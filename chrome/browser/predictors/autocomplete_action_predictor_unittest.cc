@@ -100,9 +100,13 @@ namespace predictors {
 
 class AutocompleteActionPredictorTest : public testing::Test {
  public:
-  AutocompleteActionPredictorTest()
-      : profile_(std::make_unique<TestingProfile>()), predictor_(nullptr) {
-    CHECK(profile_->CreateHistoryService());
+  AutocompleteActionPredictorTest() : predictor_(nullptr) {
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        HistoryServiceFactory::GetInstance(),
+        HistoryServiceFactory::GetDefaultFactory());
+    profile_ = profile_builder.Build();
+
     predictor_ = std::make_unique<AutocompleteActionPredictor>(profile_.get());
     profile_->BlockUntilHistoryProcessesPendingRequests();
     content::RunAllTasksUntilIdle();
@@ -555,6 +559,39 @@ TEST_F(AutocompleteActionPredictorTest,
                       transitional_matches()->end(), user_text);
   ASSERT_NE(it, transitional_matches()->end());
   EXPECT_THAT(it->urls, ::testing::ElementsAre(urls[0], urls[1]));
+}
+
+TEST_F(AutocompleteActionPredictorTest, UpdateDatabaseFromTransitionalMatches) {
+  ACMatches matches;
+  AutocompleteMatch match;
+  GURL clicked_url = GURL("https://foo-clicked.com");
+  GURL not_clicked_url = GURL("https://foo-not-clicked.com");
+  match.destination_url = clicked_url;
+  matches.push_back(match);
+  match.destination_url = not_clicked_url;
+  matches.push_back(match);
+  AutocompleteResult result;
+  result.AppendMatches(AutocompleteInput(), matches);
+  std::u16string user_text = u"foo";
+  predictor()->RegisterTransitionalMatches(user_text, result);
+  ASSERT_EQ(transitional_matches()->size(), 1ul);
+
+  predictor()->UpdateDatabaseFromTransitionalMatches(clicked_url);
+  ASSERT_TRUE(transitional_matches()->empty());
+
+  // Make sure the clicked URL has one hit.
+  DBCacheKey key = {user_text, clicked_url};
+  DBCacheMap::const_iterator it = db_cache()->find(key);
+  EXPECT_TRUE(it != db_cache()->end());
+  ASSERT_EQ(it->second.number_of_hits, 1);
+  ASSERT_EQ(it->second.number_of_misses, 0);
+
+  // Make sure the not clicked URL has one miss.
+  key.url = not_clicked_url;
+  it = db_cache()->find(key);
+  EXPECT_TRUE(it != db_cache()->end());
+  ASSERT_EQ(it->second.number_of_hits, 0);
+  ASSERT_EQ(it->second.number_of_misses, 1);
 }
 
 }  // namespace predictors

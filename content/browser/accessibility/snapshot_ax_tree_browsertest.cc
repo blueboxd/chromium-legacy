@@ -29,6 +29,9 @@ class AXTreeSnapshotWaiter {
  public:
   AXTreeSnapshotWaiter() : loop_runner_(new MessageLoopRunner()) {}
 
+  AXTreeSnapshotWaiter(const AXTreeSnapshotWaiter&) = delete;
+  AXTreeSnapshotWaiter& operator=(const AXTreeSnapshotWaiter&) = delete;
+
   void Wait() { loop_runner_->Run(); }
 
   const ui::AXTreeUpdate& snapshot() const { return snapshot_; }
@@ -41,8 +44,6 @@ class AXTreeSnapshotWaiter {
  private:
   ui::AXTreeUpdate snapshot_;
   scoped_refptr<MessageLoopRunner> loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXTreeSnapshotWaiter);
 };
 
 void DumpRolesAndNamesAsText(const ui::AXNode* node,
@@ -129,8 +130,8 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeFencedFrameBrowserTest,
   std::vector<FencedFrame*> fenced_frames = primary_rfh->GetFencedFrames();
   EXPECT_EQ(1u, fenced_frames.size());
 
-  const GURL fenced_frame_url =
-      embedded_test_server()->GetURL("fencedframe.test", "/title1.html");
+  const GURL fenced_frame_url = embedded_test_server()->GetURL(
+      "fencedframe.test", "/fenced_frames/title1.html");
   EXPECT_TRUE(ExecJs(
       primary_rfh, JsReplace("document.querySelector('fencedframe').src = $1;",
                              fenced_frame_url.spec())));
@@ -174,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root_frame = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root_frame = web_contents->GetPrimaryFrameTree().root();
 
   EXPECT_TRUE(NavigateToURLFromRenderer(root_frame->child_at(0),
                                         GURL("data:text/plain,Alpha")));
@@ -237,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root_frame = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root_frame = web_contents->GetPrimaryFrameTree().root();
 
   EXPECT_TRUE(NavigateToURLFromRenderer(root_frame->child_at(0),
                                         GURL("data:text/plain,Alpha")));
@@ -246,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
       static_cast<WebContentsImpl*>(CreateAndAttachInnerContents(
           root_frame->child_at(1)->current_frame_host()));
   EXPECT_TRUE(NavigateToURLFromRenderer(
-      inner_contents->GetFrameTree()->root(),
+      inner_contents->GetPrimaryFrameTree().root(),
       embedded_test_server()->GetURL("/accessibility/snapshot/inner.html")));
 
   AXTreeSnapshotWaiter waiter;

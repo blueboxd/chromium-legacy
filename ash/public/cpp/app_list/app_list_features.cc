@@ -32,8 +32,6 @@ const base::Feature kEnableSuggestedLocalFiles{
 const base::Feature kEnableAssistantSearch{"EnableEmbeddedAssistantUI",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kEnableAppGridGhost{"EnableAppGridGhost",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppListLaunchRecording{
     "EnableAppListLaunchRecording", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLauncherSettingsSearch{"LauncherSettingsSearch",
@@ -50,8 +48,6 @@ const base::Feature kEnableLauncherSearchNormalization{
     "EnableLauncherSearchNormalization", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kCategoricalSearch{"CategoricalSearch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kLauncherQueryHighlighting{
-    "LauncherQueryHighlighting", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kForceShowContinueSection{
     "ForceShowContinueSection", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -85,10 +81,6 @@ bool IsSuggestedLocalFilesEnabled() {
 
 bool IsAssistantSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnableAssistantSearch);
-}
-
-bool IsAppGridGhostEnabled() {
-  return base::FeatureList::IsEnabled(kEnableAppGridGhost);
 }
 
 bool IsLauncherSettingsSearchEnabled() {
@@ -131,10 +123,6 @@ bool IsCategoricalSearchEnabled() {
   // Force categorical search for the latest version of the launcher.
   return ash::features::IsProductivityLauncherEnabled() ||
          base::FeatureList::IsEnabled(kCategoricalSearch);
-}
-
-bool IsLauncherQueryHighlightingEnabled() {
-  return base::FeatureList::IsEnabled(kLauncherQueryHighlighting);
 }
 
 std::string CategoricalSearchType() {

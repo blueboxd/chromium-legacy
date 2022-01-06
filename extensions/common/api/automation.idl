@@ -267,6 +267,28 @@
     mark,
     marquee,
     math,
+    mathMLFraction,
+    mathMLIdentifier,
+    mathMLMath,
+    mathMLMultiscripts,
+    mathMLNoneScript,
+    mathMLNumber,
+    mathMLOperator,
+    mathMLOver,
+    mathMLPrescriptDelimiter,
+    mathMLRoot,
+    mathMLRow,
+    mathMLSquareRoot,
+    mathMLStringLiteral,
+    mathMLSub,
+    mathMLSubSup,
+    mathMLSup,
+    mathMLTable,
+    mathMLTableCell,
+    mathMLTableRow,
+    mathMLText,
+    mathMLUnder,
+    mathMLUnderOver,
     menu,
     menuBar,
     menuItem,
@@ -458,6 +480,7 @@
     relatedElement,
     rubyAnnotation,
     summary,
+    svgDescElement,
     tableCaption,
     title
   };
@@ -488,6 +511,12 @@
     location,
     date,
     time
+  };
+
+  // Lists the values that `invalidState` can take on.
+  enum InvalidState {
+    false,
+    true
   };
 
   // Describes possible actions when performing a do default action.
@@ -1213,6 +1242,18 @@ enum SortDirectionType {
     // Miscellaneous attributes.
     //
 
+    // Whether or not this node is a button.
+    boolean isButton;
+
+  // Whether or not this node is a checkbox.
+    boolean isCheckBox;
+
+    // Whether or not this node is a combobox.
+    boolean isComboBox;
+
+    // Whether or not this node is an image.
+    boolean isImage;
+
     // Aria auto complete.
     DOMString? autoComplete;
 
@@ -1307,6 +1348,9 @@ enum SortDirectionType {
 
     // Indicates aria-current state.
     AriaCurrentState? ariaCurrentState;
+
+    // Indicates invalid-state.
+    InvalidState? invalidState;
 
     // The application id for a tree rooted at this node.
     DOMString? appId;

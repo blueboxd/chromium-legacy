@@ -62,7 +62,7 @@ void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
     clip_rect_ =
         GeometryMapper::LocalToAncestorClipRect(new_chunk_state, layer_state_);
     if (!clip_rect_.IsInfinite())
-      clip_rect_.MoveBy(FloatPoint(-layer_offset_));
+      clip_rect_.Move(-layer_offset_);
   }
 
   chunk_state_ = new_chunk_state;
@@ -103,13 +103,13 @@ gfx::Rect ChunkToLayerMapper::MapVisualRect(const gfx::Rect& rect) const {
 // visual effects of the filters, though slowly.
 gfx::Rect ChunkToLayerMapper::MapUsingGeometryMapper(
     const gfx::Rect& rect) const {
-  FloatClipRect visual_rect((FloatRect(IntRect(rect))));
+  FloatClipRect visual_rect((gfx::RectF(rect)));
   GeometryMapper::LocalToAncestorVisualRect(chunk_state_, layer_state_,
                                             visual_rect);
   if (visual_rect.Rect().IsEmpty())
-    return IntRect();
+    return gfx::Rect();
 
-  gfx::RectF result(visual_rect.Rect());
+  gfx::RectF result = visual_rect.Rect();
   result.Offset(-layer_offset_);
   InflateForRasterEffectOutset(result);
   return gfx::ToEnclosingRect(result);

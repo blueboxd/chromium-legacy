@@ -3,7 +3,7 @@
 <translationbundle lang="az">
 <translation id="1096883626080133124">Sadə, etibarlı və həmişəkindən daha sürətli bir Google Chrome ilə daha çox iş görün</translation>
 <translation id="1282031177488366470">Chrome'un Funksiyalarını və Performansını təkmilləşdirməyə kömək edin</translation>
-<translation id="1354592789402432496">Administratorunuz təşkilat hesabı ilə daxil olmağınızı tələb edir. Administratorunuz tərəfindən məhdudlaşdırılan hesablar gizlədilib.</translation>
+<translation id="1314663809820920746">Hələ də bu cihazda əlfəcin, tarixçə, parol və digər ayarları görə bilərsiniz. Dəyişiklik etsəniz, onlar Google Hesabınızla sinxronizasiya edilməyəcək.</translation>
 <translation id="1479202195792305274">Google Hesabınız ilə daxil olduqda Chrome parollarınızı yoxlaya bilər.</translation>
 <translation id="1493827051843127077">Tablar, parollar və ödəniş məlumatlarınızı bütün cihazlarınızda sinxronlaşdırmaq üçün defolt olaraq Chrome'u ayarlayın</translation>
 <translation id="1504372625950710826">Chrome güncəlləmələri yoxlaya bilmədi. İnternet bağlantınızı yoxlayın.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google MMC</translation>
 <translation id="571296537125272375">Oflayndır, Chrome güncəlləmələri yoxlaya bilmir</translation>
 <translation id="5716154293141027663">Digər tətbiqlərdə istənilən vaxt keçidlərə toxunduqda Chrome açılsın</translation>
-<translation id="572883588166315317">Təşkilatınız Chrome'dan istifadə etmək üçün daxil olmağınızı tələb edir. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Chrome məsləhəti. Geri, İrəli və Axtarış kimi bəzi düymələr hazırda ekranın aşağısında yerləşir.</translation>
-<translation id="5876773482963502140">Chrome'un məkanınızı bilməsinə icazə versəniz, Chrome onu icazə verdiyiniz saytlara göndərir. Yaxınlıqdakı mağazalar və ya xəbərlər kimi sizə göstərəcək yerli məlumatlar olduqda saytlar məkanınızı tələb edə bilər.</translation>
 <translation id="5998675059699164418">Təşkilatınız Chrome'dan istifadə etmək üçün daxil olmağınızı tələb edir.</translation>
 <translation id="6054613632208573261">Defolt olaraq Chrome istifadə edin</translation>
 <translation id="6063091872902370735">Chrome girişinə icazə verin</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Chrome datanızınız bu cihazdan silinməsi və ya saxlanmasını seçin</translation>
 <translation id="8370517070665726704">Müəllif hüquqları <ph name="YEAR" /> Google MMC. Bütün hüquqlar qorunur.</translation>
 <translation id="840168496893712993">Bəzi addonlar Chrome'da xətaya səbəb oldu. Lütfən, onları sistemdən silməyə cəhd edin.</translation>
+<translation id="8414886616817913619">Təşkilatınız Chrome'dan istifadə etmək üçün daxil olmağınızı tələb edir. <ph name="BEGIN_LINK" />Ətraflı Məlumat<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Seçilmiş data Chrome və sinxronizasiya olunmuş cihazdan silindi. Google Hesabınızın history.google.com linkində axtarış və digər Google xidmətlərindən fəaliyyət kimi axtarış tarixçəsi formaları ola bilər.</translation>
 <translation id="850555388806794946">Chrome'u defolt etmək üçün:
   1. Ayarları açın

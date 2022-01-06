@@ -151,6 +151,8 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   BooleanPrefMember pointing_stick_acceleration_;
   BooleanPrefMember touchpad_acceleration_;
   BooleanPrefMember touchpad_scroll_acceleration_;
+  BooleanPrefMember touchpad_haptic_feedback_;
+  IntegerPrefMember touchpad_haptic_click_sensitivity_;
   FilePathPrefMember download_default_directory_;
 
   StringListPrefMember allowed_languages_;

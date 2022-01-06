@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.feed;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -12,20 +16,40 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.PathInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.AppCompatImageView;
 
-import org.chromium.chrome.browser.feed.webfeed.R;
+import org.chromium.base.CommandLine;
+import org.chromium.base.FeatureList;
+import org.chromium.base.Log;
+import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A {@link LinearLayout} that shows loading placeholder for Feed cards.
  */
 public class FeedPlaceholderLayout extends LinearLayout {
+    private static final String TAG = "FeedPlaceholder";
+    /** Command line flag to allow rendering tests to disable animation. */
+    public static final String DISABLE_ANIMATION_SWITCH = "disable-feed-placeholder-animation";
+    public static final String ENABLE_INSTANT_START_ANIMATION_PARAM =
+            "enable-animation-on-instant-start";
+    public static final BooleanCachedFieldTrialParameter ENABLE_INSTANT_START_ANIMATION =
+            new BooleanCachedFieldTrialParameter(ChromeFeatureList.FEED_LOADING_PLACEHOLDER,
+                    ENABLE_INSTANT_START_ANIMATION_PARAM, false);
+
     private static final int CARD_MARGIN_DP = 12;
     private static final int CARD_TOP_PADDING_DP = 15;
     private static final int IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP = 72;
@@ -36,12 +60,34 @@ public class FeedPlaceholderLayout extends LinearLayout {
     private static final int TEXT_PLACEHOLDER_RADIUS_DP = 12;
     private static final int LARGE_IMAGE_HEIGHT_DP = 207;
 
+    private static final int START_DELAY_MS = 733;
+    private static final int FADE_DURATION_MS = 620;
+    private static final PathInterpolator INITIAL_FADE_IN_CURVE =
+            new PathInterpolator(0.17f, 0.17f, 0.85f, 1f);
+    private static final int FADE_STAGGER_MS = 83;
+    private static final float HIGH_OPACITY = 1f;
+    private static final float LOW_OPACITY = .6f;
+    private static final PathInterpolator FADE_CYCLE_CURVE =
+            new PathInterpolator(0.33f, 0f, 0.83f, 0.83f);
+
+    private static final int MOVE_UP_DURATION_MS = 1283;
+    private static final int MOVE_UP_DP = 33;
+    private static final PathInterpolator MOVE_UP_CURVE =
+            new PathInterpolator(0.17f, 0.17f, 0f, 1f);
+
     private final Context mContext;
     private final Resources mResources;
     private long mLayoutInflationCompleteMs;
     private int mScreenWidthDp;
     private boolean mIsFirstCardDense;
     private UiConfig mUiConfig;
+
+    private final List<Animator> mFadeInAndMoveUpAnimators = new ArrayList<>();
+    private final List<Animator> mFadeBounceAnimators = new ArrayList<>();
+    private AnimatorSet mAllAnimations = new AnimatorSet();
+    private final AnimatorSet mFadeInAndMoveUp = new AnimatorSet();
+    private final AnimatorSet mFadeBounce = new AnimatorSet();
+    private boolean mInstantStart;
 
     public FeedPlaceholderLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -54,6 +100,7 @@ public class FeedPlaceholderLayout extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mUiConfig = new UiConfig(this);
+        mInstantStart = !FeatureList.isNativeInitialized();
         setPlaceholders();
         mLayoutInflationCompleteMs = SystemClock.elapsedRealtime();
     }
@@ -62,6 +109,43 @@ public class FeedPlaceholderLayout extends LinearLayout {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mUiConfig.updateDisplayStyle();
+    }
+
+    @Override
+    protected void onVisibilityChanged(View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+        updateAnimationState(isAttachedToWindow());
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        // isAttachedToWindow() doesn't turn false during onDetachedFromWindow(), so we pass the new
+        // attachment state into updateAnimationState() here explicitly.
+        updateAnimationState(/*isAttached=*/false);
+        super.onDetachedFromWindow();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        updateAnimationState(/*isAttached=*/true);
+    }
+
+    private void updateAnimationState(boolean isAttached) {
+        // Some Android versions call onVisibilityChanged() during the View's constructor.
+        if (mAllAnimations == null) return;
+
+        boolean visible = isShown() && isAttached;
+        if (mAllAnimations.isStarted() && !visible) {
+            Log.d(TAG, "Canceling animation.");
+            mAllAnimations.cancel();
+        } else if (!mAllAnimations.isStarted() && visible) {
+            if (!shouldAnimatePlaceholder()) {
+                return;
+            }
+            Log.d(TAG, "Restarting animation.");
+            mAllAnimations.start();
+        }
     }
 
     /**
@@ -88,23 +172,77 @@ public class FeedPlaceholderLayout extends LinearLayout {
         // placeholder should always show in dense mode.
         mIsFirstCardDense = getResources().getConfiguration().orientation
                 == Configuration.ORIENTATION_LANDSCAPE;
-        setPlaceholders(cardsParentView, true, lp);
+
+        // The start delays of views' opacity animations are staggered. fadeStartDelayMs keeps track
+        // of what the next view's opacity animation start delay should be.
+        int fadeStartDelayMs = setPlaceholders(cardsParentView, true, lp, 0);
 
         // Set the second and the third placeholder containers - the large image on the top.
-        setPlaceholders(cardsParentView, false, lp);
-        setPlaceholders(cardsParentView, false, lp);
+        fadeStartDelayMs = setPlaceholders(cardsParentView, false, lp, fadeStartDelayMs);
+        setPlaceholders(cardsParentView, false, lp, fadeStartDelayMs);
+
+        mFadeInAndMoveUp.setStartDelay(START_DELAY_MS);
+        mFadeInAndMoveUp.playTogether(mFadeInAndMoveUpAnimators);
+        mFadeBounce.playTogether(mFadeBounceAnimators);
+
+        // Put animations in order.
+        if (shouldFadeIn()) {
+            mAllAnimations.play(mFadeInAndMoveUp).before(mFadeBounce);
+        } else if (shouldAnimatePlaceholder()) {
+            mAllAnimations.playSequentially(mFadeBounce);
+        }
     }
 
-    private void setPlaceholders(
-            LinearLayout parent, boolean isSmallCard, ViewGroup.LayoutParams lp) {
+    private int setPlaceholders(LinearLayout parent, boolean isSmallCard, ViewGroup.LayoutParams lp,
+            int fadeStartDelayMs) {
         LinearLayout container = new LinearLayout(mContext);
         container.setLayoutParams(lp);
         container.setOrientation(isSmallCard ? HORIZONTAL : VERTICAL);
         ImageView imagePlaceholder = getImagePlaceholder(isSmallCard);
         ImageView textPlaceholder = getTextPlaceholder(isSmallCard);
-        container.addView(isSmallCard ? textPlaceholder : imagePlaceholder);
-        container.addView(isSmallCard ? imagePlaceholder : textPlaceholder);
+
+        container.addView(isSmallCard ? animate(textPlaceholder, fadeStartDelayMs)
+                                      : animate(imagePlaceholder, fadeStartDelayMs));
+        fadeStartDelayMs += FADE_STAGGER_MS;
+        container.addView(isSmallCard ? animate(imagePlaceholder, fadeStartDelayMs)
+                                      : animate(textPlaceholder, fadeStartDelayMs));
+        fadeStartDelayMs += FADE_STAGGER_MS;
+
         parent.addView(container);
+        return fadeStartDelayMs;
+    }
+
+    private View animate(View view, int fadeStartDelayMs) {
+        if (CommandLine.getInstance().hasSwitch(DISABLE_ANIMATION_SWITCH)
+                || !shouldAnimatePlaceholder()) {
+            return view;
+        }
+
+        // First, fade in from nothing.
+        view.setAlpha(0f);
+        view.setVisibility(View.VISIBLE);
+
+        ObjectAnimator initialFadeIn = ObjectAnimator.ofFloat(view, "alpha", 0f, HIGH_OPACITY);
+        initialFadeIn.setStartDelay(fadeStartDelayMs);
+        initialFadeIn.setDuration(FADE_DURATION_MS);
+        initialFadeIn.setInterpolator(INITIAL_FADE_IN_CURVE);
+        mFadeInAndMoveUpAnimators.add(initialFadeIn);
+
+        ObjectAnimator moveUp =
+                ObjectAnimator.ofFloat(view, "translationY", dpToPx(MOVE_UP_DP), 0f);
+        moveUp.setDuration(MOVE_UP_DURATION_MS);
+        moveUp.setInterpolator(MOVE_UP_CURVE);
+        mFadeInAndMoveUpAnimators.add(moveUp);
+
+        ObjectAnimator pulse = ObjectAnimator.ofFloat(view, "alpha", HIGH_OPACITY, LOW_OPACITY);
+        pulse.setStartDelay(fadeStartDelayMs);
+        pulse.setDuration(FADE_DURATION_MS);
+        pulse.setInterpolator(FADE_CYCLE_CURVE);
+        pulse.setRepeatCount(ValueAnimator.INFINITE);
+        pulse.setRepeatMode(ValueAnimator.REVERSE);
+        mFadeBounceAnimators.add(pulse);
+
+        return view;
     }
 
     private ImageView getImagePlaceholder(boolean isSmallCard) {
@@ -221,5 +359,31 @@ public class FeedPlaceholderLayout extends LinearLayout {
 
     public long getLayoutInflationCompleteMs() {
         return mLayoutInflationCompleteMs;
+    }
+
+    private static boolean isFeatureEnabled() {
+        // If the feature flag is disabled, use the old behavior: Instant Start shows the static
+        // placeholder, and the feed shouldn't show this placeholder view at all.
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.FEED_LOADING_PLACEHOLDER);
+    }
+
+    private static boolean isInstantStartAnimationEnabled() {
+        return ENABLE_INSTANT_START_ANIMATION.getValue();
+    }
+
+    private boolean shouldAnimatePlaceholder() {
+        // Always animate when showing on the feed. If showing on Instant Start, only animate if the
+        // flags are true.
+        return !mInstantStart
+                || (mInstantStart && isFeatureEnabled() && isInstantStartAnimationEnabled());
+    }
+
+    private boolean shouldFadeIn() {
+        return !mInstantStart;
+    }
+
+    @VisibleForTesting
+    void setAnimatorSetForTesting(AnimatorSet animatorSet) {
+        mAllAnimations = animatorSet;
     }
 }

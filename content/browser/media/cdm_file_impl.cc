@@ -162,6 +162,9 @@ class CdmFileImpl::FileReader {
 
   FileReader() = default;
 
+  FileReader(const FileReader&) = delete;
+  FileReader& operator=(const FileReader&) = delete;
+
   // Reads the contents of |file_url| and calls |callback| with the result
   // (file contents on success, empty data on error).
   void Read(scoped_refptr<storage::FileSystemContext> file_system_context,
@@ -272,7 +275,6 @@ class CdmFileImpl::FileReader {
   std::unique_ptr<storage::FileStreamReader> file_stream_reader_;
 
   base::WeakPtrFactory<FileReader> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(FileReader);
 };
 
 class CdmFileImpl::FileWriter {
@@ -281,6 +283,9 @@ class CdmFileImpl::FileWriter {
   using WriteDoneCB = base::OnceCallback<void(bool)>;
 
   FileWriter() {}
+
+  FileWriter(const FileWriter&) = delete;
+  FileWriter& operator=(const FileWriter&) = delete;
 
   // Writes |buffer| as the contents of |file_url| and calls |callback| with
   // whether the write succeeded or not.
@@ -362,7 +367,6 @@ class CdmFileImpl::FileWriter {
   std::unique_ptr<storage::FileStreamWriter> file_stream_writer_;
 
   base::WeakPtrFactory<FileWriter> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(FileWriter);
 };
 
 // static
@@ -641,7 +645,7 @@ void CdmFileImpl::WriteDone(bool success) {
            << dest_file_url.DebugString();
   file_util->MoveFileLocal(
       std::move(operation_context), src_file_url, dest_file_url,
-      storage::FileSystemOperation::OPTION_NONE,
+      storage::FileSystemOperation::CopyOrMoveOptionSet(),
       base::BindOnce(&CdmFileImpl::OnFileRenamed, weak_factory_.GetWeakPtr()));
 }
 

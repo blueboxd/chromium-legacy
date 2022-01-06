@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
@@ -32,8 +33,7 @@ class ZeroStateIconButton;
 // A bar that resides at the top portion of the overview mode's ShieldView,
 // which contains the virtual desks mini_views, as well as the new desk button.
 class ASH_EXPORT DesksBarView : public views::View,
-                                public DesksController::Observer,
-                                public views::ScrollView::Observer {
+                                public DesksController::Observer {
  public:
   explicit DesksBarView(OverviewGrid* overview_grid);
 
@@ -44,9 +44,8 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   static constexpr int kZeroStateBarHeight = 40;
 
-  // Returns the height of the expanded desks bar that exists on `root`. The
-  // height of zero state desks bar is `kZeroStateBarHeight`.
-  static int GetExpandedBarHeight(aura::Window* root);
+  // Returns the height of the desks bar that exists on |root|.
+  static int GetBarHeightForWidth(aura::Window* root);
 
   // Creates and returns the widget that contains the DeskBarView in overview
   // mode. The returned widget has no content view yet, and hasn't been shown
@@ -55,9 +54,7 @@ class ASH_EXPORT DesksBarView : public views::View,
       aura::Window* root,
       const gfx::Rect& bounds);
 
-  void set_is_bounds_animation_on_going(bool value) {
-    is_bounds_animation_on_going_ = value;
-  }
+  views::View* background_view() const { return background_view_; }
 
   ZeroStateDefaultDeskButton* zero_state_default_desk_button() const {
     return zero_state_default_desk_button_;
@@ -86,6 +83,8 @@ class ASH_EXPORT DesksBarView : public views::View,
   }
 
   bool dragged_item_over_bar() const { return dragged_item_over_bar_; }
+
+  OverviewGrid* overview_grid() const { return overview_grid_; }
 
   void set_should_name_nudge(bool should_name_nudge) {
     should_name_nudge_ = should_name_nudge;
@@ -169,10 +168,6 @@ class ASH_EXPORT DesksBarView : public views::View,
   void OnDeskNameChanged(const Desk* desk,
                          const std::u16string& new_name) override;
 
-  // views::ScrollView::Observer:
-  void OnContentsScrolled() override;
-  void OnContentsScrollEnded() override;
-
   // This is called on initialization, creating a new desk through the
   // NewDeskButton or ExpandedDesksBarButton, or expanding from zero state
   // bar to the expanded desks bar. Performs the expanding animation if
@@ -188,6 +183,22 @@ class ASH_EXPORT DesksBarView : public views::View,
   void OnNewDeskButtonPressed(
       DesksCreationRemovalSource desks_creation_removal_source);
 
+  // If in expanded state, updates the border color of the
+  // `expanded_state_desks_templates_button_` and the active desk's mini view
+  // after the desk templates grid has been shown. If not in expanded state,
+  // updates the background color of the `zero_state_desks_templates_button_`
+  // and the `zero_state_default_desk_button_`.
+  void UpdateButtonsForDesksTemplatesGrid();
+
+  // Updates the visibility of the desks templates button based on whether the
+  // desks templates feature is enabled, the user has any desks templates and
+  // the state of the desks bar.
+  void UpdateDesksTemplatesButtonVisibility();
+
+  // Returns the mini_view associated with `desk` or nullptr if no mini_view
+  // has been created for it yet.
+  DeskMiniView* FindMiniViewForDesk(const Desk* desk) const;
+
  private:
   friend class DesksBarScrollViewLayout;
   friend class DesksTestApi;
@@ -201,10 +212,6 @@ class ASH_EXPORT DesksBarView : public views::View,
   // scroll. Return true if the scroll is triggered. Return false if the scroll
   // is ended.
   bool MaybeScrollByDraggedDesk();
-
-  // Returns the mini_view associated with |desk| or nullptr if no mini_view
-  // has been created for it yet.
-  DeskMiniView* FindMiniViewForDesk(const Desk* desk) const;
 
   // Returns the X offset of the first mini_view on the left (if there's one),
   // or the X offset of this view's center point when there are no mini_views.
@@ -239,6 +246,14 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   void OnDesksTemplatesButtonPressed();
 
+  // Scrollview callbacks.
+  void OnContentsScrolled();
+  void OnContentsScrollEnded();
+
+  // A view that shows a dark gary transparent background that can be animated
+  // when the very first mini_views are created.
+  views::View* background_view_;
+
   // The views representing desks mini_views. They're owned by views hierarchy.
   std::vector<DeskMiniView*> mini_views_;
 
@@ -270,13 +285,6 @@ class ASH_EXPORT DesksBarView : public views::View,
   // reset.
   bool should_name_nudge_ = false;
 
-  // True if the `DesksBarBoundsAnimation` is started and hasn't finished yet.
-  // It will be used to hold `Layout` until the bounds animation is completed.
-  // `Layout` is expensive and will be called on bounds changes, which means it
-  // will be called lots of times during the bounds changes animation. This is
-  // done to eliminate the unnecessary `Layout` calls during the animation.
-  bool is_bounds_animation_on_going_ = false;
-
   ZeroStateDefaultDeskButton* zero_state_default_desk_button_ = nullptr;
   ZeroStateIconButton* zero_state_new_desk_button_ = nullptr;
   ExpandedDesksBarButton* expanded_state_new_desk_button_ = nullptr;
@@ -300,6 +308,10 @@ class ASH_EXPORT DesksBarView : public views::View,
   // persistent desks bar. Note that this button will only be created when
   // BentoBar is enabled.
   PersistentDesksBarVerticalDotsButton* vertical_dots_button_ = nullptr;
+
+  // ScrollView callback subscriptions.
+  base::CallbackListSubscription on_contents_scrolled_subscription_;
+  base::CallbackListSubscription on_contents_scroll_ended_subscription_;
 };
 
 }  // namespace ash

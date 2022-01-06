@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -73,6 +73,10 @@ class MojoVideoFrameHandleReleaser
             std::move(task_runner));
   }
 
+  MojoVideoFrameHandleReleaser(const MojoVideoFrameHandleReleaser&) = delete;
+  MojoVideoFrameHandleReleaser& operator=(const MojoVideoFrameHandleReleaser&) =
+      delete;
+
   void ReleaseVideoFrame(const base::UnguessableToken& release_token,
                          const gpu::SyncToken& release_sync_token) {
     DVLOG(3) << __func__ << "(" << release_token << ")";
@@ -96,8 +100,6 @@ class MojoVideoFrameHandleReleaser
 
   mojo::SharedRemote<mojom::VideoFrameHandleReleaser>
       video_frame_handle_releaser_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoVideoFrameHandleReleaser);
 };
 
 MojoVideoDecoder::MojoVideoDecoder(
@@ -370,11 +372,6 @@ int MojoVideoDecoder::GetMaxDecodeRequests() const {
   DVLOG(3) << __func__;
   DCHECK(initialized_);
   return max_decode_requests_;
-}
-
-bool MojoVideoDecoder::IsOptimizedForRTC() const {
-  DVLOG(3) << __func__;
-  return true;
 }
 
 void MojoVideoDecoder::InitAndBindRemoteDecoder(base::OnceClosure complete_cb) {

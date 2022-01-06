@@ -82,9 +82,14 @@ struct COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowInitProperties {
   PlatformWindowOpacity opacity = PlatformWindowOpacity::kOpaqueWindow;
 
 #if defined(OS_FUCHSIA)
-  zx::handle view_token;
+  // Scenic 3D API uses `view_token` for links, whereas Flatland
+  // API uses `view_creation_token`. Therefore, at most one of these fields must
+  // be set. If `allow_null_view_token_for_test` is true, they may both be
+  // false.
+  fuchsia::ui::views::ViewToken view_token;
+  fuchsia::ui::views::ViewCreationToken view_creation_token;
+
   scenic::ViewRefPair view_ref_pair;
-  static bool allow_null_view_token_for_test;
 
   // Specifies whether handling of keypress events from the system is enabled.
   bool enable_keyboard = false;

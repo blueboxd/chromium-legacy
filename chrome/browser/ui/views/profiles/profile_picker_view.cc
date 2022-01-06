@@ -175,6 +175,18 @@ void ProfilePicker::SwitchToDiceSignIn(
 #endif
 
 // static
+void ProfilePicker::SwitchToSignedInFlow(absl::optional<SkColor> profile_color,
+                                         Profile* signed_in_profile) {
+  if (g_profile_picker_view) {
+    g_profile_picker_view->SwitchToSignedInFlow(
+        profile_color, signed_in_profile,
+        content::WebContents::Create(
+            content::WebContents::CreateParams(signed_in_profile)),
+        /*is_saml=*/false);
+  }
+}
+
+// static
 void ProfilePicker::CancelSignedInFlow() {
   if (g_profile_picker_view) {
     g_profile_picker_view->CancelSignedInFlow();
@@ -238,17 +250,6 @@ views::WebView* ProfilePicker::GetWebViewForTesting() {
 // static
 views::View* ProfilePicker::GetViewForTesting() {
   return g_profile_picker_view;
-}
-
-// static
-views::View* ProfilePicker::GetToolbarForTesting() {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  if (!g_profile_picker_view)
-    return nullptr;
-  return g_profile_picker_view->toolbar_;
-#else
-  return nullptr;
-#endif
 }
 
 // static
@@ -442,7 +443,7 @@ bool ProfilePickerView::HandleKeyboardEvent(
 }
 
 bool ProfilePickerView::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
   // Ignores context menu.
   return true;
@@ -552,11 +553,6 @@ void ProfilePickerView::Init(Profile* system_profile) {
 #endif
 
   ShowScreenInSystemContents(CreateURLForEntryPoint(entry_point_));
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // It's important for tests that the toolbar container starts visible (but
-  // empty) and gets hidden later when setting up the layout.
-  toolbar_->SetVisible(false);
-#endif
   GetWidget()->Show();
   state_ = kReady;
 
@@ -785,9 +781,9 @@ void ProfilePickerView::BuildLayout() {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   auto toolbar = std::make_unique<ProfilePickerDiceSignInToolbar>();
-  // It is important for tests that the top container starts visible (being
-  // empty).
   toolbar_ = AddChildView(std::move(toolbar));
+  // Toolbar gets built and set visible once we it's needed for the Dice signin.
+  toolbar_->SetVisible(false);
 #endif
 
   auto web_view = std::make_unique<views::WebView>();

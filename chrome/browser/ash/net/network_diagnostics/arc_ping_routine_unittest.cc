@@ -24,7 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 namespace network_diagnostics {
 
 namespace {
@@ -114,10 +114,9 @@ class ArcPingRoutineTest : public ::testing::Test {
   void InitializeManagedNetworkConfigurationHandler() {
     network_profile_handler_ = NetworkProfileHandler::InitializeForTesting();
     network_configuration_handler_ =
-        base::WrapUnique<NetworkConfigurationHandler>(
-            NetworkConfigurationHandler::InitializeForTest(
-                network_state_helper().network_state_handler(),
-                cros_network_config_test_helper().network_device_handler()));
+        NetworkConfigurationHandler::InitializeForTest(
+            network_state_helper().network_state_handler(),
+            cros_network_config_test_helper().network_device_handler());
 
     PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
     PrefProxyConfigTrackerImpl::RegisterPrefs(local_state_.registry());
@@ -220,4 +219,4 @@ TEST_F(ArcPingRoutineTest, TestHighLatencyToPingDefaultGateway) {
 }
 
 }  // namespace network_diagnostics
-}  // namespace chromeos
+}  // namespace ash

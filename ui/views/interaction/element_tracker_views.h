@@ -60,8 +60,34 @@ class VIEWS_EXPORT ElementTrackerViews : private WidgetObserver {
   // null if none exists. Note that views which are not visible or not added to
   // a Widget may not have associated elements, and that the returned object
   // may be transient.
-  TrackedElementViews* GetElementForView(View* view);
+  //
+  // For the non-const version, if `assign_temporary_id` is set and `view` does
+  // not have an identifier, ui::ElementTracker::kTemporaryIdentifier will be
+  // assigned.
+  TrackedElementViews* GetElementForView(View* view,
+                                         bool assign_temporary_id = false);
   const TrackedElementViews* GetElementForView(const View* view) const;
+
+  // Returns either the unique View matching the given `id` in the given
+  // `context`, or null if there is none.
+  //
+  // Use if you are sure there's at most one matching element in the context
+  // and that (if present) the element is a View; will DCHECK/crash otherwise.
+  View* GetUniqueView(ui::ElementIdentifier id, ui::ElementContext context);
+
+  // Returns the first View with the given `id` in the given `context`; null if
+  // none is found. Ignores all other Views and any matching elements that are
+  // not Views.
+  //
+  // Use when you just need *a* View in the given context, and don't care if
+  // there's more than one.
+  View* GetFirstMatchingView(ui::ElementIdentifier id,
+                             ui::ElementContext context);
+
+  // Returns a list of all visible Views with identifier `id` in `context`.
+  // The list may be empty. Ignores any non-Views elements which might match.
+  ViewList GetAllMatchingViews(ui::ElementIdentifier id,
+                               ui::ElementContext context);
 
   // Called by View after the kUniqueElementKey property is set.
   void RegisterView(ui::ElementIdentifier element_id, View* view);

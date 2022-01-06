@@ -39,7 +39,6 @@ SendTabToSelfClientService::~SendTabToSelfClientService() = default;
 void SendTabToSelfClientService::Shutdown() {
   model_->RemoveObserver(this);
   model_ = nullptr;
-  registry_->OnProfileShutdown(profile_);
 }
 
 void SendTabToSelfClientService::SendTabToSelfModelLoaded() {
@@ -71,7 +70,7 @@ void SendTabToSelfClientService::EntriesAddedRemotely(
     } else {
       auto* desktop_handler =
           static_cast<DesktopNotificationHandler*>(handler.get());
-      if (desktop_handler && desktop_handler->profile() == profile_) {
+      if (desktop_handler && desktop_handler->GetProfile() == profile_) {
         handler->DisplayNewEntries(new_entries);
       }
     }

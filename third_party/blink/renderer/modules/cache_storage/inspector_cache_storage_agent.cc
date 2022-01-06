@@ -268,14 +268,16 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
       auto request_clone_without_body = mojom::blink::FetchAPIRequest::New(
           request->mode, request->is_main_resource_load, request->destination,
           request->frame_type, request->url, request->method, request->headers,
-          nullptr /* blob */, ResourceRequestBody(), request->referrer.Clone(),
-          request->credentials_mode, request->cache_mode,
-          request->redirect_mode, request->integrity, request->priority,
-          request->fetch_window_id, request->keepalive, request->is_reload,
-          request->is_history_navigation, request->devtools_stack_id);
+          nullptr /* blob */, ResourceRequestBody(), request->request_initiator,
+          request->referrer.Clone(), request->credentials_mode,
+          request->cache_mode, request->redirect_mode, request->integrity,
+          request->priority, request->fetch_window_id, request->keepalive,
+          request->is_reload, request->is_history_navigation,
+          request->devtools_stack_id);
       cache_remote_->Match(
           std::move(request), mojom::blink::CacheQueryOptions::New(),
-          false /* in_related_fetch_event */, trace_id,
+          /*in_related_fetch_event=*/false, /*in_range_fetch_event=*/false,
+          trace_id,
           WTF::Bind(
               [](scoped_refptr<ResponsesAccumulator> accumulator,
                  mojom::blink::FetchAPIRequestPtr request,
@@ -740,7 +742,8 @@ void InspectorCacheStorageAgent::requestCachedResponse(
 
   cache_storage->Match(
       std::move(request), std::move(multi_query_options),
-      false /* in_related_fetch_event */, trace_id,
+      /*in_related_fetch_event=*/false, /*in_range_fetch_event=*/false,
+      trace_id,
       WTF::Bind(
           [](std::unique_ptr<RequestCachedResponseCallback> callback,
              mojom::blink::MatchResultPtr result) {

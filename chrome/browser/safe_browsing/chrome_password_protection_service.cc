@@ -68,8 +68,8 @@
 #include "components/safe_browsing/core/common/utils.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
@@ -379,7 +379,8 @@ bool ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
       prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
   return unhandled_sync_password_reuses
              ? (unhandled_sync_password_reuses->FindKey(
-                    Origin::Create(web_contents->GetLastCommittedURL())
+                    web_contents->GetMainFrame()
+                        ->GetLastCommittedOrigin()
                         .Serialize()) != nullptr)
              : false;
 }
@@ -479,7 +480,7 @@ void ChromePasswordProtectionService::OnModalWarningShownForGaiaPassword(
     // Since base::Value doesn't support int64_t type, we convert the navigation
     // ID to string format and store it in the preference dictionary.
     update->SetKey(
-        Origin::Create(web_contents->GetLastCommittedURL()).Serialize(),
+        web_contents->GetMainFrame()->GetLastCommittedOrigin().Serialize(),
         base::Value(
             base::NumberToString(GetLastCommittedNavigationID(web_contents))));
   }
@@ -880,8 +881,6 @@ void ChromePasswordProtectionService::OnGaiaPasswordChanged(
     bool is_other_gaia_password) {
   DictionaryPrefUpdate unhandled_gaia_password_reuses(
       profile_->GetPrefs(), prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
-  LogNumberOfReuseBeforeSyncPasswordChange(
-      unhandled_gaia_password_reuses->DictSize());
   unhandled_gaia_password_reuses->Clear();
   if (!is_other_gaia_password)
     MaybeLogPasswordCapture(/*did_log_in=*/true);
@@ -942,7 +941,7 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
     LoginReputationClientResponse::VerdictType verdict_type,
     const std::string& verdict_token,
     WarningAction action) {
-  const Origin origin = Origin::Create(web_contents->GetLastCommittedURL());
+  const Origin origin = web_contents->GetMainFrame()->GetLastCommittedOrigin();
   int64_t navigation_id =
       GetNavigationIDFromPrefsByOrigin(profile_->GetPrefs(), origin);
 
@@ -1621,6 +1620,11 @@ AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
 
   return identity_manager->FindExtendedAccountInfo(
       identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
+}
+
+ChromeUserPopulation::UserPopulation
+ChromePasswordProtectionService::GetUserPopulationPref() const {
+  return ::safe_browsing::GetUserPopulationPref(profile_->GetPrefs());
 }
 
 ChromePasswordProtectionService::ChromePasswordProtectionService(

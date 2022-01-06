@@ -88,6 +88,9 @@ struct BASE_EXPORT ChromeUnwindInfoAndroid {
                           span<const FunctionTableEntry> function_table,
                           span<const uint32_t> page_table);
   ~ChromeUnwindInfoAndroid();
+  ChromeUnwindInfoAndroid(const ChromeUnwindInfoAndroid& other);
+  ChromeUnwindInfoAndroid& operator=(const ChromeUnwindInfoAndroid& other);
+
   ChromeUnwindInfoAndroid(ChromeUnwindInfoAndroid&& other);
   ChromeUnwindInfoAndroid& operator=(ChromeUnwindInfoAndroid&& other);
 
@@ -160,7 +163,7 @@ struct BASE_EXPORT ChromeUnwindInfoAndroid {
   // The function table represents the individual functions within a 128kb page.
   // The relevant entry for an instruction offset from the start of the text
   // section is the one with the largest function_start_address_page_offset <=
-  // instruction_offset_from_text_section_start.
+  // instruction_byte_offset_from_text_section_start.
   //
   // Function table is expected to have following memory layout:
   // +--------------------+--------------------+

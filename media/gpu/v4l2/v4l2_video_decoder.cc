@@ -16,10 +16,12 @@
 #include "media/base/media_log.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
+#include "media/gpu/chromeos/chromeos_status.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/v4l2/v4l2_status.h"
 #include "media/gpu/v4l2/v4l2_video_decoder_backend_stateful.h"
 #include "media/gpu/v4l2/v4l2_video_decoder_backend_stateless.h"
 
@@ -95,11 +97,11 @@ V4L2VideoDecoder::V4L2VideoDecoder(
                         std::move(decoder_task_runner),
                         std::move(client)),
       device_(std::move(device)),
-      weak_this_factory_(this) {
+      weak_this_for_polling_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   VLOGF(2);
 
-  weak_this_ = weak_this_factory_.GetWeakPtr();
+  weak_this_for_polling_ = weak_this_for_polling_factory_.GetWeakPtr();
 }
 
 V4L2VideoDecoder::~V4L2VideoDecoder() {
@@ -123,7 +125,7 @@ V4L2VideoDecoder::~V4L2VideoDecoder() {
     output_queue_ = nullptr;
   }
 
-  weak_this_factory_.InvalidateWeakPtrs();
+  weak_this_for_polling_factory_.InvalidateWeakPtrs();
 
   if (can_use_decoder_)
     num_instances_.Decrement();
@@ -153,7 +155,12 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
   // case.
   if (state_ == State::kDecoding) {
     if (!StopStreamV4L2Queue(true)) {
-      std::move(init_cb).Run(StatusCode::kV4l2FailedToStopStreamQueue);
+      // TODO(crbug/1103510): Make StopStreamV4L2Queue return a StatusOr, and
+      // pipe that back instead.
+      std::move(init_cb).Run(
+          Status(Status::Codes::kDecoderInitializeNeverCompleted)
+              .AddCause(
+                  V4L2Status(V4L2Status::Codes::kFailedToStopStreamQueue)));
       return;
     }
 
@@ -167,16 +174,19 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
       can_use_decoder_ = false;
     }
 
-    continue_change_resolution_cb_.Reset();
-
     device_ = V4L2Device::Create();
     if (!device_) {
       VLOGF(1) << "Failed to create V4L2 device.";
       SetState(State::kError);
-      std::move(init_cb).Run(StatusCode::kV4l2NoDevice);
+      // TODO(crbug/1103510): Make V4L2Device::Create return a StatusOr, and
+      // pipe that back instead.
+      std::move(init_cb).Run(
+          Status(Status::Codes::kDecoderInitializeNeverCompleted)
+              .AddCause(V4L2Status(V4L2Status::Codes::kNoDevice)));
       return;
     }
 
+    continue_change_resolution_cb_.Reset();
     if (backend_)
       backend_ = nullptr;
   }
@@ -190,7 +200,9 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (profile_ == VIDEO_CODEC_PROFILE_UNKNOWN) {
     VLOGF(1) << "Unknown profile.";
     SetState(State::kError);
-    std::move(init_cb).Run(StatusCode::kV4l2NoDecoder);
+    std::move(init_cb).Run(
+        Status(Status::Codes::kDecoderInitializeNeverCompleted)
+            .AddCause(V4L2Status(V4L2Status::Codes::kNoProfile)));
     return;
   }
 
@@ -226,7 +238,7 @@ bool V4L2VideoDecoder::IsPlatformDecoder() const {
   return true;
 }
 
-StatusCode V4L2VideoDecoder::InitializeBackend() {
+V4L2Status V4L2VideoDecoder::InitializeBackend() {
   DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(state_ == State::kInitialized);
@@ -235,7 +247,7 @@ StatusCode V4L2VideoDecoder::InitializeBackend() {
   if (!can_use_decoder_) {
     VLOGF(1) << "Reached maximum number of decoder instances ("
              << kMaxNumOfInstances << ")";
-    return StatusCode::kDecoderCreationFailed;
+    return V4L2Status::Codes::kMaxDecoderInstanceCount;
   }
 
   constexpr bool kStateful = false;
@@ -259,7 +271,7 @@ StatusCode V4L2VideoDecoder::InitializeBackend() {
     num_instances_.Decrement();
     can_use_decoder_ = false;
     VLOGF(1) << "No V4L2 API found for profile: " << GetProfileName(profile_);
-    return StatusCode::kV4l2NoDecoder;
+    return V4L2Status::Codes::kNoDriverSupportForFourcc;
   }
 
   struct v4l2_capability caps;
@@ -268,7 +280,7 @@ StatusCode V4L2VideoDecoder::InitializeBackend() {
       (caps.capabilities & kCapsRequired) != kCapsRequired) {
     VLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP, "
              << "caps check failed: 0x" << std::hex << caps.capabilities;
-    return StatusCode::kV4l2FailedFileCapabilitiesCheck;
+    return V4L2Status::Codes::kFailedFileCapabilitiesCheck;
   }
 
   // Create Input/Output V4L2Queue
@@ -276,7 +288,7 @@ StatusCode V4L2VideoDecoder::InitializeBackend() {
   output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
   if (!input_queue_ || !output_queue_) {
     VLOGF(1) << "Failed to create V4L2 queue.";
-    return StatusCode::kV4l2FailedResourceAllocation;
+    return V4L2Status::Codes::kFailedResourceAllocation;
   }
 
   const auto preferred_api_and_format = api_and_format.value();
@@ -297,28 +309,28 @@ StatusCode V4L2VideoDecoder::InitializeBackend() {
 
   if (!backend_->Initialize()) {
     VLOGF(1) << "Failed to initialize backend.";
-    return StatusCode::kV4l2FailedResourceAllocation;
+    return V4L2Status::Codes::kFailedResourceAllocation;
   }
 
   if (!SetupInputFormat(input_format_fourcc)) {
     VLOGF(1) << "Failed to setup input format.";
-    return StatusCode::kV4l2BadFormat;
+    return V4L2Status::Codes::kBadFormat;
   }
 
   if (input_queue_->AllocateBuffers(kNumInputBuffers, V4L2_MEMORY_MMAP) == 0) {
     VLOGF(1) << "Failed to allocate input buffer.";
-    return StatusCode::kV4l2FailedResourceAllocation;
+    return V4L2Status::Codes::kFailedResourceAllocation;
   }
 
   // Start streaming input queue and polling. This is required for the stateful
   // decoder, and doesn't hurt for the stateless one.
   if (!StartStreamV4L2Queue(false)) {
     VLOGF(1) << "Failed to start streaming.";
-    return StatusCode::kV4L2FailedToStartStreamQueue;
+    return V4L2Status::Codes::kFailedToStartStreamQueue;
   }
 
   SetState(State::kDecoding);
-  return StatusCode::kOk;
+  return V4L2Status::Codes::kOk;
 }
 
 bool V4L2VideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
@@ -382,13 +394,14 @@ bool V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
   }
 
   // Ask the pipeline to pick the output format.
-  StatusOr<std::pair<Fourcc, gfx::Size>> status_or_output_format =
+  CroStatus::Or<std::pair<Fourcc, gfx::Size>> status_or_output_format =
       client_->PickDecoderOutputFormat(
           candidates, visible_rect, aspect_ratio_.GetNaturalSize(visible_rect),
           /*output_size=*/absl::nullopt, num_output_frames_,
           /*use+protected=*/false, /*need_aux_frame_pool=*/false);
   if (status_or_output_format.has_error()) {
     VLOGF(1) << "Failed to pick an output format.";
+    // TODO(crbug/1103510): Don't drop the error on the floor here.
     return false;
   }
   const auto output_format = std::move(status_or_output_format).value();
@@ -422,11 +435,12 @@ bool V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
     // modifier that we need to give to the driver. We should add a
     // GetGpuBufferLayout() method to DmabufVideoFramePool to query that without
     // having to re-initialize the pool.
-    StatusOr<GpuBufferLayout> status_or_layout = pool->Initialize(
+    CroStatus::Or<GpuBufferLayout> status_or_layout = pool->Initialize(
         fourcc, adjusted_size, visible_rect,
         aspect_ratio_.GetNaturalSize(visible_rect), num_output_frames_,
         /*use_protected=*/false);
     if (status_or_layout.has_error()) {
+      // TODO(crbug/1103510): Don't just drop this error.
       VLOGF(1) << "Failed to setup format to VFPool";
       return false;
     }
@@ -472,13 +486,21 @@ void V4L2VideoDecoder::Reset(base::OnceClosure closure) {
       &base::SequencedTaskRunner::PostTask,
       base::SequencedTaskRunnerHandle::Get(), FROM_HERE, std::move(closure));
 
-  // Reset callback for resolution change, because the pipeline won't notify
-  // flushed after reset.
-  continue_change_resolution_cb_.Reset();
-
   if (state_ == State::kInitialized) {
     std::move(trampoline_reset_cb).Run();
     return;
+  }
+  if (!backend_) {
+    VLOGF(1) << "Backend was destroyed while resetting.";
+    SetState(State::kError);
+    return;
+  }
+
+  // Reset callback for resolution change, because the pipeline won't notify
+  // flushed after reset.
+  if (continue_change_resolution_cb_) {
+    continue_change_resolution_cb_.Reset();
+    backend_->OnChangeResolutionDone(CroStatus::Codes::kResetRequired);
   }
 
   // Call all pending decode callback.
@@ -524,10 +546,12 @@ void V4L2VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   }
 
   if (state_ == State::kInitialized) {
-    const StatusCode status = InitializeBackend();
-    if (status != StatusCode::kOk) {
+    V4L2Status status = InitializeBackend();
+    if (status != V4L2Status::Codes::kOk) {
       SetState(State::kError);
-      std::move(trampoline_decode_cb).Run(status);
+      std::move(trampoline_decode_cb)
+          .Run(Status(Status::Codes::kDecoderFailedDecode)
+                   .AddCause(std::move(status)));
       return;
     }
   }
@@ -549,9 +573,10 @@ bool V4L2VideoDecoder::StartStreamV4L2Queue(bool start_output_queue) {
   }
 
   if (!device_->StartPolling(
-          base::BindRepeating(&V4L2VideoDecoder::ServiceDeviceTask, weak_this_),
-          base::BindRepeating(&V4L2VideoDecoder::SetState, weak_this_,
-                              State::kError))) {
+          base::BindRepeating(&V4L2VideoDecoder::ServiceDeviceTask,
+                              weak_this_for_polling_),
+          base::BindRepeating(&V4L2VideoDecoder::SetState,
+                              weak_this_for_polling_, State::kError))) {
     SetState(State::kError);
     return false;
   }
@@ -567,6 +592,10 @@ bool V4L2VideoDecoder::StopStreamV4L2Queue(bool stop_input_queue) {
     SetState(State::kError);
     return false;
   }
+
+  // Invalidate the callback from the device.
+  weak_this_for_polling_factory_.InvalidateWeakPtrs();
+  weak_this_for_polling_ = weak_this_for_polling_factory_.GetWeakPtr();
 
   // Streamoff input and output queue.
   if (input_queue_ && stop_input_queue)
@@ -602,9 +631,14 @@ void V4L2VideoDecoder::ChangeResolution(gfx::Size pic_size,
   DCHECK(!continue_change_resolution_cb_);
 
   // After the pipeline flushes all frames, we can start changing resolution.
+  // base::Unretained() is safe because |continue_change_resolution_cb_| is
+  // called inside the class, so the pointer must be valid.
   continue_change_resolution_cb_ =
-      base::BindOnce(&V4L2VideoDecoder::ContinueChangeResolution, weak_this_,
-                     pic_size, visible_rect, num_output_frames);
+      base::BindOnce(&V4L2VideoDecoder::ContinueChangeResolution,
+                     base::Unretained(this), pic_size, visible_rect,
+                     num_output_frames)
+          .Then(base::BindOnce(&V4L2VideoDecoder::OnChangeResolutionDone,
+                               base::Unretained(this)));
 
   DCHECK(client_);
   client_->PrepareChangeResolution();
@@ -618,23 +652,24 @@ void V4L2VideoDecoder::ApplyResolutionChange() {
   std::move(continue_change_resolution_cb_).Run();
 }
 
-void V4L2VideoDecoder::ContinueChangeResolution(
+CroStatus V4L2VideoDecoder::ContinueChangeResolution(
     const gfx::Size& pic_size,
     const gfx::Rect& visible_rect,
     const size_t num_output_frames) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  // If we already reset, then skip it.
-  if (state_ == State::kDecoding)
-    return;
-  DCHECK_EQ(state_, State::kFlushing);
+  if (!backend_) {
+    VLOGF(1) << "Backend was destroyed while changing resolution.";
+    SetState(State::kError);
+    return CroStatus::Codes::kFailedToChangeResolution;
+  }
 
-  // Notify |backend_| that changing resolution fails.
-  // Note: |backend_| is owned by this, using base::Unretained() is safe.
-  base::ScopedClosureRunner done_caller(
-      base::BindOnce(&V4L2VideoDecoderBackend::OnChangeResolutionDone,
-                     base::Unretained(backend_.get()), false));
+  // If we already reset, then skip it.
+  // TODO(akahuang): Revisit to check if this condition may happen or not.
+  if (state_ == State::kDecoding)
+    return CroStatus::Codes::kResetRequired;
+  DCHECK_EQ(state_, State::kFlushing);
 
   DCHECK_GT(num_output_frames, 0u);
   num_output_frames_ = num_output_frames + kDpbOutputBufferExtraCount;
@@ -642,22 +677,61 @@ void V4L2VideoDecoder::ContinueChangeResolution(
   // Stateful decoders require the input queue to keep running during resolution
   // changes, but stateless ones require it to be stopped.
   if (!StopStreamV4L2Queue(backend_->StopInputQueueOnResChange()))
-    return;
+    return CroStatus::Codes::kFailedToChangeResolution;
 
   if (!output_queue_->DeallocateBuffers()) {
     SetState(State::kError);
-    return;
+    return CroStatus::Codes::kFailedToChangeResolution;
   }
 
   if (!backend_->ApplyResolution(pic_size, visible_rect, num_output_frames_)) {
     SetState(State::kError);
-    return;
+    return CroStatus::Codes::kFailedToChangeResolution;
+  }
+
+  // Some drivers override our requested buffer size. We need to check if the
+  // new buffer size is larger than the buffers we currently hold. If so, we
+  // need to reallocate buffers, otherwise we might end up with insufficient
+  // space.
+  size_t original_sizeimage = 0;
+  {
+    auto input_v4l2_buffer = input_queue_->GetFreeBuffer();
+    if (!input_v4l2_buffer) {
+      VLOGF(1) << "There is no free V4L2 buffer.";
+      SetState(State::kError);
+      return CroStatus::Codes::kFailedToChangeResolution;
+    }
+    original_sizeimage = input_v4l2_buffer->GetPlaneSize(0);
+  }
+
+  const auto format = input_queue_->GetFormat().first;
+  if (!format) {
+    VLOGF(1) << "Failed to get input format.";
+    SetState(State::kError);
+    return CroStatus::Codes::kFailedToChangeResolution;
+  }
+
+  const auto new_sizeimage = format->fmt.pix_mp.plane_fmt[0].sizeimage;
+  if (original_sizeimage < new_sizeimage) {
+    DVLOGF(3) << "Buffer size increased. Reallocating buffers.";
+
+    if (!input_queue_->DeallocateBuffers()) {
+      SetState(State::kError);
+      return CroStatus::Codes::kFailedToChangeResolution;
+    }
+
+    if (input_queue_->AllocateBuffers(kNumInputBuffers, V4L2_MEMORY_MMAP) ==
+        0) {
+      VLOGF(1) << "Failed to request input buffers.";
+      SetState(State::kError);
+      return CroStatus::Codes::kFailedToChangeResolution;
+    }
   }
 
   if (!SetupOutputFormat(pic_size, visible_rect)) {
     VLOGF(1) << "Failed to setup output format.";
     SetState(State::kError);
-    return;
+    return CroStatus::Codes::kFailedToChangeResolution;
   }
 
   const v4l2_memory type =
@@ -668,24 +742,33 @@ void V4L2VideoDecoder::ContinueChangeResolution(
   if (output_queue_->AllocateBuffers(v4l2_num_buffers, type) == 0) {
     VLOGF(1) << "Failed to request output buffers.";
     SetState(State::kError);
-    return;
+    return CroStatus::Codes::kFailedToChangeResolution;
   }
   if (output_queue_->AllocatedBuffersCount() < num_output_frames_) {
     VLOGF(1) << "Could not allocate requested number of output buffers.";
     SetState(State::kError);
-    return;
+    return CroStatus::Codes::kFailedToChangeResolution;
   }
 
   if (!StartStreamV4L2Queue(true)) {
     SetState(State::kError);
-    return;
+    return CroStatus::Codes::kFailedToChangeResolution;
   }
 
-  // Now notify |backend_| that changing resolution is done successfully.
-  // Note: |backend_| is owned by this, using base::Unretained() is safe.
-  done_caller.ReplaceClosure(
-      base::BindOnce(&V4L2VideoDecoderBackend::OnChangeResolutionDone,
-                     base::Unretained(backend_.get()), true));
+  return CroStatus::Codes::kOk;
+}
+
+void V4L2VideoDecoder::OnChangeResolutionDone(CroStatus status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3) << static_cast<int>(status.code());
+
+  if (!backend_) {
+    // We don't need to set error state here because ContinueChangeResolution()
+    // should have already done it if |backend_| is null.
+    VLOGF(1) << "Backend was destroyed before resolution change finished.";
+    return;
+  }
+  backend_->OnChangeResolutionDone(status);
 }
 
 void V4L2VideoDecoder::ServiceDeviceTask(bool event) {

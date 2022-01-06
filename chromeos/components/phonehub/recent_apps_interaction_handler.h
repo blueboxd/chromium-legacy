@@ -27,8 +27,8 @@ class RecentAppsInteractionHandler {
       delete;
   virtual ~RecentAppsInteractionHandler();
 
-  virtual void NotifyRecentAppClicked(const std::string& package_name,
-                                      const std::u16string& visible_name);
+  virtual void NotifyRecentAppClicked(
+      const Notification::AppMetadata& app_metadata);
   virtual void AddRecentAppClickObserver(RecentAppClickObserver* observer);
   virtual void RemoveRecentAppClickObserver(RecentAppClickObserver* observer);
 
@@ -47,5 +47,12 @@ class RecentAppsInteractionHandler {
 
 }  // namespace phonehub
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when it moved to ash.
+namespace ash {
+namespace phonehub {
+using ::chromeos::phonehub::RecentAppsInteractionHandler;
+}  // namespace phonehub
+}  // namespace ash
 
 #endif  // CHROMEOS_COMPONENTS_PHONEHUB_RECENT_APPS_INTERACTION_HANDLER_H_

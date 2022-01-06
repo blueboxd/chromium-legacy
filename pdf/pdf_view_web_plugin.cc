@@ -13,10 +13,12 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/debug/crash_logging.h"
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/string_search.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/strings/string_piece.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
@@ -308,9 +310,19 @@ bool PdfViewWebPlugin::InitializeCommon(
   if (!params.has_value())
     return false;
 
-  PerProcessInitializer::GetInstance().Acquire();
+  // Sets crash keys like `ppapi::proxy::PDFResource::SetCrashData()`. Note that
+  // we don't set the active URL from the top-level URL, as unlike within a
+  // plugin process, the active URL changes frequently within a renderer process
+  // (see crbug.com/1266050 for details).
+  //
+  // TODO(crbug.com/1266087): If multiple PDF plugin instances share the same
+  // renderer process, the crash key will be overwritten by the newest value.
+  static base::debug::CrashKeyString* subresource_url =
+      base::debug::AllocateCrashKeyString("subresource_url",
+                                          base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(subresource_url, params->original_url);
 
-  // TODO(crbug.com/1257666): Implement "has-edits" support.
+  PerProcessInitializer::GetInstance().Acquire();
   InitializeBase(
       engine ? std::move(engine)
              : std::make_unique<PDFiumEngine>(this, params->script_option),
@@ -318,9 +330,8 @@ bool PdfViewWebPlugin::InitializeCommon(
       /*src_url=*/params->src_url,
       /*original_url=*/params->original_url,
       /*full_frame=*/params->full_frame,
-      /*background_color=*/
-      params->background_color.value_or(SK_ColorTRANSPARENT),
-      /*has_edits=*/false);
+      /*background_color=*/params->background_color,
+      /*has_edits=*/params->has_edits);
   return true;
 }
 
@@ -847,6 +858,9 @@ void PdfViewWebPlugin::NotifyFindTickmarks(
   if (!find_remote_) {
     mojo::PendingRemote<pdf::mojom::PdfFindInPage> pending_find_remote;
     service->GetPdfFindInPage(&pending_find_remote);
+    if (!pending_find_remote)
+      return;
+
     find_remote_.Bind(std::move(pending_find_remote));
   }
   find_remote_->SetTickmarks(tickmarks);

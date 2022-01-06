@@ -5,7 +5,6 @@
 <translation id="1185134272377778587">Acerca do Chromium</translation>
 <translation id="1257458525759135959">Para guardar imagens, toque em Definições para permitir que o Chromium adicione as suas fotos.</translation>
 <translation id="1289216811211435351">Mude para o Chromium</translation>
-<translation id="1354592789402432496">O seu administrador requer que inicie sessão com uma conta de organização. As contas restringidas pelo seu administrador estão ocultas.</translation>
 <translation id="1361748954329991663">O Chromium está desatualizado. Se não estiverem disponíveis atualizações na <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, é possível que o seu dispositivo já não suporte novas versões do Chromium.</translation>
 <translation id="1370204544543370355">Para tirar o máximo partido do Chromium, inicie sessão no mesmo com a sua Conta Google</translation>
 <translation id="1431818719585918472">Permita que o Chromium bloqueie os seus separadores de navegação anónima.</translation>
@@ -23,6 +22,7 @@
 <translation id="2168108852149185974">Alguns suplementos provocam falhas no sistema do Chromium. Desinstale:</translation>
 <translation id="2178608107313874732">O Chromium não pode utilizar a câmara neste momento</translation>
 <translation id="2195025571279539885">Pretende que o Chromium se ofereça para traduzir as páginas em <ph name="LANGUAGE_NAME" /> deste site da próxima vez?</translation>
+<translation id="2218146227246548550">A sua organização requer que inicie sessão para utilizar o Chromium. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2426113998523353159">A sua organização requer que inicie sessão para utilizar o Chromium.</translation>
 <translation id="2450140762465183767">Agora, pode utilizar o Chromium sempre que tocar em links de mensagens, documentos e outras apps.</translation>
 <translation id="2478931088402984578">Selecione o <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
@@ -40,6 +40,7 @@
 <translation id="3472200483164753384">Opção não suportada no Chromium Canary.</translation>
 <translation id="3639997914391704523">O Chromium pode verificar as suas palavras-passe quando inicia sessão com a sua Conta Google.</translation>
 <translation id="3805899903892079518">O Chromium não tem acesso aos seus vídeos ou fotos. Ative o acesso nas Definições do iOS &gt; Privacidade &gt; Fotos.</translation>
+<translation id="3946918322491238254">Ainda pode ver todos os seus marcadores, histórico, palavras-passe e outras definições neste dispositivo. Se efetuar alterações, estes não serão sincronizadas com a sua conta.</translation>
 <translation id="4099085513035183040">Opção não suportada no Chromium Beta.</translation>
 <translation id="4555020257205549924">Se esta funcionalidade estiver ativada, o Chromium oferecer-se-á para traduzir páginas escritas noutros idiomas com o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">Agora, pode utilizar o Chromium sempre que tocar em links de mensagens, documentos e outras apps.</translation>
@@ -52,7 +53,6 @@
 <translation id="5171868502429358653">Inicie sessão no Chromium</translation>
 <translation id="5224391634244552924">Não existem palavras-passe guardadas. O Chromium consegue verificar as suas palavras-passe quando as guarda.</translation>
 <translation id="5308226104666789935">O Chromium não consegue verificar se existem atualizações.</translation>
-<translation id="5324242752415821224">A sua organização requer que inicie sessão para utilizar o Chromium. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="5396916991083608703">Pretende definir o Chromium como a predefinição?</translation>
 <translation id="5521125884468363740">Para ver os seus separadores onde quer que esteja a utilizar o Chromium, inicie sessão e ative a sincronização.</translation>
 <translation id="5573014823074921752">Sugestão para o Chromium: para obter mais opções de separadores, toque sem soltar no botão Mostrar separadores na barra de ferramentas, que se encontra na parte superior ou inferior do ecrã.</translation>
@@ -73,7 +73,6 @@
 <translation id="6424492062988593837">O Chromium ficou ainda melhor! Está disponível uma nova versão.</translation>
 <translation id="6752854822223394465">A sua entidade está a configurar o Chromium…</translation>
 <translation id="6820823224820483452">O Chromium não conseguiu verificar todas as palavras-passe. Tente novamente amanhã.</translation>
-<translation id="6827294685447036764">Se permitir que o Chromium conheça a sua localização, este envia-a para quaisquer sites que permitir. Os sites podem solicitar a sua localização quando têm informações locais para lhe mostrar, como notícias ou lojas próximas.</translation>
 <translation id="7018284295775193585">Não é possível atualizar o Chromium.</translation>
 <translation id="7045244423563602563">Personalize o Chromium</translation>
 <translation id="7099326575020694068">O Chromium não pode utilizar a câmara no modo Vista dividida</translation>

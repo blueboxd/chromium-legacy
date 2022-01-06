@@ -289,6 +289,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
 
   // TODO(crbug.com/1125136): take into account italic correction.
 
+  const auto baseline_type = Style().GetFontBaseline();
   const auto base_space = CreateConstraintSpaceForUnderOverChild(base);
   auto base_layout_result = base.Layout(base_space);
   auto base_margins =
@@ -297,7 +298,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
   NGBoxFragment base_fragment(
       ConstraintSpace().GetWritingDirection(),
       To<NGPhysicalBoxFragment>(base_layout_result->PhysicalFragment()));
-  LayoutUnit base_ascent = base_fragment.BaselineOrSynthesize();
+  LayoutUnit base_ascent = base_fragment.BaselineOrSynthesize(baseline_type);
 
   // All children are positioned centered relative to the container (and
   // therefore centered relative to themselves).
@@ -317,8 +318,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
              (over_fragment.InlineSize() + over_margins.InlineSum())) /
                 2,
         block_offset};
-    container_builder_.AddChild(over_layout_result->PhysicalFragment(),
-                                over_offset);
+    container_builder_.AddResult(*over_layout_result, over_offset);
     over.StoreMargins(ConstraintSpace(), over_margins);
     if (parameters.use_under_over_bar_fallback) {
       block_offset += over_fragment.BlockSize();
@@ -329,7 +329,8 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
         block_offset += parameters.over_gap_min;
       }
     } else {
-      LayoutUnit over_ascent = over_fragment.BaselineOrSynthesize();
+      LayoutUnit over_ascent =
+          over_fragment.BaselineOrSynthesize(baseline_type);
       block_offset +=
           std::max(over_fragment.BlockSize() + parameters.over_gap_min,
                    over_ascent + parameters.over_shift_min);
@@ -344,8 +345,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
            (base_fragment.InlineSize() + base_margins.InlineSum())) /
               2,
       block_offset};
-  container_builder_.AddChild(base_layout_result->PhysicalFragment(),
-                              base_offset);
+  container_builder_.AddResult(*base_layout_result, base_offset);
   base.StoreMargins(ConstraintSpace(), base_margins);
   block_offset += base_fragment.BlockSize() + base_margins.block_end;
 
@@ -363,7 +363,8 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
       if (!HasAccent(Node(), true))
         block_offset += parameters.under_gap_min;
     } else {
-      LayoutUnit under_ascent = under_fragment.BaselineOrSynthesize();
+      LayoutUnit under_ascent =
+          under_fragment.BaselineOrSynthesize(baseline_type);
       block_offset += std::max(parameters.under_gap_min,
                                parameters.under_shift_min - under_ascent);
     }
@@ -375,8 +376,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
         block_offset};
     block_offset += under_fragment.BlockSize();
     block_offset += parameters.under_extra_descender;
-    container_builder_.AddChild(under_layout_result->PhysicalFragment(),
-                                under_offset);
+    container_builder_.AddResult(*under_layout_result, under_offset);
     under.StoreMargins(ConstraintSpace(), under_margins);
     block_offset += under_margins.block_end;
   }
@@ -398,7 +398,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
 }
 
 MinMaxSizesResult NGMathUnderOverLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesFloatInput&) const {
+    const MinMaxSizesFloatInput&) {
   DCHECK(IsValidMathMLScript(Node()));
 
   if (auto result = CalculateMinMaxSizesIgnoringChildren(

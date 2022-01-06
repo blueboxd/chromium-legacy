@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/platform_apps/api/sync_file_system/extension_sync_event_observer.h"
 #include "chrome/browser/apps/platform_apps/api/sync_file_system/sync_file_system_api_helpers.h"
@@ -292,7 +292,7 @@ void SyncFileSystemService::InitializeForApp(
     SyncStatusCallback callback) {
   DCHECK(local_service_);
   DCHECK(remote_service_);
-  DCHECK(app_origin == app_origin.GetOrigin());
+  DCHECK(app_origin == app_origin.DeprecatedGetOriginAsURL());
 
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "Initializing for App: %s", app_origin.spec().c_str());
@@ -575,20 +575,20 @@ void SyncFileSystemService::DidDumpFiles(
       base::OwnedRef(std::move(callback)));
 
   // After all metadata loaded, sync status can be added to each entry.
-  for (size_t i = 0; i < files->GetList().size(); ++i) {
-    base::DictionaryValue* file = nullptr;
-    std::string path_string;
-    if (!files->GetDictionary(i, &file) ||
-        !file->GetString("path", &path_string)) {
+  for (base::Value& file : files->GetList()) {
+    const std::string* path_string =
+      file.is_dict() ? file.FindStringKey("path") : nullptr;
+    if (!path_string) {
       NOTREACHED();
       accumulate_callback.Run(nullptr, SYNC_FILE_ERROR_FAILED,
                               SYNC_FILE_STATUS_UNKNOWN);
       continue;
     }
-
-    base::FilePath file_path = base::FilePath::FromUTF8Unsafe(path_string);
+    base::FilePath file_path = base::FilePath::FromUTF8Unsafe(*path_string);
     FileSystemURL url = CreateSyncableFileSystemURL(origin, file_path);
-    GetFileSyncStatus(url, base::BindOnce(accumulate_callback, file));
+    base::DictionaryValue* file_value =
+        static_cast<base::DictionaryValue*>(&file);
+    GetFileSyncStatus(url, base::BindOnce(accumulate_callback, file_value));
   }
 }
 

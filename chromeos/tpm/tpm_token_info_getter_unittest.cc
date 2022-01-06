@@ -13,8 +13,8 @@
 #include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/task_runner.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -51,6 +51,9 @@ class FakeTaskRunner : public base::TaskRunner {
   // |delays|: Vector to which the dalays seen by the task runner are saved.
   explicit FakeTaskRunner(std::vector<int64_t>* delays) : delays_(delays) {}
 
+  FakeTaskRunner(const FakeTaskRunner&) = delete;
+  FakeTaskRunner& operator=(const FakeTaskRunner&) = delete;
+
   // base::TaskRunner overrides:
   bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
@@ -66,8 +69,6 @@ class FakeTaskRunner : public base::TaskRunner {
  private:
   // The vector of delays.
   std::vector<int64_t>* delays_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeTaskRunner);
 };
 
 // Implementation of CryptohomePkcs11Client used in these tests.

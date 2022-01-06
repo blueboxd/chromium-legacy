@@ -31,7 +31,7 @@ FloatSize GetSpecifiedSize(const FloatSize& size, float zoom) {
   auto un_zoom_fn = [un_zoom_factor](float a) -> float {
     return a * un_zoom_factor;
   };
-  return FloatSize(un_zoom_fn(size.Width()), un_zoom_fn(size.Height()));
+  return FloatSize(un_zoom_fn(size.width()), un_zoom_fn(size.height()));
 }
 
 }  // namespace
@@ -115,7 +115,7 @@ sk_sp<PaintRecord> CSSPaintDefinition::Paint(
   // The paint function may have produced an error, in which case produce an
   // invalid image.
   if (paint_
-          ->Invoke(instance_.NewLocal(isolate), rendering_context, paint_size,
+          ->Invoke(instance_.Get(isolate), rendering_context, paint_size,
                    style_map, *paint_arguments)
           .IsNothing()) {
     return nullptr;
@@ -173,7 +173,7 @@ void CSSPaintDefinition::MaybeCreatePaintInstance() {
   if (!constructor_->Construct().To(&paint_instance))
     return;
 
-  instance_.Set(constructor_->GetIsolate(), paint_instance.V8Value());
+  instance_.Reset(constructor_->GetIsolate(), paint_instance.V8Value());
 }
 
 void CSSPaintDefinition::Trace(Visitor* visitor) const {

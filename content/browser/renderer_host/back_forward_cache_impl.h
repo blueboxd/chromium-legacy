@@ -13,7 +13,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
@@ -66,15 +66,6 @@ const base::Feature kCacheControlNoStoreEnterBackForwardCache{
 const base::Feature kBackForwardCacheMediaSessionPlaybackStateChange{
     "BackForwardCacheMediaSessionPlaybackStateChange",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Allows pages that created a MediaSession service to stay eligible for the
-// back/forward cache.
-const base::Feature kBackForwardCacheMediaSessionService{
-    "BackForwardCacheMediaSessionService", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Allows pages with a media play to stay eligible the back/forward cache.
-constexpr base::Feature kBackForwardCacheMediaPlay{
-    "BackForwardCacheMediaPlay", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // BackForwardCache:
 //
@@ -167,6 +158,10 @@ class CONTENT_EXPORT BackForwardCacheImpl
   };
 
   BackForwardCacheImpl();
+
+  BackForwardCacheImpl(const BackForwardCacheImpl&) = delete;
+  BackForwardCacheImpl& operator=(const BackForwardCacheImpl&) = delete;
+
   ~BackForwardCacheImpl() override;
 
   // Returns whether MediaSession's playback state change is allowed for the
@@ -175,9 +170,6 @@ class CONTENT_EXPORT BackForwardCacheImpl
 
   // Returns whether MediaSession's service is allowed for the BackForwardCache.
   static bool IsMediaSessionServiceAllowed();
-
-  // Returns whether a media play is allowed for the BackForwardCache.
-  static bool IsMediaPlayAllowed();
 
   // Returns whether a RenderFrameHost can be stored into the BackForwardCache
   // right now. Depends on the |render_frame_host| and its children's state.
@@ -406,8 +398,6 @@ class CONTENT_EXPORT BackForwardCacheImpl
   const UnloadSupportStrategy unload_strategy_;
 
   base::WeakPtrFactory<BackForwardCacheImpl> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackForwardCacheImpl);
 };
 
 // Allow external code to be notified when back-forward cache is disabled for a

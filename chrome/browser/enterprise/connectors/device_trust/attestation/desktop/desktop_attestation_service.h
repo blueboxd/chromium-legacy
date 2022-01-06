@@ -11,20 +11,23 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/attestation_service.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/google_keys.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/signing_key_pair.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace enterprise_connectors {
 
 class DeviceTrustSignals;
 class EncryptedData;
+class KeyPersistenceDelegate;
 class KeyInfo;
-class SigningKeyPair;
 
 // This class is in charge of handling the key pair used for attestation. Also
 // provides the methods needed in the handshake between Chrome, an IdP and
 // Verified Access.
 class DesktopAttestationService : public AttestationService {
  public:
-  explicit DesktopAttestationService(std::unique_ptr<SigningKeyPair> key_pair);
+  explicit DesktopAttestationService(
+      std::unique_ptr<KeyPersistenceDelegate> key_persistence_delegate);
   ~DesktopAttestationService() override;
 
   // Export the public key of `key_pair_` in SubjectPublicKeyInfo format.
@@ -41,8 +44,6 @@ class DesktopAttestationService : public AttestationService {
       const std::string& challenge,
       std::unique_ptr<DeviceTrustSignals> signals,
       AttestationCallback callback) override;
-  void StampReport(DeviceTrustReportEvent& report) override;
-  bool RotateSigningKey() override;
 
  private:
   // Verify challenge comes from Verify Access.
@@ -74,7 +75,8 @@ class DesktopAttestationService : public AttestationService {
       const std::string& challenge_response_proto);
 
   GoogleKeys google_keys_;
-  std::unique_ptr<enterprise_connectors::SigningKeyPair> key_pair_;
+  std::unique_ptr<KeyPersistenceDelegate> key_persistence_delegate_;
+  absl::optional<SigningKeyPair> key_pair_;
 
   base::WeakPtrFactory<DesktopAttestationService> weak_factory_{this};
 };

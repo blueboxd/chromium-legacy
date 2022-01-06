@@ -137,6 +137,10 @@ class CONTENT_EXPORT TextInputManager {
   };
 
   explicit TextInputManager(bool should_do_learning);
+
+  TextInputManager(const TextInputManager&) = delete;
+  TextInputManager& operator=(const TextInputManager&) = delete;
+
   ~TextInputManager();
 
   // Returns the currently active widget, i.e., the RWH which is associated with
@@ -183,6 +187,12 @@ class CONTENT_EXPORT TextInputManager {
   // In the case of |active_view_| == nullptr, the method will return nullptr.
   const TextSelection* GetTextSelection(
       RenderWidgetHostViewBase* view = nullptr) const;
+
+  // Returns the bounds of the text control in the root frame.
+  const absl::optional<gfx::Rect> GetTextControlBounds() const;
+
+  // Returns the bounds of the selected text in the root frame.
+  const absl::optional<gfx::Rect> GetTextSelectionBounds() const;
 
   // ---------------------------------------------------------------------------
   // The following methods are called by RWHVs on the tab to update their IME-
@@ -283,8 +293,6 @@ class CONTENT_EXPORT TextInputManager {
   bool should_do_learning_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextInputManager);
 };
 }
 

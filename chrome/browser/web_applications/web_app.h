@@ -56,13 +56,16 @@ class WebApp {
   const GURL& scope() const { return scope_; }
 
   const absl::optional<SkColor>& theme_color() const { return theme_color_; }
-
   const absl::optional<SkColor>& dark_mode_theme_color() const {
     return dark_mode_theme_color_;
   }
 
   const absl::optional<SkColor>& background_color() const {
     return background_color_;
+  }
+
+  const absl::optional<SkColor>& dark_mode_background_color() const {
+    return dark_mode_background_color_;
   }
 
   DisplayMode display_mode() const { return display_mode_; }
@@ -140,6 +143,10 @@ class WebApp {
 
   bool file_handler_permission_blocked() const {
     return file_handler_permission_blocked_;
+  }
+
+  ApiApprovalState file_handler_approval_state() const {
+    return file_handler_approval_state_;
   }
 
   const absl::optional<apps::ShareTarget>& share_target() const {
@@ -227,6 +234,8 @@ class WebApp {
     return launch_handler_;
   }
 
+  const absl::optional<AppId>& parent_app_id() const { return parent_app_id_; }
+
   // A Web App can be installed from multiple sources simultaneously. Installs
   // add a source to the app. Uninstalls remove a source from the app.
   void AddSource(Source::Type source);
@@ -252,8 +261,9 @@ class WebApp {
   void SetLaunchQueryParams(absl::optional<std::string> launch_query_params);
   void SetScope(const GURL& scope);
   void SetThemeColor(absl::optional<SkColor> theme_color);
-  void SetDarkModeThemeColor(absl::optional<SkColor> background_color);
+  void SetDarkModeThemeColor(absl::optional<SkColor> theme_color);
   void SetBackgroundColor(absl::optional<SkColor> background_color);
+  void SetDarkModeBackgroundColor(absl::optional<SkColor> background_color);
   void SetDisplayMode(DisplayMode display_mode);
   void SetUserDisplayMode(DisplayMode user_display_mode);
   void SetDisplayModeOverride(std::vector<DisplayMode> display_mode_override);
@@ -273,6 +283,7 @@ class WebApp {
           shortcuts_menu_item_infos);
   void SetDownloadedShortcutsMenuIconsSizes(std::vector<IconSizes> icon_sizes);
   void SetFileHandlers(apps::FileHandlers file_handlers);
+  void SetFileHandlerApprovalState(ApiApprovalState approval_state);
   void SetShareTarget(absl::optional<apps::ShareTarget> share_target);
   void SetAdditionalSearchTerms(
       std::vector<std::string> additional_search_terms);
@@ -297,6 +308,7 @@ class WebApp {
   void SetWindowControlsOverlayEnabled(bool enabled);
   void SetStorageIsolated(bool is_storage_isolated);
   void SetLaunchHandler(absl::optional<LaunchHandler> launch_handler);
+  void SetParentAppId(const absl::optional<AppId>& parent_app_id);
 
   // For logging and debug purposes.
   bool operator==(const WebApp&) const;
@@ -323,6 +335,7 @@ class WebApp {
   absl::optional<SkColor> theme_color_;
   absl::optional<SkColor> dark_mode_theme_color_;
   absl::optional<SkColor> background_color_;
+  absl::optional<SkColor> dark_mode_background_color_;
   DisplayMode display_mode_;
   DisplayMode user_display_mode_;
   std::vector<DisplayMode> display_mode_override_;
@@ -362,10 +375,19 @@ class WebApp {
   ClientData client_data_;
   GURL manifest_url_;
   absl::optional<std::string> manifest_id_;
+  // A flag that's meant to represent the state of the File Handler API
+  // permission (used when DesktopPWAsFileHandlingSettingsGated is *not*
+  // enabled). When the permission is blocked, file handling shouldn't be
+  // registered with the OS.
   bool file_handler_permission_blocked_ = false;
+  // The state of the user's approval of the app's use of the File Handler API
+  // (used when DesktopPWAsFileHandlingSettingsGated is enabled).
+  ApiApprovalState file_handler_approval_state_ =
+      ApiApprovalState::kRequiresPrompt;
   bool window_controls_overlay_enabled_ = false;
   bool is_storage_isolated_ = false;
   absl::optional<LaunchHandler> launch_handler_;
+  absl::optional<AppId> parent_app_id_;
   // New fields must be added to:
   //  - |operator==|
   //  - AsDebugValue()

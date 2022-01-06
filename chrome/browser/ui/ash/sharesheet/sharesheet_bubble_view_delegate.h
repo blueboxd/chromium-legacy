@@ -9,7 +9,7 @@
 #include "chrome/browser/sharesheet/sharesheet_ui_delegate.h"
 
 namespace sharesheet {
-class SharesheetServiceDelegate;
+class SharesheetServiceDelegator;
 }  // namespace sharesheet
 
 namespace ash {
@@ -23,8 +23,8 @@ class SharesheetBubbleViewDelegate : public ::sharesheet::SharesheetUiDelegate {
  public:
   SharesheetBubbleViewDelegate(
       gfx::NativeWindow native_window,
-      ::sharesheet::SharesheetServiceDelegate* sharesheet_service_delegate);
-  ~SharesheetBubbleViewDelegate() override = default;
+      ::sharesheet::SharesheetServiceDelegator* sharesheet_service_delegator);
+  ~SharesheetBubbleViewDelegate() override;
   SharesheetBubbleViewDelegate(const SharesheetBubbleViewDelegate&) = delete;
   SharesheetBubbleViewDelegate& operator=(const SharesheetBubbleViewDelegate&) =
       delete;

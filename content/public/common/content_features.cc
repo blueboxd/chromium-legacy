@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/common/content_features.h"
+
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -17,7 +18,7 @@ namespace features {
 // All features in alphabetical order.
 
 // Enables the allowActivationDelegation attribute on iframes.
-// https://www.chromestatus.com/features/6025124331388928
+// https://www.chromestatus.com/feature/6025124331388928
 //
 // TODO(mustaq): Deprecated, see kUserActivationPostMessageTransfer.
 const base::Feature kAllowActivationDelegationAttr{
@@ -68,6 +69,11 @@ const base::Feature kAudioServiceSandbox {
 #endif
 };
 
+// When enabled, the browser process will only ask the renderer process to run
+// beforeunload handlers if it knows such handlers are registered.
+const base::Feature kAvoidUnnecessaryBeforeUnloadCheck{
+    "AvoidUnnecessaryBeforeUnloadCheck", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Kill switch for Background Fetch.
 const base::Feature kBackgroundFetch{"BackgroundFetch",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
@@ -75,6 +81,11 @@ const base::Feature kBackgroundFetch{"BackgroundFetch",
 // Enable using the BackForwardCache.
 const base::Feature kBackForwardCache{"BackForwardCache",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Allows pages that created a MediaSession service to stay eligible for the
+// back/forward cache.
+const base::Feature kBackForwardCacheMediaSessionService{
+    "BackForwardCacheMediaSessionService", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable same-site back-forward cache for trybots. This is here because of
 // https://crbug.com/1211818 and should only used for trybots. For normal use
@@ -699,17 +710,17 @@ const base::Feature kSharedArrayBufferOnDesktop{
     "SharedArrayBufferOnDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Signed Exchange Reporting for distributors
-// https://www.chromestatus.com/features/5687904902840320
+// https://www.chromestatus.com/feature/5687904902840320
 const base::Feature kSignedExchangeReportingForDistributors{
     "SignedExchangeReportingForDistributors", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Subresource prefetching+loading via Signed HTTP Exchange
-// https://www.chromestatus.com/features/5126805474246656
+// https://www.chromestatus.com/feature/5126805474246656
 const base::Feature kSignedExchangeSubresourcePrefetch{
     "SignedExchangeSubresourcePrefetch", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Origin-Signed HTTP Exchanges (for WebPackage Loading)
-// https://www.chromestatus.com/features/5745285984681984
+// https://www.chromestatus.com/feature/5745285984681984
 const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -844,8 +855,7 @@ const base::Feature kTouchpadAsyncPinchEvents{"TouchpadAsyncPinchEvents",
 // only enabled by default on CrOS, LaCrOS and Windows.
 const base::Feature kTouchpadOverscrollHistoryNavigation {
   "TouchpadOverscrollHistoryNavigation",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
-    defined(OS_WIN)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -864,6 +874,12 @@ const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
 // https://crbug.com/1144104
 const base::Feature kUnrestrictedSharedArrayBuffer{
     "UnrestrictedSharedArrayBuffer", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID) && defined(INCLUDE_BOTH_V8_SNAPSHOTS)
+// If enabled, blink's context snapshot is used rather than the v8 snapshot.
+const base::Feature kUseContextSnapshot{"UseContextSnapshot",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Allows user activation propagation to all frames having the same origin as
 // the activation notifier frame.  This is an intermediate measure before we
@@ -927,9 +943,10 @@ const base::Feature kWebAssemblyTiering{"WebAssemblyTiering",
 // Enable WebAssembly trap handler.
 const base::Feature kWebAssemblyTrapHandler {
   "WebAssemblyTrapHandler",
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
-     defined(OS_MAC)) &&                                             \
-    defined(ARCH_CPU_X86_64)
+#if ((defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+      defined(OS_MAC)) &&                                             \
+     defined(ARCH_CPU_X86_64)) ||                                     \
+    (defined(OS_MAC) && defined(ARCH_CPU_ARM64))
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -1045,6 +1062,11 @@ const base::Feature kBackgroundMediaRendererHasModerateBinding{
     "BackgroundMediaRendererHasModerateBinding",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Takes advantage of specifying which big.LITTLE cores to schedule different
+// threads on. Note this conflicts with PowerScheduler feature.
+const base::Feature kBigLittleScheduling{"BigLittleScheduling",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, BindingManager will use Context.BIND_NOT_FOREGROUND to avoid
 // affecting cpu scheduling priority.
 const base::Feature kBindingManagementWaiveCpu{
@@ -1072,6 +1094,20 @@ const base::Feature kWarmUpNetworkProcess{"WarmUpNetworkProcess",
 // using the kEnableExperimentalWebPlatformFeatures flag.
 // https://w3c.github.io/web-nfc/
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const char kBigLittleSchedulingBrowserMainBiggerParam[] =
+    "BigLittleSchedulingBrowserMainBiggerParam";
+const char kBigLittleSchedulingBrowserMainBigParam[] =
+    "BigLittleSchedulingBrowserMainBigParam";
+const char kBigLittleSchedulingBrowserIOBigParam[] =
+    "BigLittleSchedulingBrowserIOBigParam";
+const char kBigLittleSchedulingRenderMainBigParam[] =
+    "BigLittleSchedulingRenderMainBigParam";
+const char kBigLittleSchedulingNetworkMainBigParam[] =
+    "BigLittleSchedulingNetworkMainBigParam";
+const char kBigLittleSchedulingGpuMainBigParam[] =
+    "BigLittleSchedulingGpuMainBigParam";
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MAC)
@@ -1109,16 +1145,6 @@ const base::FeatureParam<bool>
     kWebUIJavaScriptErrorReportsSendToProductionParam{
         &kSendWebUIJavaScriptErrorReports,
         kSendWebUIJavaScriptErrorReportsSendToProductionVariation, true};
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Controls whether the new subtree capture path is used for window capturing on
-// ChromeOS Ash, instead of the legacy SlowWindowCapturerChromeOS
-// implementation.
-// TODO(crbug.com/1210549): remove once we have determined the new path is
-// stable.
-const base::Feature kAuraWindowSubtreeCapture{"AuraWindowSubtreeCapture",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(WEBRTC_USE_PIPEWIRE)

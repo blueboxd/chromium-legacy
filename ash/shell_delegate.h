@@ -11,9 +11,12 @@
 
 #include "ash/ash_export.h"
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "chromeos/ui/base/window_pin_type.h"
+#include "components/favicon_base/favicon_callback.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/bluetooth_system.mojom-forward.h"
 #include "services/device/public/mojom/fingerprint.mojom-forward.h"
@@ -22,6 +25,10 @@
 
 namespace aura {
 class Window;
+}
+
+namespace base {
+class CancelableTaskTracker;
 }
 
 namespace ui {
@@ -39,9 +46,10 @@ class DeskModel;
 namespace ash {
 
 class AccessibilityDelegate;
-class CaptureModeDelegate;
-class BackGestureContextualNudgeDelegate;
 class BackGestureContextualNudgeController;
+class BackGestureContextualNudgeDelegate;
+class CaptureModeDelegate;
+class DeskTemplate;
 class NearbyShareController;
 class NearbyShareDelegate;
 
@@ -115,10 +123,8 @@ class ASH_EXPORT ShellDelegate {
   // Returns if window browser sessions are restoring.
   virtual bool IsSessionRestoreInProgress() const = 0;
 
-  // Pin or unpin a window. This is used for Quiz modes and called from another
-  // client (e.g. Lacros) through Exo.
-  virtual void SetPinnedFromExo(aura::Window* window,
-                                chromeos::WindowPinType type) = 0;
+  // Adjust system configuration for a Locked Fullscreen window.
+  virtual void SetUpEnvironmentForLockedFullscreen(bool locked) = 0;
 
   // Ui Dev Tools control.
   virtual bool IsUiDevToolsStarted() const;
@@ -149,6 +155,26 @@ class ASH_EXPORT ShellDelegate {
   // Returns either the local desk storage backend or Chrome sync desk storage
   // backend depending on the feature flag DeskTemplateSync.
   virtual desks_storage::DeskModel* GetDeskModel();
+
+  // Fetches the favicon for `page_url` and returns it via the provided
+  // `callback`. `callback` may be called synchronously.
+  virtual void GetFaviconForUrl(const std::string& page_url,
+                                int desired_icon_size,
+                                favicon_base::FaviconRawBitmapCallback callback,
+                                base::CancelableTaskTracker* teacker) const = 0;
+
+  // Fetches the icon for the app with `app_id` and returns it via the provided
+  // `callback`. `callback` may be called synchronously.
+  virtual void GetIconForAppId(
+      const std::string& app_id,
+      int desired_icon_size,
+      base::OnceCallback<void(apps::mojom::IconValuePtr icon_value)> callback)
+      const = 0;
+
+  // Launches apps into the active desk. Ran immediately after a desk is created
+  // for a template.
+  virtual void LaunchAppsFromTemplate(
+      std::unique_ptr<DeskTemplate> desk_template) = 0;
 };
 
 }  // namespace ash

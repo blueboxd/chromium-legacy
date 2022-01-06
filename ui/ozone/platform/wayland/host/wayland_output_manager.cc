@@ -36,7 +36,8 @@ void WaylandOutputManager::AddWaylandOutput(uint32_t output_id,
   // unlikely to happen, unless a compositor has a bug in the numeric names
   // representation of global objects.
   DCHECK(!GetOutput(output_id));
-  auto wayland_output = std::make_unique<WaylandOutput>(output_id, output);
+  auto wayland_output =
+      std::make_unique<WaylandOutput>(output_id, output, connection_);
 
   // Even if WaylandScreen has not been created, the output still must be
   // initialized, which results in setting up a wl_listener and getting the
@@ -114,7 +115,7 @@ WaylandOutput* WaylandOutputManager::GetPrimaryOutput() const {
 
 void WaylandOutputManager::OnOutputHandleMetrics(uint32_t output_id,
                                                  const gfx::Rect& new_bounds,
-                                                 int32_t scale_factor,
+                                                 float scale_factor,
                                                  int32_t transform) {
   if (wayland_screen_) {
     wayland_screen_->OnOutputAddedOrUpdated(output_id, new_bounds,

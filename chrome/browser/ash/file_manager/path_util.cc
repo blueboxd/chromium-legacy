@@ -14,6 +14,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root.h"
@@ -293,22 +294,6 @@ bool MigratePathFromOldFormat(Profile* profile,
     return old_path != *new_path;
   }
 
-  return false;
-}
-
-bool MigrateFromDownloadsToMyFiles(Profile* profile,
-                                   const base::FilePath& old_path,
-                                   base::FilePath* new_path) {
-  const base::FilePath old_base =
-      profile->GetPath().Append(kFolderNameDownloads);
-  const base::FilePath new_base = GetDownloadsFolderForProfile(profile);
-  if (new_base == old_base)
-    return false;
-  base::FilePath relative;
-  if (AppendRelativePath(old_base, old_path, &relative)) {
-    *new_path = new_base.Append(relative);
-    return old_path != *new_path;
-  }
   return false;
 }
 
@@ -922,6 +907,31 @@ bool ExtractMountNameFileSystemNameFullPath(const base::FilePath& absolute_path,
     *full_path = value.substr(slash_pos);
   }
   return true;
+}
+
+std::string GetDisplayableFileName(GURL file_url) {
+  // Try to convert %20 to spaces, if this produces any invalid char, use the
+  // file name URL encoded.
+  std::string file_name;
+  if (!net::UnescapeBinaryURLComponentSafe(file_url.ExtractFileName(),
+                                           /*fail_on_path_separators=*/true,
+                                           &file_name)) {
+    file_name = file_url.ExtractFileName();
+  }
+
+  return file_name;
+}
+
+std::string GetDisplayableFileName(storage::FileSystemURL file_url) {
+  return GetDisplayableFileName(file_url.ToGURL());
+}
+
+std::u16string GetDisplayableFileName16(GURL file_url) {
+  return base::UTF8ToUTF16(GetDisplayableFileName(file_url));
+}
+
+std::u16string GetDisplayableFileName16(storage::FileSystemURL file_url) {
+  return base::UTF8ToUTF16(GetDisplayableFileName(file_url.ToGURL()));
 }
 
 }  // namespace util

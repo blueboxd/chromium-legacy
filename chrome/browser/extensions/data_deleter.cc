@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/post_task.h"
-#include "base/task_runner.h"
+#include "base/task/task_runner.h"
 #include "chrome/browser/extensions/chrome_extension_cookies.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -115,7 +115,7 @@ void DataDeleter::StartDeleting(Profile* profile,
     ++num_tasks;
 
     launch_web_url_origin =
-        AppLaunchInfo::GetLaunchWebURL(extension).GetOrigin();
+        AppLaunchInfo::GetLaunchWebURL(extension).DeprecatedGetOriginAsURL();
     partition =
         util::GetStoragePartitionForExtensionId(extension->id(), profile);
 

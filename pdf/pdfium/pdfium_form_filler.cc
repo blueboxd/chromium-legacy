@@ -30,9 +30,11 @@ namespace {
 
 int g_last_timer_id = 0;
 
+#if defined(PDF_ENABLE_V8)
 std::string WideStringToString(FPDF_WIDESTRING wide_string) {
   return base::UTF16ToUTF8(reinterpret_cast<const char16_t*>(wide_string));
 }
+#endif
 
 }  // namespace
 
@@ -648,9 +650,12 @@ int PDFiumFormFiller::Form_GetFilePath(IPDF_JSPLATFORM* param,
   EngineInIsolateScope engine_scope = GetEngineInIsolateScope(param);
   PDFiumEngine* engine = engine_scope.engine();
   std::string rv = engine->client_->GetURL();
-  if (file_path && rv.size() <= static_cast<size_t>(length))
-    memcpy(file_path, rv.c_str(), rv.size());
-  return rv.size();
+
+  // Account for the trailing null.
+  int necessary_length = rv.size() + 1;
+  if (file_path && necessary_length <= length)
+    memcpy(file_path, rv.c_str(), necessary_length);
+  return necessary_length;
 }
 
 // static

@@ -3,7 +3,7 @@
 <translationbundle lang="uz">
 <translation id="1096883626080133124">Oddiy, xavfsiz va har qachongidan tezkor Google Chrome brauzerida koʻplab imkoniyatlar</translation>
 <translation id="1282031177488366470">Chrome funksiyalari va unumdorligini yaxshilashga yordam bering</translation>
-<translation id="1354592789402432496">Administrator hisobga tashkilot hisobi bilan kirishni talab qilmoqda. Administrator taqiqlagan hisoblar yashirilgan.</translation>
+<translation id="1314663809820920746">Bu qurilmadagi bukmarklar, tarix, parollar va boshqa sozlamalarni koʻrishingiz mumkin. Oʻzgartirish kiritilsa, ular Google hisobingizga sinxronlanmaydi.</translation>
 <translation id="1479202195792305274">Google hisobingizga kirsangiz, Chrome parollaringizni tekshira oladi.</translation>
 <translation id="1493827051843127077">Chrome brauzerini varaqlar, parollar va toʻlov axborotlarini barcha qurilmalarga sinxronlovchi asosiy ilova sifatida belgilash</translation>
 <translation id="1504372625950710826">Chrome yangilanishlar chiqqanini tekshira olmadi. Internet aloqasini tekshiring.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Oflayn, Chrome yangilanishlar chiqqanini tekshira olmadi</translation>
 <translation id="5716154293141027663">Chromeni istalgan vaqt boshqa ilovalardagi havolalarni bosib ochish</translation>
-<translation id="572883588166315317">Chrome brauzeridan foydalanishingiz uchun tashkilotingizda roʻyxatdan oʻtishni talab qiladi. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Chrome maslahati. Ba’zi tugmalar endi ekranning quyi qismida. Masalan: Orqaga, Oldinga va Qidiruv tugmalari.</translation>
-<translation id="5876773482963502140">Geolokatsiyadan foydalanishga ruxsat bersangiz, Chrome bu maʼlumotlarni siz ruxsat bergan saytlarga yuboradi. Saytlar atrofdagi doʻkonlar yoki yangiliklar kabi axborotlarni chiqarish uchun joylashuvingizni soʻrashi mumkin.</translation>
 <translation id="5998675059699164418">Chrome brauzeridan foydalanishingiz uchun tashkilotingiz roʻyxatdan oʻtishni talab qiladi.</translation>
 <translation id="6054613632208573261">Chrome birlamchi boʻlsin</translation>
 <translation id="6063091872902370735">Chrome hisobiga kirishga ruxsat berish</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Chrome maʼlumotlari bu qurilmadan tozalanishi yoki saqlanib qolishini tanlang</translation>
 <translation id="8370517070665726704">© Google LLC, <ph name="YEAR" /> Barcha huquqlar himoyalangan.</translation>
 <translation id="840168496893712993">Ba’zi kengaytmalar Chrome brauzerini ishdan chiqaradi. Ularni o‘chirib tashlang.</translation>
+<translation id="8414886616817913619">Chrome brauzeridan foydalanishingiz uchun tashkilotingiz roʻyxatdan oʻtishni talab qiladi. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Tanlangan ma’lumotlar Chrome va sinxronlangan qurilmalardan o‘chirildi. Google hisobingiz orqali amalga oshirilgan qidiruvlar, brauzer tarixi va boshqa internetdagi faoliyatingizni history.google.com sahifasi orqali ko‘rishingiz mumkin.</translation>
 <translation id="850555388806794946">Chrome brauzerini asosiy deb belgilash uchun:
   1. Sozlamalarni oching

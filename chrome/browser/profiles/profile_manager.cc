@@ -17,7 +17,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
-#include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -30,6 +29,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/deferred_sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
@@ -70,6 +70,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -92,10 +93,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/default_search_manager.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/stop_source.h"
@@ -118,11 +119,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
-#include "chrome/browser/sessions/session_service_factory.h"
-#endif
-
-#if BUILDFLAG(ENABLE_SESSION_SERVICE) && BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
 #include "chrome/browser/sessions/app_session_service_factory.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -550,7 +548,7 @@ void ProfileManager::ShutdownSessionServices() {
     // shut them down. If they were never created, just skip.
     if (SessionServiceFactory::GetForProfileIfExisting(profile))
       SessionServiceFactory::ShutdownForProfile(profile);
-#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
     if (AppSessionServiceFactory::GetForProfileIfExisting(profile))
       AppSessionServiceFactory::ShutdownForProfile(profile);
 #endif
@@ -1019,7 +1017,8 @@ ProfileShortcutManager* ProfileManager::profile_shortcut_manager() {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 AccountProfileMapper* ProfileManager::GetAccountProfileMapper() {
-  if (!account_profile_mapper_) {
+  if (!account_profile_mapper_ &&
+      base::FeatureList::IsEnabled(kMultiProfileAccountConsistency)) {
     account_profile_mapper_ = std::make_unique<AccountProfileMapper>(
         GetAccountManagerFacade(/*profile_path=*/std::string()),
         &GetProfileAttributesStorage());

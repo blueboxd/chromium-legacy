@@ -14,7 +14,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -84,7 +84,6 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include "content/renderer/media/fuchsia_renderer_factory.h"
 #include "media/fuchsia/cdm/client/fuchsia_cdm_util.h"
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
 #include "media/mojo/clients/mojo_cdm_factory.h"  // nogncheck
@@ -609,8 +608,18 @@ MediaFactory::CreateRendererFactorySelector(
     return nullptr;
 
   auto factory_selector = std::make_unique<media::RendererFactorySelector>();
-  bool use_default_renderer_factory = true;
+  bool is_base_renderer_factory_set = false;
   bool use_media_player_renderer = false;
+
+  auto factory = GetContentClient()->renderer()->GetBaseRendererFactory(
+      render_frame_, media_log, decoder_factory,
+      base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
+                          base::Unretained(render_thread)));
+  if (factory) {
+    is_base_renderer_factory_set = true;
+    factory_selector->AddBaseFactory(RendererType::kContentEmbedderDefined,
+                                     std::move(factory));
+  }
 
 #if defined(OS_ANDROID)
   use_media_player_renderer = UseMediaPlayerRenderer(url);
@@ -629,10 +638,10 @@ MediaFactory::CreateRendererFactorySelector(
               render_thread->GetStreamTexureFactory(),
               render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 
-  if (use_media_player_renderer) {
+  if (!is_base_renderer_factory_set && use_media_player_renderer) {
     factory_selector->AddBaseFactory(RendererType::kMediaPlayer,
                                      std::move(media_player_factory));
-    use_default_renderer_factory = false;
+    is_base_renderer_factory_set = true;
   } else {
     // Always give |factory_selector| a MediaPlayerRendererClient factory. WMPI
     // might fallback to it if the final redirected URL is an HLS url.
@@ -661,8 +670,9 @@ MediaFactory::CreateRendererFactorySelector(
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
   DCHECK(!use_media_player_renderer);
-  if (renderer_media_playback_options.is_mojo_renderer_enabled()) {
-    use_default_renderer_factory = false;
+  if (!is_base_renderer_factory_set &&
+      renderer_media_playback_options.is_mojo_renderer_enabled()) {
+    is_base_renderer_factory_set = true;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
     factory_selector->AddBaseFactory(
         RendererType::kCast, std::make_unique<CastRendererClientFactory>(
@@ -679,20 +689,9 @@ MediaFactory::CreateRendererFactorySelector(
   }
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
-#if defined(OS_FUCHSIA)
-  use_default_renderer_factory = false;
-  factory_selector->AddBaseFactory(
-      RendererType::kFuchsia,
-      std::make_unique<FuchsiaRendererFactory>(
-          media_log, decoder_factory,
-          base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
-                              base::Unretained(render_thread)),
-          render_frame_->GetBrowserInterfaceBroker()));
-#endif  // defined(OS_FUCHSIA)
-
 #if BUILDFLAG(ENABLE_CAST_AUDIO_RENDERER)
-  DCHECK(!use_media_player_renderer);
-  use_default_renderer_factory = false;
+  DCHECK(!is_base_renderer_factory_set && !use_media_player_renderer);
+  is_base_renderer_factory_set = true;
   factory_selector->AddBaseFactory(
       RendererType::kCast,
       std::make_unique<CastRendererFactory>(
@@ -701,14 +700,6 @@ MediaFactory::CreateRendererFactorySelector(
                               base::Unretained(render_thread)),
           render_frame_->GetBrowserInterfaceBroker()));
 #endif  // BUILDFLAG(ENABLE_CAST_AUDIO_RENDERER)
-
-  if (use_default_renderer_factory) {
-    DCHECK(!use_media_player_renderer);
-    auto default_factory = CreateDefaultRendererFactory(
-        media_log, decoder_factory, render_thread, render_frame_);
-    factory_selector->AddBaseFactory(RendererType::kDefault,
-                                     std::move(default_factory));
-  }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   mojo::PendingRemote<media::mojom::RemotingSource> remoting_source;
@@ -778,6 +769,9 @@ MediaFactory::CreateRendererFactorySelector(
 
 #if BUILDFLAG(ENABLE_CAST_STREAMING_RENDERER)
   if (cast_streaming::IsCastStreamingMediaSourceUrl(url)) {
+    DCHECK(!is_base_renderer_factory_set);
+    DCHECK(!use_media_player_renderer);
+    is_base_renderer_factory_set = true;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
     auto default_factory_cast_streaming =
         std::make_unique<CastRendererClientFactory>(
@@ -800,6 +794,18 @@ MediaFactory::CreateRendererFactorySelector(
   }
 #endif  // BUILDFLAG(ENABLE_CAST_STREAMING_RENDERER)
 #endif  // BUILDFLAG(IS_CHROMECAST)
+
+  if (!is_base_renderer_factory_set) {
+    // TODO(crbug.com/1265448): These sorts of checks shouldn't be necessary if
+    // this method were significantly refactored to split things up by
+    // Android/non-Android/Cast/etc...
+    DCHECK(!use_media_player_renderer);
+    is_base_renderer_factory_set = true;
+    auto default_factory = CreateDefaultRendererFactory(
+        media_log, decoder_factory, render_thread, render_frame_);
+    factory_selector->AddBaseFactory(RendererType::kDefault,
+                                     std::move(default_factory));
+  }
 
   return factory_selector;
 }

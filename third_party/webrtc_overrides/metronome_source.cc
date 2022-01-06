@@ -11,13 +11,6 @@
 
 namespace blink {
 
-namespace {
-
-// TODO(https://crbug.com/1253787): Add base::FeatureParam<>s to control this.
-constexpr base::TimeDelta kMetronomeTick = base::Hertz(64);
-
-}  // namespace
-
 MetronomeSource::ListenerHandle::ListenerHandle(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::RepeatingCallback<void()> callback,
@@ -71,14 +64,14 @@ void MetronomeSource::ListenerHandle::Inactivate() {
   is_active_ = false;
 }
 
-MetronomeSource::MetronomeSource()
+MetronomeSource::MetronomeSource(base::TimeDelta metronome_tick)
     : metronome_task_runner_(
           // Single thread is used to allow tracing the metronome's ticks to
           // consistently happen on the same thread. HIGHEST priority is used to
           // reduce risk of jitter.
           base::ThreadPool::CreateSingleThreadTaskRunner(
               {base::TaskPriority::HIGHEST})),
-      metronome_tick_(kMetronomeTick) {}
+      metronome_tick_(std::move(metronome_tick)) {}
 
 MetronomeSource::~MetronomeSource() {
   DCHECK(!is_active_);
@@ -161,7 +154,8 @@ void MetronomeSource::RemoveListener(
 }
 
 void MetronomeSource::OnMetronomeTick() {
-  TRACE_EVENT0("webrtc", "MetronomeSource::OnMetronomeTick");
+  TRACE_EVENT_INSTANT0("webrtc", "MetronomeSource::OnMetronomeTick",
+                       TRACE_EVENT_SCOPE_PROCESS);
   DCHECK(metronome_task_runner_->RunsTasksInCurrentSequence());
   base::AutoLock auto_lock(lock_);
   for (auto& listener : listeners_) {

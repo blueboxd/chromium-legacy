@@ -28,23 +28,13 @@ class SimpleMenuModel;
 
 namespace ash {
 
-class AppListModel;
 class AppListNotifier;
 enum class AppListViewState;
 struct AppLaunchedMetricParams;
-class SearchModel;
 
 class ASH_PUBLIC_EXPORT AppListViewDelegate {
  public:
   virtual ~AppListViewDelegate() = default;
-
-  // Gets the model associated with the view delegate. The model may be owned
-  // by the delegate, or owned elsewhere (e.g. a profile keyed service).
-  virtual AppListModel* GetModel() = 0;
-
-  // Gets the search model associated with the view delegate. The model may be
-  // owned by the delegate, or owned elsewhere (e.g. a profile keyed service).
-  virtual SearchModel* GetSearchModel() = 0;
 
   // Returns the AppListNotifier instance. The notifier is owned by the
   // AppListClient, and may be nullptr if no client has been set for the
@@ -77,10 +67,8 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
                                 bool launch_as_default) = 0;
 
   // Called to invoke a custom action on a result with |result_id|.
-  // |action_index| corresponds to the index of an icon in
-  // |result.action_icons()|.
   virtual void InvokeSearchResultAction(const std::string& result_id,
-                                        int action_index) = 0;
+                                        SearchResultActionType action) = 0;
 
   // Returns the context menu model for a ChromeSearchResult with |result_id|,
   // or nullptr if there is currently no menu for the result.
@@ -117,6 +105,10 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
 
   // Sorts app list items (including apps and folders) with the given order.
   virtual void SortAppList(AppListSortOrder order) = 0;
+
+  // Reverts the app list temporary sort order (i.e. the order that has not been
+  // committed yet) if any.
+  virtual void RevertAppListSort() = 0;
 
   // Returns an animation observer if the |target_state| is interesting to the
   // delegate.
@@ -175,6 +167,17 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Called when close button in the Suggested Content privacy info view is
   // pressed to indicate not to show the view any more.
   virtual void MarkSuggestedContentInfoDismissed() = 0;
+
+  // Gets the app list page currently shown in the fullscreen app list, as
+  // reported from the app list view using `OnAppListPageChanged()`.
+  virtual AppListState GetCurrentAppListPage() const = 0;
+
+  // Called when the page shown in the app list contents view is updated.
+  virtual void OnAppListPageChanged(AppListState page) = 0;
+
+  // Gets the current app list view state, as reported by app list view using
+  // `OnViewStateChanged()`. Tracked for fullscreen app list view only.
+  virtual AppListViewState GetAppListViewState() const = 0;
 
   // Called when the app list view state is updated.
   virtual void OnViewStateChanged(AppListViewState state) = 0;

@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_INTEREST_GROUP_DEBUGGABLE_AUCTION_WORKLET_H_
 #define CONTENT_BROWSER_INTEREST_GROUP_DEBUGGABLE_AUCTION_WORKLET_H_
 
+#include <string>
+
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom-forward.h"
@@ -26,10 +28,17 @@ class CONTENT_EXPORT DebuggableAuctionWorklet {
   DebuggableAuctionWorklet& operator=(const DebuggableAuctionWorklet&) = delete;
 
   const GURL& url() const { return url_; }
+  RenderFrameHostImpl* owning_frame() const { return owning_frame_; }
+
+  // Human-readable description of the worklet. (For English-speaking humans,
+  // anyway).
+  std::string Title() const;
+
   void ConnectDevToolsAgent(
       mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent);
 
-  RenderFrameHostImpl* owning_frame() const { return owning_frame_; }
+  // Returns true if the worklet should start in the paused state.
+  bool should_pause_on_start() const { return should_pause_on_start_; }
 
  private:
   friend class AuctionRunner;
@@ -39,20 +48,14 @@ class CONTENT_EXPORT DebuggableAuctionWorklet {
   // NotifyCreated() observers.
   //
   // The mojo pipe must outlive `this`, as must `owning_frame`.
-  //
-  // `should_pause_on_start` will output, at constructor completion, if any
-  // observer has requested the worklet to pause before starting work until
-  // resumed by debugger.
   DebuggableAuctionWorklet(
       RenderFrameHostImpl* owning_frame,
       const GURL& url,
-      auction_worklet::mojom::BidderWorklet* bidder_worklet,
-      bool& should_pause_on_start);
+      auction_worklet::mojom::BidderWorklet* bidder_worklet);
   DebuggableAuctionWorklet(
       RenderFrameHostImpl* owning_frame,
       const GURL& url,
-      auction_worklet::mojom::SellerWorklet* seller_worklet,
-      bool& should_pause_on_start);
+      auction_worklet::mojom::SellerWorklet* seller_worklet);
 
   // Unregisters `this` from DebuggableAuctionWorkletTracker, and notifies
   // NotifyDestroyed() observers.
@@ -60,6 +63,8 @@ class CONTENT_EXPORT DebuggableAuctionWorklet {
 
   RenderFrameHostImpl* const owning_frame_ = nullptr;
   const GURL url_;
+
+  bool should_pause_on_start_ = false;
 
   absl::variant<auction_worklet::mojom::BidderWorklet*,
                 auction_worklet::mojom::SellerWorklet*>

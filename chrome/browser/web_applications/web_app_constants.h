@@ -115,12 +115,7 @@ enum class InstallResultCode {
   kSuccessOfflineOnlyInstall = 23,
   kSuccessOfflineFallbackInstall = 24,
 
-  // Failure category:
-  // The install task was destroyed, most likely due to WebAppInstallManager
-  // shutdown.
-  kInstallTaskDestroyed = 25,
-
-  kMaxValue = kInstallTaskDestroyed,
+  kMaxValue = kSuccessOfflineFallbackInstall,
 };
 
 // Checks if InstallResultCode is not a failure.
@@ -281,7 +276,44 @@ enum class FileHandlerUpdateAction {
   kNoUpdate = 2,
 };
 
+enum class ApiApprovalState {
+  kRequiresPrompt = 0,
+  kAllowed = 1,
+  kDisallowed = 2,
+};
+
 using LaunchHandler = blink::Manifest::LaunchHandler;
+
+// A result how `WebAppIconDownloader` processed the list of icon urls.
+enum class IconsDownloadedResult {
+  // All the requested icon urls have been processed and `icons_map` populated
+  // for successful http responses. `icons_http_results` contains success and
+  // failure codes. `icons_map` can be empty if every icon url failed,
+  kCompleted,
+  //
+  // There was an error downloading the icons, `icons_map` is empty:
+  //
+  // Unexpected navigations or state changes on the `web_contents`.
+  kPrimaryPageChanged,
+  // At least one icon download failed and
+  // `WebAppIconDownloader::FailAllIfAnyFail()` flag was specified.
+  // `icons_http_results` contains the failed url and http status code.
+  kAbortedDueToFailure,
+};
+
+const char* IconsDownloadedResultToString(IconsDownloadedResult result);
+
+// Generic result enumeration to be used for operations that can fail. If more
+// information is needed in a return value, we can move to something similar to
+// `base::FileErrorOr` in the future.
+enum class Result {
+  // No errors have occurred. This generally means the operation was either
+  // completed successfully or possibly intentionally skipped.
+  kOk,
+  kError
+};
+
+using ResultCallback = base::OnceCallback<void(Result)>;
 
 }  // namespace web_app
 

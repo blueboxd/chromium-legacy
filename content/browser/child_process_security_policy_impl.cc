@@ -28,6 +28,7 @@
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/site_info.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_or_resource_context.h"
@@ -687,11 +688,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
       browser_context_ = nullptr;
   }
 
-  int render_frame_host_count() const { return render_frame_host_count_; }
-  void set_render_frame_host_count(int count) {
-    render_frame_host_count_ = count;
-  }
-
  private:
   enum class CommitRequestPolicy {
     kRequestOnly,
@@ -759,10 +755,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   // The maximum number of BrowsingInstances that have been in this
   // SecurityState's RenderProcessHost, for metrics.
   unsigned max_browsing_instance_count_ = 0;
-
-  // Diagnostic code for https://crbug.com/1148542.
-  // TODO(wjmaclean): Remove once that issue is resolved.
-  int render_frame_host_count_ = 0;
 
   // The set of isolated filesystems the child process is permitted to access.
   FileSystemMap filesystem_permissions_;
@@ -1863,7 +1855,8 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
       keep_alive_durations = process->GetKeepAliveDurations();
       shutdown_delay_ref_count =
           base::NumberToString(process->GetShutdownDelayRefCount());
-      process_rfh_count = base::NumberToString(process->GetRfhCount());
+      process_rfh_count =
+          base::NumberToString(process->GetRenderFrameHostCount());
     }
   } else {
     keep_alive_durations = "no durations available: on IO thread.";
@@ -1873,9 +1866,9 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
   // keys that will help understand the circumstances of that kill.
   LogCanAccessDataForOriginCrashKeys(
       expected_process_lock.ToString(),
-      GetKilledProcessOriginLock(security_state), url.GetOrigin().spec(),
-      failure_reason, keep_alive_durations, shutdown_delay_ref_count,
-      process_rfh_count);
+      GetKilledProcessOriginLock(security_state),
+      url.DeprecatedGetOriginAsURL().spec(), failure_reason,
+      keep_alive_durations, shutdown_delay_ref_count, process_rfh_count);
   return false;
 }
 
@@ -1887,15 +1880,6 @@ void ChildProcessSecurityPolicyImpl::IncludeIsolationContext(
   auto* state = GetSecurityState(child_id);
   DCHECK(state);
   state->AddBrowsingInstanceId(isolation_context.browsing_instance_id());
-}
-
-void ChildProcessSecurityPolicyImpl::SetRenderFrameHostCount(int child_id,
-                                                             int count) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::AutoLock lock(lock_);
-  auto state = security_state_.find(child_id);
-  DCHECK(state != security_state_.end());
-  state->second->set_render_frame_host_count(count);
 }
 
 void ChildProcessSecurityPolicyImpl::LockProcess(
@@ -2437,7 +2421,7 @@ void ChildProcessSecurityPolicyImpl::
         ChildProcessSecurityPolicyImpl::GetInstance();
     policy->RemoveOptInIsolatedOriginsForBrowsingInstanceInternal(id);
   };
-  if (browsing_instance_cleanup_delay_ > base::TimeDelta()) {
+  if (browsing_instance_cleanup_delay_.is_positive()) {
     // Do the actual state cleanup after posting a task to the IO thread, to
     // give a chance for any last unprocessed tasks to be handled. The cleanup
     // itself locks the data structures and can safely happen from either
@@ -2461,24 +2445,8 @@ void ChildProcessSecurityPolicyImpl::
     // content_unittests don't always report being on the IO thread.
     DCHECK(IsRunningOnExpectedThread());
     base::AutoLock lock(lock_);
-    for (auto& it : security_state_) {
+    for (auto& it : security_state_)
       it.second->ClearBrowsingInstanceId(browsing_instance_id);
-
-      // TODO(wjmaclean): Remove when https://crbug.com/1148542 is resolved.
-      if (it.second->browsing_instance_ids().empty() &&
-          it.second->render_frame_host_count() > 0) {
-        // When there are no more BrowsingInstanceIDs associated with a
-        // RenderProcess, then there should not be any RenderFrameHosts either.
-        // Send a crash dump to alert if this happens and collect state for
-        // debugging.
-        SCOPED_CRASH_KEY_NUMBER("NoBIIDsButHasRFH", "num_rfhs",
-                                it.second->render_frame_host_count());
-        SCOPED_CRASH_KEY_STRING256("NoBIIDsButHasRFH", "process_lock",
-                                   it.second->process_lock().ToString());
-        NOTREACHED();
-        base::debug::DumpWithoutCrashing();
-      }
-    }
     // Note: if the BrowsingInstanceId set is empty at the end of this function,
     // we must never remove the ProcessLock in case the associated RenderProcess
     // is compromised, in which case we wouldn't want to reuse it for another

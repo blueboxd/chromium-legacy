@@ -46,6 +46,7 @@ preprocess_if_expr("preprocess_src_ts") {
   out_folder = "$preprocess_folder"
   in_files = [
     "i18n_mixin.ts",
+    "list_property_update_mixin.ts",
     "web_ui_listener_mixin.ts",
   ]
 }
@@ -65,9 +66,6 @@ preprocess_if_expr("preprocess_src") {
     "load_time_data.m.js",
     "plural_string_proxy.js",
     "static_types.js",
-    "post_message_api_client.js",
-    "post_message_api_request_handler.js",
-    "post_message_api_server.js",
     "search_highlight_utils.js",
     "test_loader.js",
     "test_loader_util.js",
@@ -77,7 +75,11 @@ preprocess_if_expr("preprocess_src") {
   ]
 
   if (is_chromeos_ash) {
-    in_files += [ "i18n_template_process.js" ]
+    in_files += [
+      "post_message_api_client.js",
+      "post_message_api_request_handler.js",
+      "post_message_api_server.js",
+    ]
   }
 
   # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
@@ -119,9 +121,6 @@ preprocess_if_expr("preprocess_generated") {
     "event_tracker.m.js",
     "load_time_data.js",
     "parse_html_subset.m.js",
-    "post_message_api_server.m.js",
-    "post_message_api_request_handler.m.js",
-    "post_message_api_client.m.js",
     "promise_resolver.m.js",
     "util.m.js",
   ]
@@ -131,6 +130,14 @@ preprocess_if_expr("preprocess_generated") {
       "i18n_behavior.m.js",
       "list_property_update_behavior.m.js",
       "web_ui_listener_behavior.m.js",
+    ]
+  }
+
+  if (is_chromeos_ash) {
+    in_files += [
+      "post_message_api_server.m.js",
+      "post_message_api_request_handler.m.js",
+      "post_message_api_client.m.js",
     ]
   }
 }
@@ -164,9 +171,6 @@ js_type_check("js_resources") {
     ":web_ui_listener_behavior",
     ":webui_resource_test",
   ]
-  if (is_chromeos_ash) {
-    deps += [ ":i18n_template_process" ]
-  }
   if (is_ios) {
     deps += [ "ios:web_ui" ]
   }
@@ -192,10 +196,6 @@ js_library("event_tracker") {
 
 js_library("i18n_template_no_process") {
   deps = [ ":load_time_data" ]
-}
-
-js_library("i18n_template_process") {
-  deps = [ ":i18n_template_no_process" ]
 }
 
 js_library("i18n_behavior") {
@@ -252,13 +252,17 @@ js_modulizer("modulize_local") {
     "i18n_behavior.js",
     "list_property_update_behavior.js",
     "parse_html_subset.js",
-    "post_message_api_server.js",
-    "post_message_api_request_handler.js",
-    "post_message_api_client.js",
     "promise_resolver.js",
     "util.js",
     "web_ui_listener_behavior.js",
   ]
+  if (is_chromeos_ash) {
+    input_files += [
+      "post_message_api_server.js",
+      "post_message_api_request_handler.js",
+      "post_message_api_client.js",
+    ]
+  }
   namespace_rewrites = [
     "cr.search_highlight_utils.Range|Range",
     "Polymer.ArraySplice.calculateSplices|calculateSplices",
@@ -290,15 +294,19 @@ js_type_check("js_resources_modules") {
     ":load_time_data.m",
     ":parse_html_subset.m",
     ":plural_string_proxy",
-    ":post_message_api_client.m",
-    ":post_message_api_request_handler.m",
-    ":post_message_api_server.m",
     ":promise_resolver.m",
     ":search_highlight_utils",
     ":static_types",
     ":util.m",
     ":web_ui_listener_behavior.m",
   ]
+
+  if (is_chromeos_ash) {
+    deps += [
+      ":post_message_api_client.m",
+      ":post_message_api_server.m",
+    ]
+  }
 }
 
 js_library("assert.m") {
@@ -357,25 +365,25 @@ js_library("plural_string_proxy") {
   deps = [ ":cr.m" ]
 }
 
-js_library("post_message_api_server.m") {
-  sources =
-      [ "$root_gen_dir/ui/webui/resources/js/post_message_api_server.m.js" ]
-  deps = [ ":post_message_api_request_handler.m" ]
-  extra_deps = [ ":modulize_local" ]
-}
+if (is_chromeos_ash) {
+  js_library("post_message_api_server.m") {
+    sources =
+        [ "$root_gen_dir/ui/webui/resources/js/post_message_api_server.m.js" ]
+    deps = [ ":post_message_api_request_handler.m" ]
+    extra_deps = [ ":modulize_local" ]
+  }
 
-js_library("post_message_api_client.m") {
-  sources =
-      [ "$root_gen_dir/ui/webui/resources/js/post_message_api_client.m.js" ]
-  deps = [ ":post_message_api_request_handler.m" ]
-  extra_deps = [ ":modulize_local" ]
-}
+  js_library("post_message_api_client.m") {
+    sources =
+        [ "$root_gen_dir/ui/webui/resources/js/post_message_api_client.m.js" ]
+    deps = [ ":post_message_api_request_handler.m" ]
+    extra_deps = [ ":modulize_local" ]
+  }
 
-js_library("post_message_api_request_handler.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/post_message_api_request_handler.m.js",
-  ]
-  extra_deps = [ ":modulize_local" ]
+  js_library("post_message_api_request_handler.m") {
+    sources = [ "$root_gen_dir/ui/webui/resources/js/post_message_api_request_handler.m.js" ]
+    extra_deps = [ ":modulize_local" ]
+  }
 }
 
 js_library("promise_resolver.m") {

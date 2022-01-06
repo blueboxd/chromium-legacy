@@ -12,13 +12,13 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/services/app_service/public/cpp/crosapi_utils.h"
@@ -28,12 +28,10 @@
 
 namespace apps {
 
-WebAppsCrosapi::WebAppsCrosapi(Profile* profile) : profile_(profile) {
+WebAppsCrosapi::WebAppsCrosapi(AppServiceProxy* proxy) : proxy_(proxy) {
   // This object may be created when the flag is on or off, but only register
   // the publisher if the flag is on.
-  if (base::FeatureList::IsEnabled(features::kWebAppsCrosapi)) {
-    apps::AppServiceProxyChromeOs* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile);
+  if (web_app::IsWebAppsCrosapiEnabled()) {
     mojo::Remote<apps::mojom::AppService>& app_service = proxy->AppService();
     if (!app_service.is_bound()) {
       return;
@@ -107,8 +105,10 @@ void WebAppsCrosapi::LaunchAppWithIntent(
     int32_t event_flags,
     apps::mojom::IntentPtr intent,
     apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info) {
+    apps::mojom::WindowInfoPtr window_info,
+    LaunchAppWithIntentCallback callback) {
   if (!LogIfNotConnected(FROM_HERE)) {
+    std::move(callback).Run(/*success=*/false);
     return;
   }
 
@@ -116,8 +116,10 @@ void WebAppsCrosapi::LaunchAppWithIntent(
   launch_params->app_id = app_id;
   launch_params->launch_source = launch_source;
   launch_params->intent =
-      apps_util::ConvertAppServiceToCrosapiIntent(intent, profile_);
+      apps_util::ConvertAppServiceToCrosapiIntent(intent, proxy_->profile());
   controller_->Launch(std::move(launch_params), base::DoNothing());
+  // TODO(crbug/1261263): handle the case where launch fails.
+  std::move(callback).Run(/*success=*/true);
 }
 
 void WebAppsCrosapi::LaunchAppWithFiles(const std::string& app_id,
@@ -154,10 +156,9 @@ void WebAppsCrosapi::GetMenuModel(const std::string& app_id,
                                   GetMenuModelCallback callback) {
   bool is_system_web_app = false;
   bool can_use_uninstall = true;
-  apps::mojom::WindowMode display_mode;
-  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
+  apps::mojom::WindowMode display_mode = apps::mojom::WindowMode::kUnknown;
 
-  proxy->AppRegistryCache().ForOneApp(
+  proxy_->AppRegistryCache().ForOneApp(
       app_id, [&is_system_web_app, &can_use_uninstall,
                &display_mode](const apps::AppUpdate& update) {
         if (update.InstallReason() == apps::mojom::InstallReason::kSystem) {
@@ -172,7 +173,7 @@ void WebAppsCrosapi::GetMenuModel(const std::string& app_id,
 
   apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
 
-  if (!is_system_web_app) {
+  if (display_mode != apps::mojom::WindowMode::kUnknown && !is_system_web_app) {
     apps::CreateOpenNewSubmenu(menu_type,
                                display_mode == apps::mojom::WindowMode::kBrowser
                                    ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
@@ -186,9 +187,9 @@ void WebAppsCrosapi::GetMenuModel(const std::string& app_id,
     // need to check BrowserAppInstanceRegistry directly. Remove this when
     // InstanceRegistry updates are implemented.
     bool app_running =
-        base::FeatureList::IsEnabled(features::kWebAppsCrosapi)
-            ? proxy->BrowserAppInstanceRegistry()->IsAppRunning(app_id)
-            : proxy->InstanceRegistry().ContainsAppId(app_id);
+        web_app::IsWebAppsCrosapiEnabled()
+            ? proxy_->BrowserAppInstanceRegistry()->IsAppRunning(app_id)
+            : proxy_->InstanceRegistry().ContainsAppId(app_id);
     if (app_running) {
       apps::AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE,
                            &menu_items);
@@ -307,8 +308,17 @@ void WebAppsCrosapi::ExecuteContextMenuCommand(const std::string& app_id,
                                          base::DoNothing());
 }
 
+void WebAppsCrosapi::SetPermission(const std::string& app_id,
+                                   apps::mojom::PermissionPtr permission) {
+  if (!LogIfNotConnected(FROM_HERE)) {
+    return;
+  }
+
+  controller_->SetPermission(app_id, std::move(permission));
+}
+
 void WebAppsCrosapi::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
-  if (!base::FeatureList::IsEnabled(features::kWebAppsCrosapi))
+  if (!web_app::IsWebAppsCrosapiEnabled())
     return;
   for (auto& subscriber : subscribers_) {
     subscriber->OnApps(apps_util::CloneStructPtrVector(deltas),
@@ -329,7 +339,7 @@ void WebAppsCrosapi::RegisterAppController(
 
 void WebAppsCrosapi::OnCapabilityAccesses(
     std::vector<apps::mojom::CapabilityAccessPtr> deltas) {
-  if (!base::FeatureList::IsEnabled(features::kWebAppsCrosapi))
+  if (!web_app::IsWebAppsCrosapiEnabled())
     return;
   for (auto& subscriber : subscribers_) {
     subscriber->OnCapabilityAccesses(apps_util::CloneStructPtrVector(deltas));
@@ -362,7 +372,8 @@ void WebAppsCrosapi::OnLoadIcon(uint32_t icon_effects,
                                 apps::mojom::IconValuePtr icon_value) {
   // We apply the masking effect here, as masking is not implemented in Lacros.
   ApplyIconEffects(static_cast<IconEffects>(icon_effects), size_hint_in_dip,
-                   std::move(icon_value), std::move(callback));
+                   ConvertMojomIconValueToIconValue(std::move(icon_value)),
+                   IconValueToMojomIconValueCallback(std::move(callback)));
 }
 
 }  // namespace apps

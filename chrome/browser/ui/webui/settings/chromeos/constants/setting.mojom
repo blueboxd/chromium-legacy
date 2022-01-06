@@ -133,6 +133,8 @@ enum Setting {
   kPointingStickSpeed = 435,
   kPointingStickAcceleration = 436,
   kPointingStickSwapPrimaryButtons = 437,
+  kTouchpadHapticFeedback = 438,
+  kTouchpadHapticClickSensitivity = 439,
 
   // Personalization section.
   kOpenWallpaper = 500,

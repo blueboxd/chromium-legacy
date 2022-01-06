@@ -31,7 +31,9 @@ TEST(HardeningTest, PartialCorruption) {
                        PartitionOptions::Quarantine::kDisallowed,
                        PartitionOptions::Cookie::kDisallowed,
                        PartitionOptions::BackupRefPtr::kDisabled,
-                       PartitionOptions::UseConfigurablePool::kNo}};
+                       PartitionOptions::UseConfigurablePool::kNo,
+                       PartitionOptions::LazyCommit::kEnabled}};
+  root.UncapEmptySlotSpanMemoryForTesting();
 
   const size_t kAllocSize = 100;
   void* data = root.Alloc(kAllocSize, "");
@@ -60,7 +62,9 @@ TEST(HardeningTest, OffHeapPointerCrashing) {
                        PartitionOptions::Quarantine::kDisallowed,
                        PartitionOptions::Cookie::kDisallowed,
                        PartitionOptions::BackupRefPtr::kDisabled,
-                       PartitionOptions::UseConfigurablePool::kNo}};
+                       PartitionOptions::UseConfigurablePool::kNo,
+                       PartitionOptions::LazyCommit::kEnabled}};
+  root.UncapEmptySlotSpanMemoryForTesting();
 
   const size_t kAllocSize = 100;
   void* data = root.Alloc(kAllocSize, "");
@@ -86,7 +90,9 @@ TEST(HardeningTest, MetadataPointerCrashing) {
                        PartitionOptions::Quarantine::kDisallowed,
                        PartitionOptions::Cookie::kDisallowed,
                        PartitionOptions::BackupRefPtr::kDisabled,
-                       PartitionOptions::UseConfigurablePool::kNo}};
+                       PartitionOptions::UseConfigurablePool::kNo,
+                       PartitionOptions::LazyCommit::kEnabled}};
+  root.UncapEmptySlotSpanMemoryForTesting();
 
   const size_t kAllocSize = 100;
   void* data = root.Alloc(kAllocSize, "");
@@ -117,7 +123,9 @@ TEST(HardeningTest, SuccessfulCorruption) {
                        PartitionOptions::Quarantine::kDisallowed,
                        PartitionOptions::Cookie::kDisallowed,
                        PartitionOptions::BackupRefPtr::kDisabled,
-                       PartitionOptions::UseConfigurablePool::kNo}};
+                       PartitionOptions::UseConfigurablePool::kNo,
+                       PartitionOptions::LazyCommit::kEnabled}};
+  root.UncapEmptySlotSpanMemoryForTesting();
 
   uintptr_t* zero_vector = reinterpret_cast<uintptr_t*>(
       root.AllocFlags(PartitionAllocZeroFill, 100 * sizeof(uintptr_t), ""));

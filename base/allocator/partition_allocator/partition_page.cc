@@ -4,6 +4,8 @@
 
 #include "base/allocator/partition_allocator/partition_page.h"
 
+#include <algorithm>
+
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/address_pool_manager.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
@@ -11,14 +13,13 @@
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-#include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/bits.h"
 #include "base/dcheck_is_on.h"
-#include "base/feature_list.h"
+#include "base/memory/tagging.h"
 
 namespace base {
 namespace internal {
@@ -118,6 +119,20 @@ ALWAYS_INLINE void PartitionRegisterEmptySlotSpan(
   if (current_index == kMaxFreeableSpans)
     current_index = 0;
   root->global_empty_slot_span_ring_index = current_index;
+
+  // Avoid wasting too much memory on empty slot spans. Note that we only divide
+  // by powers of two, since division can be very slow, and this path is taken
+  // for every single-slot slot span deallocation.
+  //
+  // Empty slot spans are also all decommitted with MemoryReclaimer, but it may
+  // never run, be delayed arbitrarily, and/or miss large memory spikes.
+  size_t max_empty_dirty_bytes =
+      root->total_size_of_committed_pages.load(std::memory_order_relaxed) >>
+      root->max_empty_slot_spans_dirty_bytes_shift;
+  if (root->empty_slot_spans_dirty_bytes > max_empty_dirty_bytes) {
+    root->ShrinkEmptySlotSpansRing(std::min(
+        root->empty_slot_spans_dirty_bytes / 2, max_empty_dirty_bytes));
+  }
 }
 
 }  // namespace
@@ -233,6 +248,46 @@ void SlotSpanMetadata<thread_safe>::DecommitIfPossible(
     Decommit(root);
 }
 
+template <bool thread_safe>
+void SlotSpanMetadata<thread_safe>::SortFreelist() {
+  std::bitset<kMaxSlotsPerSlotSpan> free_slots;
+  char* slot_span_base = reinterpret_cast<char*>(ToSlotSpanStartPtr(this));
+
+  size_t num_provisioned_slots =
+      bucket->get_slots_per_span() - num_unprovisioned_slots;
+  PA_CHECK(num_unprovisioned_slots <= kMaxSlotsPerSlotSpan);
+
+  size_t slot_size = bucket->slot_size;
+  for (PartitionFreelistEntry* head = freelist_head; head;
+       head = head->GetNext(slot_size)) {
+    size_t offset_in_slot_span =
+        reinterpret_cast<char*>(memory::UnmaskPtr(head)) - slot_span_base;
+    size_t slot_number = bucket->GetSlotNumber(offset_in_slot_span);
+    PA_DCHECK(slot_number < num_provisioned_slots);
+    free_slots[slot_number] = true;
+  }
+
+  PartitionFreelistEntry* back = nullptr;
+  PartitionFreelistEntry* head = nullptr;
+
+  for (size_t slot_number = 0; slot_number < num_provisioned_slots;
+       slot_number++) {
+    if (free_slots[slot_number]) {
+      char* slot_address =
+          memory::RemaskPtr(slot_span_base + (slot_size * slot_number));
+      auto* entry = new (slot_address) PartitionFreelistEntry();
+
+      if (!head)
+        head = entry;
+      else
+        back->SetNext(entry);
+
+      back = entry;
+    }
+  }
+  SetFreelistHead(head);
+}
+
 namespace {
 void UnmapNow(void* reservation_start,
               size_t reservation_size,
@@ -243,7 +298,7 @@ void UnmapNow(void* reservation_start,
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
   if (pool == GetBRPPool()) {
     // In 32-bit mode, the beginning of a reservation may be excluded from the
-    // BRP pool, so shift the pointer. Non-BRP pool doesn't have logic.
+    // BRP pool, so shift the pointer. Other pools don't have this logic.
     PA_DCHECK(IsManagedByPartitionAllocBRPPool(
 #if defined(PA_HAS_64_BITS_POINTERS)
         reservation_start
@@ -256,10 +311,10 @@ void UnmapNow(void* reservation_start,
   } else
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
   {
-    PA_DCHECK(pool == GetNonBRPPool() ||
+    PA_DCHECK(pool == GetRegularPool() ||
               (IsConfigurablePoolAvailable() && pool == GetConfigurablePool()));
     // Non-BRP pools don't need adjustment that BRP needs in 32-bit mode.
-    PA_DCHECK(IsManagedByPartitionAllocNonBRPPool(reservation_start) ||
+    PA_DCHECK(IsManagedByPartitionAllocRegularPool(reservation_start) ||
               IsManagedByPartitionAllocConfigurablePool(reservation_start));
   }
 #endif  // DCHECK_IS_ON()

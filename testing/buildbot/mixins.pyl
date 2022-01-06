@@ -639,13 +639,6 @@
       },
     },
   },
-  'lollipop_generic': {
-    'swarming': {
-      'dimensions': {
-        'device_os': 'L',
-      },
-    },
-  },
   'mac-archive-rel-args': {
     'args': [
       'mac-release/sizes',
@@ -680,15 +673,6 @@
       'dimensions': {
         'cpu': 'x86-64',
         'os': 'Mac-10.15',
-      },
-    },
-  },
-  # TODO(crbug.com/1254953) Remove 10.15 once testers have been migrated to Mac11
-  'mac_10.15_or_11': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64',
-        'os': 'Mac-10.15|Mac-11|Mac-10.16',
       },
     },
   },
@@ -801,7 +785,7 @@
         'cpu': 'x86-64',
         'gpu': '1002:6821',
         'hidpi': '1',
-        'os': 'Mac-10.14.6|Mac-11.4',
+        'os': 'Mac-11.4',
         'pool': 'chromium.tests.gpu',
         'display_attached': '1',
       },
@@ -1004,15 +988,6 @@
       },
     },
   },
-  'shamu': {
-    # Nexus 6
-    'swarming': {
-      'dimensions': {
-        'device_type': 'shamu',
-        'os': 'Android',
-      },
-    },
-  },
   'skia_gold_test': {
     '$mixin_append': {
       'args': [
@@ -1062,13 +1037,6 @@
     'swarming': {
       'dimensions': {
         'os': 'Windows-10-19042',
-      },
-    },
-  },
-  'win10-1703': {
-    'swarming': {
-      'dimensions': {
-        'os': 'Windows-10-15063',
       },
     },
   },

@@ -15,6 +15,7 @@ import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classe
 import '../controls/settings_toggle_button.js';
 import '../prefs/prefs.js';
 import '../site_settings/settings_category_default_radio_group.js';
+import '../site_settings/site_data_details_subpage.js';
 import '../settings_page/settings_animated_pages.js';
 import '../settings_page/settings_subpage.js';
 import '../settings_shared_css.js';
@@ -44,12 +45,6 @@ type BlockAutoplayStatus = {
 };
 
 type FocusConfig = Map<string, (string|(() => void))>;
-
-// TODO(crbug.com/1234307): Remove when site_data_details_subpage.js is migrated
-// to TypeScript.
-interface SiteDataDetailsSubpageElement extends HTMLElement {
-  removeAll(): void;
-}
 
 const SettingsPrivacyPageElementBase =
     RouteObserverMixin(WebUIListenerMixin(
@@ -283,8 +278,7 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
     // Intentionally not casting to SiteDataDetailsSubpageElement, as this would
     // require importing site_data_details_subpage.js and would endup in the
     // main JS bundle.
-    const node = this.shadowRoot!.querySelector<SiteDataDetailsSubpageElement>(
-        'site-data-details-subpage');
+    const node = this.shadowRoot!.querySelector('site-data-details-subpage');
     if (node) {
       node.removeAll();
     }
@@ -338,7 +332,9 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
 
   private onPrivacyReviewClick_() {
     // TODO(crbug/1215630): Implement metrics.
-    Router.getInstance().navigateTo(routes.PRIVACY_REVIEW);
+    Router.getInstance().navigateTo(
+        routes.PRIVACY_REVIEW, /* dynamicParams */ undefined,
+        /* removeSearch */ true);
   }
 
   private interactedWithPage_() {

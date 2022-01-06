@@ -14,7 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/extension_uninstaller.h"
@@ -40,6 +40,7 @@
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "content/public/browser/clear_site_data_utils.h"
@@ -109,6 +110,15 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kFromFullRestore:
     case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
     case apps::mojom::LaunchSource::kFromDiscoverTabNotification:
+    case apps::mojom::LaunchSource::kFromManagementApi:
+    case apps::mojom::LaunchSource::kFromKiosk:
+    case apps::mojom::LaunchSource::kFromCommandLine:
+    case apps::mojom::LaunchSource::kFromBackgroundMode:
+    case apps::mojom::LaunchSource::kFromNewTabPage:
+    case apps::mojom::LaunchSource::kFromIntentUrl:
+    case apps::mojom::LaunchSource::kFromOsLogin:
+    case apps::mojom::LaunchSource::kFromProtocolHandler:
+    case apps::mojom::LaunchSource::kFromUrlHandler:
       return ash::LAUNCH_FROM_UNKNOWN;
   }
 }
@@ -220,6 +230,14 @@ apps::mojom::AppPtr ExtensionAppsBase::ConvertImpl(
 
   SetShowInFields(app, extension);
 
+  const extensions::ManagementPolicy* policy =
+      extensions::ExtensionSystem::Get(profile())->management_policy();
+  DCHECK(policy);
+  app->allow_uninstall = (policy->UserMayModifySettings(extension, nullptr) &&
+                          !policy->MustRemainInstalled(extension, nullptr))
+                             ? apps::mojom::OptionalBool::kTrue
+                             : apps::mojom::OptionalBool::kFalse;
+
   return app;
 }
 
@@ -239,27 +257,31 @@ content::WebContents* ExtensionAppsBase::LaunchAppWithIntentImpl(
     int32_t event_flags,
     apps::mojom::IntentPtr intent,
     apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info) {
+    apps::mojom::WindowInfoPtr window_info,
+    LaunchAppWithIntentCallback callback) {
   const auto* extension = MaybeGetExtension(app_id);
   if (!extension || !extensions::util::IsAppLaunchable(app_id, profile_)) {
+    std::move(callback).Run(/*success=*/false);
     return nullptr;
   }
 
   if (!extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
     RunExtensionEnableFlow(
-        app_id, base::BindOnce(&ExtensionAppsBase::LaunchAppWithIntent,
-                               weak_factory_.GetWeakPtr(), app_id, event_flags,
-                               std::move(intent), launch_source,
-                               std::move(window_info)));
+        app_id,
+        base::BindOnce(&ExtensionAppsBase::ExtensionWasEnabled,
+                       weak_factory_.GetWeakPtr(), app_id, event_flags,
+                       std::move(intent), launch_source, std::move(window_info),
+                       CallbackWrapper(std::move(callback))));
     return nullptr;
   }
 
   auto params = apps::CreateAppLaunchParamsForIntent(
-      app_id, event_flags, GetAppLaunchSource(launch_source),
+      app_id, event_flags, launch_source,
       window_info ? window_info->display_id : display::kInvalidDisplayId,
       extensions::GetLaunchContainer(extensions::ExtensionPrefs::Get(profile_),
                                      extension),
-      std::move(intent));
+      std::move(intent), profile_);
+  std::move(callback).Run(/*success=*/true);
   return LaunchImpl(std::move(params));
 }
 
@@ -280,6 +302,18 @@ const extensions::Extension* ExtensionAppsBase::MaybeGetExtension(
   }
 
   return extension;
+}
+
+ExtensionAppsBase::CallbackWrapper::CallbackWrapper(
+    base::OnceCallback<void(bool)> callback)
+    : callback(std::move(callback)) {}
+
+ExtensionAppsBase::CallbackWrapper::CallbackWrapper(CallbackWrapper&&) =
+    default;
+
+ExtensionAppsBase::CallbackWrapper::~CallbackWrapper() {
+  if (callback)
+    std::move(callback).Run(false);
 }
 
 void ExtensionAppsBase::Initialize(
@@ -327,9 +361,10 @@ void ExtensionAppsBase::LoadIcon(const std::string& app_id,
                                  bool allow_placeholder_icon,
                                  LoadIconCallback callback) {
   if (icon_key) {
-    LoadIconFromExtension(icon_type, size_hint_in_dip, profile_, app_id,
-                          static_cast<IconEffects>(icon_key->icon_effects),
-                          std::move(callback));
+    LoadIconFromExtension(
+        ConvertMojomIconTypeToIconType(icon_type), size_hint_in_dip, profile_,
+        app_id, static_cast<IconEffects>(icon_key->icon_effects),
+        IconValueToMojomIconValueCallback(std::move(callback)));
     return;
   }
   // On failure, we still run the callback, with the zero IconValue.
@@ -382,12 +417,21 @@ void ExtensionAppsBase::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromFullRestore:
     case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
     case apps::mojom::LaunchSource::kFromDiscoverTabNotification:
+    case apps::mojom::LaunchSource::kFromManagementApi:
+    case apps::mojom::LaunchSource::kFromKiosk:
+    case apps::mojom::LaunchSource::kFromCommandLine:
+    case apps::mojom::LaunchSource::kFromBackgroundMode:
+    case apps::mojom::LaunchSource::kFromNewTabPage:
+    case apps::mojom::LaunchSource::kFromIntentUrl:
+    case apps::mojom::LaunchSource::kFromOsLogin:
+    case apps::mojom::LaunchSource::kFromProtocolHandler:
+    case apps::mojom::LaunchSource::kFromUrlHandler:
       break;
   }
 
   // The app will be created for the currently active profile.
   AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-      profile_, extension, event_flags, GetAppLaunchSource(launch_source),
+      profile_, extension, event_flags, launch_source,
       window_info ? window_info->display_id : display::kInvalidDisplayId);
   ash::ShelfLaunchSource source = ConvertLaunchSource(launch_source);
   if ((source == ash::LAUNCH_FROM_APP_LIST ||
@@ -415,8 +459,8 @@ void ExtensionAppsBase::LaunchAppWithFiles(
       app_id,
       extensions::GetLaunchContainer(extensions::ExtensionPrefs::Get(profile_),
                                      extension),
-      ui::DispositionFromEventFlags(event_flags),
-      GetAppLaunchSource(launch_source), display::kDefaultDisplayId);
+      ui::DispositionFromEventFlags(event_flags), launch_source,
+      display::kDefaultDisplayId);
   for (const auto& file_path : file_paths->file_paths) {
     params.launch_files.push_back(file_path);
   }
@@ -428,9 +472,10 @@ void ExtensionAppsBase::LaunchAppWithIntent(
     int32_t event_flags,
     apps::mojom::IntentPtr intent,
     apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info) {
+    apps::mojom::WindowInfoPtr window_info,
+    LaunchAppWithIntentCallback callback) {
   LaunchAppWithIntentImpl(app_id, event_flags, std::move(intent), launch_source,
-                          std::move(window_info));
+                          std::move(window_info), std::move(callback));
 }
 
 void ExtensionAppsBase::Uninstall(const std::string& app_id,
@@ -660,6 +705,18 @@ void ExtensionAppsBase::ConvertVector(
       apps_out->push_back(Convert(extension.get(), readiness));
     }
   }
+}
+
+void ExtensionAppsBase::ExtensionWasEnabled(
+    const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::LaunchSource launch_source,
+    apps::mojom::WindowInfoPtr window_info,
+    CallbackWrapper wrapper) {
+  LaunchAppWithIntent(app_id, event_flags, std::move(intent),
+                      std::move(launch_source), std::move(window_info),
+                      std::move(wrapper.callback));
 }
 
 }  // namespace apps

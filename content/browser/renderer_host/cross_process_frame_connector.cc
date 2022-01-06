@@ -46,7 +46,7 @@ CrossProcessFrameConnector::CrossProcessFrameConnector(
   // be on the correct display. All subsequent updates to |screen_infos_|
   // ultimately come from the root, so it makes sense to do it here as well.
   screen_infos_ = current_child_frame_host()
-                      ->GetOutermostMainFrame()
+                      ->GetOutermostMainFrameOrEmbedder()
                       ->GetRenderWidgetHost()
                       ->GetScreenInfos();
 }
@@ -196,6 +196,8 @@ void CrossProcessFrameConnector::SynchronizeVisualProperties(
 
   if (!view_)
     return;
+
+  view_->UpdateScreenInfo();
 
   RenderWidgetHostImpl* render_widget_host = view_->host();
   DCHECK(render_widget_host);
@@ -418,10 +420,8 @@ void CrossProcessFrameConnector::OnVisibilityChanged(
   // the visibility. The Show/Hide methods will not be called if an inner
   // WebContents exists since the corresponding WebContents will itself call
   // Show/Hide on all the RenderWidgetHostViews (including this) one.
-  if (frame_proxy_in_parent_renderer_->frame_tree_node()
-          ->render_manager()
-          ->IsMainFrameForInnerDelegate()) {
-    view_->host()->delegate()->OnRenderFrameProxyVisibilityChanged(visibility_);
+  if (view_->host()->delegate()->OnRenderFrameProxyVisibilityChanged(
+          frame_proxy_in_parent_renderer_, visibility_)) {
     return;
   }
 
@@ -452,7 +452,7 @@ CrossProcessFrameConnector::GetRootRenderWidgetHostView() {
     return nullptr;
 
   RenderFrameHostImpl* root =
-      current_child_frame_host()->GetOutermostMainFrame();
+      current_child_frame_host()->GetOutermostMainFrameOrEmbedder();
   return static_cast<RenderWidgetHostViewBase*>(root->GetView());
 }
 

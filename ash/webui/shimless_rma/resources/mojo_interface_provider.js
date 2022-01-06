@@ -5,8 +5,8 @@
 import {assert} from 'chrome://resources/js/assert.m.js';
 
 import {fakeCalibrationComponents, fakeChromeVersion, fakeComponents, fakeDeviceRegions, fakeDeviceSkus, fakeRsuChallengeCode, fakeRsuChallengeQrCode, fakeStates} from './fake_data.js';
-import {FakeShimlessRmaService} from './fake_shimless_rma_service.js'
-import {CalibrationSetupInstruction, NetworkConfigServiceInterface, RmadErrorCode, ShimlessRmaService, ShimlessRmaServiceInterface} from './shimless_rma_types.js';
+import {FakeShimlessRmaService} from './fake_shimless_rma_service.js';
+import {CalibrationSetupInstruction, NetworkConfigServiceInterface, RmadErrorCode, ShimlessRmaService, ShimlessRmaServiceInterface, WriteProtectDisableCompleteState} from './shimless_rma_types.js';
 
 /**
  * @fileoverview
@@ -18,7 +18,7 @@ import {CalibrationSetupInstruction, NetworkConfigServiceInterface, RmadErrorCod
  * If true this will replace ShimlessRmaService with a fake.
  * @type {boolean}
  */
-let useFakeService = true;
+const useFakeService = false;
 
 /**
  * @type {?ShimlessRmaServiceInterface}
@@ -36,14 +36,18 @@ let networkConfigService = null;
  */
 function setupFakeShimlessRmaService_() {
   // Create provider.
-  let service = new FakeShimlessRmaService();
+  const service = new FakeShimlessRmaService();
 
   service.setStates(fakeStates);
 
+  service.setAsyncOperationDelayMs(500);
+
   service.setAbortRmaResult(RmadErrorCode.kOk);
 
+  service.automaticallyTriggerHardwareVerificationStatusObservation();
+
   service.setGetCurrentOsVersionResult(fakeChromeVersion[0]);
-  service.setCheckForOsUpdatesResult(true);
+  service.setCheckForOsUpdatesResult(true, 'fake version 1.2.3.4');
   service.setUpdateOsResult(false);
   service.automaticallyTriggerOsUpdateObservation();
 
@@ -52,12 +56,15 @@ function setupFakeShimlessRmaService_() {
   service.automaticallyTriggerDisableWriteProtectionObservation();
   service.automaticallyTriggerCalibrationObservation();
 
-  service.setGetRsuDisableWriteProtectChallengeResult(fakeRsuChallengeCode)
-  service.setGetRsuDisableWriteProtectHwidResult('### hwid ###')
+  service.setGetRsuDisableWriteProtectChallengeResult(fakeRsuChallengeCode);
+  service.setGetRsuDisableWriteProtectHwidResult('### hwid ###');
   service.setGetRsuDisableWriteProtectChallengeQrCodeResponse(
       fakeRsuChallengeQrCode);
 
-  service.setGetOriginalSerialNumberResult('serial# 0001')
+  service.setGetWriteProtectDisableCompleteState(
+      WriteProtectDisableCompleteState.kCompleteAssembleDevice);
+
+  service.setGetOriginalSerialNumberResult('serial# 0001');
   service.setGetRegionListResult(fakeDeviceRegions);
   service.setGetOriginalRegionResult(1);
   service.setGetSkuListResult(fakeDeviceSkus);

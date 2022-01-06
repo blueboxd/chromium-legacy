@@ -2122,7 +2122,8 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
   auto* evaluator = cq_data->GetContainerQueryEvaluator();
   DCHECK(evaluator);
 
-  switch (evaluator->ContainerChanged(physical_size, physical_axes)) {
+  switch (evaluator->ContainerChanged(GetDocument(), physical_size,
+                                      physical_axes)) {
     case ContainerQueryEvaluator::Change::kNone:
       if (!cq_data->SkippedStyleRecalc())
         return;
@@ -2231,31 +2232,38 @@ void StyleEngine::ClearEnsuredDescendantStyles(Element& root) {
 }
 
 void StyleEngine::RebuildLayoutTree() {
-  DCHECK(GetDocument().documentElement());
-  DCHECK(!InRebuildLayoutTree());
-  base::AutoReset<bool> rebuild_scope(&in_layout_tree_rebuild_, true);
-
-  // We need a root scope here in case we recalc style for ::first-letter
-  // elements as part of UpdateFirstLetterPseudoElement.
-  SelectorFilterRootScope filter_scope(nullptr);
-
-  Element& root_element = layout_tree_rebuild_root_.RootElement();
+  bool propagate_to_root = false;
   {
-    WhitespaceAttacher whitespace_attacher;
-    root_element.RebuildLayoutTree(whitespace_attacher);
-  }
+    DCHECK(GetDocument().documentElement());
+    DCHECK(!InRebuildLayoutTree());
+    base::AutoReset<bool> rebuild_scope(&in_layout_tree_rebuild_, true);
 
-  for (ContainerNode* ancestor = root_element.GetReattachParent(); ancestor;
-       ancestor = ancestor->GetReattachParent()) {
-    if (auto* ancestor_element = DynamicTo<Element>(ancestor))
-      ancestor_element->RebuildLayoutTreeForTraversalRootAncestor();
-    ancestor->ClearChildNeedsStyleRecalc();
-    ancestor->ClearChildNeedsReattachLayoutTree();
-  }
-  layout_tree_rebuild_root_.Clear();
+    // We need a root scope here in case we recalc style for ::first-letter
+    // elements as part of UpdateFirstLetterPseudoElement.
+    SelectorFilterRootScope filter_scope(nullptr);
 
-  if (IsA<HTMLHtmlElement>(root_element) || IsA<HTMLBodyElement>(root_element))
+    Element& root_element = layout_tree_rebuild_root_.RootElement();
+    {
+      WhitespaceAttacher whitespace_attacher;
+      root_element.RebuildLayoutTree(whitespace_attacher);
+    }
+
+    for (ContainerNode* ancestor = root_element.GetReattachParent(); ancestor;
+         ancestor = ancestor->GetReattachParent()) {
+      if (auto* ancestor_element = DynamicTo<Element>(ancestor))
+        ancestor_element->RebuildLayoutTreeForTraversalRootAncestor();
+      ancestor->ClearChildNeedsStyleRecalc();
+      ancestor->ClearChildNeedsReattachLayoutTree();
+    }
+    layout_tree_rebuild_root_.Clear();
+    propagate_to_root = IsA<HTMLHtmlElement>(root_element) ||
+                        IsA<HTMLBodyElement>(root_element);
+  }
+  if (propagate_to_root) {
     PropagateWritingModeAndDirectionToHTMLRoot();
+    if (NeedsLayoutTreeRebuild())
+      RebuildLayoutTree();
+  }
 }
 
 void StyleEngine::UpdateStyleAndLayoutTree() {
@@ -2357,14 +2365,6 @@ void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
   }
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(dirty_node);
-  if (!ancestor && !dirty_node->NeedsReattachLayoutTree() &&
-      !dirty_node->ChildNeedsReattachLayoutTree()) {
-    // The StyleTraversalRoot requires the root node to be dirty or child-dirty.
-    // When we mark for whitespace re-attachment, we only mark the ancestor
-    // chain. Use the parent as the dirty node if the dirty_node is not dirty.
-    dirty_node = dirty_node->GetReattachParent();
-    DCHECK(dirty_node && dirty_node->ChildNeedsReattachLayoutTree());
-  }
   layout_tree_rebuild_root_.Update(ancestor, dirty_node);
 }
 
@@ -2681,15 +2681,28 @@ void StyleEngine::MarkForLayoutTreeChangesAfterDetach() {
     if (layout_object->IsInline())
       layout_object = layout_object->ContinuationRoot();
     DCHECK_EQ(layout_object, layout_object_element->GetLayoutObject());
-    // Mark the parent of a detached subtree for doing a whitespace update. This
-    // flag will be cause the element to be marked for layout tree rebuild
-    // traversal during style recalc to make sure we revisit whitespace text
-    // nodes.
-    if (!layout_object->WhitespaceChildrenMayChange() &&
-        MayHaveFlatTreeChildren(*layout_object_element)) {
-      layout_object->SetWhitespaceChildrenMayChange(true);
-      layout_object_element->MarkAncestorsWithChildNeedsStyleRecalc();
+
+    // Mark the parent of a detached subtree for doing a whitespace or list item
+    // update. These flags will be cause the element to be marked for layout
+    // tree rebuild traversal during style recalc to make sure we revisit
+    // whitespace text nodes and list items.
+
+    bool mark_ancestors = false;
+
+    // If there are no children left, no whitespace children may need
+    // reattachment.
+    if (MayHaveFlatTreeChildren(*layout_object_element)) {
+      if (!layout_object->WhitespaceChildrenMayChange()) {
+        layout_object->SetWhitespaceChildrenMayChange(true);
+        mark_ancestors = true;
+      }
     }
+    if (!layout_object->WasNotifiedOfSubtreeChange()) {
+      if (layout_object->NotifyOfSubtreeChange())
+        mark_ancestors = true;
+    }
+    if (mark_ancestors)
+      layout_object_element->MarkAncestorsWithChildNeedsStyleRecalc();
   }
   parent_for_detached_subtree_ = nullptr;
 }

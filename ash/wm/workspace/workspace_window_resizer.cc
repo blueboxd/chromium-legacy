@@ -45,6 +45,7 @@
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/transform.h"
@@ -497,6 +498,22 @@ void CrossFadeAnimation(aura::Window* window,
       maximize ? kDragMaximizeSmoothness : kDragUnmaximizeSmoothness);
 }
 
+bool IsTransitionFromTopToMaximize(WorkspaceWindowResizer::SnapType from_type,
+                                   WorkspaceWindowResizer::SnapType to_type,
+                                   const display::Display& display) {
+  if (to_type != WorkspaceWindowResizer::SnapType::kMaximize)
+    return false;
+
+  const chromeos::OrientationType orientation =
+      GetSnapDisplayOrientation(display);
+  if (chromeos::IsLandscapeOrientation(orientation))
+    return false;
+
+  const bool is_primary = chromeos::IsPrimaryOrientation(orientation);
+  return is_primary ? from_type == WorkspaceWindowResizer::SnapType::kPrimary
+                    : from_type == WorkspaceWindowResizer::SnapType::kSecondary;
+}
+
 }  // namespace
 
 std::unique_ptr<WindowResizer> CreateWindowResizer(
@@ -541,10 +558,10 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   if (!window_state->IsNormalOrSnapped() && !maximized)
     return nullptr;
 
-  // TODO(https://crbug.com/1084695): Disable dragging maximized and snapped ARC
-  // windows from the caption. This is because ARC does not currently handle
-  // setting bounds on a maximized or snapped window well.
-  if ((maximized || window_state->IsSnapped()) &&
+  // TODO(https://crbug.com/1084695): Disable dragging maximized ARC windows
+  // from the caption. This is because ARC does not currently handle setting
+  // bounds on a maximized window well.
+  if (maximized &&
       window_state->window()->GetProperty(aura::client::kAppType) ==
           static_cast<int>(AppType::ARC_APP) &&
       window_component == HTCAPTION) {
@@ -881,8 +898,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
   // is slightly less confusing.
   if (window_state()->IsSnapped()) {
     if (details().window_component == HTCAPTION ||
-        !AreBoundsValidSnappedBounds(window_state()->GetStateType(),
-                                     GetTarget()->bounds())) {
+        !AreBoundsValidSnappedBounds(GetTarget())) {
       // Set the window to WindowStateType::kNormal but keep the
       // window at the bounds that the user has moved/resized the
       // window to.
@@ -1043,7 +1059,6 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   // TODO: figure out how to deal with window going off the edge.
 
   // Calculate sizes so that we can maintain the ratios if we need to resize.
-  int total_available = 0;
   for (size_t i = 0; i < attached_windows_.size(); ++i) {
     gfx::Size min(attached_windows_[i]->delegate()
                       ? attached_windows_[i]->delegate()->GetMinimumSize()
@@ -1056,7 +1071,6 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
                             std::max(PrimaryAxisSize(min), kMinOnscreenSize));
     total_min_ += min_size;
     total_initial_size_ += initial_size;
-    total_available += std::max(min_size, initial_size) - min_size;
   }
   instance = this;
 
@@ -1464,13 +1478,21 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(
   SnapType last_type = snap_type_;
   snap_type_ = target_snap_type;
 
-  // Reset the controller if no snap or switching snap types. The latter is so
-  // that we can have a fade in show animation when switching snap types.
-  if (snap_type_ == SnapType::kNone || snap_type_ != last_type) {
+  // Reset the controller if no snap.
+  if (snap_type_ == SnapType::kNone) {
+    // TODO(crbug/1258197): Don't destroy phantom controller and add exit
+    // animation.
     snap_phantom_window_controller_.reset();
-    if (snap_type_ == SnapType::kNone)
-      return;
+    return;
   }
+
+  const bool is_top_to_maximize =
+      IsTransitionFromTopToMaximize(last_type, snap_type_, GetDisplay());
+  // Reset the controller if switching snap types unless we want to transform
+  // snap top to maximize so that we can have a fade in show animation when
+  // switching to the new snap type.
+  if (snap_type_ != last_type && !is_top_to_maximize)
+    snap_phantom_window_controller_.reset();
 
   // Update phantom window with snapped guide bounds.
   if (!snap_phantom_window_controller_) {
@@ -1500,7 +1522,12 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(
       break;
   }
 
-  snap_phantom_window_controller_->Show(phantom_bounds);
+  if (is_top_to_maximize) {
+    snap_phantom_window_controller_
+        ->TransformPhantomWidgetFromSnapTopToMaximize(phantom_bounds);
+  } else {
+    snap_phantom_window_controller_->Show(phantom_bounds);
+  }
 }
 
 void WorkspaceWindowResizer::RestackWindows() {
@@ -1556,16 +1583,21 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
 }
 
 bool WorkspaceWindowResizer::AreBoundsValidSnappedBounds(
-    WindowStateType snapped_type,
-    const gfx::Rect& bounds_in_parent) const {
-  DCHECK(snapped_type == WindowStateType::kPrimarySnapped ||
-         snapped_type == WindowStateType::kSecondarySnapped);
-  gfx::Rect snapped_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInParent(GetTarget());
-  if (snapped_type == WindowStateType::kSecondarySnapped)
-    snapped_bounds.set_x(snapped_bounds.right() - bounds_in_parent.width());
-  snapped_bounds.set_width(bounds_in_parent.width());
-  return bounds_in_parent == snapped_bounds;
+    aura::Window* window) const {
+  const gfx::Rect bounds_in_parent = window->bounds();
+  const WindowState* state = window_state();
+  const WindowStateType state_type = state->GetStateType();
+  DCHECK(state_type == WindowStateType::kPrimarySnapped ||
+         state_type == WindowStateType::kSecondarySnapped);
+  SnapViewType snapped_type = state_type == WindowStateType::kPrimarySnapped
+                                  ? SnapViewType::kPrimary
+                                  : SnapViewType::kSecondary;
+  const float snap_ratio = state->snap_ratio().value_or(kDefaultSnapRatio);
+  gfx::Rect snapped_bounds = GetSnappedWindowBounds(
+      screen_util::GetDisplayWorkAreaBoundsInParent(window),
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window), window,
+      snapped_type, snap_ratio);
+  return bounds_in_parent.ApproximatelyEqual(snapped_bounds, 1);
 }
 
 void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(

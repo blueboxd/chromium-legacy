@@ -1,3 +1,5 @@
 include_rules = [
   "+ui/aura",
+  "+ash",
+  "+ui/views",
 ]

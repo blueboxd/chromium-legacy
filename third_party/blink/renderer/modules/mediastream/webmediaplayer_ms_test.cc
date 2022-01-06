@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -68,6 +68,8 @@ class MockSurfaceLayerBridge : public WebSurfaceLayerBridge {
   MOCK_METHOD0(CreateSurfaceLayer, void());
   MOCK_METHOD0(ClearSurfaceId, void());
   MOCK_METHOD0(ClearObserver, void());
+  MOCK_METHOD0(RegisterFrameSinkHierarchy, void());
+  MOCK_METHOD0(UnregisterFrameSinkHierarchy, void());
 
   viz::FrameSinkId frame_sink_id_ = viz::FrameSinkId(1, 1);
   viz::LocalSurfaceId local_surface_id_ =

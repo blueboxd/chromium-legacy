@@ -12,11 +12,11 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/thread_annotations.h"
@@ -513,6 +513,16 @@ v8::MaybeLocal<v8::Value> AuctionV8Helper::RunScript(
     return v8::MaybeLocal<v8::Value>();
   }
   return func_result;
+}
+
+void AuctionV8Helper::MaybeTriggerInstrumentationBreakpoint(
+    int context_group_id,
+    const std::string& name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (devtools_agent_) {
+    devtools_agent_->MaybeTriggerInstrumentationBreakpoint(context_group_id,
+                                                           name);
+  }
 }
 
 void AuctionV8Helper::set_script_timeout_for_testing(

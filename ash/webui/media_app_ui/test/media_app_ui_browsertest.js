@@ -95,6 +95,17 @@ function queryIFrame() {
   return /** @type{!HTMLIFrameElement} */ (document.querySelector('iframe'));
 }
 
+/** @return {!HTMLTitleElement} */
+function getTitle() {
+  return /** @type{!HTMLTitleElement} */ (document.querySelector('title'));
+}
+
+/** @return {!HTMLLinkElement} */
+function getIcon() {
+  return /** @type{!HTMLLinkElement} */ (
+      document.querySelector('link[rel=icon]'));
+}
+
 /**
  * Sets up a FakeFileSystemFileHandle to behave like a file which has been
  * deleted or moved to a directory to which we do not have access.
@@ -351,6 +362,18 @@ MediaAppUIBrowserTest.MultipleFilesHaveTokens = async () => {
   assertEquals(fileHandleForToken(currentFiles[1].token), directory.files[1]);
 };
 
+// Tests that a launch with a single audio file selected in the files app loads
+// only that audio file and not the directory.
+MediaAppUIBrowserTest.SingleAudioLaunch = async () => {
+  await launchWithFiles([
+    // Zero-byte audio. It won't load, but should still be added to DOM.
+    new File([], 'audio1.wav', {type: 'audio/wav'}),
+    new File([], 'audio2.wav', {type: 'audio/wav'}),
+  ]);
+
+  assertFilenamesToBe('audio1.wav');
+};
+
 // Tests that a launch with multiple files selected in the files app loads only
 // the files selected.
 MediaAppUIBrowserTest.MultipleSelectionLaunch = async () => {
@@ -358,7 +381,33 @@ MediaAppUIBrowserTest.MultipleSelectionLaunch = async () => {
   const selectedIndexes = [1, 3];
   const directory = await launchWithFiles(directoryContents, selectedIndexes);
 
-  assertFilenamesToBe('1.png,3.png');
+  // Expect filenames to be sorted in the default reverse lexicographical order.
+  assertEquals(TEST_ONLY.sortOrder, SortOrder.Z_FIRST);
+  assertFilenamesToBe('3.png,1.png');
+};
+
+MediaAppUIBrowserTest.NotifyCurrentFile = async () => {
+  const imageFile = new File([], 'image.png', {type: 'image/png'});
+  const audioFile = new File([], 'audio.wav', {type: 'audio/wav'});
+  const videoFile = new File([], 'video.mp4', {type: 'video/mp4'});
+  const unknownFile = new File([], 'foo.xyz', {type: 'unknown/unknown'});
+
+  const TEST_CASES = [
+    {file: imageFile, expectedTitle: 'image.png', expectedIconType: 'image'},
+    {file: audioFile, expectedTitle: 'audio.wav', expectedIconType: 'audio'},
+    {file: videoFile, expectedTitle: 'video.mp4', expectedIconType: 'video'},
+    {file: unknownFile, expectedTitle: 'foo.xyz', expectedIconType: 'file'},
+    {file: undefined, expectedTitle: 'Gallery', expectedIconType: 'app'},
+  ];
+  for (const {file, expectedTitle, expectedIconType} of TEST_CASES) {
+    const name = file ? file.name : undefined;
+    const type = file ? file.type : undefined;
+    await sendTestMessage(
+        {simple: 'notifyCurrentFile', simpleArgs: {name, type}});
+
+    assertEquals(getTitle().innerText, expectedTitle);
+    assertEquals(getIcon().href.includes(expectedIconType), true);
+  }
 };
 
 // Tests that we show error UX when trying to launch an unopenable file.
@@ -375,6 +424,18 @@ MediaAppUIBrowserTest.LaunchUnopenableFile = async () => {
   assertMatch(result, GENERIC_ERROR_MESSAGE_REGEX);
   assertEquals(currentFiles.length, 0);
   assertEquals(await getFileErrors(), 'NotAllowedError');
+};
+
+// Tests that directories that are not navigable do not generate crash reports,
+// and the focus file still loads.
+MediaAppUIBrowserTest.LaunchUnnavigableDirectory = async () => {
+  const focus = new FakeFileSystemFileHandle('focus.png', 'image/png');
+  const mine = new FakeFileSystemFileHandle('mine.png', 'image/png');
+  mine.errorToFireOnIterate = new DOMException('boom', 'NotFoundError');
+  await launchWithHandles([focus, mine]);
+
+  assertFilenamesToBe('focus.png');
+  assertEquals(mine.errorToFireOnIterate, null);  // Consistency check.
 };
 
 // Tests that a file that becomes inaccessible after the initial app launch is
@@ -828,6 +889,33 @@ MediaAppUIBrowserTest.RenameMissingFile = async () => {
       testResponse.testQueryResult);
 };
 
+// Tests the IPC behind the AbstractFile.openFile function to open a file from a
+// file handle token previously communicated to the untrusted context.
+MediaAppUIBrowserTest.OpenAllowedFileIPC = async () => {
+  await launchWithFiles(
+      [await createTestImageFile(), await createTestImageFile()]);
+  let testResponse = await sendTestMessage({simple: 'getAllFiles'});
+  let clientFiles =
+      /** @type{!Array<!FileSnapshot>} */ (testResponse.testQueryResultData);
+
+  // Second file should be a placeholder with zero size.
+  const IMAGE_FILE_SIZE = 1605;
+  assertEquals(clientFiles[0].size, IMAGE_FILE_SIZE);
+  assertEquals(clientFiles[1].size, 0);
+
+  testResponse = await sendTestMessage(
+      {simple: 'openFileAtIndex', simpleArgs: {index: 1}});
+  assertEquals(testResponse.testQueryResult, 'opened and updated');
+
+  testResponse = await sendTestMessage({simple: 'getAllFiles'});
+  clientFiles =
+      /** @type{!Array<!FileSnapshot>} */ (testResponse.testQueryResultData);
+
+  // Second file should now be opened and have a valid size.
+  assertEquals(clientFiles[0].size, IMAGE_FILE_SIZE);
+  assertEquals(clientFiles[1].size, IMAGE_FILE_SIZE);
+};
+
 // Tests the IPC behind the loadNext and loadPrev functions on the received file
 // list in the untrusted context.
 MediaAppUIBrowserTest.NavigateIPC = async () => {
@@ -1164,6 +1252,44 @@ MediaAppUIBrowserTest.OpenFileIPC = async () => {
   assertEquals(currentFiles[1].handle.name, 'picked_file.jpg');
   assertEquals(currentFiles[1].token, lastToken);
   assertEquals(tokenMap.get(currentFiles[1].token), currentFiles[1].handle);
+};
+
+// Tests the IPC behind the AbstractFileList.openFilesWithFilePicker function to
+// relaunch the app with a new selection of files from a file picker.
+MediaAppUIBrowserTest.OpenFilesWithFilePickerIPC = async () => {
+  const pickedFileHandles = [
+    new FakeFileSystemFileHandle('picked_file1.jpg'),
+    new FakeFileSystemFileHandle('picked_file2.jpg'),
+  ];
+  let lastPickerOptions;
+  window.showOpenFilePicker = (pickerOptions) => {
+    lastPickerOptions = pickerOptions;
+    return Promise.resolve(pickedFileHandles);
+  };
+  const directory = await launchWithFiles(
+      [await createTestImageFile(10, 10, 'original_file.jpg')]);
+
+  let testResponse = await sendTestMessage(
+      {simple: 'openFilesWithFilePicker', simpleArgs: ['VIDEO', 'IMAGE']});
+  assertEquals(
+      testResponse.testQueryResult, 'openFilesWithFilePicker resolved');
+
+  // Spot-check the file picker options. It has lots of file extensions in it.
+  const {multiple, startIn, excludeAcceptAllOption, types} = lastPickerOptions;
+  assertEquals(multiple, true);
+  assertEquals(startIn, directory.files[0]);
+  assertEquals(excludeAcceptAllOption, true);
+  assertEquals(types.length, 2);
+  assertEquals(types[0].description, 'Video Files');
+  assertEquals(types[1].description, 'Image Files');
+
+  testResponse = await sendTestMessage({simple: 'getAllFiles'});
+  console.log(JSON.stringify(testResponse));
+  const clientFiles =
+      /** @type{!Array<!FileSnapshot>} */ (testResponse.testQueryResultData);
+
+  assertEquals(clientFiles[0].name, 'picked_file1.jpg');
+  assertEquals(clientFiles[1].name, 'picked_file2.jpg');
 };
 
 MediaAppUIBrowserTest.RelatedFiles = async () => {

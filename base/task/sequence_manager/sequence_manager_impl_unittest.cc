@@ -21,7 +21,6 @@
 #include "base/message_loop/message_pump_default.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -41,9 +40,11 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/null_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -258,6 +259,8 @@ class FixtureWithMockMessagePump : public Fixture {
   }
 
   TimeDelta NextPendingTaskDelay() const override {
+    if (pump_->next_wake_up_time().is_max())
+      return TimeDelta::Max();
     return pump_->next_wake_up_time() - mock_tick_clock()->NowTicks();
   }
 
@@ -443,6 +446,21 @@ class QueueTimeTaskObserver : public TaskObserver {
 
  private:
   std::vector<TimeTicks> queue_times_;
+};
+
+class ScopedNoWakeUpsForCanceledTasks {
+ public:
+  ScopedNoWakeUpsForCanceledTasks()
+      : scoped_feature_list_(SequenceManagerImpl::kNoWakeUpsForCanceledTasks) {
+    SequenceManagerImpl::MaybeSetNoWakeUpsForCanceledTasks();
+  }
+
+  ~ScopedNoWakeUpsForCanceledTasks() {
+    SequenceManagerImpl::ResetNoWakeUpsForCanceledTasksForTesting();
+  }
+
+ private:
+  test::ScopedFeatureList scoped_feature_list_;
 };
 
 }  // namespace
@@ -2638,16 +2656,16 @@ TEST_P(SequenceManagerTest, SweepLastTaskInQueue) {
   sequence_manager()->ReclaimMemory();
 }
 
-TEST_P(SequenceManagerTest, CancelledTaskPostAnother) {
+TEST_P(SequenceManagerTest, CancelledTaskPostAnother_ReclaimMemory) {
   // This check ensures that a task whose destruction causes another task to be
   // posted as a side-effect doesn't cause us to access invalid iterators while
   // sweeping away cancelled tasks.
   auto queue = CreateTaskQueue();
-  bool did_post = false;
+  bool did_destroy = false;
   auto on_destroy = BindLambdaForTesting([&] {
     queue->task_runner()->PostDelayedTask(
         FROM_HERE, BindLambdaForTesting([] {}), base::Seconds(1));
-    did_post = true;
+    did_destroy = true;
   });
 
   DestructionCallback destruction_observer(std::move(on_destroy));
@@ -2660,9 +2678,73 @@ TEST_P(SequenceManagerTest, CancelledTaskPostAnother) {
       base::Seconds(1));
 
   task.weak_factory_.InvalidateWeakPtrs();
-  EXPECT_FALSE(did_post);
+  EXPECT_FALSE(did_destroy);
   sequence_manager()->ReclaimMemory();
-  EXPECT_TRUE(did_post);
+  EXPECT_TRUE(did_destroy);
+}
+
+// Regression test to ensure that posting a new task from the destructor of a
+// canceled task doesn't crash.
+TEST_P(SequenceManagerTest,
+       CancelledTaskPostAnother_MoveReadyDelayedTasksToWorkQueues) {
+  // This check ensures that a task whose destruction causes another task to be
+  // posted as a side-effect doesn't cause us to access invalid iterators while
+  // sweeping away cancelled tasks.
+  auto queue = CreateTaskQueue();
+  bool did_destroy = false;
+  auto on_destroy = BindLambdaForTesting([&] {
+    queue->task_runner()->PostDelayedTask(
+        FROM_HERE, BindLambdaForTesting([] {}), base::Seconds(1));
+    did_destroy = true;
+  });
+
+  DestructionCallback destruction_observer(std::move(on_destroy));
+  CancelableTask task(mock_tick_clock());
+  queue->task_runner()->PostDelayedTask(
+      FROM_HERE,
+      BindOnce(&CancelableTask::FailTask<DestructionCallback>,
+               task.weak_factory_.GetWeakPtr(),
+               std::move(destruction_observer)),
+      base::Seconds(1));
+
+  AdvanceMockTickClock(base::Seconds(1));
+
+  task.weak_factory_.InvalidateWeakPtrs();
+  EXPECT_FALSE(did_destroy);
+  LazyNow lazy_now(mock_tick_clock());
+  sequence_manager()->MoveReadyDelayedTasksToWorkQueues(&lazy_now);
+  EXPECT_TRUE(did_destroy);
+}
+
+TEST_P(SequenceManagerTest,
+       CancelledTaskPostAnother_RemoveAllCanceledDelayedTasksFromFront) {
+  ScopedNoWakeUpsForCanceledTasks scoped_no_wake_ups_for_canceled_tasks;
+
+  // This check ensures that a task whose destruction causes another task to be
+  // posted as a side-effect doesn't cause us to access invalid iterators while
+  // removing canceled tasks from the front of the queues.
+  auto queue = CreateTaskQueue();
+  bool did_destroy = false;
+  auto on_destroy = BindLambdaForTesting([&] {
+    queue->task_runner()->PostDelayedTask(
+        FROM_HERE, BindLambdaForTesting([] {}), base::Seconds(1));
+    did_destroy = true;
+  });
+
+  DestructionCallback destruction_observer(std::move(on_destroy));
+  CancelableTask task(mock_tick_clock());
+  queue->task_runner()->PostDelayedTask(
+      FROM_HERE,
+      BindOnce(&CancelableTask::FailTask<DestructionCallback>,
+               task.weak_factory_.GetWeakPtr(),
+               std::move(destruction_observer)),
+      base::Seconds(1));
+
+  task.weak_factory_.InvalidateWeakPtrs();
+  EXPECT_FALSE(did_destroy);
+  LazyNow lazy_now(mock_tick_clock());
+  sequence_manager()->RemoveAllCanceledDelayedTasksFromFront(&lazy_now);
+  EXPECT_TRUE(did_destroy);
 }
 
 TEST_P(SequenceManagerTest, CancelledImmediateTaskShutsDownQueue) {
@@ -3524,6 +3606,85 @@ TEST_P(SequenceManagerTest, GetNextTaskTime_DelayedTaskReady) {
   EXPECT_EQ(TimeTicks(), sequence_manager()->GetNextTaskTime(&lazy_now));
 }
 
+TEST_P(SequenceManagerTest, RemoveAllCanceledDelayedTasksFromFront) {
+  ScopedNoWakeUpsForCanceledTasks scoped_no_wake_ups_for_canceled_tasks;
+
+  auto queue = CreateTaskQueue();
+
+  // Posts a cancelable task.
+  CancelableOnceClosure cancelable_closure(base::BindOnce(&NopTask));
+  constexpr TimeDelta kDelay = Seconds(1);
+  queue->task_runner()->PostDelayedTask(FROM_HERE,
+                                        cancelable_closure.callback(), kDelay);
+
+  // Ensure it is picked to calculate the next task time.
+  LazyNow lazy_now(mock_tick_clock());
+  EXPECT_EQ(lazy_now.Now() + kDelay,
+            sequence_manager()->GetNextTaskTime(&lazy_now));
+
+  // Canceling the task is not sufficient to ensure it is not considered for the
+  // next task time.
+  cancelable_closure.Cancel();
+  EXPECT_EQ(lazy_now.Now() + kDelay,
+            sequence_manager()->GetNextTaskTime(&lazy_now));
+
+  // Removing the canceled task means it can't be considered for the next task
+  // time.
+  sequence_manager()->RemoveAllCanceledDelayedTasksFromFront(&lazy_now);
+  EXPECT_EQ(TimeTicks::Max(), sequence_manager()->GetNextTaskTime(&lazy_now));
+}
+
+TEST_P(SequenceManagerTest,
+       RemoveAllCanceledDelayedTasksFromFront_MultipleQueues) {
+  ScopedNoWakeUpsForCanceledTasks scoped_no_wake_ups_for_canceled_tasks;
+
+  auto queues = CreateTaskQueues(2u);
+
+  // Post a task in each queue such that they would be executed in order
+  // according to their delay.
+  CancelableOnceClosure cancelable_closure_1(base::BindOnce(&NopTask));
+  constexpr TimeDelta kDelay1 = Seconds(1);
+  queues[0]->task_runner()->PostDelayedTask(
+      FROM_HERE, cancelable_closure_1.callback(), kDelay1);
+
+  CancelableOnceClosure cancelable_closure_2(base::BindOnce(&NopTask));
+  constexpr TimeDelta kDelay2 = Seconds(2);
+  queues[1]->task_runner()->PostDelayedTask(
+      FROM_HERE, cancelable_closure_2.callback(), kDelay2);
+
+  // The task from the first queue is picked to calculate the next task time.
+  LazyNow lazy_now(mock_tick_clock());
+  EXPECT_EQ(lazy_now.Now() + kDelay1,
+            sequence_manager()->GetNextTaskTime(&lazy_now));
+
+  // Test that calling RemoveAllCanceledDelayedTasksFromFront() works (and does
+  // nothing) when no task is canceled.
+  sequence_manager()->RemoveAllCanceledDelayedTasksFromFront(&lazy_now);
+  EXPECT_EQ(lazy_now.Now() + kDelay1,
+            sequence_manager()->GetNextTaskTime(&lazy_now));
+
+  // Canceling the first task which comes from the first queue.
+  cancelable_closure_1.Cancel();
+  sequence_manager()->RemoveAllCanceledDelayedTasksFromFront(&lazy_now);
+
+  // Now the only task remaining is the one from the second queue.
+  EXPECT_EQ(lazy_now.Now() + kDelay2,
+            sequence_manager()->GetNextTaskTime(&lazy_now));
+
+  // Cancel the remaining task.
+  cancelable_closure_2.Cancel();
+  sequence_manager()->RemoveAllCanceledDelayedTasksFromFront(&lazy_now);
+
+  // No more valid tasks in any queues.
+  sequence_manager()->RemoveAllCanceledDelayedTasksFromFront(&lazy_now);
+  EXPECT_EQ(TimeTicks::Max(), sequence_manager()->GetNextTaskTime(&lazy_now));
+
+  // Test that calling RemoveAllCanceledDelayedTasksFromFront() works (and does
+  // nothing) when all queues are empty.
+  sequence_manager()->RemoveAllCanceledDelayedTasksFromFront(&lazy_now);
+  EXPECT_EQ(TimeTicks::Max(), sequence_manager()->GetNextTaskTime(&lazy_now));
+}
+
 namespace {
 void MessageLoopTaskWithDelayedQuit(Fixture* fixture,
                                     scoped_refptr<TestTaskQueue> task_queue) {
@@ -3628,18 +3789,7 @@ TEST_P(SequenceManagerTest, DelayedDoWorkNotPostedForDisabledQueue) {
       queue->CreateQueueEnabledVoter();
   voter->SetVoteToEnable(false);
 
-  switch (GetUnderlyingRunnerType()) {
-    case TestType::kMessagePump:
-      EXPECT_EQ(Days(1), NextPendingTaskDelay());
-      break;
-
-    case TestType::kMockTaskRunner:
-      EXPECT_EQ(TimeDelta::Max(), NextPendingTaskDelay());
-      break;
-
-    default:
-      NOTREACHED();
-  }
+  EXPECT_EQ(TimeDelta::Max(), NextPendingTaskDelay());
 
   voter->SetVoteToEnable(true);
   EXPECT_EQ(Milliseconds(1), NextPendingTaskDelay());
@@ -3670,18 +3820,7 @@ TEST_P(SequenceManagerTest, DisablingQueuesChangesDelayTillNextDoWork) {
   EXPECT_EQ(Milliseconds(100), NextPendingTaskDelay());
 
   voter2->SetVoteToEnable(false);
-  switch (GetUnderlyingRunnerType()) {
-    case TestType::kMessagePump:
-      EXPECT_EQ(Days(1), NextPendingTaskDelay());
-      break;
-
-    case TestType::kMockTaskRunner:
-      EXPECT_EQ(TimeDelta::Max(), NextPendingTaskDelay());
-      break;
-
-    default:
-      NOTREACHED();
-  }
+  EXPECT_EQ(TimeDelta::Max(), NextPendingTaskDelay());
 }
 
 TEST_P(SequenceManagerTest, GetNextDesiredWakeUp) {
@@ -4555,9 +4694,10 @@ class MockTimeDomain : public TimeDomain {
   MockTimeDomain& operator=(const MockTimeDomain&) = delete;
   ~MockTimeDomain() override = default;
 
-  LazyNow CreateLazyNow() const override { return LazyNow(now_); }
-  TimeTicks Now() const override { return now_; }
+  // TickClock:
+  TimeTicks NowTicks() const override { return now_; }
 
+  // TimeDomain:
   base::TimeTicks GetNextDelayedTaskTime(
       sequence_manager::LazyNow* lazy_now) const override {
     return TimeTicks();
@@ -5224,6 +5364,28 @@ TEST_P(SequenceManagerTest, TaskObserverBlockedOrLowPriority_Mix) {
   RunLoop().RunUntilIdle();
 
   sequence_manager()->RemoveTaskObserver(&observer);
+}
+
+TEST_P(SequenceManagerTest, DelayedTaskOrderFromMultipleQueues) {
+  // Regression test for crbug.com/1249857. The 4th task posted below should run
+  // 4th despite being in queues[0].
+  std::vector<EnqueueOrder> run_order;
+  auto queues = CreateTaskQueues(3u);
+
+  queues[0]->task_runner()->PostDelayedTask(
+      FROM_HERE, BindOnce(&TestTask, 1, &run_order), Milliseconds(9));
+  queues[1]->task_runner()->PostDelayedTask(
+      FROM_HERE, BindOnce(&TestTask, 2, &run_order), Milliseconds(10));
+  queues[2]->task_runner()->PostDelayedTask(
+      FROM_HERE, BindOnce(&TestTask, 3, &run_order), Milliseconds(10));
+  queues[0]->task_runner()->PostDelayedTask(
+      FROM_HERE, BindOnce(&TestTask, 4, &run_order), Milliseconds(100));
+
+  // All delayed tasks are now ready, but none have run.
+  AdvanceMockTickClock(Milliseconds(100));
+  RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u, 4u));
 }
 
 }  // namespace internal

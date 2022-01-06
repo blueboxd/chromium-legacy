@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -311,6 +312,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Records whether the prediction model being constructed for an optimization
     target is valid or not. Recorded when prediction models are loaded into
     memory by the prediction manager.
+  </summary>
+</histogram>
+
+<histogram name="OptimizationGuide.MetadataFetchValidation.Result"
+    enum="Boolean" expires_after="M106">
+  <owner>robertogden@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Records whether the metadata fetch validation received the hints correctly.
+    Recorded on iOS when the mainframe navigation commits.
   </summary>
 </histogram>
 
@@ -613,7 +624,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="OptimizationGuide.PredictionManager.HasHostModelFeaturesForHost"
-    enum="Boolean" expires_after="M106">
+    enum="Boolean" expires_after="2021-10-13">
+  <obsolete>
+    Deprecated as of 2021/10.
+  </obsolete>
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -728,7 +742,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="OptimizationGuide.PredictionModelEvaluationLatency" units="ms"
-    expires_after="M106">
+    expires_after="2021-10-13">
+  <obsolete>
+    Deprecated as of 2021/10.
+  </obsolete>
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -943,6 +960,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="OptimizationGuide.PushNotifications.ReceivedNotificationType"
+    enum="OptimizationType" expires_after="M106">
+  <owner>xingliu@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Records the OptimizationType of the push notification. Recorded when the
+    notification is received and before the notification payload is delivered to
+    feature handlers.
+  </summary>
+</histogram>
+
 <histogram name="OptimizationGuide.RemoteFetchingEnabled"
     units="BooleanEnabled" expires_after="2022-04-03">
   <owner>sophiechang@chromium.org</owner>
@@ -957,7 +985,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus"
-    enum="OptimizationGuidePredictionManagerModelStatus" expires_after="M106">
+    enum="OptimizationGuidePredictionManagerModelStatus"
+    expires_after="2021-10-13">
+  <obsolete>
+    Deprecated as of 2021/10.
+  </obsolete>
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -977,16 +1009,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>mcrouse@chromium.org</owner>
   <summary>
     The decision made for whether the page load matches the optimization target.
-  </summary>
-</histogram>
-
-<histogram name="OptimizationGuide.ValidateMetadataFetch.Result" enum="Boolean"
-    expires_after="M106">
-  <owner>robertogden@chromium.org</owner>
-  <owner>chrome-intelligence-core@google.com</owner>
-  <summary>
-    Records whether the metadata fetch validation received the hints correctly.
-    Recorded on iOS when the mainframe navigation commits.
   </summary>
 </histogram>
 

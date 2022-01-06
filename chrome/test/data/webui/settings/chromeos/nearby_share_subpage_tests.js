@@ -58,10 +58,14 @@ suite('NearbyShare', function() {
   setup(function() {
     setupFakes();
     fakeSettings.setEnabled(true);
+    fakeSettings.setIsOnboardingComplete(true);
+
 
     createSubpage(/*is_enabled=*/ true, /*is_onboarding_complete=*/ true);
-
+    syncFakeSettings();
     featureToggleButton = subpage.$$('#featureToggleButton');
+
+    return flushAsync();
   });
 
   teardown(function() {
@@ -85,6 +89,23 @@ suite('NearbyShare', function() {
     nearby_share.setNearbyShareSettingsForTesting(fakeSettings);
   }
 
+  function syncFakeSettings() {
+    subpage.set('settings.enabled', fakeSettings.getEnabledForTest());
+    subpage.set(
+        'settings.isFastInitiationHardwareSupported',
+        fakeSettings.getIsFastInitiationHardwareSupportedTest());
+    subpage.set(
+        'settings.fastInitiationNotificationState',
+        fakeSettings.getFastInitiationNotificationStateTest());
+    subpage.set('settings.deviceName', fakeSettings.getDeviceNameForTest());
+    subpage.set('settings.dataUsage', fakeSettings.getDataUsageForTest());
+    subpage.set('settings.visibility', fakeSettings.getVisibilityForTest());
+    subpage.set(
+        'settings.allowedContacts', fakeSettings.getAllowedContactsForTest());
+    subpage.set(
+        'settings.isOnboardingComplete', fakeSettings.isOnboardingComplete());
+  }
+
   function createSubpage(is_enabled, is_onboarding_complete) {
     PolymerTest.clearBody();
 
@@ -105,6 +126,7 @@ suite('NearbyShare', function() {
         },
       }
     };
+    subpage.isSettingsRetreived = true;
 
     document.body.appendChild(subpage);
     Polymer.dom.flush();
@@ -216,6 +238,8 @@ suite('NearbyShare', function() {
     const newName = 'NEW NAME';
     dialog.$$('cr-input').value = newName;
     dialog.$$('.action-button').click();
+    Polymer.dom.flush();
+    syncFakeSettings();
     Polymer.dom.flush();
 
     assertEquals(newName, subpage.settings.deviceName);
@@ -434,6 +458,8 @@ suite('NearbyShare', function() {
 
     setupFakes();
     fakeSettings.setEnabled(false);
+    fakeSettings.setIsOnboardingComplete(false);
+    syncFakeSettings();
     createSubpage(/*is_enabled=*/ false, /*is_onboarding_complete=*/ false);
 
     await flushAsync();
@@ -535,6 +561,26 @@ suite('NearbyShare', function() {
       });
     });
 
+    test('UX changes disabled when no hardware support', async () => {
+      subpage.set('settings.isFastInitiationHardwareSupported', false);
+      await flushAsync();
+
+      // Toggle doesnt exist
+      const fastInitToggle = subpage.$$('#fastInitiationNotificationToggle');
+      assertFalse(!!fastInitToggle);
+
+      // Subpage contents do not show when feature off
+      featureToggleButton.click();
+      Polymer.dom.flush();
+
+      assertFalse(featureToggleButton.checked);
+      assertFalse(subpage.prefs.nearby_sharing.enabled.value);
+      assertEquals('Off', featureToggleButton.label.trim());
+
+      subpageControlsHidden(true);
+    });
+
+
     test('Fast initiation notification toggle', async () => {
       const fastInitToggle = subpage.$$('#fastInitiationNotificationToggle');
       assertTrue(!!fastInitToggle);
@@ -550,6 +596,27 @@ suite('NearbyShare', function() {
       assertEquals(
           nearbyShare.mojom.FastInitiationNotificationState.kDisabledByUser,
           subpage.settings.fastInitiationNotificationState);
+    });
+
+    test('Subpage content visible but disabled when feature off', async () => {
+      featureToggleButton.click();
+      Polymer.dom.flush();
+
+      assertFalse(featureToggleButton.checked);
+      assertFalse(subpage.prefs.nearby_sharing.enabled.value);
+      assertEquals('Off', featureToggleButton.label.trim());
+
+      subpageControlsHidden(false);
+      subpageControlsDisabled(true);
+    });
+
+    test('Subpage content not visible pre-onboarding', async () => {
+      featureToggleButton.click();
+      subpage.set('prefs.nearby_sharing.onboarding_complete.value', false);
+      await flushAsync();
+
+      assertFalse(subpage.prefs.nearby_sharing.enabled.value);
+      subpageControlsHidden(true);
     });
 
     test('Subpage content visible but disabled when feature off', async () => {

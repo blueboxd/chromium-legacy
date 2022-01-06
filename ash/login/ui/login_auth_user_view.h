@@ -29,10 +29,12 @@ class LabelButton;
 namespace ash {
 
 class LoginAuthFactorsView;
-class FingerprintAuthModel;
+class FingerprintAuthFactorModel;
+class SmartLockAuthFactorModel;
 class LoginPasswordView;
 class LoginPinView;
 class LoginPinInputView;
+enum class SmartLockState;
 
 // Wraps a UserView which also has authentication available. Adds additional
 // views below the UserView instance which show authentication UIs.
@@ -172,6 +174,12 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   // Called to show a fingerprint authentication attempt result.
   void NotifyFingerprintAuthResult(bool success);
 
+  // Update the current Smart Lock state.
+  void SetSmartLockState(SmartLockState state);
+
+  // Called to show a Smart Lock authentication attempt result.
+  void NotifySmartLockAuthResult(bool success);
+
   // Set the parameters needed to render the message that is shown to user when
   // auth method is |AUTH_DISABLED|.
   void SetAuthDisabledMessage(const AuthDisabledData& auth_disabled_data);
@@ -275,6 +283,10 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   // Controls which input field is currently being shown.
   InputFieldMode input_field_mode_ = InputFieldMode::NONE;
 
+  // TODO(https://crbug.com/1233614): Remove this field once the Smart Lock UI
+  // revamp is complete.
+  bool smart_lock_ui_revamp_enabled_ = false;
+
   LoginUserView* user_view_ = nullptr;
   LoginPasswordView* password_view_ = nullptr;
   NonAccessibleView* password_view_container_ = nullptr;
@@ -285,7 +297,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   DisabledAuthMessageView* disabled_auth_message_ = nullptr;
   FingerprintView* fingerprint_view_ = nullptr;
   LoginAuthFactorsView* auth_factors_view_ = nullptr;
-  FingerprintAuthModel* fingerprint_auth_model_ = nullptr;
+  FingerprintAuthFactorModel* fingerprint_auth_factor_model_ = nullptr;
+  SmartLockAuthFactorModel* smart_lock_auth_factor_model_ = nullptr;
   ChallengeResponseView* challenge_response_view_ = nullptr;
   LockedTpmMessageView* locked_tpm_message_view_ = nullptr;
 

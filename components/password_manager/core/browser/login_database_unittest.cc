@@ -154,6 +154,25 @@ std::vector<T> GetColumnValuesFromDatabase(const base::FilePath& database_path,
   return results;
 }
 
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+// Set the new password value for all the rows with the specified username.
+void UpdatePasswordValueForUsername(const base::FilePath& database_path,
+                                    const std::u16string& username,
+                                    const std::u16string& password) {
+  sql::Database db;
+  CHECK(db.Open(database_path));
+
+  std::string statement =
+      "UPDATE logins SET password_value = ? WHERE username_value = ?";
+  sql::Statement s(db.GetCachedStatement(SQL_FROM_HERE, statement.c_str()));
+  EXPECT_TRUE(s.is_valid());
+  s.BindString16(0, password);
+  s.BindString16(1, username);
+
+  CHECK(s.Run());
+}
+#endif  // defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+
 bool AddZeroClickableLogin(LoginDatabase* db,
                            const std::string& unique_string,
                            const GURL& origin) {
@@ -1709,25 +1728,6 @@ TEST_F(LoginDatabaseTest, EncryptionEnabled) {
 }
 #endif  // !defined(OS_IOS)
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-// Test that LoginDatabase does not encrypt values when encryption is disabled.
-// TODO(crbug.com/829857) This is supported only for Linux, while transitioning
-// into LoginDB with full encryption.
-TEST_F(LoginDatabaseTest, EncryptionDisabled) {
-  PasswordForm password_form = GenerateExamplePasswordForm();
-  base::FilePath file = temp_dir_.GetPath().AppendASCII("TestUnencryptedDB");
-  {
-    LoginDatabase db(file, IsAccountStore(false));
-    db.disable_encryption();
-    ASSERT_TRUE(db.Init());
-    EXPECT_EQ(AddChangeForForm(password_form), db.AddLogin(password_form));
-  }
-  EXPECT_EQ(
-      GetColumnValuesFromDatabase<std::string>(file, "password_value").at(0),
-      base::UTF16ToUTF8(password_form.password_value));
-}
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
-
 #if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 // On Android and ChromeOS there is a mix of plain-text and obfuscated
 // passwords. Verify that they can both be accessed. Obfuscated passwords start
@@ -1749,15 +1749,14 @@ TEST_F(LoginDatabaseTest, HandleObfuscationMix) {
     PasswordForm password_form = GenerateExamplePasswordForm();
     password_form.password_value = k_obfuscated_pw16;
     EXPECT_EQ(AddChangeForForm(password_form), db.AddLogin(password_form));
-    // Add plain-text (old) entries.
-    db.disable_encryption();
+    // Add plain-text (old) entries and rewrite the password on the disk.
     password_form.username_value = u"other_username";
-    password_form.password_value = k_plain_text_pw116;
     EXPECT_EQ(AddChangeForForm(password_form), db.AddLogin(password_form));
     password_form.username_value = u"other_username2";
-    password_form.password_value = k_plain_text_pw216;
     EXPECT_EQ(AddChangeForForm(password_form), db.AddLogin(password_form));
   }
+  UpdatePasswordValueForUsername(file, u"other_username", k_plain_text_pw116);
+  UpdatePasswordValueForUsername(file, u"other_username2", k_plain_text_pw216);
 
   std::vector<std::unique_ptr<PasswordForm>> forms;
   {
@@ -1999,7 +1998,8 @@ class LoginDatabaseUndecryptableLoginsTest : public testing::Test {
   // |should_be_corrupted| flag is active.
   PasswordForm AddDummyLogin(const std::string& unique_string,
                              const GURL& origin,
-                             bool should_be_corrupted);
+                             bool should_be_corrupted,
+                             bool blocklisted);
 
   base::FilePath database_path() const { return database_path_; }
 
@@ -2019,7 +2019,8 @@ class LoginDatabaseUndecryptableLoginsTest : public testing::Test {
 PasswordForm LoginDatabaseUndecryptableLoginsTest::AddDummyLogin(
     const std::string& unique_string,
     const GURL& origin,
-    bool should_be_corrupted) {
+    bool should_be_corrupted,
+    bool blocklisted) {
   // Create a dummy password form.
   const std::u16string unique_string16 = ASCIIToUTF16(unique_string);
   PasswordForm form;
@@ -2028,7 +2029,8 @@ PasswordForm LoginDatabaseUndecryptableLoginsTest::AddDummyLogin(
   form.username_value = unique_string16;
   form.password_element = unique_string16;
   form.password_value = unique_string16;
-  form.signon_realm = origin.GetOrigin().spec();
+  form.signon_realm = origin.DeprecatedGetOriginAsURL().spec();
+  form.blocked_by_user = blocklisted;
 
   {
     LoginDatabase db(database_path(), IsAccountStore(false));
@@ -2061,9 +2063,15 @@ PasswordForm LoginDatabaseUndecryptableLoginsTest::AddDummyLogin(
 }
 
 TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
-  auto form1 = AddDummyLogin("foo1", GURL("https://foo1.com/"), false);
-  auto form2 = AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
-  auto form3 = AddDummyLogin("foo3", GURL("https://foo3.com/"), false);
+  auto form1 =
+      AddDummyLogin("foo1", GURL("https://foo1.com/"),
+                    /*should_be_corrupted=*/false, /*blocklisted=*/false);
+  auto form2 =
+      AddDummyLogin("foo2", GURL("https://foo2.com/"),
+                    /*should_be_corrupted=*/true, /*blocklisted=*/false);
+  auto form3 =
+      AddDummyLogin("foo3", GURL("https://foo3.com/"),
+                    /*should_be_corrupted=*/true, /*blocklisted=*/true);
 
   LoginDatabase db(database_path(), IsAccountStore(false));
   base::HistogramTester histogram_tester;
@@ -2074,12 +2082,16 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
   std::vector<std::unique_ptr<PasswordForm>> result;
   EXPECT_FALSE(db.GetAutofillableLogins(&result));
   EXPECT_TRUE(result.empty());
+  EXPECT_FALSE(db.GetBlocklistLogins(&result));
+  EXPECT_TRUE(result.empty());
 
   // Delete undecryptable logins and make sure we can get valid logins.
   EXPECT_EQ(DatabaseCleanupResult::kSuccess, db.DeleteUndecryptableLogins());
   EXPECT_TRUE(db.GetAutofillableLogins(&result));
+  EXPECT_THAT(result, UnorderedElementsAre(Pointee(form1)));
 
-  EXPECT_THAT(result, UnorderedElementsAre(Pointee(form1), Pointee(form3)));
+  EXPECT_TRUE(db.GetBlocklistLogins(&result));
+  EXPECT_THAT(result, IsEmpty());
 
   RunUntilIdle();
 #else
@@ -2088,7 +2100,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
 
 // Check histograms.
 #if defined(OS_MAC)
-  histogram_tester.ExpectUniqueSample("PasswordManager.CleanedUpPasswords", 1,
+  histogram_tester.ExpectUniqueSample("PasswordManager.CleanedUpPasswords", 2,
                                       1);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.DeleteUndecryptableLoginsReturnValue",
@@ -2104,8 +2116,9 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
 #if defined(OS_MAC)
 TEST_F(LoginDatabaseUndecryptableLoginsTest,
        PasswordRecoveryDisabledGetLogins) {
-  AddDummyLogin("foo1", GURL("https://foo1.com/"), false);
-  AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
+  AddDummyLogin("foo1", GURL("https://foo1.com/"), false,
+                /*blocklisted=*/false);
+  AddDummyLogin("foo2", GURL("https://foo2.com/"), true, /*blocklisted=*/false);
 
   LoginDatabase db(database_path(), IsAccountStore(false));
   ASSERT_TRUE(db.Init());
@@ -2118,8 +2131,9 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest,
 }
 
 TEST_F(LoginDatabaseUndecryptableLoginsTest, KeychainLockedTest) {
-  AddDummyLogin("foo1", GURL("https://foo1.com/"), false);
-  AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
+  AddDummyLogin("foo1", GURL("https://foo1.com/"), false,
+                /*blocklisted=*/false);
+  AddDummyLogin("foo2", GURL("https://foo2.com/"), true, /*blocklisted=*/false);
 
   OSCryptMocker::SetBackendLocked(true);
   LoginDatabase db(database_path(), IsAccountStore(false));

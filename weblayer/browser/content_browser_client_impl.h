@@ -52,10 +52,6 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       const content::MainFunctionParams& parameters) override;
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
-  bool AllowAppCache(const GURL& manifest_url,
-                     const net::SiteForCookies& site_for_cookies,
-                     const absl::optional<url::Origin>& top_frame_origin,
-                     content::BrowserContext* context) override;
   content::AllowServiceWorkerResult AllowServiceWorker(
       const GURL& scope,
       const net::SiteForCookies& site_for_cookies,
@@ -210,7 +206,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       const net::AuthChallengeInfo& auth_info,
       content::WebContents* web_contents,
       const content::GlobalRequestID& request_id,
-      bool is_main_frame,
+      bool is_request_for_primary_main_frame,
       const GURL& url,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       bool first_auth_attempt,

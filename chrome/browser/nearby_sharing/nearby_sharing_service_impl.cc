@@ -21,8 +21,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -965,6 +965,11 @@ NearbyNotificationDelegate* NearbySharingServiceImpl::GetNotificationDelegate(
     return nullptr;
 
   return nearby_notification_manager_->GetNotificationDelegate(notification_id);
+}
+
+void NearbySharingServiceImpl::RecordFastInitiationNotificationUsage(
+    bool success) {
+  fast_initiation_scanning_metrics_->RecordUsage(success);
 }
 
 NearbyShareSettings* NearbySharingServiceImpl::GetSettings() {
@@ -2110,6 +2115,18 @@ void NearbySharingServiceImpl::StopAdvertisingAndInvalidateSurfaceState() {
 }
 
 void NearbySharingServiceImpl::InvalidateFastInitiationScanning() {
+  bool is_hardware_offloading_supported =
+      IsBluetoothPresent() &&
+      FastInitiationScanner::Factory::IsHardwareSupportAvailable(
+          bluetooth_adapter_.get());
+
+  // Hardware offloading support is computed when the bluetooth adapter becomes
+  // available. We set the hardware supported state on |settings_| to notify the
+  // UI of state changes. InvalidateFastInitiationScanning gets triggered on
+  // adapter change events.
+  settings_.SetIsFastInitiationHardwareSupported(
+      is_hardware_offloading_supported);
+
   // Nothing to do if we're shutting down the profile.
   if (!profile_)
     return;
@@ -2183,8 +2200,7 @@ void NearbySharingServiceImpl::InvalidateFastInitiationScanning() {
     return;
   }
 
-  if (!FastInitiationScanner::Factory::IsHardwareSupportAvailable(
-          bluetooth_adapter_.get())) {
+  if (!is_hardware_offloading_supported) {
     NS_LOG(VERBOSE) << __func__
                     << ": Stopping background scanning because hardware "
                        "support is not available or not ready.";

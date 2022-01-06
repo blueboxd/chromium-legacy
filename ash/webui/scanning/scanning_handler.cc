@@ -13,7 +13,7 @@
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
@@ -214,7 +214,6 @@ void ScanningHandler::HandleGetMyFilesPath(const base::ListValue* args) {
 }
 
 void ScanningHandler::HandleSaveScanSettings(const base::ListValue* args) {
-  CHECK(base::FeatureList::IsEnabled(ash::features::kScanAppStickySettings));
   if (!IsJavascriptAllowed())
     return;
 
@@ -224,7 +223,6 @@ void ScanningHandler::HandleSaveScanSettings(const base::ListValue* args) {
 }
 
 void ScanningHandler::HandleGetScanSettings(const base::ListValue* args) {
-  CHECK(base::FeatureList::IsEnabled(ash::features::kScanAppStickySettings));
   if (!IsJavascriptAllowed())
     return;
 

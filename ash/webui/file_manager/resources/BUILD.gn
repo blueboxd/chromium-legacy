@@ -36,7 +36,10 @@ js_library("main_js") {
     "main.js",
     "script_loader.js",
   ]
-  deps = [ "//ash/webui/file_manager/mojom:mojom_webui_js" ]
+  deps = [
+    "//ash/webui/file_manager/mojom:mojom_webui_js",
+    "//ui/file_manager/file_manager/common/js:glitch",
+  ]
 
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
@@ -55,7 +58,7 @@ js_type_check("closure_compile") {
                     "js_module_root=" + rebase_path(".", root_build_dir),
                     "js_module_root=" +
                         rebase_path(mojom_webui_folder, root_build_dir),
-                    "browser_resolver_prefix_replacements=\"chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/=../../ui/file_manager/file_manager/\"",
+                    "browser_resolver_prefix_replacements=\"chrome://file-manager/=../../ui/file_manager/file_manager/\"",
                   ]
 }
 
@@ -124,8 +127,7 @@ optimize_webui("build") {
 
   excludes = [ "chrome://resources/mojo/mojo/public/js/bindings.js" ]
 
-  external_paths =
-      [ "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj|$files_app_path" ]
+  external_paths = [ "chrome://file-manager|$files_app_path" ]
 
   deps = [
     ":preprocess",
@@ -200,56 +202,6 @@ grit("file_manager_swa_resources") {
     "grit/file_manager_swa_resources_map.cc",
     "grit/file_manager_swa_resources_map.h",
     "file_manager_swa_resources.pak",
-  ]
-  output_dir = target_gen_dir
-}
-
-generated_untrusted_grd = "$target_gen_dir/file_manager_untrusted_resources.grd"
-
-generate_grd("build_file_manager_untrusted_grd") {
-  grd_prefix = "file_manager_untrusted"
-  out_grd = generated_untrusted_grd
-
-  input_files_base_dir =
-      rebase_path("//ui/file_manager/file_manager/foreground/elements/", "//")
-  input_files = [
-    "files_quick_view.css",
-    "sandboxed/files_audio_content.css",
-    "sandboxed/files_audio_content.html",
-    "sandboxed/files_text_content.css",
-    "sandboxed/files_text_content.html",
-    "sandboxed/files_img_content.css",
-    "sandboxed/files_img_content.html",
-    "sandboxed/files_media_content.js",
-    "sandboxed/files_video_content.css",
-    "sandboxed/files_video_content.html",
-  ]
-  resource_path_rewrites = [
-    "sandboxed/files_audio_content.css|files_audio_content.css",
-    "sandboxed/files_audio_content.html|files_audio_content.html",
-    "sandboxed/files_text_content.css|files_text_content.css",
-    "sandboxed/files_text_content.html|files_text_content.html",
-    "sandboxed/files_img_content.css|files_img_content.css",
-    "sandboxed/files_img_content.html|files_img_content.html",
-    "sandboxed/files_media_content.js|files_media_content.js",
-    "sandboxed/files_video_content.css|files_video_content.css",
-    "sandboxed/files_video_content.html|files_video_content.html",
-  ]
-}
-
-# Resources used by chrome-untrusted://file-manager.
-grit("file_manager_untrusted_resources") {
-  # These arguments are needed since the grd is generated at build time.
-  enable_input_discovery_for_gn_analyze = false
-
-  source = generated_untrusted_grd
-  deps = [ ":build_file_manager_untrusted_grd" ]
-
-  outputs = [
-    "grit/file_manager_untrusted_resources.h",
-    "grit/file_manager_untrusted_resources_map.cc",
-    "grit/file_manager_untrusted_resources_map.h",
-    "file_manager_untrusted_resources.pak",
   ]
   output_dir = target_gen_dir
 }

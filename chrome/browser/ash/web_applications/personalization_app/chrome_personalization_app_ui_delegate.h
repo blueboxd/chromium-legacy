@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_CHROME_PERSONALIZATION_APP_UI_DELEGATE_H_
 #define CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_CHROME_PERSONALIZATION_APP_UI_DELEGATE_H_
 
-#include "chromeos/components/personalization_app/personalization_app_ui_delegate.h"
+#include "ash/webui/personalization_app/personalization_app_ui_delegate.h"
 
 #include <stdint.h>
 
@@ -17,10 +17,11 @@
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "ash/public/cpp/wallpaper/wallpaper_info.h"
+#include "ash/public/cpp/wallpaper/wallpaper_types.h"
+#include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "chromeos/components/personalization_app/mojom/personalization_app.mojom.h"
 #include "components/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -52,8 +53,9 @@ class Profile;
 // Implemented in //chrome because this will rely on chrome
 // |backdrop_wallpaper_handlers| code when fully implemented.
 // TODO(b/182012641) add wallpaper API code here.
-class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
-                                           ash::WallpaperControllerObserver {
+class ChromePersonalizationAppUiDelegate
+    : public ash::PersonalizationAppUiDelegate,
+      ash::WallpaperControllerObserver {
  public:
   explicit ChromePersonalizationAppUiDelegate(content::WebUI* web_ui);
 
@@ -67,11 +69,17 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
   // PersonalizationAppUIDelegate:
   // |BindInterface| may be called multiple times, for example if the user
   // presses Ctrl+Shift+R while on the personalization app.
-  void BindInterface(mojo::PendingReceiver<
-                     chromeos::personalization_app::mojom::WallpaperProvider>
-                         receiver) override;
+  void BindInterface(
+      mojo::PendingReceiver<ash::personalization_app::mojom::WallpaperProvider>
+          receiver) override;
 
-  // chromeos::personalization_app::mojom::WallpaperProvider:
+  // ash::personalization_app::mojom::WallpaperProvider:
+
+  // Configure the window to be transparent so that the user can trigger a "full
+  // screen preview" mode. This allows the user to see through the app window to
+  // see the chosen wallpaper. This is safe to call multiple times in a row.
+  void MakeTransparent() override;
+
   void FetchCollections(FetchCollectionsCallback callback) override;
 
   void FetchImagesForCollection(
@@ -84,18 +92,23 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
                               GetLocalImageThumbnailCallback callback) override;
 
   void SetWallpaperObserver(
-      mojo::PendingRemote<
-          chromeos::personalization_app::mojom::WallpaperObserver> observer)
-      override;
+      mojo::PendingRemote<ash::personalization_app::mojom::WallpaperObserver>
+          observer) override;
 
   // ash::WallpaperControllerObserver:
   void OnWallpaperChanged() override;
 
-  // chromeos::personalization_app::mojom::WallpaperProvider:
+  // ash::WallpaperControllerObserver:
+  void OnWallpaperPreviewEnded() override;
+
+  // ash::personalization_app::mojom::WallpaperProvider:
   void SelectWallpaper(uint64_t image_asset_id,
+                       bool preview_mode,
                        SelectWallpaperCallback callback) override;
 
   void SelectLocalImage(const base::FilePath& path,
+                        ash::WallpaperLayout layout,
+                        bool preview_mode,
                         SelectLocalImageCallback callback) override;
 
   void SetCustomWallpaperLayout(ash::WallpaperLayout layout) override;
@@ -108,16 +121,24 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
   void UpdateDailyRefreshWallpaper(
       UpdateDailyRefreshWallpaperCallback callback) override;
 
+  void IsInTabletMode(IsInTabletModeCallback callback) override;
+
+  void ConfirmPreviewWallpaper() override;
+
+  void CancelPreviewWallpaper() override;
+
  private:
   friend class ChromePersonalizationAppUiDelegateTest;
 
   void OnFetchCollections(bool success,
                           const std::vector<backdrop::Collection>& collections);
 
-  void OnFetchCollectionImages(FetchImagesForCollectionCallback callback,
-                               bool success,
-                               const std::string& collection_id,
-                               const std::vector<backdrop::Image>& images);
+  void OnFetchCollectionImages(
+      FetchImagesForCollectionCallback callback,
+      std::unique_ptr<backdrop_wallpaper_handlers::ImageInfoFetcher> fetcher,
+      bool success,
+      const std::string& collection_id,
+      const std::vector<backdrop::Image>& images);
 
   void OnGetLocalImages(GetLocalImagesCallback callback,
                         const std::vector<base::FilePath>& images);
@@ -152,18 +173,18 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
       const std::string& collection_id,
       const std::vector<backdrop::Image>& images);
 
-  AccountId GetAccountId() const;
+  // Called when the user sets an image, or cancels/confirms preview wallpaper.
+  // If a new image is set in preview mode, will minimize all windows except the
+  // wallpaper SWA. When canceling or confirming preview mode, will restore the
+  // minimized windows to their previous state.
+  void SetMinimizedWindowStateForPreview(bool preview_mode);
 
   void NotifyWallpaperChanged(
-      chromeos::personalization_app::mojom::CurrentWallpaperPtr
-          current_wallpaper);
+      ash::personalization_app::mojom::CurrentWallpaperPtr current_wallpaper);
 
   std::unique_ptr<backdrop_wallpaper_handlers::CollectionInfoFetcher>
       wallpaper_collection_info_fetcher_;
   std::vector<FetchCollectionsCallback> pending_collections_callbacks_;
-
-  std::unique_ptr<backdrop_wallpaper_handlers::ImageInfoFetcher>
-      wallpaper_images_info_fetcher_;
 
   std::unique_ptr<backdrop_wallpaper_handlers::ImageInfoFetcher>
       wallpaper_attribution_info_fetcher_;
@@ -191,6 +212,8 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
   // user's background.
   std::set<base::FilePath> local_images_;
 
+  content::WebUI* const web_ui_ = nullptr;
+
   // Pointer to profile of user that opened personalization SWA. Not owned.
   Profile* const profile_ = nullptr;
 
@@ -200,10 +223,10 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
 
   // Place near bottom of class so this is cleaned up before any pending
   // callbacks are dropped.
-  mojo::Receiver<chromeos::personalization_app::mojom::WallpaperProvider>
+  mojo::Receiver<ash::personalization_app::mojom::WallpaperProvider>
       wallpaper_receiver_{this};
 
-  mojo::Remote<chromeos::personalization_app::mojom::WallpaperObserver>
+  mojo::Remote<ash::personalization_app::mojom::WallpaperObserver>
       wallpaper_observer_remote_;
 
   // Used for interacting with local filesystem.
@@ -213,6 +236,10 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate,
   // Used for fetching online image attribution.
   base::WeakPtrFactory<ChromePersonalizationAppUiDelegate>
       attribution_weak_ptr_factory_{this};
+
+  // General use other than the specific cases above.
+  base::WeakPtrFactory<ChromePersonalizationAppUiDelegate> weak_ptr_factory_{
+      this};
 };
 
 #endif  // CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_CHROME_PERSONALIZATION_APP_UI_DELEGATE_H_

@@ -13,8 +13,8 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -193,7 +193,7 @@ void IntranetRedirectDetector::OnSimpleLoaderComplete(
   // origin to that; otherwise we set it to nothing.
   if (response_body) {
     DCHECK(source->GetFinalURL().is_valid());
-    GURL origin(source->GetFinalURL().GetOrigin());
+    GURL origin(source->GetFinalURL().DeprecatedGetOriginAsURL());
     if (resulting_origins_.empty()) {
       resulting_origins_.push_back(origin);
       return;

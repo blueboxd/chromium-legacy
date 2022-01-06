@@ -10,7 +10,6 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/app_state_observer.h"
 #include "ios/chrome/app/application_delegate/startup_information.h"
-#import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent_observer_bridge.h"
@@ -309,15 +308,7 @@
   [self.firstRunCoordinator stop];
 }
 
-- (void)didFinishPresentingScreensWithSubsequentActionsTriggered:
-    (BOOL)actionsTriggered {
-  // Only show the location permission if no additional actions were taken.
-  if (!actionsTriggered) {
-    id<ApplicationCommands> handler = static_cast<id<ApplicationCommands>>(
-        self.mainBrowser->GetCommandDispatcher());
-    [handler
-        showLocationPermissionsFromViewController:self.presentingInterface.bvc];
-  }
+- (void)didFinishPresentingScreens {
   [self.appState queueTransitionToNextInitStage];
 }
 

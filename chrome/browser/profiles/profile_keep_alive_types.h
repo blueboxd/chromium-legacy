@@ -80,8 +80,7 @@ enum class ProfileKeepAliveOrigin {
   // Data for Clear on Exit is being deleted.
   kSessionDataDeleter = 16,
 
-  // Waiting for the provider to be ready in protocol handler web app launch.
-  kWebAppProtocolHandlerLaunch = 17,
+  // DEPRECATED: kWebAppProtocolHandlerLaunch = 17,
 
   // An extension is being updated.
   kExtensionUpdater = 18,
@@ -98,7 +97,10 @@ enum class ProfileKeepAliveOrigin {
   // goes away would cause all sorts of problems...
   kFeedbackDialog = 21,
 
-  kMaxValue = kFeedbackDialog,
+  // A web app is being updated.
+  kWebAppUpdate = 22,
+
+  kMaxValue = kWebAppUpdate,
 };
 
 std::ostream& operator<<(std::ostream& out,

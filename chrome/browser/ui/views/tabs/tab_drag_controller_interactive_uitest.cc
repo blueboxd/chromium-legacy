@@ -21,8 +21,8 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1472,7 +1472,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   browser2->window()
       ->GetNativeWindow()
       ->GetHost()
-      ->SetNativeWindowOcclusionState(aura::Window::OcclusionState::OCCLUDED);
+      ->SetNativeWindowOcclusionState(aura::Window::OcclusionState::OCCLUDED,
+                                      {});
 
   // Drag a tab from first browser to middle of first tab of the second,
   // occluded browser, and drop. This should create a third browser window.
@@ -2545,8 +2546,10 @@ IN_PROC_BROWSER_TEST_P(
 
   AddTabsAndResetBrowser(browser(), 1);
 
+  // We must ensure that we set the bounds of the browser window such that it is
+  // wide enough to allow the tab strip to expand to accommodate this tab.
   browser()->window()->SetBounds(
-      gfx::Rect(0, 0, TabStyle::GetStandardWidth() * 4, 400));
+      gfx::Rect(0, 0, TabStyle::GetStandardWidth() * 5, 400));
 
   const int tab_strip_width = tab_strip->width();
   const gfx::Point tab_1_center =

@@ -11,15 +11,21 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
 
 <histograms>
+
+<variants name="CameraRollMediaType">
+  <variant name=".Photo" summary="image media types"/>
+  <variant name=".Video" summary="video media types"/>
+</variants>
 
 <histogram name="PhoneHub.Adoption.FeatureStatusChangesSinceLogin"
     enum="PhoneHubFeatureStatus" expires_after="2022-10-31">
@@ -37,6 +43,39 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>jonmann@chromium.org</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
   <summary>The steady state feature status of PhoneHub on user login.</summary>
+</histogram>
+
+<histogram name="PhoneHub.CameraRoll.Content.Clicked{MediaType}"
+    enum="PhoneHubCameraRollContentClicked" expires_after="2022-10-31">
+  <owner>jonmann@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records user clicks on Camera Roll items. Emmited when opening the context
+    menu associated with the item.
+  </summary>
+  <token key="MediaType" variants="CameraRollMediaType"/>
+</histogram>
+
+<histogram name="PhoneHub.CameraRoll.Content.Shown{MediaType}"
+    enum="PhoneHubCameraRollContentShown" expires_after="2022-10-31">
+  <owner>jonmann@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records Camera Roll items shown in PhoneHub. Emmited when displaying or
+    updating thumbnails.
+  </summary>
+  <token key="MediaType" variants="CameraRollMediaType"/>
+</histogram>
+
+<histogram name="PhoneHub.CameraRoll.ContextMenu.Download{MediaType}"
+    enum="PhoneHubCameraRollContextMenuDownload" expires_after="2022-10-31">
+  <owner>jonmann@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records download events in the Camera Roll context menu. Emitted when user
+    clicks on download for a Camera Roll item.
+  </summary>
+  <token key="MediaType" variants="CameraRollMediaType"/>
 </histogram>
 
 <histogram name="PhoneHub.CompletedUserAction" enum="PhoneHubUserAction"
@@ -142,8 +181,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>chromeos-cross-device-eng@google.com</owner>
   <summary>
     Indicates the feature state of Phone Hub features. This metric is emitted to
-    at the creation of the user session (when the user logs in), and when
-    feature state updates occur. {PhoneHubFeature}
+    at the creation of the user session (when the user logs in), when any
+    multi-device feature state changes, and every 30 minutes. {PhoneHubFeature}
   </summary>
   <token key="PhoneHubFeature">
     <variant name="">
@@ -313,6 +352,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     request message was sent and a response was received.
   </summary>
   <token key="MessageType">
+    <variant name="FetchCameraRollItemData"/>
+    <variant name="FetchCameraRollItems"/>
+    <variant name="InitiateCameraRollItemTransfer"/>
     <variant name="LocatePhone"/>
     <variant name="NotificationDismissal"/>
     <variant name="NotificationInlineReply"/>

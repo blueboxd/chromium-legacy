@@ -97,7 +97,7 @@ static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
     //      notification.
     //  (b) the browser is fullscreen
     //  (c) the browser has focus.
-    if (active_contents->GetURL().GetOrigin() == origin &&
+    if (active_contents->GetURL().DeprecatedGetOriginAsURL() == origin &&
         browser->exclusive_access_manager()->context()->IsFullscreen() &&
         browser->window()->IsActive()) {
       return true;
@@ -171,10 +171,10 @@ void PlatformNotificationServiceImpl::Shutdown() {
 void PlatformNotificationServiceImpl::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type) {
+    ContentSettingsTypeSet content_type_set) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (content_type != ContentSettingsType::NOTIFICATIONS)
+  if (!content_type_set.Contains(ContentSettingsType::NOTIFICATIONS))
     return;
 
   auto recorder = base::MakeRefCounted<RevokeDeleteCountRecorder>();

@@ -183,7 +183,8 @@ void AppTestHelper::FirstTaskRun() {
     {"enter_test_mode", WithSwitch("url", Wrap(&EnterTestMode))},
     {"expect_active_updater", WithSystemScope(Wrap(&ExpectActiveUpdater))},
     {"expect_app_unregistered_existence_checker_path",
-     WithSwitch("app_id", Wrap(&ExpectAppUnregisteredExistenceCheckerPath))},
+     WithSwitch("app_id", WithSystemScope(Wrap(
+                              &ExpectAppUnregisteredExistenceCheckerPath)))},
     {"expect_app_version",
      WithSwitch("version", WithSwitch("app_id", WithSystemScope(
                                                     Wrap(&ExpectAppVersion))))},
@@ -197,25 +198,30 @@ void AppTestHelper::FirstTaskRun() {
     {"expect_legacy_update3web_succeeds",
      WithSwitch("app_id",
                 WithSystemScope(Wrap(&ExpectLegacyUpdate3WebSucceeds)))},
+    {"expect_legacy_process_launcher_succeeds",
+     WithSystemScope(Wrap(&ExpectLegacyProcessLauncherSucceeds))},
 #endif  // OS_WIN
     {"expect_version_active",
-     WithSwitch("version", Wrap(&ExpectVersionActive))},
+     WithSwitch("version", WithSystemScope(Wrap(&ExpectVersionActive)))},
     {"expect_version_not_active",
-     WithSwitch("version", Wrap(&ExpectVersionNotActive))},
+     WithSwitch("version", WithSystemScope(Wrap(&ExpectVersionNotActive)))},
     {"install", WithSystemScope(Wrap(&Install))},
     {"print_log", WithSystemScope(Wrap(&PrintLog))},
     {"run_wake", WithSwitch("exit_code", WithSystemScope(Wrap(&RunWake)))},
-    {"update", WithSwitch("app_id", Wrap(&Update))},
-    {"update_all", Wrap(&UpdateAll)},
-    {"register_app", WithSwitch("app_id", Wrap(&RegisterApp))},
+    {"update", WithSwitch("app_id", WithSystemScope(Wrap(&Update)))},
+    {"update_all", WithSystemScope(Wrap(&UpdateAll))},
+    {"register_app", WithSwitch("app_id", WithSystemScope(Wrap(&RegisterApp)))},
     {"set_existence_checker_path",
-     WithSwitch("path", WithSwitch("app_id", Wrap(&SetExistenceCheckerPath)))},
+     WithSwitch("path",
+                (WithSwitch("app_id",
+                            WithSystemScope(Wrap(&SetExistenceCheckerPath)))))},
     {"setup_fake_updater_higher_version",
      WithSystemScope(Wrap(&SetupFakeUpdaterHigherVersion))},
     {"setup_fake_updater_lower_version",
      WithSystemScope(Wrap(&SetupFakeUpdaterLowerVersion))},
     {"set_first_registration_counter",
-     WithSwitch("value", Wrap(&SetServerStarts))},
+     WithSwitch("value", WithSystemScope(Wrap(&SetServerStarts)))},
+    {"stress_update_service", WithSystemScope(Wrap(&StressUpdateService))},
     {"uninstall", WithSystemScope(Wrap(&Uninstall))},
   };
 
@@ -277,6 +283,9 @@ class TersePrinter : public EmptyTestEventListener {
 int IntegrationTestsHelperMain(int argc, char** argv) {
   base::PlatformThread::SetName("IntegrationTestsHelperMain");
   base::CommandLine::Init(argc, argv);
+
+  // `test_suite` must be defined before setting log items.
+  base::TestSuite test_suite(argc, argv);
   logging::SetLogItems(/*enable_process_id=*/true,
                        /*enable_thread_id=*/true,
                        /*enable_timestamp=*/true,
@@ -287,7 +296,6 @@ int IntegrationTestsHelperMain(int argc, char** argv) {
           base::win::ScopedCOMInitializer::kMTA);
 #endif
   chrome::RegisterPathProvider();
-  base::TestSuite test_suite(argc, argv);
   TestEventListeners& listeners = UnitTest::GetInstance()->listeners();
   delete listeners.Release(listeners.default_result_printer());
   listeners.Append(new TersePrinter);

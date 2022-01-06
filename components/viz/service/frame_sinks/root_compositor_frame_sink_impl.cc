@@ -72,7 +72,9 @@ RootCompositorFrameSinkImpl::Create(
   std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source;
   ExternalBeginFrameSourceMojo* external_begin_frame_source_mojo = nullptr;
   bool hw_support_for_multiple_refresh_rates = false;
+#if !defined(OS_APPLE)
   bool wants_vsync_updates = false;
+#endif
 
   if (params->external_begin_frame_controller) {
     auto owned_external_begin_frame_source_mojo =
@@ -103,7 +105,9 @@ RootCompositorFrameSinkImpl::Create(
 #endif
       // Vsync updates are required to update the FrameRateDecider with
       // supported refresh rates.
+#if !defined(OS_APPLE)
       wants_vsync_updates = params->use_preferred_interval_for_video;
+#endif
       external_begin_frame_source = std::make_unique<GpuVSyncBeginFrameSource>(
           restart_id, output_surface.get());
     } else {
@@ -188,10 +192,15 @@ RootCompositorFrameSinkImpl::~RootCompositorFrameSinkImpl() {
 }
 
 void RootCompositorFrameSinkImpl::DidEvictSurface(const SurfaceId& surface_id) {
-  if (display_->CurrentSurfaceId() != surface_id)
+  const SurfaceId& current_surface_id = display_->CurrentSurfaceId();
+  if (!current_surface_id.is_valid())
     return;
-
-  display_->InvalidateCurrentSurfaceId();
+  DCHECK_EQ(surface_id.frame_sink_id(), surface_id.frame_sink_id());
+  // This matches CompositorFrameSinkSupport's eviction logic.
+  if (surface_id.local_surface_id().parent_sequence_number() >=
+      current_surface_id.local_surface_id().parent_sequence_number()) {
+    display_->InvalidateCurrentSurfaceId();
+  }
 }
 
 const SurfaceId& RootCompositorFrameSinkImpl::CurrentSurfaceId() const {
@@ -340,6 +349,11 @@ void RootCompositorFrameSinkImpl::PreserveChildSurfaceControls() {
   display_->PreserveChildSurfaceControls();
 }
 
+void RootCompositorFrameSinkImpl::SetSwapCompletionCallbackEnabled(
+    bool enable) {
+  enable_swap_competion_callback_ = enable;
+}
+
 #endif  // defined(OS_ANDROID)
 
 void RootCompositorFrameSinkImpl::AddVSyncParameterObserver(
@@ -366,7 +380,8 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     CompositorFrame frame,
     absl::optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time) {
-  if (support_->last_activated_local_surface_id() != local_surface_id) {
+  if (support_->last_activated_local_surface_id() != local_surface_id &&
+      !support_->IsEvicted(local_surface_id)) {
     display_->SetLocalSurfaceId(local_surface_id, frame.device_scale_factor());
     // Resize the |display_| to the root compositor frame |output_rect| so that
     // we won't show root surface gutters.
@@ -502,7 +517,7 @@ void RootCompositorFrameSinkImpl::DisplayDidReceiveCALayerParams(
 void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
     const gfx::Size& pixel_size) {
 #if defined(OS_ANDROID)
-  if (display_client_)
+  if (display_client_ && enable_swap_competion_callback_)
     display_client_->DidCompleteSwapWithSize(pixel_size);
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.

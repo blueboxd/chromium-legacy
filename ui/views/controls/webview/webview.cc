@@ -88,11 +88,15 @@ void WebView::SetWebContents(content::WebContents* replacement) {
   TRACE_EVENT0("views", "WebView::SetWebContents");
   if (replacement == web_contents())
     return;
-  if (web_contents())
-    web_contents()->SetColorProviderSource(nullptr);
   SetCrashedOverlayView(nullptr);
   DetachWebContentsNativeView();
   WebContentsObserver::Observe(replacement);
+
+  // Do not remove the observation of the previously hosted WebContents to allow
+  // the WebContents to continue to use the source for colors and receive update
+  // notifications when in the background and not directly part of a UI
+  // hierarchy. This avoids color pop-in if the WebContents is re-inserted into
+  // the same hierarchy at a later point in time.
   if (replacement)
     replacement->SetColorProviderSource(GetWidget());
 

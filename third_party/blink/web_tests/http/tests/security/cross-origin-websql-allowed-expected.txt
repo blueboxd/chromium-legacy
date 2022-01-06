@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 5: WebSQL in third-party contexts (i.e. cross-site iframes) is deprecated and will be removed in M97, around January 2022. Please use Web Storage or Indexed Database instead. See https://www.chromestatus.com/features/5684870116278272 for more details.
 This iframe should not return any errors:
 
 This iframe should not return any errors:
@@ -6,7 +5,7 @@ This iframe should not return any errors:
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
-No exception
+SecurityError
 
 --------
 Frame: '<!--framePath //<!--frame1-->-->'

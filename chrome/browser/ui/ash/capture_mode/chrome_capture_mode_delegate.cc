@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/policy/dlp/dlp_content_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -72,9 +73,12 @@ void ChromeCaptureModeDelegate::SetIsScreenCaptureLocked(bool locked) {
     InterruptVideoRecordingIfAny();
 }
 
-void ChromeCaptureModeDelegate::InterruptVideoRecordingIfAny() {
-  if (interrupt_video_recording_callback_)
+bool ChromeCaptureModeDelegate::InterruptVideoRecordingIfAny() {
+  if (interrupt_video_recording_callback_) {
     std::move(interrupt_video_recording_callback_).Run();
+    return true;
+  }
+  return false;
 }
 
 base::FilePath ChromeCaptureModeDelegate::GetUserDefaultDownloadsFolder()
@@ -159,11 +163,11 @@ void ChromeCaptureModeDelegate::StartObservingRestrictedContent(
       ConvertToScreenshotArea(window, bounds));
 }
 
-void ChromeCaptureModeDelegate::StopObservingRestrictedContent() {
+void ChromeCaptureModeDelegate::StopObservingRestrictedContent(
+    ash::OnCaptureModeDlpRestrictionChecked callback) {
   interrupt_video_recording_callback_.Reset();
-  // TODO(https://crbug.com/1256711): Pass a proper callback to save/delete
-  // recording
-  policy::DlpContentManager::Get()->CheckStoppedVideoCapture(base::DoNothing());
+  policy::DlpContentManager::Get()->CheckStoppedVideoCapture(
+      std::move(callback));
 }
 
 mojo::Remote<recording::mojom::RecordingService>
@@ -185,6 +189,21 @@ void ChromeCaptureModeDelegate::OnSessionStateChanged(bool started) {
 }
 
 void ChromeCaptureModeDelegate::OnServiceRemoteReset() {}
+
+bool ChromeCaptureModeDelegate::GetDriveFsMountPointPath(
+    base::FilePath* result) const {
+  if (!chromeos::LoginState::Get()->IsUserLoggedIn())
+    return false;
+
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(
+          ProfileManager::GetPrimaryUserProfile());
+  if (!integration_service || !integration_service->IsMounted())
+    return false;
+
+  *result = integration_service->GetMountPointPath();
+  return true;
+}
 
 std::unique_ptr<ash::RecordingOverlayView>
 ChromeCaptureModeDelegate::CreateRecordingOverlayView() const {

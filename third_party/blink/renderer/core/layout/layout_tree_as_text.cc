@@ -111,6 +111,40 @@ WTF::TextStream& operator<<(WTF::TextStream& ts, const Color& c) {
   return ts << c.NameForLayoutTreeAsText();
 }
 
+WTF::TextStream& operator<<(WTF::TextStream& ts, const gfx::Point& p) {
+  return ts << "(" << p.x() << "," << p.y() << ")";
+}
+
+WTF::TextStream& operator<<(WTF::TextStream& ts, const gfx::Size& s) {
+  return ts << "width=" << s.width() << " height=" << s.height();
+}
+
+WTF::TextStream& operator<<(WTF::TextStream& ts, const gfx::Rect& r) {
+  return ts << "at " << r.origin() << " size " << r.width() << "x"
+            << r.height();
+}
+
+WTF::TextStream& operator<<(WTF::TextStream& ts, const gfx::SizeF& s) {
+  ts << "width=" << WTF::TextStream::FormatNumberRespectingIntegers(s.width());
+  ts << " height="
+     << WTF::TextStream::FormatNumberRespectingIntegers(s.height());
+  return ts;
+}
+
+WTF::TextStream& operator<<(WTF::TextStream& ts, const gfx::PointF& p) {
+  ts << "(" << WTF::TextStream::FormatNumberRespectingIntegers(p.x());
+  ts << "," << WTF::TextStream::FormatNumberRespectingIntegers(p.y());
+  ts << ")";
+  return ts;
+}
+
+WTF::TextStream& operator<<(WTF::TextStream& ts, const gfx::RectF& r) {
+  ts << "at " << r.origin();
+  ts << " size " << WTF::TextStream::FormatNumberRespectingIntegers(r.width());
+  ts << "x" << WTF::TextStream::FormatNumberRespectingIntegers(r.height());
+  return ts;
+}
+
 void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
                                          const LayoutObject& o,
                                          LayoutAsTextBehavior behavior) {
@@ -459,7 +493,7 @@ static void WritePaintProperties(WTF::TextStream& ts,
       ts << " state=(" << fragment->LocalBorderBoxProperties().ToString()
          << ")";
     }
-    if (RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
+    if (RuntimeEnabledFeatures::CullRectUpdateEnabled() && o.HasLayer()) {
       ts << " cull_rect=(" << fragment->GetCullRect().ToString()
          << ") contents_cull_rect=("
          << fragment->GetContentsCullRect().ToString() << ")";
@@ -609,10 +643,10 @@ static void Write(WTF::TextStream& ts,
     ScrollOffset adjusted_scroll_offset =
         scrollable_area->GetScrollOffset() +
         ToFloatSize(FloatPoint(scrollable_area->ScrollOrigin()));
-    if (adjusted_scroll_offset.Width())
-      ts << " scrollX " << adjusted_scroll_offset.Width();
-    if (adjusted_scroll_offset.Height())
-      ts << " scrollY " << adjusted_scroll_offset.Height();
+    if (adjusted_scroll_offset.width())
+      ts << " scrollX " << adjusted_scroll_offset.width();
+    if (adjusted_scroll_offset.height())
+      ts << " scrollY " << adjusted_scroll_offset.height();
     if (layer.GetLayoutBox() &&
         layer.GetLayoutBox()->PixelSnappedClientWidth() !=
             layer.GetLayoutBox()->PixelSnappedScrollWidth())

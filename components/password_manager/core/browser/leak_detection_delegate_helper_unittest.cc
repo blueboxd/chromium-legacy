@@ -45,7 +45,7 @@ PasswordForm CreateForm(base::StringPiece origin,
   form.url = GURL(origin);
   form.username_value = std::u16string(username);
   form.password_value = std::u16string(password);
-  form.signon_realm = form.url.GetOrigin().spec();
+  form.signon_realm = form.url.DeprecatedGetOriginAsURL().spec();
   form.in_store = PasswordForm::Store::kProfileStore;
   return form;
 }
@@ -264,8 +264,10 @@ class LeakDetectionDelegateHelperWithTwoStoreTest
     : public LeakDetectionDelegateHelperTest {
  protected:
   void SetUp() override {
-    profile_store_->Init(/*prefs=*/nullptr);
-    account_store_->Init(/*prefs=*/nullptr);
+    profile_store_->Init(/*prefs=*/nullptr,
+                         /*affiliated_match_helper=*/nullptr);
+    account_store_->Init(/*prefs=*/nullptr,
+                         /*affiliated_match_helper=*/nullptr);
 
     delegate_helper_ = std::make_unique<LeakDetectionDelegateHelper>(
         profile_store_, account_store_, callback_.Get());

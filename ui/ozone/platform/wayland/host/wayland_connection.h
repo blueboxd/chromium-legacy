@@ -13,6 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/display/tablet_state.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_clipboard.h"
@@ -36,6 +37,7 @@ namespace ui {
 
 class DeviceHotplugEventObserver;
 class OrgKdeKwinIdle;
+class SurfaceAugmenter;
 class WaylandBufferManagerHost;
 class WaylandCursor;
 class WaylandCursorBufferListener;
@@ -244,6 +246,10 @@ class WaylandConnection {
     return overlay_prioritizer_.get();
   }
 
+  SurfaceAugmenter* surface_augmenter() const {
+    return surface_augmenter_.get();
+  }
+
   // Returns whether protocols that support setting window geometry are
   // available.
   bool SupportsSetWindowGeometry() const;
@@ -270,7 +276,23 @@ class WaylandConnection {
     return available_globals_;
   }
 
+  bool surface_submission_in_pixel_coordinates() const {
+    return surface_submission_in_pixel_coordinates_;
+  }
+
+  void set_surface_submission_in_pixel_coordinates(bool enabled) {
+    surface_submission_in_pixel_coordinates_ = enabled;
+  }
+
   wl::SerialTracker& serial_tracker() { return serial_tracker_; }
+
+  void set_tablet_layout_state(display::TabletState tablet_layout_state) {
+    tablet_layout_state_ = tablet_layout_state;
+  }
+  bool GetTabletMode() {
+    return tablet_layout_state_ == display::TabletState::kInTabletMode ||
+           tablet_layout_state_ == display::TabletState::kEnteringTabletMode;
+  }
 
  private:
   friend class WaylandConnectionTestApi;
@@ -285,6 +307,7 @@ class WaylandConnection {
   friend class GtkShell1;
   friend class OrgKdeKwinIdle;
   friend class OverlayPrioritizer;
+  friend class SurfaceAugmenter;
   friend class WaylandDataDeviceManager;
   friend class WaylandDrm;
   friend class WaylandOutput;
@@ -357,6 +380,9 @@ class WaylandConnection {
   wl::Object<zcr_extended_drag_v1> extended_drag_v1_;
   wl::Object<zxdg_output_manager_v1> xdg_output_manager_;
 
+  // Manages Wayland windows.
+  WaylandWindowManager wayland_window_manager_;
+
   // Event source instance. Must be declared before input objects so it
   // outlives them so thus being able to properly handle their destruction.
   std::unique_ptr<WaylandEventSource> event_source_;
@@ -384,6 +410,7 @@ class WaylandConnection {
   std::unique_ptr<XdgForeignWrapper> xdg_foreign_;
   std::unique_ptr<ZwpIdleInhibitManager> zwp_idle_inhibit_manager_;
   std::unique_ptr<OverlayPrioritizer> overlay_prioritizer_;
+  std::unique_ptr<SurfaceAugmenter> surface_augmenter_;
 
   // Clipboard-related objects. |clipboard_| must be declared after all
   // DeviceManager instances it depends on, otherwise tests may crash with
@@ -410,12 +437,19 @@ class WaylandConnection {
   // created when platform window test config is set.
   std::unique_ptr<wl::WaylandProxy> wayland_proxy_;
 
-  // Manages Wayland windows.
-  WaylandWindowManager wayland_window_manager_;
-
   WaylandCursorBufferListener* listener_ = nullptr;
 
+  // The current window table mode layout state.
+  display::TabletState tablet_layout_state_ =
+      display::TabletState::kInClamshellMode;
+
   bool scheduled_flush_ = false;
+
+  // Surfaces are submitted in pixel coordinates. Their buffer scales are always
+  // advertised to server as 1, and the scale via vp_viewporter won't be
+  // applied. The server will be responsible to scale the buffers to the right
+  // sizes.
+  bool surface_submission_in_pixel_coordinates_ = false;
 
   wl::SerialTracker serial_tracker_;
 

@@ -1743,7 +1743,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R96-14263.0.0",
+        "cros_img": "atlas-release/R97-14285.0.0",
         "name": "lacros_all_tast_tests_ATLAS_LKGM",
         "resultdb": {
           "enable": true,
@@ -1758,7 +1758,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R96-14244.0.0",
+        "cros_img": "atlas-release/R96-14268.5.0",
         "name": "lacros_all_tast_tests_ATLAS_DEV",
         "resultdb": {
           "enable": true,
@@ -1773,7 +1773,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R94-14150.46.0",
+        "cros_img": "atlas-release/R94-14150.57.0",
         "name": "lacros_all_tast_tests_ATLAS_BETA",
         "resultdb": {
           "enable": true,
@@ -1788,7 +1788,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R93-14092.66.0",
+        "cros_img": "atlas-release/R94-14150.57.0",
         "name": "lacros_all_tast_tests_ATLAS_STABLE",
         "resultdb": {
           "enable": true,
@@ -1803,7 +1803,7 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R96-14263.0.0",
+        "cros_img": "eve-release/R97-14285.0.0",
         "name": "lacros_all_tast_tests_EVE_LKGM",
         "resultdb": {
           "enable": true,
@@ -1818,7 +1818,7 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R96-14244.0.0",
+        "cros_img": "eve-release/R96-14268.5.0",
         "name": "lacros_all_tast_tests_EVE_DEV",
         "resultdb": {
           "enable": true,
@@ -1833,7 +1833,7 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R94-14150.46.0",
+        "cros_img": "eve-release/R94-14150.57.0",
         "name": "lacros_all_tast_tests_EVE_BETA",
         "resultdb": {
           "enable": true,
@@ -1848,7 +1848,7 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R93-14092.66.0",
+        "cros_img": "eve-release/R94-14150.57.0",
         "name": "lacros_all_tast_tests_EVE_STABLE",
         "resultdb": {
           "enable": true,
@@ -1885,12 +1885,40 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
+      }
+    ]
+  },
+  "lacros-arm-generic-chrome-skylab": {
+    "additional_compile_targets": [
+      "chrome",
+      "lacros_version_metadata",
+      "linux_symbols",
+      "symupload",
+      "strip_chrome_binary"
+    ],
+    "skylab_tests": [
+      {
+        "args": [],
+        "cros_board": "kevin",
+        "cros_img": "kevin-release/R97-14285.0.0",
+        "name": "lacros_all_tast_tests_KEVIN_LKGM",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800
       }
     ]
   },
@@ -3878,6 +3906,26 @@
       "chrome",
       "chrome_official_builder"
     ],
+    "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-19042",
+              "pool": "chrome.tests"
+            }
+          ],
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "base_unittests",
+        "test_id_prefix": "ninja://base:base_unittests/"
+      }
+    ],
     "isolated_scripts": [
       {
         "isolate_name": "chrome_sizes",
@@ -3900,6 +3948,29 @@
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
+      },
+      {
+        "isolate_name": "variations_smoke_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "variations_smoke_tests",
+        "resultdb": {
+          "enable": true,
+          "result_format": "single"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-19042",
+              "pool": "chrome.tests"
+            }
+          ],
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test:variations_smoke_tests/"
       }
     ]
   },

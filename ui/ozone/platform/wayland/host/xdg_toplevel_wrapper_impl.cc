@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/host/xdg_toplevel_wrapper_impl.h"
 
+#include <aura-shell-client-protocol.h>
 #include <xdg-decoration-unstable-v1-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
@@ -12,11 +13,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/hit_test.h"
+#include "ui/ozone/common/features.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/shell_surface_wrapper.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_serial_tracker.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "ui/ozone/platform/wayland/host/wayland_zaura_shell.h"
 #include "ui/ozone/platform/wayland/host/xdg_surface_wrapper_impl.h"
 
 namespace ui {
@@ -86,6 +89,21 @@ bool XDGToplevelWrapperImpl::Initialize() {
   if (!xdg_toplevel_) {
     LOG(ERROR) << "Failed to create xdg_toplevel";
     return false;
+  }
+
+  if (connection_->zaura_shell()) {
+    uint32_t version =
+        zaura_shell_get_version(connection_->zaura_shell()->wl_object());
+    if (version >=
+        ZAURA_SHELL_GET_AURA_TOPLEVEL_FOR_XDG_TOPLEVEL_SINCE_VERSION) {
+      aura_toplevel_.reset(zaura_shell_get_aura_toplevel_for_xdg_toplevel(
+          connection_->zaura_shell()->wl_object(), xdg_toplevel_.get()));
+      if (IsWaylandSurfaceSubmissionInPixelCoordinatesEnabled() &&
+          version >=
+              ZAURA_TOPLEVEL_SURFACE_SUBMISSION_IN_PIXEL_COORDINATES_SINCE_VERSION)
+        zaura_toplevel_surface_submission_in_pixel_coordinates(
+            aura_toplevel_.get());
+    }
   }
 
   xdg_toplevel_add_listener(xdg_toplevel_.get(), &xdg_toplevel_listener, this);
@@ -255,6 +273,45 @@ void XDGToplevelWrapperImpl::InitializeXdgDecoration() {
 XDGSurfaceWrapperImpl* XDGToplevelWrapperImpl::xdg_surface_wrapper() const {
   DCHECK(xdg_surface_wrapper_.get());
   return xdg_surface_wrapper_.get();
+}
+
+zaura_toplevel_orientation_lock ToZauraSurfaceOrientationLock(
+    WaylandOrientationLockType lock_type) {
+  switch (lock_type) {
+    case WaylandOrientationLockType::kLandscape:
+      return ZAURA_TOPLEVEL_ORIENTATION_LOCK_LANDSCAPE;
+    case WaylandOrientationLockType::kLandscapePrimary:
+      return ZAURA_TOPLEVEL_ORIENTATION_LOCK_LANDSCAPE_PRIMARY;
+    case WaylandOrientationLockType::kLandscapeSecondary:
+      return ZAURA_TOPLEVEL_ORIENTATION_LOCK_LANDSCAPE_SECONDARY;
+    case WaylandOrientationLockType::kPortrait:
+      return ZAURA_TOPLEVEL_ORIENTATION_LOCK_PORTRAIT;
+    case WaylandOrientationLockType::kPortraitPrimary:
+      return ZAURA_TOPLEVEL_ORIENTATION_LOCK_PORTRAIT_PRIMARY;
+    case WaylandOrientationLockType::kPortraitSecondary:
+      return ZAURA_TOPLEVEL_ORIENTATION_LOCK_PORTRAIT_SECONDARY;
+    case WaylandOrientationLockType::kAny:
+      return ZAURA_TOPLEVEL_ORIENTATION_LOCK_NONE;
+    case WaylandOrientationLockType::kNatural:
+      return ZAURA_TOPLEVEL_ORIENTATION_LOCK_CURRENT;
+  }
+  return ZAURA_TOPLEVEL_ORIENTATION_LOCK_NONE;
+}
+
+void XDGToplevelWrapperImpl::Lock(WaylandOrientationLockType lock_type) {
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_SET_ORIENTATION_LOCK_SINCE_VERSION) {
+    zaura_toplevel_set_orientation_lock(
+        aura_toplevel_.get(), ToZauraSurfaceOrientationLock(lock_type));
+  }
+}
+
+void XDGToplevelWrapperImpl::Unlock() {
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_SET_ORIENTATION_LOCK_SINCE_VERSION) {
+    zaura_toplevel_set_orientation_lock(aura_toplevel_.get(),
+                                        ZAURA_TOPLEVEL_ORIENTATION_LOCK_NONE);
+  }
 }
 
 }  // namespace ui

@@ -60,11 +60,8 @@ class UiDelegate {
   // Returns the current info box data. May be null if empty.
   virtual const InfoBox* GetInfoBox() const = 0;
 
-  // Returns the current progress; a percentage.
-  virtual int GetProgress() const = 0;
-
   // Returns the currently active progress step.
-  virtual absl::optional<int> GetProgressActiveStep() const = 0;
+  virtual int GetProgressActiveStep() const = 0;
 
   // Returns whether the progress bar is visible.
   virtual bool GetProgressVisible() const = 0;
@@ -76,7 +73,7 @@ class UiDelegate {
   virtual TtsButtonState GetTtsButtonState() const = 0;
 
   // Returns the current configuration of the step progress bar.
-  virtual absl::optional<ShowProgressBarProto::StepProgressBarConfiguration>
+  virtual ShowProgressBarProto::StepProgressBarConfiguration
   GetStepProgressBarConfiguration() const = 0;
 
   // Returns whether the progress bar should show an error state.
@@ -135,7 +132,7 @@ class UiDelegate {
 
   // Sets the chosen login option, pertaining to the current collect user data
   // options.
-  virtual void SetLoginOption(std::string identifier) = 0;
+  virtual void SetLoginOption(const std::string& identifier) = 0;
 
   // Called when the user clicks a link of the form <link0>text</link0> in a
   // text message.

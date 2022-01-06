@@ -28,8 +28,6 @@ source_set("browser_sources") {
   sources = [
     "allow_service_worker_result.cc",
     "allow_service_worker_result.h",
-    "appcache_service.cc",
-    "appcache_service.h",
     "audio_service.h",
     "audio_service_info.cc",
     "audio_service_info.h",
@@ -144,6 +142,8 @@ source_set("browser_sources") {
     "document_service.h",
     "document_service_internal.cc",
     "document_service_internal.h",
+    "document_user_data.cc",
+    "document_user_data.h",
     "dom_storage_context.h",
     "download_item_utils.h",
     "download_manager.cc",
@@ -294,8 +294,6 @@ source_set("browser_sources") {
     "push_messaging_service.h",
     "quota_permission_context.h",
     "reload_type.h",
-    "render_document_host_user_data.cc",
-    "render_document_host_user_data.h",
     "render_frame_host.h",
     "render_frame_host_receiver_set.h",
     "render_frame_metadata_provider.h",
@@ -555,6 +553,10 @@ source_set("browser_sources") {
       "native_event_processor_observer_mac.mm",
       "remote_cocoa.h",
     ]
+  }
+
+  if (is_fuchsia) {
+    sources += [ "ax_inspect_factory_fuchsia.cc" ]
   }
 
   if (is_win) {

@@ -55,6 +55,7 @@
 #include <string>
 
 #include "absl/container/inlined_vector.h"
+#include "absl/functional/function_ref.h"
 #include "absl/status/internal/status_internal.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -494,7 +495,7 @@ class Status final {
   // Returns the error message associated with this error code, if available.
   // Note that this message rarely describes the error code.  It is not unusual
   // for the error message to be the empty string. As a result, prefer
-  // `Status::ToString()` for debug logging.
+  // `operator<<` or `Status::ToString()` for debug logging.
   absl::string_view message() const;
 
   friend bool operator==(const Status&, const Status&);
@@ -590,7 +591,7 @@ class Status final {
   // NOTE: Any mutation on the same 'absl::Status' object during visitation is
   // forbidden and could result in undefined behavior.
   void ForEachPayload(
-      const std::function<void(absl::string_view, const absl::Cord&)>& visitor)
+      absl::FunctionRef<void(absl::string_view, const absl::Cord&)> visitor)
       const;
 
  private:

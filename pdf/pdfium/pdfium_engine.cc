@@ -45,7 +45,6 @@
 #include "pdf/pdf_utils/dates.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_document.h"
-#include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
 #include "pdf/pdfium/pdfium_permissions.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
@@ -2833,11 +2832,7 @@ void PDFiumEngine::ProposeNextDocumentLayout() {
 }
 
 void PDFiumEngine::UpdateDocumentLayout(DocumentLayout* layout) {
-  std::vector<gfx::Size> page_sizes = LoadPageSizes(layout->options());
-  if (page_sizes.empty())
-    return;
-
-  layout->ComputeLayout(page_sizes);
+  layout->ComputeLayout(LoadPageSizes(layout->options()));
 }
 
 std::vector<gfx::Size> PDFiumEngine::LoadPageSizes(

@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -60,9 +60,7 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(base::IgnoreResult(&base::GetLinuxDistro)));
-#endif
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
   // Set up crypt config. This should be kept in sync with the OSCrypt parts of
   // SystemNetworkContextManager::OnNetworkServiceCreated.
   std::unique_ptr<os_crypt::Config> config(new os_crypt::Config());

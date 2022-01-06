@@ -12,8 +12,6 @@
 
 using ::testing::MatchesRegex;
 
-using ::testing::MatchesRegex;
-
 namespace lens {
 
 TEST(LensEntryPointsTest, GetRegionSearchNewTabQueryParameterTest) {

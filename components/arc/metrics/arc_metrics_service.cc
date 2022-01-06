@@ -374,6 +374,12 @@ void ArcMetricsService::ReportDnsQueryResult(mojom::ArcDnsQuery query,
   base::UmaHistogramBoolean(metric_name, success);
 }
 
+void ArcMetricsService::ReportImageCopyPasteCompatAction(
+    mojom::ArcImageCopyPasteCompatAction action_type) {
+  base::UmaHistogramEnumeration("Arc.ImageCopyPasteCompatOperationType",
+                                action_type);
+}
+
 void ArcMetricsService::NotifyLowMemoryKill() {
   for (auto& obs : app_kill_observers_)
     obs.OnArcLowMemoryKill();
@@ -588,6 +594,16 @@ void ArcMetricsService::ReportMemoryPressureArcVmKills(int count,
                                                        int estimated_freed_kb) {
   for (auto& obs : app_kill_observers_)
     obs.OnArcMemoryPressureKill(count, estimated_freed_kb);
+}
+
+void ArcMetricsService::ReportArcNetworkEvent(mojom::ArcNetworkEvent event) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::UmaHistogramEnumeration("Arc.Net.ArcNetworkEvent", event);
+}
+
+void ArcMetricsService::ReportArcNetworkError(mojom::ArcNetworkError error) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::UmaHistogramEnumeration("Arc.Net.ArcNetworkError", error);
 }
 
 ArcMetricsService::ProcessObserver::ProcessObserver(

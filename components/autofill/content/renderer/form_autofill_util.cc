@@ -1580,7 +1580,7 @@ bool FormOrFieldsetsToFormData(
     });
   }
 
-  if (form->child_frames.size() > MaxParseableChildFrames(GetFrameDepth(frame)))
+  if (form->child_frames.size() > kMaxParseableChildFrames)
     form->child_frames.clear();
 
   const bool success = (!form->fields.empty() || !form->child_frames.empty()) &&
@@ -1686,6 +1686,16 @@ bool IsVisibleIframe(const WebElement& element) {
   gfx::Rect bounds = element.BoundsInViewport();
   return element.IsFocusable() && bounds.width() > kMinPixelSize &&
          bounds.height() > kMinPixelSize;
+}
+
+WebFormElement GetTopmostAncestorFormElement(WebNode n) {
+  WebFormElement owner;
+  while (!n.IsNull()) {
+    if (n.IsElementNode() && n.To<WebElement>().HasHTMLTagName("form"))
+      owner = n.To<WebFormElement>();
+    n = n.ParentNode();
+  }
+  return owner;
 }
 
 bool IsDomPredecessor(const blink::WebNode& x,
@@ -1866,13 +1876,6 @@ bool IsAutofillableElement(const WebFormControlElement& element) {
 
 bool IsWebElementVisible(const blink::WebElement& element) {
   return element.IsFocusable();
-}
-
-size_t GetFrameDepth(const blink::WebFrame* frame) {
-  size_t depth = 0;
-  while ((frame = frame->Parent()) != nullptr)
-    ++depth;
-  return depth;
 }
 
 std::u16string GetFormIdentifier(const WebFormElement& form) {
@@ -2123,8 +2126,10 @@ bool WebFormElementToFormData(
         form_element.GetElementsByHTMLTagName("iframe");
     for (WebElement iframe = iframes.FirstItem(); !iframe.IsNull();
          iframe = iframes.NextItem()) {
-      if (IsVisibleIframe(iframe))
+      if (GetTopmostAncestorFormElement(iframe) == form_element &&
+          IsVisibleIframe(iframe)) {
         owned_iframes.push_back(iframe);
+      }
     }
   }
 
@@ -2191,20 +2196,14 @@ std::vector<WebElement> GetUnownedIframeElements(const WebDocument& document) {
   if (!base::FeatureList::IsEnabled(features::kAutofillAcrossIframes))
     return {};
 
-  auto IsOwnedByForm = [](WebElement element) {
-    for (WebNode n = element; !n.IsNull(); n = n.ParentNode()) {
-      if (n.IsElementNode() && n.To<WebElement>().HasHTMLTagName("form"))
-        return true;
-    }
-    return false;
-  };
-
   std::vector<WebElement> unowned_iframes;
   WebElementCollection iframes = document.GetElementsByHTMLTagName("iframe");
   for (WebElement iframe = iframes.FirstItem(); !iframe.IsNull();
        iframe = iframes.NextItem()) {
-    if (IsVisibleIframe(iframe) && !IsOwnedByForm(iframe))
+    if (IsVisibleIframe(iframe) &&
+        GetTopmostAncestorFormElement(iframe).IsNull()) {
       unowned_iframes.push_back(iframe);
+    }
   }
   return unowned_iframes;
 }

@@ -348,17 +348,16 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   is_math_fraction_ = builder->is_math_fraction_;
   is_math_operator_ = builder->is_math_operator_;
 
-  // TODO(ikilpatrick): Investigate if new table-cells should always produce a
-  // baseline.
-  bool has_layout_containment = layout_object_->ShouldApplyLayoutContainment();
-  if (builder->baseline_.has_value() && !has_layout_containment) {
+  const bool allow_baseline = !layout_object_->ShouldApplyLayoutContainment() ||
+                              layout_object_->IsTableCell();
+  if (allow_baseline && builder->baseline_.has_value()) {
     has_baseline_ = true;
     baseline_ = *builder->baseline_;
   } else {
     has_baseline_ = false;
     baseline_ = LayoutUnit::Min();
   }
-  if (builder->last_baseline_.has_value() && !has_layout_containment) {
+  if (allow_baseline && builder->last_baseline_.has_value()) {
     has_last_baseline_ = true;
     last_baseline_ = *builder->last_baseline_;
   } else {
@@ -994,7 +993,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
   return context.children_overflow;
 }
 
-IntPoint NGPhysicalBoxFragment::PixelSnappedScrolledContentOffset() const {
+gfx::Vector2d NGPhysicalBoxFragment::PixelSnappedScrolledContentOffset() const {
   DCHECK(GetLayoutObject());
   return To<LayoutBox>(*GetLayoutObject()).PixelSnappedScrolledContentOffset();
 }
@@ -1387,6 +1386,13 @@ PositionWithAffinity NGPhysicalBoxFragment::PositionForPoint(
 
 PositionWithAffinity NGPhysicalBoxFragment::PositionForPointByClosestChild(
     PhysicalOffset point_in_contents) const {
+  if (layout_object_->ChildPaintBlockedByDisplayLock()) {
+    // If this node is DisplayLocked, then Children() will have invalid layout
+    // information.
+    return AdjustForEditingBoundary(
+        FirstPositionInOrBeforeNode(*layout_object_->GetNode()));
+  }
+
   NGLink closest_child = {nullptr};
   LayoutUnit shortest_distance = LayoutUnit::Max();
   bool found_hit_test_candidate = false;
@@ -1462,6 +1468,14 @@ NGPhysicalBoxFragment::PositionForPointInBlockFlowDirection(
   DCHECK(!layout_object_->IsTable()) << this;
   DCHECK(ShouldUsePositionForPointInBlockFlowDirection(*layout_object_))
       << this;
+
+  if (layout_object_->ChildPaintBlockedByDisplayLock()) {
+    // If this node is DisplayLocked, then Children() will have invalid layout
+    // information.
+    return AdjustForEditingBoundary(
+        FirstPositionInOrBeforeNode(*layout_object_->GetNode()));
+  }
+
   const bool blocks_are_flipped = Style().IsFlippedBlocksWritingMode();
   WritingModeConverter converter(Style().GetWritingDirection(), Size());
   const LogicalOffset logical_point_in_contents =

@@ -11,7 +11,6 @@
 #include "ash/capture_mode/capture_mode_notification_view.h"
 #include "ash/capture_mode/capture_mode_session.h"
 #include "ash/capture_mode/capture_mode_util.h"
-#include "ash/capture_mode/video_recording_watcher.h"
 #include "ash/constants/ash_features.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/projector/projector_controller_impl.h"
@@ -28,7 +27,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
-#include "base/bind_post_task.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
@@ -39,6 +38,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/current_thread.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -46,6 +46,7 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user_type.h"
 #include "components/vector_icons/vector_icons.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -53,6 +54,7 @@
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/message_center/message_center.h"
@@ -95,6 +97,18 @@ constexpr base::TimeDelta kResetCaptureRegionDuration = base::Minutes(8);
 constexpr char kCustomCapturePathPrefName[] =
     "ash.capture_mode.custom_save_path";
 
+// The name of a boolean pref that indicates whether the default downloads path
+// is currently selected even if a custom capture path is set.
+constexpr char kUsesDefaultCapturePathPrefName[] =
+    "ash.capture_mode.uses_default_capture_path";
+
+// The name of a boolean pref that determines whether we can show the folder
+// selection user nudge. When this pref is false, it means that we showed the
+// nudge at some point and the user interacted with the capture mode session UI
+// in such a way that the nudge no longer needs to be displayed again.
+constexpr char kCanShowFolderSelectionNudge[] =
+    "ash.capture_mode.can_show_folder_selection_nudge";
+
 // The screenshot notification button index.
 enum ScreenshotNotificationButtonIndex {
   BUTTON_EDIT = 0,
@@ -135,41 +149,59 @@ std::string GetTimeStr(const base::Time::Exploded& timestamp,
   return time.append(timestamp.hour >= 12 ? " PM" : " AM");
 }
 
-// Writes the given |data| in a file with |path|. Returns true if saving
+// Selects a file path for captured files (image/video) from `current_path` and
+// `fallback_path`. If `current_path` is valid, use `current_path`, otherwise
+// use `fallback_path`.
+base::FilePath SelectFilePathForCapturedFile(
+    const base::FilePath& current_path,
+    const base::FilePath& fallback_path) {
+  if (base::PathExists(current_path.DirName()))
+    return current_path;
+  DCHECK(base::PathExists(fallback_path.DirName()));
+  return fallback_path;
+}
+
+// Writes the given `data` in a file with `path`. Returns true if saving
 // succeeded, or false otherwise.
-bool SaveFile(scoped_refptr<base::RefCountedMemory> data,
-              const base::FilePath& path) {
+base::FilePath DoSaveFile(scoped_refptr<base::RefCountedMemory> data,
+                          const base::FilePath& path) {
   DCHECK(data);
   const int size = static_cast<int>(data->size());
   DCHECK(size);
-  DCHECK(!base::CurrentUIThread::IsSet());
-  DCHECK(!path.empty());
-
-  if (!base::PathExists(path.DirName())) {
-    LOG(ERROR) << "File path doesn't exist: " << path.DirName();
-    return false;
-  }
-
   if (size != base::WriteFile(
                   path, reinterpret_cast<const char*>(data->front()), size)) {
     LOG(ERROR) << "Failed to save file: " << path;
-    return false;
+    return base::FilePath();
   }
+  return path;
+}
 
-  return true;
+// Attempts to write the given `data` with the file path returned from
+// `SelectAFilePathForCapturedFile`.
+base::FilePath SaveFile(scoped_refptr<base::RefCountedMemory> data,
+                        const base::FilePath& current_path,
+                        const base::FilePath& fallback_path) {
+  DCHECK(!base::CurrentUIThread::IsSet());
+  DCHECK(!current_path.empty());
+  DCHECK(!fallback_path.empty());
+
+  return DoSaveFile(data,
+                    SelectFilePathForCapturedFile(current_path, fallback_path));
 }
 
 void DeleteFileAsync(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                     const base::FilePath& path) {
+                     const base::FilePath& path,
+                     OnFileDeletedCallback callback) {
   task_runner->PostTaskAndReplyWithResult(
       FROM_HERE, base::BindOnce(&base::DeleteFile, path),
-      base::BindOnce(
-          [](const base::FilePath& path, bool success) {
-            // TODO(afakhry): Show toast?
-            if (!success)
-              LOG(ERROR) << "Failed to delete the file: " << path;
-          },
-          path));
+      callback ? base::BindOnce(std::move(callback), path)
+               : base::BindOnce(
+                     [](const base::FilePath& path, bool success) {
+                       // TODO(afakhry): Show toast?
+                       if (!success)
+                         LOG(ERROR) << "Failed to delete the file: " << path;
+                     },
+                     path));
 }
 
 // Shows a Capture Mode related notification with the given parameters.
@@ -257,19 +289,16 @@ void ShowDisabledNotification(CaptureAllowance allowance) {
           : vector_icons::kBusinessIcon);
 }
 
-// Shows a notification informing the user that video recording was stopped. If
-// |for_hdcp| is true, then this was due to a content-enforced protection,
-// otherwise it was due to DLP which is admin enforced.
-void ShowVideoRecordingStoppedNotification(bool for_hdcp) {
+// Shows a notification informing the user that video recording was stopped due
+// to a content-enforced protection.
+void ShowVideoRecordingStoppedByHdcpNotification() {
   ShowNotification(
       kScreenCaptureStoppedNotificationId,
-      for_hdcp ? IDS_ASH_SCREEN_CAPTURE_HDCP_STOPPED_TITLE
-               : IDS_ASH_SCREEN_CAPTURE_DLP_STOPPED_TITLE,
-      for_hdcp ? IDS_ASH_SCREEN_CAPTURE_HDCP_BLOCKED_MESSAGE
-               : IDS_ASH_SCREEN_CAPTURE_DLP_STOPPED_MESSAGE,
+      IDS_ASH_SCREEN_CAPTURE_HDCP_STOPPED_TITLE,
+      IDS_ASH_SCREEN_CAPTURE_HDCP_BLOCKED_MESSAGE,
       /*optional_fields=*/{}, /*delegate=*/nullptr,
       message_center::SystemNotificationWarningLevel::CRITICAL_WARNING,
-      for_hdcp ? kCaptureModeIcon : vector_icons::kBusinessIcon);
+      kCaptureModeIcon);
 }
 
 // Copies the bitmap representation of the given |image| to the clipboard.
@@ -316,6 +345,15 @@ void EmitServiceRecordingStatus(recording::mojom::RecordingStatus status) {
       RecordEndRecordingReason(EndRecordingReason::kLowDiskSpace);
       break;
   }
+}
+
+PrefService* GetActiveUserPrefService() {
+  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
+
+  auto* pref_service =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  DCHECK(pref_service);
+  return pref_service;
 }
 
 }  // namespace
@@ -401,6 +439,10 @@ CaptureModeController* CaptureModeController::Get() {
 void CaptureModeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterFilePathPref(kCustomCapturePathPrefName,
                                  /*default_value=*/base::FilePath());
+  registry->RegisterBooleanPref(kUsesDefaultCapturePathPrefName,
+                                /*default_value=*/false);
+  registry->RegisterBooleanPref(kCanShowFolderSelectionNudge,
+                                /*default_value=*/true);
 }
 
 bool CaptureModeController::IsActive() const {
@@ -511,16 +553,66 @@ void CaptureModeController::SetUserCaptureRegion(const gfx::Rect& region,
     last_capture_region_update_time_ = base::TimeTicks::Now();
 }
 
-void CaptureModeController::SetCustomCaptureFolder(const base::FilePath& path) {
-  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
+bool CaptureModeController::CanShowFolderSelectionNudge() const {
+  auto* session_controller = Shell::Get()->session_controller();
+  DCHECK(session_controller->IsActiveUserSessionStarted());
 
-  auto* pref_service =
-      Shell::Get()->session_controller()->GetActivePrefService();
+  absl::optional<user_manager::UserType> user_type =
+      session_controller->GetUserType();
+  // This can only be called while a user is logged in, so `user_type` should
+  // never be empty.
+  DCHECK(user_type);
+  switch (*user_type) {
+    case user_manager::USER_TYPE_REGULAR:
+    case user_manager::USER_TYPE_CHILD:
+      // We only allow regular and child accounts to see the nudge.
+      break;
+    case user_manager::USER_TYPE_GUEST:
+    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+    case user_manager::USER_TYPE_KIOSK_APP:
+    case user_manager::USER_TYPE_ARC_KIOSK_APP:
+    case user_manager::USER_TYPE_WEB_KIOSK_APP:
+    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+    case user_manager::NUM_USER_TYPES:
+      return false;
+  }
+
+  auto* pref_service = session_controller->GetActivePrefService();
   DCHECK(pref_service);
+  return pref_service->GetBoolean(kCanShowFolderSelectionNudge);
+}
+
+void CaptureModeController::DisableFolderSelectionNudgeForever() {
+  GetActiveUserPrefService()->SetBoolean(kCanShowFolderSelectionNudge, false);
+}
+
+void CaptureModeController::SetUsesDefaultCaptureFolder(bool value) {
+  GetActiveUserPrefService()->SetBoolean(kUsesDefaultCapturePathPrefName,
+                                         value);
+
+  if (IsActive())
+    capture_mode_session_->OnDefaultCaptureFolderSelectionChanged();
+}
+
+void CaptureModeController::SetCustomCaptureFolder(const base::FilePath& path) {
+  auto* pref_service = GetActiveUserPrefService();
   pref_service->SetFilePath(kCustomCapturePathPrefName, path);
 
-  // TODO(https://crbug.com/1250885): Propagate the changes to the capture
-  // session (if any).
+  // When this function is called, it means the user is switching back to the
+  // custom capture folder, and we need to reset the setting to force using the
+  // default downloads folder.
+  pref_service->SetBoolean(kUsesDefaultCapturePathPrefName, false);
+
+  if (IsActive())
+    capture_mode_session_->OnCaptureFolderMayHaveChanged();
+}
+
+base::FilePath CaptureModeController::GetCustomCaptureFolder() const {
+  const auto custom_path =
+      GetActiveUserPrefService()->GetFilePath(kCustomCapturePathPrefName);
+  return custom_path != delegate_->GetUserDefaultDownloadsFolder()
+             ? custom_path
+             : base::FilePath();
 }
 
 CaptureModeController::CaptureFolder
@@ -536,7 +628,8 @@ CaptureModeController::GetCurrentCaptureFolder() const {
       Shell::Get()->session_controller()->GetActivePrefService();
   const auto default_downloads_folder =
       delegate_->GetUserDefaultDownloadsFolder();
-  if (pref_service) {
+  if (pref_service &&
+      !pref_service->GetBoolean(kUsesDefaultCapturePathPrefName)) {
     const auto custom_path =
         pref_service->GetFilePath(kCustomCapturePathPrefName);
     if (!custom_path.empty()) {
@@ -579,7 +672,8 @@ void CaptureModeController::CaptureScreenshotsOfAllDisplays() {
   // Since this doesn't create a capture mode session, log metrics here.
   RecordCaptureModeEntryType(CaptureModeEntryType::kCaptureAllDisplays);
   RecordCaptureModeConfiguration(CaptureModeType::kImage,
-                                 CaptureModeSource::kFullscreen);
+                                 CaptureModeSource::kFullscreen,
+                                 /*audio_on=*/false);
 }
 
 void CaptureModeController::PerformCapture() {
@@ -616,6 +710,14 @@ void CaptureModeController::EndVideoRecording(EndRecordingReason reason) {
   TerminateRecordingUiElements();
 }
 
+void CaptureModeController::CheckFolderAvailability(
+    const base::FilePath& folder,
+    base::OnceCallback<void(bool available)> callback) {
+  blocking_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&base::PathExists, folder),
+      base::BindOnce(std::move(callback)));
+}
+
 void CaptureModeController::SetWindowProtectionMask(aura::Window* window,
                                                     uint32_t protection_mask) {
   if (protection_mask == display::CONTENT_PROTECTION_METHOD_NONE)
@@ -637,7 +739,7 @@ void CaptureModeController::RefreshContentProtection() {
     // the service immediately so as not to record any further frames.
     RecordEndRecordingReason(EndRecordingReason::kHdcpInterruption);
     FinalizeRecording(/*success=*/false, gfx::ImageSkia());
-    ShowVideoRecordingStoppedNotification(/*for_hdcp=*/true);
+    ShowVideoRecordingStoppedByHdcpNotification();
   }
 }
 
@@ -934,8 +1036,6 @@ CaptureAllowance CaptureModeController::IsCaptureAllowedByEnterprisePolicies(
 
 void CaptureModeController::FinalizeRecording(bool success,
                                               const gfx::ImageSkia& thumbnail) {
-  delegate_->StopObservingRestrictedContent();
-
   // If |success| is false, then recording has been force-terminated due to a
   // failure on the service side, or a disconnection to it. We need to terminate
   // the recording-related UI elements.
@@ -948,8 +1048,14 @@ void CaptureModeController::FinalizeRecording(bool success,
   recording_service_remote_.reset();
   delegate_->OnServiceRemoteReset();
   recording_service_client_receiver_.reset();
+  const bool was_in_projector_mode =
+      video_recording_watcher_->is_in_projector_mode();
+  video_recording_watcher_.reset();
 
-  OnVideoFileSaved(thumbnail, success);
+  delegate_->StopObservingRestrictedContent(
+      base::BindOnce(&CaptureModeController::OnDlpRestrictionCheckedAtVideoEnd,
+                     weak_ptr_factory_.GetWeakPtr(), thumbnail, success,
+                     was_in_projector_mode));
 }
 
 void CaptureModeController::TerminateRecordingUiElements() {
@@ -959,10 +1065,11 @@ void CaptureModeController::TerminateRecordingUiElements() {
   capture_mode_util::SetStopRecordingButtonVisibility(
       video_recording_watcher_->window_being_recorded()->GetRootWindow(),
       false);
-  video_recording_watcher_.reset();
 
   capture_mode_util::TriggerAccessibilityAlert(
       IDS_ASH_SCREEN_CAPTURE_ALERT_RECORDING_STOPPED);
+
+  video_recording_watcher_->ShutDown();
 }
 
 void CaptureModeController::CaptureImage(const CaptureParams& capture_params,
@@ -1038,61 +1145,60 @@ void CaptureModeController::OnImageCaptured(
     ShowFailureNotification();
     return;
   }
-
   blocking_task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE, base::BindOnce(&SaveFile, png_bytes, path),
+      FROM_HERE,
+      base::BindOnce(&SaveFile, png_bytes, path,
+                     GetFallbackFilePathFromFile(path)),
       base::BindOnce(&CaptureModeController::OnImageFileSaved,
-                     weak_ptr_factory_.GetWeakPtr(), png_bytes, path));
+                     weak_ptr_factory_.GetWeakPtr(), png_bytes));
 }
 
 void CaptureModeController::OnImageFileSaved(
     scoped_refptr<base::RefCountedMemory> png_bytes,
-    const base::FilePath& path,
-    bool success) {
-  if (!success) {
+    const base::FilePath& file_saved_path) {
+  if (file_saved_path.empty()) {
     ShowFailureNotification();
     return;
   }
-
-  if (!on_file_saved_callback_.is_null())
-    std::move(on_file_saved_callback_).Run(path);
+  if (on_file_saved_callback_for_test_)
+    std::move(on_file_saved_callback_for_test_).Run(file_saved_path);
 
   DCHECK(png_bytes && png_bytes->size());
   const auto image = gfx::Image::CreateFrom1xPNGBytes(png_bytes);
   CopyImageToClipboard(image);
-  ShowPreviewNotification(path, image, CaptureModeType::kImage);
-
+  ShowPreviewNotification(file_saved_path, image, CaptureModeType::kImage);
+  RecordSaveToLocation(GetSaveToOption(file_saved_path));
   HoldingSpaceClient* client = HoldingSpaceController::Get()->client();
   if (client)  // May be `nullptr` in tests.
-    client->AddScreenshot(path);
+    client->AddScreenshot(file_saved_path);
 }
 
 void CaptureModeController::OnVideoFileSaved(
+    const base::FilePath& saved_video_file_path,
     const gfx::ImageSkia& video_thumbnail,
-    bool success) {
+    bool success,
+    bool in_projector_mode) {
   DCHECK(base::CurrentUIThread::IsSet());
 
   if (!success) {
     ShowFailureNotification();
   } else {
-    ShowPreviewNotification(current_video_file_path_,
-                            gfx::Image(video_thumbnail),
-                            CaptureModeType::kVideo);
+    if (!in_projector_mode) {
+      ShowPreviewNotification(saved_video_file_path,
+                              gfx::Image(video_thumbnail),
+                              CaptureModeType::kVideo);
+      HoldingSpaceClient* client = HoldingSpaceController::Get()->client();
+      if (client)  // May be `nullptr` in tests.
+        client->AddScreenRecording(saved_video_file_path);
+    }
     DCHECK(!recording_start_time_.is_null());
     RecordCaptureModeRecordTime(
         (base::TimeTicks::Now() - recording_start_time_).InSeconds());
-
-    HoldingSpaceClient* client = HoldingSpaceController::Get()->client();
-    if (client)  // May be `nullptr` in tests.
-      client->AddScreenRecording(current_video_file_path_);
   }
+  RecordSaveToLocation(GetSaveToOption(saved_video_file_path));
 
-  if (!on_file_saved_callback_.is_null())
-    std::move(on_file_saved_callback_).Run(current_video_file_path_);
-
-  low_disk_space_threshold_reached_ = false;
-  recording_start_time_ = base::TimeTicks();
-  current_video_file_path_.clear();
+  if (on_file_saved_callback_for_test_)
+    std::move(on_file_saved_callback_for_test_).Run(saved_video_file_path);
 }
 
 void CaptureModeController::ShowPreviewNotification(
@@ -1140,7 +1246,8 @@ void CaptureModeController::HandleNotificationClicked(
     if (type == CaptureModeType::kVideo) {
       DCHECK_EQ(button_index_value,
                 VideoNotificationButtonIndex::BUTTON_DELETE_VIDEO);
-      DeleteFileAsync(blocking_task_runner_, screen_capture_path);
+      DeleteFileAsync(blocking_task_runner_, screen_capture_path,
+                      std::move(on_file_deleted_callback_for_test_));
     } else {
       DCHECK_EQ(type, CaptureModeType::kImage);
       switch (button_index_value) {
@@ -1150,7 +1257,8 @@ void CaptureModeController::HandleNotificationClicked(
               CaptureQuickAction::kBacklight);
           break;
         case ScreenshotNotificationButtonIndex::BUTTON_DELETE:
-          DeleteFileAsync(blocking_task_runner_, screen_capture_path);
+          DeleteFileAsync(blocking_task_runner_, screen_capture_path,
+                          std::move(on_file_deleted_callback_for_test_));
           RecordScreenshotNotificationQuickAction(CaptureQuickAction::kDelete);
           break;
         default:
@@ -1194,12 +1302,14 @@ base::FilePath CaptureModeController::BuildPathNoExtension(
   base::Time::Exploded exploded_time;
   timestamp.LocalExplode(&exploded_time);
 
-  // TODO(https://crbug.com/1252156): The current path can become unavailable at
-  // any time before we get here. We need to handle the cases mentioned on the
-  // bug.
   return GetCurrentCaptureFolder().path.AppendASCII(base::StringPrintf(
       format_string, GetDateStr(exploded_time).c_str(),
       GetTimeStr(exploded_time, delegate_->Uses24HourFormat()).c_str()));
+}
+
+base::FilePath CaptureModeController::GetFallbackFilePathFromFile(
+    const base::FilePath& path) {
+  return delegate_->GetUserDefaultDownloadsFolder().Append(path.BaseName());
 }
 
 void CaptureModeController::RecordAndResetScreenshotsTakenInLastDay() {
@@ -1230,6 +1340,22 @@ void CaptureModeController::OnVideoRecordCountDownFinished() {
     return;
   }
 
+  // During the 3-second count down, screen content might have changed such that
+  // admin-restricted or HDCP content became present. We must check again.
+  const CaptureAllowance allowance =
+      IsCaptureAllowedByEnterprisePolicies(*capture_params);
+  if (allowance != CaptureAllowance::kAllowed) {
+    Stop();
+    ShowDisabledNotification(allowance);
+    return;
+  }
+
+  if (ShouldBlockRecordingForContentProtection(capture_params->window)) {
+    Stop();
+    ShowDisabledNotification(CaptureAllowance::kDisallowedByHdcp);
+    return;
+  }
+
   // In Projector mode, the creation of the DriveFS folder that will host the
   // video is asynchronous. We don't want the user to be able to bail out of the
   // session at this point, since we don't want to create that folder in vain.
@@ -1242,9 +1368,23 @@ void CaptureModeController::OnVideoRecordCountDownFinished() {
             weak_ptr_factory_.GetWeakPtr(), *capture_params));
     return;
   }
+  const base::FilePath current_path = BuildVideoPath();
 
-  BeginVideoRecording(*capture_params,
-                      /*for_projector=*/false, BuildVideoPath());
+  // If the current capture folder is not the default `Downloads` folder, we
+  // need to validate the current folder first before starting the video
+  // recording.
+  if (!GetCurrentCaptureFolder().is_default_downloads_folder) {
+    blocking_task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(&SelectFilePathForCapturedFile, current_path,
+                       GetFallbackFilePathFromFile(current_path)),
+        base::BindOnce(&CaptureModeController::BeginVideoRecording,
+                       weak_ptr_factory_.GetWeakPtr(), *capture_params,
+                       /*for_projector=*/false));
+    return;
+  }
+
+  BeginVideoRecording(*capture_params, /*for_projector=*/false, current_path);
 }
 
 void CaptureModeController::OnProjectorContainerFolderCreated(
@@ -1282,23 +1422,13 @@ void CaptureModeController::BeginVideoRecording(
       capture_mode_session_->ReleaseLayer();
   session_layer->set_delegate(nullptr);
 
+  // At this point, recording is guaranteed to start, and cannot be prevented by
+  // DLP or user cancellation.
+  capture_mode_session_->set_is_stopping_to_start_video_recording(true);
+
   // Stop the capture session now, so the bar doesn't show up in the captured
   // video.
   Stop();
-
-  // During the 3-second count down, screen content might have changed such that
-  // admin-restricted or HDCP content became present. We must check again.
-  const CaptureAllowance allowance =
-      IsCaptureAllowedByEnterprisePolicies(capture_params);
-  if (allowance != CaptureAllowance::kAllowed) {
-    ShowDisabledNotification(allowance);
-    return;
-  }
-
-  if (ShouldBlockRecordingForContentProtection(capture_params.window)) {
-    ShowDisabledNotification(CaptureAllowance::kDisallowedByHdcp);
-    return;
-  }
 
   mojo::PendingRemote<viz::mojom::FrameSinkVideoCaptureOverlay>
       cursor_capture_overlay;
@@ -1329,8 +1459,44 @@ void CaptureModeController::BeginVideoRecording(
 }
 
 void CaptureModeController::InterruptVideoRecording() {
-  ShowVideoRecordingStoppedNotification(/*for_hdcp=*/false);
   EndVideoRecording(EndRecordingReason::kDlpInterruption);
+}
+
+void CaptureModeController::OnDlpRestrictionCheckedAtVideoEnd(
+    const gfx::ImageSkia& video_thumbnail,
+    bool success,
+    bool in_projector_mode,
+    bool proceed) {
+  const bool should_delete_file = !proceed;
+  const auto video_file_path = current_video_file_path_;
+  current_video_file_path_.clear();
+
+  if (should_delete_file) {
+    DeleteFileAsync(blocking_task_runner_, video_file_path,
+                    std::move(on_file_deleted_callback_for_test_));
+  } else {
+    OnVideoFileSaved(video_file_path, video_thumbnail, success,
+                     in_projector_mode);
+  }
+
+  low_disk_space_threshold_reached_ = false;
+  recording_start_time_ = base::TimeTicks();
+}
+
+CaptureModeSaveToLocation CaptureModeController::GetSaveToOption(
+    const base::FilePath& path) {
+  const auto dir_path = path.DirName();
+  if (dir_path == delegate_->GetUserDefaultDownloadsFolder())
+    return CaptureModeSaveToLocation::kDefault;
+  base::FilePath mounted_path;
+  if (delegate_->GetDriveFsMountPointPath(&mounted_path)) {
+    if (dir_path == mounted_path)
+      return CaptureModeSaveToLocation::kDrive;
+
+    if (mounted_path.IsParent(dir_path))
+      return CaptureModeSaveToLocation::kDriveFolder;
+  }
+  return CaptureModeSaveToLocation::kCustomizedFolder;
 }
 
 }  // namespace ash

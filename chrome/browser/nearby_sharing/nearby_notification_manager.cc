@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -67,6 +68,11 @@ message_center::Notification CreateNearbyNotification(const std::string& id) {
       message_center::SettingsButtonHandler::DELEGATE);
 
   return notification;
+}
+
+std::string GetTimestampString() {
+  return base::NumberToString(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
 FileAttachment::Type GetCommonFileAttachmentType(
@@ -408,7 +414,7 @@ class ReceivedImageDecoder : public ImageDecoder::ImageRequest {
       return;
     }
 
-    ImageDecoder::Start(this, *contents);
+    ImageDecoder::Start(this, std::move(*contents));
   }
 
   ImageCallback callback_;
@@ -1032,7 +1038,15 @@ void NearbyNotificationManager::OnNearbyDeviceTryingToShareClicked() {
 
   std::string path =
       std::string(chromeos::settings::mojom::kNearbyShareSubpagePath) +
-      "?receive";
+      "?receive&entrypoint=notification&";
+
+  // Append a timestamp to ensure that the URL that we use to open the receive
+  // dialog on the Nearby Share subpage is unique each time the user clicks on
+  // an instance of this notification. This ensures that the page will reload
+  // and we will restart high visibility mode. Since we don't actually read this
+  // timestamp, it will not cause a problem if the user manually reloads the
+  // page with a stale timestamp.
+  path += "&time=" + GetTimestampString();
   settings_opener_->ShowSettingsPage(profile_, path);
 }
 

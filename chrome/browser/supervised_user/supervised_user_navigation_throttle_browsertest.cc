@@ -4,15 +4,19 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
@@ -218,8 +222,14 @@ void SupervisedUserNavigationThrottleTest::SetUpOnMainThread() {
 }
 
 // Tests that prerendering fails in supervised user mode.
+#if defined(OS_CHROMEOS)
+// TODO(crbug.com/1259146): Flaky on ChromeOS.
+#define MAYBE_DisallowPrerendering DISABLED_DisallowPrerendering
+#else
+#define MAYBE_DisallowPrerendering DisallowPrerendering
+#endif
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
-                       DisallowPrerendering) {
+                       MAYBE_DisallowPrerendering) {
   base::HistogramTester histogram_tester;
   const GURL initial_url = embedded_test_server()->GetURL("/simple.html");
   const GURL allowed_url =
@@ -334,17 +344,11 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
 
 class SupervisedUserIframeFilterTest
     : public SupervisedUserNavigationThrottleTest,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<
+          std::tuple</* web_filter_interstitial_refresh_enabled */ bool,
+                     /* local_web_approvals_enabled */ bool>> {
  protected:
-  SupervisedUserIframeFilterTest() {
-    if (GetParam()) {
-      scoped_feature_list_.InitWithFeatures(
-          /* enabled_features */ {supervised_users::
-                                      kWebFilterInterstitialRefresh,
-                                  supervised_users::kLocalWebApprovals},
-          /* disabled_features */ {});
-    }
-  }
+  SupervisedUserIframeFilterTest() { InitFeatures(); }
 
   ~SupervisedUserIframeFilterTest() override = default;
 
@@ -358,6 +362,8 @@ class SupervisedUserIframeFilterTest
   bool IsLocalApprovalsButtonBeingShown(int frame_id);
   void RequestPermissionFromFrame(int frame_id);
   void WaitForNavigationFinished(int frame_id, const GURL& url);
+  void InitFeatures();
+  bool IsWebFilterInterstitialRefreshEnabled() const;
   bool IsLocalWebApprovalsEnabled() const;
 
   PermissionRequestCreatorMock* permission_creator() {
@@ -385,7 +391,9 @@ void SupervisedUserIframeFilterTest::SetUpOnMainThread() {
   permission_creator_ =
       static_cast<PermissionRequestCreatorMock*>(creator.get());
   permission_creator_->SetEnabled();
-  service->SetPrimaryPermissionCreatorForTest(std::move(creator));
+  service->web_approvals_manager().ClearRemoteApprovalRequestsCreators();
+  service->web_approvals_manager().AddRemoteApprovalRequestCreator(
+      std::move(creator));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   tracker_ = std::make_unique<RenderFrameTracker>(tab);
@@ -487,13 +495,43 @@ bool SupervisedUserIframeFilterTest::RunCommandAndGetBooleanFromFrame(
   return value;
 }
 
-bool SupervisedUserIframeFilterTest::IsLocalWebApprovalsEnabled() const {
-  return GetParam();
+void SupervisedUserIframeFilterTest::InitFeatures() {
+  std::vector<base::Feature> enabled_features, disabled_features;
+  if (IsWebFilterInterstitialRefreshEnabled()) {
+    enabled_features.push_back(supervised_users::kWebFilterInterstitialRefresh);
+  } else {
+    disabled_features.push_back(
+        supervised_users::kWebFilterInterstitialRefresh);
+  }
+  if (IsLocalWebApprovalsEnabled()) {
+    enabled_features.push_back(supervised_users::kLocalWebApprovals);
+  } else {
+    disabled_features.push_back(supervised_users::kLocalWebApprovals);
+  }
+  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 }
 
-INSTANTIATE_TEST_SUITE_P(LocalWebApprovalsEnabled,
-                         SupervisedUserIframeFilterTest,
-                         testing::Bool());
+bool SupervisedUserIframeFilterTest::IsWebFilterInterstitialRefreshEnabled()
+    const {
+  return std::get<0>(GetParam());
+}
+
+bool SupervisedUserIframeFilterTest::IsLocalWebApprovalsEnabled() const {
+  return std::get<1>(GetParam());
+}
+
+// Only test the valid configurations of the two flags. LocalWebApprovals will
+// not be enabled without the WebFilterInterstitialRefresh flag.
+INSTANTIATE_TEST_SUITE_P(
+    LocalWebApprovalsEnabled,
+    SupervisedUserIframeFilterTest,
+    testing::Values(
+        std::make_tuple(/* web_filter_interstitial_refresh_enabled */ true,
+                        /* local_web_approvals_enabled */ true),
+        std::make_tuple(/* web_filter_interstitial_refresh_enabled */ true,
+                        /* local_web_approvals_enabled */ false),
+        std::make_tuple(/* web_filter_interstitial_refresh_enabled */ false,
+                        /* local_web_approvals_enabled */ false)));
 
 IN_PROC_BROWSER_TEST_P(SupervisedUserIframeFilterTest, BlockSubFrame) {
   BlockHost(kIframeHost2);
@@ -762,9 +800,18 @@ void SupervisedUserNarrowWidthIframeFilterTest::SetUp() {
   SupervisedUserIframeFilterTest::SetUp();
 }
 
-INSTANTIATE_TEST_SUITE_P(LocalWebApprovalsEnabledNarrowWidth,
-                         SupervisedUserNarrowWidthIframeFilterTest,
-                         testing::Bool());
+// Only test the valid configurations of the two flags. LocalWebApprovals will
+// not be enabled without the WebFilterInterstitialRefresh flag.
+INSTANTIATE_TEST_SUITE_P(
+    LocalWebApprovalsEnabledNarrowWidth,
+    SupervisedUserNarrowWidthIframeFilterTest,
+    testing::Values(
+        std::make_tuple(/* web_filter_interstitial_refresh_enabled */ true,
+                        /* local_web_approvals_enabled */ true),
+        std::make_tuple(/* web_filter_interstitial_refresh_enabled */ true,
+                        /* local_web_approvals_enabled */ false),
+        std::make_tuple(/* web_filter_interstitial_refresh_enabled */ false,
+                        /* local_web_approvals_enabled */ false)));
 
 IN_PROC_BROWSER_TEST_P(SupervisedUserNarrowWidthIframeFilterTest,
                        NarrowWidthWindow) {

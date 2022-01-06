@@ -6,6 +6,8 @@ component("crdtp") {
   sources = [
     "crdtp/cbor.cc",
     "crdtp/cbor.h",
+    "crdtp/chromium/protocol_traits.cc",
+    "crdtp/chromium/protocol_traits.h",
     "crdtp/dispatch.cc",
     "crdtp/dispatch.h",
     "crdtp/error_support.cc",
@@ -29,11 +31,16 @@ component("crdtp") {
 
   defines = [ "CRDTP_IMPLEMENTATION" ]
 
-  if (!is_debug) {
+  # Disable max speed optimizations for size-sensitive platforms.
+  if (!is_debug && !is_fuchsia) {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
-  deps = [ ":crdtp_platform" ]
+
+  deps = [
+    ":crdtp_platform",
+    "//base",
+  ]
 }
 
 # A small adapter library which only :crdtp may depend on.

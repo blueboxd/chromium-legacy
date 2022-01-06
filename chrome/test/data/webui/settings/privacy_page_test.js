@@ -6,11 +6,11 @@
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {CategorySettingExceptionsElement, ClearBrowsingDataBrowserProxyImpl, ContentSettingsTypes, CookieControlsMode, SafeBrowsingSetting, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {CategorySettingExceptionsElement, ClearBrowsingDataBrowserProxyImpl, ContentSettingsTypes, CookieControlsMode, CookiePrimarySetting, SafeBrowsingSetting, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Route, Router, routes, SecureDnsMode, SettingsPrivacyPageElement, TrustSafetyInteraction} from 'chrome://settings/settings.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {flushTasks, isChildVisible, isVisible} from '../test_util.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {flushTasks, isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
 
 import {TestClearBrowsingDataBrowserProxy} from './test_clear_browsing_data_browser_proxy.js';
 import {TestHatsBrowserProxy} from './test_hats_browser_proxy.js';
@@ -218,6 +218,26 @@ suite('PrivacyReviewEnabled', function() {
     document.body.innerHTML = '';
     page = /** @type {!SettingsPrivacyPageElement} */
         (document.createElement('settings-privacy-page'));
+    page.prefs = {
+      // Need privacy_sandbox pref for the page's setup.
+      privacy_sandbox: {
+        apis_enabled: {value: true},
+      },
+      privacy_review: {
+        show_welcome_card:
+            {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
+      },
+      generated: {
+        cookie_primary_setting: {
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: CookiePrimarySetting.BLOCK_THIRD_PARTY,
+        },
+        safe_browsing: {
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: SafeBrowsingSetting.STANDARD,
+        },
+      },
+    };
     document.body.appendChild(page);
     return flushTasks();
   });

@@ -10,7 +10,6 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/constants/ash_features.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -28,7 +27,9 @@
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
+#include "ash/wm/desks/templates/desks_templates_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
@@ -37,7 +38,6 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
-#include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -62,13 +62,6 @@
 namespace ash {
 
 namespace {
-
-// Values for the no items indicator which appears when opening overview mode
-// with no opened windows.
-constexpr int kNoItemsIndicatorHeightDp = 32;
-constexpr int kNoItemsIndicatorHorizontalPaddingDp = 16;
-constexpr int kNoItemsIndicatorRoundingDp = 16;
-constexpr int kNoItemsIndicatorVerticalPaddingDp = 8;
 
 // Values for scrolling the grid by using the keyboard.
 // TODO(sammiequon): See if we can use the same values used for web scrolling.
@@ -172,10 +165,22 @@ void OverviewSession::Init(const WindowList& windows,
                            const WindowList& hide_windows) {
   Shell::Get()->AddShellObserver(this);
 
+  if (desks_templates_util::AreDesksTemplatesEnabled())
+    tablet_mode_observation_.Observe(Shell::Get()->tablet_mode_controller());
+
   hide_overview_windows_ = std::make_unique<ScopedOverviewHideWindows>(
       std::move(hide_windows), /*force_hidden=*/false);
   if (active_window_before_overview_)
     active_window_before_overview_->AddObserver(this);
+
+  // Create this before the desks bar widget.
+  if (desks_templates_util::AreDesksTemplatesEnabled() &&
+      !desks_templates_presenter_) {
+    desks_templates_presenter_ =
+        std::make_unique<DesksTemplatesPresenter>(this);
+    desks_templates_dialog_controller_ =
+        std::make_unique<DesksTemplatesDialogController>();
+  }
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::sort(root_windows.begin(), root_windows.end(),
@@ -219,7 +224,7 @@ void OverviewSession::Init(const WindowList& windows,
     }
   }
 
-  UpdateNoWindowsWidget();
+  UpdateNoWindowsWidgetOnEachGrid();
 
   // Create the widget that will receive focus while in overview mode for
   // accessibility purposes. Add a button as the contents so that
@@ -264,9 +269,15 @@ void OverviewSession::Shutdown() {
   Shell::Get()->RemovePreTargetHandler(this);
   Shell::Get()->RemoveShellObserver(this);
 
+  tablet_mode_observation_.Reset();
+
   // Stop the presenter from receiving any events that may update the model or
   // UI.
   desks_templates_presenter_.reset();
+
+  // Resetting here will close any dialogs, and DCHECK anyone trying to open a
+  // dialog past this point.
+  desks_templates_dialog_controller_.reset();
 
   // Stop observing screen metrics changes first to avoid auto-positioning
   // windows in response to work area changes from window activation.
@@ -305,7 +316,7 @@ void OverviewSession::Shutdown() {
   RemoveAllObservers();
 
   for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_)
-    overview_grid->Shutdown();
+    overview_grid->Shutdown(enter_exit_overview_type_);
 
   DCHECK(num_items_ >= remaining_items);
   UMA_HISTOGRAM_COUNTS_100("Ash.Overview.OverviewClosedItems",
@@ -320,18 +331,6 @@ void OverviewSession::Shutdown() {
   // consuming them.
   if (overview_focus_widget_)
     overview_focus_widget_->Hide();
-
-  if (no_windows_widget_) {
-    if (enter_exit_overview_type_ == OverviewEnterExitType::kImmediateExit) {
-      ImmediatelyCloseWidgetOnExit(std::move(no_windows_widget_));
-      return;
-    }
-
-    // Fade out the no windows widget. This animation continues past the
-    // lifetime of |this|.
-    FadeOutWidgetFromOverview(std::move(no_windows_widget_),
-                              OVERVIEW_ANIMATION_RESTORE_WINDOW);
-  }
 }
 
 void OverviewSession::OnGridEmpty() {
@@ -340,7 +339,7 @@ void OverviewSession::OnGridEmpty() {
 
   if (SplitViewController::Get(Shell::GetPrimaryRootWindow())
           ->InTabletSplitViewMode()) {
-    UpdateNoWindowsWidget();
+    UpdateNoWindowsWidgetOnEachGrid();
   } else {
     EndOverview(OverviewEndAction::kLastWindowRemoved);
   }
@@ -529,7 +528,7 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item,
                                              reposition);
   --num_items_;
 
-  UpdateNoWindowsWidget();
+  UpdateNoWindowsWidgetOnEachGrid();
   UpdateAccessibilityFocus();
 }
 
@@ -553,8 +552,10 @@ void OverviewSession::InitiateDrag(OverviewItem* item,
       this, item, is_touch_dragging);
   window_drag_controller_->InitiateDrag(location_in_screen);
 
-  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->OnSelectorItemDragStarted(item);
+    grid->UpdateSaveDeskAsTemplateButton();
+  }
 }
 
 void OverviewSession::Drag(OverviewItem* item,
@@ -574,8 +575,10 @@ void OverviewSession::CompleteDrag(OverviewItem* item,
   highlight_controller_->SetFocusHighlightVisibility(true);
   const bool snap = window_drag_controller_->CompleteDrag(location_in_screen) ==
                     OverviewWindowDragController::DragResult::kSnap;
-  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->OnSelectorItemDragEnded(snap);
+    grid->UpdateSaveDeskAsTemplateButton();
+  }
 }
 
 void OverviewSession::StartNormalDragMode(
@@ -595,8 +598,10 @@ void OverviewSession::Fling(OverviewItem* item,
   const bool snap = window_drag_controller_->Fling(location_in_screen,
                                                    velocity_x, velocity_y) ==
                     OverviewWindowDragController::DragResult::kSnap;
-  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->OnSelectorItemDragEnded(snap);
+    grid->UpdateSaveDeskAsTemplateButton();
+  }
 }
 
 void OverviewSession::ActivateDraggedWindow() {
@@ -605,8 +610,10 @@ void OverviewSession::ActivateDraggedWindow() {
 
 void OverviewSession::ResetDraggedWindowGesture() {
   window_drag_controller_->ResetGesture();
-  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->OnSelectorItemDragEnded(/*snap=*/false);
+    grid->UpdateSaveDeskAsTemplateButton();
+  }
 }
 
 void OverviewSession::OnWindowDragStarted(aura::Window* dragged_window,
@@ -654,7 +661,7 @@ void OverviewSession::PositionWindows(
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->PositionWindows(animate, ignored_items);
 
-  RefreshNoWindowsWidgetBounds(animate);
+  RefreshNoWindowsWidgetBoundsOnEachGrid(animate);
 }
 
 bool OverviewSession::IsWindowInOverview(const aura::Window* window) {
@@ -698,14 +705,6 @@ void OverviewSession::OnStartingAnimationComplete(bool canceled,
   if (canceled)
     return;
 
-  // Create this after the desks bar widget. This will try to update the desks
-  // templates button on the desks bar views during construction.
-  if (features::AreDesksTemplatesEnabled()) {
-    DCHECK(!desks_templates_presenter_);
-    desks_templates_presenter_ =
-        std::make_unique<DesksTemplatesPresenter>(this);
-  }
-
   if (overview_focus_widget_) {
     if (should_focus_overview) {
       overview_focus_widget_->Show();
@@ -741,6 +740,15 @@ void OverviewSession::OnWindowActivating(
   // Activating the Desks bar should not end overview.
   if (gained_active && gained_active->GetId() == kShellWindowId_DesksBarWindow)
     return;
+
+  // Activating one of the confirmation dialogs associated with desks templates
+  // should not end overview.
+  if (gained_active && desks_templates_util::AreDesksTemplatesEnabled()) {
+    const views::Widget* dialog_widget =
+        desks_templates_dialog_controller_->dialog_widget();
+    if (dialog_widget && gained_active == dialog_widget->GetNativeWindow())
+      return;
+  }
 
   if (DesksController::Get()->AreDesksBeingModified()) {
     // Activating a desk from its mini view will activate its most-recently used
@@ -901,7 +909,7 @@ void OverviewSession::OnRootWindowClosing(aura::Window* root) {
                              return grid->root_window() == root;
                            });
   DCHECK(iter != grid_list_.end());
-  (*iter)->Shutdown();
+  (*iter)->Shutdown(OverviewEnterExitType::kImmediateExit);
   grid_list_.erase(iter);
 }
 
@@ -943,10 +951,11 @@ bool OverviewSession::IsWindowActiveWindowBeforeOverview(
   return window == active_window_before_overview_;
 }
 
-void OverviewSession::ShowDesksTemplatesGrids() {
+void OverviewSession::ShowDesksTemplatesGrids(bool was_zero_state) {
   for (auto& grid : grid_list_)
-    grid->ShowDesksTemplatesGrid();
-  UpdateNoWindowsWidget();
+    grid->ShowDesksTemplatesGrid(was_zero_state);
+  desks_templates_presenter_->GetAllEntries();
+  UpdateNoWindowsWidgetOnEachGrid();
 }
 
 void OverviewSession::OnDisplayAdded(const display::Display& display) {
@@ -960,22 +969,17 @@ void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
                                               uint32_t metrics) {
   if (window_drag_controller_)
     ResetDraggedWindowGesture();
-  GetGridWithRootWindow(Shell::GetRootWindowForDisplayId(display.id()))
-      ->OnDisplayMetricsChanged();
+  auto* overview_grid =
+      GetGridWithRootWindow(Shell::GetRootWindowForDisplayId(display.id()));
+  overview_grid->OnDisplayMetricsChanged();
 
-  // The no windows widget is on the primary root window. If |display|
-  // corresponds to another root window, then we are done.
-  if (display.id() !=
-      GetRootWindowSettings(Shell::GetPrimaryRootWindow())->display_id) {
-    return;
-  }
   // In case of split view mode, the no windows widget bounds will be updated in
   // |OnSplitViewDividerPositionChanged|.
   if (SplitViewController::Get(Shell::GetPrimaryRootWindow())
           ->InSplitViewMode()) {
     return;
   }
-  RefreshNoWindowsWidgetBounds(/*animate=*/false);
+  overview_grid->RefreshNoWindowsWidgetBounds(/*animate=*/false);
 }
 
 void OverviewSession::OnWindowDestroying(aura::Window* window) {
@@ -994,6 +998,12 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
   Shell* shell = Shell::Get();
   if (!shell->tablet_mode_controller()->InTabletMode() &&
       shell->app_list_controller()->IsVisible()) {
+    return;
+  }
+
+  // If a desk templates dialog is visible it should receive the key events.
+  if (desks_templates_dialog_controller_ &&
+      desks_templates_dialog_controller_->dialog_widget()) {
     return;
   }
 
@@ -1123,20 +1133,6 @@ void OverviewSession::OnShelfAlignmentChanged(aura::Window* root_window,
   EndOverview(OverviewEndAction::kShelfAlignmentChanged);
 }
 
-void OverviewSession::OnSplitViewStateChanged(
-    SplitViewController::State previous_state,
-    SplitViewController::State state) {
-  // Do nothing if overview is being shutdown.
-  if (!Shell::Get()->overview_controller()->InOverviewSession())
-    return;
-
-  RefreshNoWindowsWidgetBounds(/*animate=*/false);
-}
-
-void OverviewSession::OnSplitViewDividerPositionChanged() {
-  RefreshNoWindowsWidgetBounds(/*animate=*/false);
-}
-
 void OverviewSession::OnUserWorkAreaInsetsChanged(aura::Window* root_window) {
   // Don't make any change if |root_window| is not the primary root window.
   // Because ChromveVox is only shown on the primary window.
@@ -1158,6 +1154,34 @@ void OverviewSession::OnUserWorkAreaInsetsChanged(aura::Window* root_window) {
     if (root_window == overview_grid->root_window())
       overview_grid->OnUserWorkAreaInsetsChanged(root_window);
   }
+}
+
+void OverviewSession::OnSplitViewStateChanged(
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
+  // Do nothing if overview is being shutdown.
+  if (!Shell::Get()->overview_controller()->InOverviewSession())
+    return;
+
+  RefreshNoWindowsWidgetBoundsOnEachGrid(/*animate=*/false);
+}
+
+void OverviewSession::OnSplitViewDividerPositionChanged() {
+  RefreshNoWindowsWidgetBoundsOnEachGrid(/*animate=*/false);
+}
+
+void OverviewSession::OnTabletModeStarted() {
+  OnTabletModeChanged();
+}
+
+void OverviewSession::OnTabletModeEnded() {
+  OnTabletModeChanged();
+}
+
+void OverviewSession::OnTabletModeChanged() {
+  DCHECK(desks_templates_util::AreDesksTemplatesEnabled());
+  DCHECK(desks_templates_presenter_);
+  desks_templates_presenter_->UpdateDesksTemplatesUI();
 }
 
 void OverviewSession::Move(bool reverse) {
@@ -1214,68 +1238,27 @@ void OverviewSession::RemoveAllObservers() {
   active_window_before_overview_ = nullptr;
 }
 
-void OverviewSession::UpdateNoWindowsWidget() {
+void OverviewSession::UpdateNoWindowsWidgetOnEachGrid() {
   if (is_shutting_down_)
     return;
 
-  bool desks_templates_grid_visible = false;
-  for (auto& grid : grid_list_) {
-    if (grid->IsShowingDesksTemplatesGrid()) {
-      desks_templates_grid_visible = true;
-      break;
-    }
-  }
-
-  // Hide the widget if there is an item in overview or if the desks templates
-  // grid is visible.
-  if (!IsEmpty() || desks_templates_grid_visible) {
-    no_windows_widget_.reset();
-    return;
-  }
-
-  if (!no_windows_widget_) {
-    // Create and fade in the widget.
-    RoundedLabelWidget::InitParams params;
-    params.name = "OverviewNoWindowsLabel";
-    params.horizontal_padding = kNoItemsIndicatorHorizontalPaddingDp;
-    params.vertical_padding = kNoItemsIndicatorVerticalPaddingDp;
-    params.rounding_dp = kNoItemsIndicatorRoundingDp;
-    auto* color_provider = AshColorProvider::Get();
-    params.background_color = color_provider->GetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparent80);
-    params.foreground_color = color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary);
-    params.preferred_height = kNoItemsIndicatorHeightDp;
-    params.message_id = IDS_ASH_OVERVIEW_NO_RECENT_ITEMS;
-    params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
-        desks_util::GetActiveDeskContainerId());
-    params.hide_in_mini_view = true;
-    no_windows_widget_ = std::make_unique<RoundedLabelWidget>();
-    no_windows_widget_->Init(std::move(params));
-
-    aura::Window* widget_window = no_windows_widget_->GetNativeWindow();
-    widget_window->parent()->StackChildAtBottom(widget_window);
-    ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_NO_RECENTS_FADE,
-                                             widget_window);
-    no_windows_widget_->SetOpacity(1.f);
-  }
-
-  RefreshNoWindowsWidgetBounds(/*animate=*/false);
+  for (auto& grid : grid_list_)
+    grid->UpdateNoWindowsWidget(IsEmpty());
 }
 
-void OverviewSession::RefreshNoWindowsWidgetBounds(bool animate) {
-  if (!no_windows_widget_)
+void OverviewSession::RefreshNoWindowsWidgetBoundsOnEachGrid(bool animate) {
+  // If there are overview items then the no windows widgets will not be
+  // visible so early return.
+  if (!IsEmpty())
     return;
 
-  auto* grid = GetGridWithRootWindow(Shell::GetPrimaryRootWindow());
-  DCHECK(grid);
-  no_windows_widget_->SetBoundsCenteredIn(grid->GetGridEffectiveBounds(),
-                                          animate);
+  for (auto& grid : grid_list_)
+    grid->RefreshNoWindowsWidgetBounds(animate);
 }
 
 void OverviewSession::OnItemAdded(aura::Window* window) {
   ++num_items_;
-  UpdateNoWindowsWidget();
+  UpdateNoWindowsWidgetOnEachGrid();
 
   OverviewGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
   // The drop target window is non-activatable, so no need to transfer focus.
@@ -1299,7 +1282,7 @@ void OverviewSession::UpdateAccessibilityFocus() {
 
   // Construct the list of accessible widgets, these are the overview focus
   // widget, desk bar widget, all the item widgets and the no window indicator
-  // widget, if available.
+  // widgets, if available.
   std::vector<views::Widget*> a11y_widgets;
   if (overview_focus_widget_)
     a11y_widgets.push_back(overview_focus_widget_.get());
@@ -1309,9 +1292,13 @@ void OverviewSession::UpdateAccessibilityFocus() {
       a11y_widgets.push_back(item->item_widget());
     if (grid->desks_widget())
       a11y_widgets.push_back(const_cast<views::Widget*>(grid->desks_widget()));
+
+    auto* no_windows_widget = grid->no_windows_widget();
+    if (no_windows_widget) {
+      a11y_widgets.push_back(
+          static_cast<views::Widget*>(grid->no_windows_widget()));
+    }
   }
-  if (no_windows_widget_.get())
-    a11y_widgets.push_back(no_windows_widget_.get());
 
   if (a11y_widgets.empty())
     return;

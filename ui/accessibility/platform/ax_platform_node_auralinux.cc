@@ -609,8 +609,8 @@ gboolean DoAction(AtkAction* atk_action, gint index) {
   const std::vector<ax::mojom::Action> actions = obj->GetSupportedActions();
   g_return_val_if_fail(index < static_cast<gint>(actions.size()), FALSE);
 
-  if (index == 0) {
-    // The action at index 0 is always the default action.
+  if (index == 0 && obj->HasDefaultActionVerb()) {
+    // If there is a default action, it will always be at index 0.
     return obj->DoDefaultAction();
   }
   AXActionData data;
@@ -648,8 +648,8 @@ const gchar* GetName(AtkAction* atk_action, gint index) {
   const std::vector<ax::mojom::Action> actions = obj->GetSupportedActions();
   g_return_val_if_fail(index < static_cast<gint>(actions.size()), nullptr);
 
-  if (index == 0) {
-    // The action at index 0 is always the default action.
+  if (index == 0 && obj->HasDefaultActionVerb()) {
+    // If there is a default action, it will always be at index 0.
     return obj->GetDefaultActionName();
   }
   return ToString(actions[index]);
@@ -667,8 +667,9 @@ const gchar* GetKeybinding(AtkAction* atk_action, gint index) {
   const std::vector<ax::mojom::Action> actions = obj->GetSupportedActions();
   g_return_val_if_fail(index < static_cast<gint>(actions.size()), nullptr);
 
-  if (index == 0) {
-    // The action at index 0 is always the default action.
+  if (index == 0 && obj->HasDefaultActionVerb()) {
+    // If there is a default action, it will always be at index 0. Only the
+    // default action has a key binding.
     return obj->GetStringAttribute(ax::mojom::StringAttribute::kAccessKey)
         .c_str();
   }
@@ -2850,7 +2851,51 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kMark:
       return kStaticRole;
     case ax::mojom::Role::kMath:
+    case ax::mojom::Role::kMathMLMath:
       return ATK_ROLE_MATH;
+    // https://w3c.github.io/mathml-aam/#mathml-element-mappings
+    case ax::mojom::Role::kMathMLFraction:
+      return ATK_ROLE_MATH_FRACTION;
+    case ax::mojom::Role::kMathMLIdentifier:
+      return ATK_ROLE_STATIC;
+    case ax::mojom::Role::kMathMLMultiscripts:
+      return ATK_ROLE_SECTION;
+    case ax::mojom::Role::kMathMLNoneScript:
+      return ATK_ROLE_SECTION;
+    case ax::mojom::Role::kMathMLNumber:
+      return ATK_ROLE_STATIC;
+    case ax::mojom::Role::kMathMLPrescriptDelimiter:
+      return ATK_ROLE_SECTION;
+    case ax::mojom::Role::kMathMLOperator:
+      return ATK_ROLE_STATIC;
+    case ax::mojom::Role::kMathMLOver:
+      return ATK_ROLE_SECTION;
+    case ax::mojom::Role::kMathMLRoot:
+      return ATK_ROLE_MATH_ROOT;
+    case ax::mojom::Role::kMathMLRow:
+      return ATK_ROLE_SECTION;
+    case ax::mojom::Role::kMathMLSquareRoot:
+      return ATK_ROLE_MATH_ROOT;
+    case ax::mojom::Role::kMathMLStringLiteral:
+      return ATK_ROLE_STATIC;
+    case ax::mojom::Role::kMathMLSub:
+      return ATK_ROLE_SECTION;
+    case ax::mojom::Role::kMathMLSubSup:
+      return ATK_ROLE_SECTION;
+    case ax::mojom::Role::kMathMLSup:
+      return ATK_ROLE_SECTION;
+    case ax::mojom::Role::kMathMLTable:
+      return ATK_ROLE_TABLE;
+    case ax::mojom::Role::kMathMLTableCell:
+      return ATK_ROLE_TABLE_CELL;
+    case ax::mojom::Role::kMathMLTableRow:
+      return ATK_ROLE_TABLE_ROW;
+    case ax::mojom::Role::kMathMLText:
+      return ATK_ROLE_STATIC;
+    case ax::mojom::Role::kMathMLUnder:
+      return ATK_ROLE_SECTION;
+    case ax::mojom::Role::kMathMLUnderOver:
+      return ATK_ROLE_SECTION;
     case ax::mojom::Role::kMarquee:
       return ATK_ROLE_MARQUEE;
     case ax::mojom::Role::kMenu:
@@ -3105,6 +3150,12 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
       atk_state_set_add_state(atk_state_set, ATK_STATE_MULTI_LINE);
     else
       atk_state_set_add_state(atk_state_set, ATK_STATE_SINGLE_LINE);
+  }
+
+  // Special case for indeterminate progressbar.
+  if (GetRole() == ax::mojom::Role::kProgressIndicator &&
+      !HasFloatAttribute(ax::mojom::FloatAttribute::kValueForRange)) {
+    atk_state_set_add_state(atk_state_set, ATK_STATE_INDETERMINATE);
   }
 
   if (!GetStringAttribute(ax::mojom::StringAttribute::kAutoComplete).empty() ||
@@ -5133,15 +5184,21 @@ std::pair<int, int> AXPlatformNodeAuraLinux::GetSelectionOffsetsForAtk() {
   return selection;
 }
 
+bool AXPlatformNodeAuraLinux::HasDefaultActionVerb() const {
+  return GetData().GetDefaultActionVerb() !=
+         ax::mojom::DefaultActionVerb::kNone;
+}
+
 std::vector<ax::mojom::Action> AXPlatformNodeAuraLinux::GetSupportedActions()
     const {
   static const base::NoDestructor<std::vector<ax::mojom::Action>>
       kActionsThatCanBeExposedViaAtkAction{
           {ax::mojom::Action::kDecrement, ax::mojom::Action::kIncrement}};
+  std::vector<ax::mojom::Action> supported_actions;
 
-  // The default action is always included and exposed at the first index.
-  std::vector<ax::mojom::Action> supported_actions = {
-      ax::mojom::Action::kDoDefault};
+  // The default action, if it exists, must be listed at index 0.
+  if (HasDefaultActionVerb())
+    supported_actions.push_back(ax::mojom::Action::kDoDefault);
 
   for (const auto& item : *kActionsThatCanBeExposedViaAtkAction) {
     if (HasAction(item))

@@ -121,7 +121,7 @@ bool LayoutSVGResourcePattern::FindCycleFromSelf() const {
 }
 
 std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
-    const FloatRect& object_bounding_box) {
+    const gfx::RectF& object_bounding_box) {
   NOT_DESTROYED();
   auto pattern_data = std::make_unique<PatternData>();
 
@@ -140,7 +140,7 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
 
   // Compute tile metrics.
   FloatRect tile_bounds = SVGLengthContext::ResolveRectangle(
-      GetElement(), attributes.PatternUnits(), object_bounding_box,
+      GetElement(), attributes.PatternUnits(), FloatRect(object_bounding_box),
       *attributes.X(), *attributes.Y(), *attributes.Width(),
       *attributes.Height());
   if (tile_bounds.IsEmpty())
@@ -153,22 +153,22 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
       return pattern_data;
     tile_transform = SVGFitToViewBox::ViewBoxToViewTransform(
         attributes.ViewBox(), attributes.PreserveAspectRatio(),
-        tile_bounds.Size());
+        ToGfxSizeF(tile_bounds.size()));
   } else {
     // A viewBox overrides patternContentUnits, per spec.
     if (attributes.PatternContentUnits() ==
         SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
-      tile_transform.Scale(object_bounding_box.Width(),
-                           object_bounding_box.Height());
+      tile_transform.Scale(object_bounding_box.width(),
+                           object_bounding_box.height());
     }
   }
 
   pattern_data->pattern = Pattern::CreatePaintRecordPattern(
-      AsPaintRecord(tile_bounds.Size(), tile_transform),
-      FloatRect(FloatPoint(), tile_bounds.Size()));
+      AsPaintRecord(tile_bounds.size(), tile_transform),
+      FloatRect(FloatPoint(), tile_bounds.size()));
 
   // Compute pattern space transformation.
-  pattern_data->transform.Translate(tile_bounds.X(), tile_bounds.Y());
+  pattern_data->transform.Translate(tile_bounds.x(), tile_bounds.y());
   pattern_data->transform.PreMultiply(attributes.PatternTransform());
 
   return pattern_data;
@@ -176,7 +176,7 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
 
 bool LayoutSVGResourcePattern::ApplyShader(
     const SVGResourceClient& client,
-    const FloatRect& reference_box,
+    const gfx::RectF& reference_box,
     const AffineTransform* additional_transform,
     PaintFlags& flags) {
   NOT_DESTROYED();

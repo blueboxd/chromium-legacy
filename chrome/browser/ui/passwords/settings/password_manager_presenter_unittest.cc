@@ -133,7 +133,7 @@ password_manager::PasswordForm AddPasswordToStore(
     base::StringPiece password) {
   password_manager::PasswordForm form;
   form.url = url;
-  form.signon_realm = url.GetOrigin().spec();
+  form.signon_realm = url.DeprecatedGetOriginAsURL().spec();
   form.username_value = base::ASCIIToUTF16(username);
   form.password_value = base::ASCIIToUTF16(password);
   store->AddLogin(form);
@@ -162,10 +162,10 @@ void SetUpSyncInTransportMode(Profile* profile) {
   account.email = "foo@gmail.com";
   account.gaia = "foo";
   account.account_id = CoreAccountId::FromGaiaId(account.gaia);
-  sync_service->SetAuthenticatedAccountInfo(account);
+  sync_service->SetAccountInfo(account);
   sync_service->SetDisableReasons({});
   sync_service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  sync_service->SetIsAuthenticatedAccountPrimary(false);
+  sync_service->SetHasSyncConsent(false);
   ASSERT_FALSE(sync_service->IsSyncFeatureEnabled());
 }
 

@@ -81,6 +81,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               gfx::NativeView parent_native_view);
 
+  RenderWidgetHostViewAndroid(const RenderWidgetHostViewAndroid&) = delete;
+  RenderWidgetHostViewAndroid& operator=(const RenderWidgetHostViewAndroid&) =
+      delete;
+
   // Interface used to observe the destruction of a RenderWidgetHostViewAndroid.
   class DestructionObserver {
    public:
@@ -192,7 +196,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   WebContentsAccessibility* GetWebContentsAccessibility() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
-  void GetScreenInfo(display::ScreenInfo* screen_info) override;
+  display::ScreenInfo GetScreenInfo() const override;
   std::vector<std::unique_ptr<ui::TouchEvent>> ExtractAndCancelActiveTouches()
       override;
   void TransferTouches(
@@ -622,8 +626,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool is_surface_sync_throttling_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };
 
 }  // namespace content

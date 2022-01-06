@@ -17,8 +17,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
@@ -647,12 +647,7 @@ void RTCVideoDecoderAdapter::DecrementCurrentDecoderCountForTesting() {
 
 // static
 bool RTCVideoDecoderAdapter::Vp9HwSupportForSpatialLayers() {
-  // Most hardware VP9 decoders don't handle more than one spatial layer.
-#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
-  return base::FeatureList::IsEnabled(media::kVaapiVp9kSVCHWDecoding);
-#else
-  return false;
-#endif
+  return base::FeatureList::IsEnabled(media::kVp9kSVCHWDecoding);
 }
 
 }  // namespace blink

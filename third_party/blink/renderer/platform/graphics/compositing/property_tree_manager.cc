@@ -89,7 +89,7 @@ static void UpdateCcTransformLocalMatrix(
     FloatPoint3D origin = transform_node.Origin();
     compositor_node.local.matrix() =
         TransformationMatrix::ToSkMatrix44(transform_node.Matrix());
-    compositor_node.origin = origin;
+    compositor_node.origin = ToGfxPoint3F(origin);
   }
   compositor_node.needs_local_transform_update = true;
 }
@@ -562,7 +562,7 @@ int PropertyTreeManager::EnsureCompositorClipNode(
 
   cc::ClipNode& compositor_node = *GetClipTree().Node(id);
 
-  compositor_node.clip = clip_node.PaintClipRect().Rect();
+  compositor_node.clip = ToGfxRectF(clip_node.PaintClipRect().Rect());
   compositor_node.transform_id =
       EnsureCompositorTransformNode(clip_node.LocalTransformSpace().Unalias());
   compositor_node.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
@@ -588,7 +588,7 @@ void PropertyTreeManager::CreateCompositorScrollNode(
   compositor_node.scrollable = true;
 
   compositor_node.container_bounds = scroll_node.ContainerRect().size();
-  compositor_node.bounds = scroll_node.ContentsSize();
+  compositor_node.bounds = scroll_node.ContentsRect().size();
   compositor_node.user_scrollable_horizontal =
       scroll_node.UserScrollableHorizontal();
   compositor_node.user_scrollable_vertical =
@@ -887,7 +887,7 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
     return false;
 
   auto WidthAndHeightAreTheSame = [](const FloatSize& size) {
-    return size.Width() == size.Height();
+    return size.width() == size.height();
   };
 
   const FloatRoundedRect::Radii& radii = clip.PaintClipRect().GetRadii();
@@ -1194,6 +1194,7 @@ void PropertyTreeManager::PopulateCcEffectNode(
   effect_node.effect_changed = effect.NodeChangeAffectsRaster();
   effect_node.document_transition_shared_element_id =
       effect.DocumentTransitionSharedElementId();
+  effect_node.shared_element_resource_id = effect.SharedElementResourceId();
 }
 
 }  // namespace blink

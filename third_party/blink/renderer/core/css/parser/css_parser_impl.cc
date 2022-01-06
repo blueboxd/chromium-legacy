@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -54,12 +54,17 @@ AtomicString ConsumeStringOrURI(CSSParserTokenStream& stream) {
       !EqualIgnoringASCIICase(token.Value(), "url"))
     return AtomicString();
 
-  CSSParserTokenStream::BlockGuard guard(stream);
-  const CSSParserToken& uri = stream.ConsumeIncludingWhitespace();
-  if (uri.GetType() == kBadStringToken || !stream.UncheckedAtEnd())
-    return AtomicString();
-  DCHECK_EQ(uri.GetType(), kStringToken);
-  return uri.Value().ToAtomicString();
+  AtomicString result;
+  {
+    CSSParserTokenStream::BlockGuard guard(stream);
+    const CSSParserToken& uri = stream.ConsumeIncludingWhitespace();
+    if (uri.GetType() != kBadStringToken && stream.UncheckedAtEnd()) {
+      DCHECK_EQ(uri.GetType(), kStringToken);
+      result = uri.Value().ToAtomicString();
+    }
+  }
+  stream.ConsumeWhitespace();
+  return result;
 }
 
 AtomicString ConsumeContainerName(CSSParserTokenRange& range,
@@ -701,7 +706,7 @@ StyleRuleCharset* CSSParserImpl::ConsumeCharsetRule(
 }
 
 StyleRuleImport* CSSParserImpl::ConsumeImportRule(
-    AtomicString uri,
+    const AtomicString& uri,
     CSSParserTokenStream& stream) {
   wtf_size_t prelude_offset_start = stream.LookAheadOffset();
   CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
@@ -1327,9 +1332,6 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
     ConsumeVariableValue(tokenized_value, variable_name, important,
                          is_animation_tainted);
   } else if (unresolved_property != CSSPropertyID::kInvalid) {
-    if (style_sheet_ && style_sheet_->SingleOwnerDocument())
-      Deprecation::WarnOnDeprecatedProperties(
-          style_sheet_->SingleOwnerDocument()->GetFrame(), unresolved_property);
     ConsumeDeclarationValue(tokenized_value, unresolved_property, important,
                             rule_type);
   }

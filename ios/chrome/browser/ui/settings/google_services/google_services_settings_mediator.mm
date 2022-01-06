@@ -65,8 +65,8 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 // List of items. For implementation details in
 // GoogleServicesSettingsViewController, two SyncSwitchItem items should not
 // share the same type. The cell UISwitch tag is used to save the item type, and
-// when the user taps on the switch, this tag is used to retreive the item based
-// on the type.
+// when the user taps on the switch, this tag is used to retrieve the item
+// based on the type.
 typedef NS_ENUM(NSInteger, ItemType) {
   AllowChromeSigninItemType = kItemTypeEnumZero,
   AutocompleteSearchesAndURLsItemType,
@@ -77,7 +77,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ImproveChromeManagedItemType,
   BetterSearchAndBrowsingItemType,
   BetterSearchAndBrowsingManagedItemType,
-  ItemTypePasswordLeakCheckSwitch,
+  PasswordLeakCheckSwitchItemType,
 };
 
 // TODO(crbug.com/1244632): Use the Authentication Service sign-in status API
@@ -97,6 +97,27 @@ bool IsSigninControllableByUser() {
   }
   NOTREACHED();
   return true;
+}
+
+bool GetStatusForSigninPolicy() {
+  BrowserSigninMode policy_mode = static_cast<BrowserSigninMode>(
+      GetApplicationContext()->GetLocalState()->GetInteger(
+          prefs::kBrowserSigninPolicy));
+  switch (policy_mode) {
+    case BrowserSigninMode::kEnabled:
+    case BrowserSigninMode::kForced:
+      return true;
+    case BrowserSigninMode::kDisabled:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool IsForcedSigninPolicy() {
+  return static_cast<BrowserSigninMode>(
+             GetApplicationContext()->GetLocalState()->GetInteger(
+                 prefs::kBrowserSigninPolicy)) == BrowserSigninMode::kForced;
 }
 
 }  // namespace
@@ -220,7 +241,7 @@ bool IsSigninControllableByUser() {
                          IDS_IOS_GOOGLE_SERVICES_SETTINGS_ALLOW_SIGNIN_TEXT
                    detailStringID:
                        IDS_IOS_GOOGLE_SERVICES_SETTINGS_ALLOW_SIGNIN_DETAIL
-                           status:NO];
+                           status:GetStatusForSigninPolicy()];
 }
 
 #pragma mark - Load non personalized section
@@ -293,7 +314,7 @@ bool IsSigninControllableByUser() {
                 ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                 : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
         break;
-      case ItemTypePasswordLeakCheckSwitch:
+      case PasswordLeakCheckSwitchItemType:
         [self updateLeakCheckItem];
         break;
     }
@@ -418,7 +439,7 @@ bool IsSigninControllableByUser() {
 - (SettingsSwitchItem*)passwordLeakCheckItem {
   if (!_passwordLeakCheckItem) {
     SettingsSwitchItem* passwordLeakCheckItem = [[SettingsSwitchItem alloc]
-        initWithType:ItemTypePasswordLeakCheckSwitch];
+        initWithType:PasswordLeakCheckSwitchItemType];
     passwordLeakCheckItem.text =
         l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SWITCH);
     passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
@@ -459,6 +480,11 @@ bool IsSigninControllableByUser() {
   if (!status) {
     managedItem.tintColor = [UIColor colorNamed:kGrey300Color];
     managedItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  } else if (IsForcedSigninPolicy()) {
+    // Status should be ON for forced sign-in policy, but the text color has to
+    // be gray because the knob is not shown.
+    managedItem.textColor = [UIColor colorNamed:kDisabledTintColor];
+    managedItem.detailTextColor = [UIColor colorNamed:kDisabledTintColor];
   }
   managedItem.accessibilityHint =
       l10n_util::GetNSString(IDS_IOS_TOGGLE_SETTING_MANAGED_ACCESSIBILITY_HINT);
@@ -506,6 +532,10 @@ bool IsSigninControllableByUser() {
           self, self.accountManagerService));
 }
 
+- (BOOL)isAllowChromeSigninItem:(int)type {
+  return type == AllowChromeSigninItemType;
+}
+
 #pragma mark - GoogleServicesSettingsServiceDelegate
 
 - (void)toggleSwitchItem:(TableViewItem*)item
@@ -551,7 +581,7 @@ bool IsSigninControllableByUser() {
     case BetterSearchAndBrowsingItemType:
       self.anonymizedDataCollectionPreference.value = value;
       break;
-    case ItemTypePasswordLeakCheckSwitch:
+    case PasswordLeakCheckSwitchItemType:
       // Update the pref.
       self.passwordLeakCheckEnabled.value = value;
       // Update the item.

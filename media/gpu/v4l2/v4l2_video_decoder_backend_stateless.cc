@@ -16,7 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "media/base/decode_status.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
@@ -54,6 +54,9 @@ struct V4L2StatelessVideoDecoderBackend::OutputRequest {
     return OutputRequest(kChangeResolutionFence);
   }
 
+  OutputRequest(const OutputRequest&) = delete;
+  OutputRequest& operator=(const OutputRequest&) = delete;
+
   bool IsReady() const {
     return (type != OutputRequestType::kSurface) || surface->decoded();
   }
@@ -83,8 +86,6 @@ struct V4L2StatelessVideoDecoderBackend::OutputRequest {
   OutputRequest(scoped_refptr<V4L2DecodeSurface> s, base::TimeDelta t)
       : type(kSurface), surface(std::move(s)), timestamp(t) {}
   explicit OutputRequest(OutputRequestType t) : type(t) {}
-
-  DISALLOW_COPY_AND_ASSIGN(OutputRequest);
 };
 
 V4L2StatelessVideoDecoderBackend::DecodeRequest::DecodeRequest(
@@ -578,8 +579,12 @@ bool V4L2StatelessVideoDecoderBackend::ApplyResolution(
   return true;
 }
 
-void V4L2StatelessVideoDecoderBackend::OnChangeResolutionDone(bool success) {
-  if (!success) {
+void V4L2StatelessVideoDecoderBackend::OnChangeResolutionDone(
+    CroStatus status) {
+  if (status == CroStatus::Codes::kResetRequired)
+    return;
+
+  if (status != CroStatus::Codes::kOk) {
     client_->OnBackendError();
     return;
   }
@@ -653,8 +658,8 @@ bool V4L2StatelessVideoDecoderBackend::IsSupportedProfile(
     VideoDecodeAccelerator::SupportedProfiles profiles =
         device->GetSupportedDecodeProfiles(base::size(kSupportedInputFourccs),
                                            kSupportedInputFourccs);
-    for (const auto& profile : profiles)
-      supported_profiles_.push_back(profile.profile);
+    for (const auto& entry : profiles)
+      supported_profiles_.push_back(entry.profile);
   }
   return std::find(supported_profiles_.begin(), supported_profiles_.end(),
                    profile) != supported_profiles_.end();

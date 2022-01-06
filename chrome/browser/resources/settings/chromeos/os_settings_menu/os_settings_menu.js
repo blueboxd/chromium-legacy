@@ -18,8 +18,9 @@ import {assert, assertNotReached} from '//resources/js/assert.m.js';
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Route, RouteObserverBehavior, Router} from '../../router.js';
+import {Route, Router} from '../../router.js';
 import {routes} from '../os_route.m.js';
+import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 Polymer({
   _template: html`{__html_template__}`,
@@ -51,18 +52,6 @@ Polymer({
     showReset: Boolean,
 
     showKerberosSection: Boolean,
-
-    /**
-     * True if redesign of account management flows is enabled.
-     * @private
-     */
-    isAccountManagementFlowsV2Enabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled');
-      },
-      readOnly: true,
-    },
   },
 
   /** @param {!Route} newRoute */

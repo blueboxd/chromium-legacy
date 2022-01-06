@@ -212,9 +212,14 @@ void AddDrmGpuPermissions(std::vector<BrokerFilePermission>* permissions) {
 }
 
 void AddAmdGpuPermissions(std::vector<BrokerFilePermission>* permissions) {
-  static const char* const kReadOnlyList[] = {"/etc/ld.so.cache",
-                                              "/usr/lib64/libEGL.so.1",
-                                              "/usr/lib64/libGLESv2.so.2"};
+  static const char* const kReadOnlyList[] = {
+      "/etc/ld.so.cache",
+      "/usr/lib64/libEGL.so.1",
+      "/usr/lib64/libGLESv2.so.2",
+      "/usr/share/vulkan/icd.d",
+      "/usr/share/vulkan/icd.d/radeon_icd.x86_64.json",
+      "/usr/lib64/libvulkan.so.1",
+      "/usr/lib64/libvulkan_radeon.so"};
   for (const char* item : kReadOnlyList)
     permissions->push_back(BrokerFilePermission::ReadOnly(item));
 
@@ -260,8 +265,8 @@ void AddIntelGpuPermissions(std::vector<BrokerFilePermission>* permissions) {
       // Allow libglvnd files and libs.
       "/usr/share/glvnd/egl_vendor.d",
       "/usr/share/glvnd/egl_vendor.d/50_mesa.json",
-      "/usr/lib64/libEGL_mesa.so",
-      "/usr/lib64/libGLdispatch.so"};
+      "/usr/lib64/libEGL_mesa.so.0",
+      "/usr/lib64/libGLdispatch.so.0"};
   for (const char* item : kReadOnlyList)
     permissions->push_back(BrokerFilePermission::ReadOnly(item));
 

@@ -12,13 +12,18 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "services/network/public/cpp/network_switches.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif
+
 namespace web_app {
 
 TwoClientWebAppsIntegrationTestBase::TwoClientWebAppsIntegrationTestBase()
     : SyncTest(TWO_CLIENT), helper_(this) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Disable WebAppsCrosapi, so that Web Apps get synced in the Ash browser.
-  scoped_feature_list_.InitAndDisableFeature(features::kWebAppsCrosapi);
+  scoped_feature_list_.InitWithFeatures(
+      {}, {features::kWebAppsCrosapi, chromeos::features::kLacrosPrimary});
 #endif
 }
 
@@ -95,9 +100,6 @@ void TwoClientWebAppsIntegrationTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
   SyncTest::SetUpCommandLine(command_line);
   ASSERT_TRUE(embedded_test_server()->Start());
-  command_line->AppendSwitchASCII(
-      network::switches::kUnsafelyTreatInsecureOriginAsSecure,
-      helper_.GetInstallableAppURL("SiteA").GetOrigin().spec());
   command_line->AppendSwitch("disable-fake-server-failure-output");
 }
 

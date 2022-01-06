@@ -16,7 +16,6 @@
 #include <fuchsia/media/cpp/fidl.h>
 #include <fuchsia/mediacodec/cpp/fidl.h>
 #include <fuchsia/memorypressure/cpp/fidl.h>
-#include <fuchsia/net/cpp/fidl.h>
 #include <fuchsia/net/interfaces/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
 #include <fuchsia/ui/scenic/cpp/fidl.h>
@@ -39,6 +38,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/switches.h"
 
 namespace sandbox {
@@ -71,6 +71,8 @@ constexpr SandboxConfig kGpuConfig = {
         fuchsia::media::ProfileProvider::Name_,
         fuchsia::sysmem::Allocator::Name_,
         "fuchsia.vulkan.loader.Loader",
+        fuchsia::ui::composition::Allocator::Name_,
+        fuchsia::ui::composition::Flatland::Name_,
         fuchsia::ui::scenic::Scenic::Name_,
     }),
     kProvideVulkanResources,
@@ -78,7 +80,6 @@ constexpr SandboxConfig kGpuConfig = {
 
 constexpr SandboxConfig kNetworkConfig = {
     base::make_span((const char* const[]){
-        fuchsia::net::NameLookup::Name_,
         "fuchsia.net.name.Lookup",
         fuchsia::net::interfaces::State::Name_,
         "fuchsia.posix.socket.Provider",
@@ -94,6 +95,7 @@ constexpr SandboxConfig kRendererConfig = {
         fuchsia::mediacodec::CodecFactory::Name_,
         fuchsia::memorypressure::Provider::Name_,
         fuchsia::sysmem::Allocator::Name_,
+        fuchsia::ui::composition::Allocator::Name_,
     }),
     kAmbientMarkVmoAsExecutable,
 };
@@ -112,25 +114,25 @@ constexpr SandboxConfig kEmptySandboxConfig = {
     0,
 };
 
-const SandboxConfig* GetConfigForSandboxType(SandboxType type) {
+const SandboxConfig* GetConfigForSandboxType(sandbox::mojom::Sandbox type) {
   switch (type) {
-    case SandboxType::kNoSandbox:
+    case sandbox::mojom::Sandbox::kNoSandbox:
       return nullptr;
-    case SandboxType::kGpu:
+    case sandbox::mojom::Sandbox::kGpu:
       return &kGpuConfig;
-    case SandboxType::kNetwork:
+    case sandbox::mojom::Sandbox::kNetwork:
       return &kNetworkConfig;
-    case SandboxType::kRenderer:
+    case sandbox::mojom::Sandbox::kRenderer:
       return &kRendererConfig;
-    case SandboxType::kVideoCapture:
+    case sandbox::mojom::Sandbox::kVideoCapture:
       return &kVideoCaptureConfig;
     // Remaining types receive no-access-to-anything.
-    case SandboxType::kAudio:
-    case SandboxType::kCdm:
-    case SandboxType::kPrintCompositor:
-    case SandboxType::kService:
-    case SandboxType::kSpeechRecognition:
-    case SandboxType::kUtility:
+    case sandbox::mojom::Sandbox::kAudio:
+    case sandbox::mojom::Sandbox::kCdm:
+    case sandbox::mojom::Sandbox::kPrintCompositor:
+    case sandbox::mojom::Sandbox::kService:
+    case sandbox::mojom::Sandbox::kSpeechRecognition:
+    case sandbox::mojom::Sandbox::kUtility:
       return &kEmptySandboxConfig;
   }
 }
@@ -146,9 +148,9 @@ constexpr auto kDefaultServices = base::make_span((const char* const[]) {
 
 }  // namespace
 
-SandboxPolicyFuchsia::SandboxPolicyFuchsia(SandboxType type) {
+SandboxPolicyFuchsia::SandboxPolicyFuchsia(sandbox::mojom::Sandbox type) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox)) {
-    type_ = SandboxType::kNoSandbox;
+    type_ = sandbox::mojom::Sandbox::kNoSandbox;
   } else {
     type_ = type;
   }
@@ -195,7 +197,7 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
   options->fds_to_remap.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
   options->fds_to_remap.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
 
-  if (type_ == SandboxType::kNoSandbox) {
+  if (type_ == sandbox::mojom::Sandbox::kNoSandbox) {
     options->spawn_flags = FDIO_SPAWN_CLONE_NAMESPACE | FDIO_SPAWN_CLONE_JOB;
     options->clear_environment = false;
     return;

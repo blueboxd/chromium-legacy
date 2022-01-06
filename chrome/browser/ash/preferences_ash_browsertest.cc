@@ -55,7 +55,7 @@ class PreferencesTest : public LoginManagerTest {
         ->SetImeKeyboardForTesting(keyboard_);
   }
 
-  // Sets set of preferences in given |prefs|. Value of prefernece depends of
+  // Sets set of preferences in given |prefs|. Value of preference depends on
   // |variant| value. For opposite |variant| values all preferences receive
   // different values.
   void SetPrefs(PrefService* prefs, bool variant) {
@@ -69,11 +69,14 @@ class PreferencesTest : public LoginManagerTest {
     prefs->SetBoolean(::prefs::kPointingStickAcceleration, variant);
     prefs->SetBoolean(::prefs::kTouchpadAcceleration, variant);
     prefs->SetBoolean(::prefs::kTouchpadScrollAcceleration, variant);
+    prefs->SetBoolean(::prefs::kTouchpadHapticFeedback, variant);
     prefs->SetBoolean(::prefs::kEnableTouchpadThreeFingerClick, !variant);
     prefs->SetInteger(::prefs::kMouseSensitivity, !variant);
     prefs->SetInteger(::prefs::kMouseScrollSensitivity, variant ? 1 : 4);
     prefs->SetInteger(::prefs::kPointingStickSensitivity, !variant);
     prefs->SetInteger(::prefs::kTouchpadSensitivity, variant);
+    prefs->SetInteger(::prefs::kTouchpadHapticClickSensitivity,
+                      variant ? 1 : 3);
     prefs->SetInteger(::prefs::kTouchpadScrollSensitivity, variant ? 1 : 4);
     prefs->SetBoolean(ash::prefs::kXkbAutoRepeatEnabled, variant);
     prefs->SetInteger(ash::prefs::kXkbAutoRepeatDelay, variant ? 100 : 500);
@@ -107,6 +110,8 @@ class PreferencesTest : public LoginManagerTest {
     EXPECT_EQ(
         prefs->GetBoolean(::prefs::kTouchpadScrollAcceleration),
         input_settings_->current_touchpad_settings().GetScrollAcceleration());
+    EXPECT_EQ(prefs->GetBoolean(::prefs::kTouchpadHapticFeedback),
+              input_settings_->current_touchpad_settings().GetHapticFeedback());
     EXPECT_EQ(
         prefs->GetBoolean(::prefs::kEnableTouchpadThreeFingerClick),
         input_settings_->current_touchpad_settings().GetThreeFingerClick());
@@ -119,6 +124,9 @@ class PreferencesTest : public LoginManagerTest {
         input_settings_->current_pointing_stick_settings().GetSensitivity());
     EXPECT_EQ(prefs->GetInteger(::prefs::kTouchpadSensitivity),
               input_settings_->current_touchpad_settings().GetSensitivity());
+    EXPECT_EQ(prefs->GetInteger(::prefs::kTouchpadHapticClickSensitivity),
+              input_settings_->current_touchpad_settings()
+                  .GetHapticClickSensitivity());
     EXPECT_EQ(
         prefs->GetInteger(::prefs::kTouchpadScrollSensitivity),
         input_settings_->current_touchpad_settings().GetScrollSensitivity());

@@ -80,7 +80,8 @@ class CORE_EXPORT CSSAnimations final {
       Element&,
       const ComputedStyle&,
       const ComputedStyle* parent_style,
-      bool was_viewport_changed);
+      bool was_viewport_changed,
+      bool force_update);
 
   static AnimationEffect::EventDelegate* CreateEventDelegate(
       Element* element,
@@ -111,6 +112,9 @@ class CORE_EXPORT CSSAnimations final {
   }
   void ClearPendingUpdate() { pending_update_.Clear(); }
   void MaybeApplyPendingUpdate(Element*);
+  bool HasPreviousActiveInterpolationsForAnimations() const {
+    return !previous_active_interpolations_for_animations_.IsEmpty();
+  }
   bool IsEmpty() const {
     return running_animations_.IsEmpty() && transitions_.IsEmpty() &&
            pending_update_.IsEmpty();

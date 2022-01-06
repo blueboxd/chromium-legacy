@@ -5,7 +5,6 @@
 <translation id="1185134272377778587">Chromiumৰ বিষয়ে</translation>
 <translation id="1257458525759135959">প্ৰতিচ্ছবিসমূহ ছেভ কৰিবলৈ Chromiumক আপোনাৰ ফট’সমূহত যোগ দিয়াৰ অনুমতি দিবলৈ ছেটিংসমূহত টিপক</translation>
 <translation id="1289216811211435351">Chromiumলৈ সলনি কৰক</translation>
-<translation id="1354592789402432496">আপোনাৰ প্ৰশাসকৰ বাবে আপুনি এটা প্ৰতিষ্ঠানৰ একাউণ্টৰ জৰিয়তে ছাইন ইন কৰাৰ আৱশ্যক। আপোনাৰ প্ৰশাসকে সীমাবদ্ধ কৰা একাউণ্টসমূহ লুকুওৱা হৈছে।</translation>
 <translation id="1361748954329991663">Chromium পুৰণি হৈছে। <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />ত কোনো আপডে’ট নাথাকিলে এয়া সম্ভৱ যে আপোনাৰ ডিভাইচটোৱে Chromiumৰ নতুন সংস্কৰণসমূহ আৰু সমৰ্থন নকৰে।</translation>
 <translation id="1370204544543370355">Chromium পাৰ্যমানে ব্যৱহাৰ কৰিবলৈ আপোনাৰ Google একাউণ্টটোৰ জৰিয়তে Chromiumত ছাইন ইন কৰক</translation>
 <translation id="1431818719585918472">Chromiumক আপোনাৰ ইনক’গনিট’ টেবসমূহ লক কৰিবলৈ দিয়ক।</translation>
@@ -23,6 +22,7 @@
 <translation id="2168108852149185974">কিছুমান এড-অনৰ কাৰণে Chrome ক্ৰেশ্ব হয়। অনুগ্ৰহ কৰি ইয়াক আনইনষ্টল কৰক:</translation>
 <translation id="2178608107313874732">এই মুহূৰ্তত Chromiumএ আপোনাৰ কেমেৰা ব্যৱহাৰ কৰিব নোৱাৰে</translation>
 <translation id="2195025571279539885">আপুনি এই ছাইটবোৰৰ <ph name="LANGUAGE_NAME" /> পৃষ্ঠাবোৰ Chromiumএ অনুবাদ কৰি দিয়াটো বিচাৰিবনে?</translation>
+<translation id="2218146227246548550">Chromium ব্যৱহাৰ কৰিবলৈ আপোনাৰ প্ৰতিষ্ঠানৰ বাবে আপুনি ছাইন ইন কৰাৰ আৱশ্যক। <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" /></translation>
 <translation id="2426113998523353159">Chromium ব্যৱহাৰ কৰিবলৈ আপোনাৰ প্ৰতিষ্ঠানৰ বাবে আপুনি ছাইন ইন কৰাৰ আৱশ্যক।</translation>
 <translation id="2450140762465183767">এতিয়া আপুনি বাৰ্তা, নথি আৰু অন্য এপ্‌সমূহত লিংকসমূহত টিপিলে যিকোনো সময়তে Chromium ব্যৱহাৰ কৰিব পাৰে।</translation>
 <translation id="2478931088402984578"><ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> বাছনি কৰক</translation>
@@ -40,6 +40,7 @@
 <translation id="3472200483164753384">Chromium Canaryত সমৰ্থিত নহয়</translation>
 <translation id="3639997914391704523">আপুনি নিজৰ Google একাউণ্টটোৰ জৰিয়তে ছাইন ইন কৰিলে Chromiumএ আপোনাৰ পাছৱর্ডসমূহ পৰীক্ষা কৰিব পাৰে।</translation>
 <translation id="3805899903892079518">আপোনাৰ ফট’ আৰু ভিডিঅ’সমূহত Chromiumৰ এক্সেছ নাই। iOS ছেটিং &gt; গোপনীয়তা &gt; ফট’-ত এক্সেছ সক্ষম কৰক।</translation>
+<translation id="3946918322491238254">আপুনি এই ডিভাইচটোত থকা আপোনাৰ আটাইবোৰ বুকমাৰ্ক, ইতিহাস, পাছৱৰ্ড আৰু অন্য ছেটিং তথাপিও চাব পাৰে। যদি আপুনি কোনো সালসলনি কৰে, সেয়া আপোনাৰ একাউণ্টত ছিংক কৰা নহ’ব।</translation>
 <translation id="4099085513035183040">Chromium বিটাত সমৰ্থিত নহয়</translation>
 <translation id="4555020257205549924">যেতিয়া এই সুবিধাটো অন কৰি ৰখা হয় তেতিয়া Chromiumএ অন্য ভাষাত থকা পৃষ্ঠা Google Translate ব্যৱহাৰ কৰি অনুবাদ কৰাৰ সুবিধা দিয়ে। <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">এতিয়া আপুনি বাৰ্তা, নথি আৰু অন্য এপ্‌সমূহত থকা লিংকত টিপিলে যিকোনো সময়তে Chromium ব্যৱহাৰ কৰিব পাৰে।</translation>
@@ -52,7 +53,6 @@
 <translation id="5171868502429358653">Chromiumত ছাইন ইন কৰক</translation>
 <translation id="5224391634244552924">ছেভ কৰা কোনো পাছৱৰ্ড নাই। আপুনি নিজৰ পাছৱর্ডসমূহ ছেভ কৰিলে Chromiumএ সেইবোৰ পৰীক্ষা কৰিব পাৰে।</translation>
 <translation id="5308226104666789935">Chromiumএ আপডে’টৰ বাবে পৰীক্ষা কৰিব নোৱাৰে</translation>
-<translation id="5324242752415821224">Chromium ব্যৱহাৰ কৰিবলৈ আপোনাৰ প্ৰতিষ্ঠানৰ বাবে আপুনি ছাইন ইন কৰাৰ আৱশ্যক। <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" />।</translation>
 <translation id="5396916991083608703">Chromiumক ডিফ’ল্ট হিচাপে ছেট কৰিবনে?</translation>
 <translation id="5521125884468363740">আপুনি Chromium ব্যৱহাৰ কৰা সকলো ডিভাইচৰ পৰা নিজৰ টেবসমূহ চাবলৈ ছাইন ইন কৰক আৰু ছিংক অন কৰক</translation>
 <translation id="5573014823074921752">Chromium ব্যৱহাৰৰ কিটিপ। টেবৰ অধিক বিকল্প পাবলৈ আপোনাৰ স্ক্রীণৰ একেবাৰে ওপৰত অথবা তলত থকা টুলবাৰৰ টেব দেখুৱাওক বুটামটো স্পৰ্শ কৰি ধৰি ৰাখক।</translation>
@@ -73,7 +73,6 @@
 <translation id="6424492062988593837">Chromium আৰু উন্নত হৈছে! এটা নতুন সংস্কৰণ আছে।</translation>
 <translation id="6752854822223394465">আপোনাৰ প্ৰতিষ্ঠানে Chromium ছেট আপ কৰি আছে...</translation>
 <translation id="6820823224820483452">Chromiumএ সকলো পাছৱৰ্ড পৰীক্ষা কৰিব নোৱাৰিলে। কাইলৈ পুনৰ চেষ্টা কৰক।</translation>
-<translation id="6827294685447036764">আপুনি যদি Chromiumক আপোনাৰ অৱস্থানৰ বিষয়ে জানিবলৈ দিয়ে, Chromiumএ সেয়া আপুনি অনুমতি দিয়া সকলো ছাইটলৈ পঠিয়ায়। ছাইটসমূহৰ আপোনাক ওচৰ-পাজৰৰ দোকান অথবা বাতৰিৰ দৰে স্থানীয় তথ্য দেখুৱাবলগীয়া থাকিলে সেইসমূহে আপোনাক অৱস্থানৰ বিষয়ে সুধিব পাৰে।</translation>
 <translation id="7018284295775193585">Chromium আপডে’ট হ’ব নোৱাৰে</translation>
 <translation id="7045244423563602563">আপুনি Chromiumত ছাইন ইন কৰক</translation>
 <translation id="7099326575020694068">Chromiumএ বিভাজিত ম’ডত আপোনাৰ কেমেৰা ব্যৱহাৰ কৰিব নোৱাৰে</translation>

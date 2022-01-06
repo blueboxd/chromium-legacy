@@ -786,16 +786,18 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
           resource_type == ResourceType::kFont &&
           params.Url().ProtocolIsData()));
 
-  KURL bundle_url_for_urn_resources;
+  KURL bundle_url_for_uuid_resources;
   if (resource_request.GetWebBundleTokenParams()) {
     DCHECK_EQ(resource_request.GetRequestDestination(),
               network::mojom::RequestDestination::kWebBundle);
   } else {
     AttachWebBundleTokenIfNeeded(resource_request);
-    if (resource_request.Url().Protocol() == "urn" &&
+    // TODO(https://crbug.com/1257045): Remove urn: scheme support.
+    if ((resource_request.Url().Protocol() == "urn" ||
+         resource_request.Url().Protocol() == "uuid-in-package") &&
         resource_request.GetWebBundleTokenParams()) {
       // We use the bundle URL for urn resources for security checks.
-      bundle_url_for_urn_resources =
+      bundle_url_for_uuid_resources =
           MemoryCache::RemoveFragmentIdentifierIfNeeded(
               resource_request.GetWebBundleTokenParams()->bundle_url);
     }
@@ -845,8 +847,9 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
       resource_request.GetRequestContext(),
       resource_request.GetRequestDestination(),
       MemoryCache::RemoveFragmentIdentifierIfNeeded(
-          bundle_url_for_urn_resources.IsValid() ? bundle_url_for_urn_resources
-                                                 : params.Url()),
+          bundle_url_for_uuid_resources.IsValid()
+              ? bundle_url_for_uuid_resources
+              : params.Url()),
       options, reporting_disposition,
       MemoryCache::RemoveFragmentIdentifierIfNeeded(url_before_redirects),
       redirect_status);
@@ -918,8 +921,8 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   absl::optional<ResourceRequestBlockedReason> blocked_reason =
       Context().CanRequest(resource_type, resource_request,
                            MemoryCache::RemoveFragmentIdentifierIfNeeded(
-                               bundle_url_for_urn_resources.IsValid()
-                                   ? bundle_url_for_urn_resources
+                               bundle_url_for_uuid_resources.IsValid()
+                                   ? bundle_url_for_uuid_resources
                                    : params.Url()),
                            options, reporting_disposition,
                            resource_request.GetRedirectInfo());
@@ -1239,7 +1242,8 @@ std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
     const ResourceRequestHead& request,
     const ResourceLoaderOptions& options) {
   DCHECK(!GetProperties().IsDetached());
-  DCHECK(loader_factory_);
+  // TODO(http://crbug.com/1252983): Revert this to DCHECK.
+  CHECK(loader_factory_);
 
   // Set |unfreezable_task_runner| to the thread task-runner for keepalive
   // fetches because we want it to keep running even after the frame is
@@ -1255,7 +1259,8 @@ std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
 
 std::unique_ptr<WebCodeCacheLoader> ResourceFetcher::CreateCodeCacheLoader() {
   DCHECK(!GetProperties().IsDetached());
-  DCHECK(loader_factory_);
+  // TODO(http://crbug.com/1252983): Revert this to DCHECK.
+  CHECK(loader_factory_);
   return loader_factory_->CreateCodeCacheLoader();
 }
 
@@ -1884,19 +1889,6 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
   }
 
   resource->VirtualTimePauser().UnpauseVirtualTime();
-
-  // A response should not serve partial content if it was not requested via a
-  // Range header: https://fetch.spec.whatwg.org/#main-fetch so keep it out
-  // of the preload cache in case of a non-206 response (which generates an
-  // error).
-  if (resource->GetResponse().GetType() ==
-          network::mojom::FetchResponseType::kOpaque &&
-      resource->GetResponse().HasRangeRequested() &&
-      !resource->GetResourceRequest().HttpHeaderFields().Contains(
-          net::HttpRequestHeaders::kRange)) {
-    RemovePreload(resource);
-  }
-
   if (type == kDidFinishLoading) {
     resource->Finish(response_end, freezable_task_runner_.get());
 

@@ -45,6 +45,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAllowDisableTouchpadHapticFeedback;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAllowTouchpadHapticClickSettings;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAlwaysReinstallSystemWebApps;
 
@@ -66,6 +71,8 @@ extern const base::Feature kAppManagementIntentSettings;
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceExternalProtocol;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppServiceLoadIconWithoutMojom;
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_MAC)
@@ -260,11 +267,6 @@ extern const base::Feature kEnableWebAppUninstallFromOsSettings;
 
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kEnterpriseRealtimeExtensionRequest;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::FeatureParam<base::TimeDelta>
-    kEnterpiseRealtimeExtensionRequestThrottleDelay;
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kExtensionDeferredIndividualSettings;
 #endif
 
@@ -313,6 +315,9 @@ extern const base::Feature kHappinessTrackingSurveysForDesktopDemo;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSurveysForDesktopPrivacySandbox;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopPrivacySandboxTime;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSurveysForDesktopSettings;
@@ -322,6 +327,15 @@ extern const base::Feature kHappinessTrackingSurveysForDesktopSettingsPrivacy;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<bool>
     kHappinessTrackingSurveysForDesktopSettingsPrivacyNoSandbox;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopSettingsPrivacyTime;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingSurveysForDesktopPrivacyReview;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopPrivacyReviewTime;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSurveysForDesktopNtpModules;
@@ -349,6 +363,12 @@ extern const base::Feature kHaTSDesktopDevToolsLayoutPanel;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSystem;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingSystemStability;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingSystemPerformance;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSystemOnboarding;
@@ -595,6 +615,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kChromeOSSharingHub;
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSharesheetCopyToClipboard;
+#endif
+
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kShareUsageRanking;
@@ -617,17 +642,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSoundContentSetting;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSSLCipher3DES;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSupportTool;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSysInternals;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSystemExtensions;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTPMFirmwareUpdate;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -635,8 +654,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTPMFirmwareUpdate;
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTabMetricsLogging;
 #endif
-
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTeamfoodFlags;
 
 #if defined(OS_WIN)
 // Only has an effect in branded builds.
@@ -724,12 +741,10 @@ extern const base::Feature kWebAppManifestIconUpdating;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWebAppManifestPolicyAppIdentityUpdate;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWebAppsCrosapi;
-#endif  // defined(OS_CHROMEOS)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWebKioskEnableLacros;
 #endif
@@ -771,10 +786,13 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 bool IsParentAccessCodeForOnlineLoginEnabled();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_CHROMEOS)
+// This flag is used for enabling Omnibox triggered prerendering and
+// blink::WebRuntimeFeatures::Prerender2RelatedFeatures that enables Prerender2
+// related web exposed features. This flag takes effect only when
+// blink::features::Prerender2 is enabled. See crbug.com/1166085 for more
+// details of Omnibox triggered prerendering.
 COMPONENT_EXPORT(CHROME_FEATURES)
-bool IsBrowserAppInstanceTrackingEnabled();
-#endif  // defined(OS_CHROMEOS)
+extern const base::Feature kOmniboxTriggerForPrerender2;
 
 bool PrefServiceEnabled();
 

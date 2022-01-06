@@ -20,6 +20,8 @@ class AlarmTimerManager;
 namespace chromeos {
 namespace libassistant {
 
+class ServicesStatusObserver;
+
 class AssistantClientV1 : public AssistantClient {
  public:
   AssistantClientV1(
@@ -28,16 +30,11 @@ class AssistantClientV1 : public AssistantClient {
   ~AssistantClientV1() override;
 
   // chromeos::libassistant::AssistantClient:
-  void StartServices(base::OnceClosure services_ready_callback) override;
+  void StartServices(ServicesStatusObserver* services_status_observer) override;
   void SetChromeOSApiDelegate(
       assistant_client::ChromeOSApiDelegate* delegate) override;
   bool StartGrpcServices() override;
   void AddExperimentIds(const std::vector<std::string>& exp_ids) override;
-  void SendVoicelessInteraction(
-      const ::assistant::api::Interaction& interaction,
-      const std::string& description,
-      const ::assistant::api::VoicelessOptions& options,
-      base::OnceCallback<void(bool)> on_done) override;
   void AddSpeakerIdEnrollmentEventObserver(
       GrpcServicesObserver<OnSpeakerIdEnrollmentEventRequest>* observer)
       override;
@@ -52,7 +49,7 @@ class AssistantClientV1 : public AssistantClient {
       const GetSpeakerIdEnrollmentInfoRequest& request,
       base::OnceCallback<void(bool user_model_exists)> on_done) override;
   void ResetAllDataAndShutdown() override;
-  void OnDisplayRequest(const OnDisplayRequestRequest& request) override;
+  void SendDisplayRequest(const OnDisplayRequestRequest& request) override;
   void AddDisplayEventObserver(
       GrpcServicesObserver<OnAssistantDisplayEventRequest>* observer) override;
   void ResumeCurrentStream() override;
@@ -60,8 +57,17 @@ class AssistantClientV1 : public AssistantClient {
   void SetExternalPlaybackState(const MediaStatus& status_proto) override;
   void AddDeviceStateEventObserver(
       GrpcServicesObserver<OnDeviceStateEventRequest>* observer) override;
+  void SendVoicelessInteraction(
+      const ::assistant::api::Interaction& interaction,
+      const std::string& description,
+      const ::assistant::api::VoicelessOptions& options,
+      base::OnceCallback<void(bool)> on_done) override;
   void RegisterActionModule(
       assistant_client::ActionModule* action_module) override;
+  void SendScreenContextRequest(
+      const std::vector<std::string>& context_protos) override;
+  void StartVoiceInteraction() override;
+  void StopAssistantInteraction(bool cancel_conversation) override;
   void SetAuthenticationInfo(const AuthTokens& tokens) override;
   void SetInternalOptions(const std::string& locale,
                           bool spoken_feedback_enabled) override;
@@ -121,8 +127,7 @@ class AssistantClientV1 : public AssistantClient {
   base::ObserverList<GrpcServicesObserver<OnDeviceStateEventRequest>>
       device_state_event_observer_list_;
 
-  // Invoked when Libassistant services are ready to query.
-  base::OnceClosure services_ready_callback_;
+  ServicesStatusObserver* services_status_observer_ = nullptr;
 
   base::WeakPtrFactory<AssistantClientV1> weak_factory_{this};
 };

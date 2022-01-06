@@ -10,6 +10,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
@@ -24,14 +25,6 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/interaction/interaction_sequence_views.h"
-
-namespace {
-
-views::View* ElementToView(ui::TrackedElement* element) {
-  return element->AsA<views::TrackedElementViews>()->view();
-}
-
-}  // namespace
 
 // This test ensures basic compatibility of InteractionSequence[Views] and a
 // live browser. It verifies that a simple journey of opening the main menu and
@@ -54,9 +47,9 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceUITest, OpenMainMenuAndViewHelpItem) {
 
   // Demonstrate that we can find the app button without having to pick through
   // the BrowserView hierarcny.
-  views::View* const button_view = ElementToView(
-      ui::ElementTracker::GetElementTracker()->GetFirstMatchingElement(
-          BrowserAppMenuButton::kIdentifier, context));
+  views::View* const button_view =
+      views::ElementTrackerViews::GetInstance()->GetFirstMatchingView(
+          kAppMenuButtonElementId, context);
   BrowserAppMenuButton* const app_menu_button =
       static_cast<BrowserAppMenuButton*>(button_view);
   DCHECK_EQ(std::string("BrowserAppMenuButton"),
@@ -73,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceUITest, OpenMainMenuAndViewHelpItem) {
           .AddStep(
               views::InteractionSequenceViews::WithInitialView(app_menu_button))
           .AddStep(ui::InteractionSequence::StepBuilder()
-                       .SetElementID(BrowserAppMenuButton::kIdentifier)
+                       .SetElementID(kAppMenuButtonElementId)
                        .SetType(ui::InteractionSequence::StepType::kActivated)
                        .Build())
           .AddStep(ui::InteractionSequence::StepBuilder()
@@ -102,9 +95,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceUITest, OpenMainMenuAndViewHelpItem) {
   views::MenuItemView* const history_menu_item =
       app_menu_button->app_menu()->root_menu_item()->GetMenuItemByID(
           IDC_RECENT_TABS_MENU);
-  EXPECT_EQ(
-      history_menu_item,
-      ElementToView(
-          ui::ElementTracker::GetElementTracker()->GetFirstMatchingElement(
-              AppMenuModel::kHistoryMenuItem, context)));
+  EXPECT_EQ(history_menu_item,
+            views::ElementTrackerViews::GetInstance()->GetFirstMatchingView(
+                AppMenuModel::kHistoryMenuItem, context));
 }

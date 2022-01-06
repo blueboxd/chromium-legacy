@@ -157,6 +157,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/browser_context_keyed_service_factories.h"
 #include "chrome/browser/ash/login/security_token_session_controller_factory.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #else
@@ -253,7 +254,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::login::SecurityTokenSessionControllerFactory::GetInstance();
-  chromeos::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  ash::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #endif
 
   AboutSigninInternalsFactory::GetInstance();
@@ -486,7 +487,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   SupervisedUserServiceFactory::GetInstance();
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (base::FeatureList::IsEnabled(features::kSystemExtensions))
+  if (SystemExtensionsProvider::IsEnabled())
     SystemExtensionsProviderFactory::GetInstance();
 #endif
   TabRestoreServiceFactory::GetInstance();

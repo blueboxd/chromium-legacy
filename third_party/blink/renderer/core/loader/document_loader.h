@@ -35,12 +35,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/base/big_buffer.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
-#include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/same_document_navigation_type.mojom-blink.h"
@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/core/permissions_policy/policy_helper.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/loader/fetch/code_cache_host.h"
 #include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -87,6 +88,7 @@ class TickClock;
 namespace blink {
 
 class ContentSecurityPolicy;
+class CodeCacheHost;
 class Document;
 class DocumentParser;
 class Frame;
@@ -155,6 +157,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   const KURL& UrlForHistory() const;
   const AtomicString& HttpMethod() const;
   const Referrer& GetReferrer() const;
+  const SecurityOrigin* GetRequestorOrigin() const;
   const KURL& UnreachableURL() const;
   const absl::optional<blink::mojom::FetchCacheMode>& ForceFetchCacheMode()
       const;
@@ -180,6 +183,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
                                        mojom::blink::ScrollRestorationType,
                                        WebFrameLoadType,
                                        const SecurityOrigin* initiator_origin,
+                                       bool is_browser_initiated,
                                        bool is_synchronously_committed);
 
   const ResourceResponse& GetResponse() const { return response_; }
@@ -218,8 +222,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // same document navigation in that frame. Returns false if the navigation
   // cannot commit, true otherwise.
   // |initiator_origin| is the origin of the document or script that initiated
-  // the navigation or nullptr if the navigation is browser-initiated (e.g.
-  // typed in omnibox).
+  // the navigation or nullptr if the navigation is initiated via browser UI
+  // (e.g. typed in omnibox), or a history traversal to a previous navigation
+  // via browser UI.
   // |is_synchronously_committed| is true if the navigation is synchronously
   // committed from within Blink, rather than being driven by the browser's
   // navigation stack.
@@ -232,6 +237,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       const SecurityOrigin* initiator_origin,
       bool is_synchronously_committed,
       mojom::blink::TriggeringEventInfo,
+      bool is_browser_initiated,
       std::unique_ptr<WebDocumentLoader::ExtraData>);
 
   void SetDefersLoading(LoaderFreezeMode);
@@ -349,8 +355,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // activated.
   void NotifyPrerenderingDocumentActivated(base::TimeTicks activation_start);
 
-  blink::mojom::CodeCacheHost* GetCodeCacheHost();
-  void OnCodeCacheHostClosed();
+  CodeCacheHost* GetCodeCacheHost();
   void SetCodeCacheHost(
       mojo::PendingRemote<mojom::CodeCacheHost> code_cache_host);
   static void DisableCodeCacheForTesting();
@@ -406,6 +411,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       ClientRedirectPolicy,
       bool has_transient_user_activation,
       const SecurityOrigin* initiator_origin,
+      bool is_browser_initiated,
       bool is_synchronously_committed,
       mojom::blink::TriggeringEventInfo,
       std::unique_ptr<WebDocumentLoader::ExtraData>);
@@ -633,7 +639,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // This is the interface that handles generated code cache
   // requests to fetch code cache when loading resources.
-  mojo::Remote<blink::mojom::CodeCacheHost> code_cache_host_;
+  std::unique_ptr<CodeCacheHost> code_cache_host_;
 
   HashSet<KURL> early_hints_preloaded_resources_;
 };

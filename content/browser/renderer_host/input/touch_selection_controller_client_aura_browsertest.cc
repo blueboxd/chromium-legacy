@@ -48,13 +48,12 @@ bool JSONToPoint(const std::string& str, gfx::PointF* point) {
   base::DictionaryValue* root;
   if (!value->GetAsDictionary(&root))
     return false;
-  double x, y;
-  if (!root->GetDouble("x", &x))
+  absl::optional<double> x = root->FindDoubleKey("x");
+  absl::optional<double> y = root->FindDoubleKey("y");
+  if (!x || !y)
     return false;
-  if (!root->GetDouble("y", &y))
-    return false;
-  point->set_x(x);
-  point->set_y(y);
+  point->set_x(*x);
+  point->set_y(*y);
   return true;
 }
 
@@ -407,8 +406,8 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   EXPECT_EQ(
       " Site A\n"
       "   +--Site A\n"
@@ -513,8 +512,8 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   EXPECT_EQ(
       " Site A\n"
       "   +--Site A\n"
@@ -936,7 +935,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
             rwhva->selection_controller()->active_status());
   EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
-  EXPECT_EQ(2.f, rwhva->GetCurrentDeviceScaleFactor());
+  EXPECT_EQ(2.f, rwhva->GetDeviceScaleFactor());
   EXPECT_EQ(gfx::RectF(),
             rwhva->selection_controller()->GetVisibleRectBetweenBounds());
 

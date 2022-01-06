@@ -16,9 +16,9 @@
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
@@ -31,6 +31,31 @@
 namespace ash {
 
 namespace {
+
+constexpr net::NetworkTrafficAnnotationTag kAmbientPhotoCacheNetworkTag =
+    net::DefineNetworkTrafficAnnotation("ambient_photo_cache", R"(
+        semantics {
+          sender: "Ambient photo"
+          description:
+            "Get ambient photo from url to store limited number of photos in "
+            "the device cache. This is used to show the screensaver when the "
+            "user is idle. The url can be Backdrop service to provide pictures"
+            " from internal gallery, weather/time photos served by Google, or "
+            "user selected album from Google photos."
+          trigger:
+            "Triggered by a photo refresh timer, after the device has been "
+            "idle and the battery is charging."
+          data: "None."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+         cookies_allowed: NO
+         setting:
+           "This feature is off by default and can be overridden by users."
+         policy_exception_justification:
+           "This feature is set by user settings.ambient_mode.enabled pref. "
+           "The user setting is per device and cannot be overriden by admin."
+        })");
 
 void ToImageSkia(base::OnceCallback<void(const gfx::ImageSkia&)> callback,
                  const SkBitmap& image) {
@@ -69,7 +94,7 @@ std::unique_ptr<network::SimpleURLLoader> CreateSimpleURLLoader(
   }
 
   return network::SimpleURLLoader::Create(std::move(resource_request),
-                                          NO_TRAFFIC_ANNOTATION_YET);
+                                          kAmbientPhotoCacheNetworkTag);
 }
 
 bool CreateDirIfNotExists(const base::FilePath& path) {
@@ -198,9 +223,9 @@ class AmbientPhotoCacheImpl : public AmbientPhotoCache {
   void DecodePhoto(
       const std::string& data,
       base::OnceCallback<void(const gfx::ImageSkia&)> callback) override {
-    std::vector<uint8_t> image_bytes(data.begin(), data.end());
     data_decoder::DecodeImageIsolated(
-        image_bytes, data_decoder::mojom::ImageCodec::kDefault,
+        base::as_bytes(base::make_span(data)),
+        data_decoder::mojom::ImageCodec::kDefault,
         /*shrink_to_fit=*/true, data_decoder::kDefaultMaxSizeInBytes,
         /*desired_image_frame_size=*/gfx::Size(),
         base::BindOnce(&ToImageSkia, std::move(callback)));

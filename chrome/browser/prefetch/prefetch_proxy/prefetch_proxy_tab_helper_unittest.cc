@@ -51,6 +51,7 @@
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -759,6 +760,58 @@ TEST_F(PrefetchProxyTabHelperTest, NoCookies) {
       "PrefetchProxy.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
+TEST_F(PrefetchProxyTabHelperTest, CookiesChangedAfterInitialCheck) {
+  base::HistogramTester histogram_tester;
+
+  NavigateSomewhere();
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url("https://www.cat-food.com/");
+  MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
+
+  network::ResourceRequest request = VerifyCommonRequestState(prediction_url);
+  MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType,
+                      {{"X-Testing", "Hello World"}}, kHTMLBody);
+
+  std::unique_ptr<PrefetchedMainframeResponseContainer> resp =
+      tab_helper()->TakePrefetchResponse(prediction_url);
+  ASSERT_TRUE(resp);
+  EXPECT_EQ(*resp->TakeBody(), kHTMLBody);
+
+  network::mojom::URLResponseHeadPtr head = resp->TakeHead();
+  EXPECT_TRUE(head->headers->HasHeaderValue("X-Testing", "Hello World"));
+
+  EXPECT_TRUE(resp->isolation_info().IsEqualForTesting(
+      request.trusted_params->isolation_info));
+  VerifyIsolationInfo(resp->isolation_info());
+
+  EXPECT_EQ(predicted_urls_count(), 1U);
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 1U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+  EXPECT_TRUE(navigation_to_prefetch_start().has_value());
+
+  histogram_tester.ExpectUniqueSample(
+      "PrefetchProxy.Prefetch.Mainframe.NetError", net::OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PrefetchProxy.Prefetch.Mainframe.RespCode", net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PrefetchProxy.Prefetch.Mainframe.BodyLength", base::size(kHTMLBody), 1);
+  histogram_tester.ExpectUniqueSample(
+      "PrefetchProxy.Prefetch.Mainframe.TotalTime", kTotalTimeDuration, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PrefetchProxy.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration, 1);
+
+  ASSERT_TRUE(SetCookie(profile(), prediction_url, "testing"));
+  base::RunLoop().RunUntilIdle();
+
+  NavigateAndVerifyPrefetchStatus(
+      prediction_url,
+      PrefetchProxyPrefetchStatus::kPrefetchNotUsedCookiesChanged);
+  EXPECT_EQ(after_srp_prefetch_eligible_count(), 1U);
+  EXPECT_EQ(absl::optional<size_t>(0), after_srp_clicked_link_srp_position());
+}
+
 TEST_F(PrefetchProxyTabHelperTest, 2XXOnly) {
   base::HistogramTester histogram_tester;
 
@@ -1225,8 +1278,8 @@ TEST_F(PrefetchProxyTabHelperTest, ServiceWorkerRegistered) {
   GURL doc_url("https://www.google.com/search?q=cats");
   GURL prediction_url("https://www.cat-food.com/");
 
-  service_worker_context_.AddRegistrationToRegisteredOrigins(
-      url::Origin::Create(prediction_url));
+  service_worker_context_.AddRegistrationToRegisteredStorageKeys(
+      blink::StorageKey(url::Origin::Create(prediction_url)));
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
@@ -1251,8 +1304,8 @@ TEST_F(PrefetchProxyTabHelperTest, ServiceWorkerNotRegistered) {
   GURL prediction_url("https://www.cat-food.com/");
   GURL service_worker_registration("https://www.service-worker.com/");
 
-  service_worker_context_.AddRegistrationToRegisteredOrigins(
-      url::Origin::Create(service_worker_registration));
+  service_worker_context_.AddRegistrationToRegisteredStorageKeys(
+      blink::StorageKey(url::Origin::Create(service_worker_registration)));
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
@@ -1326,8 +1379,8 @@ TEST_F(PrefetchProxyTabHelperWithDecoyTest, ServiceWorkerRegistered) {
   GURL doc_url("https://www.google.com/search?q=cats");
   GURL prediction_url("https://www.cat-food.com/");
 
-  service_worker_context_.AddRegistrationToRegisteredOrigins(
-      url::Origin::Create(prediction_url));
+  service_worker_context_.AddRegistrationToRegisteredStorageKeys(
+      blink::StorageKey(url::Origin::Create(prediction_url)));
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
@@ -1840,8 +1893,8 @@ TEST_F(PrefetchProxyTabHelperRedirectWithDecoyTest, ServiceWorkerRegistered) {
   GURL prediction_url("https://www.cat-food.com/");
   GURL redirect_url("https://www.kitty-krunch.com/");
 
-  service_worker_context_.AddRegistrationToRegisteredOrigins(
-      url::Origin::Create(prediction_url));
+  service_worker_context_.AddRegistrationToRegisteredStorageKeys(
+      blink::StorageKey(url::Origin::Create(prediction_url)));
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
@@ -1881,8 +1934,8 @@ TEST_F(PrefetchProxyTabHelperRedirectWithDecoyTest,
   GURL doc_url("https://www.google.com/search?q=cats");
   GURL prediction_url("https://www.cat-food.com/");
 
-  service_worker_context_.AddRegistrationToRegisteredOrigins(
-      url::Origin::Create(prediction_url));
+  service_worker_context_.AddRegistrationToRegisteredStorageKeys(
+      blink::StorageKey(url::Origin::Create(prediction_url)));
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
@@ -2026,8 +2079,8 @@ TEST_F(PrefetchProxyTabHelperRedirectTest, NoRedirect_ServiceWorker) {
 
   GURL site_with_worker("https://service-worker.com");
 
-  service_worker_context_.AddRegistrationToRegisteredOrigins(
-      url::Origin::Create(site_with_worker));
+  service_worker_context_.AddRegistrationToRegisteredStorageKeys(
+      blink::StorageKey(url::Origin::Create(site_with_worker)));
 
   RunNoRedirectTest(site_with_worker);
 

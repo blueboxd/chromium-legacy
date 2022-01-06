@@ -11,6 +11,7 @@
 #include "ash/app_list/app_list_bubble_presenter.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/model/app_list_test_model.h"
 #include "ash/app_list/model/search/search_model.h"
@@ -90,18 +91,12 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
   ~AppListAppLaunchedMetricTest() override = default;
 
   void SetUp() override {
-    AppListView::SetShortAnimationForTesting(true);
     AshTestBase::SetUp();
 
-    search_model_ = Shell::Get()->app_list_controller()->GetSearchModel();
+    search_model_ = AppListModelProvider::Get()->search_model();
 
     shelf_test_api_ = std::make_unique<ShelfViewTestAPI>(
         GetPrimaryShelf()->GetShelfViewForTesting());
-  }
-
-  void TearDown() override {
-    AshTestBase::TearDown();
-    AppListView::SetShortAnimationForTesting(false);
   }
 
  protected:
@@ -196,7 +191,7 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
 
   void PopulateAndLaunchAppInGrid() {
     // Populate apps in the root app grid.
-    AppListModel* model = Shell::Get()->app_list_controller()->GetModel();
+    AppListModel* model = AppListModelProvider::Get()->model();
     model->AddItem(std::make_unique<AppListItem>("item 0"));
     model->AddItem(std::make_unique<AppListItem>("item 1"));
     model->AddItem(std::make_unique<AppListItem>("item 2"));
@@ -694,7 +689,7 @@ TEST_F(AppListAppCountMetricTest, RecordApplistItemCounts) {
   histogram.ExpectTotalCount("Apps.AppList.NumberOfApps", 0);
   histogram.ExpectTotalCount("Apps.AppList.NumberOfRootLevelItems", 0);
 
-  AppListModel* model = Shell::Get()->app_list_controller()->GetModel();
+  AppListModel* model = AppListModelProvider::Get()->model();
 
   // Add 5 items to the app list.
   for (int i = 0; i < 5; i++) {
@@ -711,7 +706,8 @@ TEST_F(AppListAppCountMetricTest, RecordApplistItemCounts) {
 
   // Create a folder and add 3 items to it.
   const std::string folder_id = base::StringPrintf("folder_id");
-  auto folder = std::make_unique<AppListFolderItem>(folder_id);
+  auto folder = std::make_unique<AppListFolderItem>(
+      folder_id, Shell::Get()->app_list_controller());
   model->AddItem(std::move(folder));
   for (int i = 0; i < 3; i++) {
     auto item =

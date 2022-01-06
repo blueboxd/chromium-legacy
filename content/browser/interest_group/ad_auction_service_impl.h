@@ -8,12 +8,14 @@
 #include <memory>
 #include <set>
 
+#include "base/callback_forward.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "content/browser/interest_group/auction_runner.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/document_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/interest_group/ad_auction_service.mojom.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-forward.h"
@@ -38,6 +40,9 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
       RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::AdAuctionService> receiver);
 
+  typedef base::RepeatingCallback<void(const std::vector<std::string>& errors)>
+      AuctionCompleteCallback;
+
   // blink::mojom::AdAuctionService.
   void JoinInterestGroup(const blink::InterestGroup& group) override;
   void LeaveInterestGroup(const url::Origin& owner,
@@ -50,6 +55,14 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
   network::mojom::URLLoaderFactory* GetFrameURLLoaderFactory() override;
   network::mojom::URLLoaderFactory* GetTrustedURLLoaderFactory() override;
   RenderFrameHostImpl* GetFrame() override;
+  network::mojom::ClientSecurityStatePtr GetClientSecurityState() override;
+
+  // Sets a global callback invoked whenever an auction completes, for
+  // investigating flakiness on the bots.
+  //
+  // TODO(https://crbug.com/1259733):  Remove this once the issue is fixed.
+  static void SetOnAuctionCompleteCallbackForTesting(
+      AuctionCompleteCallback auction_complete_callback);
 
   using DocumentService::origin;
   using DocumentService::render_frame_host;

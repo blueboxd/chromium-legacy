@@ -11,8 +11,10 @@ import static org.chromium.components.content_settings.PrefNames.ENABLE_QUIET_NO
 import static org.chromium.components.content_settings.PrefNames.NOTIFICATIONS_VIBRATE_ENABLED;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
@@ -269,10 +271,17 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         }
         if (!mGroupByAllowBlock) return;
 
-        // When the toggle is set to Blocked, the Allowed list header should read 'Exceptions', not
-        // 'Allowed' (because it shows exceptions from the rule).
-        int resourceId = toggleValue ? R.string.website_settings_allowed_group_heading
-                                     : R.string.website_settings_exceptions_group_heading;
+        int resourceId;
+        if (mCategory.showSites(SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE)) {
+            // REQUEST_DESKTOP_SITE has its own Allowed list header.
+            resourceId = R.string.website_settings_allowed_group_heading_request_desktop_site;
+        } else if (toggleValue) {
+            resourceId = R.string.website_settings_allowed_group_heading;
+        } else {
+            // When the toggle is set to Blocked, the Allowed list header should read 'Exceptions',
+            // not 'Allowed' (because it shows exceptions from the rule).
+            resourceId = R.string.website_settings_exceptions_group_heading;
+        }
         allowedGroup.setTitle(getHeaderTitle(resourceId, numAllowed));
         allowedGroup.setExpanded(mAllowListExpanded);
     }
@@ -287,9 +296,14 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         if (!mGroupByAllowBlock) return;
 
         // Set the title and arrow icons for the header.
-        int resourceId = mCategory.showSites(SiteSettingsCategory.Type.SOUND)
-                ? R.string.website_settings_blocked_group_heading_sound
-                : R.string.website_settings_blocked_group_heading;
+        int resourceId;
+        if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
+            resourceId = R.string.website_settings_blocked_group_heading_sound;
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE)) {
+            resourceId = R.string.website_settings_blocked_group_heading_request_desktop_site;
+        } else {
+            resourceId = R.string.website_settings_blocked_group_heading;
+        }
         blockedGroup.setTitle(getHeaderTitle(resourceId, numBlocked));
         blockedGroup.setExpanded(mBlockListExpanded);
     }
@@ -454,6 +468,20 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                         SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER);
                 website_pref.getExtras().putInt(
                         SettingsNavigationSource.EXTRA_KEY, navigationSource);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                    && mCategory.showSites(SiteSettingsCategory.Type.NOTIFICATIONS)) {
+                // In  Android O+, users can manage Notification channels through App Info. If this
+                // is the case we send the user directly to Android Settings to modify the
+                // Notification exception.
+                String channelId = getSiteSettingsDelegate().getChannelIdForOrigin(
+                        website_pref.site().getAddress().getOrigin());
+                Intent intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
+                intent.putExtra(Settings.EXTRA_CHANNEL_ID, channelId);
+                intent.putExtra(
+                        Settings.EXTRA_APP_PACKAGE, preference.getContext().getPackageName());
+                startActivityForResult(
+                        intent, SingleWebsiteSettings.REQUEST_CODE_NOTIFICATION_CHANNEL_SETTINGS);
+
             } else {
                 buildPreferenceDialog(website_pref.site()).show();
             }
@@ -594,6 +622,11 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             assert WebsitePreferenceBridge.isCategoryEnabled(
                     browserContextHandle, ContentSettingsType.AUTO_DARK_WEB_CONTENT);
             resource = R.string.website_settings_add_site_description_auto_dark_block;
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE)) {
+            resource = WebsitePreferenceBridge.isCategoryEnabled(
+                               browserContextHandle, ContentSettingsType.REQUEST_DESKTOP_SITE)
+                    ? R.string.website_settings_add_site_description_desktop_site_block
+                    : R.string.website_settings_add_site_description_desktop_site_allow;
         }
         assert resource > 0;
         return getString(resource);
@@ -677,27 +710,29 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
 
         BrowserContextHandle browserContextHandle =
                 getSiteSettingsDelegate().getBrowserContextHandle();
-        boolean exception = false;
+        boolean allowSpecifyingExceptions = false;
         if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
-            exception = true;
+            allowSpecifyingExceptions = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)) {
-            exception = true;
+            allowSpecifyingExceptions = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
-            exception = true;
+            allowSpecifyingExceptions = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
                 && !WebsitePreferenceBridge.isCategoryEnabled(
                         browserContextHandle, ContentSettingsType.BACKGROUND_SYNC)) {
-            exception = true;
+            allowSpecifyingExceptions = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)
                 && !WebsitePreferenceBridge.isCategoryEnabled(
                         browserContextHandle, ContentSettingsType.AUTOMATIC_DOWNLOADS)) {
-            exception = true;
+            allowSpecifyingExceptions = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT)
                 && WebsitePreferenceBridge.isCategoryEnabled(
                         browserContextHandle, ContentSettingsType.AUTO_DARK_WEB_CONTENT)) {
-            exception = true;
+            allowSpecifyingExceptions = true;
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE)) {
+            allowSpecifyingExceptions = true;
         }
-        if (exception) {
+        if (allowSpecifyingExceptions) {
             getPreferenceScreen().addPreference(new AddExceptionPreference(getStyledContext(),
                     ADD_EXCEPTION_KEY, getAddExceptionDialogMessage(), mCategory, this));
         }

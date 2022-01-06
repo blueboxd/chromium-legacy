@@ -472,15 +472,16 @@ std::vector<MediaSinkWithCastModes> MediaRouterUI::GetEnabledSinks() const {
 }
 
 std::u16string MediaRouterUI::GetPresentationRequestSourceName() const {
-  GURL gurl = GetFrameURL();
+  const url::Origin frame_origin = GetFrameOrigin();
   // Presentation URLs are only possible on https: and other secure contexts,
   // so we can omit http/https schemes here.
-  return gurl.SchemeIs(extensions::kExtensionScheme)
-             ? base::UTF8ToUTF16(
-                   GetExtensionName(gurl, extensions::ExtensionRegistry::Get(
+  return frame_origin.scheme() == extensions::kExtensionScheme
+             ? base::UTF8ToUTF16(GetExtensionName(
+                   frame_origin.GetURL(), extensions::ExtensionRegistry::Get(
                                               initiator_->GetBrowserContext())))
-             : url_formatter::FormatUrlForSecurityDisplay(
-                   gurl, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+             : url_formatter::FormatOriginForSecurityDisplay(
+                   frame_origin,
+                   url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
 }
 
 void MediaRouterUI::AddIssue(const IssueInfo& issue) {
@@ -666,7 +667,6 @@ void MediaRouterUI::OnDefaultPresentationChanged(
       GetMediaRouter(), source_for_route_observer.id(),
       base::BindRepeating(&MediaRouterUI::OnRoutesUpdated,
                           base::Unretained(this)));
-
   UpdateModelHeader();
 }
 
@@ -780,9 +780,9 @@ absl::optional<RouteParameters> MediaRouterUI::GetRouteParameters(
   return absl::make_optional(std::move(params));
 }
 
-GURL MediaRouterUI::GetFrameURL() const {
-  return presentation_request_ ? presentation_request_->frame_origin.GetURL()
-                               : GURL();
+url::Origin MediaRouterUI::GetFrameOrigin() const {
+  return presentation_request_ ? presentation_request_->frame_origin
+                               : url::Origin();
 }
 
 void MediaRouterUI::SendIssueForRouteTimeout(
@@ -1058,9 +1058,11 @@ void MediaRouterUI::MaybeReportFileInformation(
 content::WebContents* MediaRouterUI::OpenTabWithUrl(const GURL& url) {
   // Check if the current page is a new tab. If so open file in current page.
   // If not then open a new page.
-  auto initiatorOrigin = initiator_->GetVisibleURL().GetOrigin();
-  if (initiatorOrigin == GURL(chrome::kChromeUINewTabPageURL).GetOrigin() ||
-      initiatorOrigin == GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
+  auto initiatorOrigin = initiator_->GetVisibleURL().DeprecatedGetOriginAsURL();
+  if (initiatorOrigin ==
+          GURL(chrome::kChromeUINewTabPageURL).DeprecatedGetOriginAsURL() ||
+      initiatorOrigin ==
+          GURL(chrome::kChromeUINewTabURL).DeprecatedGetOriginAsURL()) {
     content::NavigationController::LoadURLParams load_params(url);
     load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
     initiator_->GetController().LoadURLWithParams(load_params);

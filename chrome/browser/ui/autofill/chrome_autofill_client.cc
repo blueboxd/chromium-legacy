@@ -650,11 +650,6 @@ void ChromeAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
 void ChromeAutofillClient::ShowAutofillPopup(
     const autofill::AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
-  // Autofill popups should only be shown in focused windows because on Windows
-  // the popup may overlap the focused window (see crbug.com/1239760).
-  if (!has_focus_)
-    return;
-
   // Don't show any popups while Autofill Assistant's UI is shown.
   if (IsAutofillAssistantShowing()) {
     return;
@@ -915,7 +910,7 @@ void ChromeAutofillClient::LoadRiskData(
   risk_util::LoadRiskData(0, web_contents(), std::move(callback));
 }
 
-void ChromeAutofillClient::MainFrameWasResized(bool width_changed) {
+void ChromeAutofillClient::PrimaryMainFrameWasResized(bool width_changed) {
 #if defined(OS_ANDROID)
   // Ignore virtual keyboard showing and hiding a strip of suggestions.
   if (!width_changed)
@@ -929,15 +924,8 @@ void ChromeAutofillClient::WebContentsDestroyed() {
   HideAutofillPopup(PopupHidingReason::kTabGone);
 }
 
-void ChromeAutofillClient::OnWebContentsLostFocus(
-    content::RenderWidgetHost* render_widget_host) {
-  has_focus_ = false;
-  HideAutofillPopup(PopupHidingReason::kFocusChanged);
-}
-
 void ChromeAutofillClient::OnWebContentsFocused(
     content::RenderWidgetHost* render_widget_host) {
-  has_focus_ = true;
 #if defined(OS_ANDROID)
   save_card_message_controller_android_.OnWebContentsFocused();
 #endif

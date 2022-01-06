@@ -287,7 +287,9 @@ class NavigationBaseBrowserTest : public ContentBrowserTest {
     return static_cast<WebContentsImpl*>(shell()->web_contents());
   }
 
-  FrameTreeNode* main_frame() { return web_contents()->GetFrameTree()->root(); }
+  FrameTreeNode* main_frame() {
+    return web_contents()->GetPrimaryFrameTree().root();
+  }
 
   RenderFrameHostImpl* current_frame_host() {
     return main_frame()->current_frame_host();
@@ -2082,6 +2084,11 @@ class CreateWebContentsOnCrashObserver : public NotificationObserver {
                                    WebContents* first_web_contents)
       : url_(url), first_web_contents_(first_web_contents) {}
 
+  CreateWebContentsOnCrashObserver(const CreateWebContentsOnCrashObserver&) =
+      delete;
+  CreateWebContentsOnCrashObserver& operator=(
+      const CreateWebContentsOnCrashObserver&) = delete;
+
   void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) override {
@@ -2112,8 +2119,6 @@ class CreateWebContentsOnCrashObserver : public NotificationObserver {
   WebContents* first_web_contents_;
 
   ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreateWebContentsOnCrashObserver);
 };
 
 // This test simulates android webview's behavior in apps that handle
@@ -3508,8 +3513,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
 // when performing a non-history navigation to decide if it's a same-document
 // navigation, so..
 // 6. The browser will perform a cross-document navigation to a.html#foo.
+//
+// TODO(https://crbug.com/1262032): Test is flaky on various platforms.
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
-                       SameDocumentNavigationRacesPushStateURLChange) {
+                       DISABLED_SameDocumentNavigationRacesPushStateURLChange) {
   WebContents* wc = shell()->web_contents();
   GURL url0 = embedded_test_server()->GetURL("/title1.html");
   GURL url1 = embedded_test_server()->GetURL("/title2.html");
@@ -5604,8 +5611,8 @@ IN_PROC_BROWSER_TEST_F(
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* speculative_render_frame_host =
-      web_contents->GetFrameTree()
-          ->root()
+      web_contents->GetPrimaryFrameTree()
+          .root()
           ->render_manager()
           ->speculative_frame_host();
   ASSERT_TRUE(speculative_render_frame_host);
@@ -5619,7 +5626,7 @@ IN_PROC_BROWSER_TEST_F(
   const GURL final_url =
       embedded_test_server()->GetURL("c.com", "/title1.html");
   BeginNavigationInCommitCallbackInterceptor interceptor(
-      web_contents->GetFrameTree()->root(), final_url);
+      web_contents->GetPrimaryFrameTree().root(), final_url);
   speculative_render_frame_host->SetCommitCallbackInterceptorForTesting(
       &interceptor);
 
@@ -5648,8 +5655,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestWithPerformanceManager,
   FrameTreeNode* first_subframe_node =
       web_contents->GetMainFrame()->child_at(0);
   RenderProcessHost* const a_com_render_process_host =
-      web_contents->GetFrameTree()
-          ->root()
+      web_contents->GetPrimaryFrameTree()
+          .root()
           ->render_manager()
           ->current_frame_host()
           ->GetProcess();
@@ -5780,7 +5787,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestWithPerformanceManager,
   // Simulates a race where the a.com renderer detaches the second child frame
   // after the browser sends `CommitNavigation()` to the b.com renderer.
   DetachChildFrameInCommitCallbackInterceptor interceptor(
-      web_contents->GetFrameTree()->root(), 1);
+      web_contents->GetPrimaryFrameTree().root(), 1);
   speculative_render_frame_host->SetCommitCallbackInterceptorForTesting(
       &interceptor);
 

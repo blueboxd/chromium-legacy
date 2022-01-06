@@ -27,7 +27,9 @@ class Ranker {
 
   // Called each time a new search session begins, eg. when the user types a
   // character.
-  virtual void Start(const std::u16string& query) {}
+  virtual void Start(const std::u16string& query,
+                     ResultsMap& results,
+                     CategoriesMap& categories) {}
 
   // Called each time a search provider sets new results. Passed the |provider|
   // type that triggered this call, and all |results| received so far for this
@@ -39,10 +41,15 @@ class Ranker {
   //
   // The goal of a ranker should be to update scores in the Scoring structs
   // within |results|. Generally, one ranker should map to one score member.
-  virtual void Rank(ResultsMap& results, ProviderType provider) {}
+  virtual void Rank(ResultsMap& results,
+                    CategoriesMap& categories,
+                    ProviderType provider) {}
 
   // Called each time a user launches a result.
   virtual void Train(const LaunchData& launch) {}
+
+  // Called each time a user removes a result from the search results list.
+  virtual void Remove(ChromeSearchResult* result) {}
 };
 
 }  // namespace app_list

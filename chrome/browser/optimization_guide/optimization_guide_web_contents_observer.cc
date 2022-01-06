@@ -7,7 +7,9 @@
 #include "chrome/browser/optimization_guide/chrome_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/optimization_guide/core/hints_fetcher.h"
 #include "components/optimization_guide/core/hints_processing_util.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
@@ -21,8 +23,22 @@ namespace {
 
 bool IsValidOptimizationGuideNavigation(
     content::NavigationHandle* navigation_handle) {
-  return navigation_handle->IsInPrimaryMainFrame() &&
-         navigation_handle->GetURL().SchemeIsHTTPOrHTTPS();
+  if (!navigation_handle->IsInPrimaryMainFrame())
+    return false;
+
+  if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
+    return false;
+
+  // Now check if this is a NSP navigation. NSP is not a valid navigation.
+  prerender::NoStatePrefetchManager* no_state_prefetch_manager =
+      prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
+          navigation_handle->GetWebContents()->GetBrowserContext());
+  if (!no_state_prefetch_manager) {
+    // Not a NSP navigation if there is no NSP manager.
+    return true;
+  }
+  return !(no_state_prefetch_manager->IsWebContentsPrerendering(
+      navigation_handle->GetWebContents()));
 }
 
 }  // namespace
@@ -150,7 +166,9 @@ void OptimizationGuideWebContentsObserver::FetchHintsUsingManager(
   PageData& page_data = GetPageData(*page);
   page_data.set_sent_batched_hints_request();
 
-  hints_manager->FetchHintsForURLs(page_data.GetHintsTargetUrls());
+  hints_manager->FetchHintsForURLs(
+      page_data.GetHintsTargetUrls(),
+      optimization_guide::proto::CONTEXT_BATCH_UPDATE_GOOGLE_SRP);
 }
 
 void OptimizationGuideWebContentsObserver::NotifyNavigationFinish(

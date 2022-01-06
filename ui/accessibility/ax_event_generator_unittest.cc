@@ -10,13 +10,14 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
+#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 
 namespace ui {
 
 // Required by gmock to print TargetedEvent in a human-readable way.
 void PrintTo(const AXEventGenerator::TargetedEvent& event, std::ostream* os) {
-  *os << event.event_params.event << " on " << event.node->id();
+  *os << event.event_params.event << " on " << event.node_id;
 }
 
 namespace {
@@ -37,7 +38,7 @@ MATCHER_P2(HasEventAtNode,
                PrintToString(expected_node_id)) {
   const auto& event = arg;
   return Matches(expected_event_type)(event.event_params.event) &&
-         Matches(expected_node_id)(event.node->id());
+         Matches(expected_node_id)(event.node_id);
 }
 
 }  // namespace
@@ -128,15 +129,15 @@ TEST(AXEventGeneratorTest, IterateThroughEmptyEventSets) {
   // Node9 contains no event.
   std::set<AXEventGenerator::EventParams> node9_events;
 
-  event_generator.AddEventsForTesting(node1, node1_events);
-  event_generator.AddEventsForTesting(node2, node2_events);
-  event_generator.AddEventsForTesting(node3, node3_events);
-  event_generator.AddEventsForTesting(node4, node4_events);
-  event_generator.AddEventsForTesting(node5, node5_events);
-  event_generator.AddEventsForTesting(node6, node6_events);
-  event_generator.AddEventsForTesting(node7, node7_events);
-  event_generator.AddEventsForTesting(node8, node8_events);
-  event_generator.AddEventsForTesting(node9, node9_events);
+  event_generator.AddEventsForTesting(*node1, node1_events);
+  event_generator.AddEventsForTesting(*node2, node2_events);
+  event_generator.AddEventsForTesting(*node3, node3_events);
+  event_generator.AddEventsForTesting(*node4, node4_events);
+  event_generator.AddEventsForTesting(*node5, node5_events);
+  event_generator.AddEventsForTesting(*node6, node6_events);
+  event_generator.AddEventsForTesting(*node7, node7_events);
+  event_generator.AddEventsForTesting(*node8, node8_events);
+  event_generator.AddEventsForTesting(*node9, node9_events);
 
   std::map<AXNode*, std::set<AXEventGenerator::Event>> expected_event_map;
   expected_event_map[node3] = {AXEventGenerator::Event::IGNORED_CHANGED,
@@ -145,10 +146,12 @@ TEST(AXEventGeneratorTest, IterateThroughEmptyEventSets) {
   expected_event_map[node7] = {AXEventGenerator::Event::IGNORED_CHANGED};
 
   for (const auto& targeted_event : event_generator) {
-    auto map_iter = expected_event_map.find(targeted_event.node);
+    AXNode* node = tree.GetFromId(targeted_event.node_id);
+    ASSERT_NE(nullptr, node);
+    auto map_iter = expected_event_map.find(node);
 
     ASSERT_NE(map_iter, expected_event_map.end())
-        << "|expected_event_map| contains node.id=" << targeted_event.node->id()
+        << "|expected_event_map| contains node_id=" << targeted_event.node_id
         << "\nExpected: true"
         << "\nActual: " << std::boolalpha
         << (map_iter != expected_event_map.end());
@@ -158,7 +161,7 @@ TEST(AXEventGeneratorTest, IterateThroughEmptyEventSets) {
 
     ASSERT_NE(event_iter, node_events.end())
         << "Event=" << targeted_event.event_params.event
-        << ", on node.id=" << targeted_event.node->id()
+        << ", on node_id=" << targeted_event.node_id
         << " NOT found in |expected_event_map|";
 
     // If the event from |event_generator| is found in |expected_event_map|,
@@ -1498,6 +1501,56 @@ TEST(AXEventGeneratorTest, NodeBecomesUnignored2) {
                   HasEventAtNode(AXEventGenerator::Event::CHILDREN_CHANGED, 2),
                   HasEventAtNode(AXEventGenerator::Event::SUBTREE_CREATED, 4),
                   HasEventAtNode(AXEventGenerator::Event::IGNORED_CHANGED, 4)));
+}
+
+TEST(AXEventGeneratorTest, NodeChangesIsIgnoredDueToFocusChange) {
+  AXTree::SetFocusedNodeShouldNeverBeIgnored();
+
+  AXNodeData root;
+  AXNodeData button_1;
+  AXNodeData button_2;
+  root.id = 1;
+  button_1.id = 2;
+  button_2.id = 3;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {button_1.id, button_2.id};
+
+  button_1.role = ax::mojom::Role::kButton;
+  button_1.AddState(ax::mojom::State::kIgnored);
+
+  button_2.role = ax::mojom::Role::kButton;
+  button_2.AddState(ax::mojom::State::kIgnored);
+
+  AXTreeUpdate update;
+  update.root_id = root.id;
+  update.nodes = {root, button_1, button_2};
+
+  AXTreeData tree_data;
+  tree_data.focus_id = button_1.id;
+  update.has_tree_data = true;
+  update.tree_data = tree_data;
+
+  AXTree tree(update);
+  AXEventGenerator event_generator(&tree);
+  ASSERT_THAT(event_generator, IsEmpty());
+
+  tree_data = tree.data();
+  tree_data.focused_tree_id = tree.GetAXTreeID();
+  tree_data.focus_id = button_2.id;
+  AXTreeUpdate update_2;
+  update_2.has_tree_data = true;
+  update_2.tree_data = tree_data;
+
+  ASSERT_TRUE(tree.Unserialize(update_2));
+  EXPECT_THAT(
+      event_generator,
+      UnorderedElementsAre(
+          HasEventAtNode(AXEventGenerator::Event::IGNORED_CHANGED, button_1.id),
+          HasEventAtNode(AXEventGenerator::Event::IGNORED_CHANGED, button_2.id),
+          HasEventAtNode(AXEventGenerator::Event::CHILDREN_CHANGED, root.id),
+          HasEventAtNode(AXEventGenerator::Event::SUBTREE_CREATED,
+                         button_2.id)));
 }
 
 TEST(AXEventGeneratorTest, NodeInsertedViaRoleChange) {

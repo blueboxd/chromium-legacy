@@ -65,7 +65,8 @@ constexpr char kTemplateRequest[] = R"(
     "imageBytes": "%s",
     "engineParameters": [
       {"ocrParameters": {}},
-      {"descriptionParameters": {}}
+      {"descriptionParameters": {}},
+      {"iconParameters": {}}
     ]
   }]
 }
@@ -80,7 +81,8 @@ constexpr char kBatchRequest[] = R"(
       "imageBytes": "BwgJ",
       "engineParameters": [
         {"ocrParameters": {}},
-        {"descriptionParameters": {}}
+        {"descriptionParameters": {}},
+        {"iconParameters": {}}
       ]
     },
     {
@@ -88,7 +90,8 @@ constexpr char kBatchRequest[] = R"(
       "imageBytes": "BAUG",
       "engineParameters": [
         {"ocrParameters": {}},
-        {"descriptionParameters": {}}
+        {"descriptionParameters": {}},
+        {"iconParameters": {}}
       ]
     },
     {
@@ -96,7 +99,8 @@ constexpr char kBatchRequest[] = R"(
       "imageBytes": "AQID",
       "engineParameters": [
         {"ocrParameters": {}},
-        {"descriptionParameters": {}}
+        {"descriptionParameters": {}},
+        {"iconParameters": {}}
       ]
     }
   ]
@@ -239,6 +243,9 @@ class TestImageProcessor : public mojom::ImageProcessor {
  public:
   TestImageProcessor() = default;
 
+  TestImageProcessor(const TestImageProcessor&) = delete;
+  TestImageProcessor& operator=(const TestImageProcessor&) = delete;
+
   mojo::PendingRemote<mojom::ImageProcessor> GetPendingRemote() {
     mojo::PendingRemote<mojom::ImageProcessor> remote;
     receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
@@ -260,8 +267,6 @@ class TestImageProcessor : public mojom::ImageProcessor {
   std::vector<GetJpgImageDataCallback> callbacks_;
 
   mojo::ReceiverSet<mojom::ImageProcessor> receivers_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestImageProcessor);
 };
 
 // A class that supports test URL loading for the "server" use case: where
@@ -274,6 +279,10 @@ class TestServerURLLoaderFactory {
         shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &loader_factory_)) {}
+
+  TestServerURLLoaderFactory(const TestServerURLLoaderFactory&) = delete;
+  TestServerURLLoaderFactory& operator=(const TestServerURLLoaderFactory&) =
+      delete;
 
   const std::vector<network::TestURLLoaderFactory::PendingRequest>& requests() {
     return *loader_factory_.pending_requests();
@@ -349,8 +358,6 @@ class TestServerURLLoaderFactory {
   const std::string server_url_prefix_;
   network::TestURLLoaderFactory loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestServerURLLoaderFactory);
 };
 
 // Returns a "canonically" formatted version of a JSON string by parsing and
@@ -1860,7 +1867,8 @@ TEST(AnnotatorTest, DescPolicy) {
               "imageId": "https://www.example.com/image2.jpg",
               "imageBytes": "BAUG",
               "engineParameters": [
-                {"ocrParameters": {}}
+                {"ocrParameters": {}},
+                {"iconParameters": {}}
               ]
             },
             {
@@ -1868,7 +1876,8 @@ TEST(AnnotatorTest, DescPolicy) {
               "imageBytes": "AQID",
               "engineParameters": [
                 {"ocrParameters": {}},
-                {"descriptionParameters": {}}
+                {"descriptionParameters": {}},
+                {"iconParameters": {}}
               ]
             }
           ]
@@ -2048,7 +2057,8 @@ TEST(AnnotatorTest, DescLanguage) {
               "imageId": "https://www.example.com/image2.jpg en",
               "imageBytes": "BAUG",
               "engineParameters": [
-                {"ocrParameters": {}}
+                {"ocrParameters": {}},
+                {"iconParameters": {}}
               ]
             },
             {
@@ -2060,7 +2070,8 @@ TEST(AnnotatorTest, DescLanguage) {
                   "descriptionParameters": {
                     "preferredLanguages": ["it"]
                   }
-                }
+                },
+                {"iconParameters": {}}
               ]
             },
             {
@@ -2072,7 +2083,8 @@ TEST(AnnotatorTest, DescLanguage) {
                   "descriptionParameters": {
                     "preferredLanguages": ["fr"]
                   }
-                }
+                },
+                {"iconParameters": {}}
               ]
             }
           ]
@@ -2224,7 +2236,8 @@ TEST(AnnotatorTest, LanguageFallback) {
                   "descriptionParameters": {
                     "preferredLanguages": ["en"]
                   }
-                }
+                },
+                {"iconParameters": {}}
               ]
             }
           ]

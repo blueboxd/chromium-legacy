@@ -5,14 +5,14 @@
 #include "ash/quick_answers/quick_answers_controller_impl.h"
 
 #include "ash/components/quick_answers/quick_answers_client.h"
-#include "ash/components/quick_answers/quick_answers_notice.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/quick_answers/quick_answers_state.h"
 #include "ash/quick_answers/quick_answers_ui_controller.h"
 #include "ash/quick_answers/ui/quick_answers_view.h"
 #include "ash/quick_answers/ui/user_consent_view.h"
-#include "ash/quick_answers/ui/user_notice_view.h"
 #include "ash/test/ash_test_base.h"
+#include "base/memory/scoped_refptr.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 
 namespace ash {
@@ -46,7 +46,9 @@ class QuickAnswersControllerTest : public AshTestBase {
     QuickAnswersState::Get()->set_eligibility_for_testing(true);
 
     controller()->SetClient(std::make_unique<quick_answers::QuickAnswersClient>(
-        &test_url_loader_factory_, controller()->GetQuickAnswersDelegate()));
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_),
+        controller()->GetQuickAnswersDelegate()));
   }
 
   QuickAnswersControllerImpl* controller() {
@@ -109,6 +111,7 @@ class QuickAnswersControllerTest : public AshTestBase {
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 };
 
 TEST_F(QuickAnswersControllerTest, ShouldNotShowWhenFeatureNotEligible) {

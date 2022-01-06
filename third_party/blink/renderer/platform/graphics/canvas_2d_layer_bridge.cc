@@ -30,7 +30,7 @@
 
 #include "base/location.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/elapsed_timer.h"
 #include "cc/layers/texture_layer.h"
 #include "components/viz/common/resources/transferable_resource.h"
@@ -57,13 +57,13 @@ namespace blink {
 
 Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
                                          RasterMode raster_mode,
-                                         const CanvasColorParams& color_params)
+                                         OpacityMode opacity_mode)
     : logger_(std::make_unique<Logger>()),
       have_recorded_draw_commands_(false),
       is_hidden_(false),
       is_being_displayed_(false),
       raster_mode_(raster_mode),
-      color_params_(color_params),
+      opacity_mode_(opacity_mode),
       size_(size),
       snapshot_state_(kInitialSnapshotState),
       resource_host_(nullptr),
@@ -264,8 +264,8 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider() {
     layer_ = cc::TextureLayer::CreateForMailbox(this);
     layer_->SetIsDrawable(true);
     layer_->SetHitTestable(true);
-    layer_->SetContentsOpaque(ColorParams().GetOpacityMode() == kOpaque);
-    layer_->SetBlendBackgroundColor(ColorParams().GetOpacityMode() != kOpaque);
+    layer_->SetContentsOpaque(opacity_mode_ == kOpaque);
+    layer_->SetBlendBackgroundColor(opacity_mode_ != kOpaque);
     layer_->SetNearestNeighbor(resource_host_->FilterQuality() ==
                                cc::PaintFlags::FilterQuality::kNone);
   }
@@ -369,8 +369,8 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
   if (!GetOrCreateResourceProvider())
     return false;
 
-  if (x <= 0 && y <= 0 && x + orig_info.width() >= size_.Width() &&
-      y + orig_info.height() >= size_.Height()) {
+  if (x <= 0 && y <= 0 && x + orig_info.width() >= size_.width() &&
+      y + orig_info.height() >= size_.height()) {
     SkipQueuedDrawCommands();
   } else {
     FlushRecording();
@@ -672,7 +672,7 @@ void Canvas2DLayerBridge::FinalizeFrame() {
 
 void Canvas2DLayerBridge::DoPaintInvalidation(const IntRect& dirty_rect) {
   if (layer_ && raster_mode_ == RasterMode::kGPU)
-    layer_->SetNeedsDisplayRect(dirty_rect);
+    layer_->SetNeedsDisplayRect(ToGfxRect(dirty_rect));
 }
 
 scoped_refptr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot() {

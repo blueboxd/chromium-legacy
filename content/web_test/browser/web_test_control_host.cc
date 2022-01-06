@@ -27,12 +27,12 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -588,7 +588,7 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   // Tests should always start with the browser controls hidden.
   // TODO(danakj): We no longer run web tests on android, and this is an android
   // feature, so maybe this isn't needed anymore.
-  main_window_->web_contents()->GetMainFrame()->UpdateBrowserControlsState(
+  main_window_->web_contents()->UpdateBrowserControlsState(
       cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kHidden,
       false);
 

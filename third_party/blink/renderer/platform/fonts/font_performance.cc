@@ -5,16 +5,15 @@
 #include "third_party/blink/renderer/platform/fonts/font_performance.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 
 namespace blink {
 
 base::TimeDelta FontPerformance::primary_font_;
 base::TimeDelta FontPerformance::primary_font_in_style_;
 base::TimeDelta FontPerformance::system_fallback_;
+base::TimeDelta FontPerformance::shaping_;
 unsigned FontPerformance::in_style_ = 0;
-
-const base::Feature kAsyncFontAccess{"AsyncFontAccess",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // static
 void FontPerformance::MarkFirstContentfulPaint() {
@@ -24,6 +23,9 @@ void FontPerformance::MarkFirstContentfulPaint() {
                       FontPerformance::PrimaryFontTimeInStyle());
   UMA_HISTOGRAM_TIMES("Renderer.Font.SystemFallback.FCP",
                       FontPerformance::SystemFallbackFontTime());
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  UMA_HISTOGRAM_TIMES("Renderer.Font.Shaping.FCP", shaping_);
+#endif
 }
 
 // static
@@ -34,6 +36,9 @@ void FontPerformance::MarkDomContentLoaded() {
                       FontPerformance::PrimaryFontTimeInStyle());
   UMA_HISTOGRAM_TIMES("Renderer.Font.SystemFallback.DomContentLoaded",
                       FontPerformance::SystemFallbackFontTime());
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  UMA_HISTOGRAM_TIMES("Renderer.Font.Shaping.DomContentLoaded", shaping_);
+#endif
 }
 
 }  // namespace blink

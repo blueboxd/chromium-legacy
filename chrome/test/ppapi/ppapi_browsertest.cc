@@ -1530,8 +1530,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NaClIRTStackAlignment) {
   // Windows kernel, only 64-bit NaCl works.  This test matches the condition
   // used in //components/nacl/browser/nacl_browser.cc::NaClIrtName to
   // choose which kind of NaCl nexe to load, so it better be right.
-  is32 = (base::win::OSInfo::GetInstance()->wow64_status() !=
-          base::win::OSInfo::WOW64_ENABLED);
+  is32 = !base::win::OSInfo::GetInstance()->IsWowX86OnAMD64();
 #endif
   if (is32)
     RunTestViaHTTP(STRIP_PREFIXES(NaClIRTStackAlignment));
@@ -2206,7 +2205,7 @@ class PackagedAppTest : public extensions::ExtensionBrowserTest {
     apps::AppLaunchParams params(
         extension->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
         WindowOpenDisposition::NEW_WINDOW,
-        apps::mojom::AppLaunchSource::kSourceTest);
+        apps::mojom::LaunchSource::kFromTest);
     params.command_line = *base::CommandLine::ForCurrentProcess();
     apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
         ->BrowserAppLauncher()

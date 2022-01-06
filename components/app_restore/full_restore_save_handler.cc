@@ -9,7 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/full_restore_file_handler.h"
@@ -107,7 +107,6 @@ void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
     if (arc_save_handler_)
       arc_save_handler_->OnWindowInitialized(window);
 
-    ++window_count_;
     return;
   }
 
@@ -115,7 +114,6 @@ void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
   if (!SessionID::IsValidValue(window_id))
     return;
 
-  ++window_count_;
   observed_windows_.AddObservation(window);
 
   std::string* app_id_str = window->GetProperty(app_restore::kAppIdKey);
@@ -205,6 +203,45 @@ void FullRestoreSaveHandler::OnTaskDestroyed(int32_t task_id) {
 void FullRestoreSaveHandler::OnArcConnectionChanged(bool is_connection_ready) {
   if (arc_save_handler_)
     arc_save_handler_->set_is_connection_ready(is_connection_ready);
+}
+
+void FullRestoreSaveHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
+  if (enabled)
+    return;
+
+  if (arc_save_handler_)
+    arc_save_handler_->OnArcPlayStoreEnabledChanged(enabled);
+
+  auto restore_data_it =
+      profile_path_to_restore_data_.find(active_profile_path_);
+  if (restore_data_it == profile_path_to_restore_data_.end())
+    return;
+
+  auto app_registry_cache_it =
+      profile_path_to_app_registry_cache_.find(active_profile_path_);
+  if (app_registry_cache_it == profile_path_to_app_registry_cache_.end())
+    return;
+
+  // Get the ARC app list saved in the restore data.
+  const auto& launch_list = restore_data_it->second.app_id_to_launch_list();
+  std::vector<std::string> arc_app_ids;
+  for (const auto& it : launch_list) {
+    if (app_registry_cache_it->second->GetAppType(it.first) ==
+        apps::mojom::AppType::kArc) {
+      arc_app_ids.push_back(it.first);
+    }
+  }
+
+  if (arc_app_ids.empty())
+    return;
+
+  // Remove all ARC app data from the restore data.
+  for (const auto& app_id : arc_app_ids)
+    restore_data_it->second.RemoveApp(app_id);
+
+  pending_save_profile_paths_.insert(active_profile_path_);
+
+  MaybeStartSaveTimer(active_profile_path_);
 }
 
 void FullRestoreSaveHandler::OnTaskThemeColorUpdated(
@@ -420,7 +457,7 @@ void FullRestoreSaveHandler::RemoveAppRestoreData(
   MaybeStartSaveTimer(profile_path);
 }
 
-void FullRestoreSaveHandler::RemoveWindowInfo(
+void FullRestoreSaveHandler::SendWindowToBackground(
     const base::FilePath& profile_path,
     const std::string& app_id,
     int window_id) {
@@ -428,7 +465,7 @@ void FullRestoreSaveHandler::RemoveWindowInfo(
   if (it == profile_path_to_restore_data_.end())
     return;
 
-  it->second.RemoveWindowInfo(app_id, window_id);
+  it->second.SendWindowToBackground(app_id, window_id);
 
   pending_save_profile_paths_.insert(profile_path);
 

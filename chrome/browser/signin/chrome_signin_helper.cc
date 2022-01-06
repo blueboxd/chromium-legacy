@@ -220,8 +220,9 @@ void ProcessMirrorHeader(
           web_contents);
 #endif
 
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   // Do not do anything if the navigation happened in the "background".
-  if (!chrome::FindBrowserWithWebContents(web_contents) &&
+  if ((!browser || !browser->window()->IsActive()) &&
       should_ignore_guest_webview) {
     return;
   }
@@ -230,10 +231,12 @@ void ProcessMirrorHeader(
   base::UmaHistogramEnumeration("AccountManager.ManageAccountsServiceType",
                                 service_type);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Ignore response to background request from another profile, so dialogs are
-  // not displayed in the wrong profile when using multiprofile mode.
+  // not displayed in the wrong profile when using ChromeOS multiprofile mode.
   if (profile != ProfileManager::GetActiveUserProfile())
     return;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // The only allowed operations are:
   // 1. Going Incognito.
@@ -302,7 +305,7 @@ void ProcessMirrorHeader(
     // Display a re-authentication dialog.
     ::GetAccountManagerFacade(profile->GetPath().value())
         ->ShowReauthAccountDialog(account_manager::AccountManagerFacade::
-                                      AccountAdditionSource::kContentArea,
+                                      AccountAdditionSource::kContentAreaReauth,
                                   manage_accounts_params.email);
     return;
   }
@@ -311,7 +314,7 @@ void ProcessMirrorHeader(
   if (service_type == GAIA_SERVICE_TYPE_ADDSESSION) {
     ::GetAccountManagerFacade(profile->GetPath().value())
         ->ShowAddAccountDialog(account_manager::AccountManagerFacade::
-                                   AccountAdditionSource::kContentArea);
+                                   AccountAdditionSource::kOgbAddAccount);
     return;
   }
 

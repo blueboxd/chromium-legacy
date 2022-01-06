@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/webui/connectors_internals/zero_trust_utils.h"
 
+#include "base/containers/span.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 
 namespace enterprise_connectors {
 namespace utils {
 
 namespace {
+
+using google::protobuf::RepeatedPtrField;
 
 void TrySetSignal(base::flat_map<std::string, std::string>& map,
                   const std::string& key,
@@ -38,6 +42,18 @@ void TrySetSignal(base::flat_map<std::string, std::string>& map,
   }
 }
 
+// Encodes repeated fields into a single string with values separated by commas.
+void TrySetSignal(base::flat_map<std::string, std::string>& map,
+                  const std::string& key,
+                  const RepeatedPtrField<std::string>& values) {
+  if (values.empty()) {
+    return;
+  }
+
+  map[key] = base::JoinString(
+      std::vector<base::StringPiece>(values.begin(), values.end()), ", ");
+}
+
 }  // namespace
 
 base::flat_map<std::string, std::string> SignalsToMap(
@@ -58,12 +74,14 @@ base::flat_map<std::string, std::string> SignalsToMap(
   TrySetSignal(map, "display_name", signals->has_display_name(),
                signals->display_name());
   TrySetSignal(map, "os", signals->has_os(), signals->os());
+  TrySetSignal(map, "os_version", signals->has_os_version(),
+               signals->os_version());
   TrySetSignal(map, "device_manufacturer", signals->has_device_manufacturer(),
                signals->device_manufacturer());
   TrySetSignal(map, "device_model", signals->has_device_model(),
                signals->device_model());
-  TrySetSignal(map, "imei", signals->has_imei(), signals->imei());
-  TrySetSignal(map, "meid", signals->has_meid(), signals->meid());
+  TrySetSignal(map, "imei", signals->imei());
+  TrySetSignal(map, "meid", signals->meid());
   TrySetSignal(map, "tpm_hash", signals->has_tpm_hash(), signals->tpm_hash());
   TrySetSignal(map, "is_disk_encrypted", signals->has_is_disk_encrypted(),
                signals->is_disk_encrypted());

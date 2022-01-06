@@ -45,6 +45,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/display/display.h"
@@ -806,6 +807,17 @@ bool TabletModeController::ShouldShowOverviewButton() const {
          tablet_mode_behavior_.always_show_overview_button;
 }
 
+bool TabletModeController::CanEnterTabletMode() const {
+  // If ChromeOS EC lid angle driver is supported, EC can handle lid angle
+  // calculation, and trigger tablet mode at some point.
+  // Otherwise, lid angle calculation is done on Chrome side for convertible
+  // device. If we have ever seen accelerometer data, then HandleHingeRotation
+  // may trigger tablet mode at some point in the future.
+  return IsBoardTypeMarkedAsTabletCapable() &&
+         (is_ec_lid_angle_driver_supported_.value_or(false) ||
+          have_seen_accelerometer_data_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TabletModeController, private:
 
@@ -975,13 +987,6 @@ bool TabletModeController::CanUseUnstableLidAngle() const {
   DCHECK(now >= first_unstable_lid_angle_time_);
   const base::TimeDelta elapsed_time = now - first_unstable_lid_angle_time_;
   return elapsed_time >= kUnstableLidAngleDuration;
-}
-
-bool TabletModeController::CanEnterTabletMode() {
-  // If we have ever seen accelerometer data, then HandleHingeRotation may
-  // trigger tablet mode at some point in the future.
-  // All TabletMode-enabled devices can enter tablet mode.
-  return have_seen_accelerometer_data_ || InTabletMode();
 }
 
 void TabletModeController::RecordTabletModeUsageInterval(
@@ -1281,13 +1286,8 @@ bool TabletModeController::ShouldUiBeInTabletMode() const {
   if (is_in_tablet_physical_state_)
     return true;
 
-  const bool can_enter_tablet_mode =
-      IsBoardTypeMarkedAsTabletCapable() && HasActiveInternalDisplay() &&
-      (is_ec_lid_angle_driver_supported_.value_or(false) ||
-       have_seen_accelerometer_data_);
-
-  return !has_internal_pointing_device_ && can_enter_tablet_mode &&
-         chromeos::IsRunningAsSystemCompositor();
+  return !has_internal_pointing_device_ && CanEnterTabletMode() &&
+         HasActiveInternalDisplay() && chromeos::IsRunningAsSystemCompositor();
 }
 
 bool TabletModeController::SetIsInTabletPhysicalState(bool new_state) {

@@ -9,8 +9,6 @@ import android.content.Context;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.signin.SyncConsentFragmentBase;
@@ -44,29 +42,24 @@ public class SyncConsentFirstRunFragment
                 getPageDelegate().getProperties().getInt(CHILD_ACCOUNT_STATUS);
         setArguments(createArguments(SigninAccessPoint.START_PAGE,
                 accounts.isEmpty() ? null : accounts.get(0).name, childAccountStatus));
-        // Records if there are {0, 1, 2+} accounts on device for default/non-default flows.
-        RecordHistogram.recordCountHistogram(
-                "Signin.AndroidDeviceAccountsNumberWhenEnteringFRE", Math.min(accounts.size(), 2));
-        RecordUserAction.record("MobileFre.SignInShown");
     }
 
     @Override
-    protected void onSigninRefused() {
+    protected void onSyncRefused() {
         if (ChildAccountStatus.isChild(mChildAccountStatus)) {
             // Somehow the child account disappeared while we were in the FRE.
             // The user would have to go through the FRE again.
             getPageDelegate().abortFirstRunExperience();
         } else {
             SignInPromo.temporarilySuppressPromos();
-            getPageDelegate().refuseSignIn();
+            getPageDelegate().refuseSync();
             getPageDelegate().advanceToNextPage();
         }
     }
 
     @Override
-    protected void onSigninAccepted(
-            String accountName, boolean settingsClicked, Runnable callback) {
-        getPageDelegate().acceptSignIn(accountName, settingsClicked);
+    protected void onSyncAccepted(String accountName, boolean settingsClicked, Runnable callback) {
+        getPageDelegate().acceptSync(accountName, settingsClicked);
         getPageDelegate().advanceToNextPage();
         callback.run();
     }

@@ -19,6 +19,7 @@
 #include <stddef.h>
 #include <functional>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -28,8 +29,8 @@
 
 namespace base {
 
-class FilePath;
 class DuplicateSwitchHandler;
+class FilePath;
 
 class BASE_EXPORT CommandLine {
  public:

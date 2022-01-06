@@ -209,6 +209,13 @@ void GrammarManager::OnSurroundingTextChanged(const std::u16string& text,
   if (!input_context)
     return;
 
+  // Do not show suggestion when the cursor is within an auto correct range.
+  const gfx::Range range = input_context->GetAutocorrectRange();
+  if (!range.is_empty() && cursor_pos >= range.start() &&
+      cursor_pos <= range.end()) {
+    return;
+  }
+
   absl::optional<ui::GrammarFragment> grammar_fragment_opt =
       input_context->GetGrammarFragment(gfx::Range(cursor_pos));
 
@@ -223,12 +230,12 @@ void GrammarManager::OnSurroundingTextChanged(const std::u16string& text,
     properties.type = ui::ime::AssistiveWindowType::kGrammarSuggestion;
     properties.candidates = {base::UTF8ToUTF16(current_fragment_.suggestion)};
     properties.visible = true;
+    properties.announce_string = kShowGrammarSuggestionMessage;
     suggestion_button_.announce_string = base::UTF8ToUTF16(
         base::StringPrintf(kSuggestionButtonMessageTemplate,
                            current_fragment_.suggestion.c_str()));
     suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties,
                                                       &error);
-    suggestion_handler_->Announce(kShowGrammarSuggestionMessage);
     if (!error.empty()) {
       LOG(ERROR) << "Fail to show suggestion. " << error;
     }
@@ -332,6 +339,8 @@ void GrammarManager::AcceptSuggestion() {
                           current_fragment_.range.start()),
         current_fragment_.range.length() -
             surrounding_text.selection_range.length());
+    input_context->SetSelectionRange(current_fragment_.range.start(),
+                                     current_fragment_.range.start());
     // Insert the suggestion and put cursor after it.
     input_context->CommitText(
         base::UTF8ToUTF16(current_fragment_.suggestion),

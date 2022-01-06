@@ -18,9 +18,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/notreached.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -711,9 +711,4 @@ const base::Value* PrefService::GetPreferenceValueChecked(
   const base::Value* value = GetPreferenceValue(path);
   DCHECK(value) << "Trying to read an unregistered pref: " << path;
   return value;
-}
-
-void PrefService::CommitPendingWriteSynchronously() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  user_pref_store_->CommitPendingWriteSynchronously();
 }

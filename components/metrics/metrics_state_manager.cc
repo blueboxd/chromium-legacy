@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 
+#include "base/base_switches.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
@@ -23,6 +24,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -37,6 +39,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/entropy_provider.h"
+#include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/variations_switches.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
@@ -78,6 +81,13 @@ void LogClonedInstall() {
 // No-op function used to create a MetricsStateManager.
 std::unique_ptr<metrics::ClientInfo> NoOpLoadClientInfoBackup() {
   return nullptr;
+}
+
+// Exits the browser with a helpful error message if an invalid,
+// field-trial-related command-line flag was specified.
+void ExitWithMessage(const std::string& message) {
+  puts(message.c_str());
+  exit(1);
 }
 
 // Returns a log normal distribution based on the feature params of
@@ -221,6 +231,7 @@ MetricsStateManager::MetricsStateManager(
     const std::wstring& backup_registry_key,
     const base::FilePath& user_data_dir,
     StartupVisibility startup_visibility,
+    version_info::Channel channel,
     StoreClientInfoCallback store_client_info,
     LoadClientInfoCallback retrieve_client_info,
     base::StringPiece external_client_id)
@@ -228,7 +239,10 @@ MetricsStateManager::MetricsStateManager(
       enabled_state_provider_(enabled_state_provider),
       store_client_info_(std::move(store_client_info)),
       load_client_info_(std::move(retrieve_client_info)),
-      clean_exit_beacon_(backup_registry_key, user_data_dir, local_state),
+      clean_exit_beacon_(backup_registry_key,
+                         user_data_dir,
+                         local_state,
+                         channel),
       external_client_id_(external_client_id),
       entropy_state_(local_state),
       entropy_source_returned_(ENTROPY_SOURCE_NONE),
@@ -313,10 +327,6 @@ bool MetricsStateManager::IsMetricsReportingEnabled() {
   return enabled_state_provider_->IsReportingEnabled();
 }
 
-int64_t MetricsStateManager::GetInstallDate() const {
-  return ReadInstallDate(local_state_);
-}
-
 int MetricsStateManager::GetLowEntropySource() {
   return entropy_state_.GetLowEntropySource();
 }
@@ -341,6 +351,10 @@ void MetricsStateManager::InstantiateFieldTrialList(
     ignore_result(leaked_field_trial_list);
   }
 
+  // TODO(crbug/1257204): Some FieldTrial-setup-related code is here and some is
+  // in VariationsFieldTrialCreator::SetUpFieldTrials(). It's not ideal that
+  // it's in two places.
+  //
   // When benchmarking is enabled, field trials' default groups are chosen, so
   // see whether benchmarking needs to be enabled here, before any field trials
   // are created.
@@ -353,6 +367,33 @@ void MetricsStateManager::InstantiateFieldTrialList(
     base::FieldTrial::EnableBenchmarking();
   }
 
+  if (command_line->HasSwitch(variations::switches::kForceFieldTrialParams)) {
+    bool result =
+        variations::AssociateParamsFromString(command_line->GetSwitchValueASCII(
+            variations::switches::kForceFieldTrialParams));
+    if (!result) {
+      // Some field trial params implement things like csv or json with a
+      // particular param. If some control characters are not %-encoded, it can
+      // lead to confusing error messages, so add a hint here.
+      ExitWithMessage(base::StringPrintf(
+          "Invalid --%s list specified. Make sure you %%-"
+          "encode the following characters in param values: %%:/.,",
+          variations::switches::kForceFieldTrialParams));
+    }
+  }
+
+  // Ensure any field trials specified on the command line are initialized.
+  if (command_line->HasSwitch(::switches::kForceFieldTrials)) {
+    // Create field trials without activating them, so that this behaves in a
+    // consistent manner with field trials created from the server.
+    bool result = base::FieldTrialList::CreateTrialsFromString(
+        command_line->GetSwitchValueASCII(::switches::kForceFieldTrials));
+    if (!result) {
+      ExitWithMessage(base::StringPrintf("Invalid --%s list specified.",
+                                         ::switches::kForceFieldTrials));
+    }
+  }
+
   // Initializing the CleanExitBeacon is done after FieldTrialList instantiation
   // to allow experimentation on the CleanExitBeacon.
   clean_exit_beacon_.Initialize();
@@ -360,22 +401,18 @@ void MetricsStateManager::InstantiateFieldTrialList(
 
 void MetricsStateManager::LogHasSessionShutdownCleanly(
     bool has_session_shutdown_cleanly,
-    bool write_synchronously,
-    bool update_beacon) {
+    bool write_synchronously) {
   clean_exit_beacon_.WriteBeaconValue(has_session_shutdown_cleanly,
-                                      write_synchronously, update_beacon);
+                                      write_synchronously);
 }
 
 void MetricsStateManager::ForceClientIdCreation() {
   // TODO(asvitkine): Ideally, all tests would actually set up consent properly,
-  // so the command-line check wouldn't be needed here.
+  // so the command-line checks wouldn't be needed here.
   // Currently, kForceEnableMetricsReporting is used by Java UkmTest and
   // kMetricsRecordingOnly is used by Chromedriver tests.
   DCHECK(enabled_state_provider_->IsConsentGiven() ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kForceEnableMetricsReporting) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kMetricsRecordingOnly));
+         IsMetricsReportingForceEnabled() || IsMetricsRecordingOnlyEnabled());
   if (!external_client_id_.empty()) {
     client_id_ = external_client_id_;
     base::UmaHistogramEnumeration("UMA.ClientIdSource",
@@ -519,6 +556,7 @@ std::unique_ptr<MetricsStateManager> MetricsStateManager::Create(
     const std::wstring& backup_registry_key,
     const base::FilePath& user_data_dir,
     StartupVisibility startup_visibility,
+    version_info::Channel channel,
     StoreClientInfoCallback store_client_info,
     LoadClientInfoCallback retrieve_client_info,
     base::StringPiece external_client_id) {
@@ -527,7 +565,7 @@ std::unique_ptr<MetricsStateManager> MetricsStateManager::Create(
   if (!instance_exists_) {
     result.reset(new MetricsStateManager(
         local_state, enabled_state_provider, backup_registry_key, user_data_dir,
-        startup_visibility,
+        startup_visibility, channel,
         store_client_info.is_null() ? base::DoNothing()
                                     : std::move(store_client_info),
         retrieve_client_info.is_null()

@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/first_run_signin_logger.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/user_signin_logger.h"
 #import "ios/chrome/browser/ui/first_run/signin/signin_screen_consumer.h"
@@ -47,9 +48,19 @@
         std::make_unique<ChromeAccountManagerServiceObserverBridge>(
             self, _accountManagerService);
 
+    // Use the forced sign-in access point when the force sign-in policy is
+    // enabled, otherwise infer that the sign-in screen is used in the FRE. If
+    // the forced sign-in screen is presented in the FRE, the forced sign-in
+    // access point will still be used. The forced sign-in screen may also be
+    // presented outside of the FRE when the user has to be prompted to sign-in
+    // because of the policy.
+    signin_metrics::AccessPoint accessPoint =
+        IsForceSignInEnabled()
+            ? signin_metrics::AccessPoint::ACCESS_POINT_FORCED_SIGNIN
+            : signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE;
+
     _logger = [[FirstRunSigninLogger alloc]
-          initWithAccessPoint:signin_metrics::AccessPoint::
-                                  ACCESS_POINT_START_PAGE
+          initWithAccessPoint:accessPoint
                   promoAction:signin_metrics::PromoAction::
                                   PROMO_ACTION_NO_SIGNIN_PROMO
         accountManagerService:accountManagerService];
@@ -75,20 +86,14 @@
   [self.consumer setUIEnabled:NO];
   __weak __typeof(self) weakSelf = self;
   [authenticationFlow startSignInWithCompletion:^(BOOL success) {
-    // There is a bug in -startSignInWithCompletion: where the
-    // completion block may be invoked synchronously. To ensure
-    // that the completion block is always invoked asynchronously
-    // use a dispatch_async. Remove once crbug.com/1246480 is fixed.
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [weakSelf.consumer setUIEnabled:YES];
-      if (!success)
-        return;
-      [weakSelf.logger
-          logSigninCompletedWithResult:SigninCoordinatorResultSuccess
-                          addedAccount:weakSelf.addedAccount
-                 advancedSettingsShown:NO];
+    [weakSelf.consumer setUIEnabled:YES];
+    if (!success)
+      return;
+    [weakSelf.logger logSigninCompletedWithResult:SigninCoordinatorResultSuccess
+                                     addedAccount:weakSelf.addedAccount
+                            advancedSettingsShown:NO];
+    if (completion)
       completion();
-    });
   }];
 }
 

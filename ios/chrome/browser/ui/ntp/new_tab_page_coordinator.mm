@@ -65,15 +65,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// Kill switch guarding a fix an NTP/discover memory leak fix. Behind a feature
-// flag so we can validate the impact, as well as safety for a stable respin.
-const base::Feature kUpdateNTPForFeedFix{"UpdateNTPForFeedFix",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-}  // namespace
-
 @interface NewTabPageCoordinator () <BooleanObserver,
                                      DiscoverFeedDelegate,
                                      DiscoverFeedObserverBridgeDelegate,
@@ -355,6 +346,8 @@ const base::Feature kUpdateNTPForFeedFix{"UpdateNTPForFeedFix",
   self.ntpViewController.contentSuggestionsViewController =
       self.contentSuggestionsCoordinator.viewController;
   self.ntpViewController.panGestureHandler = self.panGestureHandler;
+  self.ntpViewController.feedVisible =
+      [self shouldFeedBeVisible] && self.discoverFeedViewController;
   self.ntpMediator.ntpViewController = self.ntpViewController;
 
   self.discoverFeedWrapperViewController =
@@ -449,9 +442,6 @@ const base::Feature kUpdateNTPForFeedFix{"UpdateNTPForFeedFix",
 }
 
 - (void)reload {
-  if (self.browser->GetBrowserState()->IsOffTheRecord()) {
-    return;
-  }
   ios::GetChromeBrowserProvider().GetDiscoverFeedProvider()->RefreshFeed();
   [self reloadContentSuggestions];
 }
@@ -480,12 +470,6 @@ const base::Feature kUpdateNTPForFeedFix{"UpdateNTPForFeedFix",
 #pragma mark - NewTabPageCommands
 
 - (void)updateNTPForDiscoverFeed {
-  static bool update_ntp_for_feed_fix =
-      base::FeatureList::IsEnabled(kUpdateNTPForFeedFix);
-  if (update_ntp_for_feed_fix && !self.started) {
-    return;
-  }
-
   [self stop];
   [self start];
   [self updateDiscoverFeedLayout];
@@ -649,10 +633,6 @@ const base::Feature kUpdateNTPForFeedFix{"UpdateNTPForFeedFix",
 
 - (void)reloadContentSuggestions {
   [self.contentSuggestionsCoordinator reload];
-}
-
-- (BOOL)isFeedVisible {
-  return [self shouldFeedBeVisible] && self.discoverFeedViewController;
 }
 
 #pragma mark - PrefObserverDelegate

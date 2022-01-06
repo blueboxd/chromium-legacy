@@ -8,15 +8,99 @@
 
 #include "base/cxx17_backports.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
+#include "ui/base/interaction/element_tracker.h"
+#include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/widget/widget.h"
+
+using views::BubbleBorder;
+
+namespace {
+
+// Returns true if the arrow is either located on top or on the bottom of the
+// bubble.
+bool IsVerticalArrowSide(views::BubbleArrowSide side) {
+  return side == views::BubbleArrowSide::kTop ||
+         side == views::BubbleArrowSide::kBottom;
+}
+
+// Returns false if the element is not sufficiently visible to place an arrow.
+bool IsElementSufficienttlyVisibleForAVerticalArrow(
+    const gfx::Rect& content_area_bounds,
+    const gfx::Rect& element_bounds,
+    views::BubbleArrowSide side) {
+  // Only consider the visible size of the element for vertival arrows.
+  if (!IsVerticalArrowSide(side)) {
+    return true;
+  }
+
+  int visible_width =
+      base::clamp(element_bounds.right(), content_area_bounds.x(),
+                  content_area_bounds.right()) -
+      base::clamp(element_bounds.x(), content_area_bounds.x(),
+                  content_area_bounds.right());
+
+  return visible_width > 3 * BubbleBorder::kVisibleArrowRadius;
+}
+
+// Returns a BubbleBorder::Arrow that is suitable for the supplied |side| and
+// text direction.
+BubbleBorder::Arrow GetBubbleArrowForBubbleArrowSide(
+    views::BubbleArrowSide side,
+    bool right_to_left) {
+  switch (side) {
+    case views::BubbleArrowSide::kTop:
+      return right_to_left ? BubbleBorder::Arrow::TOP_RIGHT
+                           : BubbleBorder::Arrow::TOP_LEFT;
+
+    case views::BubbleArrowSide::kBottom:
+      return right_to_left ? BubbleBorder::Arrow::BOTTOM_RIGHT
+                           : BubbleBorder::Arrow::BOTTOM_LEFT;
+
+    case views::BubbleArrowSide::kLeft:
+      return BubbleBorder::Arrow::LEFT_TOP;
+
+    case views::BubbleArrowSide::kRight:
+      return BubbleBorder::Arrow::RIGHT_TOP;
+  }
+}
+
+// Returns the size of bubble placed on the |side| of the |element_bounds| once
+// the bubble is expanded to its |bubble_preferred_size| or the maximum size
+// available on the |content_area_bounds|.
+gfx::Size GetExpandedBubbleSize(const gfx::Rect& content_area_bounds,
+                                const gfx::Rect& element_bounds,
+                                const gfx::Size& bubble_preferred_size,
+                                int scrollbar_width,
+                                views::BubbleArrowSide side) {
+  // Get the maximum available space for the bubble.
+  int available_height = GetAvailableVerticalSpaceOnSideOfElement(
+      content_area_bounds, element_bounds, side);
+  int available_width = GetAvailableHorizontalSpaceOnSideOfElement(
+      content_area_bounds, element_bounds, side);
+
+  int height = std::min(available_height, bubble_preferred_size.height());
+  int width = std::min(
+      available_width,
+      bubble_preferred_size.width() +
+          (height < bubble_preferred_size.height() ? scrollbar_width : 0));
+
+  return {width, height};
+}
+
+}  // namespace
 
 void CalculatePopupXAndWidthHorizontallyCentered(
     int popup_preferred_width,
     const gfx::Rect& content_area_bounds,
     const gfx::Rect& element_bounds,
     bool is_rtl,
-    gfx::Rect* popup_bounds) {
+    gfx::Rect* bubble_bounds) {
   // The preferred horizontal starting point for the pop-up is at the horizontal
   // center of the field.
   int preferred_starting_point =
@@ -44,15 +128,15 @@ void CalculatePopupXAndWidthHorizontallyCentered(
   int amount_to_grow_in_unpreffered_direction =
       std::max(0, popup_width - space_to_grow_in_preferred_direction);
 
-  popup_bounds->set_width(popup_width);
+  bubble_bounds->set_width(popup_width);
   if (is_rtl) {
     // Note, in RTL the |pop_up_width| must be subtracted to achieve
     // right-alignment of the pop-up with the element.
-    popup_bounds->set_x(preferred_starting_point - popup_width +
-                        amount_to_grow_in_unpreffered_direction);
+    bubble_bounds->set_x(preferred_starting_point - popup_width +
+                         amount_to_grow_in_unpreffered_direction);
   } else {
-    popup_bounds->set_x(preferred_starting_point -
-                        amount_to_grow_in_unpreffered_direction);
+    bubble_bounds->set_x(preferred_starting_point -
+                         amount_to_grow_in_unpreffered_direction);
   }
 }
 
@@ -60,7 +144,7 @@ void CalculatePopupXAndWidth(int popup_preferred_width,
                              const gfx::Rect& content_area_bounds,
                              const gfx::Rect& element_bounds,
                              bool is_rtl,
-                             gfx::Rect* popup_bounds) {
+                             gfx::Rect* bubble_bounds) {
   int right_growth_start = base::clamp(
       element_bounds.x(), content_area_bounds.x(), content_area_bounds.right());
   int left_growth_end =
@@ -85,15 +169,15 @@ void CalculatePopupXAndWidth(int popup_preferred_width,
         right_available < popup_width && right_available < left_available;
   }
 
-  popup_bounds->set_width(popup_width);
-  popup_bounds->set_x(grow_left ? left_growth_end - popup_width
-                                : right_growth_start);
+  bubble_bounds->set_width(popup_width);
+  bubble_bounds->set_x(grow_left ? left_growth_end - popup_width
+                                 : right_growth_start);
 }
 
 void CalculatePopupYAndHeight(int popup_preferred_height,
                               const gfx::Rect& content_area_bounds,
                               const gfx::Rect& element_bounds,
-                              gfx::Rect* popup_bounds) {
+                              gfx::Rect* bubble_bounds) {
   int top_growth_end = base::clamp(element_bounds.y(), content_area_bounds.y(),
                                    content_area_bounds.bottom());
   int bottom_growth_start =
@@ -103,18 +187,18 @@ void CalculatePopupYAndHeight(int popup_preferred_height,
   int top_available = top_growth_end - content_area_bounds.y();
   int bottom_available = content_area_bounds.bottom() - bottom_growth_start;
 
-  popup_bounds->set_height(popup_preferred_height);
-  popup_bounds->set_y(top_growth_end);
+  bubble_bounds->set_height(popup_preferred_height);
+  bubble_bounds->set_y(top_growth_end);
 
   if (bottom_available >= popup_preferred_height ||
       bottom_available >= top_available) {
-    popup_bounds->AdjustToFit(
-        gfx::Rect(popup_bounds->x(), element_bounds.bottom(),
-                  popup_bounds->width(), bottom_available));
+    bubble_bounds->AdjustToFit(
+        gfx::Rect(bubble_bounds->x(), element_bounds.bottom(),
+                  bubble_bounds->width(), bottom_available));
   } else {
-    popup_bounds->AdjustToFit(gfx::Rect(popup_bounds->x(),
-                                        content_area_bounds.y(),
-                                        popup_bounds->width(), top_available));
+    bubble_bounds->AdjustToFit(
+        gfx::Rect(bubble_bounds->x(), content_area_bounds.y(),
+                  bubble_bounds->width(), top_available));
   }
 }
 
@@ -123,20 +207,20 @@ gfx::Rect CalculatePopupBounds(const gfx::Size& desired_size,
                                const gfx::Rect& element_bounds,
                                bool is_rtl,
                                bool horizontally_centered) {
-  gfx::Rect popup_bounds;
+  gfx::Rect bubble_bounds;
 
   if (horizontally_centered) {
     CalculatePopupXAndWidthHorizontallyCentered(
         desired_size.width(), content_area_bounds, element_bounds, is_rtl,
-        &popup_bounds);
+        &bubble_bounds);
   } else {
     CalculatePopupXAndWidth(desired_size.width(), content_area_bounds,
-                            element_bounds, is_rtl, &popup_bounds);
+                            element_bounds, is_rtl, &bubble_bounds);
   }
   CalculatePopupYAndHeight(desired_size.height(), content_area_bounds,
-                           element_bounds, &popup_bounds);
+                           element_bounds, &bubble_bounds);
 
-  return popup_bounds;
+  return bubble_bounds;
 }
 
 bool CanShowDropdownHere(int item_height,
@@ -148,14 +232,14 @@ bool CanShowDropdownHere(int item_height,
   bool enough_space_for_one_item_in_content_area_above_element =
       element_bounds.y() - content_area_bounds.y() >= item_height;
   bool element_top_is_within_content_area_bounds =
-      element_bounds.y() > content_area_bounds.y() &&
+      element_bounds.y() >= content_area_bounds.y() &&
       element_bounds.y() < content_area_bounds.bottom();
 
   bool enough_space_for_one_item_in_content_area_below_element =
       content_area_bounds.bottom() - element_bounds.bottom() >= item_height;
   bool element_bottom_is_within_content_area_bounds =
       element_bounds.bottom() > content_area_bounds.y() &&
-      element_bounds.bottom() < content_area_bounds.bottom();
+      element_bounds.bottom() <= content_area_bounds.bottom();
 
   return (enough_space_for_one_item_in_content_area_above_element &&
           element_top_is_within_content_area_bounds) ||
@@ -169,6 +253,15 @@ bool BoundsOverlapWithAnyOpenPrompt(const gfx::Rect& screen_bounds,
       platform_util::GetViewForWindow(web_contents->GetTopLevelNativeWindow());
   if (!top_level_view)
     return false;
+  // We generally want to ensure that no prompt overlaps with |screen_bounds|.
+  // It is possible, however, that a <datalist> is part of a prompt (e.g. an
+  // extension popup can render a <datalist>). Therefore, we exclude the widget
+  // that hosts the |web_contents| from the prompts that are considered for
+  // overlaps.
+  views::Widget* web_contents_widget =
+      views::Widget::GetTopLevelWidgetForNativeView(
+          web_contents->GetContentNativeView());
+
   // On Aura-based systems, prompts are siblings to the top level native window,
   // and hence we need to go one level up to start searching from the root
   // window.
@@ -177,8 +270,186 @@ bool BoundsOverlapWithAnyOpenPrompt(const gfx::Rect& screen_bounds,
                        : top_level_view;
   views::Widget::Widgets all_widgets;
   views::Widget::GetAllChildWidgets(top_level_view, &all_widgets);
-  return base::ranges::any_of(all_widgets, [&screen_bounds](views::Widget* w) {
-    return w->IsDialogBox() &&
-           w->GetWindowBoundsInScreen().Intersects(screen_bounds);
-  });
+  return base::ranges::any_of(
+      all_widgets, [&screen_bounds, web_contents_widget](views::Widget* w) {
+        return w->IsDialogBox() &&
+               w->GetWindowBoundsInScreen().Intersects(screen_bounds) &&
+               w != web_contents_widget;
+      });
+}
+
+bool BoundsOverlapWithOpenPermissionsPrompt(
+    const gfx::Rect& screen_bounds,
+    content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return false;
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  if (!browser_view)
+    return false;
+
+  views::View* const permission_bubble_view =
+      views::ElementTrackerViews::GetInstance()->GetFirstMatchingView(
+          PermissionPromptBubbleView::kPermissionPromptBubbleViewIdentifier,
+          views::ElementTrackerViews::GetInstance()->GetContextForView(
+              browser_view));
+  if (!permission_bubble_view)
+    return false;
+
+  return permission_bubble_view->GetWidget()
+      ->GetWindowBoundsInScreen()
+      .Intersects(screen_bounds);
+}
+
+bool PopupMayExceedContentAreaBounds(content::WebContents* web_contents) {
+  if (!web_contents)  // May be null for tests.
+    return false;
+  const GURL& url = web_contents->GetLastCommittedURL();
+  // Extensions may want to show <datalist> form controls whose popups cannot be
+  // rendered within the bounds of an extension popup. For that reason they are
+  // allow-listed to draw popups outside the boundary of the extension popup.
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
+    views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(
+        web_contents->GetContentNativeView());
+    return widget && widget->GetName() == ExtensionPopup::kViewClassName;
+  }
+  return false;
+}
+
+int GetAvailableVerticalSpaceOnSideOfElement(
+    const gfx::Rect& content_area_bounds,
+    const gfx::Rect& element_bounds,
+    views::BubbleArrowSide side) {
+  // Note that the side of the arrow is opposite to the side of the element the
+  // bubble is located on.
+  switch (side) {
+    case views::BubbleArrowSide::kLeft:
+    case views::BubbleArrowSide::kRight:
+      // For a bubble that is either on the left of the right side of the
+      // element, the height of the content area is the total available space.
+      return content_area_bounds.height();
+
+    case views::BubbleArrowSide::kBottom:
+      // If the bubble sits above the element, return the space between the
+      // upper edge of the element and the content area.
+      return element_bounds.y() - content_area_bounds.y();
+
+    case views::BubbleArrowSide::kTop:
+      // If the bubble sits below the element, return the space between the
+      // lower edge of the element and the content area.
+      return content_area_bounds.bottom() - element_bounds.bottom();
+  }
+}
+
+int GetAvailableHorizontalSpaceOnSideOfElement(
+    const gfx::Rect& content_area_bounds,
+    const gfx::Rect& element_bounds,
+    views::BubbleArrowSide side) {
+  // Note that the side of the arrow is opposite to the side of the element the
+  // bubble is located on.
+  switch (side) {
+    case views::BubbleArrowSide::kRight:
+      return element_bounds.x() - content_area_bounds.x();
+
+    case views::BubbleArrowSide::kLeft:
+      return content_area_bounds.right() - element_bounds.right();
+
+    case views::BubbleArrowSide::kTop:
+    case views::BubbleArrowSide::kBottom:
+      return content_area_bounds.width();
+  }
+}
+
+bool IsBubblePlaceableOnSideOfElement(const gfx::Rect& content_area_bounds,
+                                      const gfx::Rect& element_bounds,
+                                      const gfx::Size& bubble_preferred_size,
+                                      int additional_spacing,
+                                      views::BubbleArrowSide side) {
+  switch (side) {
+    case views::BubbleArrowSide::kLeft:
+    case views::BubbleArrowSide::kRight:
+      return bubble_preferred_size.width() + additional_spacing <=
+             GetAvailableHorizontalSpaceOnSideOfElement(content_area_bounds,
+                                                        element_bounds, side);
+
+    case views::BubbleArrowSide::kTop:
+    case views::BubbleArrowSide::kBottom:
+      return bubble_preferred_size.height() + additional_spacing <=
+             GetAvailableVerticalSpaceOnSideOfElement(content_area_bounds,
+                                                      element_bounds, side);
+  }
+}
+
+views::BubbleArrowSide GetOptimalBubbleArrowSide(
+    const gfx::Rect& content_area_bounds,
+    const gfx::Rect& element_bounds,
+    const gfx::Size& bubble_preferred_size) {
+  // Probe for a side of the element on which the bubble can be shown entirely.
+  const std::vector<views::BubbleArrowSide> sides_by_preference(
+      {views::BubbleArrowSide::kTop, views::BubbleArrowSide::kBottom,
+       views::BubbleArrowSide::kLeft, views::BubbleArrowSide::kRight});
+  for (views::BubbleArrowSide possible_side : sides_by_preference) {
+    if (IsBubblePlaceableOnSideOfElement(
+            content_area_bounds, element_bounds, bubble_preferred_size,
+            BubbleBorder::kVisibleArrowLength, possible_side) &&
+        IsElementSufficienttlyVisibleForAVerticalArrow(
+            content_area_bounds, element_bounds, possible_side)) {
+      return possible_side;
+    }
+  }
+
+  return views::BubbleArrowSide::kBottom;
+}
+
+BubbleBorder::Arrow GetOptimalBubblePlacement(
+    const gfx::Rect& content_area_bounds,
+    const gfx::Rect& element_bounds,
+    const gfx::Size& bubble_preferred_size,
+    bool right_to_left,
+    int scrollbar_width,
+    int maximum_offset_to_center,
+    gfx::Rect& bubble_bounds) {
+  // Determine the best side of the element to put the bubble and get a
+  // corresponding arrow.
+  views::BubbleArrowSide side = GetOptimalBubbleArrowSide(
+      content_area_bounds, element_bounds, bubble_preferred_size);
+  BubbleBorder::Arrow arrow =
+      GetBubbleArrowForBubbleArrowSide(side, right_to_left);
+
+  // Set the actual size of the bubble.
+  bubble_bounds.set_size(
+      GetExpandedBubbleSize(content_area_bounds, element_bounds,
+                            bubble_preferred_size, scrollbar_width, side));
+
+  // Move the anchor position of |element_bounds| corresponding to |arrow|.
+  bubble_bounds += views::GetContentBoundsOffsetToArrowAnchorPoint(
+      bubble_bounds, arrow,
+      views::GetArrowAnchorPointFromAnchorRect(arrow, element_bounds));
+
+  if (!IsVerticalArrowSide(side)) {
+    // For an horizontal arrow, move the bubble to the top if it leaves the
+    // lower part of the screen. Note, that by default, the bubble's top is
+    // aligned with the field.
+    bubble_bounds.Offset(0, -1 * std::max(0, bubble_bounds.bottom() -
+                                                 content_area_bounds.bottom()));
+    return arrow;
+  }
+
+  // Move the content bounds towards to center of the field.
+  // Note that for |right_to_left|, this will be a negative value.
+  bubble_bounds.Offset(
+      std::min(maximum_offset_to_center, element_bounds.width() / 2) *
+          (right_to_left ? -1 : 1),
+      0);
+
+  // In case the bubble the exceeds the right edge of the view port, move it
+  // back until it completely fits.
+  bubble_bounds.Offset(
+      std::max(0,
+               std::min(bubble_bounds.x() - content_area_bounds.x(),
+                        bubble_bounds.right() - content_area_bounds.right())),
+      0);
+
+  return arrow;
 }

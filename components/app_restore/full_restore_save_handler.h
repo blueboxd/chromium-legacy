@@ -36,6 +36,7 @@ struct WindowInfo;
 namespace ash {
 namespace full_restore {
 class FullRestoreServiceTestHavingFullRestoreFile;
+class FullRestoreAppLaunchHandlerArcAppBrowserTest;
 }
 }  // namespace ash
 
@@ -93,6 +94,7 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
                      int32_t session_id) override;
   void OnTaskDestroyed(int32_t task_id) override;
   void OnArcConnectionChanged(bool is_connection_ready) override;
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnTaskThemeColorUpdated(int32_t task_id,
                                uint32_t primary_color,
                                uint32_t status_bar_color) override;
@@ -150,10 +152,10 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
                             const std::string& app_id,
                             int window_id);
 
-  // Removes WindowInfo from |profile_path| for |app_id| and |window_id|.
-  void RemoveWindowInfo(const base::FilePath& profile_path,
-                        const std::string& app_id,
-                        int window_id);
+  // Sends the window for `profile_path` `app_id and `window_id` to background.
+  void SendWindowToBackground(const base::FilePath& profile_path,
+                              const std::string& app_id,
+                              int window_id);
 
   // Starts the timer, and when timeout, clears restore data for |profile_path|.
   void ClearRestoreData(const base::FilePath& profile_path);
@@ -170,8 +172,6 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
   // the window's associated AppRestoreData.
   std::string GetAppId(aura::Window* window);
 
-  int window_count() const { return window_count_; }
-
   base::OneShotTimer* GetTimerForTesting() { return &save_timer_; }
 
   // Since this is a singleton, tests may need to clear it between tests.
@@ -180,6 +180,7 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
  private:
   friend class FullRestoreSaveHandlerTestApi;
   friend class ash::full_restore::FullRestoreServiceTestHavingFullRestoreFile;
+  friend class ash::full_restore::FullRestoreAppLaunchHandlerArcAppBrowserTest;
 
   // Map from a profile path to AppLaunchInfos.
   using AppLaunchInfos = std::map<base::FilePath, std::list<AppLaunchInfoPtr>>;
@@ -280,9 +281,6 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreSaveHandler
   // When one of the above condition is matched, allow_save_ is set as true to
   // permit `save_timer_` to start periodically triggering saving to disk.
   bool allow_save_ = false;
-
-  // The number of window created. This is used for metrics only.
-  int window_count_ = 0;
 
   base::ScopedObservation<aura::Env, aura::EnvObserver> env_observer_{this};
 

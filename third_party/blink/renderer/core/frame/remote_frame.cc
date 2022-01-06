@@ -82,8 +82,8 @@ static RemoteFramesByTokenMap& GetRemoteFramesMap() {
 
 FloatRect DeNormalizeRect(const gfx::RectF& normalized, const IntRect& base) {
   FloatRect result(normalized);
-  result.Scale(base.Width(), base.Height());
-  result.MoveBy(FloatPoint(base.Location()));
+  result.Scale(base.width(), base.height());
+  result.MoveBy(FloatPoint(base.origin()));
   return result;
 }
 
@@ -551,9 +551,9 @@ void RemoteFrame::SetInsecureNavigationsSet(const WebVector<unsigned>& set) {
 
 void RemoteFrame::FrameRectsChanged(const IntRect& local_frame_rect,
                                     const IntRect& screen_space_rect) {
-  pending_visual_properties_.screen_space_rect = gfx::Rect(screen_space_rect);
+  pending_visual_properties_.screen_space_rect = ToGfxRect(screen_space_rect);
   pending_visual_properties_.local_frame_size =
-      gfx::Size(local_frame_rect.Width(), local_frame_rect.Height());
+      gfx::Size(local_frame_rect.width(), local_frame_rect.height());
   SynchronizeVisualProperties();
 }
 
@@ -845,7 +845,7 @@ IntSize RemoteFrame::GetMainFrameViewportSize() const {
   return owner->GetDocument().GetFrame()->GetMainFrameViewportSize();
 }
 
-IntPoint RemoteFrame::GetMainFrameScrollOffset() const {
+gfx::Point RemoteFrame::GetMainFrameScrollOffset() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   DCHECK(owner);
   DCHECK(owner->GetDocument().GetFrame());
@@ -987,7 +987,7 @@ bool RemoteFrame::SynchronizeVisualProperties(bool propagate) {
 
   if (view_) {
     pending_visual_properties_.compositor_viewport =
-        view_->GetCompositingRect();
+        ToGfxRect(view_->GetCompositingRect());
     pending_visual_properties_.compositing_scale_factor =
         view_->GetCompositingScaleFactor();
   }

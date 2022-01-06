@@ -709,6 +709,21 @@ class ShellUtil {
   // should call GetCurrentInstallationSuffix().
   static bool GetUserSpecificRegistrySuffix(std::wstring* suffix);
 
+  // Stores the given list of `file_handler_prog_ids` registered for an app as a
+  // subkey under the app's `prog_id`. This is used to remove the registry
+  // entries for the file handler ProgIds when the app is uninstalled.
+  // `prog_id` - Windows ProgId for the app.
+  // `file_handler_prog_ids` - ProgIds of the file handlers registered for the
+  // app.
+  static bool RegisterFileHandlerProgIdsForAppId(
+      const std::wstring& prog_id,
+      const std::vector<std::wstring>& file_handler_prog_ids);
+
+  // Returns the list of file-handler ProgIds registered for the app with
+  // ProgId `prog_id`.
+  static std::vector<std::wstring> GetFileHandlerProgIdsForAppId(
+      const std::wstring& prog_id);
+
   // Sets |suffix| to this user's username preceded by a dot. This suffix should
   // only be used to support legacy installs that used this suffixing
   // style.
@@ -748,7 +763,7 @@ class ShellUtil {
 
   // Deletes all associations with a particular application in the Windows
   // registry, for the current user only.
-  // |prog_id| is the ProgId used by Windows for file associations with this
+  // `prog_id` is the ProgId used by Windows for file associations with this
   // application, as given to AddFileAssociations. All information associated
   // with this name will be deleted.
   static bool DeleteFileAssociations(const std::wstring& prog_id);

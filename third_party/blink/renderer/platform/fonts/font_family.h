@@ -63,6 +63,9 @@ class PLATFORM_EXPORT FontFamily {
   void AppendFamily(AtomicString family_name, Type family_type);
   scoped_refptr<SharedFontFamily> ReleaseNext();
 
+  bool IsPrewarmed() const { return is_prewarmed_; }
+  void SetIsPrewarmed() const { is_prewarmed_ = true; }
+
   // Returns this font family's name followed by all subsequent linked
   // families separated ", " (comma and space). Font family names are never
   // quoted nor escaped. For web-exposed serialization, please rely instead on
@@ -80,6 +83,7 @@ class PLATFORM_EXPORT FontFamily {
   AtomicString family_name_;
   scoped_refptr<SharedFontFamily> next_;
   Type family_type_ = Type::kFamilyName;
+  mutable bool is_prewarmed_ = false;
 };
 
 class PLATFORM_EXPORT SharedFontFamily : public FontFamily,

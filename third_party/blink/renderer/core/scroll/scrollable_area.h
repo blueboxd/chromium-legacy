@@ -298,25 +298,25 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     local_rect.MoveBy(scrollbar.Location());
     return local_rect;
   }
-  virtual IntPoint ConvertFromContainingEmbeddedContentViewToScrollbar(
+  virtual gfx::Point ConvertFromContainingEmbeddedContentViewToScrollbar(
       const Scrollbar& scrollbar,
-      const IntPoint& parent_point) const {
+      const gfx::Point& parent_point) const {
     NOTREACHED();
     return parent_point;
   }
-  virtual IntPoint ConvertFromScrollbarToContainingEmbeddedContentView(
+  virtual gfx::Point ConvertFromScrollbarToContainingEmbeddedContentView(
       const Scrollbar& scrollbar,
-      const IntPoint& scrollbar_point) const {
+      const gfx::Point& scrollbar_point) const {
     NOTREACHED();
     return scrollbar_point;
   }
-  virtual IntPoint ConvertFromRootFrame(
-      const IntPoint& point_in_root_frame) const {
+  virtual gfx::Point ConvertFromRootFrame(
+      const gfx::Point& point_in_root_frame) const {
     NOTREACHED();
     return point_in_root_frame;
   }
-  virtual IntPoint ConvertFromRootFrameToVisualViewport(
-      const IntPoint& point_in_root_frame) const {
+  virtual gfx::Point ConvertFromRootFrameToVisualViewport(
+      const gfx::Point& point_in_root_frame) const {
     NOTREACHED();
     return point_in_root_frame;
   }
@@ -357,8 +357,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual IntRect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const = 0;
-  virtual int VisibleHeight() const { return VisibleContentRect().Height(); }
-  virtual int VisibleWidth() const { return VisibleContentRect().Width(); }
+  virtual int VisibleHeight() const { return VisibleContentRect().height(); }
+  virtual int VisibleWidth() const { return VisibleContentRect().width(); }
   virtual IntSize ContentsSize() const = 0;
 
   // scroll snapport is the area of the scrollport that is used as the alignment
@@ -370,7 +370,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return PhysicalRect(VisibleContentRect(scrollbar_inclusion));
   }
 
-  virtual IntPoint LastKnownMousePosition() const { return IntPoint(); }
+  virtual gfx::Point LastKnownMousePosition() const { return gfx::Point(); }
 
   virtual bool ShouldSuspendScrollAnimations() const { return true; }
   virtual bool ScrollbarsCanBeActive() const = 0;
@@ -425,12 +425,12 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   // Convenience functions
   float MinimumScrollOffset(ScrollbarOrientation orientation) {
-    return orientation == kHorizontalScrollbar ? MinimumScrollOffset().Width()
-                                               : MinimumScrollOffset().Height();
+    return orientation == kHorizontalScrollbar ? MinimumScrollOffset().width()
+                                               : MinimumScrollOffset().height();
   }
   float MaximumScrollOffset(ScrollbarOrientation orientation) {
-    return orientation == kHorizontalScrollbar ? MaximumScrollOffset().Width()
-                                               : MaximumScrollOffset().Height();
+    return orientation == kHorizontalScrollbar ? MaximumScrollOffset().width()
+                                               : MaximumScrollOffset().height();
   }
   float ClampScrollOffset(ScrollbarOrientation orientation, float offset) {
     return ClampTo(offset, MinimumScrollOffset(orientation),

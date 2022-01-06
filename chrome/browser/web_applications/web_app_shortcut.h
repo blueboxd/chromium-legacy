@@ -15,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "ui/gfx/image/image_family.h"
 #include "url/gurl.h"
 
@@ -211,9 +212,8 @@ void ScheduleDeletePlatformShortcuts(
     std::unique_ptr<ShortcutInfo> shortcut_info,
     DeleteShortcutsCallback callback);
 
-void ScheduleDeleteMultiProfileShortcutsForApp(
-    const std::string& app_id,
-    DeleteShortcutsCallback callback);
+void ScheduleDeleteMultiProfileShortcutsForApp(const std::string& app_id,
+                                               ResultCallback callback);
 
 // Delete all the shortcuts we have added for this extension, returning the
 // result via `callback` posted to `result_runner`. This is the platform
@@ -230,7 +230,8 @@ void DeleteMultiProfileShortcutsForApp(const std::string& app_id);
 
 // Updates all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the UpdateAllShortcuts function, and
-// is executed on the FILE thread.
+// is executed on the FILE thread. On Windows, this also updates shortcuts in
+// the pinned taskbar directories.
 void UpdatePlatformShortcuts(const base::FilePath& shortcut_data_path,
                              const std::u16string& old_app_title,
                              const ShortcutInfo& shortcut_info);

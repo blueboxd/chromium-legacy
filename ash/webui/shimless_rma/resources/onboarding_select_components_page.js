@@ -73,7 +73,7 @@ export class OnboardingSelectComponentsPageElement extends PolymerElement {
         return;
       }
 
-      let componentList = [];
+      const componentList = [];
       result.components.forEach(item => {
         const component = assert(item.component);
 
@@ -109,12 +109,16 @@ export class OnboardingSelectComponentsPageElement extends PolymerElement {
   /** @protected */
   onReworkFlowButtonClicked_(e) {
     e.preventDefault();
-    console.log('Rework flow clicked');
-    this.shimlessRmaService_.reworkMainboard().then(
-        (state) => this.dispatchEvent(new CustomEvent(
-            'load-next-state',
-            {bubbles: true, composed: true, detail: state},
-            )));
+    this.dispatchEvent(new CustomEvent(
+        'transition-state',
+        {
+          bubbles: true,
+          composed: true,
+          detail: (() => {
+            return this.shimlessRmaService_.reworkMainboard();
+          })
+        },
+        ));
   }
 
   /** @return {!Promise<!StateResult>} */
@@ -122,7 +126,7 @@ export class OnboardingSelectComponentsPageElement extends PolymerElement {
     return this.shimlessRmaService_.setComponentList(
         this.getComponentRepairStateList_());
   }
-};
+}
 
 customElements.define(
     OnboardingSelectComponentsPageElement.is,

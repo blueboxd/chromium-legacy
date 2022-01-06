@@ -170,7 +170,7 @@ bool ExtensionAppShimManagerDelegate::AppUsesRemoteCocoa(
   return extension->from_bookmark() ||
          extension->id() == extension_misc::kYoutubeAppId ||
          extension->id() == extension_misc::kGoogleDriveAppId ||
-         extension->id() == extension_misc::kGMailAppId;
+         extension->id() == extension_misc::kGmailAppId;
 }
 
 void ExtensionAppShimManagerDelegate::EnableExtension(
@@ -198,7 +198,7 @@ void ExtensionAppShimManagerDelegate::LaunchApp(
   if (extension->is_hosted_app()) {
     auto params = CreateAppLaunchParamsUserContainer(
         profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        apps::mojom::AppLaunchSource::kSourceCommandLine);
+        apps::mojom::LaunchSource::kFromCommandLine);
     params.launch_files = files;
     apps::AppServiceProxyFactory::GetForProfile(profile)
         ->BrowserAppLauncher()

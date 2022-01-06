@@ -15,6 +15,8 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/embedder_support/switches.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -78,40 +80,44 @@ int GetPreRS5UniversalApiContractVersion() {
 }
 // Returns the UniversalApiContract version number, which is available for
 // Windows versions greater than RS5. Otherwise, returns 0.
-std::string GetUniversalApiContractVersion() {
+const std::string& GetUniversalApiContractVersion() {
   // Do not use this for runtime environment detection logic. This method should
   // only be used to help populate the Sec-CH-UA-Platform client hint. If
   // authoring code that depends on a minimum API contract version being
   // available, you should instead leverage the OS's IsApiContractPresentByMajor
   // method.
-  int major_version = 0;
-  int minor_version = 0;
-  if (base::win::GetVersion() >= base::win::Version::WIN10) {
-    if (base::win::GetVersion() <= base::win::Version::WIN10_RS4) {
-      major_version = GetPreRS5UniversalApiContractVersion();
-    } else {
-      base::win::RegKey version_key(HKEY_LOCAL_MACHINE,
-                                    kWindowsRuntimeWellKnownContractsRegKeyName,
-                                    KEY_QUERY_VALUE | KEY_WOW64_64KEY);
-      if (version_key.Valid()) {
-        DWORD universal_api_contract_version = 0;
-        LONG result = version_key.ReadValueDW(kUniversalApiContractName,
-                                              &universal_api_contract_version);
-        if (result == ERROR_SUCCESS) {
-          major_version = HIWORD(universal_api_contract_version);
-          minor_version = LOWORD(universal_api_contract_version);
-        } else {
-          major_version = kHighestKnownUniversalApiContractVersion;
+  static const base::NoDestructor<std::string> universal_api_contract_version(
+      [] {
+        int major_version = 0;
+        int minor_version = 0;
+        if (base::win::GetVersion() >= base::win::Version::WIN10) {
+          if (base::win::GetVersion() <= base::win::Version::WIN10_RS4) {
+            major_version = GetPreRS5UniversalApiContractVersion();
+          } else {
+            base::win::RegKey version_key(
+                HKEY_LOCAL_MACHINE, kWindowsRuntimeWellKnownContractsRegKeyName,
+                KEY_QUERY_VALUE | KEY_WOW64_64KEY);
+            if (version_key.Valid()) {
+              DWORD universal_api_contract_version = 0;
+              LONG result = version_key.ReadValueDW(
+                  kUniversalApiContractName, &universal_api_contract_version);
+              if (result == ERROR_SUCCESS) {
+                major_version = HIWORD(universal_api_contract_version);
+                minor_version = LOWORD(universal_api_contract_version);
+              } else {
+                major_version = kHighestKnownUniversalApiContractVersion;
+              }
+            } else {
+              major_version = kHighestKnownUniversalApiContractVersion;
+            }
+          }
         }
-      } else {
-        major_version = kHighestKnownUniversalApiContractVersion;
-      }
-    }
-  }
-  // The major version of the contract is stored in the HIWORD, while the
-  // minor version is stored in the LOWORD.
-  return base::StrCat({base::NumberToString(major_version), ".",
-                       base::NumberToString(minor_version), ".0"});
+        // The major version of the contract is stored in the HIWORD, while the
+        // minor version is stored in the LOWORD.
+        return base::StrCat({base::NumberToString(major_version), ".",
+                             base::NumberToString(minor_version), ".0"});
+      }());
+  return *universal_api_contract_version;
 }
 
 #endif  // defined(OS_WIN)
@@ -132,41 +138,52 @@ const std::string& GetM100VersionNumber() {
 }
 
 const blink::UserAgentBrandList GetUserAgentBrandList(
-    const std::string& major_version) {
+    const std::string& major_version,
+    bool enable_updated_grease_by_policy) {
   int major_version_number;
   base::StringToInt(major_version, &major_version_number);
   absl::optional<std::string> brand;
 #if !BUILDFLAG(CHROMIUM_BRANDING)
   brand = version_info::GetProductName();
 #endif
-  absl::optional<std::string> maybe_param_override =
+  absl::optional<std::string> maybe_brand_override =
       base::GetFieldTrialParamValueByFeature(features::kGreaseUACH,
                                              "brand_override");
-  if (maybe_param_override->empty())
-    maybe_param_override = absl::nullopt;
+  absl::optional<std::string> maybe_version_override =
+      base::GetFieldTrialParamValueByFeature(features::kGreaseUACH,
+                                             "version_override");
+  if (maybe_brand_override->empty())
+    maybe_brand_override = absl::nullopt;
+  if (maybe_version_override->empty())
+    maybe_version_override = absl::nullopt;
 
   return GenerateBrandVersionList(major_version_number, brand, major_version,
-                                  maybe_param_override);
+                                  maybe_brand_override, maybe_version_override,
+                                  enable_updated_grease_by_policy);
 }
 
-const blink::UserAgentBrandList& GetUserAgentBrandList() {
+const blink::UserAgentBrandList& GetUserAgentBrandList(
+    bool enable_updated_grease_by_policy) {
   static const base::NoDestructor<blink::UserAgentBrandList> brand_list(
-      GetUserAgentBrandList(version_info::GetMajorVersionNumber()));
+      GetUserAgentBrandList(version_info::GetMajorVersionNumber(),
+                            enable_updated_grease_by_policy));
   return *brand_list;
 }
 
-const blink::UserAgentBrandList& GetForcedM100UserAgentBrandList() {
+const blink::UserAgentBrandList& GetForcedM100UserAgentBrandList(
+    bool enable_updated_grease_by_policy) {
   static const base::NoDestructor<blink::UserAgentBrandList> brand_list(
-      GetUserAgentBrandList(kMajorVersion100));
+      GetUserAgentBrandList(kMajorVersion100, enable_updated_grease_by_policy));
   return *brand_list;
 }
 
-const blink::UserAgentBrandList& GetBrandVersionList() {
+const blink::UserAgentBrandList& GetBrandVersionList(
+    bool enable_updated_grease_by_policy) {
   if (base::FeatureList::IsEnabled(
           blink::features::kForceMajorVersion100InUserAgent))
-    return GetForcedM100UserAgentBrandList();
+    return GetForcedM100UserAgentBrandList(enable_updated_grease_by_policy);
 
-  return GetUserAgentBrandList();
+  return GetUserAgentBrandList(enable_updated_grease_by_policy);
 }
 
 }  // namespace
@@ -212,14 +229,16 @@ std::string GetReducedUserAgent() {
 // Generate a pseudo-random permutation of the following brand/version pairs:
 //   1. The base project (i.e. Chromium)
 //   2. The browser brand, if available
-//   3. A randomized string containing escaped characters to ensure proper
+//   3. A randomized string containing GREASE characters to ensure proper
 //      header parsing, along with an arbitrarily low version to ensure proper
 //      version checking.
 blink::UserAgentBrandList GenerateBrandVersionList(
     int seed,
     absl::optional<std::string> brand,
     std::string major_version,
-    absl::optional<std::string> maybe_greasey_brand) {
+    absl::optional<std::string> maybe_greasey_brand,
+    absl::optional<std::string> maybe_greasey_version,
+    bool enable_updated_grease_by_policy) {
   DCHECK_GE(seed, 0);
   const int npermutations = 6;  // 3!
   int permutation = seed % npermutations;
@@ -232,17 +251,10 @@ blink::UserAgentBrandList GenerateBrandVersionList(
   DCHECK_EQ(6u, orders.size());
   DCHECK_EQ(3u, order.size());
 
-  // Previous values for indexes 0 and 1 were '\' and '"', temporarily removed
-  // because of compat issues
-  const std::vector<std::string> escaped_chars = {" ", " ", ";"};
-  std::string greasey_brand =
-      base::StrCat({escaped_chars[order[0]], "Not", escaped_chars[order[1]],
-                    "A", escaped_chars[order[2]], "Brand"});
-
-  blink::UserAgentBrandVersion greasey_bv = {
-      maybe_greasey_brand.value_or(greasey_brand), "99"};
+  blink::UserAgentBrandVersion greasey_bv = GetGreasedUserAgentBrandVersion(
+      order, seed, maybe_greasey_brand, maybe_greasey_version,
+      enable_updated_grease_by_policy);
   blink::UserAgentBrandVersion chromium_bv = {"Chromium", major_version};
-
   blink::UserAgentBrandList greased_brand_version_list(3);
 
   if (brand) {
@@ -262,6 +274,41 @@ blink::UserAgentBrandList GenerateBrandVersionList(
   return greased_brand_version_list;
 }
 
+blink::UserAgentBrandVersion GetGreasedUserAgentBrandVersion(
+    std::vector<int> permuted_order,
+    int seed,
+    absl::optional<std::string> maybe_greasey_brand,
+    absl::optional<std::string> maybe_greasey_version,
+    bool enable_updated_grease_by_policy) {
+  std::string greasey_brand;
+  std::string greasey_version;
+  if (enable_updated_grease_by_policy &&
+      base::GetFieldTrialParamByFeatureAsBool(features::kGreaseUACH,
+                                              "updated_algorithm", false)) {
+    const std::vector<std::string> greasey_chars = {
+        " ", "(", ":", "-", ".", "/", ")", ";", "=", "?", "_"};
+    const std::vector<std::string> greased_versions = {"8", "99", "24"};
+    // The spec disallows a leading or trailing space, so ensuring the first
+    // char isn't index 0. See the spec:
+    // https://wicg.github.io/ua-client-hints/#create-arbitrary-brands-section
+    greasey_brand = base::StrCat(
+        {greasey_chars[(seed % (greasey_chars.size() - 1)) + 1], "Not",
+         greasey_chars[(seed + 1) % greasey_chars.size()], "A",
+         greasey_chars[(seed + 2) % greasey_chars.size()], "Brand"});
+    greasey_version = greased_versions[seed % greased_versions.size()];
+  } else {
+    const std::vector<std::string> greasey_chars = {" ", " ", ";"};
+    greasey_brand = base::StrCat({greasey_chars[permuted_order[0]], "Not",
+                                  greasey_chars[permuted_order[1]], "A",
+                                  greasey_chars[permuted_order[2]], "Brand"});
+    greasey_version = "99";
+  }
+  blink::UserAgentBrandVersion greasey_bv = {
+      maybe_greasey_brand.value_or(greasey_brand),
+      maybe_greasey_version.value_or(greasey_version)};
+
+  return greasey_bv;
+}
 // TODO(crbug.com/1103047): This can be removed/re-refactored once we use
 // "macOS" by default
 std::string GetPlatformForUAMetadata() {
@@ -273,9 +320,20 @@ std::string GetPlatformForUAMetadata() {
 }
 
 blink::UserAgentMetadata GetUserAgentMetadata() {
-  blink::UserAgentMetadata metadata;
+  return GetUserAgentMetadata(nullptr);
+}
 
-  metadata.brand_version_list = GetBrandVersionList();
+blink::UserAgentMetadata GetUserAgentMetadata(PrefService* pref_service) {
+  blink::UserAgentMetadata metadata;
+  bool enable_updated_grease_by_policy = true;
+  if (pref_service &&
+      pref_service->HasPrefPath(
+          policy::policy_prefs::kUserAgentClientHintsGREASEUpdateEnabled)) {
+    enable_updated_grease_by_policy = pref_service->GetBoolean(
+        policy::policy_prefs::kUserAgentClientHintsGREASEUpdateEnabled);
+  }
+  metadata.brand_version_list =
+      GetBrandVersionList(enable_updated_grease_by_policy);
   metadata.full_version = base::FeatureList::IsEnabled(
                               blink::features::kForceMajorVersion100InUserAgent)
                               ? GetM100VersionNumber()

@@ -513,7 +513,7 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
   if (box_fragment_.IsScrollContainer()) {
     DCHECK(!text_combine);
     ScrollableAreaPainter(*PhysicalFragment().Layer()->GetScrollableArea())
-        .PaintOverflowControls(info, RoundedIntPoint(paint_offset));
+        .PaintOverflowControls(info, ToRoundedVector2d(paint_offset));
   }
 }
 
@@ -642,7 +642,7 @@ void NGBoxFragmentPainter::PaintObject(
       paint_phase == PaintPhase::kDescendantBlockBackgroundsOnly) {
     NGTablePainter(box_fragment_)
         .PaintCollapsedBorders(paint_info, paint_offset,
-                               VisualRect(paint_offset));
+                               IntRect(VisualRect(paint_offset)));
   }
 
   if (ShouldPaintSelfOutline(paint_phase)) {
@@ -1010,7 +1010,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
   absl::optional<ScopedBoxContentsPaintState> contents_paint_state;
   bool painting_background_in_contents_space =
       IsPaintingBackgroundInContentsSpace(paint_info);
-  IntRect visual_rect;
+  gfx::Rect visual_rect;
   if (painting_background_in_contents_space) {
     // For the case where we are painting the background in the contents space,
     // we need to include the entire overflow rect.
@@ -1027,8 +1027,9 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
 
     background_client = &layout_box.GetScrollableArea()
                              ->GetScrollingBackgroundDisplayItemClient();
-    visual_rect = layout_box.GetScrollableArea()->ScrollingBackgroundVisualRect(
-        paint_offset);
+    visual_rect =
+        ToGfxRect(layout_box.GetScrollableArea()->ScrollingBackgroundVisualRect(
+            paint_offset));
   } else {
     paint_rect.offset = paint_offset;
     paint_rect.size = box_fragment_.Size();
@@ -1044,14 +1045,21 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     PaintBoxDecorationBackgroundWithRect(
         contents_paint_state ? contents_paint_state->GetPaintInfo()
                              : paint_info,
-        visual_rect, paint_rect, *background_client);
+        IntRect(visual_rect), paint_rect, *background_client);
   }
 
   if (ShouldRecordHitTestData(paint_info)) {
     paint_info.context.GetPaintController().RecordHitTestData(
-        *background_client, PixelSnappedIntRect(paint_rect),
+        *background_client, ToGfxRect(PixelSnappedIntRect(paint_rect)),
         PhysicalFragment().EffectiveAllowedTouchAction(),
         PhysicalFragment().InsideBlockingWheelEventHandler());
+  }
+
+  Element* element = DynamicTo<Element>(layout_object.GetNode());
+  if (element && element->GetRegionCaptureCropId()) {
+    paint_info.context.GetPaintController().RecordRegionCaptureData(
+        *background_client, *(element->GetRegionCaptureCropId()),
+        ToGfxRect(PixelSnappedIntRect(paint_rect)));
   }
 
   bool needs_scroll_hit_test = true;
@@ -1101,7 +1109,8 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     return;
 
   DrawingRecorder recorder(paint_info.context, background_client,
-                           DisplayItem::kBoxDecorationBackground, visual_rect);
+                           DisplayItem::kBoxDecorationBackground,
+                           ToGfxRect(visual_rect));
 
   if (PhysicalFragment().IsFieldsetContainer()) {
     NGFieldsetPainter(box_fragment_)
@@ -1278,7 +1287,7 @@ void NGBoxFragmentPainter::PaintColumnRules(
     return;
 
   DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
-                           DisplayItem::kColumnRules, IntRect());
+                           DisplayItem::kColumnRules, gfx::Rect());
 
   const Color& rule_color =
       LayoutObject::ResolveColor(style, GetCSSPropertyColumnRuleColor());
@@ -1356,7 +1365,7 @@ void NGBoxFragmentPainter::PaintColumnRules(
     IntRect snapped_rule = PixelSnappedIntRect(rule);
     BoxBorderPainter::DrawBoxSide(paint_info.context, snapped_rule, box_side,
                                   rule_color, rule_style, auto_dark_mode);
-    recorder.UniteVisualRect(snapped_rule);
+    recorder.UniteVisualRect(ToGfxRect(snapped_rule));
 
     previous_column = current_column;
   }
@@ -1478,15 +1487,22 @@ inline void NGBoxFragmentPainter::PaintLineBox(
   if (paint_info.phase != PaintPhase::kForeground)
     return;
 
+  PhysicalRect border_box = line_box_fragment.LocalRect();
+  border_box.offset += child_offset;
   absl::optional<ScopedDisplayItemFragment> display_item_fragment;
   if (ShouldRecordHitTestData(paint_info)) {
     display_item_fragment.emplace(paint_info.context, line_fragment_id);
-    PhysicalRect border_box = line_box_fragment.LocalRect();
-    border_box.offset += child_offset;
     paint_info.context.GetPaintController().RecordHitTestData(
-        display_item_client, PixelSnappedIntRect(border_box),
+        display_item_client, ToGfxRect(PixelSnappedIntRect(border_box)),
         PhysicalFragment().EffectiveAllowedTouchAction(),
         PhysicalFragment().InsideBlockingWheelEventHandler());
+  }
+
+  Element* element = DynamicTo<Element>(line_box_fragment.GetNode());
+  if (element && element->GetRegionCaptureCropId()) {
+    paint_info.context.GetPaintController().RecordRegionCaptureData(
+        display_item_client, *(element->GetRegionCaptureCropId()),
+        ToGfxRect(PixelSnappedIntRect(border_box)));
   }
 
   // Paint the background of the `::first-line` line box.
@@ -1610,7 +1626,7 @@ void NGBoxFragmentPainter::PaintBackplate(NGInlineCursor* line_boxes,
   // Only paint backplates behind text when forced-color-adjust is auto and the
   // element is visible.
   const ComputedStyle& style = PhysicalFragment().Style();
-  if (style.ForcedColorAdjust() == EForcedColorAdjust::kNone ||
+  if (style.ForcedColorAdjust() != EForcedColorAdjust::kAuto ||
       style.Visibility() != EVisibility::kVisible)
     return;
 
@@ -1627,7 +1643,7 @@ void NGBoxFragmentPainter::PaintBackplate(NGInlineCursor* line_boxes,
   const auto& backplates = BuildBackplate(line_boxes, paint_offset);
   DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
                            DisplayItem::kForcedColorsModeBackplate,
-                           EnclosingIntRect(UnionRect(backplates)));
+                           ToGfxRect(EnclosingIntRect(UnionRect(backplates))));
   for (const auto backplate : backplates) {
     paint_info.context.FillRect(
         FloatRect(backplate), backplate_color,
@@ -1774,7 +1790,7 @@ void NGBoxFragmentPainter::PaintTextClipMask(const PaintInfo& paint_info,
                                              const IntRect& mask_rect,
                                              const PhysicalOffset& paint_offset,
                                              bool object_has_multiple_boxes) {
-  PaintInfo mask_paint_info(paint_info.context, CullRect(mask_rect),
+  PaintInfo mask_paint_info(paint_info.context, CullRect(ToGfxRect(mask_rect)),
                             PaintPhase::kTextClip, kGlobalPaintNormalPhase, 0);
   mask_paint_info.SetFragmentID(paint_info.FragmentID());
   if (!object_has_multiple_boxes) {
@@ -1937,7 +1953,8 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
   const LayoutObject* layout_object = fragment.GetLayoutObject();
   bool skip_children =
       layout_object &&
-      layout_object == hit_test.result->GetHitTestRequest().GetStopNode();
+      (layout_object == hit_test.result->GetHitTestRequest().GetStopNode() ||
+       layout_object->ChildPaintBlockedByDisplayLock());
   if (!skip_children && box_fragment_.ShouldClipOverflowAlongEitherAxis()) {
     // PaintLayer::HitTestContentsForFragments checked the fragments'
     // foreground rect for intersection if a layer is self painting,
@@ -2377,6 +2394,30 @@ bool NGBoxFragmentPainter::HitTestBlockChildren(
   return false;
 }
 
+// static
+bool NGBoxFragmentPainter::ShouldHitTestCulledInlineAncestors(
+    const HitTestContext& hit_test,
+    const NGFragmentItem& item) {
+  if (hit_test.action != kHitTestForeground)
+    return false;
+  if (item.Type() == NGFragmentItem::kLine)
+    return false;
+  if (hit_test.result->GetHitTestRequest().ListBased()) {
+    // For list base hit test, we should include culled inline into list.
+    // DocumentOrShadowRoot-prototype-elementFromPoint.html requires this.
+    return true;
+  }
+  if (item.IsBlockInInline()) {
+    // To handle, empty size <div>, we skip hit testing on culled inline box.
+    // See "fast/events/ondragenter.html".
+    //
+    // Culled inline should be handled by item in another line for block-in-
+    // inline, e.g. <span>a<div>b</div></span>.
+    return false;
+  }
+  return !item.IsBlockInInline();
+}
+
 bool NGBoxFragmentPainter::HitTestItemsChildren(
     const HitTestContext& hit_test,
     const NGPhysicalBoxFragment& container,
@@ -2418,8 +2459,7 @@ bool NGBoxFragmentPainter::HitTestItemsChildren(
 
     cursor.MoveToPreviousSibling();
 
-    if (hit_test.action == kHitTestForeground &&
-        item->Type() != NGFragmentItem::kLine && !item->IsBlockInInline()) {
+    if (ShouldHitTestCulledInlineAncestors(hit_test, *item)) {
       // Hit test culled inline boxes between |fragment| and its parent
       // fragment.
       const PhysicalOffset child_offset =
@@ -2572,7 +2612,7 @@ bool NGBoxFragmentPainter::HitTestOverflowControl(
                                             accumulated_offset);
 }
 
-IntRect NGBoxFragmentPainter::VisualRect(const PhysicalOffset& paint_offset) {
+gfx::Rect NGBoxFragmentPainter::VisualRect(const PhysicalOffset& paint_offset) {
   if (const auto* layout_box =
           DynamicTo<LayoutBox>(box_fragment_.GetLayoutObject()))
     return BoxPainter(*layout_box).VisualRect(paint_offset);
@@ -2580,7 +2620,7 @@ IntRect NGBoxFragmentPainter::VisualRect(const PhysicalOffset& paint_offset) {
   DCHECK(box_item_);
   PhysicalRect ink_overflow = box_item_->InkOverflow();
   ink_overflow.Move(paint_offset);
-  return EnclosingIntRect(ink_overflow);
+  return ToGfxRect(EnclosingIntRect(ink_overflow));
 }
 
 }  // namespace blink

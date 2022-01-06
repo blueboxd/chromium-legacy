@@ -13,6 +13,7 @@
 #include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_observer.h"
@@ -74,7 +75,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   ~OverviewGrid() override;
 
   // Exits overview mode.
-  void Shutdown();
+  void Shutdown(OverviewEnterExitType exit_type);
 
   // Prepares the windows in this grid for overview. This will restore all
   // minimized windows and ensure they are visible.
@@ -84,7 +85,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // fit that height. Optionally animates the windows to their targets when
   // |animate| is true. Items in |ignored_items| are not positioned. This is for
   // dragging. |transition| specifies the overview state when this function is
-  // called.
+  // called. Updates the save desk template button if necessary.
   void PositionWindows(
       bool animate,
       const base::flat_set<OverviewItem*>& ignored_items = {},
@@ -337,11 +338,29 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Commits any on-going desk name changes if any.
   void CommitDeskNameChanges();
 
-  // Shows the grid of the desks templates. Creates the widget if needed.
-  void ShowDesksTemplatesGrid();
+  // Shows the grid of the desks templates. Creates the widget if needed. If
+  // `was_zero_state` is true then we will expand the desks bar.
+  void ShowDesksTemplatesGrid(bool was_zero_state);
+
+  // Hides the grid of desks templates and reshow the overview items. Updates
+  // the templates button if we are not exiting overview.
+  void HideDesksTemplatesGrid(bool exit_overview);
 
   // True if the grid of desks templates is shown.
   bool IsShowingDesksTemplatesGrid() const;
+
+  // Updates the visibility of the `no_windows_widget_`. If `no_items` is true,
+  // the widget will be shown. If `no_items` is false or the desk templates grid
+  // is visible, the widget will be hidden.
+  void UpdateNoWindowsWidget(bool no_items);
+
+  // Refreshes the bounds of `no_windows_widget_`, animating if `animate` is
+  // true.
+  void RefreshNoWindowsWidgetBounds(bool animate);
+
+  // Updates the button that saves the active desk as a template. Creates the
+  // button if it hasn't been created already, else it just sets its bounds.
+  void UpdateSaveDeskAsTemplateButton();
 
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
@@ -357,6 +376,8 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   const std::vector<std::unique_ptr<OverviewItem>>& window_list() const {
     return window_list_;
   }
+
+  RoundedLabelWidget* no_windows_widget() { return no_windows_widget_.get(); }
 
   SplitViewDragIndicators* split_view_drag_indicators() {
     return split_view_drag_indicators_.get();
@@ -382,8 +403,13 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
     return grid_event_handler_.get();
   }
 
+  views::Widget* desks_templates_grid_widget() const {
+    return desks_templates_grid_widget_.get();
+  }
+
  private:
   class TargetWindowObserver;
+  friend class DesksTemplatesTest;
   friend class OverviewTestBase;
 
   // Struct which holds data required to perform nudges.
@@ -455,14 +481,8 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Updates frame throttling on overview item windows.
   void UpdateFrameThrottling();
 
-  // Shows the button that saves the active desk as a template.
-  void ShowCreateDesksTemplatesButtons();
-
   // Called back when the button to save a desk template is pressed.
-  void OnCreateDesksTemplatesButtonPressed();
-
-  // Returns the height of `desks_bar_view_`.
-  int GetDesksBarHeight() const;
+  void OnSaveDeskAsTemplateButtonPressed();
 
   // Root window the grid is in.
   aura::Window* root_window_;
@@ -472,6 +492,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Vector containing all the windows in this grid.
   std::vector<std::unique_ptr<OverviewItem>> window_list_;
+
+  // A widget that is shown if we entered overview without any windows opened.
+  std::unique_ptr<RoundedLabelWidget> no_windows_widget_;
 
   // The owner of the widget that displays split-view-related information. Null
   // if split view is unsupported (see |ShouldAllowSplitView|).
@@ -538,11 +561,11 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   aura::Window* dragged_window_ = nullptr;
 
   // The widget that contains the view for all the existing templates.
-  views::UniqueWidgetPtr desks_templates_grid_;
+  views::UniqueWidgetPtr desks_templates_grid_widget_;
 
   // A widget that contains a button which creates a new desk template when
   // pressed.
-  std::unique_ptr<views::Widget> create_desks_templates_widget_;
+  std::unique_ptr<views::Widget> save_desk_as_template_widget_;
 };
 
 }  // namespace ash

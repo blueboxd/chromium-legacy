@@ -32,24 +32,27 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.app.feed.FeedActionDelegateImpl;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.feed.FeedActionDelegate;
 import org.chromium.chrome.browser.feed.FeedLaunchReliabilityLoggingState;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
+import org.chromium.chrome.browser.feed.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.feed.FeedSurfaceLifecycleManager;
+import org.chromium.chrome.browser.feed.FeedSurfaceProvider;
 import org.chromium.chrome.browser.feed.FeedSwipeRefreshLayout;
 import org.chromium.chrome.browser.feed.NtpFeedSurfaceLifecycleManager;
-import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
-import org.chromium.chrome.browser.feed.shared.FeedSurfaceProvider;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.feed.componentinterfaces.SurfaceCoordinator;
+import org.chromium.chrome.browser.feed.hooks.FeedHooksImpl;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
@@ -326,6 +329,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mJankTracker = jankTracker;
         mToolbarSupplier = toolbarSupplier;
         mMostVisitedTileClickObservers = new ObserverList<>();
+        mBrowserControlsStateProvider = browserControlsStateProvider;
+
         Profile profile = Profile.fromWebContents(mTab.getWebContents());
 
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegate(
@@ -393,7 +398,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         initializeMainView(activity, windowAndroid, snackbarManager, uma, isInNightMode,
                 bottomSheetController, shareDelegateSupplier, url);
 
-        mBrowserControlsStateProvider = browserControlsStateProvider;
         getView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View view) {
@@ -450,27 +454,26 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
 
-        final SectionHeaderView sectionHeaderView;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)) {
-            sectionHeaderView = (SectionHeaderView) inflater.inflate(
-                    R.layout.new_tab_page_multi_feed_header, null, false);
-        } else {
-            sectionHeaderView = (SectionHeaderView) inflater.inflate(
-                    R.layout.new_tab_page_feed_v2_expandable_header, null, false);
-        }
+        FeedActionDelegate actionDelegate = new FeedActionDelegateImpl(activity, snackbarManager,
+                mNewTabPageManager.getNavigationDelegate(), new BookmarkBridge(profile)) {
+            @Override
+            public void openHelpPage() {
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
+                super.openHelpPage();
+            }
+        };
 
         mFeedSurfaceProvider = new FeedSurfaceCoordinator(activity, snackbarManager, windowAndroid,
-                new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout), mNewTabPageLayout,
-                sectionHeaderView, isInNightMode, this, mNewTabPageManager.getNavigationDelegate(),
-                profile,
+                new SnapScrollHelperImpl(mNewTabPageManager, mNewTabPageLayout), mNewTabPageLayout,
+                mBrowserControlsStateProvider.getTopControlsHeight(), isInNightMode, this, profile,
                 /* isPlaceholderShownInitially= */ false, bottomSheetController,
                 shareDelegateSupplier, /* externalScrollableContainerDelegate= */ null,
                 NewTabPageUtils.decodeOriginFromNtpUrl(url),
                 PrivacyPreferencesManagerImpl.getInstance(), mToolbarSupplier,
                 new FeedLaunchReliabilityLoggingState(SurfaceType.NEW_TAB_PAGE, mConstructedTimeNs),
                 FeedSwipeRefreshLayout.create(activity, R.id.toolbar_container),
-                /* overScrollDisabled= */ false, /* viewportView= */ null,
-                new BookmarkBridge(profile));
+                /* overScrollDisabled= */ false, /* viewportView= */ null, actionDelegate,
+                HelpAndFeedbackLauncherImpl.getInstance(), FeedHooksImpl.getInstance());
 
         // Record the timestamp at which the new tab page's construction started.
         uma.trackTimeToFirstDraw(mFeedSurfaceProvider.getView(), mConstructedTimeNs);
@@ -895,8 +898,9 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     // Implements FeedSurfaceDelegate
     @Override
     public FeedSurfaceLifecycleManager createStreamLifecycleManager(
-            Activity activity, FeedSurfaceCoordinator coordinator) {
-        return new NtpFeedSurfaceLifecycleManager(activity, mTab, coordinator);
+            Activity activity, SurfaceCoordinator coordinator) {
+        return new NtpFeedSurfaceLifecycleManager(
+                activity, mTab, (FeedSurfaceCoordinator) coordinator);
     }
 
     @Override

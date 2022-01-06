@@ -11,11 +11,15 @@
 
 #include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_util.h"
 #include "net/cookies/same_party_context.h"
 #include "services/network/first_party_sets/first_party_set_parser.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -69,6 +73,9 @@ FirstPartySets::FirstPartySets() = default;
 FirstPartySets::~FirstPartySets() = default;
 
 void FirstPartySets::SetManuallySpecifiedSet(const std::string& flag_value) {
+  if (!net::cookie_util::IsFirstPartySetsEnabled())
+    return;
+
   manually_specified_set_ = CanonicalizeSet(base::SplitString(
       flag_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY));
 
@@ -79,6 +86,9 @@ void FirstPartySets::SetManuallySpecifiedSet(const std::string& flag_value) {
 
 base::flat_map<net::SchemefulSite, net::SchemefulSite>*
 FirstPartySets::ParseAndSet(base::StringPiece raw_sets) {
+  if (!net::cookie_util::IsFirstPartySetsEnabled())
+    return &sets_;
+
   sets_ = FirstPartySetParser::ParseSetsFromComponentUpdater(raw_sets);
   ApplyManuallySpecifiedSet();
   component_sets_ready_ = true;
@@ -114,6 +124,8 @@ net::SamePartyContext FirstPartySets::ComputeContext(
     const net::SchemefulSite& site,
     const net::SchemefulSite* top_frame_site,
     const std::set<net::SchemefulSite>& party_context) const {
+  const base::ElapsedTimer timer;
+
   net::SamePartyContext::Type context_type = ContextTypeFromBool(
       IsContextSamePartyWithSite(site, top_frame_site, party_context,
                                  false /* infer_singleton_sets */));
@@ -123,6 +135,10 @@ net::SamePartyContext FirstPartySets::ComputeContext(
   net::SamePartyContext::Type top_resource =
       ContextTypeFromBool(IsContextSamePartyWithSite(
           site, top_frame_site, {}, true /* infer_singleton_sets */));
+
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Cookie.FirstPartySets.ComputeContext.Latency", timer.Elapsed(),
+      base::Microseconds(1), base::Milliseconds(100), 50);
 
   return net::SamePartyContext(context_type, ancestors, top_resource);
 }
@@ -157,14 +173,23 @@ net::FirstPartySetsContextType FirstPartySets::ComputeContextType(
 const absl::optional<net::SchemefulSite> FirstPartySets::FindOwner(
     const net::SchemefulSite& site,
     bool infer_singleton_sets) const {
+  const base::ElapsedTimer timer;
+
   net::SchemefulSite normalized_site = site;
   normalized_site.ConvertWebSocketToHttp();
+
+  absl::optional<net::SchemefulSite> owner;
   const auto it = sets_.find(normalized_site);
-  if (it != sets_.end())
-    return it->second;
-  if (infer_singleton_sets)
-    return normalized_site;
-  return absl::nullopt;
+  if (it != sets_.end()) {
+    owner = it->second;
+  } else if (infer_singleton_sets) {
+    owner = normalized_site;
+  }
+
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Cookie.FirstPartySets.FindOwner.Latency", timer.Elapsed(),
+      base::Microseconds(1), base::Milliseconds(100), 50);
+  return owner;
 }
 
 bool FirstPartySets::IsInNontrivialFirstPartySet(

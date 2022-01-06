@@ -14,6 +14,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
@@ -112,23 +113,19 @@ class WebAppInstallManager final : public SyncInstallDelegate {
       webapps::WebappInstallSource install_source,
       OnceInstallCallback callback);
 
-  // Reinstall an existing web app. If |redownload_app_icons| is true, will
-  // redownload app icons and update them on disk. Otherwise, the icons in
-  // |web_application_info.bitmap_icons| will be used and saved to disk.
-  void UpdateWebAppFromInfo(
-      const AppId& app_id,
-      std::unique_ptr<WebApplicationInfo> web_application_info,
-      bool redownload_app_icons,
-      OnceInstallCallback callback);
-
   // For the new USS-based system only. SyncInstallDelegate:
   void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
                                RepeatingInstallCallback callback) override;
-  void UninstallFromSyncBeforeRegistryUpdate(
-      std::vector<AppId> web_apps) override;
-  void UninstallFromSyncAfterRegistryUpdate(
-      std::vector<std::unique_ptr<WebApp>> web_apps,
+  void UninstallWithoutRegistryUpdateFromSync(
+      const std::vector<AppId>& web_apps,
       RepeatingUninstallCallback callback) override;
+  void RetryIncompleteUninstalls(
+      const std::vector<AppId>& apps_to_uninstall) override;
+
+  // Collects icon read/write errors (unbounded) if the |kRecordWebAppDebugInfo|
+  // flag is enabled to be used by: chrome://web-app-internals
+  using ErrorLog = base::Value::ListStorage;
+  const ErrorLog* error_log() const { return error_log_.get(); }
 
   using DataRetrieverFactory =
       base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()>;
@@ -142,8 +139,6 @@ class WebAppInstallManager final : public SyncInstallDelegate {
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppInstallManagerTest,
                            TaskQueueWebContentsReadyRace);
-
-  base::WeakPtr<WebAppInstallManager> GetWeakPtr();
 
   void EnqueueInstallAppFromSync(
       const AppId& sync_app_id,
@@ -163,6 +158,7 @@ class WebAppInstallManager final : public SyncInstallDelegate {
                    base::OnceClosure start_task);
   void MaybeStartQueuedTask();
 
+  void TakeTaskErrorLog(WebAppInstallTask* task);
   void DeleteTask(WebAppInstallTask* task);
   void OnInstallTaskCompleted(WebAppInstallTask* task,
                               OnceInstallCallback callback,
@@ -196,6 +192,11 @@ class WebAppInstallManager final : public SyncInstallDelegate {
   void OnWebContentsReadyRunTask(PendingTask pending_task,
                                  WebAppUrlLoader::Result result);
 
+  void LogErrorObject(const char* stage, base::Value object);
+  void LogUrlLoaderError(const char* stage,
+                         const PendingTask& task,
+                         WebAppUrlLoader::Result result);
+
   DataRetrieverFactory data_retriever_factory_;
 
   Profile* const profile_;
@@ -220,6 +221,8 @@ class WebAppInstallManager final : public SyncInstallDelegate {
   std::unique_ptr<content::WebContents> web_contents_;
 
   bool started_ = false;
+
+  std::unique_ptr<ErrorLog> error_log_;
 
   base::WeakPtrFactory<WebAppInstallManager> weak_ptr_factory_{this};
 };

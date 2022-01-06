@@ -8,11 +8,20 @@ import './base_page.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
-import {FinalizationObserverInterface, FinalizationObserverReceiver, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {FinalizationObserverInterface, FinalizationObserverReceiver, FinalizationStatus, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
 
 // TODO(gavindodd): Update text for i18n
 const openDeviceMessage = 'Open your device and reconnect the battery.';
 const hwwpEnabledMessage = 'HWWP enabled.';
+
+// TODO(gavindodd): Update text for i18n
+/** @type {!Object<!FinalizationStatus, string>} */
+const finalizationStatusText = {
+  [FinalizationStatus.kInProgress]: 'In progress...',
+  [FinalizationStatus.kComplete]: 'Complete...',
+  [FinalizationStatus.kFailedBlocking]: 'Critical failure, cannot continue.',
+  [FinalizationStatus.kFailedNonBlocking]: 'Failure.',
+};
 
 /**
  * @fileoverview
@@ -57,26 +66,28 @@ export class WrapupFinalizePageElement extends PolymerElement {
   }
 
   /**
-   * @param {boolean} is_compliant
-   * @param {string} error_message
+   * @param {!FinalizationStatus} status
+   * @param {number} progress
    */
-  onHardwareVerificationResult(is_compliant, error_message) {
-    this.finalizationMessage_ = is_compliant ?
-        'Device is compliant.' :
-        'Device is not compliant: ' + error_message;
-    this.finalizationComplete_ = true;
+  onFinalizationUpdated(status, progress) {
+    if (status == FinalizationStatus.kInProgress) {
+      this.finalizationMessage_ = finalizationStatusText[status] + ' ' +
+          Math.round(progress * 100) + '%';
+    } else {
+      this.finalizationMessage_ = finalizationStatusText[status];
+    }
+    this.finalizationComplete_ = status == FinalizationStatus.kComplete ||
+        status == FinalizationStatus.kFailedNonBlocking;
   }
 
   /** @return {!Promise<!StateResult>} */
   onNextButtonClick() {
     if (this.finalizationComplete_) {
-      // TODO(crbug.com/1218180): Replace with a state specific function e.g.
-      // FinalizationComplete()
-      return this.shimlessRmaService_.transitionNextState();
+      return this.shimlessRmaService_.finalizationComplete();
     } else {
       return Promise.reject(new Error('Finalization is not complete.'));
     }
   }
-};
+}
 
 customElements.define(WrapupFinalizePageElement.is, WrapupFinalizePageElement);

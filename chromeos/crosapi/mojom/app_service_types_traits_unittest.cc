@@ -57,6 +57,15 @@ TEST(AppServiceTypesTraitsTest, RoundTrip) {
 
   input->window_mode = apps::mojom::WindowMode::kWindow;
 
+  auto permission = apps::mojom::Permission::New();
+  permission->permission_type = apps::mojom::PermissionType::kCamera;
+  permission->value = apps::mojom::PermissionValue::New();
+  permission->value->set_bool_value(true);
+  permission->is_managed = true;
+  input->permissions.push_back(std::move(permission));
+
+  input->allow_uninstall = apps::mojom::OptionalBool::kTrue;
+
   apps::mojom::AppPtr output;
   ASSERT_TRUE(
       mojo::test::SerializeAndDeserialize<crosapi::mojom::App>(input, output));
@@ -102,6 +111,16 @@ TEST(AppServiceTypesTraitsTest, RoundTrip) {
   EXPECT_EQ(filter->activity_label, "activity_label");
 
   EXPECT_EQ(output->window_mode, apps::mojom::WindowMode::kWindow);
+
+  ASSERT_EQ(output->permissions.size(), 1U);
+  auto& out_permission = output->permissions[0];
+  EXPECT_EQ(out_permission->permission_type,
+            apps::mojom::PermissionType::kCamera);
+  ASSERT_TRUE(out_permission->value->is_bool_value());
+  EXPECT_TRUE(out_permission->value->get_bool_value());
+  EXPECT_TRUE(out_permission->is_managed);
+
+  EXPECT_EQ(output->allow_uninstall, apps::mojom::OptionalBool::kTrue);
 }
 
 // Test that serialization and deserialization works with optional fields that
@@ -130,6 +149,7 @@ TEST(AppServiceTypesTraitsTest, RoundTripNoOptional) {
       apps::mojom::PatternMatchType::kNone, intent_filter);
   input->intent_filters.push_back(std::move(intent_filter));
   input->window_mode = apps::mojom::WindowMode::kBrowser;
+  input->allow_uninstall = apps::mojom::OptionalBool::kTrue;
 
   apps::mojom::AppPtr output;
   ASSERT_TRUE(
@@ -163,6 +183,7 @@ TEST(AppServiceTypesTraitsTest, RoundTripNoOptional) {
             apps::mojom::PatternMatchType::kNone);
 
   EXPECT_EQ(output->window_mode, apps::mojom::WindowMode::kBrowser);
+  EXPECT_EQ(output->allow_uninstall, apps::mojom::OptionalBool::kTrue);
 }
 
 // Test that serialization and deserialization works with updating app type.
@@ -993,5 +1014,99 @@ TEST(AppServiceTypesTraitsTest, RoundTripLaunchSource) {
         mojo::test::SerializeAndDeserialize<crosapi::mojom::LaunchSource>(
             input, output));
     EXPECT_EQ(output, input);
+  }
+}
+
+TEST(AppServiceTypesTraitsTest, RoundTripPermissions) {
+  {
+    auto permission = apps::mojom::Permission::New();
+    permission->permission_type = apps::mojom::PermissionType::kUnknown;
+    permission->value = apps::mojom::PermissionValue::New();
+    permission->value->set_bool_value(true);
+    permission->is_managed = false;
+    apps::mojom::PermissionPtr output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::Permission>(
+        permission, output));
+    EXPECT_EQ(permission->permission_type, output->permission_type);
+    EXPECT_EQ(permission->value, output->value);
+    EXPECT_EQ(permission->is_managed, output->is_managed);
+  }
+  {
+    auto permission = apps::mojom::Permission::New();
+    permission->permission_type = apps::mojom::PermissionType::kCamera;
+    permission->value = apps::mojom::PermissionValue::New();
+    permission->value->set_bool_value(false);
+    permission->is_managed = true;
+    apps::mojom::PermissionPtr output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::Permission>(
+        permission, output));
+    EXPECT_EQ(permission->permission_type, output->permission_type);
+    EXPECT_EQ(permission->value, output->value);
+    EXPECT_EQ(permission->is_managed, output->is_managed);
+  }
+  {
+    auto permission = apps::mojom::Permission::New();
+    permission->permission_type = apps::mojom::PermissionType::kLocation;
+    permission->value = apps::mojom::PermissionValue::New();
+    permission->value->set_tristate_value(apps::mojom::TriState::kAllow);
+    permission->is_managed = false;
+    apps::mojom::PermissionPtr output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::Permission>(
+        permission, output));
+    EXPECT_EQ(permission->permission_type, output->permission_type);
+    EXPECT_EQ(permission->value, output->value);
+    EXPECT_EQ(permission->is_managed, output->is_managed);
+  }
+  {
+    auto permission = apps::mojom::Permission::New();
+    permission->permission_type = apps::mojom::PermissionType::kMicrophone;
+    permission->value = apps::mojom::PermissionValue::New();
+    permission->value->set_tristate_value(apps::mojom::TriState::kBlock);
+    permission->is_managed = true;
+    apps::mojom::PermissionPtr output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::Permission>(
+        permission, output));
+    EXPECT_EQ(permission->permission_type, output->permission_type);
+    EXPECT_EQ(permission->value, output->value);
+    EXPECT_EQ(permission->is_managed, output->is_managed);
+  }
+  {
+    auto permission = apps::mojom::Permission::New();
+    permission->permission_type = apps::mojom::PermissionType::kNotifications;
+    permission->value = apps::mojom::PermissionValue::New();
+    permission->value->set_tristate_value(apps::mojom::TriState::kAsk);
+    permission->is_managed = false;
+    apps::mojom::PermissionPtr output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::Permission>(
+        permission, output));
+    EXPECT_EQ(permission->permission_type, output->permission_type);
+    EXPECT_EQ(permission->value, output->value);
+    EXPECT_EQ(permission->is_managed, output->is_managed);
+  }
+  {
+    auto permission = apps::mojom::Permission::New();
+    permission->permission_type = apps::mojom::PermissionType::kContacts;
+    permission->value = apps::mojom::PermissionValue::New();
+    permission->value->set_tristate_value(apps::mojom::TriState::kAllow);
+    permission->is_managed = true;
+    apps::mojom::PermissionPtr output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::Permission>(
+        permission, output));
+    EXPECT_EQ(permission->permission_type, output->permission_type);
+    EXPECT_EQ(permission->value, output->value);
+    EXPECT_EQ(permission->is_managed, output->is_managed);
+  }
+  {
+    auto permission = apps::mojom::Permission::New();
+    permission->permission_type = apps::mojom::PermissionType::kStorage;
+    permission->value = apps::mojom::PermissionValue::New();
+    permission->value->set_tristate_value(apps::mojom::TriState::kBlock);
+    permission->is_managed = false;
+    apps::mojom::PermissionPtr output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::Permission>(
+        permission, output));
+    EXPECT_EQ(permission->permission_type, output->permission_type);
+    EXPECT_EQ(permission->value, output->value);
+    EXPECT_EQ(permission->is_managed, output->is_managed);
   }
 }

@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_typography.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/ash/sharesheet/sharesheet_constants.h"
@@ -14,6 +16,8 @@
 #include "ui/base/models/image_model.h"
 #include "ui/color/color_id.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -21,10 +25,6 @@ namespace {
 
 // Sizes are in px.
 
-// kButtonWidth = 76px width + 2*8px for padding on left and right
-constexpr int kButtonWidth = 92;
-// kButtonHeight = 88px height + 2*8px for padding on top and bottom.
-constexpr int kButtonHeight = 104;
 // kButtonTextMaxWidth is button max width without padding.
 constexpr int kButtonTextMaxWidth = 76;
 constexpr int kButtonMaxLines = 2;
@@ -33,16 +33,39 @@ constexpr int kButtonPadding = 8;
 std::unique_ptr<views::ImageView> CreateImageView(
     const absl::optional<gfx::ImageSkia> icon,
     const gfx::VectorIcon* vector_icon) {
+  auto image = std::make_unique<views::ImageView>();
   if (icon.has_value()) {
-    auto image = std::make_unique<views::ImageView>();
     image->SetImage(icon.value());
     return image;
-  } else if (vector_icon != nullptr) {
-    return std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
-        *vector_icon, ui::kColorIcon, sharesheet::kIconSize));
   }
-  NOTREACHED();
-  return nullptr;
+  if (vector_icon != nullptr) {
+    ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
+    auto* color_provider = ash::AshColorProvider::Get();
+    const auto icon_color = color_provider->GetContentLayerColor(
+        ash::AshColorProvider::ContentLayerType::kIconColorProminent);
+    gfx::ImageSkia icon = gfx::CreateVectorIcon(
+        *vector_icon, sharesheet::kIconSize / 2, icon_color);
+    gfx::ImageSkia circle_icon =
+        gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
+            sharesheet::kIconSize / 2, color_provider->GetBackgroundColor(),
+            icon);
+
+    // TODO(crbug.com/1184414): Replace hard-coded values when shadow styles
+    // are implemented.
+    gfx::ShadowValues shadow_values;
+    shadow_values.push_back(gfx::ShadowValue(gfx::Vector2d(0, 1), 0,
+                                             SkColorSetARGB(0x33, 0, 0, 0)));
+    shadow_values.push_back(gfx::ShadowValue(gfx::Vector2d(0, 1), 2,
+                                             SkColorSetARGB(0x33, 0, 0, 0)));
+    gfx::ImageSkia circle_icon_with_shadow =
+        gfx::ImageSkiaOperations::CreateImageWithDropShadow(circle_icon,
+                                                            shadow_values);
+    image->SetImage(circle_icon_with_shadow);
+  }
+  // There must always be either an icon or a vector icon so image must be
+  // set here.
+  DCHECK(!image->GetImageModel().IsEmpty());
+  return image;
 }
 
 }  // namespace
@@ -110,7 +133,6 @@ SharesheetTargetButton::SharesheetTargetButton(
 }
 
 void SharesheetTargetButton::SetLabelProperties(views::Label* label) {
-  label->SetLineHeight(kPrimaryTextLineHeight);
   label->SetMultiLine(true);
   label->SetMaximumWidth(kButtonTextMaxWidth);
   label->SetBackgroundColor(SK_ColorTRANSPARENT);
@@ -118,11 +140,6 @@ void SharesheetTargetButton::SetLabelProperties(views::Label* label) {
   label->SetTooltipText(label->GetText());
   label->SetAutoColorReadabilityEnabled(false);
   label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-}
-
-// Button is 76px width x 88px height + 8px padding along all sides.
-gfx::Size SharesheetTargetButton::CalculatePreferredSize() const {
-  return gfx::Size(kButtonWidth, kButtonHeight);
 }
 
 BEGIN_METADATA(SharesheetTargetButton, views::Button)

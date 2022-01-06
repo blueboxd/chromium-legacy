@@ -55,8 +55,8 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/feature_engagement/test/test_tracker.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_pref_names.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -766,6 +766,10 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_SyncPaused,
   RunTest();
 }
 
+// Lacros doesn't allow to disable sign-in in regular profiles yet.
+// TODO(https://crbug.com/1220066): re-enable this test once kSigninAllowed is
+// no longer force set to true on Lacros.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
 constexpr ProfileMenuViewBase::ActionableItem
@@ -795,6 +799,7 @@ IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SigninDisallowed,
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSigninAllowedOnNextStartup, false);
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
@@ -816,7 +821,7 @@ constexpr ProfileMenuViewBase::ActionableItem
 
 PROFILE_MENU_CLICK_TEST(kActionableItems_WithUnconsentedPrimaryAccount,
                         ProfileMenuClickTest_WithUnconsentedPrimaryAccount) {
-  secondary_account_helper::SignInSecondaryAccount(
+  secondary_account_helper::SignInUnconsentedAccount(
       browser()->profile(), &test_url_loader_factory_, "user@example.com");
   UnconsentedPrimaryAccountChecker(identity_manager()).Wait();
   // Check that the setup was successful.

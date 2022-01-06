@@ -79,6 +79,12 @@ bool IsChromeOsDataMandatory();
 // Returns true if sync should install web apps locally by default.
 bool AreAppsLocallyInstalledBySync();
 
+// Returns whether `old_handlers` contains all handlers in `new_handlers`.
+// Useful for determining whether the user's approval of the API needs to be
+// reset during app update.
+bool AreNewFileHandlersASubsetOfOld(const apps::FileHandlers& old_handlers,
+                                    const apps::FileHandlers& new_handlers);
+
 // Returns true if `new_handlers` are effectively the same or less broad than
 // the file handlers for PWAs installed under the same origin as `url` in
 // `profile`. In other words, if `new_handlers` would not change the text
@@ -104,9 +110,23 @@ apps::FileHandlers GetFileHandlersForAllWebAppsWithOrigin(Profile* profile,
 // truncated, like "TXT, PNG". `found_multiple`, when non-null, will be set to
 // indicate whether the returned string is a list (false indicates it's a single
 // object).
+// TODO(estade): remove this when kDesktopPWAsFileHandlingSettingsGated is
+// default.
 std::u16string GetFileTypeAssociationsHandledByWebAppsForDisplay(
     Profile* profile,
     const GURL& url,
+    bool* found_multiple = nullptr);
+
+// Returns a display-ready string that holds all file type associations handled
+// by the app referenced by `app_id`. On Linux, where files are associated via
+// MIME types, this will return MIME types like "text/plain, image/png". On all
+// other platforms, where files are associated via file extensions, this will
+// return capitalized file extensions with the period truncated, like "TXT,
+// PNG". `found_multiple`, when non-null, will be set to indicate whether the
+// returned string is a list (false indicates it's a single object).
+std::u16string GetFileTypeAssociationsHandledByWebAppForDisplay(
+    Profile* profile,
+    const AppId& app_id,
     bool* found_multiple = nullptr);
 
 // Updates the approved or disallowed protocol list for the given app. If
@@ -117,6 +137,20 @@ void PersistProtocolHandlersUserChoice(
     const GURL& protocol_url,
     bool allowed,
     base::OnceClosure update_finished_callback);
+
+// Updates the File Handling API approval state for the given app. If
+// necessary, it also updates the registration with the OS.
+void PersistFileHandlersUserChoice(Profile* profile,
+                                   const AppId& app_id,
+                                   bool allowed,
+                                   base::OnceClosure update_finished_callback);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// The kLacrosPrimary and kWebAppsCrosapi features are each independently
+// sufficient to enable the web apps Crosapi (used for Lacros web app
+// management).
+bool IsWebAppsCrosapiEnabled();
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 // Enables System Web Apps so we can test SWA features in Lacros, even we don't

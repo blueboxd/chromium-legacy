@@ -87,7 +87,8 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     Destroy();
   }
 
-  void RenderProcessGone(base::TerminationStatus status) override {
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override {
     if (destroyed_)
       return;
     // If the embedder process is destroyed, then destroy the guest.
@@ -103,7 +104,7 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     guest_->EmbedderFullscreenToggled(is_fullscreen_);
   }
 
-  void MainFrameWasResized(bool width_changed) override {
+  void PrimaryMainFrameWasResized(bool width_changed) override {
     if (destroyed_ || !web_contents()->GetDelegate())
       return;
 

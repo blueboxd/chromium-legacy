@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "services/device/generic_sensor/platform_sensor.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
@@ -26,6 +26,11 @@ class PlatformSensorAccelerometerMac : public PlatformSensor {
   // where readings will be written.
   PlatformSensorAccelerometerMac(SensorReadingSharedBuffer* reading_buffer,
                                  PlatformSensorProvider* provider);
+
+  PlatformSensorAccelerometerMac(const PlatformSensorAccelerometerMac&) =
+      delete;
+  PlatformSensorAccelerometerMac& operator=(
+      const PlatformSensorAccelerometerMac&) = delete;
 
   mojom::ReportingMode GetReportingMode() override;
   // Can only be called once, the first time or after a StopSensor call.
@@ -52,8 +57,6 @@ class PlatformSensorAccelerometerMac : public PlatformSensor {
   bool is_reading_active_ = false;
 
   base::WeakPtrFactory<PlatformSensorAccelerometerMac> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformSensorAccelerometerMac);
 };
 
 }  // namespace device

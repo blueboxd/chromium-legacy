@@ -22,6 +22,7 @@
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/input/browser_controls_state.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/mhtml_generation_result.h"
@@ -244,6 +245,10 @@ class WebContents : public PageNavigator,
     // mostly for debugging (e.g. to help attribute specific scenarios or
     // invariant violations to a particular flavor of WebContents).
     base::Location creator_location;
+
+    // Enables contents to hold wake locks, for example, to keep the screen on
+    // while playing video.
+    bool enable_wake_locks;
   };
 
   // Creates a new WebContents.
@@ -414,11 +419,6 @@ class WebContents : public PageNavigator,
   // silently.
   virtual void ForEachFrame(
       const base::RepeatingCallback<void(RenderFrameHost*)>& on_frame) = 0;
-
-  // TODO(1208438): Migrate to |ForEachRenderFrameHost|.
-  // Returns a vector of all RenderFrameHosts in the currently active view in
-  // breadth-first traversal order.
-  virtual std::vector<RenderFrameHost*> GetAllFrames() = 0;
 
   // TODO(1208438): Migrate to |ForEachRenderFrameHost|.
   // Sends the given IPC to all live frames in this WebContents and returns the
@@ -1310,6 +1310,22 @@ class WebContents : public PageNavigator,
 
   // Returns the value from CreateParams::creator_location.
   virtual const base::Location& GetCreatorLocation() = 0;
+
+  // Hide or show the browser controls for the given WebContents, based on
+  // allowed states, desired state and whether the transition should be animated
+  // or not.
+  virtual void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
+                                          cc::BrowserControlsState current,
+                                          bool animate) = 0;
+
+  // Sets the last time a tab switch made this WebContents visible.
+  // `start_time` is the timestamp of the input event that triggered the tab
+  // switch. `destination_is_loaded` is true when
+  // ResourceCoordinatorTabHelper::IsLoaded() is true for the new tab contents.
+  // These will be used to record metrics with the latency between the input
+  // event and the time when the WebContents is painted.
+  virtual void SetTabSwitchStartTime(base::TimeTicks start_time,
+                                     bool destination_is_loaded) = 0;
 
  private:
   // This interface should only be implemented inside content.

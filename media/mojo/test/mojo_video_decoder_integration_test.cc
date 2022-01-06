@@ -13,7 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -182,6 +182,9 @@ class FakeMojoMediaClient : public MojoMediaClient {
   explicit FakeMojoMediaClient(CreateVideoDecoderCB create_video_decoder_cb)
       : create_video_decoder_cb_(std::move(create_video_decoder_cb)) {}
 
+  FakeMojoMediaClient(const FakeMojoMediaClient&) = delete;
+  FakeMojoMediaClient& operator=(const FakeMojoMediaClient&) = delete;
+
   std::unique_ptr<VideoDecoder> CreateVideoDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
@@ -193,8 +196,6 @@ class FakeMojoMediaClient : public MojoMediaClient {
 
  private:
   CreateVideoDecoderCB create_video_decoder_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeMojoMediaClient);
 };
 
 }  // namespace
@@ -205,6 +206,11 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
       : mojo_media_client_(base::BindRepeating(
             &MojoVideoDecoderIntegrationTest::CreateVideoDecoder,
             base::Unretained(this))) {}
+
+  MojoVideoDecoderIntegrationTest(const MojoVideoDecoderIntegrationTest&) =
+      delete;
+  MojoVideoDecoderIntegrationTest& operator=(
+      const MojoVideoDecoderIntegrationTest&) = delete;
 
   void TearDown() override {
     if (client_) {
@@ -360,8 +366,6 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
 
   // Provides |decoder_| to the service.
   FakeMojoMediaClient mojo_media_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoVideoDecoderIntegrationTest);
 };
 
 TEST_F(MojoVideoDecoderIntegrationTest, CreateAndDestroy) {}

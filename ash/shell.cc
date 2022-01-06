@@ -26,6 +26,7 @@
 #include "ash/accessibility/ui/accessibility_focus_ring_controller_impl.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_feature_usage_metrics.h"
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/calendar/calendar_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
@@ -114,6 +115,7 @@
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/system/machine_learning/user_settings_event_logger.h"
+#include "ash/system/media/media_notification_provider_impl.h"
 #include "ash/system/message_center/message_center_ash_impl.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/model/system_tray_model.h"
@@ -599,6 +601,8 @@ Shell::~Shell() {
   for (auto& observer : shell_observers_)
     observer.OnShellDestroying();
 
+  ash_dbus_services_.reset();
+
   desks_controller_->Shutdown();
 
   user_metrics_recorder_->OnShellShuttingDown();
@@ -666,6 +670,9 @@ Shell::~Shell() {
   // `tablet_mode_controller_`, `desks_controller_` and
   // `app_list_controller_` that it observes.
   persistent_desks_bar_controller_.reset();
+
+  // Depends on `app_list_controller_` and `tablet_mode_controller_`.
+  app_list_feature_usage_metrics_.reset();
 
   // Destroy |app_list_controller_| earlier than |tablet_mode_controller_| since
   // the former may use the latter before destruction.
@@ -959,6 +966,9 @@ void Shell::Init(
       std::make_unique<MultiDeviceNotificationPresenter>(
           message_center::MessageCenter::Get());
   media_controller_ = std::make_unique<MediaControllerImpl>();
+  media_notification_provider_ =
+      std::make_unique<MediaNotificationProviderImpl>(
+          shell_delegate_->GetMediaSessionService());
 
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
@@ -1457,6 +1467,11 @@ void Shell::OnFirstSessionStarted() {
   // Reset user prefs related to contextual tooltips.
   if (switches::ContextualNudgesResetShownCount())
     contextual_tooltip::ClearPrefs();
+
+  // The launcher is not available before login, so start tracking usage after
+  // the session starts.
+  app_list_feature_usage_metrics_ =
+      std::make_unique<AppListFeatureUsageMetrics>();
 }
 
 void Shell::OnSessionStateChanged(session_manager::SessionState state) {

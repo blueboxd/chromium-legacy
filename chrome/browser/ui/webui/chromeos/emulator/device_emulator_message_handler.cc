@@ -333,8 +333,9 @@ void DeviceEmulatorMessageHandler::HandleRemoveAudioNode(
 
 void DeviceEmulatorMessageHandler::HandleSetHasTouchpad(
     const base::ListValue* args) {
-  bool has_touchpad;
-  CHECK(args->GetBoolean(0, &has_touchpad));
+  const auto& list = args->GetList();
+  CHECK(!list.empty());
+  const bool has_touchpad = list[0].GetBool();
 
   system::InputDeviceSettings::Get()->GetFakeInterface()->set_touchpad_exists(
       has_touchpad);
@@ -342,8 +343,9 @@ void DeviceEmulatorMessageHandler::HandleSetHasTouchpad(
 
 void DeviceEmulatorMessageHandler::HandleSetHasMouse(
     const base::ListValue* args) {
-  bool has_mouse;
-  CHECK(args->GetBoolean(0, &has_mouse));
+  const auto& list = args->GetList();
+  CHECK(!list.empty());
+  const bool has_mouse = list[0].GetBool();
 
   system::InputDeviceSettings::Get()->GetFakeInterface()->set_mouse_exists(
       has_mouse);
@@ -573,7 +575,11 @@ std::string DeviceEmulatorMessageHandler::CreateBluetoothDeviceFromListValue(
   CHECK(device_dict->GetString("pairingMethod", &props.pairing_method));
   CHECK(device_dict->GetString("pairingAuthToken", &props.pairing_auth_token));
   CHECK(device_dict->GetString("pairingAction", &props.pairing_action));
-  CHECK(device_dict->GetInteger("classValue", &props.device_class));
+
+  absl::optional<int> class_value = device_dict->FindIntKey("classValue");
+  CHECK(class_value);
+  props.device_class = *class_value;
+
   CHECK(device_dict->GetBoolean("isTrusted", &props.is_trusted));
   CHECK(device_dict->GetBoolean("incoming", &props.incoming));
 

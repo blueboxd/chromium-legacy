@@ -63,6 +63,8 @@ extern const char kMinimumTabWidthFeatureParameterName[];
 
 extern const base::Feature kScrollableTabStripButtons;
 
+extern const base::Feature kForceDisableStackedTabs;
+
 #if !defined(ANDROID)
 extern const base::Feature kSettingsLandingPageRedesign;
 #endif
@@ -70,6 +72,7 @@ extern const base::Feature kSettingsLandingPageRedesign;
 // TODO(pbos): Once kReadLater is cleaned up on Desktop, move definition into
 // ui_features.cc. This is currently temporarily in reading_list_switches.h.
 extern const base::Feature kSidePanel;
+extern const base::Feature kSidePanelBorder;
 extern const base::Feature kSidePanelDragAndDrop;
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
@@ -126,11 +129,11 @@ extern const base::Feature kTabRestoreSubMenus;
 
 extern const base::Feature kTabSearchChevronIcon;
 
-extern const base::Feature kTabSearchFuzzySearch;
-
 extern const base::Feature kTabSearchFeedback;
 
-extern const base::Feature kTabSearchRecentlyClosed;
+extern const base::Feature kTabSearchFuzzySearch;
+
+extern const char kTabSearchSearchThresholdName[];
 
 // Setting this to true will ignore the distance parameter when finding matches.
 // This means that it will not matter where in the string the pattern occurs.
@@ -166,6 +169,8 @@ extern const base::FeatureParam<double> kTabSearchGroupTitleWeight;
 // Whether to move the active tab to the bottom of the list.
 extern const base::FeatureParam<bool> kTabSearchMoveActiveTabToBottom;
 
+extern const base::Feature kTabSearchRecentlyClosed;
+
 // Default number of recently closed entries to display by default when no
 // search text is provided.
 extern const base::FeatureParam<int>
@@ -179,10 +184,6 @@ extern const base::FeatureParam<int> kTabSearchRecentlyClosedTabCountThreshold;
 // Determines how screenshots of the toolbar uses Software or Hardware drawing.
 // Works on Android 10+.
 extern const base::Feature kToolbarUseHardwareBitmapDraw;
-
-// Whether to label the update menu item as "Relaunch to update Chrome", rather
-// than "Update Google Chrome".
-extern const base::Feature kUseRelaunchToUpdateString;
 
 extern const base::Feature kWebUIBubblePerProfilePersistence;
 

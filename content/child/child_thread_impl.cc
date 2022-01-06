@@ -33,11 +33,11 @@
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
@@ -129,6 +129,9 @@ class WaitAndExitDelegate : public base::PlatformThread::Delegate {
   explicit WaitAndExitDelegate(base::TimeDelta duration)
       : duration_(duration) {}
 
+  WaitAndExitDelegate(const WaitAndExitDelegate&) = delete;
+  WaitAndExitDelegate& operator=(const WaitAndExitDelegate&) = delete;
+
   void ThreadMain() override {
     base::PlatformThread::Sleep(duration_);
     base::Process::TerminateCurrentProcessImmediately(0);
@@ -136,7 +139,6 @@ class WaitAndExitDelegate : public base::PlatformThread::Delegate {
 
  private:
   const base::TimeDelta duration_;
-  DISALLOW_COPY_AND_ASSIGN(WaitAndExitDelegate);
 };
 
 bool CreateWaitAndExitThread(base::TimeDelta duration) {
@@ -266,6 +268,9 @@ class ChildThreadImpl::IOThreadState
         weak_main_thread_(std::move(weak_main_thread)),
         quit_closure_(std::move(quit_closure)),
         service_binder_(std::move(service_binder)) {}
+
+  IOThreadState(const IOThreadState&) = delete;
+  IOThreadState& operator=(const IOThreadState&) = delete;
 
   // Used only in the deprecated Service Manager IPC mode.
   void BindChildProcessReceiver(
@@ -414,8 +419,6 @@ class ChildThreadImpl::IOThreadState
   // Binding requests which should be handled by |interface_binders|, but which
   // have been queued because |allow_interface_binders_| is still |false|.
   std::vector<mojo::GenericPendingReceiver> pending_binding_requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOThreadState);
 };
 
 ChildThread* ChildThread::Get() {

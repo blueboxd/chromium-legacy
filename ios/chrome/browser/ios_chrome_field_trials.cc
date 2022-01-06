@@ -9,10 +9,9 @@
 #include "components/metrics/persistent_histograms.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/ui/first_run/default_browser_promo_field_trial.h"
 #include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 
-void IOSChromeFieldTrials::SetupFieldTrials() {
+void IOSChromeFieldTrials::SetUpFieldTrials() {
   // Persistent histograms must be enabled as soon as possible.
   base::FilePath user_data_dir;
   if (base::PathService::Get(ios::DIR_USER_DATA, &user_data_dir)) {
@@ -20,7 +19,7 @@ void IOSChromeFieldTrials::SetupFieldTrials() {
   }
 }
 
-void IOSChromeFieldTrials::SetupFeatureControllingFieldTrials(
+void IOSChromeFieldTrials::SetUpFeatureControllingFieldTrials(
     bool has_seed,
     const base::FieldTrial::EntropyProvider* low_entropy_provider,
     base::FeatureList* feature_list) {
@@ -28,10 +27,6 @@ void IOSChromeFieldTrials::SetupFeatureControllingFieldTrials(
   // See http://crrev/c/1128269 for an example.
   // Note: On iOS, the |low_entropy_provider| is guaranteed to be non-null.
   DCHECK(low_entropy_provider);
-  fre_default_browser_promo_field_trial::Create(
-      *low_entropy_provider, feature_list,
-      GetApplicationContext()->GetLocalState());
-
   fre_field_trial::Create(*low_entropy_provider, feature_list,
                           GetApplicationContext()->GetLocalState());
 }

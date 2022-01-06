@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/version_info/channel.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -31,9 +32,14 @@ class CleanExitBeacon {
   //
   // |user_data_dir| is the path to the client's user data directory. If empty,
   // a separate file will not be used for Variations Safe Mode prefs.
+  //
+  // TODO(crbug/1241702): Remove |channel| at the end of the Extended Variations
+  // Safe Mode experiment. |channel| is used to enable the experiment on only
+  // certain channels.
   CleanExitBeacon(const std::wstring& backup_registry_key,
                   const base::FilePath& user_data_dir,
-                  PrefService* local_state);
+                  PrefService* local_state,
+                  version_info::Channel channel);
 
   virtual ~CleanExitBeacon() = default;
 
@@ -55,18 +61,15 @@ class CleanExitBeacon {
     return initial_browser_last_live_timestamp_;
   }
 
-  // Sets the beacon value to |exited_cleanly| (unless |update_beacon| is false)
-  // and updates the last live timestamp. If |write_synchronously| is true, then
-  // the beacon value is written to disk synchronously; otherwise, a write is
-  // scheduled.
+  // Sets the beacon value to |exited_cleanly| and updates the last live
+  // timestamp. If |write_synchronously| is true, then the beacon value is
+  // written to disk synchronously. If false, a write is scheduled, and for
+  // clients in the Extended Variations Safe Mode experiment, a synchronous
+  // write is done, too.
   //
   // Note: |write_synchronously| should be true only for some clients in the
   // Extended Variations Safe Mode experiment.
-  //
-  // TODO(b/184937096): Remove |update_beacon| when the experiment is over.
-  void WriteBeaconValue(bool exited_cleanly,
-                        bool write_synchronously = false,
-                        bool update_beacon = true);
+  void WriteBeaconValue(bool exited_cleanly, bool write_synchronously = false);
 
   // Updates the last live timestamp.
   void UpdateLastLiveTimestamp();
@@ -106,7 +109,7 @@ class CleanExitBeacon {
  private:
   // Writes |exited_cleanly| and the crash streak to the file located at
   // |beacon_file_path_|.
-  void WriteVariationsSafeModeFile(bool exited_cleanly) const;
+  void WriteBeaconFile(bool exited_cleanly) const;
 
 #if defined(OS_IOS)
   // Checks if the NSUserDefault clean exit beacon value is set.
@@ -137,6 +140,11 @@ class CleanExitBeacon {
   // of construction. It is a timestamp from the previous browser session when
   // the browser was known to be alive.
   const base::Time initial_browser_last_live_timestamp_;
+
+  // The client's channel, e.g. Canary. Used to help determine whether the
+  // client should participate in the Extended Variations Safe Mode experiment.
+  // TODO(crbug/1241702): Remove at the end of the experiment.
+  const version_info::Channel channel_;
 
   bool did_previous_session_exit_cleanly_ = false;
 

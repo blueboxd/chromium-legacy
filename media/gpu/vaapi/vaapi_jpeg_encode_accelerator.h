@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "components/chromeos_camera/jpeg_encode_accelerator.h"
 #include "media/base/bitstream_buffer.h"
@@ -67,6 +67,10 @@ class MEDIA_GPU_EXPORT VaapiJpegEncodeAccelerator
                   std::unique_ptr<UnalignedSharedMemory> exif_shm,
                   std::unique_ptr<UnalignedSharedMemory> output_shm,
                   int quality);
+
+    EncodeRequest(const EncodeRequest&) = delete;
+    EncodeRequest& operator=(const EncodeRequest&) = delete;
+
     ~EncodeRequest();
 
     int32_t task_id;
@@ -74,8 +78,6 @@ class MEDIA_GPU_EXPORT VaapiJpegEncodeAccelerator
     std::unique_ptr<UnalignedSharedMemory> exif_shm;
     std::unique_ptr<UnalignedSharedMemory> output_shm;
     int quality;
-
-    DISALLOW_COPY_AND_ASSIGN(EncodeRequest);
   };
 
   // The Encoder class is a collection of methods that run on

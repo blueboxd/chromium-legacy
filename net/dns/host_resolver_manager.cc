@@ -34,7 +34,6 @@
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/sequence_checker.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -44,6 +43,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -3108,6 +3108,8 @@ void HostResolverManager::SetDnsClientForTesting(
     dns_client->SetConfigOverrides(dns_client_->GetConfigOverridesForTesting());
   }
   dns_client_ = std::move(dns_client);
+  // Inform `registered_contexts_` of the new `DnsClient`.
+  InvalidateCaches();
 }
 
 void HostResolverManager::SetLastIPv6ProbeResultForTesting(
@@ -3444,7 +3446,7 @@ void HostResolverManager::CacheResult(HostCache* cache,
                                       const HostCache::Entry& entry,
                                       base::TimeDelta ttl) {
   // Don't cache an error unless it has a positive TTL.
-  if (cache && (entry.error() == OK || ttl > base::TimeDelta()))
+  if (cache && (entry.error() == OK || ttl.is_positive()))
     cache->Set(key, entry, tick_clock_->NowTicks(), ttl);
 }
 

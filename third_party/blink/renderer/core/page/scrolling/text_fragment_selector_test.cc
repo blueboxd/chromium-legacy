@@ -6,90 +6,144 @@
 
 #include <gtest/gtest.h>
 
+#define EXPECT_SELECTORS_EQ(a, b)    \
+  EXPECT_EQ(a.Type(), b.Type());     \
+  EXPECT_EQ(a.Start(), b.Start());   \
+  EXPECT_EQ(a.End(), b.End());       \
+  EXPECT_EQ(a.Prefix(), b.Prefix()); \
+  EXPECT_EQ(a.Suffix(), b.Suffix());
+
 namespace blink {
 
-class TextFragmentSelectorTest : public testing::Test {
- protected:
-  bool Equals(TextFragmentSelector a, TextFragmentSelector b) {
-    return a.Type() == b.Type() && a.Start() == b.Start() &&
-           a.End() == b.End() && a.Prefix() == b.Prefix() &&
-           a.Suffix() == b.Suffix();
-  }
-};
+static const TextFragmentSelector kInvalidSelector(
+    TextFragmentSelector::kInvalid);
 
-TEST_F(TextFragmentSelectorTest, ExactText) {
-  TextFragmentSelector selector = TextFragmentSelector::Create("test");
+TEST(TextFragmentSelectorTest, ExactText) {
+  TextFragmentSelector selector =
+      TextFragmentSelector::FromTextDirective("test");
   TextFragmentSelector expected(TextFragmentSelector::kExact, "test", "", "",
                                 "");
-  EXPECT_TRUE(Equals(selector, expected));
+  EXPECT_SELECTORS_EQ(selector, expected);
 }
 
-TEST_F(TextFragmentSelectorTest, ExactTextWithPrefix) {
-  TextFragmentSelector selector = TextFragmentSelector::Create("prefix-,test");
+TEST(TextFragmentSelectorTest, ExactTextWithPrefix) {
+  TextFragmentSelector selector =
+      TextFragmentSelector::FromTextDirective("prefix-,test");
   TextFragmentSelector expected(TextFragmentSelector::kExact, "test", "",
                                 "prefix", "");
-  EXPECT_TRUE(Equals(selector, expected));
+  EXPECT_SELECTORS_EQ(selector, expected);
 }
 
-TEST_F(TextFragmentSelectorTest, ExactTextWithSuffix) {
-  TextFragmentSelector selector = TextFragmentSelector::Create("test,-suffix");
+TEST(TextFragmentSelectorTest, ExactTextWithSuffix) {
+  TextFragmentSelector selector =
+      TextFragmentSelector::FromTextDirective("test,-suffix");
   TextFragmentSelector expected(TextFragmentSelector::kExact, "test", "", "",
                                 "suffix");
-  EXPECT_TRUE(Equals(selector, expected));
+  EXPECT_SELECTORS_EQ(selector, expected);
 }
 
-TEST_F(TextFragmentSelectorTest, ExactTextWithContext) {
+TEST(TextFragmentSelectorTest, ExactTextWithContext) {
   TextFragmentSelector selector =
-      TextFragmentSelector::Create("prefix-,test,-suffix");
+      TextFragmentSelector::FromTextDirective("prefix-,test,-suffix");
   TextFragmentSelector expected(TextFragmentSelector::kExact, "test", "",
                                 "prefix", "suffix");
-  EXPECT_TRUE(Equals(selector, expected));
+  EXPECT_SELECTORS_EQ(selector, expected);
 }
 
-TEST_F(TextFragmentSelectorTest, TextRange) {
-  TextFragmentSelector selector = TextFragmentSelector::Create("test,page");
+TEST(TextFragmentSelectorTest, TextRange) {
+  TextFragmentSelector selector =
+      TextFragmentSelector::FromTextDirective("test,page");
   TextFragmentSelector expected(TextFragmentSelector::kRange, "test", "page",
                                 "", "");
-  EXPECT_TRUE(Equals(selector, expected));
+  EXPECT_SELECTORS_EQ(selector, expected);
 }
 
-TEST_F(TextFragmentSelectorTest, TextRangeWithPrefix) {
+TEST(TextFragmentSelectorTest, TextRangeWithPrefix) {
   TextFragmentSelector selector =
-      TextFragmentSelector::Create("prefix-,test,page");
+      TextFragmentSelector::FromTextDirective("prefix-,test,page");
   TextFragmentSelector expected(TextFragmentSelector::kRange, "test", "page",
                                 "prefix", "");
-  EXPECT_TRUE(Equals(selector, expected));
+  EXPECT_SELECTORS_EQ(selector, expected);
 }
 
-TEST_F(TextFragmentSelectorTest, TextRangeWithSuffix) {
+TEST(TextFragmentSelectorTest, TextRangeWithSuffix) {
   TextFragmentSelector selector =
-      TextFragmentSelector::Create("test,page,-suffix");
+      TextFragmentSelector::FromTextDirective("test,page,-suffix");
   TextFragmentSelector expected(TextFragmentSelector::kRange, "test", "page",
                                 "", "suffix");
-  EXPECT_TRUE(Equals(selector, expected));
+  EXPECT_SELECTORS_EQ(selector, expected);
 }
 
-TEST_F(TextFragmentSelectorTest, TextRangeWithContext) {
+TEST(TextFragmentSelectorTest, TextRangeWithContext) {
   TextFragmentSelector selector =
-      TextFragmentSelector::Create("prefix-,test,page,-suffix");
+      TextFragmentSelector::FromTextDirective("prefix-,test,page,-suffix");
   TextFragmentSelector expected(TextFragmentSelector::kRange, "test", "page",
                                 "prefix", "suffix");
-  EXPECT_TRUE(Equals(selector, expected));
+  EXPECT_SELECTORS_EQ(selector, expected);
 }
 
-TEST_F(TextFragmentSelectorTest, InvalidContext) {
+TEST(TextFragmentSelectorTest, InvalidContext) {
   TextFragmentSelector selector =
-      TextFragmentSelector::Create("prefix,test,page,suffix");
-  TextFragmentSelector expected(TextFragmentSelector::kInvalid);
-  EXPECT_TRUE(Equals(selector, expected));
+      TextFragmentSelector::FromTextDirective("prefix,test,page,suffix");
+  EXPECT_SELECTORS_EQ(selector, kInvalidSelector);
 }
 
-TEST_F(TextFragmentSelectorTest, TooManyParameters) {
-  TextFragmentSelector selector = TextFragmentSelector::Create(
+TEST(TextFragmentSelectorTest, TooManyParameters) {
+  TextFragmentSelector selector = TextFragmentSelector::FromTextDirective(
       "prefix-,exact text, that has commas, which are not percent "
       "encoded,-suffix");
-  TextFragmentSelector expected(TextFragmentSelector::kInvalid);
-  EXPECT_TRUE(Equals(selector, expected));
+  EXPECT_SELECTORS_EQ(selector, kInvalidSelector);
+}
+
+TEST(TextFragmentSelectorTest, Empty) {
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective(""),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective("-"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective("-,"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective(",-"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective("-,-"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective(","),
+                      kInvalidSelector);
+}
+
+TEST(TextFragmentSelectorTest, NoMatchTextWithPrefix) {
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective("prefix-"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective("prefix-,"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective("text,prefix-"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(
+      TextFragmentSelector::FromTextDirective("text,prefix-,text"),
+      kInvalidSelector);
+}
+
+TEST(TextFragmentSelectorTest, NoMatchTextWithSuffix) {
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective("text,-"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective("-suffix"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective("-suffix"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective(",-suffix"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective("-suffix,"),
+                      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(TextFragmentSelector::FromTextDirective("text,-suffix,"),
+                      kInvalidSelector);
+}
+
+TEST(TextFragmentSelectorTest, NoMatchTextWithPrefixAndSuffix) {
+  EXPECT_SELECTORS_EQ(
+      TextFragmentSelector::FromTextDirective("prefix-,-suffix"),
+      kInvalidSelector);
+  EXPECT_SELECTORS_EQ(
+      TextFragmentSelector::FromTextDirective("prefix-,-suffix,invalid"),
+      kInvalidSelector);
 }
 
 }  // namespace blink

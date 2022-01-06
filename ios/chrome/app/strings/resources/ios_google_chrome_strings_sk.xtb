@@ -3,7 +3,7 @@
 <translationbundle lang="sk">
 <translation id="1096883626080133124">Zvýšte svoju výkonnosť pomocou jednoduchého, bezpečného a mimoriadne rýchleho Chromu</translation>
 <translation id="1282031177488366470">Pomoc so zlepšovaním funkcií a výkonu Chromu</translation>
-<translation id="1354592789402432496">Správca vyžaduje, aby ste sa prihlásili účtom organizácie. Účty obmedzené správcom sú skryté.</translation>
+<translation id="1314663809820920746">Vaše záložky, história, heslá a ďalšie nastavenia zostanú v tomto zariadení zachované. Ak ich zmeníte, tieto zmeny nebudú synchronizované do vášho účtu Google.</translation>
 <translation id="1479202195792305274">Keď sa prihlásite účtom Google, Chrome môže skontrolovať vaše heslá.</translation>
 <translation id="1493827051843127077">Nastavte si Chromium ako predvolený prehliadač na synchronizovanie kariet, hesiel a platobných údajov vo všetkých zariadeniach</translation>
 <translation id="1504372625950710826">Chromu sa nepodarilo skontrolovať dostupnosť aktualizácií. Skontrolujte internetové pripojenie.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Offline, Chrome nemôže skontrolovať dostupnosť aktualizácií</translation>
 <translation id="5716154293141027663">Chrome otvoríte vždy, keď klepnete na odkazy v iných aplikáciách</translation>
-<translation id="572883588166315317">Vaša organizácia vyžaduje, aby ste sa na používanie Chromu prihlásili. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="5854621639439811139">Tip pre Chrome: niektoré tlačidlá sa teraz nachádzajú v dolnej časti obrazovky, napríklad Dopredu, Späť a Hľadať.</translation>
-<translation id="5876773482963502140">Ak povolíte Chromu prístup k vašej polohe, bude ju odosielať všetkým webom, ktoré povolíte. Weby vás môžu požiadať o polohu, keď vám chcú zobraziť miestne informácie, napríklad obchody v okolí alebo správy.</translation>
 <translation id="5998675059699164418">Vaša organizácia vyžaduje, aby ste sa na používanie Chromu prihlásili.</translation>
 <translation id="6054613632208573261">Predvolene používať Chrome</translation>
 <translation id="6063091872902370735">Povoliť prihlásenie do Chromu</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Vyberte, či chcete údaje Chromu v tomto zariadení vymazať alebo ponechať</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Všetky práva vyhradené.</translation>
 <translation id="840168496893712993">Niektoré doplnky spôsobujú zlyhanie prehliadača Chrome. Skúste ich odinštalovať.</translation>
+<translation id="8414886616817913619">Vaša organizácia vyžaduje, aby ste sa na používanie Chromu prihlásili. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Vybraté údaje boli odstránené z Chromu a synchronizovaných zariadení. Váš účet Google môže mať na adrese history.google.com ďalšie formy histórie prehliadania, ako napríklad vyhľadávania a aktivity v iných službách Google.</translation>
 <translation id="850555388806794946">Ak chcete Chrome nastaviť ako predvolený prehliadač:
   1. Otvorte Nastavenia.

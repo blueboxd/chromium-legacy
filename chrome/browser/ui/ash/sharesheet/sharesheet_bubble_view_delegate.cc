@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sharesheet/sharesheet_service_delegate.h"
+#include "chrome/browser/sharesheet/sharesheet_service_delegator.h"
 #include "chrome/browser/ui/ash/sharesheet/sharesheet_bubble_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -17,10 +17,16 @@ namespace sharesheet {
 
 SharesheetBubbleViewDelegate::SharesheetBubbleViewDelegate(
     gfx::NativeWindow native_window,
-    ::sharesheet::SharesheetServiceDelegate* sharesheet_service_delegate)
+    ::sharesheet::SharesheetServiceDelegator* sharesheet_service_delegator)
     : sharesheet_bubble_view_(
           new SharesheetBubbleView(native_window,
-                                   sharesheet_service_delegate)) {}
+                                   sharesheet_service_delegator)) {}
+
+SharesheetBubbleViewDelegate::~SharesheetBubbleViewDelegate() {
+  // Delete the bubble view if not owned by the view tree yet.
+  if (!sharesheet_bubble_view_->parent())
+    delete sharesheet_bubble_view_;
+}
 
 void SharesheetBubbleViewDelegate::ShowBubble(
     std::vector<::sharesheet::TargetInfo> targets,
@@ -85,7 +91,6 @@ void SharesheetBubbleViewDelegate::CloseBubble(
   } else if (result == ::sharesheet::SharesheetResult::kCancel) {
     reason = views::Widget::ClosedReason::kCancelButtonClicked;
   }
-
   DCHECK(sharesheet_bubble_view_);
   sharesheet_bubble_view_->CloseBubble(reason);
 }

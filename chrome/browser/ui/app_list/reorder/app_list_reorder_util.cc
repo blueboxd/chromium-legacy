@@ -9,6 +9,8 @@
 namespace app_list {
 namespace reorder {
 
+const float kOrderResetThreshold = 0.2f;
+
 // ReorderParam ----------------------------------------------------------------
 
 ReorderParam::ReorderParam(const std::string& new_sync_item_id,
@@ -39,6 +41,29 @@ std::vector<SyncItemWrapper<std::string>> GenerateStringWrappersFromSyncItems(
     wrappers.emplace_back(std::move(wrapper));
   }
 
+  return wrappers;
+}
+
+SyncItemWrapper<std::string> ConvertAppListItemToStringWrapper(
+    const ChromeAppListItem& app_list_item) {
+  SyncItemWrapper<std::string> wrapper;
+  wrapper.id = app_list_item.id();
+  wrapper.item_ordinal = app_list_item.position();
+  wrapper.key_attribute = app_list_item.name();
+  wrapper.is_folder = app_list_item.is_folder();
+  return wrapper;
+}
+
+std::vector<SyncItemWrapper<std::string>>
+GenerateStringWrappersFromAppListItems(
+    const std::vector<const ChromeAppListItem*>& items) {
+  std::vector<SyncItemWrapper<std::string>> wrappers;
+  for (const auto* app_list_item : items) {
+    if (app_list_item->is_page_break())
+      continue;
+
+    wrappers.emplace_back(ConvertAppListItemToStringWrapper(*app_list_item));
+  }
   return wrappers;
 }
 

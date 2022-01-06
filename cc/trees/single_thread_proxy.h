@@ -54,7 +54,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void SetNeedsUpdateLayers() override;
   void SetNeedsCommit() override;
   void SetNeedsRedraw(const gfx::Rect& damage_rect) override;
-  void SetNextCommitWaitsForActivation() override;
   void SetTargetLocalSurfaceId(
       const viz::LocalSurfaceId& target_local_surface_id) override;
   bool RequestedAnimatePending() override;
@@ -108,7 +107,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void ScheduledActionBeginMainFrameNotExpectedUntil(
       base::TimeTicks time) override;
   void FrameIntervalUpdated(base::TimeDelta interval) override;
-  bool HasCustomPropertyAnimations() const override;
+  bool HasInvalidationAnimation() const override;
 
   // LayerTreeHostImplClient implementation
   void DidLoseLayerTreeFrameSinkOnImplThread() override;
@@ -174,7 +173,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void BeginMainFrame(const viz::BeginFrameArgs& begin_frame_args);
   void BeginMainFrameAbortedOnImplThread(CommitEarlyOutReason reason);
   void DoBeginMainFrame(const viz::BeginFrameArgs& begin_frame_args);
-  void DoPainting();
+  void DoPainting(const viz::BeginFrameArgs& commit_args);
   void DoCommit(const viz::BeginFrameArgs& commit_args);
   DrawResult DoComposite(LayerTreeHostImpl::FrameData* frame);
   void DoSwap();

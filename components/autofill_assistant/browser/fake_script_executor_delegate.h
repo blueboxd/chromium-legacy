@@ -5,12 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_FAKE_SCRIPT_EXECUTOR_DELEGATE_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_FAKE_SCRIPT_EXECUTOR_DELEGATE_H_
 
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
@@ -40,6 +39,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   WebsiteLoginManager* GetWebsiteLoginManager() override;
   content::WebContents* GetWebContents() override;
   std::string GetEmailAddressForAccessTokenAccount() override;
+  ukm::UkmRecorder* GetUkmRecorder() override;
   bool EnterState(AutofillAssistantState state) override;
   void SetTouchableElementArea(const ElementAreaProto& element) override;
   void SetStatusMessage(const std::string& message) override;
@@ -56,7 +56,6 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
                      base::TimeDelta delay) override;
   void SetInfoBox(const InfoBox& info_box) override;
   void ClearInfoBox() override;
-  void SetProgress(int progress) override;
   bool SetProgressActiveStepIdentifier(
       const std::string& active_step_identifier) override;
   void SetProgressActiveStep(int active_step) override;
@@ -114,6 +113,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
       ConfigureUiStateProto::OverlayBehavior overlay_behavior) override;
   void SetBrowseModeInvisible(bool invisible) override;
   void SetShowFeedbackChip(bool show_feedback_chip) override;
+  ProcessedActionStatusDetailsProto& GetLogInfo() override;
 
   bool ShouldShowWarning() override;
 
@@ -186,8 +186,9 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::unique_ptr<UserData> payment_request_info_;
   bool navigating_to_new_document_ = false;
   bool navigation_error_ = false;
-  std::set<ScriptExecutorDelegate::NavigationListener*> navigation_listeners_;
-  std::set<ScriptExecutorDelegate::Listener*> listeners_;
+  base::flat_set<ScriptExecutorDelegate::NavigationListener*>
+      navigation_listeners_;
+  base::flat_set<ScriptExecutorDelegate::Listener*> listeners_;
   ViewportMode viewport_mode_ = ViewportMode::NO_RESIZE;
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;
@@ -197,6 +198,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::vector<std::string> browse_domains_;
   UserModel* user_model_ = nullptr;
   std::unique_ptr<GenericUserInterfaceProto> persistent_generic_ui_;
+  ProcessedActionStatusDetailsProto log_info_;
 
   bool require_ui_ = false;
 };

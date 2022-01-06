@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './input_key.js'
+import './input_key.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
@@ -13,24 +13,24 @@ import {getShortcutProvider} from './mojo_interface_provider.js';
 import {AcceleratorConfigResult, AcceleratorInfo, AcceleratorKeys, AcceleratorSource, AcceleratorState, AcceleratorType, Modifier, ShortcutProviderInterface} from './shortcut_types.js';
 
 const ModifierRawKeys = [
-  /*Shift=*/16,
-  /*Alt=*/17,
-  /*Ctrl=*/18,
-  /*MetaLeft=*/91,
-  /*MetaRight=*/92,
-]
+  /*Shift=*/ 16,
+  /*Alt=*/ 17,
+  /*Ctrl=*/ 18,
+  /*MetaLeft=*/ 91,
+  /*MetaRight=*/ 92,
+];
 
 const KeyState = {
   NOT_SELECTED: 'not-selected',
   MODIFIER: 'modifier-selected',
   ALPHANUMERIC: 'alpha-numeric-selected',
-}
+};
 
 export const ViewState = {
   VIEW: 0,
   ADD: 1,
   EDIT: 2,
-}
+};
 
 /**
  * Returns the converted modifier flag as a readable string.
@@ -143,7 +143,7 @@ export class AcceleratorViewElement extends PolymerElement {
         type: Number,
         value: 0,
       },
-    }
+    };
   }
 
   /** @override */
@@ -162,7 +162,7 @@ export class AcceleratorViewElement extends PolymerElement {
    * @private
    */
   getModifiers_() {
-    let modifiers = [];
+    const modifiers = [];
     for (const key in Modifier) {
       const modifier = Modifier[key];
       if (this.acceleratorInfo.accelerator.modifiers & modifier) {
@@ -209,6 +209,11 @@ export class AcceleratorViewElement extends PolymerElement {
     // Disable ChromeOS accelerator handler when starting input capture.
     this.pendingAcceleratorInfo_ = CreateEmptyAcceleratorInfo();
     this.isCapturing_ = true;
+
+    this.dispatchEvent(new CustomEvent('accelerator-capturing-started', {
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   /** @private */
@@ -222,6 +227,11 @@ export class AcceleratorViewElement extends PolymerElement {
     this.hasError = false;
     this.isCapturing_ = false;
     this.pendingAcceleratorInfo_ = CreateEmptyAcceleratorInfo();
+
+    this.dispatchEvent(new CustomEvent('accelerator-capturing-ended', {
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   /**
@@ -306,11 +316,24 @@ export class AcceleratorViewElement extends PolymerElement {
     if (foundId !== undefined) {
       // TODO(jimmyxgong): Fetch name of accelerator with real implementation.
       const uuidParams = foundId.split('-');
+      const conflictSource =
+          /** @type {!AcceleratorSource} */(parseInt(uuidParams[0], 10));
+      const conflictAction = parseInt(uuidParams[1], 10);
       const conflictAccelName = this.lookupManager_.getAcceleratorName(
-          /**source=*/ parseInt(uuidParams[0], 10),
-          /**action=*/ parseInt(uuidParams[1], 10));
+          conflictSource, conflictAction);
+
+      // Cannot override a locked action.
+      if (!this.shortcutProvider_.isMutable(conflictSource) ||
+          this.lookupManager_.isAcceleratorLocked(
+              conflictSource, conflictAction, pendingKeys)) {
+        // TODO(jimmyxgong): i18n this string.
+        this.statusMessage = 'Shortcut is used by \"' + conflictAccelName +
+            '\". Press a new shortcut to replace.';
+        this.hasError = true;
+        return;
+      }
+
       // TODO(jimmyxgong): i18n this string.
-      // TODO(jimmyxgong): Handle attempting to override a locked action.
       this.statusMessage = 'Shortcut is used by ' + conflictAccelName +
           '. Press a new shortcut or press the same one again to use it for ' +
           'this action instead.';
@@ -484,7 +507,6 @@ export class AcceleratorViewElement extends PolymerElement {
               this.fireUpdateEvent_();
             }
           });
-      ;
     }
 
     if (this.viewState === ViewState.ADD) {

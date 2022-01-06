@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -17,11 +18,11 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/apps/intent_helper/metrics/intent_handling_metrics.h"
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -30,8 +31,10 @@
 #include "chrome/browser/ash/arc/intent_helper/custom_tab_session_impl.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/url_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/web_applications/chrome_camera_app_ui_delegate.h"
+#include "chrome/browser/ash/web_applications/calculator_app/calculator_app_utils.h"
+#include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_delegate.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -124,6 +127,8 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::POINTEROVERLAY,
       chromeos::settings::mojom::kPointersSubpagePath},
      {ChromePage::POWER, chromeos::settings::mojom::kPowerSubpagePath},
+     {ChromePage::SMARTPRIVACY,
+      chromeos::settings::mojom::kSmartPrivacySubpagePath},
      {ChromePage::STORAGE, chromeos::settings::mojom::kStorageSubpagePath},
      {ChromePage::WIFI, chromeos::settings::mojom::kWifiNetworksSubpagePath}};
 
@@ -238,6 +243,18 @@ chrome::FeedbackSource MapToChromeSource(
   }
 }
 
+// When the Files SWA is enabled: Open Files SWA.
+// Returns true if it opens the SWA.
+bool OpenFilesSwa(Profile* const profile) {
+  if (!ash::features::IsFileManagerSwaEnabled()) {
+    return false;
+  }
+
+  web_app::LaunchSystemWebAppAsync(profile,
+                                   web_app::SystemAppType::FILE_MANAGER, {});
+  return true;
+}
+
 }  // namespace
 
 ChromeNewWindowClient::ChromeNewWindowClient()
@@ -339,10 +356,10 @@ void ChromeNewWindowClient::NewWindow(bool is_incognito,
       should_trigger_session_restore);
 }
 
-void ChromeNewWindowClient::NewWindowForWebUITabDrop(
+void ChromeNewWindowClient::NewWindowForDetachingTab(
     aura::Window* source_window,
     const ui::OSExchangeData& drop_data,
-    NewWindowForWebUITabDropCallback closure) {
+    NewWindowForDetachingTabCallback closure) {
   DCHECK(ash::features::IsWebUITabStripTabDragIntegrationEnabled());
 
   BrowserView* source_view = BrowserView::GetBrowserViewForNativeWindow(
@@ -393,16 +410,20 @@ void ChromeNewWindowClient::OpenUrl(const GURL& url,
 
 void ChromeNewWindowClient::OpenCalculator() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   DCHECK(proxy);
-  proxy->Launch(extension_misc::kCalculatorAppId, ui::EF_NONE,
-                apps::mojom::LaunchSource::kFromKeyboard);
+  proxy->Launch(ash::calculator_app::GetInstalledCalculatorAppId(profile),
+                ui::EF_NONE, apps::mojom::LaunchSource::kFromKeyboard);
 }
 
 void ChromeNewWindowClient::OpenFileManager() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  apps::AppServiceProxyChromeOs* proxy =
+  if (OpenFilesSwa(profile)) {
+    return;
+  }
+
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   DCHECK(proxy);
 
@@ -429,7 +450,12 @@ void ChromeNewWindowClient::OpenFileManager() {
 
 void ChromeNewWindowClient::OpenDownloadsFolder() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  apps::AppServiceProxyChromeOs* proxy =
+  // TODO(b/204372025): Force to open in the Downloads folder.
+  if (OpenFilesSwa(profile)) {
+    return;
+  }
+
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   auto downloads_path =
       file_manager::util::GetDownloadsFolderForProfile(profile);
@@ -575,7 +601,7 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
   int event_flags = apps::GetEventFlags(
       apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_WINDOW, /*prefer_container=*/false);
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
   proxy->AppRegistryCache().ForOneApp(

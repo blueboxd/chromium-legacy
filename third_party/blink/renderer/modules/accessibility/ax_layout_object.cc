@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/css/counter_style_map.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/range.h"
@@ -81,6 +82,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
+#include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -251,8 +253,15 @@ ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObjectOrNode() const {
   if (node && node->IsSVGElement()) {
     if (layout_object_->IsSVGImage())
       return ax::mojom::blink::Role::kImage;
-    if (layout_object_->IsSVGRoot())
-      return ax::mojom::blink::Role::kSvgRoot;
+    if (IsA<SVGSVGElement>(node)) {
+      // Exposing a nested <svg> as a group (rather than a generic container)
+      // increases the likelihood that an author-provided name will be presented
+      // by assistive technologies. Note that this mapping is not yet in the
+      // SVG-AAM, which currently maps all <svg> elements as graphics-document.
+      // See https://github.com/w3c/svg-aam/issues/18.
+      return layout_object_->IsSVGRoot() ? ax::mojom::blink::Role::kSvgRoot
+                                         : ax::mojom::blink::Role::kGroup;
+    }
     if (layout_object_->IsSVGShape())
       return ax::mojom::blink::Role::kGraphicsSymbol;
     if (layout_object_->IsSVGForeignObject() || IsA<SVGGElement>(node))
@@ -342,7 +351,7 @@ bool AXLayoutObject::IsOffScreen() const {
   IntRect content_rect =
       PixelSnappedIntRect(layout_object_->VisualRectInDocument());
   LocalFrameView* view = layout_object_->GetFrame()->View();
-  IntRect view_rect(IntPoint(), view->Size());
+  IntRect view_rect(gfx::Point(), view->Size());
   view_rect.Intersect(content_rect);
   return view_rect.IsEmpty();
 }
@@ -1151,18 +1160,18 @@ String AXLayoutObject::TextAlternative(
 // Hit testing.
 //
 
-AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
-  if (!layout_object_ || !layout_object_->HasLayer() ||
-      !layout_object_->IsBox())
+AXObject* AXLayoutObject::AccessibilityHitTest(const gfx::Point& point) const {
+  // Must be called for the document.
+  if (!IsRoot() || !layout_object_)
     return nullptr;
 
-    // Must be called with lifecycle >= pre-paint clean
-#if DCHECK_IS_ON()
+  // Must be called with lifecycle >= pre-paint clean
   DCHECK_GE(GetDocument()->Lifecycle().GetState(),
             DocumentLifecycle::kPrePaintClean);
-#endif
 
+  DCHECK(layout_object_->IsLayoutView());
   PaintLayer* layer = To<LayoutBox>(layout_object_.Get())->Layer();
+  DCHECK(layer);
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                          HitTestRequest::kRetargetForInert);
@@ -1736,7 +1745,7 @@ void AXLayoutObject::GetWordBoundaries(Vector<int>& word_starts,
 
 AXObject* AXLayoutObject::AccessibilityImageMapHitTest(
     HTMLAreaElement* area,
-    const IntPoint& point) const {
+    const gfx::Point& point) const {
   if (!area)
     return nullptr;
 

@@ -674,8 +674,8 @@ IN_PROC_BROWSER_TEST_F(
   account.account_id = CoreAccountId::FromGaiaId(account.gaia);
 
   syncer::TestSyncService sync_service;
-  sync_service.SetIsAuthenticatedAccountPrimary(false);
-  sync_service.SetAuthenticatedAccountInfo(account);
+  sync_service.SetHasSyncConsent(false);
+  sync_service.SetAccountInfo(account);
   ASSERT_EQ(sync_service.GetTransportState(),
             syncer::SyncService::TransportState::ACTIVE);
   password_manager::features_util::OptInToAccountStorage(prefs, &sync_service);
@@ -699,8 +699,8 @@ IN_PROC_BROWSER_TEST_F(
   account.account_id = CoreAccountId::FromGaiaId(account.gaia);
 
   syncer::TestSyncService sync_service;
-  sync_service.SetIsAuthenticatedAccountPrimary(false);
-  sync_service.SetAuthenticatedAccountInfo(account);
+  sync_service.SetHasSyncConsent(false);
+  sync_service.SetAccountInfo(account);
   ASSERT_EQ(sync_service.GetTransportState(),
             syncer::SyncService::TransportState::ACTIVE);
   password_manager::features_util::OptInToAccountStorage(prefs, &sync_service);
@@ -1218,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 // sends a request to System-proxy to clear the cached user credentials.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        SystemProxyClearsUserCredentials) {
-  chromeos::SystemProxyManager::Get()->SetSystemProxyEnabledForTest(true);
+  ash::SystemProxyManager::Get()->SetSystemProxyEnabledForTest(true);
   EXPECT_EQ(0, chromeos::SystemProxyClient::Get()
                    ->GetTestInterface()
                    ->GetClearUserCredentialsCount());

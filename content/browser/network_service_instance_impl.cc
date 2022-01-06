@@ -14,15 +14,17 @@
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread.h"
@@ -31,13 +33,13 @@
 #include "build/chromeos_buildflags.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/network_service_client.h"
-#include "content/browser/service_sandbox_type.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/network_service_util.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -62,6 +64,8 @@
 #include "base/win/sid.h"
 #include "base/win/windows_version.h"
 #include "sandbox/policy/features.h"
+#elif defined(OS_ANDROID)
+#include "content/common/android/cpu_affinity_setter.h"
 #endif  // defined(OS_WIN)
 
 namespace content {
@@ -87,6 +91,14 @@ base::Time g_last_network_service_crash;
 // invalid.
 const base::FilePath::CharType kCheckpointFileName[] =
     FILE_PATH_LITERAL("NetworkDataMigrated");
+
+// A directory name that is created below the http cache path and passed to the
+// network context when creating a network context with cache enabled.
+// This must be a directory below the main cache path so operations such as
+// resetting the cache via HttpCacheParams.reset_cache can function correctly
+// as they rely on having access to the parent directory of the cache.
+const base::FilePath::CharType kCacheDataDirectoryName[] =
+    FILE_PATH_LITERAL("Cache_Data");
 
 // A platform specific set of parameters that is used when granting the sandbox
 // access to the network context data.
@@ -178,6 +190,14 @@ static NetworkServiceClient* g_client = nullptr;
 
 void CreateInProcessNetworkServiceOnThread(
     mojo::PendingReceiver<network::mojom::NetworkService> receiver) {
+#if defined(OS_ANDROID)
+  if (base::GetFieldTrialParamByFeatureAsBool(
+          features::kBigLittleScheduling,
+          features::kBigLittleSchedulingNetworkMainBigParam, false)) {
+    SetCpuAffinityForCurrentThread(base::CpuAffinityMode::kBigCoresOnly);
+  }
+#endif
+
   // The test interface doesn't need to be implemented in the in-process case.
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(base::BindRepeating(
@@ -256,6 +276,31 @@ bool IsSafeToUseDataPath(SandboxGrantResult result) {
   }
 }
 
+// Takes a cache dir and deletes all files in it except those in 'Cache_Data'
+// directory. This can be removed once all caches have been moved to the new
+// sub-directory, around M99.
+void MaybeDeleteOldCache(const base::FilePath& cache_dir) {
+  bool deleted_old_files = false;
+  base::FileEnumerator enumerator(
+      cache_dir, /*recursive=*/false,
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+
+  for (auto name = enumerator.Next(); !name.empty(); name = enumerator.Next()) {
+    base::FileEnumerator::FileInfo info = enumerator.GetInfo();
+    DCHECK_EQ(info.GetName(), name.BaseName());
+
+    if (info.IsDirectory()) {
+      if (name.BaseName().value() == kCacheDataDirectoryName)
+        continue;
+    }
+    base::DeletePathRecursively(name);
+    deleted_old_files = true;
+  }
+
+  base::UmaHistogramBoolean("NetworkService.DeletedOldCacheData",
+                            deleted_old_files);
+}
+
 void CreateNetworkContextInternal(
     mojo::PendingReceiver<network::mojom::NetworkContext> context,
     network::mojom::NetworkContextParamsPtr params,
@@ -275,7 +320,8 @@ void CreateNetworkContextInternal(
       grant_access_result != SandboxGrantResult::kMigrationAlreadySucceeded) {
     PLOG(ERROR) << "Encountered error while migrating network context data or "
                    "granting sandbox access for "
-                << params->file_paths->data_path
+                << (params->file_paths ? params->file_paths->data_path
+                                       : base::FilePath())
                 << ". Result: " << static_cast<int>(grant_access_result);
   }
 
@@ -289,6 +335,16 @@ void CreateNetworkContextInternal(
     // in this case.
     DCHECK(params->file_paths->unsandboxed_data_path.has_value());
     params->file_paths->data_path = *params->file_paths->unsandboxed_data_path;
+  }
+  if (params->http_cache_enabled && params->http_cache_path) {
+    // Delete any old data except for the "Cache_Data" directory.
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce(MaybeDeleteOldCache, *params->http_cache_path));
+    params->http_cache_path =
+        params->http_cache_path->Append(kCacheDataDirectoryName);
   }
   GetNetworkService()->CreateNetworkContext(std::move(context),
                                             std::move(params));

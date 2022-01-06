@@ -14,10 +14,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/test/fake_task.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_executor.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -3199,14 +3199,14 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimePauser) {
       scheduler_.get(),
       WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant, "test");
 
-  base::TimeTicks before = scheduler_->GetVirtualTimeDomain()->Now();
+  base::TimeTicks before = scheduler_->GetVirtualTimeDomain()->NowTicks();
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
   pauser.PauseVirtualTime();
   EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
   pauser.UnpauseVirtualTime();
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
-  base::TimeTicks after = scheduler_->GetVirtualTimeDomain()->Now();
+  base::TimeTicks after = scheduler_->GetVirtualTimeDomain()->NowTicks();
   EXPECT_EQ(after, before);
 }
 
@@ -3219,10 +3219,10 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimePauserNonInstantTask) {
       scheduler_.get(),
       WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant, "test");
 
-  base::TimeTicks before = scheduler_->GetVirtualTimeDomain()->Now();
+  base::TimeTicks before = scheduler_->GetVirtualTimeDomain()->NowTicks();
   pauser.PauseVirtualTime();
   pauser.UnpauseVirtualTime();
-  base::TimeTicks after = scheduler_->GetVirtualTimeDomain()->Now();
+  base::TimeTicks after = scheduler_->GetVirtualTimeDomain()->NowTicks();
   EXPECT_GT(after, before);
 }
 

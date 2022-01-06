@@ -16,8 +16,6 @@ namespace features {
 // Keep sorted!
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kColorProviderRedirection;
-COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kCompositorThreadedScrollbarScrolling;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kExperimentalFlingAnimation;
@@ -57,6 +55,8 @@ extern const char kElasticOverscrollTypeTransform[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kApplyNativeOccludedRegionToWindowTracker;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kApplyNativeOcclusionToCompositor;
 COMPONENT_EXPORT(UI_BASE_FEATURES)

@@ -48,6 +48,8 @@
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
+#include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom.h"
 #include "url/url_constants.h"
 
 using testing::_;
@@ -68,29 +70,18 @@ using OnNavigationStateChangedCallback =
 
 namespace {
 
-const char kPage1Path[] = "/title1.html";
-const char kPage2Path[] = "/title2.html";
-const char kPage3Path[] = "/websql.html";
-const char kPage4Path[] = "/image.html";
-const char kPage4ImgPath[] = "/img.png";
-const char kDynamicTitlePath[] = "/dynamic_title.html";
-const char kPopupParentPath[] = "/popup_parent.html";
-const char kPopupRedirectPath[] = "/popup_child.html";
-const char kPopupMultiplePath[] = "/popup_multiple.html";
-const char kSetHeaderRequestPath[] = "/set_header_request.html";
-const char kVisibilityPath[] = "/visibility.html";
-const char kWaitSizePath[] = "/wait-size.html";
-const char kPage1Title[] = "title 1";
-const char kPage2Title[] = "title 2";
-const char kPage3Title[] = "websql not available";
-const char kDataUrl[] =
+constexpr char kPage1Path[] = "/title1.html";
+constexpr char kPage2Path[] = "/title2.html";
+constexpr char kPage3Path[] = "/websql.html";
+constexpr char kDynamicTitlePath[] = "/dynamic_title.html";
+constexpr char kVisibilityPath[] = "/visibility.html";
+constexpr char kWaitSizePath[] = "/wait-size.html";
+constexpr char kPage1Title[] = "title 1";
+constexpr char kPage2Title[] = "title 2";
+constexpr char kPage3Title[] = "websql not available";
+constexpr char kDataUrl[] =
     "data:text/html;base64,PGI+SGVsbG8sIHdvcmxkLi4uPC9iPg==";
-const int64_t kOnLoadScriptId = 0;
-const char kChildQueryParamName[] = "child_url";
-const char kPopupChildFile[] = "popup_child.html";
-const char kAutoplayFileAndQuery[] = "play_video.html?autoplay=1&codecs=vp8";
-const char kAutoPlayBlockedTitle[] = "blocked";
-const char kAutoPlaySuccessTitle[] = "playing";
+constexpr int64_t kOnLoadScriptId = 0;
 
 MATCHER_P(NavigationHandleUrlEquals,
           url,
@@ -111,12 +102,6 @@ class MockWebContentsObserver : public content::WebContentsObserver {
   MOCK_METHOD1(RenderViewDeleted,
                void(content::RenderViewHost* render_view_host));
 };
-
-std::string StringFromMemBufferOrDie(const fuchsia::mem::Buffer& buffer) {
-  absl::optional<std::string> output = base::StringFromMemBuffer(buffer);
-  CHECK(output.has_value());
-  return std::move(*output);
-}
 
 }  // namespace
 
@@ -142,7 +127,7 @@ std::string GetDocumentVisibilityState(fuchsia::web::Frame* frame) {
       [visibility, quit_loop = loop.QuitClosure()](
           fuchsia::web::Frame_ExecuteJavaScript_Result result) {
         ASSERT_TRUE(result.is_response());
-        visibility->data = StringFromMemBufferOrDie(result.response().result);
+        visibility->data = *base::StringFromMemBuffer(result.response().result);
         quit_loop.Run();
       });
   loop.Run();
@@ -790,7 +775,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScript) {
   auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
 
   frame->AddBeforeLoadJavaScript(
-      kBindingsId, {url.GetOrigin().spec()},
+      kBindingsId, {url.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString("stashed_title = 'hello';", "test"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
         EXPECT_TRUE(result.is_response());
@@ -812,7 +797,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptUpdated) {
   auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
 
   frame->AddBeforeLoadJavaScript(
-      kBindingsId, {url.GetOrigin().spec()},
+      kBindingsId, {url.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString("stashed_title = 'hello';", "test"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
         EXPECT_TRUE(result.is_response());
@@ -822,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptUpdated) {
   // injected alongside it. (The latter would result in the title being
   // "helloclobber").
   frame->AddBeforeLoadJavaScript(
-      kBindingsId, {url.GetOrigin().spec()},
+      kBindingsId, {url.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString("stashed_title = document.title + 'clobber';",
                                 "test"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
@@ -848,13 +833,13 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptOrdered) {
   auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
 
   frame->AddBeforeLoadJavaScript(
-      kBindingsId1, {url.GetOrigin().spec()},
+      kBindingsId1, {url.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString("stashed_title = 'hello';", "test"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
         EXPECT_TRUE(result.is_response());
       });
   frame->AddBeforeLoadJavaScript(
-      kBindingsId2, {url.GetOrigin().spec()},
+      kBindingsId2, {url.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString("stashed_title += ' there';", "test"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
         EXPECT_TRUE(result.is_response());
@@ -877,7 +862,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptRemoved) {
   auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
 
   frame->AddBeforeLoadJavaScript(
-      kBindingsId1, {url.GetOrigin().spec()},
+      kBindingsId1, {url.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString("stashed_title = 'foo';", "test"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
         EXPECT_TRUE(result.is_response());
@@ -885,7 +870,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptRemoved) {
 
   // Add a script which clobbers "foo".
   frame->AddBeforeLoadJavaScript(
-      kBindingsId2, {url.GetOrigin().spec()},
+      kBindingsId2, {url.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString("stashed_title = 'bar';", "test"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
         EXPECT_TRUE(result.is_response());
@@ -934,7 +919,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScript) {
 
   // Execute with no result to set the variable.
   frame->ExecuteJavaScriptNoResult(
-      {kUrl.GetOrigin().spec()},
+      {kUrl.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString(
           base::StringPrintf("my_variable = %s;", kJsonStringLiteral), "test"),
       [](fuchsia::web::Frame_ExecuteJavaScriptNoResult_Result result) {
@@ -944,12 +929,12 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScript) {
   // Execute a script snippet to return the variable's value.
   base::RunLoop loop;
   frame->ExecuteJavaScript(
-      {kUrl.GetOrigin().spec()},
+      {kUrl.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString("my_variable;", "test"),
       [&](fuchsia::web::Frame_ExecuteJavaScript_Result result) {
         ASSERT_TRUE(result.is_response());
         std::string result_json =
-            StringFromMemBufferOrDie(result.response().result);
+            *base::StringFromMemBuffer(result.response().result);
         EXPECT_EQ(result_json, kJsonStringLiteral);
         loop.Quit();
       });
@@ -964,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptVmoDestroyed) {
   auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
 
   frame->AddBeforeLoadJavaScript(
-      kOnLoadScriptId, {url.GetOrigin().spec()},
+      kOnLoadScriptId, {url.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString("stashed_title = 'hello';", "test"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
         EXPECT_TRUE(result.is_response());
@@ -1045,7 +1030,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest,
   auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
 
   frame->AddBeforeLoadJavaScript(
-      kOnLoadScriptId, {url.GetOrigin().spec()},
+      kOnLoadScriptId, {url.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString("stashed_title = 'hello';", "test"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
         EXPECT_TRUE(result.is_response());
@@ -1057,7 +1042,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest,
   frame.navigation_listener().RunUntilUrlAndTitleEquals(url, "hello");
 
   frame->AddBeforeLoadJavaScript(
-      kOnLoadScriptId2, {url.GetOrigin().spec()},
+      kOnLoadScriptId2, {url.DeprecatedGetOriginAsURL().spec()},
       base::MemBufferFromString("stashed_title += ' there';", "test"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
         EXPECT_TRUE(result.is_response());
@@ -1093,7 +1078,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
 
   // 0xFE is an illegal UTF-8 byte; it should cause UTF-8 conversion to fail.
   frame->ExecuteJavaScriptNoResult(
-      {url.GetOrigin().spec()}, base::MemBufferFromString("true;\xfe", "test"),
+      {url.DeprecatedGetOriginAsURL().spec()},
+      base::MemBufferFromString("true;\xfe", "test"),
       [&run_loop](fuchsia::web::Frame_ExecuteJavaScriptNoResult_Result result) {
         EXPECT_TRUE(result.is_err());
         EXPECT_EQ(result.err(), fuchsia::web::FrameError::BUFFER_NOT_UTF8);
@@ -1255,86 +1241,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, Stop) {
                    ->web_contents_->IsLoading());
 }
 
-IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  net::test_server::EmbeddedTestServerHandle test_server_handle;
-  ASSERT_TRUE(test_server_handle =
-                  embedded_test_server()->StartAndReturnHandle());
-  GURL post_message_url(
-      embedded_test_server()->GetURL("/window_post_message.html"));
-
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      post_message_url.spec()));
-  frame.navigation_listener().RunUntilUrlAndTitleEquals(post_message_url,
-                                                        "postmessage");
-
-  fuchsia::web::WebMessage message;
-  message.set_data(base::MemBufferFromString(kPage1Path, "test"));
-  base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result> post_result;
-  frame->PostMessage(
-      post_message_url.GetOrigin().spec(), std::move(message),
-      cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
-  ASSERT_TRUE(post_result.Wait());
-
-  frame.navigation_listener().RunUntilUrlAndTitleEquals(
-      embedded_test_server()->GetURL(kPage1Path), kPage1Title);
-
-  EXPECT_TRUE(post_result.Get().is_response());
-}
-
-// Send a MessagePort to the content, then perform bidirectional messaging
-// through the port.
-IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  net::test_server::EmbeddedTestServerHandle test_server_handle;
-  ASSERT_TRUE(test_server_handle =
-                  embedded_test_server()->StartAndReturnHandle());
-  GURL post_message_url(embedded_test_server()->GetURL("/message_port.html"));
-
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      post_message_url.spec()));
-  frame.navigation_listener().RunUntilUrlAndTitleEquals(post_message_url,
-                                                        "messageport");
-
-  fuchsia::web::MessagePortPtr message_port;
-  {
-    base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result> post_result;
-    frame->PostMessage(
-        post_message_url.GetOrigin().spec(),
-        cr_fuchsia::CreateWebMessageWithMessagePortRequest(
-            message_port.NewRequest(), base::MemBufferFromString("hi", "test")),
-        cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
-
-    base::test::TestFuture<fuchsia::web::WebMessage> receiver;
-    message_port->ReceiveMessage(
-        cr_fuchsia::CallbackToFitFunction(receiver.GetCallback()));
-    ASSERT_TRUE(receiver.Wait());
-    ASSERT_TRUE(receiver.Get().has_data());
-    EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver.Get().data()));
-  }
-
-  {
-    fuchsia::web::WebMessage msg;
-    msg.set_data(base::MemBufferFromString("ping", "test"));
-    base::test::TestFuture<fuchsia::web::MessagePort_PostMessage_Result>
-        post_result;
-    message_port->PostMessage(std::move(msg), cr_fuchsia::CallbackToFitFunction(
-                                                  post_result.GetCallback()));
-    base::test::TestFuture<fuchsia::web::WebMessage> receiver;
-    message_port->ReceiveMessage(
-        cr_fuchsia::CallbackToFitFunction(receiver.GetCallback()));
-    ASSERT_TRUE(post_result.Wait());
-    ASSERT_TRUE(receiver.Wait());
-    ASSERT_TRUE(receiver.Get().has_data());
-    EXPECT_EQ("ack ping", StringFromMemBufferOrDie(receiver.Get().data()));
-    EXPECT_TRUE(post_result.Get().is_response());
-  }
-}
-
 // TODO(crbug.com/1058247): Re-enable this test on Arm64 when femu is available
 // for that architecture. This test requires Vulkan and Scenic to properly
 // signal the Views visibility.
@@ -1444,204 +1350,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_SetPageScale) {
   EXPECT_EQ(frame2_dpr->GetDouble(), 1.0);
 }
 
-// Send a MessagePort to the content, then perform bidirectional messaging
-// over its channel.
-IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  net::test_server::EmbeddedTestServerHandle test_server_handle;
-  ASSERT_TRUE(test_server_handle =
-                  embedded_test_server()->StartAndReturnHandle());
-  GURL post_message_url(embedded_test_server()->GetURL("/message_port.html"));
-
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      post_message_url.spec()));
-  frame.navigation_listener().RunUntilUrlAndTitleEquals(post_message_url,
-                                                        "messageport");
-
-  fuchsia::web::MessagePortPtr message_port;
-  {
-    base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result> post_result;
-    frame->PostMessage(
-        post_message_url.GetOrigin().spec(),
-        cr_fuchsia::CreateWebMessageWithMessagePortRequest(
-            message_port.NewRequest(), base::MemBufferFromString("hi", "test")),
-        cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
-
-    base::test::TestFuture<fuchsia::web::WebMessage> receiver;
-    message_port->ReceiveMessage(
-        cr_fuchsia::CallbackToFitFunction(receiver.GetCallback()));
-    ASSERT_TRUE(post_result.Wait());
-    ASSERT_TRUE(receiver.Wait());
-    ASSERT_TRUE(receiver.IsReady());
-    EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver.Get().data()));
-    EXPECT_TRUE(post_result.Get().is_response());
-  }
-
-  // Navigating off-page should tear down the Mojo channel, thereby causing the
-  // MessagePortImpl to self-destruct and tear down its FIDL channel.
-  {
-    base::RunLoop run_loop;
-    message_port.set_error_handler(
-        [&run_loop](zx_status_t) { run_loop.Quit(); });
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        url::kAboutBlankURL));
-    run_loop.Run();
-  }
-}
-
-// Send a MessagePort to the content, and through that channel, receive a
-// different MessagePort that was created by the content. Verify the second
-// channel's liveness by sending a ping to it.
-IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  net::test_server::EmbeddedTestServerHandle test_server_handle;
-  ASSERT_TRUE(test_server_handle =
-                  embedded_test_server()->StartAndReturnHandle());
-  GURL post_message_url(embedded_test_server()->GetURL("/message_port.html"));
-
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      post_message_url.spec()));
-  frame.navigation_listener().RunUntilUrlAndTitleEquals(post_message_url,
-                                                        "messageport");
-
-  fuchsia::web::MessagePortPtr incoming_message_port;
-  {
-    fuchsia::web::MessagePortPtr message_port;
-    base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result> post_result;
-    frame->PostMessage(
-        "*",
-        cr_fuchsia::CreateWebMessageWithMessagePortRequest(
-            message_port.NewRequest(), base::MemBufferFromString("hi", "test")),
-        cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
-
-    base::test::TestFuture<fuchsia::web::WebMessage> receiver;
-    message_port->ReceiveMessage(
-        cr_fuchsia::CallbackToFitFunction(receiver.GetCallback()));
-    ASSERT_TRUE(receiver.Wait());
-    ASSERT_TRUE(receiver.Get().has_data());
-    EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver.Get().data()));
-    ASSERT_TRUE(receiver.Get().has_incoming_transfer());
-    ASSERT_EQ(receiver.Get().incoming_transfer().size(), 1u);
-    incoming_message_port = receiver.Take()
-                                .mutable_incoming_transfer()
-                                ->at(0)
-                                .message_port()
-                                .Bind();
-    EXPECT_TRUE(post_result.Get().is_response());
-  }
-
-  // Get the content to send three 'ack ping' messages, which will accumulate in
-  // the MessagePortImpl buffer.
-  for (int i = 0; i < 3; ++i) {
-    base::test::TestFuture<fuchsia::web::MessagePort_PostMessage_Result>
-        post_result;
-    fuchsia::web::WebMessage msg;
-    msg.set_data(base::MemBufferFromString("ping", "test"));
-    incoming_message_port->PostMessage(
-        std::move(msg),
-        cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
-    ASSERT_TRUE(post_result.Wait());
-    EXPECT_TRUE(post_result.Get().is_response());
-  }
-
-  // Receive another acknowledgement from content on a side channel to ensure
-  // that all the "ack pings" are ready to be consumed.
-  {
-    fuchsia::web::MessagePortPtr ack_message_port;
-
-    // Quit the runloop only after we've received a WebMessage AND a PostMessage
-    // result.
-    base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result> post_result;
-    frame->PostMessage(
-        "*",
-        cr_fuchsia::CreateWebMessageWithMessagePortRequest(
-            ack_message_port.NewRequest(),
-            base::MemBufferFromString("hi", "test")),
-        cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
-    base::test::TestFuture<fuchsia::web::WebMessage> receiver;
-    ack_message_port->ReceiveMessage(
-        cr_fuchsia::CallbackToFitFunction(receiver.GetCallback()));
-    ASSERT_TRUE(receiver.Wait());
-    ASSERT_TRUE(receiver.Get().has_data());
-    EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver.Get().data()));
-    EXPECT_TRUE(post_result.Get().is_response());
-  }
-
-  // Pull the three 'ack ping's from the buffer.
-  for (int i = 0; i < 3; ++i) {
-    base::test::TestFuture<fuchsia::web::WebMessage> receiver;
-    incoming_message_port->ReceiveMessage(
-        cr_fuchsia::CallbackToFitFunction(receiver.GetCallback()));
-    ASSERT_TRUE(receiver.Wait());
-    ASSERT_TRUE(receiver.Get().has_data());
-    EXPECT_EQ("ack ping", StringFromMemBufferOrDie(receiver.Get().data()));
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  net::test_server::EmbeddedTestServerHandle test_server_handle;
-  ASSERT_TRUE(test_server_handle =
-                  embedded_test_server()->StartAndReturnHandle());
-  GURL post_message_url(embedded_test_server()->GetURL("/message_port.html"));
-
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      post_message_url.spec()));
-  frame.navigation_listener().RunUntilUrlAndTitleEquals(post_message_url,
-                                                        "messageport");
-
-  // PostMessage() to invalid origins should be ignored. We pass in a
-  // MessagePort but nothing should happen to it.
-  fuchsia::web::MessagePortPtr bad_origin_incoming_message_port;
-  base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result>
-      unused_post_result;
-  frame->PostMessage(
-      "https://example.com",
-      cr_fuchsia::CreateWebMessageWithMessagePortRequest(
-          bad_origin_incoming_message_port.NewRequest(),
-          base::MemBufferFromString("bad origin, bad!", "test")),
-      cr_fuchsia::CallbackToFitFunction(unused_post_result.GetCallback()));
-  base::test::TestFuture<fuchsia::web::WebMessage> unused_message_read;
-  bad_origin_incoming_message_port->ReceiveMessage(
-      cr_fuchsia::CallbackToFitFunction(unused_message_read.GetCallback()));
-
-  // PostMessage() with a valid origin should succeed.
-  // Verify it by looking for an ack message on the MessagePort we passed in.
-  // Since message events are handled in order, observing the result of this
-  // operation will verify whether the previous PostMessage() was received but
-  // discarded.
-  fuchsia::web::MessagePortPtr incoming_message_port;
-  fuchsia::web::MessagePortPtr message_port;
-  base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result> post_result;
-  frame->PostMessage(
-      "*",
-      cr_fuchsia::CreateWebMessageWithMessagePortRequest(
-          message_port.NewRequest(),
-          base::MemBufferFromString("good origin", "test")),
-      cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
-  base::test::TestFuture<fuchsia::web::WebMessage> receiver;
-  message_port->ReceiveMessage(
-      cr_fuchsia::CallbackToFitFunction(receiver.GetCallback()));
-  ASSERT_TRUE(receiver.Wait());
-  ASSERT_TRUE(receiver.Get().has_data());
-  EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver.Get().data()));
-  ASSERT_TRUE(receiver.Get().has_incoming_transfer());
-  ASSERT_EQ(receiver.Get().incoming_transfer().size(), 1u);
-  incoming_message_port =
-      receiver.Take().mutable_incoming_transfer()->at(0).message_port().Bind();
-  EXPECT_TRUE(post_result.Get().is_response());
-
-  // Verify that the first PostMessage() call wasn't handled.
-  EXPECT_FALSE(unused_message_read.IsReady());
-}
-
 IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
   auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
 
@@ -1717,7 +1425,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ChildFrameNavigationIgnored) {
   message.set_data(base::MemBufferFromString("test", "test"));
   base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result> post_result;
   frame->PostMessage(
-      page_url.GetOrigin().spec(), std::move(message),
+      page_url.DeprecatedGetOriginAsURL().spec(), std::move(message),
       cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
 
   frame.navigation_listener().SetBeforeAckHook(
@@ -1838,773 +1546,68 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, InvalidHeader) {
   }
 }
 
-class RequestMonitoringFrameImplBrowserTest : public FrameImplTest {
- public:
-  RequestMonitoringFrameImplBrowserTest() = default;
-
- protected:
-  void SetUpOnMainThread() override {
-    // Accumulate all http requests made to |embedded_test_server| into
-    // |accumulated_requests_| container.
-    embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
-        &RequestMonitoringFrameImplBrowserTest::MonitorRequestOnIoThread,
-        base::Unretained(this), base::SequencedTaskRunnerHandle::Get()));
-
-    ASSERT_TRUE(test_server_handle_ =
-                    embedded_test_server()->StartAndReturnHandle());
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Needed for UrlRequestRewriteAddHeaders.
-    command_line->AppendSwitchNative(switches::kCorsExemptHeaders, "Test");
-  }
-
-  std::map<GURL, net::test_server::HttpRequest> accumulated_requests_;
-
- private:
-  void MonitorRequestOnIoThread(
-      const scoped_refptr<base::SequencedTaskRunner>& main_thread_task_runner,
-      const net::test_server::HttpRequest& request) {
-    main_thread_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &RequestMonitoringFrameImplBrowserTest::MonitorRequestOnMainThread,
-            base::Unretained(this), request));
-  }
-
-  void MonitorRequestOnMainThread(
-      const net::test_server::HttpRequest& request) {
-    accumulated_requests_[request.GetURL()] = request;
-  }
-
-  net::test_server::EmbeddedTestServerHandle test_server_handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestMonitoringFrameImplBrowserTest);
-};
-
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest, ExtraHeaders) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ContentAreaSettings) {
   auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
+  base::RunLoop().RunUntilIdle();
+  auto* frame_impl = context_impl()->GetFrameImplForTest(&frame.ptr());
+  auto* web_contents = frame_impl->web_contents_for_test();
 
-  const GURL page_url(embedded_test_server()->GetURL(kPage1Path));
-  fuchsia::web::LoadUrlParams load_url_params;
-  fuchsia::net::http::Header header1;
-  header1.name = cr_fuchsia::StringToBytes("X-ExtraHeaders");
-  header1.value = cr_fuchsia::StringToBytes("1");
-  fuchsia::net::http::Header header2;
-  header2.name = cr_fuchsia::StringToBytes("X-2ExtraHeaders");
-  header2.value = cr_fuchsia::StringToBytes("2");
-  load_url_params.set_headers({header1, header2});
-
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), std::move(load_url_params),
-      page_url.spec()));
-  frame.navigation_listener().RunUntilUrlAndTitleEquals(page_url, kPage1Title);
-
-  // At this point, the page should be loaded, the server should have received
-  // the request and the request should be in the map.
-  const auto iter = accumulated_requests_.find(page_url);
-  ASSERT_NE(iter, accumulated_requests_.end());
-  EXPECT_THAT(iter->second.headers, Contains(Key("X-ExtraHeaders")));
-  EXPECT_THAT(iter->second.headers, Contains(Key("X-2ExtraHeaders")));
-}
-
-// Tests that UrlRequestActions can be set up to deny requests to specific
-// hosts.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteDeny) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_hosts_filter({"127.0.0.1"});
-  rule.set_action(fuchsia::web::UrlRequestAction::DENY);
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // 127.0.0.1 should be blocked.
-  const GURL page_url(embedded_test_server()->GetURL(kPage4Path));
+  // Frame should start with default values in web_contents.
   {
-    fuchsia::web::NavigationState error_state;
-    error_state.set_page_type(fuchsia::web::PageType::ERROR);
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        page_url.spec()));
-    frame.navigation_listener().RunUntilNavigationStateMatches(error_state);
+    blink::web_pref::WebPreferences web_prefs =
+        web_contents->GetOrCreateWebPreferences();
+    EXPECT_FALSE(web_prefs.hide_scrollbars);
+    EXPECT_EQ(web_prefs.autoplay_policy,
+              blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired);
+    EXPECT_EQ(web_prefs.preferred_color_scheme,
+              blink::mojom::PreferredColorScheme::kLight);
   }
 
-  // However, "localhost" is not blocked, so this request should be allowed.
+  // SetContentAreaSettings with empty settings object should not change any
+  // existing settings.
   {
-    GURL::Replacements replacements;
-    replacements.SetHostStr("localhost");
-    GURL page_url_localhost = page_url.ReplaceComponents(replacements);
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        page_url_localhost.spec()));
-    frame.navigation_listener().RunUntilUrlEquals(page_url_localhost);
+    fuchsia::web::ContentAreaSettings settings;
+    frame->SetContentAreaSettings(std::move(settings));
+    base::RunLoop().RunUntilIdle();
+
+    blink::web_pref::WebPreferences web_prefs =
+        web_contents->GetOrCreateWebPreferences();
+    EXPECT_FALSE(web_prefs.hide_scrollbars);
+    EXPECT_EQ(web_prefs.autoplay_policy,
+              blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired);
+    EXPECT_EQ(web_prefs.preferred_color_scheme,
+              blink::mojom::PreferredColorScheme::kLight);
   }
-}
 
-// Tests that a UrlRequestAction with no filter criteria will apply to all
-// requests.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteDenyAll) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  // No filter criteria are set, so everything is denied.
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_action(fuchsia::web::UrlRequestAction::DENY);
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // 127.0.0.1 should be blocked.
-  const GURL page_url(embedded_test_server()->GetURL(kPage4Path));
+  // Set hide_scrollbars field and expect that it's reflected in web_contents.
+  // Expect other fields to be unchanged.
   {
-    fuchsia::web::NavigationState error_state;
-    error_state.set_page_type(fuchsia::web::PageType::ERROR);
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        page_url.spec()));
-    frame.navigation_listener().RunUntilNavigationStateMatches(error_state);
+    fuchsia::web::ContentAreaSettings settings;
+    settings.set_hide_scrollbars(true);
+    frame->SetContentAreaSettings(std::move(settings));
+    base::RunLoop().RunUntilIdle();
+
+    blink::web_pref::WebPreferences web_prefs =
+        web_contents->GetOrCreateWebPreferences();
+    EXPECT_TRUE(web_prefs.hide_scrollbars);
+    EXPECT_EQ(web_prefs.autoplay_policy,
+              blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired);
+    EXPECT_EQ(web_prefs.preferred_color_scheme,
+              blink::mojom::PreferredColorScheme::kLight);
   }
 
-  // "localhost" should be blocked.
+  // ResetContentAreaSettings should revert preferences to their default values
+  // in web_contents.
   {
-    GURL::Replacements replacements;
-    replacements.SetHostStr("localhost");
-    GURL page_url_localhost = page_url.ReplaceComponents(replacements);
-    fuchsia::web::NavigationState error_state;
-    error_state.set_page_type(fuchsia::web::PageType::ERROR);
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        page_url.spec()));
-    frame.navigation_listener().RunUntilNavigationStateMatches(error_state);
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        page_url_localhost.spec()));
-    frame.navigation_listener().RunUntilNavigationStateMatches(error_state);
+    frame->ResetContentAreaSettings();
+    base::RunLoop().RunUntilIdle();
+
+    blink::web_pref::WebPreferences web_prefs =
+        web_contents->GetOrCreateWebPreferences();
+    EXPECT_FALSE(web_prefs.hide_scrollbars);
+    EXPECT_EQ(web_prefs.autoplay_policy,
+              blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired);
+    EXPECT_EQ(web_prefs.preferred_color_scheme,
+              blink::mojom::PreferredColorScheme::kLight);
   }
-}
-
-// Tests that UrlRequestActions can be set up to only allow requests for a
-// single host, while denying everything else.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteSelectiveAllow) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  // Allow 127.0.0.1.
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_hosts_filter({"127.0.0.1"});
-  rule.set_action(fuchsia::web::UrlRequestAction::ALLOW);
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-
-  // Deny everything else.
-  rule = {};
-  rule.set_action(fuchsia::web::UrlRequestAction::DENY);
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // 127.0.0.1 should be allowed.
-  const GURL page_url(embedded_test_server()->GetURL(kPage4Path));
-  {
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        page_url.spec()));
-    frame.navigation_listener().RunUntilUrlEquals(page_url);
-  }
-
-  // "localhost" should be blocked.
-  {
-    GURL::Replacements replacements;
-    replacements.SetHostStr("localhost");
-    GURL page_url_localhost = page_url.ReplaceComponents(replacements);
-    fuchsia::web::NavigationState error_state;
-    error_state.set_page_type(fuchsia::web::PageType::ERROR);
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        page_url_localhost.spec()));
-    frame.navigation_listener().RunUntilNavigationStateMatches(error_state);
-  }
-}
-
-// Tests the URLRequestRewrite API properly adds headers on every requests.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteAddHeaders) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-  rewrites.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test", "Value"));
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_rewrites(std::move(rewrites));
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // Navigate, we should get the additional header on the main request and the
-  // image request.
-  const GURL page_url(embedded_test_server()->GetURL(kPage4Path));
-  const GURL img_url(embedded_test_server()->GetURL(kPage4ImgPath));
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      page_url.spec()));
-  frame.navigation_listener().RunUntilUrlEquals(page_url);
-
-  {
-    const auto iter = accumulated_requests_.find(page_url);
-    ASSERT_NE(iter, accumulated_requests_.end());
-    EXPECT_THAT(iter->second.headers, Contains(Key("Test")));
-  }
-  {
-    const auto iter = accumulated_requests_.find(img_url);
-    ASSERT_NE(iter, accumulated_requests_.end());
-    EXPECT_THAT(iter->second.headers, Contains(Key("Test")));
-  }
-}
-
-// Tests the URLRequestRewrite API properly adds headers on every requests.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteAddExistingHeader) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-  rewrites.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test", "Value"));
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_rewrites(std::move(rewrites));
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // Navigate. The first page request should have the "Test" header set to
-  // "Value". The second one should have the "Test" header set to "SetByJS" via
-  // JavaScript and not be overridden by the rewrite rule.
-  const GURL page_url(embedded_test_server()->GetURL(kSetHeaderRequestPath));
-  const GURL img_url(embedded_test_server()->GetURL(kPage4Path));
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      page_url.spec()));
-  frame.navigation_listener().RunUntilTitleEquals("loaded");
-
-  {
-    const auto iter = accumulated_requests_.find(page_url);
-    ASSERT_NE(iter, accumulated_requests_.end());
-    ASSERT_THAT(iter->second.headers, Contains(Key("Test")));
-    EXPECT_EQ(iter->second.headers["Test"], "Value");
-  }
-  {
-    const auto iter = accumulated_requests_.find(img_url);
-    ASSERT_NE(iter, accumulated_requests_.end());
-    ASSERT_THAT(iter->second.headers, Contains(Key("Test")));
-    EXPECT_EQ(iter->second.headers["Test"], "SetByJS");
-  }
-}
-
-// Tests the URLRequestRewrite API properly removes headers on every requests.
-// Also tests that rewrites are applied properly in succession.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteRemoveHeader) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-  rewrites.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test", "Value"));
-  rewrites.push_back(
-      cr_fuchsia::CreateRewriteRemoveHeader(absl::nullopt, "Test"));
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_rewrites(std::move(rewrites));
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // Navigate, we should get no "Test" header.
-  const GURL page_url(embedded_test_server()->GetURL(kPage4Path));
-  const GURL img_url(embedded_test_server()->GetURL(kPage4ImgPath));
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      page_url.spec()));
-  frame.navigation_listener().RunUntilUrlEquals(page_url);
-
-  {
-    const auto iter = accumulated_requests_.find(page_url);
-    ASSERT_NE(iter, accumulated_requests_.end());
-    EXPECT_THAT(iter->second.headers, Not(Contains(Key("Test"))));
-  }
-  {
-    const auto iter = accumulated_requests_.find(img_url);
-    ASSERT_NE(iter, accumulated_requests_.end());
-    EXPECT_THAT(iter->second.headers, Not(Contains(Key("Test"))));
-  }
-}
-
-// Tests the URLRequestRewrite API properly removes headers, based on the
-// presence of a string in the query.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteRemoveHeaderWithQuery) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  const GURL page_url(embedded_test_server()->GetURL("/page?stuff=[pattern]"));
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-  rewrites.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test", "Value"));
-  rewrites.push_back(cr_fuchsia::CreateRewriteRemoveHeader(
-      absl::make_optional("[pattern]"), "Test"));
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_rewrites(std::move(rewrites));
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // Navigate, we should get no "Test" header.
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      page_url.spec()));
-  frame.navigation_listener().RunUntilUrlEquals(page_url);
-
-  const auto iter = accumulated_requests_.find(page_url);
-  ASSERT_NE(iter, accumulated_requests_.end());
-  EXPECT_THAT(iter->second.headers, Not(Contains(Key("Test"))));
-}
-
-// Tests the URLRequestRewrite API properly handles query substitution.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteSubstituteQueryPattern) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-  rewrites.push_back(cr_fuchsia::CreateRewriteSubstituteQueryPattern(
-      "[pattern]", "substitution"));
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_rewrites(std::move(rewrites));
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // Navigate, we should get to the URL with the modified request.
-  const GURL page_url(embedded_test_server()->GetURL("/page?[pattern]"));
-  const GURL final_url(embedded_test_server()->GetURL("/page?substitution"));
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      page_url.spec()));
-  frame.navigation_listener().RunUntilUrlEquals(final_url);
-
-  EXPECT_THAT(accumulated_requests_, Contains(Key(final_url)));
-}
-
-// Tests the URLRequestRewrite API properly handles URL replacement.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteReplaceUrl) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  const GURL page_url(embedded_test_server()->GetURL(kPage1Path));
-  const GURL final_url(embedded_test_server()->GetURL(kPage2Path));
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-  rewrites.push_back(
-      cr_fuchsia::CreateRewriteReplaceUrl(kPage1Path, final_url.spec()));
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_rewrites(std::move(rewrites));
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // Navigate, we should get to the replaced URL.
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      page_url.spec()));
-  frame.navigation_listener().RunUntilUrlEquals(final_url);
-
-  EXPECT_THAT(accumulated_requests_, Contains(Key(final_url)));
-}
-
-// Tests the URLRequestRewrite API properly handles URL replacement when the
-// original request URL contains a query and a fragment string.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteReplaceUrlQueryRef) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  const GURL page_url(
-      embedded_test_server()->GetURL(std::string(kPage1Path) + "?query#ref"));
-  const GURL replacement_url(embedded_test_server()->GetURL(kPage2Path));
-  const GURL final_url_with_ref(
-      embedded_test_server()->GetURL(std::string(kPage2Path) + "?query#ref"));
-  const GURL final_url(
-      embedded_test_server()->GetURL(std::string(kPage2Path) + "?query"));
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-  rewrites.push_back(
-      cr_fuchsia::CreateRewriteReplaceUrl(kPage1Path, replacement_url.spec()));
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_rewrites(std::move(rewrites));
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // Navigate, we should get to the replaced URL.
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      page_url.spec()));
-  frame.navigation_listener().RunUntilUrlEquals(final_url_with_ref);
-
-  EXPECT_THAT(accumulated_requests_, Contains(Key(final_url)));
-}
-
-// Tests the URLRequestRewrite API properly handles adding a query.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteAddQuery) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-  rewrites.push_back(cr_fuchsia::CreateRewriteAppendToQuery("query"));
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_rewrites(std::move(rewrites));
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  {
-    // Add a query to a URL with no query.
-    const GURL page_url(embedded_test_server()->GetURL(kPage1Path));
-    const GURL expected_url(
-        embedded_test_server()->GetURL(std::string(kPage1Path) + "?query"));
-
-    // Navigate, we should get to the URL with the query.
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        page_url.spec()));
-    frame.navigation_listener().RunUntilUrlEquals(expected_url);
-
-    EXPECT_THAT(accumulated_requests_, Contains(Key(expected_url)));
-  }
-
-  {
-    // Add a quest to a URL that has an empty query.
-    const std::string original_path = std::string(kPage1Path) + "?";
-    const GURL page_url(embedded_test_server()->GetURL(original_path));
-    const GURL expected_url(
-        embedded_test_server()->GetURL(original_path + "query"));
-
-    // Navigate, we should get to the URL with the query, but no "&".
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        page_url.spec()));
-    frame.navigation_listener().RunUntilUrlEquals(expected_url);
-
-    EXPECT_THAT(accumulated_requests_, Contains(Key(expected_url)));
-  }
-
-  {
-    // Add a query to a URL that already has a query.
-    const std::string original_path =
-        std::string(kPage1Path) + "?original_query=value";
-    const GURL page_url(embedded_test_server()->GetURL(original_path));
-    const GURL expected_url(
-        embedded_test_server()->GetURL(original_path + "&query"));
-
-    // Navigate, we should get to the URL with the appended query.
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        page_url.spec()));
-    frame.navigation_listener().RunUntilUrlEquals(expected_url);
-
-    EXPECT_THAT(accumulated_requests_, Contains(Key(expected_url)));
-  }
-
-  {
-    // Add a query to a URL that has a ref.
-    const GURL page_url(
-        embedded_test_server()->GetURL(std::string(kPage1Path) + "#ref"));
-    const GURL expected_url(
-        embedded_test_server()->GetURL(std::string(kPage1Path) + "?query#ref"));
-
-    // Navigate, we should get to the URL with the query.
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-        page_url.spec()));
-    frame.navigation_listener().RunUntilUrlEquals(expected_url);
-  }
-}
-
-// Tests the URLRequestRewrite API properly handles adding a query with a
-// question mark.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteAppendToQueryQuestionMark) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  const GURL page_url(embedded_test_server()->GetURL(kPage1Path));
-  const GURL expected_url(
-      embedded_test_server()->GetURL(std::string(kPage1Path) + "?qu?ery"));
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-  rewrites.push_back(cr_fuchsia::CreateRewriteAppendToQuery("qu?ery"));
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_rewrites(std::move(rewrites));
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // Navigate, we should get to the URL with the query.
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      page_url.spec()));
-  frame.navigation_listener().RunUntilUrlEquals(expected_url);
-
-  EXPECT_THAT(accumulated_requests_, Contains(Key(expected_url)));
-}
-
-// Tests the URLRequestRewrite API properly handles scheme and host filtering in
-// rules.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteSchemeHostFilter) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites1;
-  rewrites1.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test1", "Value"));
-  fuchsia::web::UrlRequestRewriteRule rule1;
-  rule1.set_rewrites(std::move(rewrites1));
-  rule1.set_hosts_filter({"127.0.0.1"});
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites2;
-  rewrites2.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test2", "Value"));
-  fuchsia::web::UrlRequestRewriteRule rule2;
-  rule2.set_rewrites(std::move(rewrites2));
-  rule2.set_hosts_filter({"test.xyz"});
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites3;
-  rewrites3.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test3", "Value"));
-  fuchsia::web::UrlRequestRewriteRule rule3;
-  rule3.set_rewrites(std::move(rewrites3));
-  rule3.set_schemes_filter({"http"});
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites4;
-  rewrites4.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test4", "Value"));
-  fuchsia::web::UrlRequestRewriteRule rule4;
-  rule4.set_rewrites(std::move(rewrites4));
-  rule4.set_schemes_filter({"https"});
-
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule1));
-  rules.push_back(std::move(rule2));
-  rules.push_back(std::move(rule3));
-  rules.push_back(std::move(rule4));
-
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-
-  // Navigate, we should get the "Test1" and "Test3" headers, but not "Test2"
-  // and "Test4".
-  const GURL page_url(embedded_test_server()->GetURL("/default"));
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
-      page_url.spec()));
-  frame.navigation_listener().RunUntilUrlEquals(page_url);
-
-  const auto iter = accumulated_requests_.find(page_url);
-  ASSERT_NE(iter, accumulated_requests_.end());
-  EXPECT_THAT(iter->second.headers, Contains(Key("Test1")));
-  EXPECT_THAT(iter->second.headers, Contains(Key("Test3")));
-  EXPECT_THAT(iter->second.headers, Not(Contains(Key("Test2"))));
-  EXPECT_THAT(iter->second.headers, Not(Contains(Key("Test4"))));
-}
-
-// Tests the URLRequestRewrite API properly closes the Frame channel if the
-// rules are invalid.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       UrlRequestRewriteInvalidRules) {
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-  base::RunLoop run_loop;
-  frame.ptr().set_error_handler([&run_loop](zx_status_t status) {
-    EXPECT_EQ(status, ZX_ERR_INVALID_ARGS);
-    run_loop.Quit();
-  });
-
-  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-  rewrites.push_back(cr_fuchsia::CreateRewriteAddHeaders("Te\nst1", "Value"));
-  fuchsia::web::UrlRequestRewriteRule rule;
-  rule.set_rewrites(std::move(rewrites));
-  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-  rules.push_back(std::move(rule));
-
-  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
-  run_loop.Run();
-}
-
-class TestPopupListener : public fuchsia::web::PopupFrameCreationListener {
- public:
-  TestPopupListener() = default;
-  ~TestPopupListener() override = default;
-  TestPopupListener(const TestPopupListener&) = delete;
-  TestPopupListener& operator=(const TestPopupListener&) = delete;
-
-  void GetAndAckNextPopup(fuchsia::web::FramePtr* frame,
-                          fuchsia::web::PopupFrameCreationInfo* creation_info) {
-    if (!frame_) {
-      base::RunLoop run_loop;
-      received_popup_callback_ = run_loop.QuitClosure();
-      run_loop.Run();
-    }
-
-    *frame = frame_.Bind();
-    *creation_info = std::move(creation_info_);
-
-    popup_ack_callback_();
-    popup_ack_callback_ = {};
-  }
-
- private:
-  void OnPopupFrameCreated(fidl::InterfaceHandle<fuchsia::web::Frame> frame,
-                           fuchsia::web::PopupFrameCreationInfo creation_info,
-                           OnPopupFrameCreatedCallback callback) override {
-    creation_info_ = std::move(creation_info);
-    frame_ = std::move(frame);
-
-    popup_ack_callback_ = std::move(callback);
-
-    if (received_popup_callback_)
-      std::move(received_popup_callback_).Run();
-  }
-
-  fidl::InterfaceHandle<fuchsia::web::Frame> frame_;
-  fuchsia::web::PopupFrameCreationInfo creation_info_;
-  base::OnceClosure received_popup_callback_;
-  OnPopupFrameCreatedCallback popup_ack_callback_;
-};
-
-// TODO(crbug.com/1155378): Move these tests to their own file in a follow-up
-// CL.
-class FrameImplPopupTest : public FrameImplTestBaseWithServer {
- public:
-  FrameImplPopupTest()
-      : popup_listener_binding_(&popup_listener_),
-        popup_nav_listener_binding_(&popup_nav_listener_) {}
-
-  ~FrameImplPopupTest() override = default;
-  FrameImplPopupTest(const FrameImplPopupTest&) = delete;
-  FrameImplPopupTest& operator=(const FrameImplPopupTest&) = delete;
-
- protected:
-  // Builds a URL for the kPopupParentPath page to pop up a Frame with
-  // |child_file_and_query|. |child_file_and_query| may optionally include a
-  // query string.
-  GURL GetParentPageTestServerUrl(const char* child) const;
-
-  // Loads a page that autoplays video in a popup, populates the popup_*
-  // members, and returns its URL.
-  GURL LoadAutoPlayingPageInPopup(
-      fuchsia::web::CreateFrameParams parent_frame_params);
-
-  fuchsia::web::FramePtr popup_frame_;
-
-  TestPopupListener popup_listener_;
-  fidl::Binding<fuchsia::web::PopupFrameCreationListener>
-      popup_listener_binding_;
-
-  cr_fuchsia::TestNavigationListener popup_nav_listener_;
-  fidl::Binding<fuchsia::web::NavigationEventListener>
-      popup_nav_listener_binding_;
-};
-
-GURL FrameImplPopupTest::GetParentPageTestServerUrl(const char* child) const {
-  const std::string url = base::StringPrintf("%s?%s=%s", kPopupParentPath,
-                                             kChildQueryParamName, child);
-
-  return embedded_test_server()->GetURL(url);
-}
-
-GURL FrameImplPopupTest::LoadAutoPlayingPageInPopup(
-    fuchsia::web::CreateFrameParams parent_frame_params) {
-  GURL popup_parent_url = GetParentPageTestServerUrl(kAutoplayFileAndQuery);
-  GURL popup_child_url = embedded_test_server()->GetURL(
-      base::StringPrintf("/%s", kAutoplayFileAndQuery));
-
-  auto parent_frame = cr_fuchsia::FrameForTest::Create(
-      context(), std::move(parent_frame_params));
-
-  parent_frame->SetPopupFrameCreationListener(
-      popup_listener_binding_.NewBinding());
-
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      parent_frame.GetNavigationController(), {}, popup_parent_url.spec()));
-
-  fuchsia::web::PopupFrameCreationInfo popup_info;
-  popup_listener_.GetAndAckNextPopup(&popup_frame_, &popup_info);
-  EXPECT_EQ(popup_info.initial_url(), popup_child_url);
-
-  popup_frame_->SetNavigationEventListener(
-      popup_nav_listener_binding_.NewBinding());
-
-  return popup_child_url;
-}
-
-IN_PROC_BROWSER_TEST_F(FrameImplPopupTest, PopupWindowRedirect) {
-  GURL popup_parent_url = GetParentPageTestServerUrl(kPopupChildFile);
-  GURL popup_child_url(embedded_test_server()->GetURL(kPopupRedirectPath));
-  GURL title1_url(embedded_test_server()->GetURL(kPage1Path));
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  frame->SetPopupFrameCreationListener(popup_listener_binding_.NewBinding());
-
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), {}, popup_parent_url.spec()));
-
-  // Verify the popup's initial URL, "popup_child.html".
-  fuchsia::web::PopupFrameCreationInfo popup_info;
-  popup_listener_.GetAndAckNextPopup(&popup_frame_, &popup_info);
-  EXPECT_EQ(popup_info.initial_url(), popup_child_url);
-
-  // Verify that the popup eventually redirects to "title1.html".
-  popup_frame_->SetNavigationEventListener(
-      popup_nav_listener_binding_.NewBinding());
-  popup_nav_listener_.RunUntilUrlAndTitleEquals(title1_url, kPage1Title);
-}
-
-IN_PROC_BROWSER_TEST_F(FrameImplPopupTest, MultiplePopups) {
-  GURL popup_parent_url(embedded_test_server()->GetURL(kPopupMultiplePath));
-  GURL title1_url(embedded_test_server()->GetURL(kPage1Path));
-  GURL title2_url(embedded_test_server()->GetURL(kPage2Path));
-  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
-
-  frame->SetPopupFrameCreationListener(popup_listener_binding_.NewBinding());
-
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController(), {}, popup_parent_url.spec()));
-
-  fuchsia::web::PopupFrameCreationInfo popup_info;
-  popup_listener_.GetAndAckNextPopup(&popup_frame_, &popup_info);
-  EXPECT_EQ(popup_info.initial_url(), title1_url);
-
-  popup_listener_.GetAndAckNextPopup(&popup_frame_, &popup_info);
-  EXPECT_EQ(popup_info.initial_url(), title2_url);
-}
-
-// Verifies that the child popup Frame has the same default CreateFrameParams as
-// the parent Frame by verifying that autoplay is blocked in the child. This
-// mostly verifies that AutoPlaySucceedsis actually modifies behavior.
-IN_PROC_BROWSER_TEST_F(FrameImplPopupTest,
-                       PopupFrameHasSameCreateFrameParams_AutoplayBlocked) {
-  // The default autoplay_policy is REQUIRE_USER_ACTIVATION.
-  fuchsia::web::CreateFrameParams parent_frame_params;
-
-  // Load the page and wait for the popup Frame to be created.
-  GURL popup_child_url =
-      LoadAutoPlayingPageInPopup(std::move(parent_frame_params));
-
-  // Verify that the child does not autoplay media.
-  popup_nav_listener_.RunUntilUrlAndTitleEquals(popup_child_url,
-                                                kAutoPlayBlockedTitle);
-}
-
-// Verifies that the child popup Frame has the same CreateFrameParams as the
-// parent Frame by allowing autoplay in the parent's params and verifying that
-// autoplay succeeds in the child.
-IN_PROC_BROWSER_TEST_F(FrameImplPopupTest,
-                       PopupFrameHasSameCreateFrameParams_AutoplaySucceeds) {
-  // Set autoplay to always be allowed in the parent frame.
-  fuchsia::web::CreateFrameParams parent_frame_params;
-  parent_frame_params.set_autoplay_policy(fuchsia::web::AutoplayPolicy::ALLOW);
-
-  // Load the page and wait for the popup Frame to be created.
-  GURL popup_child_url =
-      LoadAutoPlayingPageInPopup(std::move(parent_frame_params));
-
-  // Verify that the child autoplays media.
-  popup_nav_listener_.RunUntilUrlAndTitleEquals(popup_child_url,
-                                                kAutoPlaySuccessTitle);
 }

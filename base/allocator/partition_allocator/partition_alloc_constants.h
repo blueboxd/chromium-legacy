@@ -9,11 +9,13 @@
 #include <cstddef>
 
 #include <algorithm>
+#include <limits>
 
 #include "base/allocator/partition_allocator/address_pool_manager_types.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
+#include "base/memory/tagging.h"
 #include "build/build_config.h"
 
 #if defined(OS_APPLE) && defined(ARCH_CPU_64_BITS)
@@ -21,6 +23,15 @@
 #endif
 
 namespace base {
+
+// Size of a cache line. Not all CPUs in the world have a 64 bytes cache line
+// size, but as of 2021, most do. This is in particular the case for almost all
+// x86_64 and almost all ARM CPUs supported by Chromium. As this is used for
+// static alignment, we cannot query the CPU at runtime to determine the actual
+// alignment, so use 64 bytes everywhere. Since this is only used to avoid false
+// sharing, getting this wrong only results in lower performance, not incorrect
+// code.
+constexpr size_t kPartitionCachelineSize = 64;
 
 // Underlying partition storage pages (`PartitionPage`s) are a power-of-2 size.
 // It is typical for a `PartitionPage` to be based on multiple system pages.
@@ -194,7 +205,7 @@ constexpr size_t kSuperPageShift = 21;  // 2 MiB
 constexpr size_t kSuperPageSize = 1 << kSuperPageShift;
 constexpr size_t kSuperPageAlignment = kSuperPageSize;
 constexpr size_t kSuperPageOffsetMask = kSuperPageAlignment - 1;
-constexpr size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
+constexpr size_t kSuperPageBaseMask = ~kSuperPageOffsetMask & kMemTagUnmask;
 
 // GigaCage is split into two pools, one which supports BackupRefPtr (BRP) and
 // one that doesn't.
@@ -206,24 +217,32 @@ constexpr size_t kPoolMaxSize = 8 * kGiB;
 constexpr size_t kNumPools = 2;
 constexpr size_t kPoolMaxSize = 4 * kGiB;
 #endif
-constexpr size_t kMaxSuperPages = kPoolMaxSize / kSuperPageSize;
+constexpr size_t kMaxSuperPagesInPool = kPoolMaxSize / kSuperPageSize;
 
-static constexpr internal::pool_handle kNonBRPPoolHandle = 1;
+static constexpr internal::pool_handle kRegularPoolHandle = 1;
 static constexpr internal::pool_handle kBRPPoolHandle = 2;
 static constexpr internal::pool_handle kConfigurablePoolHandle = 3;
+
+// Slots larger than this size will not receive MTE protection. Pages intended
+// for allocations larger than this constant should not be backed with PROT_MTE
+// (which saves shadow tag memory). We also save CPU cycles by skipping tagging
+// of large areas which are less likely to benefit from MTE protection.
+// TODO(Richard.Townsend@arm.com): adjust RecommitSystemPagesForData to skip
+// PROT_MTE.
+constexpr size_t kMaxMemoryTaggingSize = 1024;
 
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 NumPartitionPagesPerSuperPage() {
   return kSuperPageSize >> PartitionPageShift();
 }
 
-constexpr ALWAYS_INLINE size_t MaxSuperPages() {
-  return kMaxSuperPages;
+constexpr ALWAYS_INLINE size_t MaxSuperPagesInPool() {
+  return kMaxSuperPagesInPool;
 }
 
 #if defined(PA_HAS_64_BITS_POINTERS)
 // In 64-bit mode, the direct map allocation granularity is super page size,
-// because this is the reservation granularit of the GigaCage.
+// because this is the reservation granularity of the GigaCage.
 constexpr ALWAYS_INLINE size_t DirectMapAllocationGranularity() {
   return kSuperPageSize;
 }
@@ -306,9 +325,39 @@ constexpr size_t kMaxSupportedAlignment = kSuperPageSize / 2;
 
 constexpr size_t kBitsPerSizeT = sizeof(void*) * CHAR_BIT;
 
-// Constant for the memory reclaim logic.
+// When a SlotSpan becomes empty, the allocator tries to avoid re-using it
+// immediately, to help with fragmentation. At this point, it becomes dirty
+// committed memory, which we want to minimize. This could be decommitted
+// immediately, but that would imply doing a lot of system calls. In particular,
+// for single-slot SlotSpans, a malloc() / free() loop would cause a *lot* of
+// system calls.
+//
+// As an intermediate step, empty SlotSpans are placed into a per-partition
+// global ring buffer, giving the newly-empty SlotSpan a chance to be re-used
+// before getting decommitted. A new entry (i.e. a newly empty SlotSpan) taking
+// the place used by a previous one will lead the previous SlotSpan to be
+// decommitted immediately, provided that it is still empty.
+//
+// Setting this value higher means giving more time for reuse to happen, at the
+// cost of possibly increasing peak committed memory usage (and increasing the
+// size of PartitionRoot a bit, since the ring buffer is there). Note that the
+// ring buffer doesn't necessarily contain an empty SlotSpan, as SlotSpans are
+// *not* removed from it when re-used. So the ring buffer really is a buffer of
+// *possibly* empty SlotSpans.
+//
+// In all cases, PartitionRoot::PurgeMemory() with the
+// PartitionPurgeDecommitEmptySlotSpans flag will eagerly decommit all entries
+// in the ring buffer, so with periodic purge enabled, this typically happens
+// every few seconds.
+#if defined(OS_LINUX)
+// Set to a higher value on Linux, to assess impact on performance bots. This
+// roughly halves the number of syscalls done during a speedometer 2.0 run on
+// this platform.
+constexpr size_t kMaxFreeableSpans = std::numeric_limits<int8_t>::max();
+#else
 constexpr size_t kMaxFreeableSpans = 16;
-// Constant for the memory reclaim logic.
+#endif
+
 constexpr int kEmptyCacheIndexBits = 8;
 // Has to fit into SlotSpanMetadata::empty_cache_index.
 static_assert(kMaxFreeableSpans < (1 << (kEmptyCacheIndexBits - 1)), "");

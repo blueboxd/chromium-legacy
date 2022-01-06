@@ -641,7 +641,8 @@ CA_NAME="req_ca_dn" \
   openssl ca \
     -batch \
     -extensions user_cert \
-    -days 900 \
+    -startdate 190701000000Z \
+    -enddate   211217000000Z \
     -in out/900_days_after_2019_07_01.req \
     -out ../certificates/900_days_after_2019_07_01.pem \
     -config ca.cnf

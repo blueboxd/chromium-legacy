@@ -8,19 +8,27 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "base/sequence_checker.h"
 #include "chromeos/services/libassistant/grpc/external_services/customer_registration_client.h"
+#include "chromeos/services/libassistant/grpc/external_services/event_handler_driver.h"
+#include "chromeos/services/libassistant/grpc/external_services/grpc_services_observer.h"
 #include "chromeos/services/libassistant/grpc/external_services/heartbeat_event_handler_driver.h"
 #include "chromeos/services/libassistant/grpc/grpc_client_thread.h"
 #include "chromeos/services/libassistant/grpc/services_initializer_base.h"
 #include "chromeos/services/libassistant/grpc/services_status_provider.h"
 #include "third_party/grpc/src/include/grpcpp/server_builder.h"
 
+namespace assistant {
+namespace api {
+class AssistantDisplayEventHandlerInterface;
+class DeviceStateEventHandlerInterface;
+}  // namespace api
+}  // namespace assistant
+
 namespace chromeos {
 namespace libassistant {
 
+class ActionService;
 class GrpcLibassistantClient;
 
 // Component responsible for:
@@ -39,6 +47,16 @@ class GrpcServicesInitializer : public ServicesInitializerBase {
   // before this method is called. Client functionality is not impacted by this
   // call. Returns false if the attempt to start a gRPC server failed.
   bool Start();
+
+  // Add observer for each handler driver.
+  void AddAssistantDisplayEventObserver(
+      GrpcServicesObserver<::assistant::api::OnAssistantDisplayEventRequest>*
+          observer);
+  void AddDeviceStateEventObserver(
+      GrpcServicesObserver<::assistant::api::OnDeviceStateEventRequest>*
+          observer);
+
+  ActionService* GetActionService();
 
   // Expose a reference to |GrpcLibassistantClient|.
   GrpcLibassistantClient& GrpcLibassistantClient();
@@ -65,6 +83,8 @@ class GrpcServicesInitializer : public ServicesInitializerBase {
   // This should be called before Start().
   void InitAssistantGrpcServer();
 
+  void RegisterEventHandlers();
+
   // Address of assistant gRPC server.
   const std::string assistant_service_address_;
   // Address of Libassistant gRPC server.
@@ -83,12 +103,20 @@ class GrpcServicesInitializer : public ServicesInitializerBase {
       GrpcServicesObserver<::assistant::api::OnHeartbeatEventRequest>>
       heartbeat_event_observation_{&services_status_provider_};
 
-  SEQUENCE_CHECKER(sequence_checker_);
-
   std::unique_ptr<chromeos::libassistant::CustomerRegistrationClient>
       customer_registration_client_;
 
-  base::WeakPtrFactory<GrpcServicesInitializer> weak_factory_{this};
+  std::unique_ptr<HeartbeatEventHandlerDriver> heartbeat_driver_;
+
+  std::unique_ptr<ActionService> action_handler_driver_;
+
+  std::unique_ptr<EventHandlerDriver<
+      ::assistant::api::AssistantDisplayEventHandlerInterface>>
+      assistant_display_event_handler_driver_;
+
+  std::unique_ptr<
+      EventHandlerDriver<::assistant::api::DeviceStateEventHandlerInterface>>
+      device_state_event_handler_driver_;
 };
 
 }  // namespace libassistant

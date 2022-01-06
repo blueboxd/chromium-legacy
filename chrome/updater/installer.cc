@@ -78,6 +78,7 @@ update_client::CrxComponent Installer::MakeCrxComponent() {
     pv_ = pv;
     checker_path_ = persisted_data_->GetExistenceCheckerPath(app_id_);
     fingerprint_ = persisted_data_->GetFingerprint(app_id_);
+    ap_ = persisted_data_->GetAP(app_id_);
   } else {
     pv_ = base::Version(kNullVersion);
   }
@@ -89,6 +90,7 @@ update_client::CrxComponent Installer::MakeCrxComponent() {
   component.crx_format_requirement =
       crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
   component.app_id = app_id_;
+  component.ap = ap_;
   component.name = app_id_;
   component.version = pv_;
   component.fingerprint = fingerprint_;

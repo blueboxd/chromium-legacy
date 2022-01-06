@@ -49,11 +49,6 @@ config("inside_blink") {
       "-Wno-implicit-float-conversion",
       "-Wno-implicit-int-conversion",
     ]
-
-    if (!is_chromeos_ash ||
-        default_toolchain != "//build/toolchain/cros:target") {
-      cflags += [ "-Wno-enum-float-conversion" ]
-    }
   }
 
   configs = [ "//build/config/compiler:noshadowing" ]
@@ -102,7 +97,6 @@ config("config") {
       "/wd4324",  # Struct padded due to declspec(align).
       "/wd4714",  # Function marked forceinline not inlined.
       "/wd4800",  # Value forced to bool.
-      "/wd4996",  # Deprecated function call.
     ]
   }
 

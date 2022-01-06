@@ -18,11 +18,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/apps/app_service/app_icon_source.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
@@ -60,6 +61,7 @@ TaskType GetTaskType(apps::mojom::AppType app_type) {
     case apps::mojom::AppType::kSystemWeb:
       return TASK_TYPE_WEB_APP;
     case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kStandaloneBrowserExtension:
       // TODO(petermarshall): Distinguish Chrome apps from Extensions.
       return TASK_TYPE_FILE_HANDLER;
     case apps::mojom::AppType::kUnknown:
@@ -70,13 +72,22 @@ TaskType GetTaskType(apps::mojom::AppType app_type) {
     case apps::mojom::AppType::kStandaloneBrowser:
     case apps::mojom::AppType::kRemote:
     case apps::mojom::AppType::kBorealis:
-    case apps::mojom::AppType::kStandaloneBrowserExtension:
       return TASK_TYPE_UNKNOWN;
   }
 }
 
 const char kImportCrostiniImageHandlerId[] = "import-crostini-image";
 const char kInstallLinuxPackageHandlerId[] = "install-linux-package";
+
+bool IsAudio(const base::FilePath& path) {
+  constexpr const char* kAudioExtensions[] = {".flac", ".m4a",  ".mp3", ".weba",
+                                              ".ogg",  ".opus", ".wav", ".oga"};
+  for (const char* extension : kAudioExtensions) {
+    if (path.MatchesExtension(extension))
+      return true;
+  }
+  return false;
+}
 
 }  // namespace
 
@@ -112,10 +123,13 @@ void FindAppServiceTasks(Profile* profile,
   // permitted at present. See https://crbug.com/1079065.
   bool has_non_native_file = false;
   bool has_pdf_file = false;
+  bool has_audio_file = false;
   for (const auto& entry : entries) {
     if (!has_non_native_file &&
         util::IsUnderNonNativeLocalPath(profile, entry.path))
       has_non_native_file = true;
+    if (!has_audio_file && IsAudio(entry.path))
+      has_audio_file = true;
     if (!has_pdf_file && entry.path.Extension() == ".pdf")
       has_pdf_file = true;
   }
@@ -124,10 +138,16 @@ void FindAppServiceTasks(Profile* profile,
   // handlers to open a download from its notification from Incognito mode. Use
   // the base profile in these cases (see crbug.com/1111695).
   Profile* maybe_original_profile = profile;
-  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
-    maybe_original_profile = profile->GetOriginalProfile();
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
+    if (profile->IsOffTheRecord()) {
+      maybe_original_profile = profile->GetOriginalProfile();
+    } else {
+      LOG(WARNING) << "Unexpected profile type";
+      return;
+    }
+  }
 
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(maybe_original_profile);
 
   std::vector<apps::mojom::IntentFilePtr> intent_files;
@@ -150,7 +170,8 @@ void FindAppServiceTasks(Profile* profile,
     if (!(app_type == apps::mojom::AppType::kArc ||
           app_type == apps::mojom::AppType::kWeb ||
           app_type == apps::mojom::AppType::kSystemWeb ||
-          app_type == apps::mojom::AppType::kExtension))
+          app_type == apps::mojom::AppType::kExtension ||
+          app_type == apps::mojom::AppType::kStandaloneBrowserExtension))
       continue;
 
     if (app_type == apps::mojom::AppType::kWeb ||
@@ -162,10 +183,13 @@ void FindAppServiceTasks(Profile* profile,
       }
 
       // "Hide" the media app task (i.e. skip the rest of this loop which would
-      // add it as a handler) when the flag to handle PDF is off.
+      // add it as a handler) when the flag to handle PDF or audio is off.
       if (launch_entry.app_id == web_app::kMediaAppId &&
-          !base::FeatureList::IsEnabled(ash::features::kMediaAppHandlesPdf) &&
-          has_pdf_file)
+          ((!base::FeatureList::IsEnabled(ash::features::kMediaAppHandlesPdf) &&
+            has_pdf_file) ||
+           (!base::FeatureList::IsEnabled(
+                ash::features::kMediaAppHandlesAudio) &&
+            has_audio_file)))
         continue;
 
       // Check the origin trial and feature flag for file handling in web apps.
@@ -213,28 +237,67 @@ void ExecuteAppServiceTask(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(file_system_urls.size(), mime_types.size());
 
-  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
-    return;
+  // App Service doesn't exist in Incognito mode but apps can be
+  // launched (ie. default handler to open a download from its
+  // notification) from Incognito mode. Use the base profile in these
+  // cases (see crbug.com/1111695).
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
+    if (profile->IsOffTheRecord()) {
+      profile = profile->GetOriginalProfile();
+    } else {
+      LOG(WARNING) << "Unexpected profile type";
+      std::move(done).Run(
+          extensions::api::file_manager_private::TASK_RESULT_FAILED,
+          "Unexpected profile type");
+      return;
+    }
+  }
 
   constexpr auto launch_source = apps::mojom::LaunchSource::kFromFileManager;
-  constexpr auto launch_container =
-      apps::mojom::LaunchContainer::kLaunchContainerWindow;
 
   std::vector<GURL> file_urls;
+  std::vector<apps::mojom::IntentFilePtr> intent_files;
+  file_urls.reserve(file_system_urls.size());
+  intent_files.reserve(file_system_urls.size());
+  for (size_t i = 0; i < file_system_urls.size(); i++) {
+    file_urls.push_back(file_system_urls[i].ToGURL());
 
-  for (auto& file_system_url : file_system_urls)
-    file_urls.push_back(file_system_url.ToGURL());
+    auto file = apps::mojom::IntentFile::New();
+    file->url = file_system_urls[i].ToGURL();
+    file->mime_type = mime_types.at(i);
+    intent_files.push_back(std::move(file));
+  }
 
-  apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithFileUrls(
-      task.app_id,
-      apps::GetEventFlags(launch_container, WindowOpenDisposition::NEW_WINDOW,
-                          /*prefer_container=*/true),
-      launch_source, file_urls, mime_types);
+  DCHECK(task.task_type == TASK_TYPE_ARC_APP ||
+         task.task_type == TASK_TYPE_WEB_APP ||
+         task.task_type == TASK_TYPE_FILE_HANDLER);
+  apps::mojom::IntentPtr intent =
+      task.task_type == TASK_TYPE_ARC_APP
+          ? apps_util::CreateShareIntentFromFiles(file_urls, mime_types)
+          : apps_util::CreateViewIntentFromFiles(std::move(intent_files));
 
-  // TODO(benwells): return the correct code here, depending on how the app will
-  // be opened in multiprofile.
-  std::move(done).Run(
-      extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
+  apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithIntent(
+      task.app_id, ui::EF_NONE, std::move(intent), launch_source,
+      apps::MakeWindowInfo(display::kDefaultDisplayId),
+      base::BindOnce(
+          [](FileTaskFinishedCallback done, TaskType task_type, bool success) {
+            if (!success) {
+              std::move(done).Run(
+                  extensions::api::file_manager_private::TASK_RESULT_FAILED,
+                  "");
+            } else if (task_type == TASK_TYPE_WEB_APP) {
+              // TODO(benwells): return the correct code here, depending on how
+              // the app will be opened in multiprofile.
+              std::move(done).Run(
+                  extensions::api::file_manager_private::TASK_RESULT_OPENED,
+                  "");
+            } else {
+              std::move(done).Run(extensions::api::file_manager_private::
+                                      TASK_RESULT_MESSAGE_SENT,
+                                  "");
+            }
+          },
+          std::move(done), task.task_type));
 }
 
 }  // namespace file_tasks

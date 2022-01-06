@@ -29,7 +29,9 @@ class TutorialBubbleFactoryViews : public TutorialBubbleFactory {
       absl::optional<std::u16string> title_text,
       absl::optional<std::u16string> body_text,
       TutorialDescription::Step::Arrow arrow,
-      absl::optional<std::pair<int, int>> progress) override;
+      absl::optional<std::pair<int, int>> progress,
+      base::RepeatingClosure abort_callback,
+      bool is_last_step = false) override;
 
   bool CanBuildBubbleForTrackedElement(ui::TrackedElement* element) override;
 };

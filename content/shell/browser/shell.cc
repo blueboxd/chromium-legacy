@@ -16,10 +16,10 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -65,6 +65,10 @@ class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
   DevToolsWebContentsObserver(Shell* shell, WebContents* web_contents)
       : WebContentsObserver(web_contents), shell_(shell) {}
 
+  DevToolsWebContentsObserver(const DevToolsWebContentsObserver&) = delete;
+  DevToolsWebContentsObserver& operator=(const DevToolsWebContentsObserver&) =
+      delete;
+
   // WebContentsObserver
   void WebContentsDestroyed() override {
     shell_->OnDevToolsWebContentsDestroyed();
@@ -72,8 +76,6 @@ class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
 
  private:
   Shell* shell_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsWebContentsObserver);
 };
 
 Shell::Shell(std::unique_ptr<WebContents> web_contents,

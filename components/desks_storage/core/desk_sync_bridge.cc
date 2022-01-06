@@ -21,6 +21,7 @@
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/window_info.h"
 #include "components/desks_storage/core/desk_model_observer.h"
+#include "components/desks_storage/core/desk_template_conversion.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/sync/model/entity_change.h"
@@ -40,6 +41,7 @@ using BrowserAppTab =
     sync_pb::WorkspaceDeskSpecifics_BrowserAppWindow_BrowserAppTab;
 using BrowserAppWindow = sync_pb::WorkspaceDeskSpecifics_BrowserAppWindow;
 using ash::DeskTemplate;
+using ash::DeskTemplateSource;
 using WindowState = sync_pb::WorkspaceDeskSpecifics_WindowState;
 using WindowBound = sync_pb::WorkspaceDeskSpecifics_WindowBound;
 using ProgressiveWebApp = sync_pb::WorkspaceDeskSpecifics_ProgressiveWebApp;
@@ -53,24 +55,14 @@ using syncer::ModelTypeStore;
 // The maximum number of templates the local storage can hold.
 constexpr std::size_t kMaxTemplateCount = 6u;
 
-// Converts a time field from sync protobufs to a time object.
-base::Time ProtoTimeToTime(int64_t proto_t) {
-  return base::Time::FromDeltaSinceWindowsEpoch(base::Microseconds(proto_t));
-}
-
-// Converts a time object to the format used in sync protobufs
-// (Microseconds since the Windows epoch).
-int64_t TimeToProtoTime(const base::Time& t) {
-  return t.ToDeltaSinceWindowsEpoch().InMicroseconds();
-}
-
 // Allocate a EntityData and copies |specifics| into it.
 std::unique_ptr<syncer::EntityData> CopyToEntityData(
     const sync_pb::WorkspaceDeskSpecifics& specifics) {
   auto entity_data = std::make_unique<syncer::EntityData>();
   *entity_data->specifics.mutable_workspace_desk() = specifics;
   entity_data->name = specifics.uuid();
-  entity_data->creation_time = ProtoTimeToTime(specifics.created_time_usec());
+  entity_data->creation_time = desk_template_conversion::ProtoTimeToTime(
+      specifics.created_time_windows_epoch_micros());
   return entity_data;
 }
 
@@ -466,7 +458,12 @@ void FillWorkspaceDeskSpecifics(
       const int window_id = window_id_to_launch_info.first;
       const app_restore::AppRestoreData* app_restore_data =
           window_id_to_launch_info.second.get();
-      const apps::mojom::AppType app_type = apps_cache->GetAppType(app_id);
+      // The apps cache returns kExtension for browser windows, therefore we
+      // short circuit the cache retrieval if we get the browser ID.
+      const apps::mojom::AppType app_type =
+          app_id == extension_misc::kChromeAppId
+              ? apps::mojom::AppType::kWeb
+              : apps_cache->GetAppType(app_id);
 
       WorkspaceDeskSpecifics_App* app =
           out_entry_proto->mutable_desk()->add_apps();
@@ -499,11 +496,18 @@ std::unique_ptr<DeskTemplate> DeskSyncBridge::FromSyncProto(
   if (uuid.empty() || !base::GUID::ParseCaseInsensitive(uuid).is_valid())
     return nullptr;
 
-  const base::Time created_time = ProtoTimeToTime(pb_entry.created_time_usec());
+  const base::Time created_time = desk_template_conversion::ProtoTimeToTime(
+      pb_entry.created_time_windows_epoch_micros());
 
   // Protobuf parsing enforces UTF-8 encoding for all strings.
-  std::unique_ptr<DeskTemplate> desk_template =
-      std::make_unique<DeskTemplate>(uuid, pb_entry.name(), created_time);
+  std::unique_ptr<DeskTemplate> desk_template = std::make_unique<DeskTemplate>(
+      uuid, ash::DeskTemplateSource::kUser, pb_entry.name(), created_time);
+
+  if (pb_entry.has_updated_time_windows_epoch_micros()) {
+    desk_template->set_updated_time(desk_template_conversion::ProtoTimeToTime(
+        pb_entry.updated_time_windows_epoch_micros()));
+  }
+
   desk_template->set_desk_restore_data(ConvertToRestoreData(pb_entry));
   return desk_template;
 }
@@ -636,6 +640,9 @@ void DeskSyncBridge::GetAllEntries(GetAllEntriesCallback callback) {
     return;
   }
 
+  for (const auto& it : policy_entries_)
+    entries.push_back(it.get());
+
   for (const auto& it : entries_) {
     DCHECK_EQ(it.first, it.second->uuid());
     entries.push_back(it.second.get());
@@ -683,6 +690,10 @@ void DeskSyncBridge::AddOrUpdateEntry(std::unique_ptr<DeskTemplate> new_entry,
     std::move(callback).Run(AddOrUpdateEntryStatus::kInvalidArgument);
     return;
   }
+
+  // When a user creates a desk template locally, the desk template has |kUser|
+  // as its source. Only user desk templates should be saved to Sync.
+  DCHECK_EQ(DeskTemplateSource::kUser, new_entry->source());
 
   auto entry = new_entry->Clone();
   entry->set_template_name(
@@ -772,6 +783,10 @@ std::size_t DeskSyncBridge::GetMaxEntryCount() const {
 
 std::vector<base::GUID> DeskSyncBridge::GetAllEntryUuids() const {
   std::vector<base::GUID> keys;
+
+  for (const auto& it : policy_entries_)
+    keys.push_back(it.get()->uuid());
+
   for (const auto& it : entries_) {
     DCHECK_EQ(it.first, it.second->uuid());
     keys.emplace_back(it.first);
@@ -800,8 +815,13 @@ sync_pb::WorkspaceDeskSpecifics DeskSyncBridge::ToSyncProto(
 
   pb_entry.set_uuid(desk_template->uuid().AsLowercaseString());
   pb_entry.set_name(base::UTF16ToUTF8(desk_template->template_name()));
-  pb_entry.set_created_time_usec(
-      TimeToProtoTime(desk_template->created_time()));
+  pb_entry.set_created_time_windows_epoch_micros(
+      desk_template_conversion::TimeToProtoTime(desk_template->created_time()));
+  if (desk_template->WasUpdatedSinceCreation()) {
+    pb_entry.set_updated_time_windows_epoch_micros(
+        desk_template_conversion::TimeToProtoTime(
+            desk_template->GetLastUpdatedTime()));
+  }
 
   if (desk_template->desk_restore_data()) {
     FillWorkspaceDeskSpecifics(&pb_entry, cache,
@@ -912,6 +932,7 @@ void DeskSyncBridge::UploadLocalOnlyData(
     const syncer::EntityChangeList& entity_data) {
   std::set<base::GUID> local_keys_to_upload;
   for (const auto& it : entries_) {
+    DCHECK_EQ(DeskTemplateSource::kUser, it.second->source());
     local_keys_to_upload.insert(it.first);
   }
 

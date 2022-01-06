@@ -23,7 +23,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/app_icon_source.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -568,6 +568,16 @@ void AppLauncherHandler::OnWebAppInstalled(const web_app::AppId& app_id) {
   web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info, highlight);
 }
 
+void AppLauncherHandler::OnWebAppInstallTimeChanged(
+    const web_app::AppId& app_id,
+    const base::Time& time) {
+  // Use the appAdded to update the app icon's color to no longer be
+  // greyscale.
+  std::unique_ptr<base::DictionaryValue> app_info = GetWebAppInfo(app_id);
+  if (app_info)
+    web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info);
+}
+
 void AppLauncherHandler::OnWebAppWillBeUninstalled(
     const web_app::AppId& app_id) {
   std::unique_ptr<base::DictionaryValue> app_info =
@@ -818,7 +828,7 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
         disposition == WindowOpenDisposition::NEW_WINDOW
             ? apps::mojom::LaunchContainer::kLaunchContainerWindow
             : apps::mojom::LaunchContainer::kLaunchContainerTab,
-        disposition, apps::mojom::AppLaunchSource::kSourceNewTabPage);
+        disposition, apps::mojom::LaunchSource::kFromNewTabPage);
     params.override_url = override_url;
     apps::AppServiceProxyFactory::GetForProfile(profile)
         ->BrowserAppLauncher()
@@ -836,7 +846,7 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
         extension_id, launch_container,
         old_contents ? WindowOpenDisposition::CURRENT_TAB
                      : WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        extensions::AppLaunchSource::kSourceNewTabPage);
+        apps::mojom::LaunchSource::kFromNewTabPage);
     params.override_url = override_url;
     WebContents* new_contents =
         apps::AppServiceProxyFactory::GetForProfile(profile)
@@ -922,8 +932,10 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
         weak_ptr_factory_.GetWeakPtr());
 
     extension_id_prompting_ = extension_id;
-    bool dont_confirm = false;
-    if (args->GetBoolean(1, &dont_confirm) && dont_confirm) {
+    const auto& list = args->GetList();
+    const bool dont_confirm =
+        list.size() >= 2 && list[1].is_bool() && list[1].GetBool();
+    if (dont_confirm) {
       base::AutoReset<bool> auto_reset(&ignore_changes_, true);
       web_app_provider_->install_finalizer().UninstallWebApp(
           extension_id_prompting_, webapps::WebappUninstallSource::kAppsPage,
@@ -959,8 +971,10 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
 
   extension_id_prompting_ = extension_id;
 
-  bool dont_confirm = false;
-  if (args->GetBoolean(1, &dont_confirm) && dont_confirm) {
+  const auto& list = args->GetList();
+  const bool dont_confirm =
+      list.size() >= 2 && list[1].is_bool() && list[1].GetBool();
+  if (dont_confirm) {
     base::AutoReset<bool> auto_reset(&ignore_changes_, true);
     // Do the uninstall work here.
     extension_service_->UninstallExtension(
@@ -1022,12 +1036,6 @@ void AppLauncherHandler::HandleInstallAppLocally(const base::ListValue* args) {
 
   web_app_provider_->sync_bridge().SetAppIsLocallyInstalled(app_id, true);
   web_app_provider_->sync_bridge().SetAppInstallTime(app_id, base::Time::Now());
-
-  // Use the appAdded to update the app icon's color to no longer be
-  // greyscale.
-  std::unique_ptr<base::DictionaryValue> app_info = GetWebAppInfo(app_id);
-  if (app_info)
-    web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info);
 }
 
 void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {

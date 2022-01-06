@@ -20,9 +20,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/services/storage/public/mojom/partition.mojom.h"
 #include "components/services/storage/public/mojom/storage_service.mojom-forward.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
-#include "content/browser/broadcast_channel/broadcast_channel_service.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/content_index/content_index_context_impl.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
@@ -43,6 +41,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "storage/browser/quota/quota_client_type.h"
+#include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom.h"
 
@@ -59,11 +59,11 @@ namespace content {
 class BackgroundFetchContext;
 class BlobRegistryWrapper;
 class BluetoothAllowedDevicesMap;
-class BroadcastChannelProvider;
+class BroadcastChannelService;
 class BucketContext;
 class CacheStorageControlWrapper;
 class ComputePressureManager;
-class ConversionManagerImpl;
+class AttributionManagerImpl;
 class CookieStoreManager;
 class FileSystemAccessEntryFactory;
 class FileSystemAccessManagerImpl;
@@ -79,6 +79,7 @@ class PaymentAppContextImpl;
 class PrefetchURLLoaderService;
 class PushMessagingContext;
 class QuotaContext;
+class SharedStorageWorkletHostManager;
 
 class CONTENT_EXPORT StoragePartitionImpl
     : public StoragePartition,
@@ -123,6 +124,9 @@ class CONTENT_EXPORT StoragePartitionImpl
       BackgroundSyncContextImpl* background_sync_context);
   void OverrideSharedWorkerServiceForTesting(
       std::unique_ptr<SharedWorkerServiceImpl> shared_worker_service);
+  void OverrideSharedStorageWorkletHostManagerForTesting(
+      std::unique_ptr<SharedStorageWorkletHostManager>
+          shared_storage_worklet_host_manager);
 
   // Returns the StoragePartitionConfig that represents this StoragePartition.
   const StoragePartitionConfig& GetConfig();
@@ -148,7 +152,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   CreateURLLoaderNetworkObserverForNavigationRequest(
       int frame_tree_id) override;
   storage::QuotaManager* GetQuotaManager() override;
-  ChromeAppCacheService* GetAppCacheService() override;
   BackgroundSyncContextImpl* GetBackgroundSyncContext() override;
   storage::FileSystemContext* GetFileSystemContext() override;
   FontAccessContext* GetFontAccessContext() override;
@@ -156,6 +159,11 @@ class CONTENT_EXPORT StoragePartitionImpl
   DOMStorageContextWrapper* GetDOMStorageContext() override;
   storage::mojom::LocalStorageControl* GetLocalStorageControl() override;
   LockManager* GetLockManager();  // override; TODO: Add to interface
+  // TODO(https://crbug.com/1218540): Add this method to the StoragePartition
+  // interface, which would also require making SharedStorageWorkletHostManager
+  // an interface accessible in //content/public/.
+  SharedStorageWorkletHostManager*
+  GetSharedStorageWorkletHostManager();  // override;
   storage::mojom::IndexedDBControl& GetIndexedDBControl() override;
   FileSystemAccessEntryFactory* GetFileSystemAccessEntryFactory() override;
   storage::mojom::CacheStorageControl* GetCacheStorageControl() override;
@@ -214,7 +222,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   BackgroundFetchContext* GetBackgroundFetchContext();
   PaymentAppContextImpl* GetPaymentAppContext();
   BroadcastChannelService* GetBroadcastChannelService();
-  BroadcastChannelProvider* GetBroadcastChannelProvider();
   BluetoothAllowedDevicesMap* GetBluetoothAllowedDevicesMap();
   BlobRegistryWrapper* GetBlobRegistry();
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
@@ -222,7 +229,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   FileSystemAccessManagerImpl* GetFileSystemAccessManager();
   BucketContext* GetBucketContext();
   QuotaContext* GetQuotaContext();
-  ConversionManagerImpl* GetConversionManager();
+  AttributionManagerImpl* GetAttributionManager();
   void SetFontAccessManagerForTesting(
       std::unique_ptr<FontAccessManagerImpl> font_access_manager);
   FontAccessManagerImpl* GetFontAccessManager();
@@ -536,11 +543,12 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   scoped_refptr<QuotaContext> quota_context_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<storage::FileSystemContext> filesystem_context_;
   scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
   std::unique_ptr<LockManager> lock_manager_;
+  std::unique_ptr<SharedStorageWorkletHostManager>
+      shared_storage_worklet_host_manager_;
   std::unique_ptr<IndexedDBControlWrapper> indexed_db_control_wrapper_;
   std::unique_ptr<CacheStorageControlWrapper> cache_storage_control_wrapper_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
@@ -555,7 +563,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   scoped_refptr<PaymentAppContextImpl> payment_app_context_;
   std::unique_ptr<BroadcastChannelService> broadcast_channel_service_;
-  std::unique_ptr<BroadcastChannelProvider> broadcast_channel_provider_;
   std::unique_ptr<BluetoothAllowedDevicesMap> bluetooth_allowed_devices_map_;
   scoped_refptr<BlobRegistryWrapper> blob_registry_;
   scoped_refptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
@@ -569,7 +576,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       proto_database_provider_;
   scoped_refptr<ContentIndexContextImpl> content_index_context_;
   scoped_refptr<NativeIOContextImpl> native_io_context_;
-  std::unique_ptr<ConversionManagerImpl> conversion_manager_;
+  std::unique_ptr<AttributionManagerImpl> attribution_manager_;
   std::unique_ptr<FontAccessManagerImpl> font_access_manager_;
   std::unique_ptr<InterestGroupManager> interest_group_manager_;
 

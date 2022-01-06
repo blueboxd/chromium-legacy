@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "content/services/auction_worklet/debug_command_queue.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -71,6 +71,12 @@ class AuctionV8DevToolsAgent : public blink::mojom::DevToolsAgent,
   // `context_group_id`.
   void Connect(mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent,
                int context_group_id);
+
+  // If any session debugging `context_group_id` has an instrumentation
+  // breakpoint named `name` set, asks for execution to be paused at next
+  // statement.
+  void MaybeTriggerInstrumentationBreakpoint(int context_group_id,
+                                             const std::string& name);
 
   // Cleans up all state associated with connections, so the v8 inspector can be
   // safely deleted.

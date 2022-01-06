@@ -5,7 +5,6 @@
 <translation id="1185134272377778587">Despre Chromium</translation>
 <translation id="1257458525759135959">Pentru a salva imaginile, atinge Setări ca să permiți browserului Chromium să adauge fotografiile</translation>
 <translation id="1289216811211435351">Treci la Chromium</translation>
-<translation id="1354592789402432496">Administratorul solicită să te conectezi cu un cont de organizație. Conturile restricționate de administrator sunt ascunse.</translation>
 <translation id="1361748954329991663">Chromium nu este actualizat. Dacă nu este disponibilă nicio actualizare în <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, e posibil ca dispozitivul tău să nu mai accepte versiuni noi de Chromium.</translation>
 <translation id="1370204544543370355">Pentru a profita din plin de Chromium, conectează-te la Chromium folosind Contul Google</translation>
 <translation id="1431818719585918472">Permite ca Chromium să blocheze filele incognito.</translation>
@@ -23,6 +22,7 @@
 <translation id="2168108852149185974">Unele suplimente blochează Chromium. Dezinstalează:</translation>
 <translation id="2178608107313874732">Momentan, Chromium nu poate folosi camera foto</translation>
 <translation id="2195025571279539885">Dorești ca data viitoare Chromium să propună traducerea paginilor în limba <ph name="LANGUAGE_NAME" /> de pe acest site?</translation>
+<translation id="2218146227246548550">Organizația îți solicită să te conectezi pentru a folosi Chromium. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="2426113998523353159">Organizația îți solicită să te conectezi pentru a folosi Chromium.</translation>
 <translation id="2450140762465183767">Acum poți folosi Chromium oricând atingi linkuri în mesaje, documente și alte aplicații.</translation>
 <translation id="2478931088402984578">Selectează <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
@@ -40,6 +40,7 @@
 <translation id="3472200483164753384">Nu se acceptă în Chromium Canary</translation>
 <translation id="3639997914391704523">Chromium poate să îți verifice parolele atunci când te conectezi folosind Contul Google.</translation>
 <translation id="3805899903892079518">Chromium nu are acces la fotografii și videoclipuri. Activează accesul din Setări iOS &gt; Confidențialitate &gt; Fotografii.</translation>
+<translation id="3946918322491238254">Poți vedea în continuare toate marcajele, istoricul, parolele și alte setări pe acest dispozitiv. Dacă faci modificări, ele nu se vor sincroniza cu contul.</translation>
 <translation id="4099085513035183040">Nu se acceptă în Chromium Beta</translation>
 <translation id="4555020257205549924">Când această funcție este activată, Chromium se va oferi să traducă paginile scrise în alte limbi utilizând Google Traducere. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">Acum poți folosi Chromium oricând atingi linkuri în mesaje, documente și alte aplicații.</translation>
@@ -52,7 +53,6 @@
 <translation id="5171868502429358653">Conectează-te la Chromium</translation>
 <translation id="5224391634244552924">Nu există parole salvate. Chromium îți poate verifica parolele dacă le salvezi.</translation>
 <translation id="5308226104666789935">Chromium nu poate căuta actualizări.</translation>
-<translation id="5324242752415821224">Organizația îți solicită să te conectezi pentru a folosi Chromium. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" />.</translation>
 <translation id="5396916991083608703">Setezi Chromium ca browser prestabilit?</translation>
 <translation id="5521125884468363740">Pentru a vedea toate filele tale deschise în Chromium, conectează-te și activează sincronizarea</translation>
 <translation id="5573014823074921752">Sfat pentru Chromium: pentru mai multe opțiuni de file, atinge lung butonul Afișează filele din bara de instrumente, care se află în partea de sus sau de jos a ecranului.</translation>
@@ -73,7 +73,6 @@
 <translation id="6424492062988593837">Chromium a devenit și mai bun! Este disponibilă o nouă versiune.</translation>
 <translation id="6752854822223394465">Organizația ta configurează Chromium...</translation>
 <translation id="6820823224820483452">Chromium nu a putut verifica toate parolele. Încearcă din nou mâine.</translation>
-<translation id="6827294685447036764">Dacă permiți accesul Chromium la locație, Chromium trimite informații privind locația la site-urile cărora le acorzi această permisiune. Site-urile pot solicita informații despre locație atunci când au informații locale de afișat, de exemplu, magazine din apropiere sau știri.</translation>
 <translation id="7018284295775193585">Chromium nu se poate actualiza</translation>
 <translation id="7045244423563602563">Personalizează Chromium</translation>
 <translation id="7099326575020694068">Chromium nu poate folosi camera foto în modul Vizualizare împărțită</translation>

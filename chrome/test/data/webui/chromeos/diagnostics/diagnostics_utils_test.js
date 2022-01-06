@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {NetworkType, RoutineType} from 'chrome://diagnostics/diagnostics_types.js';
-import {convertKibToGibDecimalString, getNetworkCardTitle, getRoutineGroups, getSubnetMaskFromRoutingPrefix, setDisplayStateInTitleForTesting} from 'chrome://diagnostics/diagnostics_utils.js';
+import {convertKibToGibDecimalString, getNetworkCardTitle, getRoutineGroups, getSignalStrength, getSubnetMaskFromRoutingPrefix, setDisplayStateInTitleForTesting} from 'chrome://diagnostics/diagnostics_utils.js';
 import {RoutineGroup} from 'chrome://diagnostics/routine_group.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
@@ -64,23 +64,26 @@ export function diagnosticsUtilsTestSuite() {
     loadTimeData.overrideValues({enableArcNetworkDiagnostics: true});
     let isArcEnabled = loadTimeData.getBoolean('enableArcNetworkDiagnostics');
     let routineGroups = getRoutineGroups(NetworkType.kWiFi, isArcEnabled);
+    let [
+      localNetworkGroup,
+       nameResolutionGroup,
+       wifiGroup,
+       internetConnectivityGroup,
+      ]
+      = routineGroups;
 
     // All groups should be present.
     assertEquals(routineGroups.length, 4);
 
     // WiFi group should exist and all three WiFi routines should be present.
-    let wifiGroup = routineGroups[2];
     assertEquals(wifiGroup.routines.length, 3);
     assertEquals(wifiGroup.groupName, 'wifiGroupLabel');
 
     // ARC routines should be present in their categories.
-    let nameResolutionGroup = routineGroups[1];
     assertTrue(
         nameResolutionGroup.routines.includes(RoutineType.kArcDnsResolution));
 
-    let internetConnectivityGroup = routineGroups[3];
-    assertTrue(
-        internetConnectivityGroup.routines.includes(RoutineType.kArcPing));
+    assertTrue(localNetworkGroup.routines.includes(RoutineType.kArcPing));
     assertTrue(
         internetConnectivityGroup.routines.includes(RoutineType.kArcHttp));
   });
@@ -98,14 +101,12 @@ export function diagnosticsUtilsTestSuite() {
     loadTimeData.overrideValues({enableArcNetworkDiagnostics: false});
     let isArcEnabled = loadTimeData.getBoolean('enableArcNetworkDiagnostics');
     let routineGroups = getRoutineGroups(NetworkType.kEthernet, isArcEnabled);
-
-    let nameResolutionGroup = routineGroups[1];
+    let [localNetworkGroup, nameResolutionGroup, internetConnectivityGroup] =
+        routineGroups;
     assertFalse(
         nameResolutionGroup.routines.includes(RoutineType.kArcDnsResolution));
 
-    let internetConnectivityGroup = routineGroups[2];
-    assertFalse(
-        internetConnectivityGroup.routines.includes(RoutineType.kArcPing));
+    assertFalse(localNetworkGroup.routines.includes(RoutineType.kArcPing));
     assertFalse(
         internetConnectivityGroup.routines.includes(RoutineType.kArcHttp));
   });
@@ -119,5 +120,14 @@ export function diagnosticsUtilsTestSuite() {
     // Default state is to not display connection details in title.
     setDisplayStateInTitleForTesting(false);
     assertEquals('Ethernet', getNetworkCardTitle('Ethernet', 'Online'));
+  });
+
+  test('GetSignalStrength', () => {
+    assertEquals(getSignalStrength(0), '');
+    assertEquals(getSignalStrength(1), '');
+    assertEquals(getSignalStrength(14), 'Weak (14)');
+    assertEquals(getSignalStrength(33), 'Average (33)');
+    assertEquals(getSignalStrength(63), 'Good (63)');
+    assertEquals(getSignalStrength(98), 'Excellent (98)');
   });
 }

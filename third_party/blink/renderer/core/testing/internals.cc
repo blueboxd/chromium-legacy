@@ -972,7 +972,7 @@ void Internals::pauseAnimations(double pause_time,
 
   GetFrame()->View()->UpdateAllLifecyclePhasesForTest();
   GetFrame()->GetDocument()->Timeline().PauseAnimationsForTesting(
-      AnimationTimeDelta::FromSecondsD(pause_time));
+      ANIMATION_TIME_DELTA_FROM_SECONDS(pause_time));
 }
 
 bool Internals::isCompositedAnimation(Animation* animation) {
@@ -1662,22 +1662,22 @@ String Internals::viewportAsText(Document* document,
   // Update initial viewport size.
   IntSize initial_viewport_size(available_width, available_height);
   document->GetPage()->DeprecatedLocalMainFrame()->View()->SetFrameRect(
-      IntRect(IntPoint::Zero(), initial_viewport_size));
+      IntRect(gfx::Point(), initial_viewport_size));
 
   ViewportDescription description = page->GetViewportDescription();
   PageScaleConstraints constraints =
       description.Resolve(FloatSize(initial_viewport_size), Length());
 
-  constraints.FitToContentsWidth(constraints.layout_size.Width(),
+  constraints.FitToContentsWidth(constraints.layout_size.width(),
                                  available_width);
   constraints.ResolveAutoInitialScale();
 
   StringBuilder builder;
 
   builder.Append("viewport size ");
-  builder.Append(String::Number(constraints.layout_size.Width()));
+  builder.Append(String::Number(constraints.layout_size.width()));
   builder.Append('x');
-  builder.Append(String::Number(constraints.layout_size.Height()));
+  builder.Append(String::Number(constraints.layout_size.height()));
 
   builder.Append(" scale ");
   builder.Append(String::Number(constraints.initial_scale));
@@ -1904,13 +1904,13 @@ DOMPoint* Internals::touchPositionAdjustedToBestClickableNode(
   HitTestResult result;
   HitTestRect(location, result, x, y, width, height, document);
   Node* target_node = nullptr;
-  IntPoint adjusted_point;
+  gfx::Point adjusted_point;
 
   EventHandler& event_handler = document->GetFrame()->GetEventHandler();
   bool found_node = event_handler.BestClickableNodeForHitTestResult(
       location, result, adjusted_point, target_node);
   if (found_node)
-    return DOMPoint::Create(adjusted_point.X(), adjusted_point.Y());
+    return DOMPoint::Create(adjusted_point.x(), adjusted_point.y());
 
   return nullptr;
 }
@@ -1933,7 +1933,7 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(
   HitTestResult result;
   HitTestRect(location, result, x, y, width, height, document);
   Node* target_node = nullptr;
-  IntPoint adjusted_point;
+  gfx::Point adjusted_point;
   document->GetFrame()->GetEventHandler().BestClickableNodeForHitTestResult(
       location, result, adjusted_point, target_node);
   return target_node;
@@ -1957,13 +1957,13 @@ DOMPoint* Internals::touchPositionAdjustedToBestContextMenuNode(
   HitTestResult result;
   HitTestRect(location, result, x, y, width, height, document);
   Node* target_node = nullptr;
-  IntPoint adjusted_point;
+  gfx::Point adjusted_point;
 
   EventHandler& event_handler = document->GetFrame()->GetEventHandler();
   bool found_node = event_handler.BestContextMenuNodeForHitTestResult(
       location, result, adjusted_point, target_node);
   if (found_node)
-    return DOMPoint::Create(adjusted_point.X(), adjusted_point.Y());
+    return DOMPoint::Create(adjusted_point.x(), adjusted_point.y());
 
   return DOMPoint::Create(x, y);
 }
@@ -1986,7 +1986,7 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(
   HitTestResult result;
   HitTestRect(location, result, x, y, width, height, document);
   Node* target_node = nullptr;
-  IntPoint adjusted_point;
+  gfx::Point adjusted_point;
   document->GetFrame()->GetEventHandler().BestContextMenuNodeForHitTestResult(
       location, result, adjusted_point, target_node);
   return target_node;
@@ -2175,27 +2175,27 @@ static void MergeRects(Vector<IntRect>& rects) {
         if (rects[j].IsEmpty())
           continue;
         // Try to merge rects[j] into rects[i] along the 4 possible edges.
-        if (rects[i].Y() == rects[j].Y() &&
-            rects[i].Height() == rects[j].Height()) {
-          if (rects[i].X() + rects[i].Width() == rects[j].X()) {
-            rects[i].Expand(rects[j].Width(), 0);
+        if (rects[i].y() == rects[j].y() &&
+            rects[i].height() == rects[j].height()) {
+          if (rects[i].x() + rects[i].width() == rects[j].x()) {
+            rects[i].Expand(rects[j].width(), 0);
             rects[j] = IntRect();
             updated = true;
-          } else if (rects[i].X() == rects[j].X() + rects[j].Width()) {
-            rects[i].SetX(rects[j].X());
-            rects[i].Expand(rects[j].Width(), 0);
+          } else if (rects[i].x() == rects[j].x() + rects[j].width()) {
+            rects[i].set_x(rects[j].x());
+            rects[i].Expand(rects[j].width(), 0);
             rects[j] = IntRect();
             updated = true;
           }
-        } else if (rects[i].X() == rects[j].X() &&
-                   rects[i].Width() == rects[j].Width()) {
-          if (rects[i].Y() + rects[i].Height() == rects[j].Y()) {
-            rects[i].Expand(0, rects[j].Height());
+        } else if (rects[i].x() == rects[j].x() &&
+                   rects[i].width() == rects[j].width()) {
+          if (rects[i].y() + rects[i].height() == rects[j].y()) {
+            rects[i].Expand(0, rects[j].height());
             rects[j] = IntRect();
             updated = true;
-          } else if (rects[i].Y() == rects[j].Y() + rects[j].Height()) {
-            rects[i].SetY(rects[j].Y());
-            rects[i].Expand(0, rects[j].Height());
+          } else if (rects[i].y() == rects[j].y() + rects[j].height()) {
+            rects[i].set_y(rects[j].y());
+            rects[i].Expand(0, rects[j].height());
             rects[j] = IntRect();
             updated = true;
           }
@@ -2316,7 +2316,7 @@ StaticNodeList* Internals::nodesFromRect(
                     LayoutUnit(height)};
   if (ignore_clipping) {
     hit_type |= HitTestRequest::kIgnoreClipping;
-  } else if (!IntRect(IntPoint(), frame->View()->Size())
+  } else if (!IntRect(gfx::Point(), frame->View()->Size())
                   .Intersects(EnclosingIntRect(rect))) {
     return nullptr;
   }
@@ -2853,6 +2853,15 @@ Vector<String> Internals::getReferencedFilePaths() const {
       .GetDocumentLoader()
       ->GetHistoryItem()
       ->GetReferencedFilePaths();
+}
+
+void Internals::disableReferencedFilePathsVerification() const {
+  if (!GetFrame())
+    return;
+  GetFrame()
+      ->GetDocument()
+      ->GetFormController()
+      .SetDropReferencedFilePathsForTesting();
 }
 
 void Internals::startTrackingRepaints(Document* document,

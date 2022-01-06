@@ -198,7 +198,7 @@ bool IsOptedInForAccountStorage(const PrefService* pref_service,
     return false;
 
   // The opt-in is per account, so if there's no account then there's no opt-in.
-  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  std::string gaia_id = sync_service->GetAccountInfo().gaia;
   if (gaia_id.empty())
     return false;
 
@@ -223,8 +223,8 @@ bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
     return false;
   }
 
-  if (current_page_url.GetOrigin() ==
-      GaiaUrls::GetInstance()->gaia_url().GetOrigin()) {
+  if (current_page_url.DeprecatedGetOriginAsURL() ==
+      GaiaUrls::GetInstance()->gaia_url().DeprecatedGetOriginAsURL()) {
     return false;
   }
 
@@ -254,7 +254,7 @@ void OptInToAccountStorage(PrefService* pref_service,
   DCHECK(
       base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage));
 
-  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  std::string gaia_id = sync_service->GetAccountInfo().gaia;
   if (gaia_id.empty()) {
     // Maybe the account went away since the opt-in UI was shown. This should be
     // rare, but is ultimately harmless - just do nothing here.
@@ -278,7 +278,7 @@ void OptOutOfAccountStorageAndClearSettings(
   DCHECK(
       base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage));
 
-  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  std::string gaia_id = sync_service->GetAccountInfo().gaia;
   bool account_exists = !gaia_id.empty();
   base::UmaHistogramBoolean(
       "PasswordManager.AccountStorage.SignedInAccountFoundDuringOptOut",
@@ -321,7 +321,7 @@ bool IsDefaultPasswordStoreSet(const PrefService* pref_service,
   if (!sync_service)
     return false;
 
-  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  std::string gaia_id = sync_service->GetAccountInfo().gaia;
   if (gaia_id.empty())
     return false;
 
@@ -340,7 +340,7 @@ PasswordForm::Store GetDefaultPasswordStore(
   if (!IsUserEligibleForAccountStorage(sync_service))
     return PasswordForm::Store::kProfileStore;
 
-  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  std::string gaia_id = sync_service->GetAccountInfo().gaia;
   if (gaia_id.empty())
     return PasswordForm::Store::kProfileStore;
 
@@ -380,7 +380,7 @@ void SetDefaultPasswordStore(PrefService* pref_service,
   DCHECK(
       base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage));
 
-  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  std::string gaia_id = sync_service->GetAccountInfo().gaia;
   if (gaia_id.empty()) {
     // Maybe the account went away since the UI was shown. This should be rare,
     // but is ultimately harmless - just do nothing here.
@@ -401,10 +401,10 @@ void KeepAccountStorageSettingsOnlyForUsers(
   DCHECK(pref_service);
 
   // Build a set of hashes of all the Gaia IDs.
-  std::vector<std::string> hashes_to_keep_list;
-  for (const std::string& gaia_id : gaia_ids)
-    hashes_to_keep_list.push_back(GaiaIdHash::FromGaiaId(gaia_id).ToBase64());
-  base::flat_set<std::string> hashes_to_keep(std::move(hashes_to_keep_list));
+  auto hashes_to_keep =
+      base::MakeFlatSet<std::string>(gaia_ids, {}, [](const auto& gaia_id) {
+        return GaiaIdHash::FromGaiaId(gaia_id).ToBase64();
+      });
 
   // Now remove any settings for account that are *not* in the set of hashes.
   // DictionaryValue doesn't allow removing elements while iterating, so first
@@ -494,7 +494,7 @@ void RecordMoveOfferedToNonOptedInUser(
     const syncer::SyncService* sync_service) {
   DCHECK(pref_service);
   DCHECK(sync_service);
-  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  std::string gaia_id = sync_service->GetAccountInfo().gaia;
   DCHECK(!gaia_id.empty());
   DCHECK(!AccountStorageSettingsReader(pref_service,
                                        GaiaIdHash::FromGaiaId(gaia_id))
@@ -509,7 +509,7 @@ int GetMoveOfferedToNonOptedInUserCount(
     const syncer::SyncService* sync_service) {
   DCHECK(pref_service);
   DCHECK(sync_service);
-  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  std::string gaia_id = sync_service->GetAccountInfo().gaia;
   DCHECK(!gaia_id.empty());
   AccountStorageSettingsReader reader(pref_service,
                                       GaiaIdHash::FromGaiaId(gaia_id));

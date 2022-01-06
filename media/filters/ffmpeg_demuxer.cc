@@ -18,13 +18,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -59,6 +59,8 @@
 namespace media {
 
 namespace {
+
+constexpr int64_t kInvalidPTSMarker = static_cast<int64_t>(0x8000000000000000);
 
 void SetAVStreamDiscard(AVStream* stream, AVDiscard discard) {
   DCHECK(stream);
@@ -538,15 +540,14 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   // If this file has negative timestamps don't rebase any other stream types
   // against the negative starting time.
   base::TimeDelta start_time = demuxer_->start_time();
-  if (fixup_negative_timestamps_ && !is_audio &&
-      start_time < base::TimeDelta()) {
+  if (fixup_negative_timestamps_ && !is_audio && start_time.is_negative()) {
     start_time = base::TimeDelta();
   }
 
   // Don't rebase timestamps for positive start times, the HTML Media Spec
   // details this in section "4.8.10.6 Offsets into the media resource." We
   // will still need to rebase timestamps before seeking with FFmpeg though.
-  if (start_time > base::TimeDelta())
+  if (start_time.is_positive())
     start_time = base::TimeDelta();
 
   buffer->set_timestamp(stream_timestamp - start_time);
@@ -568,7 +569,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
 
   // Fixup negative timestamps where the before-zero portion is completely
   // discarded after decoding.
-  if (buffer->timestamp() < base::TimeDelta()) {
+  if (buffer->timestamp().is_negative()) {
     // Discard padding may also remove samples after zero.
     auto fixed_ts = buffer->discard_padding().first + buffer->timestamp();
 
@@ -583,7 +584,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   // Only allow negative timestamps past if we know they'll be fixed up by the
   // code paths below; otherwise they should be treated as a parse error.
   if ((!fixup_chained_ogg_ || last_packet_timestamp_ == kNoTimestamp) &&
-      buffer->timestamp() < base::TimeDelta()) {
+      buffer->timestamp().is_negative()) {
     MEDIA_LOG(ERROR, media_log_)
         << "FFmpegDemuxer: unfixable negative timestamp.";
     demuxer_->NotifyDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE);
@@ -594,11 +595,9 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   // timestamps for post-decode discard. If codec delay is present, discard is
   // handled by the decoder using that value.
   if (fixup_negative_timestamps_ && is_audio &&
-      stream_timestamp < base::TimeDelta() &&
-      buffer->duration() != kNoTimestamp &&
+      stream_timestamp.is_negative() && buffer->duration() != kNoTimestamp &&
       !audio_decoder_config().codec_delay()) {
-
-    if (stream_timestamp + buffer->duration() < base::TimeDelta()) {
+    if ((stream_timestamp + buffer->duration()).is_negative()) {
       DCHECK_EQ(buffer->discard_padding().second, base::TimeDelta());
 
       // Discard the entire packet if it's entirely before zero, but don't
@@ -1082,7 +1081,7 @@ void FFmpegDemuxer::SeekInternal(base::TimeDelta time,
   // Blink (http://crbug.com/137275), we also want to clamp seeks before the
   // start time to the start time.
   base::TimeDelta seek_time;
-  if (start_time_ < base::TimeDelta()) {
+  if (start_time_.is_negative()) {
     seek_time = time + start_time_;
   } else {
     seek_time = std::max(start_time_, time);
@@ -1450,7 +1449,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
     if (!has_opus_or_vorbis_audio)
       has_opus_or_vorbis_audio = is_opus_or_vorbis;
 
-    if (codec_type == AVMEDIA_TYPE_AUDIO && start_time < base::TimeDelta() &&
+    if (codec_type == AVMEDIA_TYPE_AUDIO && start_time.is_negative() &&
         is_opus_or_vorbis) {
       needs_negative_timestamp_fixup = true;
 
@@ -1537,7 +1536,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
 
   // Since we're shifting the externally visible start time to zero, we need to
   // adjust the timeline offset to compensate.
-  if (!timeline_offset_.is_null() && start_time_ < base::TimeDelta())
+  if (!timeline_offset_.is_null() && start_time_.is_negative())
     timeline_offset_ += start_time_;
 
   if (max_duration == kInfiniteDuration && !timeline_offset_.is_null()) {
@@ -1595,6 +1594,8 @@ FFmpegDemuxerStream* FFmpegDemuxer::FindStreamWithLowestStartTimestamp(
   for (const auto& stream : streams_) {
     if (!stream || stream->IsEnabled() != enabled)
       continue;
+    if (av_stream_get_first_dts(stream->av_stream()) == kInvalidPTSMarker)
+      continue;
     if (!lowest_start_time_stream ||
         stream->start_time() < lowest_start_time_stream->start_time()) {
       lowest_start_time_stream = stream.get();
@@ -1607,16 +1608,21 @@ FFmpegDemuxerStream* FFmpegDemuxer::FindPreferredStreamForSeeking(
     base::TimeDelta seek_time) {
   // If we have a selected/enabled video stream and its start time is lower
   // than the |seek_time| or unknown, then always prefer it for seeking.
-  FFmpegDemuxerStream* video_stream = nullptr;
   for (const auto& stream : streams_) {
-    if (stream && stream->type() == DemuxerStream::VIDEO &&
-        stream->IsEnabled()) {
-      video_stream = stream.get();
-      if (video_stream->start_time() <= seek_time) {
-        return video_stream;
-      }
-      break;
-    }
+    if (!stream)
+      continue;
+
+    if (stream->type() != DemuxerStream::VIDEO)
+      continue;
+
+    if (av_stream_get_first_dts(stream->av_stream()) == kInvalidPTSMarker)
+      continue;
+
+    if (!stream->IsEnabled())
+      continue;
+
+    if (stream->start_time() <= seek_time)
+      return stream.get();
   }
 
   // If video stream is not present or |seek_time| is lower than the video start

@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -251,7 +251,7 @@ base::TimeDelta GCMAccountTracker::GetTimeToNextTokenReporting() const {
       base::Milliseconds(kTokenReportingIntervalMs) - base::Time::Now();
 
   // Case when token fetching is overdue.
-  if (time_till_next_reporting < base::TimeDelta())
+  if (time_till_next_reporting.is_negative())
     return base::TimeDelta();
 
   // Case when calculated period is larger than expected, including the

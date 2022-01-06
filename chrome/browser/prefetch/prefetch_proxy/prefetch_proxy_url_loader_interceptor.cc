@@ -166,6 +166,15 @@ void PrefetchProxyURLLoaderInterceptor::MaybeCreateLoader(
     return;
   }
 
+  // If the cookies associated with |url_| have changed since the initial
+  // eligibility check, then we shouldn't use the prefetched resources.
+  PrefetchProxyTabHelper* tab_helper = PrefetchProxyTabHelper::FromWebContents(
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_));
+  if (tab_helper && tab_helper->HaveCookiesChanged(url_)) {
+    DoNotInterceptNavigation();
+    return;
+  }
+
   if (service->origin_prober()->ShouldProbeOrigins()) {
     probe_start_time_ = base::TimeTicks::Now();
     base::OnceClosure on_success_callback =
@@ -175,7 +184,7 @@ void PrefetchProxyURLLoaderInterceptor::MaybeCreateLoader(
                        std::move(prefetch));
 
     service->origin_prober()->Probe(
-        url_.GetOrigin(),
+        url_.DeprecatedGetOriginAsURL(),
         base::BindOnce(&PrefetchProxyURLLoaderInterceptor::OnProbeComplete,
                        weak_factory_.GetWeakPtr(),
                        std::move(on_success_callback)));

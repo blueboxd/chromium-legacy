@@ -20,14 +20,14 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -2497,15 +2497,15 @@ TEST_F(HostResolverManagerTest, IsIPv6Reachable) {
       nullptr /* net_log */);
 
   // Verify that two consecutive calls return the same value.
-  RecordingTestNetLog test_net_log;
+  RecordingNetLogObserver net_log_observer;
   NetLogWithSource net_log =
-      NetLogWithSource::Make(&test_net_log, NetLogSourceType::NONE);
+      NetLogWithSource::Make(net::NetLog::Get(), NetLogSourceType::NONE);
   bool result1 = IsIPv6Reachable(net_log);
   bool result2 = IsIPv6Reachable(net_log);
   EXPECT_EQ(result1, result2);
 
   // Filter reachability check events and verify that there are two of them.
-  auto probe_event_list = test_net_log.GetEntriesWithType(
+  auto probe_event_list = net_log_observer.GetEntriesWithType(
       NetLogEventType::HOST_RESOLVER_MANAGER_IPV6_REACHABILITY_CHECK);
   ASSERT_EQ(2U, probe_event_list.size());
 

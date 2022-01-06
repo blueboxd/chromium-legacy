@@ -186,6 +186,9 @@ bool IsLacrosAllowedToLaunch();
 // Returns true if chrome apps should be routed through Lacros instead of ash.
 bool IsLacrosChromeAppsEnabled();
 
+// Returns true if Lacros is used in the web Kiosk session.
+bool IsLacrosEnabledInWebKioskSession();
+
 // Returns true if |window| is an exo ShellSurface window representing a Lacros
 // browser.
 bool IsLacrosWindow(const aura::Window* window);
@@ -223,7 +226,8 @@ struct InitialBrowserAction {
 // such as lacros-chrome.
 mojom::BrowserInitParamsPtr GetBrowserInitParams(
     EnvironmentProvider* environment_provider,
-    InitialBrowserAction initial_browser_action);
+    InitialBrowserAction initial_browser_action,
+    bool is_keep_alive_enabled);
 
 // Invite the lacros-chrome to the mojo universe.
 // Queue messages to establish the mojo connection, so that the passed IPC is
@@ -239,7 +243,8 @@ mojo::Remote<crosapi::mojom::BrowserService> SendMojoInvitationToLacrosChrome(
 // and returns its FD.
 base::ScopedFD CreateStartupData(
     ::crosapi::EnvironmentProvider* environment_provider,
-    InitialBrowserAction initial_browser_action);
+    InitialBrowserAction initial_browser_action,
+    bool is_keep_alive_enabled);
 
 // Reads `kDataVerPref` and gets corresponding data version for `user_id_hash`.
 // If no such version is registered yet, returns `Version` that is invalid.
@@ -272,13 +277,15 @@ base::Version GetRootfsLacrosVersionMayBlock(
 // switch.
 void CacheLacrosLaunchSwitch(const policy::PolicyMap& map);
 
-// Returns the ComponentInfo associated with the currently active Lacros based
-// on the lacros stability switch selection.
+// Returns the ComponentInfo associated with the stateful lacros instance.
 ComponentInfo GetLacrosComponentInfo();
 
 // Returns the update channel associated with the given loaded lacros selection.
 version_info::Channel GetLacrosSelectionUpdateChannel(
     LacrosSelection selection);
+
+// Returns the device settings needed for Lacros.
+mojom::DeviceSettingsPtr GetDeviceSettings();
 
 // Exposed for testing. Returns the lacros integration suggested by the policy
 // lacros-availability, modified by Finch flags and user flags as appropriate.

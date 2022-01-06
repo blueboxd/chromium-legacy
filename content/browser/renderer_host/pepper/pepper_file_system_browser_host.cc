@@ -162,10 +162,6 @@ void PepperFileSystemBrowserHost::IOThreadState::OpenIsolatedFileSystem(
       opened_ = true;
       SendReplyForIsolatedFileSystem(reply_context, fsid, PP_OK);
       return;
-    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_PLUGINPRIVATE:
-      OpenPluginPrivateFileSystem(origin, plugin_id, reply_context, fsid,
-                                  file_system_context_);
-      return;
     default:
       NOTREACHED();
       SendReplyForIsolatedFileSystem(reply_context, fsid, PP_ERROR_BADARGUMENT);
@@ -338,7 +334,7 @@ void PepperFileSystemBrowserHost::IOThreadState::CreateQuotaReservation(
   base::PostTaskAndReplyWithResult(
       file_system_context_->default_file_task_runner(), FROM_HERE,
       base::BindOnce(&QuotaReservation::Create, file_system_context_,
-                     root_url_.GetOrigin(),
+                     root_url_.DeprecatedGetOriginAsURL(),
                      PepperFileSystemTypeToFileSystemType(type_)),
       base::BindOnce(&IOThreadState::GotQuotaReservation, this,
                      std::move(callback)));
@@ -506,8 +502,8 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgOpen(
     return PP_ERROR_FAILED;
   }
 
-  GURL origin =
-      browser_ppapi_host_->GetDocumentURLForInstance(pp_instance()).GetOrigin();
+  GURL origin = browser_ppapi_host_->GetDocumentURLForInstance(pp_instance())
+                    .DeprecatedGetOriginAsURL();
   GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&IOThreadState::OpenFileSystem, io_thread_state_, origin,
@@ -538,8 +534,8 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgInitIsolatedFileSystem(
     return PP_ERROR_FAILED;
   }
 
-  GURL origin =
-      browser_ppapi_host_->GetDocumentURLForInstance(pp_instance()).GetOrigin();
+  GURL origin = browser_ppapi_host_->GetDocumentURLForInstance(pp_instance())
+                    .DeprecatedGetOriginAsURL();
   GURL root_url = GURL(storage::GetIsolatedFileSystemRootURIString(
       origin, fsid, ppapi::IsolatedFileSystemTypeToRootName(type)));
 

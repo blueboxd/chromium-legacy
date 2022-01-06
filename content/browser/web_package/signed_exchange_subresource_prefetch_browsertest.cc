@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_runner.h"
+#include "base/task/task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_clock_override.h"
@@ -54,6 +54,7 @@
 #include "services/network/public/cpp/corb/corb_impl.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/blink/public/common/switches.h"
 
 namespace content {
 
@@ -132,6 +133,9 @@ class MockClock {
     return *mock_clock;
   }
 
+  MockClock(const MockClock&) = delete;
+  MockClock& operator=(const MockClock&) = delete;
+
   void Advance(base::TimeDelta delta) {
     DCHECK_GE(delta, base::TimeDelta());
     base::AutoLock lock(lock_);
@@ -163,8 +167,6 @@ class MockClock {
   std::unique_ptr<base::subtle::ScopedTimeClockOverrides> time_override_;
   base::Lock lock_;
   base::TimeDelta offset_ GUARDED_BY(lock_);
-
-  DISALLOW_COPY_AND_ASSIGN(MockClock);
 };
 
 MockClock* MockClock::mock_clock_ = nullptr;
@@ -173,6 +175,11 @@ class NavigationHandleSXGAttributeObserver : public WebContentsObserver {
  public:
   explicit NavigationHandleSXGAttributeObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
+
+  NavigationHandleSXGAttributeObserver(
+      const NavigationHandleSXGAttributeObserver&) = delete;
+  NavigationHandleSXGAttributeObserver& operator=(
+      const NavigationHandleSXGAttributeObserver&) = delete;
 
   // WebContentsObserver implementation.
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
@@ -186,8 +193,6 @@ class NavigationHandleSXGAttributeObserver : public WebContentsObserver {
 
  private:
   absl::optional<bool> had_prefetched_alt_sxg_;
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationHandleSXGAttributeObserver);
 };
 
 }  // namespace
@@ -827,7 +832,8 @@ class SignedExchangeSubresourcePrefetchBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PrefetchBrowserTestBase::SetUpCommandLine(command_line);
     // For window.gc().
-    command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
+    command_line->AppendSwitchASCII(blink::switches::kJavaScriptFlags,
+                                    "--expose-gc");
   }
 
   void SetUp() override {
@@ -1343,6 +1349,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
       1 /* expected_script_fetch_count */);
 }
 
+// TODO(crbug.com/1258886): Fails flakily on all platforms with Synchronous HTML
+// Parsing enabled.
 IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
                        DISABLED_ImageSrcsetAndSizes) {
   const char* prefetch_path = "/prefetch.html";

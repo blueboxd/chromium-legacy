@@ -268,19 +268,20 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
   current_frame_resources_.swap(pending_frame_resources_);
   pending_frame_resources_.clear();
 
-  gfx::SurfaceControl::Transaction::OnCompleteCb callback = base::BindOnce(
+  gfx::SurfaceControl::Transaction::OnCompleteCb complete_cb = base::BindOnce(
       &GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread,
       weak_factory_.GetWeakPtr(), std::move(completion_callback),
       std::move(present_callback), std::move(resources_to_release),
       std::move(primary_plane_fences_));
   primary_plane_fences_.reset();
-  pending_transaction_->SetOnCompleteCb(std::move(callback), gpu_task_runner_);
+  pending_transaction_->SetOnCompleteCb(std::move(complete_cb),
+                                        gpu_task_runner_);
 
   if (using_on_commit_callback_) {
-    gfx::SurfaceControl::Transaction::OnCommitCb callback = base::BindOnce(
+    gfx::SurfaceControl::Transaction::OnCommitCb commit_cb = base::BindOnce(
         &GLSurfaceEGLSurfaceControl::OnTransactionCommittedOnGpuThread,
         weak_factory_.GetWeakPtr());
-    pending_transaction_->SetOnCommitCb(std::move(callback), gpu_task_runner_);
+    pending_transaction_->SetOnCommitCb(std::move(commit_cb), gpu_task_runner_);
   }
 
   pending_surfaces_count_ = 0u;
@@ -313,12 +314,6 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   if (surface_lost_) {
     LOG(ERROR) << "ScheduleOverlayPlane failed because surface is lost";
     return false;
-  }
-
-  const auto& image_color_space = GetNearestSupportedImageColorSpace(image);
-  if (!gfx::SurfaceControl::SupportsColorSpace(image_color_space)) {
-    LOG(ERROR) << "Not supported color space used with overlay : "
-               << image_color_space.ToString();
   }
 
   if (!pending_transaction_)
@@ -441,6 +436,12 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   if (uninitialized || surface_state.opaque != opaque) {
     surface_state.opaque = opaque;
     pending_transaction_->SetOpaque(*surface_state.surface, opaque);
+  }
+
+  const auto& image_color_space = overlay_plane_data.color_space;
+  if (!gfx::SurfaceControl::SupportsColorSpace(image_color_space)) {
+    LOG(DFATAL) << "Not supported color space used with overlay : "
+                << image_color_space.ToString();
   }
 
   if (uninitialized || surface_state.color_space != image_color_space) {
@@ -640,8 +641,8 @@ gfx::Rect GLSurfaceEGLSurfaceControl::ApplyDisplayInverse(
 }
 
 const gfx::ColorSpace&
-GLSurfaceEGLSurfaceControl::GetNearestSupportedImageColorSpace(
-    GLImage* image) const {
+GLSurfaceEGLSurfaceControl::GetNearestSupportedColorSpace(
+    const gfx::ColorSpace& buffer_color_space) const {
   static constexpr gfx::ColorSpace kSRGB = gfx::ColorSpace::CreateSRGB();
   static constexpr gfx::ColorSpace kP3 = gfx::ColorSpace::CreateDisplayP3D65();
 
@@ -650,7 +651,7 @@ GLSurfaceEGLSurfaceControl::GetNearestSupportedImageColorSpace(
     case GLSurfaceFormat::COLOR_SPACE_SRGB:
       return kSRGB;
     case GLSurfaceFormat::COLOR_SPACE_DISPLAY_P3:
-      return image->color_space() == kP3 ? kP3 : kSRGB;
+      return buffer_color_space == kP3 ? kP3 : kSRGB;
   }
 
   NOTREACHED();

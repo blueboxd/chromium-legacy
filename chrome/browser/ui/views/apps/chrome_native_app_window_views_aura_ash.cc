@@ -31,7 +31,7 @@
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
-#include "components/app_restore/full_restore_utils.h"
+#include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/window_properties.h"
 #include "components/session_manager/core/session_manager.h"
 #include "extensions/browser/app_window/app_delegate.h"
@@ -140,7 +140,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
   }
 
   const int32_t restore_window_id =
-      full_restore::FetchRestoreWindowId(app_window()->extension_id());
+      app_restore::FetchRestoreWindowId(app_window()->extension_id());
   init_params->init_properties_container.SetProperty(
       app_restore::kWindowIdKey, app_window()->session_id().id());
   init_params->init_properties_container.SetProperty(
@@ -150,7 +150,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
   init_params->init_properties_container.SetProperty(
       aura::client::kAppType, static_cast<int>(ash::AppType::CHROME_APP));
 
-  full_restore::ModifyWidgetParams(restore_window_id, init_params);
+  app_restore::ModifyWidgetParams(restore_window_id, init_params);
 }
 
 std::unique_ptr<views::NonClientFrameView>
@@ -590,9 +590,8 @@ void ChromeNativeAppWindowViewsAuraAsh::LoadAppIcon(
     bool allow_placeholder_icon) {
   if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
           Profile::FromBrowserContext(app_window()->browser_context()))) {
-    apps::AppServiceProxyChromeOs* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(
-            Profile::FromBrowserContext(app_window()->browser_context()));
+    apps::AppServiceProxy* proxy = apps::AppServiceProxyFactory::GetForProfile(
+        Profile::FromBrowserContext(app_window()->browser_context()));
 
     apps::mojom::AppType app_type =
         proxy->AppRegistryCache().GetAppType(app_window()->extension_id());

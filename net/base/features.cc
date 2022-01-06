@@ -89,6 +89,9 @@ const base::FeatureParam<int> kUseDnsHttpsSvcbExtraTimePercent{
 const base::Feature kEnableTLS13EarlyData{"EnableTLS13EarlyData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEncryptedClientHello{"EncryptedClientHello",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNetworkQualityEstimator{"NetworkQualityEstimator",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -193,14 +196,8 @@ const base::Feature kTurnOffStreamingMediaCachingOnBattery{
 const base::Feature kTurnOffStreamingMediaCachingAlways{
     "TurnOffStreamingMediaCachingAlways", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kLegacyTLSEnforced{"LegacyTLSEnforced",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kSchemefulSameSite{"SchemefulSameSite",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kTLSLegacyCryptoFallbackForMetrics{
-    "TLSLegacyCryptoFallbackForMetrics", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kReportPoorConnectivity{"ReportPoorConnectivity",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

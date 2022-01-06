@@ -359,7 +359,7 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
         [[TableViewLinkHeaderFooterItem alloc]
             initWithType:SignOutItemFooterType];
     footerItem.text = l10n_util::GetNSString(
-        IDS_IOS_ENTERPRISE_FORCED_SIGNIN_SYNC_SETTINGS_SIGNOUT_FOOTER);
+        IDS_IOS_ENTERPRISE_FORCED_SIGNIN_MESSAGE_WITH_LEARN_MORE);
     footerItem.urls = std::vector<GURL>{GURL("chrome://management/")};
     [model setFooter:footerItem
         forSectionWithIdentifier:SignOutSectionIdentifier];
@@ -590,7 +590,6 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
       case EncryptionItemType:
       case GoogleActivityControlsItemType:
       case DataFromChromeSync:
-      case RestartAuthenticationFlowErrorItemType:
       case ReauthDialogAsSyncIsInAuthErrorItemType:
       case ShowPassphraseDialogErrorItemType:
       case SyncNeedsTrustedVaultKeyErrorItemType:
@@ -621,9 +620,6 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
       break;
     case DataFromChromeSync:
       [self.commandHandler openDataFromChromeSyncWebPage];
-      break;
-    case RestartAuthenticationFlowErrorItemType:
-      [self.syncErrorHandler restartAuthenticationFlow];
       break;
     case ReauthDialogAsSyncIsInAuthErrorItemType:
       [self.syncErrorHandler openReauthDialogAsSyncIsInAuthError];
@@ -658,17 +654,16 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
 
 // Creates an item to display the sync error. |itemType| should only be one of
 // those types:
-//   + RestartAuthenticationFlowErrorItemType
 //   + ReauthDialogAsSyncIsInAuthErrorItemType
 //   + ShowPassphraseDialogErrorItemType
 //   + SyncNeedsTrustedVaultKeyErrorItemType
 //   + SyncTrustedVaultRecoverabilityDegradedErrorItemType
 - (TableViewItem*)createSyncErrorItemWithItemType:(NSInteger)itemType {
-  DCHECK(itemType == RestartAuthenticationFlowErrorItemType ||
-         itemType == ReauthDialogAsSyncIsInAuthErrorItemType ||
-         itemType == ShowPassphraseDialogErrorItemType ||
-         itemType == SyncNeedsTrustedVaultKeyErrorItemType ||
-         itemType == SyncTrustedVaultRecoverabilityDegradedErrorItemType);
+  DCHECK((itemType == ReauthDialogAsSyncIsInAuthErrorItemType) ||
+         (itemType == ShowPassphraseDialogErrorItemType) ||
+         (itemType == SyncNeedsTrustedVaultKeyErrorItemType) ||
+         (itemType == SyncTrustedVaultRecoverabilityDegradedErrorItemType))
+      << "itemType: " << itemType;
   SettingsImageDetailTextItem* syncErrorItem =
       [[SettingsImageDetailTextItem alloc] initWithType:itemType];
   syncErrorItem.text = GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
@@ -780,9 +775,6 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
         SyncDisabledByAdministratorErrorItemType);
   }
   switch (self.syncSetupService->GetSyncServiceState()) {
-    case SyncSetupService::kSyncServiceUnrecoverableError:
-      return absl::make_optional<SyncSettingsItemType>(
-          RestartAuthenticationFlowErrorItemType);
     case SyncSetupService::kSyncServiceSignInNeedsUpdate:
       return absl::make_optional<SyncSettingsItemType>(
           ReauthDialogAsSyncIsInAuthErrorItemType);
@@ -795,6 +787,7 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
     case SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded:
       return absl::make_optional<SyncSettingsItemType>(
           SyncTrustedVaultRecoverabilityDegradedErrorItemType);
+    case SyncSetupService::kSyncServiceUnrecoverableError:
     case SyncSetupService::kNoSyncServiceError:
     case SyncSetupService::kSyncServiceCouldNotConnect:
     case SyncSetupService::kSyncServiceServiceUnavailable:

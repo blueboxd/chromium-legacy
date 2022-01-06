@@ -395,6 +395,10 @@ bool WebRuntimeFeatures::IsPrerender2Enabled() {
   return RuntimeEnabledFeatures::Prerender2EnabledByRuntimeFlag();
 }
 
+void WebRuntimeFeatures::EnablePrerender2RelatedFeatures(bool enable) {
+  RuntimeEnabledFeatures::SetPrerender2RelatedFeaturesEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableV8IdleTasks(bool enable) {
   RuntimeEnabledFeatures::SetV8IdleTasksEnabled(enable);
 }
@@ -461,10 +465,6 @@ void WebRuntimeFeatures::EnableWebXRPlaneDetection(bool enable) {
 
 void WebRuntimeFeatures::EnableWebXRViewportScale(bool enable) {
   RuntimeEnabledFeatures::SetWebXRViewportScaleEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableWheelEventRegions(bool enable) {
-  RuntimeEnabledFeatures::SetWheelEventRegionsEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnablePresentationAPI(bool enable) {
@@ -641,10 +641,6 @@ void WebRuntimeFeatures::EnableTrustTokensAlwaysAllowIssuance(bool enable) {
 
 void WebRuntimeFeatures::EnableInstalledApp(bool enable) {
   RuntimeEnabledFeatures::SetInstalledAppEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableTransformInterop(bool enable) {
-  RuntimeEnabledFeatures::SetTransformInteropEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableBackfaceVisibilityInterop(bool enable) {

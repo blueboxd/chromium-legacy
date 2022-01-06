@@ -15,6 +15,8 @@ constexpr char kEndRecordingReasonHistogramName[] =
     "Ash.CaptureModeController.EndRecordingReason";
 constexpr char kBarButtonHistogramName[] =
     "Ash.CaptureModeController.BarButtons";
+constexpr char kCaptureAudioOnHistogramName[] =
+    "Ash.CaptureModeController.CaptureAudioOnMetric";
 constexpr char kCaptureConfigurationHistogramName[] =
     "Ash.CaptureModeController.CaptureConfiguration";
 constexpr char kCaptureRegionAdjustmentHistogramName[] =
@@ -26,6 +28,8 @@ constexpr char kQuickActionHistogramName[] =
     "Ash.CaptureModeController.QuickAction";
 constexpr char kRecordTimeHistogramName[] =
     "Ash.CaptureModeController.ScreenRecordingLength";
+constexpr char kSaveToLocationHistogramName[] =
+    "Ash.CaptureModeController.SaveLocation";
 constexpr char kScreenshotsPerDayHistogramName[] =
     "Ash.CaptureModeController.ScreenshotsPerDay";
 constexpr char kScreenshotsPerWeekHistogramName[] =
@@ -76,10 +80,15 @@ void RecordCaptureModeBarButtonType(CaptureModeBarButtonType button_type) {
 }
 
 void RecordCaptureModeConfiguration(CaptureModeType type,
-                                    CaptureModeSource source) {
+                                    CaptureModeSource source,
+                                    bool audio_on) {
   base::UmaHistogramEnumeration(
       GetCaptureModeHistogramName(kCaptureConfigurationHistogramName),
       GetConfiguration(type, source));
+  if (type == CaptureModeType::kVideo) {
+    base::UmaHistogramBoolean(
+        GetCaptureModeHistogramName(kCaptureAudioOnHistogramName), audio_on);
+  }
 }
 
 void RecordCaptureModeEntryType(CaptureModeEntryType entry_type) {
@@ -127,6 +136,11 @@ void RecordNumberOfScreenshotsTakenInLastWeek(
 
 void RecordScreenshotNotificationQuickAction(CaptureQuickAction action) {
   base::UmaHistogramEnumeration(kQuickActionHistogramName, action);
+}
+
+void RecordSaveToLocation(CaptureModeSaveToLocation save_location) {
+  base::UmaHistogramEnumeration(
+      GetCaptureModeHistogramName(kSaveToLocationHistogramName), save_location);
 }
 
 }  // namespace ash

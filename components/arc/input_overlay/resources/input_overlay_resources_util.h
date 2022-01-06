@@ -22,9 +22,11 @@ constexpr char kKey[] = "key";
 
 // About position.
 constexpr char kLocation[] = "location";
-constexpr char kPositions[] = "position";
+constexpr char kType[] = "type";
+constexpr char kPosition[] = "position";
 constexpr char kAnchor[] = "anchor";
 constexpr char kAnchorToTarget[] = "anchor_to_target";
+constexpr char kDependentPosition[] = "dependent_position";
 }  // namespace input_overlay
 
 // Get the resource ID of the input overlay JSON file by the associated package

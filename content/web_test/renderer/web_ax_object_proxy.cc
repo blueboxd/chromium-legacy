@@ -989,8 +989,6 @@ std::string WebAXObjectProxy::Invalid() {
       return "false";
     case ax::mojom::InvalidState::kTrue:
       return "true";
-    case ax::mojom::InvalidState::kOther:
-      return "other";
     default:
       return std::string();
   }
@@ -1381,7 +1379,7 @@ bool WebAXObjectProxy::IsAttributeSettable(const std::string& attribute) {
 
 bool WebAXObjectProxy::IsPressActionSupported() {
   UpdateLayout();
-  return accessibility_object_.CanPress();
+  return accessibility_object_.Action() == ax::mojom::DefaultActionVerb::kPress;
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::ParentElement() {
@@ -1680,6 +1678,8 @@ std::string WebAXObjectProxy::DescriptionFrom() {
       return "rubyAnnotation";
     case ax::mojom::DescriptionFrom::kSummary:
       return "summary";
+    case ax::mojom::DescriptionFrom::kSvgDescElement:
+      return "svgDescElement";
     case ax::mojom::DescriptionFrom::kTableCaption:
       return "tableCaption";
     case ax::mojom::DescriptionFrom::kTitle:

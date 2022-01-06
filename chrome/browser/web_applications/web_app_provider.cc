@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -71,7 +72,7 @@ WebAppProvider* WebAppProvider::GetForWebApps(Profile* profile) {
   // If features::kWebAppsCrosapi is enabled, Ash browser only manages system
   // web apps (return nullptr here). Otherwise, Ash browser manages all web apps
   // (return WebAppProvider).
-  return base::FeatureList::IsEnabled(features::kWebAppsCrosapi)
+  return IsWebAppsCrosapiEnabled()
              ? nullptr
              : WebAppProviderFactory::GetForProfile(profile);
 #else
@@ -125,6 +126,11 @@ void WebAppProvider::Start() {
 }
 
 WebAppRegistrar& WebAppProvider::registrar() {
+  CheckIsConnected();
+  return *registrar_;
+}
+
+const WebAppRegistrar& WebAppProvider::registrar() const {
   CheckIsConnected();
   return *registrar_;
 }
@@ -243,7 +249,7 @@ void WebAppProvider::CreateSubsystems(Profile* profile) {
   }
 
   auto icon_manager = std::make_unique<WebAppIconManager>(
-      profile, *registrar, std::make_unique<FileUtilsWrapper>());
+      profile, *registrar, base::MakeRefCounted<FileUtilsWrapper>());
   install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
       profile, icon_manager.get(), web_app_policy_manager_.get());
 
@@ -290,7 +296,7 @@ void WebAppProvider::ConnectSubsystems() {
                                   install_finalizer_.get());
   manifest_update_manager_->SetSubsystems(
       registrar_.get(), icon_manager_.get(), ui_manager_.get(),
-      install_manager_.get(), system_web_app_manager_.get(),
+      install_finalizer_.get(), system_web_app_manager_.get(),
       os_integration_manager_.get(), sync_bridge_.get());
   externally_managed_app_manager_->SetSubsystems(
       registrar_.get(), os_integration_manager_.get(), ui_manager_.get(),

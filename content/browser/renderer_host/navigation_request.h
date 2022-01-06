@@ -81,7 +81,6 @@ struct URLLoaderCompletionStatus;
 
 namespace content {
 
-class AppCacheNavigationHandle;
 class CrossOriginEmbedderPolicyReporter;
 class WebBundleHandleTracker;
 class WebBundleNavigationInfo;
@@ -93,6 +92,7 @@ class NavigationUIData;
 class NavigatorDelegate;
 class PrefetchedSignedExchangeCache;
 class ServiceWorkerMainResourceHandle;
+class SiteInfo;
 struct SubresourceLoaderParams;
 
 // The primary implementation of NavigationHandle.
@@ -128,6 +128,11 @@ class CONTENT_EXPORT NavigationRequest
     // The navigation is visible to embedders (via NavigationHandle). Wait for
     // the NavigationThrottles to finish running the WillStartRequest event.
     // This is potentially asynchronous.
+    // For navigations that have already committed synchronously in the renderer
+    // (see |is_synchronous_renderer_commit_|), this will synchronously proceed
+    // to DID_COMMIT directly without any waiting (or the navigation might not
+    // commit in certain cases, and be cleared in this state). All other
+    // navigations can only reach DID_COMMIT from READY_TO_COMMIT.
     WILL_START_REQUEST,
 
     // The request is being redirected. Wait for the NavigationThrottles to
@@ -234,7 +239,7 @@ class CONTENT_EXPORT NavigationRequest
       const ui::PageTransition& transition,
       bool should_replace_current_entry,
       const std::string& method,
-      const NavigationGesture& gesture,
+      bool has_transient_activation,
       bool is_overriding_user_agent,
       const std::vector<GURL>& redirects,
       const GURL& original_url,
@@ -351,7 +356,7 @@ class CONTENT_EXPORT NavigationRequest
   void SetSilentlyIgnoreErrors() override;
   network::mojom::WebSandboxFlags SandboxFlagsToCommit() override;
   bool IsWaitingToCommit() override;
-  bool WasEarlyHintsPreloadLinkHeaderReceived() override;
+  bool WasResourceHintsReceived() override;
   bool IsPdf() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
@@ -596,12 +601,6 @@ class CONTENT_EXPORT NavigationRequest
   // navigation being committed (e.g. canceled navigations).
   virtual bool DidEncounterError() const;
 
-  std::unique_ptr<AppCacheNavigationHandle> TakeAppCacheHandle();
-
-  AppCacheNavigationHandle* appcache_handle() const {
-    return appcache_handle_.get();
-  }
-
   void set_complete_callback_for_testing(
       ThrottleChecksFinishedCallback callback) {
     complete_callback_for_testing_ = std::move(callback);
@@ -637,7 +636,7 @@ class CONTENT_EXPORT NavigationRequest
   }
 
   network::mojom::RequestDestination request_destination() const {
-    return begin_params_->request_destination;
+    return common_params_->request_destination;
   }
 
   blink::mojom::MixedContentContextType mixed_content_context_type() const {
@@ -1454,8 +1453,6 @@ class CONTENT_EXPORT NavigationRequest
   // Note: |commit_params_->is_browser_initiated| and |common_params_| may be
   // mutated by ContentBrowserClient::OverrideNavigationParams at construction
   // time (i.e. before we actually kick off the navigation).
-  // |commit_params_->is_browser_initiated| will always be true for history
-  // navigations, even if they began in the renderer using the history API.
   blink::mojom::CommonNavigationParamsPtr common_params_;
   blink::mojom::BeginNavigationParamsPtr begin_params_;
   blink::mojom::CommitNavigationParamsPtr commit_params_;
@@ -1552,7 +1549,7 @@ class CONTENT_EXPORT NavigationRequest
   base::OnceClosure on_start_checks_complete_closure_;
 
   // Used in the network service world to pass the subressource loader params
-  // to the renderer. Used by AppCache and ServiceWorker, and
+  // to the renderer. Used by ServiceWorker and
   // SignedExchangeSubresourcePrefetch.
   absl::optional<SubresourceLoaderParams> subresource_loader_params_;
 
@@ -1649,11 +1646,6 @@ class CONTENT_EXPORT NavigationRequest
 
   // The time this navigation was ready to commit.
   base::TimeTicks ready_to_commit_time_;
-
-  // Manages the lifetime of a pre-created AppCacheHost until a browser side
-  // navigation is ready to be committed, i.e we have a renderer process ready
-  // to service the navigation request.
-  std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
 
   // Set in ReadyToCommitNavigation.
   bool is_same_process_ = true;
@@ -1829,7 +1821,7 @@ class CONTENT_EXPORT NavigationRequest
 
   // True when at least one preload Link header was received via an Early Hints
   // response. This is set only for a main frame navigation.
-  bool was_early_hints_preload_link_header_received_ = false;
+  bool was_resource_hints_received_ = false;
 
   // Observers listening to cookie access notifications for the network requests
   // made by this navigation.

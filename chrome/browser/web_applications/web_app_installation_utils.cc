@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
@@ -79,13 +80,19 @@ void SetWebAppManifestFields(const WebApplicationInfo& web_app_info,
   DCHECK(!web_app_info.theme_color.has_value() ||
          SkColorGetA(*web_app_info.theme_color) == SK_AlphaOPAQUE);
   web_app.SetThemeColor(web_app_info.theme_color);
-  DCHECK(!web_app_info.background_color.has_value() ||
-         SkColorGetA(*web_app_info.background_color) == SK_AlphaOPAQUE);
-  web_app.SetBackgroundColor(web_app_info.background_color);
 
   DCHECK(!web_app_info.dark_mode_theme_color.has_value() ||
          SkColorGetA(*web_app_info.dark_mode_theme_color) == SK_AlphaOPAQUE);
   web_app.SetDarkModeThemeColor(web_app_info.dark_mode_theme_color);
+
+  DCHECK(!web_app_info.background_color.has_value() ||
+         SkColorGetA(*web_app_info.background_color) == SK_AlphaOPAQUE);
+  web_app.SetBackgroundColor(web_app_info.background_color);
+
+  DCHECK(!web_app_info.dark_mode_background_color.has_value() ||
+         SkColorGetA(*web_app_info.dark_mode_background_color) ==
+             SK_AlphaOPAQUE);
+  web_app.SetDarkModeBackgroundColor(web_app_info.dark_mode_background_color);
 
   WebApp::SyncFallbackData sync_fallback_data;
   sync_fallback_data.name = base::UTF16ToUTF8(web_app_info.title);
@@ -112,6 +119,11 @@ void SetWebAppManifestFields(const WebApplicationInfo& web_app_info,
       GetDownloadedShortcutsMenuIconsSizes(
           web_app_info.shortcuts_menu_icon_bitmaps));
 
+  if (web_app.file_handler_approval_state() == ApiApprovalState::kAllowed &&
+      !AreNewFileHandlersASubsetOfOld(web_app.file_handlers(),
+                                      web_app_info.file_handlers)) {
+    web_app.SetFileHandlerApprovalState(ApiApprovalState::kRequiresPrompt);
+  }
   web_app.SetFileHandlers(web_app_info.file_handlers);
   web_app.SetShareTarget(web_app_info.share_target);
   web_app.SetProtocolHandlers(web_app_info.protocol_handlers);

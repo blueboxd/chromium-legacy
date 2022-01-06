@@ -40,6 +40,7 @@
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/test_upload_data_stream_not_allow_http1.h"
 #include "net/http/transport_security_state.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
@@ -666,7 +667,7 @@ class QuicNetworkTransactionTest
     session_context_.ssl_config_service = ssl_config_service_.get();
     session_context_.http_auth_handler_factory = auth_handler_factory_.get();
     session_context_.http_server_properties = http_server_properties_.get();
-    session_context_.net_log = net_log_.bound().net_log();
+    session_context_.net_log = NetLog::Get();
 
     session_ =
         std::make_unique<HttpNetworkSession>(session_params_, session_context_);
@@ -737,7 +738,7 @@ class QuicNetworkTransactionTest
 
   void RunTransaction(HttpNetworkTransaction* trans) {
     TestCompletionCallback callback;
-    int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+    int rv = trans->Start(&request_, callback.callback(), net_log_with_source_);
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsOk());
   }
@@ -922,7 +923,7 @@ class QuicNetworkTransactionTest
 
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
     TestCompletionCallback callback;
-    int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+    int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     // Pump the message loop to get the request started.
@@ -1013,7 +1014,8 @@ class QuicNetworkTransactionTest
   MockClientSocketFactory socket_factory_;
   ProofVerifyDetailsChromium verify_details_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  MockHostResolver host_resolver_;
+  MockHostResolver host_resolver_{/*default_result=*/MockHostResolverBase::
+                                      RuleResolver::GetLocalhostResult()};
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
@@ -1025,7 +1027,9 @@ class QuicNetworkTransactionTest
   HttpNetworkSessionParams session_params_;
   HttpNetworkSessionContext session_context_;
   HttpRequestInfo request_;
-  RecordingBoundTestNetLog net_log_;
+  NetLogWithSource net_log_with_source_{
+      NetLogWithSource::Make(NetLogSourceType::NONE)};
+  RecordingNetLogObserver net_log_observer_;
   std::vector<std::unique_ptr<StaticSocketDataProvider>> hanging_data_;
   SSLSocketDataProvider ssl_data_;
   std::unique_ptr<ScopedMockNetworkChangeNotifier> scoped_mock_change_notifier_;
@@ -1075,7 +1079,7 @@ TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmed) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
 
@@ -1106,7 +1110,7 @@ TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmedAsync) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
 
@@ -1228,7 +1232,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   SendRequestAndExpectQuicResponse("hello!");
 
   // Check that the NetLog was filled reasonably.
-  auto entries = net_log_.GetEntries();
+  auto entries = net_log_observer_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged a QUIC_SESSION_PACKET_RECEIVED.
@@ -1318,7 +1322,7 @@ TEST_P(QuicNetworkTransactionTest, ResetOnEmptyResponseHeaders) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsError(net::ERR_QUIC_PROTOCOL_ERROR));
   base::RunLoop().RunUntilIdle();
@@ -1469,7 +1473,7 @@ TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
 }
@@ -1890,7 +1894,7 @@ TEST_P(QuicNetworkTransactionTest, RetryMisdirectedRequest) {
 
   // Run until |mock_quic_data| has failed and |http_data| has paused.
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   base::RunLoop().RunUntilIdle();
 
@@ -1934,7 +1938,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   for (size_t i = 0; i < 2; ++i) {
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
     TestCompletionCallback callback;
-    int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+    int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_CLOSED));
     EXPECT_EQ(1 + i, test_socket_performance_watcher_factory_.watcher_count());
@@ -2635,7 +2639,7 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()
@@ -2729,7 +2733,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2846,7 +2850,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2989,7 +2993,7 @@ TEST_P(
   request_.network_isolation_key = kNetworkIsolationKey1;
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3125,7 +3129,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3282,7 +3286,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3353,7 +3357,7 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3513,7 +3517,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3612,7 +3616,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3731,7 +3735,7 @@ TEST_P(QuicNetworkTransactionTest,
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
   request_.network_isolation_key = kNetworkIsolationKey1;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3843,7 +3847,7 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -4860,7 +4864,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  EXPECT_THAT(trans.Start(&request_, callback.callback(), net_log_.bound()),
+  EXPECT_THAT(trans.Start(&request_, callback.callback(), net_log_with_source_),
               IsError(ERR_IO_PENDING));
   // Complete host resolution in next message loop so that QUIC job could
   // proceed.
@@ -4926,7 +4930,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  EXPECT_THAT(trans.Start(&request_, callback.callback(), net_log_.bound()),
+  EXPECT_THAT(trans.Start(&request_, callback.callback(), net_log_with_source_),
               IsError(ERR_IO_PENDING));
   // Complete host resolution in next message loop so that QUIC job could
   // proceed.
@@ -5026,7 +5030,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()
@@ -5113,7 +5117,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Confirm the handshake after the 425 Too Early.
@@ -5219,7 +5223,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Confirm the handshake after the 425 Too Early.
@@ -5284,7 +5288,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()
@@ -5354,7 +5358,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()
@@ -5428,7 +5432,7 @@ TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()
@@ -5501,7 +5505,7 @@ TEST_P(QuicNetworkTransactionTest, RstStreamBeforeHeaders) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()
@@ -5639,7 +5643,7 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_SOCKET_NOT_CONNECTED));
   ExpectQuicAlternateProtocolMapping();
@@ -5700,7 +5704,7 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  EXPECT_THAT(trans.Start(&request_, callback.callback(), net_log_.bound()),
+  EXPECT_THAT(trans.Start(&request_, callback.callback(), net_log_with_source_),
               IsError(ERR_IO_PENDING));
   // Complete host resolution in next message loop so that QUIC job could
   // proceed.
@@ -5771,7 +5775,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  EXPECT_THAT(trans.Start(&request_, callback.callback(), net_log_.bound()),
+  EXPECT_THAT(trans.Start(&request_, callback.callback(), net_log_with_source_),
               IsError(ERR_IO_PENDING));
 
   // Complete host resolution in next message loop so that QUIC job could
@@ -5817,7 +5821,7 @@ TEST_P(QuicNetworkTransactionTest, NetErrorDetailsSetBeforeHandshake) {
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Allow the TCP job to fail.
   base::RunLoop().RunUntilIdle();
@@ -6098,7 +6102,7 @@ TEST_P(QuicNetworkTransactionTest, QuicUpload) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_NE(OK, callback.WaitForResult());
 }
@@ -6148,7 +6152,7 @@ TEST_P(QuicNetworkTransactionTest, QuicUploadWriteError) {
   std::unique_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans->Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   base::RunLoop().RunUntilIdle();
@@ -6262,7 +6266,7 @@ TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterAsyncNoBufferSpace) {
   quic::QuicTime start = context_.clock()->Now();
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   while (!callback.have_result()) {
     base::RunLoop().RunUntilIdle();
@@ -6301,7 +6305,7 @@ TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterSynchronousNoBufferSpace) {
   quic::QuicTime start = context_.clock()->Now();
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   while (!callback.have_result()) {
     base::RunLoop().RunUntilIdle();
@@ -6345,7 +6349,7 @@ TEST_P(QuicNetworkTransactionTest, NoMigrationForMsgTooBig) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback.have_result());
@@ -6447,7 +6451,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
   SendRequestAndExpectQuicResponse("and hello!");
 
   // Check that the NetLog was filled reasonably.
-  auto entries = net_log_.GetEntries();
+  auto entries = net_log_observer_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged a QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM
@@ -6748,7 +6752,7 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
   auto trans2 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
                                                          session_.get());
   TestCompletionCallback callback2;
-  int rv = trans2->Start(&request_, callback2.callback(), net_log_.bound());
+  int rv = trans2->Start(&request_, callback2.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   base::RunLoop().RunUntilIdle();
 
@@ -6761,8 +6765,9 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   HttpNetworkTransaction trans3(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback3;
-  EXPECT_THAT(trans3.Start(&request3, callback3.callback(), net_log_.bound()),
-              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(
+      trans3.Start(&request3, callback3.callback(), net_log_with_source_),
+      IsError(ERR_IO_PENDING));
 
   base::RunLoop().RunUntilIdle();
 
@@ -6829,7 +6834,9 @@ class QuicURLRequestContext : public URLRequestContext {
                         MockClientSocketFactory* socket_factory)
       : storage_(this) {
     socket_factory_ = socket_factory;
-    storage_.set_host_resolver(std::make_unique<MockHostResolver>());
+    storage_.set_host_resolver(std::make_unique<MockHostResolver>(
+        /*default_result=*/MockHostResolverBase::RuleResolver::
+            GetLocalhostResult()));
     storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
     storage_.set_transport_security_state(
         std::make_unique<TransportSecurityState>());
@@ -7113,7 +7120,7 @@ class QuicNetworkTransactionWithDestinationTest
     request.traffic_annotation =
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
     TestCompletionCallback callback;
-    int rv = trans.Start(&request, callback.callback(), net_log_.bound());
+    int rv = trans.Start(&request, callback.callback(), net_log_with_source_);
     EXPECT_THAT(callback.GetResult(rv), IsOk());
 
     std::string response_data;
@@ -7146,7 +7153,8 @@ class QuicNetworkTransactionWithDestinationTest
   MockQuicContext context_;
   std::unique_ptr<HttpNetworkSession> session_;
   MockClientSocketFactory socket_factory_;
-  MockHostResolver host_resolver_;
+  MockHostResolver host_resolver_{/*default_result=*/MockHostResolverBase::
+                                      RuleResolver::GetLocalhostResult()};
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
@@ -7155,7 +7163,8 @@ class QuicNetworkTransactionWithDestinationTest
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   HttpServerProperties http_server_properties_;
-  RecordingBoundTestNetLog net_log_;
+  NetLogWithSource net_log_with_source_{
+      NetLogWithSource::Make(NetLogSourceType::NONE)};
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   std::vector<std::unique_ptr<StaticSocketDataProvider>>
       static_socket_data_provider_vector_;
@@ -7207,7 +7216,7 @@ TEST_P(QuicNetworkTransactionWithDestinationTest, InvalidCertificate) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request, callback.callback(), net_log_with_source_);
   EXPECT_THAT(callback.GetResult(rv), IsError(ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(AllDataConsumed());
@@ -8129,7 +8138,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectFailure) {
   request_.url = GURL("https://mail.example.org/");
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, callback.WaitForResult());
 
@@ -8169,7 +8178,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyQuicConnectionError) {
   request_.url = GURL("https://mail.example.org/");
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, callback.WaitForResult());
 
@@ -8288,7 +8297,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
   request_.url = GURL("https://mail.example.org/");
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, callback.WaitForResult());
 
@@ -8356,7 +8365,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyUserAgent) {
                                    kRequestUserAgent);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, callback.WaitForResult());
 
@@ -8401,7 +8410,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyRequestPriority) {
   request_.url = GURL("https://mail.example.org/");
   HttpNetworkTransaction trans(request_priority, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, callback.WaitForResult());
 
@@ -8456,7 +8465,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyMultipleRequestsError) {
   request_.url = GURL("https://mail.example.org/");
   HttpNetworkTransaction trans(kRequestPriority, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   HttpRequestInfo request2;
@@ -8466,7 +8475,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyMultipleRequestsError) {
 
   HttpNetworkTransaction trans2(kRequestPriority2, session_.get());
   TestCompletionCallback callback2;
-  int rv2 = trans2.Start(&request2, callback2.callback(), net_log_.bound());
+  int rv2 = trans2.Start(&request2, callback2.callback(), net_log_with_source_);
   EXPECT_EQ(ERR_IO_PENDING, rv2);
 
   EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, callback.WaitForResult());
@@ -8813,30 +8822,30 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
   request_.url = GURL("https://mail.example.org/0.jpg");
   HttpNetworkTransaction trans_0(HIGHEST, session_.get());
   TestCompletionCallback callback_0;
-  EXPECT_EQ(ERR_IO_PENDING,
-            trans_0.Start(&request_, callback_0.callback(), net_log_.bound()));
+  EXPECT_EQ(ERR_IO_PENDING, trans_0.Start(&request_, callback_0.callback(),
+                                          net_log_with_source_));
   base::RunLoop().RunUntilIdle();
 
   request_.url = GURL("https://mail.example.org/1.jpg");
   HttpNetworkTransaction trans_1(MEDIUM, session_.get());
   TestCompletionCallback callback_1;
-  EXPECT_EQ(ERR_IO_PENDING,
-            trans_1.Start(&request_, callback_1.callback(), net_log_.bound()));
+  EXPECT_EQ(ERR_IO_PENDING, trans_1.Start(&request_, callback_1.callback(),
+                                          net_log_with_source_));
   base::RunLoop().RunUntilIdle();
 
   request_.url = GURL("https://mail.example.org/2.jpg");
   HttpNetworkTransaction trans_2(MEDIUM, session_.get());
   TestCompletionCallback callback_2;
-  EXPECT_EQ(ERR_IO_PENDING,
-            trans_2.Start(&request_, callback_2.callback(), net_log_.bound()));
+  EXPECT_EQ(ERR_IO_PENDING, trans_2.Start(&request_, callback_2.callback(),
+                                          net_log_with_source_));
   base::RunLoop().RunUntilIdle();
 
   // Client makes request that matches resource pushed in |pushed_stream_0|.
   request_.url = GURL("https://mail.example.org/pushed_0.jpg");
   HttpNetworkTransaction trans_3(HIGHEST, session_.get());
   TestCompletionCallback callback_3;
-  EXPECT_EQ(ERR_IO_PENDING,
-            trans_3.Start(&request_, callback_3.callback(), net_log_.bound()));
+  EXPECT_EQ(ERR_IO_PENDING, trans_3.Start(&request_, callback_3.callback(),
+                                          net_log_with_source_));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(callback_0.have_result());
@@ -9279,7 +9288,7 @@ TEST_P(QuicNetworkTransactionTest, AllowHTTP1FalseProhibitsH1) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_H2_OR_QUIC_REQUIRED));
 }
@@ -9381,7 +9390,7 @@ TEST_P(QuicNetworkTransactionTest, AllowHTTP1UploadPauseAndResume) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   base::RunLoop().RunUntilIdle();
   // Resume QUIC job
@@ -9465,7 +9474,7 @@ TEST_P(QuicNetworkTransactionTest, AllowHTTP1UploadFailH1AndResumeQuic) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Confirm TCP job was resumed.
   // We can not check its failure because HttpStreamFactory::JobController.
@@ -9535,7 +9544,7 @@ TEST_P(QuicNetworkTransactionTest, IncorrectHttp3GoAway) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()
@@ -9652,7 +9661,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnHttp3GoAway) {
 
   HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback1;
-  int rv = trans1.Start(&request_, callback1.callback(), net_log_.bound());
+  int rv = trans1.Start(&request_, callback1.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   base::RunLoop().RunUntilIdle();
 
@@ -9667,7 +9676,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnHttp3GoAway) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback2;
-  rv = trans2.Start(&request2, callback2.callback(), net_log_.bound());
+  rv = trans2.Start(&request2, callback2.callback(), net_log_with_source_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   EXPECT_THAT(callback1.WaitForResult(), IsOk());

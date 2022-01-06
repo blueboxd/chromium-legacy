@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SCRIPT_EXECUTOR_DELEGATE_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SCRIPT_EXECUTOR_DELEGATE_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -19,6 +18,7 @@
 #include "components/autofill_assistant/browser/user_action.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -66,6 +66,7 @@ class ScriptExecutorDelegate {
   virtual WebsiteLoginManager* GetWebsiteLoginManager() = 0;
   virtual content::WebContents* GetWebContents() = 0;
   virtual std::string GetEmailAddressForAccessTokenAccount() = 0;
+  virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
 
   // Enters the given state. Returns true if the state was changed.
   virtual bool EnterState(AutofillAssistantState state) = 0;
@@ -99,7 +100,6 @@ class ScriptExecutorDelegate {
   virtual void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>
           write_callback) = 0;
-  virtual void SetProgress(int progress) = 0;
   virtual bool SetProgressActiveStepIdentifier(
       const std::string& active_step_identifier) = 0;
   virtual void SetProgressActiveStep(int active_step) = 0;
@@ -209,6 +209,10 @@ class ScriptExecutorDelegate {
   // Whether the slow connection or website warning should be shown. Depends on
   // the state at the moment of the invocation.
   virtual bool ShouldShowWarning() = 0;
+
+  // Get modifiable log information gathered while executing the action. This
+  // gets attached to the action's response if non empty.
+  virtual ProcessedActionStatusDetailsProto& GetLogInfo() = 0;
 
  protected:
   virtual ~ScriptExecutorDelegate() {}

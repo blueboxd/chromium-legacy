@@ -13,6 +13,7 @@ source_set("signin") {
   deps = [
     ":signin_ui",
     "//components/prefs",
+    "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/browser",
     "//ios/chrome/browser/first_run",
     "//ios/chrome/browser/main:public",
@@ -25,8 +26,10 @@ source_set("signin") {
     "//ios/chrome/browser/ui/authentication/signin/user_signin/logging",
     "//ios/chrome/browser/ui/authentication/unified_consent/identity_chooser",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/first_run:interruptible_chrome_coordinator",
     "//ios/chrome/browser/ui/first_run:screen_delegate",
     "//ios/chrome/browser/ui/first_run:utils",
+    "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/unified_consent",
     "//ios/chrome/browser/url_loading",
     "//ios/public/provider/chrome/browser",

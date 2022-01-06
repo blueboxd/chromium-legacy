@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -299,6 +300,71 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     gain to maintain a strong audio level, but without clipping (saturation).
     The histogram will log a new value every time the AGC changes the target
     level.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.ApmAnalogGainDecreaseAverage" units="level"
+    expires_after="2022-10-05">
+  <owner>silen@chromium.org</owner>
+  <owner>alessiob@chromium.org</owner>
+  <summary>
+    The analog gain average decrease measured over 60 seconds in
+    AudioProcessingImpl. A log call is made every 60 seconds during an active
+    WebRTC call.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.ApmAnalogGainDecreaseRate" units="changes/minute"
+    expires_after="2022-10-05">
+  <owner>silen@chromium.org</owner>
+  <owner>alessiob@chromium.org</owner>
+  <summary>
+    The analog gain decrease rate measured over 60 seconds in
+    AudioProcessingImpl. A log call is made every 60 seconds during an active
+    WebRTC call.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.ApmAnalogGainIncreaseAverage" units="level"
+    expires_after="2022-10-05">
+  <owner>silen@chromium.org</owner>
+  <owner>alessiob@chromium.org</owner>
+  <summary>
+    The analog gain average increase measured over 60 seconds in
+    AudioProcessingImpl. A log call is made every 60 seconds during an active
+    WebRTC call.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.ApmAnalogGainIncreaseRate" units="changes/minute"
+    expires_after="2022-10-05">
+  <owner>silen@chromium.org</owner>
+  <owner>alessiob@chromium.org</owner>
+  <summary>
+    The analog gain increase rate measured over 60 seconds in
+    AudioProcessingImpl. A log call is made every 60 seconds during an active
+    WebRTC call.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.ApmAnalogGainUpdateAverage" units="level"
+    expires_after="2022-10-05">
+  <owner>silen@chromium.org</owner>
+  <owner>alessiob@chromium.org</owner>
+  <summary>
+    The analog gain average update measured over 60 seconds in
+    AudioProcessingImpl. A log call is made every 60 seconds during an active
+    WebRTC call.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.ApmAnalogGainUpdateRate" units="changes/minute"
+    expires_after="2022-10-05">
+  <owner>silen@chromium.org</owner>
+  <owner>alessiob@chromium.org</owner>
+  <summary>
+    The analog gain update rate measured over 60 seconds in AudioProcessingImpl.
+    A log call is made every 60 seconds during an active WebRTC call.
   </summary>
 </histogram>
 
@@ -937,14 +1003,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.BWE.InitiallyLostPackets" units="packets"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>holmer@chromium.org</owner>
   <summary>
     The number of video packets lost durig the first 2 seconds in a WebRTC call.
   </summary>
 </histogram>
 
-<histogram name="WebRTC.BWE.InitialRtt" units="ms" expires_after="2022-02-20">
+<histogram name="WebRTC.BWE.InitialRtt" units="ms" expires_after="2022-04-24">
   <owner>holmer@chromium.org</owner>
   <summary>
     The round-trip time as measured 2 seconds into a WebRTC call.
@@ -1010,7 +1076,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.BWE.Probing.TimePerProbeCluster" units="ms"
-    expires_after="2022-01-16">
+    expires_after="2022-04-24">
   <owner>jonasolsson@chromium.org</owner>
   <owner>crodbro@chromium.org</owner>
   <summary>
@@ -1077,7 +1143,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Call.AudioBitrateReceivedInKbps" units="kbps"
-    expires_after="2022-02-21">
+    expires_after="2022-04-24">
   <owner>holmer@chromium.org</owner>
   <summary>
     Average audio bitrate received during a call, counted from first packet
@@ -1125,7 +1191,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Call.RtcpBitrateReceivedInBps" units="bits/s"
-    expires_after="2022-02-21">
+    expires_after="2022-04-24">
   <owner>holmer@chromium.org</owner>
   <summary>
     Average RTCP bitrate received during a call, counted from first packet
@@ -1363,7 +1429,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.BundlePolicy"
-    enum="PeerConnectionBundlePolicy" expires_after="2022-01-01">
+    enum="PeerConnectionBundlePolicy" expires_after="2022-04-24">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1374,7 +1440,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.BundleUsage"
-    enum="PeerConnectionBundleUsage" expires_after="2022-01-01">
+    enum="PeerConnectionBundleUsage" expires_after="2022-04-24">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1495,6 +1561,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records the transport channel states when ICE restart happens.
   </summary>
+</histogram>
+
+<histogram name="WebRTC.PeerConnection.IceServers.{MeasuredAt}" units="servers"
+    expires_after="2022-10-15">
+  <owner>hta@chromium.org</owner>
+  <owner>webrtc-dev@chromium.org</owner>
+  <summary>
+    Records the number of configured ICE servers when the peerconnection is
+    created or gets connected, depending on {MeasuredAt}.
+  </summary>
+  <token key="MeasuredAt">
+    <variant name="Configured"/>
+    <variant name="Connected"/>
+  </token>
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.IPMetrics" enum="PeerConnectionCounters"
@@ -1825,6 +1905,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.PeerConnection.SpeedLimit" units="%"
+    expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>hbos@chromium.org</owner>
+  <summary>
+    Measures computer speed limit state, sampled every 60s when a PeerConnection
+    is open. The value indicates the current operating point in percent of the
+    nominal capacity of the CPUs. The computer decreases the capacity during
+    thermal overload events.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.PeerConnection.SrtcpUnprotectError"
     enum="SrtpErrorCode" expires_after="never">
 <!-- expires-never: Needed for long-term tracking of the ecosystem. -->
@@ -1885,6 +1977,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     open with a video sender. Most quick toggles between thermal states are thus
     not sampled, but thermal states are generally stable so these toggles should
     be rare.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.PeerConnection.ThermalThrottling" units="boolean"
+    expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>hbos@chromium.org</owner>
+  <summary>
+    Sampled every 60s when the peer connection is open. True when the computer's
+    speed limit is between 0 and 99 inclusively, false otherwise.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.PeerConnection.ThermalThrottlingEpisodes" units="count"
+    expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>hbos@chromium.org</owner>
+  <summary>
+    The number of thermal throttling episodes the peer connection encountered.
+    Reported when the peer connection is torn down if the peer connection had at
+    least one track.
   </summary>
 </histogram>
 
@@ -1950,6 +2063,96 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="2020-10-18">
   <owner>jiayl@chromium.org</owner>
   <summary>Time for capturing one frame in screen capturing.</summary>
+</histogram>
+
+<histogram name="WebRTC.Screenshare.FrameRateConstraints.60MinPlusMaxMinusOne"
+    units="2D fps" expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Sampled every time a VideoStreamEncoder starts encoding frames with min and
+    max frame rate constraint supplied. The value sampled is 60 * min + max - 1.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Screenshare.FrameRateConstraints.Exists"
+    units="boolean" expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Sampled true every time a VideoStreamEncoder starts encoding frames with
+    frame rate constraints supplied in advance.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Screenshare.FrameRateConstraints.Max.Exists"
+    units="boolean" expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Sampled true every time a VideoStreamEncoder starts encoding frames with a
+    max frame rate constraint supplied.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Screenshare.FrameRateConstraints.Max.Value" units="fps"
+    expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Sampled every time a VideoStreamEncoder starts encoding frames with a max
+    frame rate constraint supplied.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Screenshare.FrameRateConstraints.Min.Exists"
+    units="boolean" expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Sampled true every time a VideoStreamEncoder starts encoding frames with a
+    min frame rate constraint supplied.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Screenshare.FrameRateConstraints.Min.Value" units="fps"
+    expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Sampled every time a VideoStreamEncoder starts encoding frames with a min
+    frame rate constraint supplied.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Screenshare.FrameRateConstraints.MinLessThanMax.Max"
+    units="fps" expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Sampled every time a VideoStreamEncoder starts encoding frames with a max
+    frame rate constraint supplied, which is greater than the min value.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Screenshare.FrameRateConstraints.MinLessThanMax.Min"
+    units="fps" expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Sampled every time a VideoStreamEncoder starts encoding frames with a min
+    frame rate constraint supplied, which is less than the max value.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Screenshare.FrameRateConstraints.MinUnset.Max"
+    units="fps" expires_after="2022-10-07">
+  <owner>handellm@google.com</owner>
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Sampled every time a VideoStreamEncoder starts encoding frames with a max
+    frame rate constraint supplied, and the min frame rate constraint is unset.
+  </summary>
 </histogram>
 
 <histogram name="WebRTC.SentAudioTrackDuration" units="ms"
@@ -2539,6 +2742,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name=".Multiplex" summary=""/>
     <variant name=".Vp8" summary=""/>
     <variant name=".Vp9" summary=""/>
+  </token>
+</histogram>
+
+<histogram name="WebRTC.Video.HwCapabilities.{Tier}" units="bitfield"
+    expires_after="2022-04-30">
+  <owner>kron@chromium.org</owner>
+  <owner>webrtc-video@google.com</owner>
+  <summary>
+    A bitfield representing RTC HW encode and decode support. The number is
+    reported one time per frame when the first RTCPeerConnection object is
+    created. The bits in the reported number have the following meaning: H264
+    decode supported (1), VP8 decode supported (2), VP9 decode supported (4),
+    VP9 kSVC decode supported (8), H264 encode supported (16), VP8 encode
+    supported (32), VP9 encode supported (64), VP9 kSVC encode supported (128).
+  </summary>
+  <token key="Tier">
+    <variant name="HIGH_OR_ULTRA"/>
+    <variant name="LOW"/>
+    <variant name="MID"/>
   </token>
 </histogram>
 

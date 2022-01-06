@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './accelerator_edit_dialog.js'
+import './accelerator_edit_dialog.js';
 import './shortcut_input.js';
-import './shortcuts_page.js'
-import './shortcut_customization_fonts_css.js'
+import './shortcuts_page.js';
+import './shortcut_customization_fonts_css.js';
 import 'chrome://resources/ash/common/navigation_view_panel.js';
 import 'chrome://resources/ash/common/page_toolbar.js';
 
@@ -13,7 +13,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
-import {AcceleratorConfig, AcceleratorSource, LayoutInfoList, ShortcutProviderInterface} from './shortcut_types.js';
+import {AcceleratorConfig, AcceleratorSource, AcceleratorState, AcceleratorType, LayoutInfoList, ShortcutProviderInterface} from './shortcut_types.js';
 import {AcceleratorInfo} from './shortcut_types.js';
 
 /**
@@ -64,7 +64,13 @@ export class ShortcutCustomizationAppElement extends PolymerElement {
         type: Boolean,
         value: false,
       },
-    }
+
+      /** @protected */
+      showRestoreAllDialog_: {
+        type: Boolean,
+        value: false,
+      },
+    };
   }
 
   /** @override */
@@ -181,10 +187,36 @@ export class ShortcutCustomizationAppElement extends PolymerElement {
    */
   onRequestUpdateAccelerators_(detail) {
     this.$.navigationPanel.notifyEvent('updateSubsections');
-    const updatedAccels = this.acceleratorLookupManager_.getAccelerators(
-        detail.source, detail.action);
+    const updatedAccels =
+        this.acceleratorLookupManager_
+            .getAccelerators(detail.source, detail.action)
+            .filter((accel) => {
+              // Hide accelerators that are default and disabled.
+              return !(accel.type === AcceleratorType.kDefault &&
+                  accel.state === AcceleratorState.kDisabledByUser);
+            });
     this.shadowRoot.querySelector('#editDialog')
         .updateDialogAccelerators(updatedAccels);
+  }
+
+  /** @protected */
+  onRestoreAllDefaultClicked_() {
+    this.showRestoreAllDialog_ = true;
+  }
+
+  /** @protected */
+  onCancelRestoreButtonClicked_() {
+    this.closeRestoreAllDialog_();
+  }
+
+  /** @protected */
+  onConfirmRestoreButtonClicked_() {
+    // TODO(jimmyxgong): Implement this function.
+  }
+
+  /** @protected */
+  closeRestoreAllDialog_() {
+    this.showRestoreAllDialog_ = false;
   }
 }
 

@@ -94,6 +94,20 @@ void PaintController::RecordHitTestData(const DisplayItemClient& client,
   }
 }
 
+void PaintController::RecordRegionCaptureData(
+    const DisplayItemClient& client,
+    const RegionCaptureCropId& crop_id,
+    const gfx::Rect& rect) {
+  DCHECK(!crop_id->is_zero());
+  PaintChunk::Id id(client.Id(), DisplayItem::kRegionCapture,
+                    current_fragment_);
+  CheckNewChunkId(id);
+  ValidateNewChunkClient(client);
+  if (paint_chunker_.AddRegionCaptureDataToCurrentChunk(id, client, crop_id,
+                                                        rect))
+    CheckNewChunk();
+}
+
 void PaintController::RecordScrollHitTestData(
     const DisplayItemClient& client,
     DisplayItem::Type type,
@@ -113,20 +127,6 @@ void PaintController::RecordSelection(
   DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   DCHECK(start.has_value() || end.has_value());
   paint_chunker_.AddSelectionToCurrentChunk(start, end);
-}
-
-void PaintController::SetPossibleBackgroundColor(
-    const DisplayItemClient& client,
-    Color color,
-    uint64_t area) {
-  PaintChunk::Id id(client.Id(), DisplayItem::kBoxDecorationBackground,
-                    current_fragment_);
-  CheckNewChunkId(id);
-  ValidateNewChunkClient(client);
-  if (paint_chunker_.ProcessBackgroundColorCandidate(id, client, color, area)) {
-    RecordDebugInfo(client);
-    CheckNewChunk();
-  }
 }
 
 bool PaintController::UseCachedItemIfPossible(const DisplayItemClient& client,
@@ -685,7 +685,7 @@ void PaintController::CommitNewDisplayItems() {
 }
 
 PaintController::CycleScope::~CycleScope() {
-  for (const auto* client : clients_to_validate_) {
+  for (const auto& client : *clients_to_validate_) {
     if (client->IsCacheable())
       client->Validate();
   }
@@ -694,7 +694,7 @@ PaintController::CycleScope::~CycleScope() {
 }
 
 void PaintController::StartCycle(
-    Vector<const DisplayItemClient*>& clients_to_validate,
+    HeapVector<Member<const DisplayItemClient>>& clients_to_validate,
     bool record_debug_info) {
   // StartCycle() can only be called before the controller has painted anything.
   DCHECK(new_paint_artifact_);

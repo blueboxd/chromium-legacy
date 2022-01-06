@@ -32,7 +32,7 @@ static int LocalPixelDistanceToExpand(
   GeometryMapper::SourceToDestinationRect(root_transform, local_transform,
                                           rect);
   // Now rect.Size() is the size of a screen pixel in local coordinates.
-  float scale = std::max(rect.Width(), rect.Height());
+  float scale = std::max(rect.width(), rect.height());
   // A very big scale may be caused by non-invertable near non-invertable
   // transforms. Fallback to scale 1. The limit is heuristic.
   if (scale > kReasonablePixelLimit / kPixelDistanceToExpand)
@@ -47,10 +47,10 @@ bool CullRect::Intersects(const gfx::Rect& rect) const {
 }
 
 bool CullRect::IntersectsTransformed(const AffineTransform& transform,
-                                     const FloatRect& rect) const {
+                                     const gfx::RectF& rect) const {
   if (rect.IsEmpty())
     return false;
-  return IsInfinite() || transform.MapRect(rect).Intersects(IntRect(rect_));
+  return IsInfinite() || transform.MapRect(rect).Intersects(gfx::RectF(rect_));
 }
 
 bool CullRect::IntersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const {
@@ -96,14 +96,13 @@ CullRect::ApplyTransformResult CullRect::ApplyScrollTranslation(
 
   // We create scroll node for the root scroller even it's not scrollable.
   // Don't expand in the case.
-  if (scroll->ContainerRect().width() >= scroll->ContentsSize().width() &&
-      scroll->ContainerRect().height() >= scroll->ContentsSize().height())
+  gfx::Rect contents_rect = scroll->ContentsRect();
+  if (scroll->ContainerRect().width() >= contents_rect.width() &&
+      scroll->ContainerRect().height() >= contents_rect.height())
     return kNotExpanded;
 
   // Expand the cull rect for scrolling contents for composited scrolling.
   rect_.Outset(LocalPixelDistanceToExpand(root_transform, scroll_translation));
-  gfx::Rect contents_rect(scroll->ContainerRect().origin(),
-                          scroll->ContentsSize());
   rect_.Intersect(contents_rect);
   return rect_ == contents_rect ? kExpandedForWholeScrollingContents
                                 : kExpandedForPartialScrollingContents;
@@ -247,9 +246,7 @@ bool CullRect::ApplyPaintProperties(
   bool expanded = false;
   if (last_scroll_translation_result == kExpandedForPartialScrollingContents) {
     DCHECK(last_transform->ScrollNode());
-    expansion_bounds.emplace(
-        last_transform->ScrollNode()->ContainerRect().origin(),
-        last_transform->ScrollNode()->ContentsSize());
+    expansion_bounds = last_transform->ScrollNode()->ContentsRect();
     if (last_transform != &destination.Transform() ||
         last_clip != &destination.Clip()) {
       // Map expansion_bounds in the same way as we did for rect_ in the last

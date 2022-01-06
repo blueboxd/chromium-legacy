@@ -10,8 +10,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -200,6 +200,9 @@ std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
       return "CheckUserAccount";
     case DeviceManagementService::JobConfiguration::TYPE_UPLOAD_EUICC_INFO:
       return "UploadEuiccInfo";
+    case DeviceManagementService::JobConfiguration::
+        TYPE_BROWSER_UPLOAD_PUBLIC_KEY:
+      return "BrowserUploadPublicKey";
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";

@@ -16,7 +16,6 @@ group("closure_compile") {
     "dialogs:closure_compile",
     "oobe_carousel:closure_compile",
     "oobe_slide:closure_compile",
-    "progress_list_item:closure_compile",
     "throbber_notice:closure_compile",
   ]
 }
@@ -26,9 +25,8 @@ js_type_check("closure_compile_local") {
   deps = [
     ":fake_oobe",
     ":hd_iron_icon",
-    ":html-echo",
+    ":html_echo",
     ":long_touch_detector",
-    ":oobe_i18n_dropdown",
     ":oobe_select",
     ":oobe_types",
   ]
@@ -41,15 +39,19 @@ group("closure_compile_module") {
     "common_styles:closure_compile_module",
     "dialogs:closure_compile_module",
     "oobe_vars:closure_compile_module",
+    "progress_list_item:closure_compile_module",
 
     # Local targets
     ":display_manager_types.m",
     ":hd_iron_icon.m",
+    ":html_echo.m",
     ":long_touch_detector.m",
     ":network_select_login.m",
     ":oobe_a11y_option.m",
+    ":oobe_i18n_dropdown.m",
     ":oobe_icons.m",
     ":oobe_network_icons.m",
+    ":oobe_select.m",
     ":oobe_types.m",
     ":web_view_helper.m",
     ":web_view_loader.m",
@@ -58,22 +60,23 @@ group("closure_compile_module") {
 
 group("polymer3_elements") {
   public_deps = [
-    "behaviors:modulize",
-    "buttons:polymer3_elements",
-    "common_styles:polymer3_elements",
-    "dialogs:polymer3_elements",
-    "oobe_vars:polymer3_elements",
+                  "behaviors:modulize",
+                  "buttons:polymer3_elements",
+                  "common_styles:polymer3_elements",
+                  "dialogs:polymer3_elements",
+                  "oobe_vars:polymer3_elements",
+                  "progress_list_item:polymer3_elements",
 
-    # Local targets
-    ":hd_iron_icon_module",
-    ":long_touch_detector_module",
-    ":network_select_login_module",
-    ":oobe_a11y_option_module",
-    ":oobe_icons_module",
-    ":oobe_network_icons_module",
-  ] + [
-    ":modulize"
-  ]
+                  # Local targets
+                  ":hd_iron_icon_module",
+                  ":html_echo_module",
+                  ":long_touch_detector_module",
+                  ":network_select_login_module",
+                  ":oobe_a11y_option_module",
+                  ":oobe_icons_module",
+                  ":oobe_i18n_dropdown_module",
+                  ":oobe_network_icons_module",
+                ] + [ ":modulize" ]
 }
 
 ###############################
@@ -106,17 +109,10 @@ js_library("fake_oobe") {
 js_library("hd_iron_icon") {
 }
 
-js_library("html-echo") {
+js_library("html_echo") {
 }
 
 js_library("long_touch_detector") {
-}
-
-js_library("oobe_i18n_dropdown") {
-  deps = [
-    ":oobe_select",
-    ":oobe_types",
-  ]
 }
 
 js_library("oobe_select") {
@@ -147,6 +143,14 @@ js_library("hd_iron_icon.m") {
   extra_deps = [ ":hd_iron_icon_module" ]
 }
 
+js_library("html_echo.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/html_echo.m.js" ]
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  extra_deps = [ ":html_echo_module" ]
+}
+
 js_library("long_touch_detector.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/long_touch_detector.m.js" ]
   deps = []
@@ -175,10 +179,25 @@ js_library("oobe_icons.m") {
   extra_deps = [ ":oobe_icons_module" ]
 }
 
+js_library("oobe_i18n_dropdown.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_i18n_dropdown.m.js" ]
+  deps = [
+    ":oobe_select",
+    ":oobe_types",
+  ]
+  extra_deps = [ ":oobe_i18n_dropdown_module" ]
+}
+
 js_library("oobe_network_icons.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_network_icons.m.js" ]
   deps = []
   extra_deps = [ ":oobe_network_icons_module" ]
+}
+
+js_library("oobe_select.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_select.m.js" ]
+  deps = []
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("oobe_types.m") {
@@ -202,6 +221,12 @@ js_library("web_view_loader.m") {
 polymer_modulizer("hd_iron_icon") {
   js_file = "hd_iron_icon.js"
   html_file = "hd_iron_icon.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("html_echo") {
+  js_file = "html_echo.js"
+  html_file = "html_echo.html"
   html_type = "dom-module"
 }
 
@@ -233,6 +258,14 @@ polymer_modulizer("oobe_icons") {
   html_type = "iron-iconset"
 }
 
+polymer_modulizer("oobe_i18n_dropdown") {
+  js_file = "oobe_i18n_dropdown.js"
+  html_file = "oobe_i18n_dropdown.html"
+  html_type = "dom-module"
+  auto_imports = oobe_auto_imports
+  namespace_rewrites = oobe_namespace_rewrites
+}
+
 polymer_modulizer("oobe_network_icons") {
   js_file = "oobe_network_icons.m.js"
   html_file = "oobe_network_icons.html"
@@ -242,6 +275,7 @@ polymer_modulizer("oobe_network_icons") {
 js_modulizer("modulize") {
   input_files = [
     "display_manager_types.js",
+    "oobe_select.js",
     "oobe_types.js",
     "web_view_helper.js",
     "web_view_loader.js",

@@ -95,7 +95,7 @@ bool ICOImageDecoder::SetFailed() {
   return ImageDecoder::SetFailed();
 }
 
-bool ICOImageDecoder::HotSpot(IntPoint& hot_spot) const {
+bool ICOImageDecoder::HotSpot(gfx::Point& hot_spot) const {
   // When unspecified, the default frame is always frame 0. This is consistent
   // with BitmapImage, where CurrentFrame() starts at 0 and only increases when
   // animation is requested.
@@ -103,7 +103,7 @@ bool ICOImageDecoder::HotSpot(IntPoint& hot_spot) const {
 }
 
 bool ICOImageDecoder::HotSpotAtIndex(wtf_size_t index,
-                                     IntPoint& hot_spot) const {
+                                     gfx::Point& hot_spot) const {
   if (index >= dir_entries_.size() || file_type_ != CURSOR)
     return false;
 
@@ -115,8 +115,8 @@ bool ICOImageDecoder::HotSpotAtIndex(wtf_size_t index,
 bool ICOImageDecoder::CompareEntries(const IconDirectoryEntry& a,
                                      const IconDirectoryEntry& b) {
   // Larger icons are better.  After that, higher bit-depth icons are better.
-  const int a_entry_area = a.size_.Width() * a.size_.Height();
-  const int b_entry_area = b.size_.Width() * b.size_.Height();
+  const int a_entry_area = a.size_.width() * a.size_.height();
+  const int b_entry_area = b.size_.width() * b.size_.height();
   return (a_entry_area == b_entry_area) ? (a.bit_count_ > b.bit_count_)
                                         : (a_entry_area > b_entry_area);
 }
@@ -288,8 +288,8 @@ bool ICOImageDecoder::ProcessDirectoryEntries() {
   const IconDirectoryEntry& dir_entry = dir_entries_.front();
   // Technically, this next call shouldn't be able to fail, since the width
   // and height here are each <= 256, and |frame_size_| is empty.
-  return SetSize(static_cast<unsigned>(dir_entry.size_.Width()),
-                 static_cast<unsigned>(dir_entry.size_.Height()));
+  return SetSize(static_cast<unsigned>(dir_entry.size_.width()),
+                 static_cast<unsigned>(dir_entry.size_.height()));
 }
 
 ICOImageDecoder::IconDirectoryEntry ICOImageDecoder::ReadDirectoryEntry() {
@@ -308,10 +308,10 @@ ICOImageDecoder::IconDirectoryEntry ICOImageDecoder::ReadDirectoryEntry() {
   entry.size_ = IntSize(width, height);
   if (file_type_ == CURSOR) {
     entry.bit_count_ = 0;
-    entry.hot_spot_ = IntPoint(ReadUint16(4), ReadUint16(6));
+    entry.hot_spot_ = gfx::Point(ReadUint16(4), ReadUint16(6));
   } else {
     entry.bit_count_ = ReadUint16(6);
-    entry.hot_spot_ = IntPoint();
+    entry.hot_spot_ = gfx::Point();
   }
   entry.byte_size_ = ReadUint32(8);
   entry.image_offset_ = ReadUint32(12);

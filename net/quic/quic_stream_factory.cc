@@ -18,10 +18,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -1785,7 +1785,7 @@ int QuicStreamFactory::CreateSession(
   std::unique_ptr<CryptoClientConfigHandle> crypto_config_handle =
       CreateCryptoConfigHandle(key.session_key().network_isolation_key());
   InitializeCachedStateInCryptoConfig(*crypto_config_handle, server_id,
-                                      server_info, &connection_id);
+                                      server_info);
 
   QuicChromiumPacketWriter* writer =
       new QuicChromiumPacketWriter(socket.get(), task_runner_);
@@ -1898,7 +1898,7 @@ void QuicStreamFactory::ConfigureInitialRttEstimate(
   // Sometimes *srtt is negative. See https://crbug.com/1225616.
   // TODO(ricea): When the root cause of the negative value is fixed, change the
   // non-negative assertion to a DCHECK.
-  if (srtt != nullptr && *srtt > base::TimeDelta()) {
+  if (srtt && srtt->is_positive()) {
     SetInitialRttEstimate(*srtt, INITIAL_RTT_CACHED, config);
     return;
   }
@@ -1915,7 +1915,7 @@ void QuicStreamFactory::ConfigureInitialRttEstimate(
     return;
   }
 
-  if (params_.initial_rtt_for_handshake > base::TimeDelta()) {
+  if (params_.initial_rtt_for_handshake.is_positive()) {
     SetInitialRttEstimate(
         base::Microseconds(params_.initial_rtt_for_handshake.InMicroseconds()),
         INITIAL_RTT_DEFAULT, config);
@@ -2037,8 +2037,7 @@ void QuicStreamFactory::InitializeMigrationOptions() {
 void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
     const CryptoClientConfigHandle& crypto_config_handle,
     const quic::QuicServerId& server_id,
-    const std::unique_ptr<QuicServerInfo>& server_info,
-    quic::QuicConnectionId* connection_id) {
+    const std::unique_ptr<QuicServerInfo>& server_info) {
   quic::QuicCryptoClientConfig::CachedState* cached =
       crypto_config_handle.GetConfig()->LookupOrCreate(server_id);
 

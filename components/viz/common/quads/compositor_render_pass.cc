@@ -20,6 +20,7 @@
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/largest_draw_quad.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
+#include "components/viz/common/quads/shared_element_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
@@ -89,7 +90,8 @@ void CompositorRenderPass::SetAll(
     const cc::FilterOperations& backdrop_filters,
     const absl::optional<gfx::RRectF>& backdrop_filter_bounds,
     SubtreeCaptureId capture_id,
-    gfx::Size size,
+    gfx::Size subtree_capture_size,
+    SharedElementResourceId resource_id,
     bool has_transparent_background,
     bool cache_render_pass,
     bool has_damage_from_contributing_content,
@@ -104,8 +106,9 @@ void CompositorRenderPass::SetAll(
   this->filters = filters;
   this->backdrop_filters = backdrop_filters;
   this->backdrop_filter_bounds = backdrop_filter_bounds;
-  subtree_capture_id = capture_id;
-  subtree_size = size;
+  this->subtree_capture_id = capture_id;
+  this->subtree_size = subtree_capture_size;
+  this->shared_element_resource_id = resource_id;
   this->has_transparent_background = has_transparent_background;
   this->cache_render_pass = cache_render_pass;
   this->has_damage_from_contributing_content =
@@ -121,7 +124,6 @@ void CompositorRenderPass::AsValueInto(
   RenderPassInternal::AsValueInto(value);
 
   value->SetString("subtree_capture_id", subtree_capture_id.ToString());
-
   cc::MathUtil::AddToTracedValue("subtree_size", subtree_size, value);
 
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
@@ -171,6 +173,9 @@ DrawQuad* CompositorRenderPass::CopyFromAndAppendDrawQuad(
     case DrawQuad::Material::kYuvVideoContent:
       quad_list.AllocateAndCopyFrom(YUVVideoDrawQuad::MaterialCast(quad));
       break;
+    case DrawQuad::Material::kSharedElement:
+      quad_list.AllocateAndCopyFrom(SharedElementDrawQuad::MaterialCast(quad));
+      break;
     // RenderPass quads need to use specific CopyFrom function.
     case DrawQuad::Material::kAggregatedRenderPass:
     case DrawQuad::Material::kCompositorRenderPass:
@@ -194,9 +199,9 @@ std::unique_ptr<CompositorRenderPass> CompositorRenderPass::DeepCopy() const {
   copy_pass->SetAll(id, output_rect, damage_rect, transform_to_root_target,
                     filters, backdrop_filters, backdrop_filter_bounds,
                     subtree_capture_id, subtree_size,
-                    has_transparent_background, cache_render_pass,
-                    has_damage_from_contributing_content, generate_mipmap,
-                    has_per_quad_damage);
+                    shared_element_resource_id, has_transparent_background,
+                    cache_render_pass, has_damage_from_contributing_content,
+                    generate_mipmap, has_per_quad_damage);
 
   if (shared_quad_state_list.empty()) {
     DCHECK(quad_list.empty());

@@ -25,10 +25,12 @@ include_rules = [
     "+skia/ext/platform_canvas.h",
 
     "+base/atomicops.h",
-    "+base/bind_post_task.h",
+    "+base/task/bind_post_task.h",
     "+base/files/file.h",
     "+base/metrics/field_trial.h",
 
+    "+base/guid.h",
+    "+base/token.h",
     "+base/trace_event/trace_event.h",
     "+base/unguessable_token.h",
     "+media/audio",

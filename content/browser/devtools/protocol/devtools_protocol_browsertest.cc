@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -74,7 +75,7 @@
 #include "ui/snapshot/snapshot.h"
 
 #if defined(OS_POSIX)
-#include "base/deferred_sequenced_task_runner.h"
+#include "base/task/deferred_sequenced_task_runner.h"
 #include "base/tracing/perfetto_task_runner.h"
 #include "services/tracing/perfetto/system_test_utils.h"
 #endif
@@ -293,7 +294,8 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, DISABLED_KeyboardEventAck) {
   EXPECT_EQ(3u, result_ids_.size());
 }
 
-IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventAck) {
+// Flaky: https://crbug.com/1263461
+IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, DISABLED_MouseEventAck) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
   ASSERT_TRUE(content::ExecJs(
@@ -1582,7 +1584,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateError) {
   GURL test_url = https_server.GetURL("/devtools/navigation.html");
   std::unique_ptr<base::DictionaryValue> params;
   std::unique_ptr<base::DictionaryValue> command_params;
-  int eventId;
+  absl::optional<int> eventId;
 
   shell()->LoadURL(GURL("about:blank"));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
@@ -1605,9 +1607,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateError) {
   EXPECT_EQ(
       test_url,
       shell()->web_contents()->GetController().GetPendingEntry()->GetURL());
-  EXPECT_TRUE(params->GetInteger("eventId", &eventId));
+  eventId = params->FindIntKey("eventId");
+  ASSERT_TRUE(eventId);
   command_params = std::make_unique<base::DictionaryValue>();
-  command_params->SetInteger("eventId", eventId);
+  command_params->SetInteger("eventId", *eventId);
   command_params->SetString("action", "cancel");
   SendCommand("Security.handleCertificateError", std::move(command_params),
               false);
@@ -1625,9 +1628,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateError) {
   TestNavigationObserver continue_observer(shell()->web_contents(), 1);
   shell()->LoadURL(test_url);
   params = WaitForNotification("Security.certificateError", false);
-  EXPECT_TRUE(params->GetInteger("eventId", &eventId));
+  eventId = params->FindIntKey("eventId");
+  EXPECT_TRUE(eventId);
   command_params = std::make_unique<base::DictionaryValue>();
-  command_params->SetInteger("eventId", eventId);
+  command_params->SetInteger("eventId", *eventId);
   command_params->SetString("action", "continue");
   SendCommand("Security.handleCertificateError", std::move(command_params),
               false);
@@ -1747,7 +1751,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SubresourceWithCertificateError) {
   GURL test_url = https_server.GetURL("/image.html");
   std::unique_ptr<base::DictionaryValue> params;
   std::unique_ptr<base::DictionaryValue> command_params;
-  int eventId;
+  absl::optional<int> eventId;
 
   shell()->LoadURL(GURL("about:blank"));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
@@ -1764,18 +1768,20 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SubresourceWithCertificateError) {
 
   // Expect certificateError event for main frame.
   params = WaitForNotification("Security.certificateError", false);
-  EXPECT_TRUE(params->GetInteger("eventId", &eventId));
+  eventId = params->FindIntKey("eventId");
+  ASSERT_TRUE(eventId);
   command_params = std::make_unique<base::DictionaryValue>();
-  command_params->SetInteger("eventId", eventId);
+  command_params->SetInteger("eventId", *eventId);
   command_params->SetString("action", "continue");
   SendCommand("Security.handleCertificateError", std::move(command_params),
               false);
 
   // Expect certificateError event for image.
   params = WaitForNotification("Security.certificateError", false);
-  EXPECT_TRUE(params->GetInteger("eventId", &eventId));
+  eventId = params->FindIntKey("eventId");
+  ASSERT_TRUE(eventId);
   command_params = std::make_unique<base::DictionaryValue>();
-  command_params->SetInteger("eventId", eventId);
+  command_params->SetInteger("eventId", *eventId);
   command_params->SetString("action", "continue");
   SendCommand("Security.handleCertificateError", std::move(command_params),
               false);
@@ -2722,6 +2728,27 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DISABLED_MultiDownload) {
       file2, GetTestFilePath("download", "download-test.lib")));
 }
 #endif  // !defined(ANDROID)
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, UnsafeOperations) {
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+
+  base::Value params(base::Value::Type::DICTIONARY);
+  params.SetStringKey("url", "http://www.example.com/hello.js");
+  params.SetStringKey("data", "Tm90aGluZyB0byBzZWUgaGVyZSE=");
+
+  SendCommand("Page.addCompilationCache",
+              std::make_unique<base::Value>(params.Clone()));
+  EXPECT_TRUE(result_);
+  Detach();
+  SetAllowUnsafeOperations(false);
+  Attach();
+  SendCommand("Page.addCompilationCache",
+              std::make_unique<base::Value>(params.Clone()));
+  EXPECT_THAT(error_, base::test::DictionaryHasValue(
+                          "code", base::Value(static_cast<int>(
+                                      crdtp::DispatchCode::SERVER_ERROR))));
+}
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TracingWithPerfettoConfig) {
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());

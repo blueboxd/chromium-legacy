@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -94,6 +94,9 @@ class TestWebContentsViewDelegate : public WebContentsViewDelegate {
 class WebContentsViewAuraTest : public ContentBrowserTest {
  public:
   WebContentsViewAuraTest() = default;
+
+  WebContentsViewAuraTest(const WebContentsViewAuraTest&) = delete;
+  WebContentsViewAuraTest& operator=(const WebContentsViewAuraTest&) = delete;
 
   // Starts the test server and navigates to the given url. Sets a large enough
   // size to the root window.  Returns after the navigation to the url is
@@ -298,8 +301,6 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
  private:
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsViewAuraTest);
 };
 
 // Flaky on Windows: http://crbug.com/305722
@@ -586,8 +587,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DragDropOnOopif) {
     run_loop.Run();
 
     EXPECT_EQ(drop_target_widget_,
-              RenderWidgetHostImpl::From(contents->GetFrameTree()
-                                             ->root()
+              RenderWidgetHostImpl::From(contents->GetPrimaryFrameTree()
+                                             .root()
                                              ->current_frame_host()
                                              ->GetRenderWidgetHost()));
   }
@@ -619,8 +620,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DragDropOnOopif) {
     run_loop.Run();
 
     EXPECT_EQ(drop_target_widget_,
-              RenderWidgetHostImpl::From(contents->GetFrameTree()
-                                             ->root()
+              RenderWidgetHostImpl::From(contents->GetPrimaryFrameTree()
+                                             .root()
                                              ->current_frame_host()
                                              ->GetRenderWidgetHost()));
   }
@@ -974,8 +975,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, GetDropCallback_Run) {
   EXPECT_TRUE(drag_dest_delegate_.GetOnDropCalled());
   EXPECT_FALSE(drag_dest_delegate_.GetOnDragLeaveCalled());
   EXPECT_EQ(drop_target_widget_,
-            RenderWidgetHostImpl::From(contents->GetFrameTree()
-                                           ->root()
+            RenderWidgetHostImpl::From(contents->GetPrimaryFrameTree()
+                                           .root()
                                            ->current_frame_host()
                                            ->GetRenderWidgetHost()));
 }

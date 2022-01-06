@@ -171,6 +171,7 @@ application extensions:
 -   `${prefix}.chrome.ios.dev`
 -   `${prefix}.chrome.ios.dev.ContentTodayExtension`
 -   `${prefix}.chrome.ios.dev.CredentialProviderExtension`
+-   `${prefix}.chrome.ios.dev.IntentsExtension`
 -   `${prefix}.chrome.ios.dev.SearchTodayExtension`
 -   `${prefix}.chrome.ios.dev.ShareExtension`
 -   `${prefix}.chrome.ios.dev.TodayExtension`
@@ -237,7 +238,7 @@ installed that could sign the `ios_web_shell.app` bundle with the identity
 request such a mobile provisioning profile from Apple.
 
 You can inspect the file passed via the `-e` flag to the `codesign.py` script
-to check which capabilites are required for the mobile provisioning profile
+to check which capabilities are required for the mobile provisioning profile
 (e.g. `src/build/config/ios/entitlements.plist` for the above build error,
 remember that the paths are relative to the build directory, not to the source
 directory).

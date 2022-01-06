@@ -53,8 +53,7 @@ ScrollableAppsGridView::ScrollableAppsGridView(
     views::ScrollView* parent_scroll_view,
     AppListFolderController* folder_controller,
     AppsGridViewFocusDelegate* focus_delegate)
-    : AppsGridView(/*contents_view=*/nullptr,
-                   a11y_announcer,
+    : AppsGridView(a11y_announcer,
                    view_delegate,
                    folder_delegate,
                    folder_controller,
@@ -98,7 +97,7 @@ gfx::Size ScrollableAppsGridView::GetTileViewSize() const {
   return gfx::Size(config->grid_tile_width(), config->grid_tile_height());
 }
 
-gfx::Insets ScrollableAppsGridView::GetTilePadding() const {
+gfx::Insets ScrollableAppsGridView::GetTilePadding(int page) const {
   if (has_fixed_tile_padding_)
     return gfx::Insets(-vertical_tile_padding_, -horizontal_tile_padding_);
 
@@ -126,9 +125,10 @@ gfx::Size ScrollableAppsGridView::GetTileGridSize() const {
   }
   const bool is_last_row_full = (items % cols() == 0);
   const int rows = is_last_row_full ? items / cols() : items / cols() + 1;
-  gfx::Size tile_size = GetTotalTileSize();
-  gfx::Size grid_size(tile_size.width() * cols(), tile_size.height() * rows);
-  return grid_size;
+  gfx::Size tile_size = GetTotalTileSize(/*page=*/0);
+  gfx::Rect grid(tile_size.width() * cols(), tile_size.height() * rows);
+  grid.Inset(-GetTilePadding(/*page=*/0));
+  return grid.size();
 }
 
 int ScrollableAppsGridView::GetPaddingBetweenPages() const {
@@ -278,15 +278,15 @@ bool ScrollableAppsGridView::CanAutoScrollView(
   return visible_rect.bottom() < scroll_view_->contents()->height();
 }
 
-void ScrollableAppsGridView::HandleScrollFromAppListView(
+void ScrollableAppsGridView::HandleScrollFromParentView(
     const gfx::Vector2d& offset,
     ui::EventType type) {
   // AppListView uses a paged apps grid view, so this must be a folder opened
   // in the fullscreen launcher.
   DCHECK(IsInFolder());
 
-  // TODO(crbug.com/1214064): Handle scroll events once folders are working.
-  NOTIMPLEMENTED_LOG_ONCE();
+  // Scroll events in the folder view title area should scroll the view.
+  scroll_view_->vertical_scroll_bar()->OnScroll(/*dx=*/0, offset.y());
 }
 
 void ScrollableAppsGridView::SetFocusAfterEndDrag() {

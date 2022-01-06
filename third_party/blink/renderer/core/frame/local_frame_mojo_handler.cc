@@ -653,7 +653,7 @@ void LocalFrameMojoHandler::GetResourceSnapshotForWebBundle(
 void LocalFrameMojoHandler::CopyImageAt(const gfx::Point& window_point) {
   gfx::Point viewport_position =
       frame_->GetWidgetForLocalRoot()->DIPsToRoundedBlinkSpace(window_point);
-  frame_->CopyImageAtViewportPoint(IntPoint(viewport_position));
+  frame_->CopyImageAtViewportPoint(viewport_position);
 }
 
 void LocalFrameMojoHandler::SaveImageAt(const gfx::Point& window_point) {
@@ -703,9 +703,7 @@ void LocalFrameMojoHandler::MediaPlayerActionAt(
     blink::mojom::blink::MediaPlayerActionPtr action) {
   gfx::Point viewport_position =
       frame_->GetWidgetForLocalRoot()->DIPsToRoundedBlinkSpace(window_point);
-  IntPoint location(viewport_position);
-
-  frame_->MediaPlayerActionAtViewportPoint(location, action->type,
+  frame_->MediaPlayerActionAtViewportPoint(viewport_position, action->type,
                                            action->enable);
 }
 
@@ -883,18 +881,19 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequestForTests(
 
   v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
   v8::Local<v8::Value> result;
+
+  // `kDoNotSanitize` is used because this is only for tests and some tests
+  // need `kDoNotSanitize` for dynamic imports.
+  ClassicScript* script = ClassicScript::CreateUnspecifiedScript(
+      javascript, SanitizeScriptErrors::kDoNotSanitize);
+
   if (world_id == DOMWrapperWorld::kMainWorldId) {
-    result = ClassicScript::CreateUnspecifiedScript(javascript)
-                 ->RunScriptAndReturnValue(DomWindow());
+    result = script->RunScriptAndReturnValue(DomWindow());
   } else {
     CHECK_GT(world_id, DOMWrapperWorld::kMainWorldId);
     CHECK_LT(world_id, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit);
-    // Note: An error event in an isolated world will never be dispatched to
-    // a foreign world.
     result =
-        ClassicScript::CreateUnspecifiedScript(
-            javascript, SanitizeScriptErrors::kDoNotSanitize)
-            ->RunScriptInIsolatedWorldAndReturnValue(DomWindow(), world_id);
+        script->RunScriptInIsolatedWorldAndReturnValue(DomWindow(), world_id);
   }
 
   if (wants_result) {
@@ -1081,13 +1080,20 @@ void LocalFrameMojoHandler::HandleRendererDebugURL(const KURL& url) {
 
 void LocalFrameMojoHandler::GetCanonicalUrlForSharing(
     GetCanonicalUrlForSharingCallback callback) {
-  KURL canonical_url;
+  KURL canon_url;
   HTMLLinkElement* link_element = GetDocument()->LinkCanonical();
-  if (link_element)
-    canonical_url = link_element->Href();
-  std::move(callback).Run(canonical_url.IsNull()
-                              ? absl::nullopt
-                              : absl::make_optional(canonical_url));
+  if (link_element) {
+    canon_url = link_element->Href();
+    KURL doc_url = GetDocument()->Url();
+    // When sharing links to pages, the fragment identifier often serves to mark a specific place
+    // within the page that the user wishes to point the recipient to. Canonical URLs generally
+    // don't and can't contain this state, so try to match user expectations a little more closely
+    // here by splicing the fragment identifier (if there is one) into the shared URL.
+    if (doc_url.HasFragmentIdentifier() && !canon_url.HasFragmentIdentifier())
+      canon_url.SetFragmentIdentifier(doc_url.FragmentIdentifier());
+  }
+  std::move(callback).Run(canon_url.IsNull() ? absl::nullopt
+                                             : absl::make_optional(canon_url));
 }
 
 void LocalFrameMojoHandler::AnimateDoubleTapZoom(const gfx::Point& point,
@@ -1133,7 +1139,7 @@ void LocalFrameMojoHandler::PluginActionAt(
     mojom::blink::PluginActionType action) {
   // TODO(bokan): Location is probably in viewport coordinates
   HitTestResult result =
-      HitTestResultForRootFramePos(frame_, PhysicalOffset(IntPoint(location)));
+      HitTestResultForRootFramePos(frame_, PhysicalOffset(location));
   Node* node = result.InnerNode();
   if (!IsA<HTMLObjectElement>(*node) && !IsA<HTMLEmbedElement>(*node))
     return;

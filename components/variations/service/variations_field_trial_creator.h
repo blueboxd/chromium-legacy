@@ -44,7 +44,9 @@ enum class SeedUsage {
   kRegularSeedUsedAfterEmptySafeSeedLoaded = 6,
   kExpiredRegularSeedNotUsedAfterEmptySafeSeedLoaded = 7,
   kCorruptedRegularSeedNotUsedAfterEmptySafeSeedLoaded = 8,
-  kMaxValue = kCorruptedRegularSeedNotUsedAfterEmptySafeSeedLoaded,
+  kRegularSeedForFutureMilestoneNotUsed = 9,
+  kSafeSeedForFutureMilestoneNotUsed = 10,
+  kMaxValue = kSafeSeedForFutureMilestoneNotUsed,
 };
 
 // Denotes a variations seed's expiry state. Exposed for testing.
@@ -77,7 +79,7 @@ class PlatformFieldTrials;
 class SafeSeedManager;
 class VariationsServiceClient;
 
-// Used to setup field trials based on stored variations seed data.
+// Used to set up field trials based on stored variations seed data.
 class VariationsFieldTrialCreator {
  public:
   // Caller is responsible for ensuring that objects passed to the constructor
@@ -128,7 +130,7 @@ class VariationsFieldTrialCreator {
   // explicit --disable-features and --enable-features from the command line
   // take precedence over |extra_overrides|, which takes precedence over the
   // field trials.
-  bool SetupFieldTrials(
+  bool SetUpFieldTrials(
       const std::vector<std::string>& variation_ids,
       const std::vector<base::FeatureList::FeatureOverrideInfo>&
           extra_overrides,
@@ -176,6 +178,18 @@ class VariationsFieldTrialCreator {
   // Returns the locale that was used for evaluating trials.
   const std::string& application_locale() const { return application_locale_; }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // TODO(crbug/1248239, crbug/1255305): Remove ifdef once the Extended
+  // Variations Safe Mode experiment is enabled on Clank and re-enabled on iOS.
+ protected:
+  // If the client is in an Extended Variations Safe Mode experiment group,
+  // applies group-specific behavior. Does nothing if the client is not in the
+  // experiment. See CleanExitBeacon::Initialize() for group assignment details.
+  // Protected and virtual for testing.
+  virtual void MaybeExtendVariationsSafeMode(
+      metrics::MetricsStateManager* metrics_state_manager);
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
  private:
   // Returns true if the loaded VariationsSeed has expired. An expired seed is
   // one that (a) was fetched over |kMaxVariationsSeedAgeDays| ago and (b) is
@@ -183,6 +197,12 @@ class VariationsFieldTrialCreator {
   //
   // Also, records a couple VariationsSeed-related metrics.
   bool HasSeedExpired(bool is_safe_seed);
+
+  // Returns true if the loaded VariationsSeed is for a future milestone (e.g.
+  // if the client is on M92 and the seed was fetched with M93). A seed for a
+  // future milestone is invalid as it may be missing studies filtered out by
+  // the server.
+  bool IsSeedForFutureMilestone(bool is_safe_seed);
 
   // Creates field trials based on the variations seed loaded from local state.
   // If there is a problem loading the seed data, all trials specified by the
@@ -208,14 +228,6 @@ class VariationsFieldTrialCreator {
 
   // Get the platform we're running on, respecting OverrideVariationsPlatform().
   Study::Platform GetPlatform();
-
-#if !defined(OS_ANDROID)
-  // On channels that support the ExtendedVariationsSafeMode experiment, (a)
-  // assigns the client to an experiment group and (b) applies group-specific
-  // behavior. Does nothing if the channel does not support the experiment.
-  void MaybeExtendVariationsSafeMode(
-      metrics::MetricsStateManager* metrics_state_manager) const;
-#endif
 
   PrefService* local_state() { return seed_store_->local_state(); }
   const PrefService* local_state() const { return seed_store_->local_state(); }

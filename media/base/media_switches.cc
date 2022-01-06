@@ -185,11 +185,12 @@ const char kOverrideEnabledCdmInterfaceVersion[] =
     "override-enabled-cdm-interface-version";
 
 // Overrides hardware secure codecs support for testing. If specified, real
-// platform hardware secure codecs check will be skipped. Codecs are separated
-// by comma. Valid video codecs are "vp8", "vp9", "avc1" and "hevc", and valid
-// audio codecs are "mp4a" and "vorbis". For example:
-//  --override-hardware-secure-codecs-for-testing=vp8,vp9
-//  --override-hardware-secure-codecs-for-testing=avc1
+// platform hardware secure codecs check will be skipped. Valid codecs are:
+// - video: "vp8", "vp9", "avc1", "hevc", "dolbyvision"
+// - audio: "mp4a", "vorbis"
+// Codecs are separated by comma. For example:
+//  --override-hardware-secure-codecs-for-testing=vp8,vp9,vorbis
+//  --override-hardware-secure-codecs-for-testing=avc1,mp4a
 // CENC encryption scheme is assumed to be supported for the specified codecs.
 // If no valid codecs specified, no hardware secure codecs are supported. This
 // can be used to disable hardware secure codecs support:
@@ -538,9 +539,6 @@ const base::Feature kVaapiVP9Encoder{"VaapiVP9Encoder",
 // Enable H264 temporal layer encoding with HW encoder on ChromeOS.
 const base::Feature kVaapiH264TemporalLayerHWEncoding{
     "VaapiH264TemporalLayerEncoding", base::FEATURE_ENABLED_BY_DEFAULT};
-// Enable VP9 k-SVC decoding with HW decoder for webrtc use case on ChromeOS.
-const base::Feature kVaapiVp9kSVCHWDecoding{"VaapiVp9kSVCHWDecoding",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 // Enable VP9 k-SVC encoding with HW encoder for webrtc use case on ChromeOS.
 const base::Feature kVaapiVp9kSVCHWEncoding{"VaapiVp9kSVCHWEncoding",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
@@ -550,6 +548,23 @@ const base::Feature kVaapiVp9kSVCHWEncoding{"VaapiVp9kSVCHWEncoding",
 // Inform video blitter of video color space.
 const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable VP9 k-SVC decoding with HW decoder for webrtc use case.
+const base::Feature kVp9kSVCHWDecoding {
+  "Vp9kSVCHWDecoding",
+#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+// Takes a reference on a video frame, keeping it alive during the duration of a
+// video.requestVideoFrameCallback call. Doesn't change anything to the API for
+// now, as this is only used to measure the potential impact of keeping frames
+// alive for longer. See crbug.com/1259784.
+const base::Feature kKeepRvfcFrameAlive{"keep-rvfc-frame-alive",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables support for External Clear Key (ECK) key system for testing on
 // supported platforms. On platforms that do not support ECK, this feature has
@@ -696,6 +711,12 @@ const base::Feature kUseAudioLatencyFromHAL{"UseAudioLatencyFromHAL",
 // the GPU main thread during VideoFrame construction.
 const base::Feature kUsePooledSharedImageVideoProvider{
     "UsePooledSharedImageVideoProvider", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Historically we hardcoded sRGB for color space. This flags controls if we
+// pass real color space to VideoFrame/SharedImages.
+const base::Feature kUseRealColorSpaceForAndroidVideo{
+    "UseRealColorSpaceForAndroidVideo", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -739,14 +760,13 @@ const base::Feature kDirectShowGetPhotoState{"DirectShowGetPhotoState",
 const base::Feature kIncludeIRCamerasInDeviceEnumeration{
     "IncludeIRCamerasInDeviceEnumeration", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables asynchronous H264 HW encode acceleration using Media Foundation for
-// Windows.
-const base::Feature kMediaFoundationAsyncH264Encoding{
-    "MediaFoundationAsyncH264Encoding", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables AV1 decode acceleration for Windows.
 const base::Feature MEDIA_EXPORT kMediaFoundationAV1Decoding{
     "MediaFoundationAV1Decoding", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables AV1 encode acceleration for Windows.
+const base::Feature MEDIA_EXPORT kMediaFoundationAV1Encoding{
+    "MediaFoundationAV1Encoding", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables MediaFoundation based video capture
 const base::Feature kMediaFoundationVideoCapture{
@@ -879,16 +899,6 @@ const base::Feature kInternalMediaSession {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-const base::Feature kKaleidoscope{"Kaleidoscope",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kKaleidoscopeInMenu{"KaleidoscopeInMenu",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kKaleidoscopeForceShowFirstRunExperience{
-    "KaleidoscopeForceShowFirstRunExperience",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Keypress detection which serves as input to noise suppression methods
 // in WebRTC clients. This functionality is enabled by default but it can be

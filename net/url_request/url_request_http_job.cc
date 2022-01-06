@@ -25,9 +25,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -597,8 +597,10 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
                                                request_->site_for_cookies())) {
       force_ignore_site_for_cookies = true;
     }
-    bool is_main_frame_navigation = IsolationInfo::RequestType::kMainFrame ==
-                                    request_->isolation_info().request_type();
+    bool is_main_frame_navigation =
+        IsolationInfo::RequestType::kMainFrame ==
+            request_->isolation_info().request_type() ||
+        request_->force_main_frame_for_same_site_cookies();
     CookieOptions::SameSiteCookieContext same_site_context =
         net::cookie_util::ComputeSameSiteContextForRequest(
             request_->method(), request_->url_chain(),

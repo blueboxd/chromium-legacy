@@ -23,7 +23,7 @@ class ContinueTaskView;
 // The container for the Continue Tasks results view. The view contains a preset
 // number of ContinueTaskViews that get populated based on the list of results
 // passed in SetResult.
-// ContinueTaskContainerView will accommodate Continue Task views in a grid
+// ContinueTaskContainerView will accommodate Continue Task views in a table
 // layout with the number of columns specified at construction.
 class ASH_EXPORT ContinueTaskContainerView : public ui::ListModelObserver,
                                              public views::View {
@@ -34,7 +34,8 @@ class ASH_EXPORT ContinueTaskContainerView : public ui::ListModelObserver,
 
   ContinueTaskContainerView(AppListViewDelegate* view_delegate,
                             int columns,
-                            OnResultsChanged update_callback);
+                            OnResultsChanged update_callback,
+                            bool tablet_mode);
   ContinueTaskContainerView(const ContinueTaskContainerView&) = delete;
   ContinueTaskContainerView& operator=(const ContinueTaskContainerView&) =
       delete;

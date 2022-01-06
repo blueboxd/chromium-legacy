@@ -82,6 +82,7 @@
       "symbol_level": 1,
       "target_os": "chromeos",
       "use_goma": true,
+      "use_py3_for_perf": true,
       "use_thin_lto": true
     }
   },
@@ -93,7 +94,8 @@
       "strip_absolute_paths_from_debug_symbols": true,
       "symbol_level": 1,
       "use_gnome_keyring": false,
-      "use_goma": true
+      "use_goma": true,
+      "use_py3_for_perf": true
     }
   },
   "linux-builder-perf-rel": {

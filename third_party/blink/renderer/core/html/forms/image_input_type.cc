@@ -64,22 +64,22 @@ void ImageInputType::AppendToFormData(FormData& form_data) const {
     return;
   const AtomicString& name = GetElement().GetName();
   if (name.IsEmpty()) {
-    form_data.AppendFromElement("x", click_location_.X());
-    form_data.AppendFromElement("y", click_location_.Y());
+    form_data.AppendFromElement("x", click_location_.x());
+    form_data.AppendFromElement("y", click_location_.y());
     return;
   }
 
   DEFINE_STATIC_LOCAL(String, dot_x_string, (".x"));
   DEFINE_STATIC_LOCAL(String, dot_y_string, (".y"));
-  form_data.AppendFromElement(name + dot_x_string, click_location_.X());
-  form_data.AppendFromElement(name + dot_y_string, click_location_.Y());
+  form_data.AppendFromElement(name + dot_x_string, click_location_.x());
+  form_data.AppendFromElement(name + dot_y_string, click_location_.y());
 }
 
 String ImageInputType::ResultForDialogSubmit() const {
   StringBuilder result;
-  result.AppendNumber(click_location_.X());
+  result.AppendNumber(click_location_.x());
   result.Append(',');
-  result.AppendNumber(click_location_.Y());
+  result.AppendNumber(click_location_.y());
   return result.ToString();
 }
 
@@ -87,13 +87,13 @@ bool ImageInputType::SupportsValidation() const {
   return false;
 }
 
-static IntPoint ExtractClickLocation(const Event& event) {
+static gfx::Point ExtractClickLocation(const Event& event) {
   const auto* mouse_event = DynamicTo<MouseEvent>(event.UnderlyingEvent());
   if (!event.UnderlyingEvent() || !mouse_event)
-    return IntPoint();
+    return gfx::Point();
   if (!mouse_event->HasPosition())
-    return IntPoint();
-  return IntPoint(mouse_event->offsetX(), mouse_event->offsetY());
+    return gfx::Point();
+  return gfx::Point(mouse_event->offsetX(), mouse_event->offsetY());
 }
 
 void ImageInputType::HandleDOMActivateEvent(Event& event) {
@@ -176,7 +176,7 @@ unsigned ImageInputType::Height() const {
     if (image_loader && image_loader->GetContent()) {
       return image_loader->GetContent()
           ->IntrinsicSize(kRespectImageOrientation)
-          .Height();
+          .height();
     }
   }
 
@@ -202,7 +202,7 @@ unsigned ImageInputType::Width() const {
     if (image_loader && image_loader->GetContent()) {
       return image_loader->GetContent()
           ->IntrinsicSize(kRespectImageOrientation)
-          .Width();
+          .width();
     }
   }
 

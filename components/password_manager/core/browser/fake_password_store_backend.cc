@@ -5,7 +5,7 @@
 #include "components/password_manager/core/browser/fake_password_store_backend.h"
 
 #include "base/notreached.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
@@ -118,9 +118,14 @@ FieldInfoStore* FakePasswordStoreBackend::GetFieldInfoStore() {
 }
 
 std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
-FakePasswordStoreBackend::CreateSyncControllerDelegateFactory() {
+FakePasswordStoreBackend::CreateSyncControllerDelegate() {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+void FakePasswordStoreBackend::GetSyncStatus(
+    base::OnceCallback<void(bool)> callback) {
+  NOTIMPLEMENTED();
 }
 
 LoginsResult FakePasswordStoreBackend::GetAllLoginsInternal() {
@@ -176,7 +181,8 @@ LoginsResult FakePasswordStoreBackend::FillMatchingLoginsHelper(
         // Repeat the condition above with an additional check for origin.
         if (realm_matches || realm_psl_matches ||
             (form.scheme == PasswordForm::Scheme::kHtml &&
-             stored_form.url.GetOrigin() == form.url.GetOrigin() &&
+             stored_form.url.DeprecatedGetOriginAsURL() ==
+                 form.url.DeprecatedGetOriginAsURL() &&
              password_manager::IsFederatedRealm(stored_form.signon_realm,
                                                 form.url))) {
           matched_forms.push_back(std::make_unique<PasswordForm>(stored_form));

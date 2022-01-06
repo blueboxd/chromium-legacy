@@ -5,14 +5,15 @@
 #include "components/password_manager/core/browser/password_store_backend.h"
 
 #include "components/password_manager/core/browser/login_database.h"
+#include "components/password_manager/core/browser/password_store_built_in_backend.h"
+#include "components/prefs/pref_service.h"
 
 namespace password_manager {
 
 std::unique_ptr<PasswordStoreBackend> PasswordStoreBackend::Create(
-    std::unique_ptr<LoginDatabase> login_db) {
-  // TODO(crbug.com/1217071): Once PasswordStoreImpl does not implement the
-  // PasswordStore abstract class anymore, return a local backend.
-  return nullptr;
+    std::unique_ptr<LoginDatabase> login_db,
+    PrefService* prefs) {
+  return std::make_unique<PasswordStoreBuiltInBackend>(std::move(login_db));
 }
 
 }  // namespace password_manager

@@ -3,7 +3,7 @@
 <translationbundle lang="fil">
 <translation id="1096883626080133124">Makagawa ng mas maraming bagay gamit ang simple, secure, at mas mabilis na ngayong Google Chrome</translation>
 <translation id="1282031177488366470">Tumulong sa Pagpapahusay sa Mga Feature at Performance ng Chrome</translation>
-<translation id="1354592789402432496">Hinihiling sa iyo ng administrator mo na mag-sign in gamit ang isang account ng organisasyon. Nakatago ang mga account na pinaghihigpitan ng iyong administrator.</translation>
+<translation id="1314663809820920746">Makikita mo pa rin ang lahat ng iyong bookmark, history, password, at iba pang setting sa device na ito. Kung gagawa ka ng mga pagbabago, hindi masi-sync ang mga ito sa iyong Google Account.</translation>
 <translation id="1479202195792305274">Masusuri ng Chrome ang iyong mga password kapag nag-sign in ka sa Google Account mo.</translation>
 <translation id="1493827051843127077">Itakda ang Chrome bilang default para ma-sync ang iyong mga tab, password, at impormasyon sa pagbabayad sa lahat ng device mo</translation>
 <translation id="1504372625950710826">Hindi matingnan ng Chrome kung may mga update. Subukang tingnan ang iyong koneksyon sa internet.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Naka-offline, hindi matingnan ng Chrome kung may mga update</translation>
 <translation id="5716154293141027663">Buksan ang Chrome sa tuwing magta-tap ka sa mga link sa iba pang app</translation>
-<translation id="572883588166315317">Hinihiling sa iyo ng organisasyon mo na mag-sign in para magamit ang Chrome. <ph name="BEGIN_LINK" />Matuto Pa<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Tip sa Chrome. Nasa ibaba na ng iyong screen ang ilang button, tulad ng Bumalik, Susunod, at Maghanap.</translation>
-<translation id="5876773482963502140">Kung papayagan mo ang Chrome na alamin ang iyong lokasyon, ipapadala ito ng Chrome sa anumang site na papayagan mo. Posibleng hingin ng mga site ang iyong lokasyon kapag may lokal na impormasyong ipapakita sa iyo ang mga ito, tulad ng mga shop sa malapit o balita.</translation>
 <translation id="5998675059699164418">Hinihiling sa iyo ng organisasyon mo na mag-sign in para magamit ang Chrome.</translation>
 <translation id="6054613632208573261">Gamitin ang Chrome bilang Default</translation>
 <translation id="6063091872902370735">Payagan ang Pag-sign In sa Chrome</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Piliin kung iki-clear ang iyong data sa Chrome sa device na ito o kung papanatilihin ito</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Nakalaan ang lahat ng karapatan.</translation>
 <translation id="840168496893712993">Nagiging dahilan ang ilang add-on ng pag-crash ng Chrome. Pakisubukang i-uninstall ang mga ito.</translation>
+<translation id="8414886616817913619">Hinihiling sa iyo ng organisasyon mo na mag-sign in para magamit ang Chrome. <ph name="BEGIN_LINK" />Matuto Pa<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Inalis ang piniling data mula sa Chrome at mga naka-sync na device. Maaaring mayroong ibang mga uri ng history ng pag-browse ang iyong Google Account gaya ng mga paghahanap at aktibidad mula sa iba pang mga serbisyo ng Google sa history.google.com.</translation>
 <translation id="850555388806794946">Para itakda ang Chrome bilang iyong default:
   1. Buksan ang Mga Setting

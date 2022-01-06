@@ -50,8 +50,6 @@ class ReceivingUiHandlerRegistry {
   AndroidNotificationHandler* GetAndroidNotificationHandlerForProfile(
       Profile* profile);
 
-  void OnProfileShutdown(Profile* profile);
-
  private:
   friend struct base::DefaultSingletonTraits<ReceivingUiHandlerRegistry>;
 

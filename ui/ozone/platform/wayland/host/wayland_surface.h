@@ -98,12 +98,13 @@ class WaylandSurface {
   // process) for the next submitted buffer. This helps Wayland compositor to
   // determine buffer size in dip (GPU operates in pixels. So, when buffers are
   // created, their requested size is in pixels).
-  void SetSurfaceBufferScale(int32_t scale);
+  void SetSurfaceBufferScale(float scale);
 
   // Sets the region that is opaque on this surface in physical pixels. This is
   // expected to be called whenever the region that the surface span changes or
   // the opacity changes. Rects in |region_px| are specified surface-local, in
-  // physical pixels.  If |region_px| is nullptr, the opaque region is reset.
+  // physical pixels.  If |region_px| is nullptr or empty, the opaque region is
+  // reset to empty.
   void SetOpaqueRegion(const std::vector<gfx::Rect>* region_px);
 
   // Sets the input region on this surface in physical pixels.
@@ -111,7 +112,7 @@ class WaylandSurface {
   // touch input events. This is expected to be called from ToplevelWindow
   // whenever the region that the surface span changes or window state changes
   // when custom frame is used.  If |region_px| is nullptr, the input region is
-  // reset.
+  // reset to cover the entire wl_surface.
   void SetInputRegion(const gfx::Rect* region_px);
 
   // Set the source rectangle of the associated wl_surface.
@@ -146,6 +147,11 @@ class WaylandSurface {
 
   // Sets the priority hint for the overlay that is committed via this surface.
   void SetOverlayPriority(gfx::OverlayPriorityHint priority_hint);
+
+  // Sets the rounded corners for this surface. Values are radius in dip.
+  // |rounded_corners| must either be empty or all the corners must be set in
+  // the following order - top left, top right, bottom right, bottom left.
+  void SetRoundedCorners(const std::vector<float> rounded_corners);
 
   // Validates the |pending_state_| and generates the corresponding requests.
   // Then copy |pending_states_| to |states_|.
@@ -184,8 +190,8 @@ class WaylandSurface {
     ~State();
 
     std::vector<gfx::Rect> damage_px;
-    absl::optional<std::vector<gfx::Rect>> opaque_region_px;
-    absl::optional<gfx::Rect> input_region_px;
+    std::vector<gfx::Rect> opaque_region_px;
+    absl::optional<gfx::Rect> input_region_px = absl::nullopt;
 
     // The acquire gpu fence to associate with the surface buffer.
     gfx::GpuFenceHandle acquire_fence;
@@ -214,12 +220,14 @@ class WaylandSurface {
     gfx::Size viewport_px = {0, 0};
 
     // The opacity of the wl_surface used to call zcr_blending_v1_set_alpha.
-    float opacity = 0.f;
+    float opacity = 1.f;
+
     // The blending equation of the wl_surface used to call
     // zcr_blending_v1_set_blending.
-    bool use_blending = false;
+    bool use_blending = true;
 
-    gfx::OverlayPriorityHint priority_hint = gfx::OverlayPriorityHint::kNone;
+    std::vector<float> rounded_corners;
+    gfx::OverlayPriorityHint priority_hint = gfx::OverlayPriorityHint::kRegular;
   };
 
   wl::Object<wl_region> CreateAndAddRegion(
@@ -234,9 +242,11 @@ class WaylandSurface {
   // called.
   State state_;
 
+  bool SurfaceSubmissionInPixelCoordinates() const;
   // Creates (if not created) the synchronization surface and returns a pointer
   // to it.
   zwp_linux_surface_synchronization_v1* GetSurfaceSync();
+  augmented_surface* GetAugmentedSurface();
 
   WaylandConnection* const connection_;
   WaylandWindow* root_window_ = nullptr;
@@ -246,6 +256,7 @@ class WaylandSurface {
   wl::Object<zcr_blending_v1> blending_;
   wl::Object<zwp_linux_surface_synchronization_v1> surface_sync_;
   wl::Object<overlay_prioritized_surface> overlay_priority_surface_;
+  wl::Object<augmented_surface> augmented_surface_;
   base::flat_map<zwp_linux_buffer_release_v1*, ExplicitReleaseInfo>
       linux_buffer_releases_;
   ExplicitReleaseCallback explicit_release_callback_;

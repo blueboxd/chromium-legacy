@@ -11,15 +11,16 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chromecast/common/mojom/constants.mojom.h"
 #include "chromecast/external_mojo/external_service_support/external_connector.h"
+#include "chromecast/media/api/cma_backend_factory.h"
 #include "chromecast/media/api/decoder_buffer_base.h"
 #include "chromecast/media/audio/net/conversions.h"
 #include "chromecast/media/base/audio_device_ids.h"
 #include "chromecast/media/base/cast_decoder_buffer_impl.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
-#include "chromecast/media/common/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/media/stream_id.h"
@@ -42,17 +43,20 @@ namespace audio_output_service {
 CmaBackendShim::CmaBackendShim(
     base::WeakPtr<Delegate> delegate,
     scoped_refptr<base::SequencedTaskRunner> delegate_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     const audio_output_service::CmaBackendParams& params,
-    MediaPipelineBackendManager* backend_manager,
+    CmaBackendFactory* cma_backend_factory,
     external_service_support::ExternalConnector* connector)
     : delegate_(std::move(delegate)),
       delegate_task_runner_(std::move(delegate_task_runner)),
-      backend_manager_(backend_manager),
-      media_task_runner_(backend_manager_->task_runner()),
-      backend_task_runner_(backend_manager_->task_runner()),
+      cma_backend_factory_(cma_backend_factory),
+      media_task_runner_(std::move(media_task_runner)),
+      backend_task_runner_(media_task_runner_),
       backend_params_(params),
       audio_decoder_(nullptr) {
   DCHECK(delegate_task_runner_);
+  DCHECK(cma_backend_factory_);
+  DCHECK(media_task_runner_);
   DCHECK(connector);
 
   connector->BindInterface(chromecast::mojom::kChromecastServiceName,
@@ -107,7 +111,7 @@ void CmaBackendShim::InitializeOnMediaThread(
   device_params.audio_channel = multiroom_info->audio_channel;
   device_params.multiroom = multiroom_info->multiroom;
   device_params.output_delay_us = multiroom_info->output_delay.InMicroseconds();
-  cma_backend_ = backend_manager_->CreateBackend(device_params);
+  cma_backend_ = cma_backend_factory_->CreateBackend(device_params);
 
   audio_decoder_ = cma_backend_->CreateAudioDecoder();
   if (!audio_decoder_) {
@@ -229,9 +233,7 @@ void CmaBackendShim::SetPlaybackRateOnMediaThread(float playback_rate) {
   }
 
   if (backend_state_ != BackendState::kStopped) {
-    POST_DELEGATE_TASK(&Delegate::UpdateMediaTime,
-                       cma_backend_->GetCurrentPts(),
-                       base::TimeTicks::Now().ToInternalValue());
+    UpdateMediaTimeAndRenderingDelay();
   }
 
   if (playback_rate_ == 0.0f) {
@@ -320,6 +322,18 @@ bool CmaBackendShim::SetAudioConfig() {
   return audio_decoder_->SetConfig(audio_config);
 }
 
+void CmaBackendShim::UpdateMediaTimeAndRenderingDelay() {
+  if (!cma_backend_ || !audio_decoder_) {
+    return;
+  }
+  auto rendering_delay = audio_decoder_->GetRenderingDelay();
+  POST_DELEGATE_TASK(&Delegate::UpdateMediaTimeAndRenderingDelay,
+                     cma_backend_->GetCurrentPts(),
+                     base::TimeTicks::Now().since_origin().InMicroseconds(),
+                     rendering_delay.delay_microseconds,
+                     rendering_delay.timestamp_microseconds);
+}
+
 void CmaBackendShim::OnPushBufferComplete(BufferStatus status) {
   DCHECK(media_task_runner_->RunsTasksInCurrentSequence());
 
@@ -329,8 +343,7 @@ void CmaBackendShim::OnPushBufferComplete(BufferStatus status) {
     return;
   }
   POST_DELEGATE_TASK(&Delegate::OnBufferPushed);
-  POST_DELEGATE_TASK(&Delegate::UpdateMediaTime, cma_backend_->GetCurrentPts(),
-                     base::TimeTicks::Now().ToInternalValue());
+  UpdateMediaTimeAndRenderingDelay();
 }
 
 void CmaBackendShim::OnEndOfStream() {

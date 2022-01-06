@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
@@ -58,6 +58,9 @@ class PepperDeviceEnumerationHostHelper::ScopedEnumerationRequest
     sync_call_ = false;
   }
 
+  ScopedEnumerationRequest(const ScopedEnumerationRequest&) = delete;
+  ScopedEnumerationRequest& operator=(const ScopedEnumerationRequest&) = delete;
+
   bool requested() const { return requested_; }
 
  private:
@@ -78,8 +81,6 @@ class PepperDeviceEnumerationHostHelper::ScopedEnumerationRequest
   PepperDeviceEnumerationHostHelper::Delegate::DevicesOnceCallback callback_;
   bool requested_;
   bool sync_call_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedEnumerationRequest);
 };
 
 // Makes sure that StopMonitoringDevices() is called for each

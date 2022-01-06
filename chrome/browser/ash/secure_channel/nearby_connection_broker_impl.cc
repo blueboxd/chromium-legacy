@@ -4,15 +4,27 @@
 
 #include "chrome/browser/ash/secure_channel/nearby_connection_broker_impl.h"
 
+#include <memory>
+#include <utility>
+
 #include "ash/constants/ash_features.h"
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
+#include "base/files/file.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/secure_channel/nearby_endpoint_finder.h"
 #include "chrome/browser/ash/secure_channel/util/histogram_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace ash {
 namespace secure_channel {
@@ -90,6 +102,11 @@ void RecordWebRtcUpgradeDuration(base::TimeDelta duration) {
       /*buckets=*/50);
 }
 
+scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
+  return base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+}
+
 }  // namespace
 
 // static
@@ -151,7 +168,8 @@ NearbyConnectionBrokerImpl::NearbyConnectionBrokerImpl(
                              std::move(on_disconnected_callback)),
       endpoint_finder_(endpoint_finder),
       nearby_connections_(nearby_connections),
-      timer_(std::move(timer)) {
+      timer_(std::move(timer)),
+      task_runner_(CreateTaskRunner()) {
   TransitionToStatus(ConnectionStatus::kDiscoveringEndpoint);
   endpoint_finder_->FindEndpoint(
       bluetooth_public_address, eid,
@@ -226,6 +244,7 @@ void NearbyConnectionBrokerImpl::TransitionToDisconnectedAndInvokeCallback() {
     return;
 
   TransitionToStatus(ConnectionStatus::kDisconnected);
+  CleanUpPendingFileTransfers();
   InvokeDisconnectedCallback();
 }
 
@@ -424,10 +443,32 @@ void NearbyConnectionBrokerImpl::OnPayloadFileRegistered(
     Status status) {
   bool success = status == Status::kSuccess;
   if (success) {
-    file_payload_listeners_.emplace(payload_id, std::move(listener));
+    mojo::Remote<chromeos::secure_channel::mojom::FilePayloadListener>
+        listener_remote(std::move(listener));
+    // Safe to use Unretained because the Remote and its disconnect handler does
+    // not out live NearbyConnectionBrokerImpl.
+    listener_remote.set_disconnect_handler(base::BindOnce(
+        &NearbyConnectionBrokerImpl::OnFilePayloadListenerDisconnect,
+        base::Unretained(this), payload_id));
+    file_payload_listeners_.emplace(payload_id, std::move(listener_remote));
   }
   // TODO(https://crbug.com/1221297): log file payload registration results
   std::move(callback).Run(success);
+}
+
+void NearbyConnectionBrokerImpl::OnFilePayloadListenerDisconnect(
+    int64_t payload_id) {
+  file_payload_listeners_.erase(payload_id);
+}
+
+void NearbyConnectionBrokerImpl::CleanUpPendingFileTransfers() {
+  for (auto& id_to_listener : file_payload_listeners_) {
+    id_to_listener.second->OnFileTransferUpdate(mojom::FileTransferUpdate::New(
+        id_to_listener.first, mojom::FileTransferStatus::kCanceled,
+        /*total_bytes=*/0,
+        /*bytes_transferred=*/0));
+  }
+  file_payload_listeners_.clear();
 }
 
 void NearbyConnectionBrokerImpl::OnConnectionInitiated(
@@ -563,6 +604,14 @@ void NearbyConnectionBrokerImpl::OnPayloadReceived(
                       << payload->id;
       // TODO(https://crbug.com/1221297): log file payloads received
     }
+
+    // We don't need to use the base::File provided by |payload| and it should
+    // be closed in a task that may block. Otherwise the file will be closed on
+    // the current thread when |payload| goes out of scope, which would result
+    // in a DCHECK failure because base::File::Close() is a blocking call.
+    task_runner_->DeleteSoon(
+        FROM_HERE, std::make_unique<base::File>(
+                       std::move(payload->content->get_file()->file)));
   } else {
     PA_LOG(WARNING) << "OnPayloadReceived(): Received unexpected payload type "
                     << "(was expecting bytes type). Disconnecting.";

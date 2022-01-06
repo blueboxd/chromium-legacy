@@ -23,6 +23,11 @@ _NON_BRANCHED_TESTERS = {
     # the branches
     "mac-osxbeta-rel": branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 
+    # This tester is also triggered by 'Mac Builder', but we don't have enough
+    # capacity on Mac 11 to run this on the branches yet.
+    # TODO(crbug.com/1206401): Restore this when we do have capacity.
+    "Mac11 Tests": branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+
     # This tester is triggered by 'Win x64 Builder', but it is an FYI builder
     # and not mirrored by any branched try builders, so we do not need to run it
     # on the branches
@@ -31,9 +36,6 @@ _NON_BRANCHED_TESTERS = {
     # These Android testers are triggered by 'Android arm Builder (dbg)', but we
     # don't have sufficient capacity of devices with older Android versions, so
     # we do not run them on the branches
-    "Android WebView L (dbg)": branches.STANDARD_MILESTONE,
-    "Lollipop Phone Tester": branches.STANDARD_MILESTONE,
-    "Lollipop Tablet Tester": branches.STANDARD_MILESTONE,
     "Marshmallow Tablet Tester": branches.STANDARD_MILESTONE,
 }
 

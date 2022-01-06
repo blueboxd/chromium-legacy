@@ -1477,10 +1477,7 @@ DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
 
   DCHECK(db_.is_open());
 
-  // Get all autofillable (not blocklisted) logins.
-  sql::Statement s(
-      db_.GetCachedStatement(SQL_FROM_HERE, blocklisted_statement_.c_str()));
-  s.BindInt(0, 0);  // blocklisted = false
+  sql::Statement s(db_.GetUniqueStatement("SELECT * FROM logins"));
 
   std::vector<PasswordForm> forms_to_be_deleted;
 
@@ -1760,8 +1757,6 @@ FormRetrievalResult LoginDatabase::StatementToForms(
     sql::Statement* statement,
     const PasswordFormDigest* matched_form,
     PrimaryKeyToFormMap* key_to_form_map) {
-  std::vector<PasswordForm> forms_to_be_deleted;
-
   key_to_form_map->clear();
   while (statement->Step()) {
     auto new_form = std::make_unique<PasswordForm>();
@@ -1771,8 +1766,9 @@ FormRetrievalResult LoginDatabase::StatementToForms(
     EncryptionResult result = InitPasswordFormFromStatement(
         *statement, /*decrypt_and_fill_password_value=*/true, &primary_key,
         new_form.get());
-    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
+    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE) {
       return FormRetrievalResult::kEncrytionServiceFailure;
+    }
     if (result == ENCRYPTION_RESULT_ITEM_FAILURE) {
       continue;
     }
@@ -1795,18 +1791,9 @@ FormRetrievalResult LoginDatabase::StatementToForms(
     key_to_form_map->emplace(primary_key, std::move(new_form));
   }
 
-#if defined(OS_MAC)
-  // Remove corrupted passwords.
-  size_t count_removed_logins = 0;
-  for (const auto& form : forms_to_be_deleted) {
-    if (RemoveLogin(form, nullptr)) {
-      count_removed_logins++;
-    }
-  }
-#endif
-
-  if (!statement->Succeeded())
+  if (!statement->Succeeded()) {
     return FormRetrievalResult::kDbError;
+  }
   return FormRetrievalResult::kSuccess;
 }
 

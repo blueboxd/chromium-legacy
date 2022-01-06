@@ -9,12 +9,12 @@ import '../strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {hasKeyModifiers} from 'chrome://resources/js/util.m.js';
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {DarkModeMixin, DarkModeMixinInterface} from '../dark_mode_mixin.js';
+import {DarkModeMixin} from '../dark_mode_mixin.js';
 import {Coordinate2d} from '../data/coordinate2d.js';
 import {Destination} from '../data/destination.js';
 import {getPrinterTypeForDestination} from '../data/destination_match.js';
@@ -31,7 +31,7 @@ import {areRangesEqual} from '../print_preview_utils.js';
 
 import {MARGIN_KEY_MAP, MarginObject, PrintPreviewMarginControlContainerElement} from './margin_control_container.js';
 import {PluginProxy, PluginProxyImpl} from './plugin_proxy.js';
-import {SettingsMixin, SettingsMixinInterface} from './settings_mixin.js';
+import {SettingsMixin} from './settings_mixin.js';
 
 type PreviewTicket = Ticket&{
   headerFooterEnabled: boolean;
@@ -54,12 +54,7 @@ export interface PrintPreviewPreviewAreaElement {
 }
 
 const PrintPreviewPreviewAreaElementBase =
-    mixinBehaviors(
-        [WebUIListenerBehavior, I18nBehavior],
-        SettingsMixin(DarkModeMixin(PolymerElement))) as {
-      new (): PolymerElement & WebUIListenerBehavior & I18nBehavior &
-      SettingsMixinInterface & DarkModeMixinInterface
-    };
+    WebUIListenerMixin(I18nMixin(SettingsMixin(DarkModeMixin(PolymerElement))));
 
 export class PrintPreviewPreviewAreaElement extends
     PrintPreviewPreviewAreaElementBase {
@@ -82,38 +77,30 @@ export class PrintPreviewPreviewAreaElement extends
         notify: true,
       },
 
-      /** @type {Margins} */
       margins: Object,
 
-      /** @type {?MeasurementSystem} */
       measurementSystem: Object,
 
-      /** @type {!Size} */
       pageSize: Object,
 
-      /** @type {!PreviewAreaState} */
       previewState: {
         type: String,
         notify: true,
         value: PreviewAreaState.LOADING,
       },
 
-      /** @type {!State} */
       state: Number,
 
-      /** @private {boolean} Whether the plugin completely loaded the preview */
       pluginLoadComplete_: {
         type: Boolean,
         value: false,
       },
 
-      /** @private {boolean} Whether the document is ready */
       documentReady_: {
         type: Boolean,
         value: false,
       },
 
-      /** @private {boolean} */
       previewLoaded_: {
         type: Boolean,
         notify: true,
@@ -256,7 +243,7 @@ export class PrintPreviewPreviewAreaElement extends
   }
 
   /**
-   * @return {string} The current preview area message to display.
+   * @return The current preview area message to display.
    */
   private currentMessage_(): string {
     switch (this.previewState) {
@@ -788,8 +775,6 @@ export class PrintPreviewPreviewAreaElement extends
       case Error.NO_DESTINATIONS:
         return this.i18n('noDestinationsMessage');
       // </if>
-      case Error.NO_PLUGIN:
-        return this.i18n('noPlugin');
       case Error.PREVIEW_FAILED:
         return this.i18n('previewFailed');
       default:

@@ -44,7 +44,7 @@ class SendTabToSelfToolbarIconController
 
   void RemoveDelegate(SendTabToSelfToolbarIconControllerDelegate* delegate);
 
-  const Profile* profile() const override;
+  Profile* profile() const { return profile_; }
 
   void LogNotificationOpened();
 

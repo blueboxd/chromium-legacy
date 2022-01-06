@@ -35,6 +35,11 @@ extern const wchar_t kPrefsAccessMutex[];
   L"Software\\Microsoft\\Internet Explorer\\" \
   L"InternetRegistry\\REGISTRY\\USER"
 
+// The environment variable is created into the environment of the installer
+// process to indicate the updater scope. The valid values for the environment
+// variable are "0" and "1".
+#define ENV_GOOGLE_UPDATE_IS_MACHINE COMPANY_SHORTNAME_STRING L"UpdateIsMachine"
+
 extern const wchar_t kRegValuePV[];
 extern const wchar_t kRegValueName[];
 
@@ -58,6 +63,16 @@ extern const wchar_t kRegValueDmToken[];
 
 extern const wchar_t kWindowsServiceName[];
 extern const wchar_t kWindowsInternalServiceName[];
+
+// crbug.com/1259178: there is a race condition on activating the COM service
+// and the service shutdown. The race condition is likely to occur when a new
+// instance of an updater coclass is created right after the last reference
+// to an object hosted by the COM service is released. The execution flow inside
+// the updater is sequential, for the most part. Therefore, introducing a slight
+// delay before creating coclasses reduces (but it does not eliminate) the
+// probability of running into this race condition, until a better soulution is
+// found.
+constexpr int kCreateUpdaterInstanceDelayMs = 100;
 
 }  // namespace updater
 

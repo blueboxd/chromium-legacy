@@ -598,8 +598,8 @@ void WebGLRenderingContextBase::commit() {
   if (!GetDrawingBuffer() || (Host() && Host()->IsOffscreenCanvas()))
     return;
 
-  int width = GetDrawingBuffer()->Size().Width();
-  int height = GetDrawingBuffer()->Size().Height();
+  int width = GetDrawingBuffer()->Size().width();
+  int height = GetDrawingBuffer()->Size().height();
 
   if (PaintRenderingResultsToCanvas(kBackBuffer)) {
     if (Host()->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)) {
@@ -630,16 +630,18 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage() {
   // custom resource provider. This avoids consuming compositing-specific
   // resources (e.g. GpuMemoryBuffer). We tag the SharedImage with display usage
   // since there are uncommon paths which may use this snapshot for compositing.
-  auto color_params = CanvasRenderingContextColorParams().GetAsResourceParams();
+  const auto image_info =
+      SkImageInfo::Make(SkISize::Make(size.width(), size.height()),
+                        CanvasRenderingContextSkColorInfo());
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::CreateSharedImageProvider(
-          size, GetDrawingBuffer()->FilterQuality(), color_params,
+          image_info, GetDrawingBuffer()->FilterQuality(),
           CanvasResourceProvider::ShouldInitialize::kNo,
           SharedGpuContext::ContextProviderWrapper(), RasterMode::kGPU,
           is_origin_top_left_, gpu::SHARED_IMAGE_USAGE_DISPLAY);
   if (!resource_provider || !resource_provider->IsValid()) {
     resource_provider = CanvasResourceProvider::CreateBitmapProvider(
-        size, GetDrawingBuffer()->FilterQuality(), color_params,
+        image_info, GetDrawingBuffer()->FilterQuality(),
         CanvasResourceProvider::ShouldInitialize::kNo);
   }
 
@@ -1010,7 +1012,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       num_gl_errors_to_console_allowed_(kMaxGLErrorsAllowedToConsole),
       context_type_(context_type),
       program_completion_queries_(
-          base::MRUCache<WebGLProgram*, GLuint>::NO_AUTO_EVICT),
+          base::LRUCache<WebGLProgram*, GLuint>::NO_AUTO_EVICT),
       number_of_user_allocated_multisampled_renderbuffers_(0) {
   DCHECK(context_provider);
 
@@ -1425,8 +1427,8 @@ bool WebGLRenderingContextBase::PushFrameNoCopy() {
   auto canvas_resource = GetDrawingBuffer()->ExportCanvasResource();
   if (!canvas_resource)
     return false;
-  const int width = GetDrawingBuffer()->Size().Width();
-  const int height = GetDrawingBuffer()->Size().Height();
+  const int width = GetDrawingBuffer()->Size().width();
+  const int height = GetDrawingBuffer()->Size().height();
   const bool submitted_frame = Host()->PushFrame(
       std::move(canvas_resource), SkIRect::MakeWH(width, height));
 
@@ -1438,8 +1440,8 @@ bool WebGLRenderingContextBase::PushFrameWithCopy() {
   bool submitted_frame = false;
   if (PaintRenderingResultsToCanvas(kBackBuffer)) {
     if (Host()->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)) {
-      const int width = GetDrawingBuffer()->Size().Width();
-      const int height = GetDrawingBuffer()->Size().Height();
+      const int width = GetDrawingBuffer()->Size().width();
+      const int height = GetDrawingBuffer()->Size().height();
       submitted_frame =
           Host()->PushFrame(Host()->ResourceProvider()->ProduceCanvasResource(),
                             SkIRect::MakeWH(width, height));
@@ -1711,8 +1713,8 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
     raster_interface->Flush();
 
     return GetDrawingBuffer()->CopyToPlatformMailbox(
-        raster_interface, mailbox, texture_target, flip_y, IntPoint(0, 0),
-        IntRect(IntPoint(0, 0), drawing_buffer_->Size()), source_buffer);
+        raster_interface, mailbox, texture_target, flip_y, gfx::Point(0, 0),
+        IntRect(gfx::Point(0, 0), drawing_buffer_->Size()), source_buffer);
   }
 
   // As the resource provider is not accelerated, we don't need an accelerated
@@ -1723,8 +1725,8 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   if (!image || !image->PaintImageForCurrentFrame())
     return false;
 
-  IntRect src_rect(IntPoint(), image->Size());
-  IntRect dest_rect(IntPoint(), resource_provider->Size());
+  IntRect src_rect(gfx::Point(), image->Size());
+  IntRect dest_rect(gfx::Point(), resource_provider->Size());
   PaintFlags flags;
   flags.setBlendMode(SkBlendMode::kSrc);
   // We use this draw helper as we need to take into account the
@@ -1734,6 +1736,26 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   image->Draw(resource_provider->Canvas(), flags, FloatRect(dest_rect),
               FloatRect(src_rect), draw_options);
   return true;
+}
+
+void WebGLRenderingContextBase::CopyRenderingResultsToVideoFrame(
+    WebGraphicsContext3DVideoFramePool* frame_pool,
+    SourceDrawingBuffer src_buffer,
+    const gfx::ColorSpace& dst_color_space,
+    VideoFrameCopyCompletedCallback& callback) {
+  if (!frame_pool)
+    return;
+
+  auto* drawing_buffer = GetDrawingBuffer();
+  if (!drawing_buffer)
+    return;
+
+  ScopedFramebufferRestorer fbo_restorer(this);
+  if (!drawing_buffer->ResolveAndBindForReadAndDraw())
+    return;
+
+  drawing_buffer->CopyToVideoFrame(frame_pool, src_buffer, is_origin_top_left_,
+                                   dst_color_space, callback);
 }
 
 IntSize WebGLRenderingContextBase::DrawingBufferSize() const {
@@ -1805,11 +1827,11 @@ void WebGLRenderingContextBase::Reshape(int width, int height) {
 }
 
 int WebGLRenderingContextBase::drawingBufferWidth() const {
-  return isContextLost() ? 0 : GetDrawingBuffer()->Size().Width();
+  return isContextLost() ? 0 : GetDrawingBuffer()->Size().width();
 }
 
 int WebGLRenderingContextBase::drawingBufferHeight() const {
-  return isContextLost() ? 0 : GetDrawingBuffer()->Size().Height();
+  return isContextLost() ? 0 : GetDrawingBuffer()->Size().height();
 }
 
 void WebGLRenderingContextBase::activeTexture(GLenum texture) {
@@ -4986,8 +5008,8 @@ void WebGLRenderingContextBase::TexImageImpl(
   // Adjust the source image rectangle if doing a y-flip.
   IntRect adjusted_source_image_rect = sub_rect;
   if (flip_y) {
-    adjusted_source_image_rect.SetY(image->height() -
-                                    adjusted_source_image_rect.MaxY());
+    adjusted_source_image_rect.set_y(image->height() -
+                                     adjusted_source_image_rect.bottom());
   }
 
   WebGLImageConversion::ImageExtractor image_extractor(
@@ -5024,27 +5046,27 @@ void WebGLRenderingContextBase::TexImageImpl(
   ScopedUnpackParametersResetRestore temporary_reset_unpack(this);
   if (function_id == kTexImage2D) {
     TexImage2DBase(target, level, internalformat,
-                   adjusted_source_image_rect.Width(),
-                   adjusted_source_image_rect.Height(), 0, format, type,
+                   adjusted_source_image_rect.width(),
+                   adjusted_source_image_rect.height(), 0, format, type,
                    need_conversion ? data.data() : image_pixel_data);
   } else if (function_id == kTexSubImage2D) {
     ContextGL()->TexSubImage2D(
-        target, level, xoffset, yoffset, adjusted_source_image_rect.Width(),
-        adjusted_source_image_rect.Height(), format, type,
+        target, level, xoffset, yoffset, adjusted_source_image_rect.width(),
+        adjusted_source_image_rect.height(), format, type,
         need_conversion ? data.data() : image_pixel_data);
   } else {
     // 3D functions.
     if (function_id == kTexImage3D) {
       ContextGL()->TexImage3D(
-          target, level, internalformat, adjusted_source_image_rect.Width(),
-          adjusted_source_image_rect.Height(), depth, 0, format, type,
+          target, level, internalformat, adjusted_source_image_rect.width(),
+          adjusted_source_image_rect.height(), depth, 0, format, type,
           need_conversion ? data.data() : image_pixel_data);
     } else {
       DCHECK_EQ(function_id, kTexSubImage3D);
       ContextGL()->TexSubImage3D(
           target, level, xoffset, yoffset, zoffset,
-          adjusted_source_image_rect.Width(),
-          adjusted_source_image_rect.Height(), depth, format, type,
+          adjusted_source_image_rect.width(),
+          adjusted_source_image_rect.height(), depth, format, type,
           need_conversion ? data.data() : image_pixel_data);
     }
   }
@@ -5132,8 +5154,8 @@ scoped_refptr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
   if (!image->CurrentFrameKnownToBeOpaque())
     resource_provider->Canvas()->clear(SK_ColorTRANSPARENT);
 
-  IntRect src_rect(IntPoint(), image->Size());
-  IntRect dest_rect(0, 0, size.Width(), size.Height());
+  IntRect src_rect(gfx::Point(), image->Size());
+  IntRect dest_rect(0, 0, size.width(), size.height());
   PaintFlags flags;
   // TODO(ccameron): WebGL should produce sRGB images.
   // https://crbug.com/672299
@@ -5343,8 +5365,8 @@ void WebGLRenderingContextBase::TexImageHelperImageData(
   // Adjust the source image rectangle if doing a y-flip.
   IntRect adjusted_source_image_rect = source_image_rect;
   if (unpack_flip_y_) {
-    adjusted_source_image_rect.SetY(pixels->height() -
-                                    adjusted_source_image_rect.MaxY());
+    adjusted_source_image_rect.set_y(pixels->height() -
+                                     adjusted_source_image_rect.bottom());
   }
 
   Vector<uint8_t> data;
@@ -5395,23 +5417,23 @@ void WebGLRenderingContextBase::TexImageHelperImageData(
   if (function_id == kTexImage2D) {
     DCHECK_EQ(unpack_image_height, 0);
     TexImage2DBase(
-        target, level, internalformat, adjusted_source_image_rect.Width(),
-        adjusted_source_image_rect.Height(), border, format, type, bytes);
+        target, level, internalformat, adjusted_source_image_rect.width(),
+        adjusted_source_image_rect.height(), border, format, type, bytes);
   } else if (function_id == kTexSubImage2D) {
     DCHECK_EQ(unpack_image_height, 0);
     ContextGL()->TexSubImage2D(
-        target, level, xoffset, yoffset, adjusted_source_image_rect.Width(),
-        adjusted_source_image_rect.Height(), format, type, bytes);
+        target, level, xoffset, yoffset, adjusted_source_image_rect.width(),
+        adjusted_source_image_rect.height(), format, type, bytes);
   } else {
-    GLint upload_height = adjusted_source_image_rect.Height();
+    GLint upload_height = adjusted_source_image_rect.height();
     if (function_id == kTexImage3D) {
       ContextGL()->TexImage3D(target, level, internalformat,
-                              adjusted_source_image_rect.Width(), upload_height,
+                              adjusted_source_image_rect.width(), upload_height,
                               depth, border, format, type, bytes);
     } else {
       DCHECK_EQ(function_id, kTexSubImage3D);
       ContextGL()->TexSubImage3D(target, level, xoffset, yoffset, zoffset,
-                                 adjusted_source_image_rect.Width(),
+                                 adjusted_source_image_rect.width(),
                                  upload_height, depth, format, type, bytes);
     }
   }
@@ -5555,8 +5577,8 @@ void WebGLRenderingContextBase::TexImageViaGPU(
   bool have_source_canvas_webgl_context = source_canvas_webgl_context;
   DCHECK(have_source_image ^ have_source_canvas_webgl_context);
 
-  int width = source_sub_rectangle.Width();
-  int height = source_sub_rectangle.Height();
+  int width = source_sub_rectangle.width();
+  int height = source_sub_rectangle.height();
 
   ScopedTexture2DRestorer restorer(this);
 
@@ -5590,7 +5612,7 @@ void WebGLRenderingContextBase::TexImageViaGPU(
     if (source_image) {
       source_image->CopyToTexture(
           ContextGL(), target, target_texture, level, premultiply_alpha, flip_y,
-          IntPoint(xoffset, yoffset), source_sub_rectangle);
+          gfx::Point(xoffset, yoffset), source_sub_rectangle);
     } else {
       WebGLRenderingContextBase* gl = source_canvas_webgl_context;
       if (gl->is_origin_top_left_ && !canvas()->LowLatencyEnabled())
@@ -5598,7 +5620,7 @@ void WebGLRenderingContextBase::TexImageViaGPU(
       ScopedTexture2DRestorer inner_restorer(gl);
       if (!gl->GetDrawingBuffer()->CopyToPlatformTexture(
               ContextGL(), target, target_texture, level,
-              unpack_premultiply_alpha_, !flip_y, IntPoint(xoffset, yoffset),
+              unpack_premultiply_alpha_, !flip_y, gfx::Point(xoffset, yoffset),
               source_sub_rectangle, kBackBuffer)) {
         NOTREACHED();
       }
@@ -5666,8 +5688,8 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
     function_type = kTexSubImage;
   if (!ValidateTexFunc(func_name, function_type, kSourceHTMLCanvasElement,
                        target, level, internalformat,
-                       source_sub_rectangle.Width(),
-                       source_sub_rectangle.Height(), depth, 0, format, type,
+                       source_sub_rectangle.width(),
+                       source_sub_rectangle.height(), depth, 0, format, type,
                        xoffset, yoffset, zoffset))
     return;
 
@@ -5699,7 +5721,7 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
   } else {
     image = context_host->GetSourceImageForCanvas(
         &source_image_status,
-        FloatSize(source_sub_rectangle.Width(), source_sub_rectangle.Height()));
+        FloatSize(source_sub_rectangle.width(), source_sub_rectangle.height()));
     if (source_image_status != kNormalSourceImageStatus)
       return;
   }
@@ -5726,14 +5748,15 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
       should_adjust_source_sub_rectangle = !should_adjust_source_sub_rectangle;
 
     if (should_adjust_source_sub_rectangle) {
-      adjusted_source_sub_rectangle.SetY(context_host->Size().Height() -
-                                         adjusted_source_sub_rectangle.MaxY());
+      adjusted_source_sub_rectangle.set_y(
+          context_host->Size().height() -
+          adjusted_source_sub_rectangle.bottom());
     }
 
     if (function_id == kTexImage2D) {
       TexImage2DBase(target, level, internalformat,
-                     source_sub_rectangle.Width(),
-                     source_sub_rectangle.Height(), 0, format, type, nullptr);
+                     source_sub_rectangle.width(),
+                     source_sub_rectangle.height(), 0, format, type, nullptr);
       TexImageViaGPU(function_id, texture, target, level, 0, 0, 0, accel_image,
                      source_canvas_webgl_context, adjusted_source_sub_rectangle,
                      unpack_premultiply_alpha_, unpack_flip_y_);
@@ -6073,7 +6096,7 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
 
   // TODO(crbug.com/1175907): Double check that the premultiply alpha settings
   // are all correct below. When we go through the CanvasResourceProvider for
-  // Image creation, CanvasResourceParams { kPremul_SkAlphaType } is used.
+  // Image creation, SkImageInfo { kPremul_SkAlphaType } is used.
   //
   // We probably need some stronger checks on the accelerated upload path if
   // unmultiply has been requested or we need to never premultiply for Image
@@ -6137,8 +6160,8 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
     auto* accel_image = static_cast<AcceleratedStaticBitmapImage*>(image.get());
     if (function_id == kTexImage2D) {
       TexImage2DBase(
-          target, level, internalformat, adjusted_source_image_rect.Width(),
-          adjusted_source_image_rect.Height(), 0, format, type, nullptr);
+          target, level, internalformat, adjusted_source_image_rect.width(),
+          adjusted_source_image_rect.height(), 0, format, type, nullptr);
       TexImageViaGPU(function_id, texture, target, level, 0, 0, 0, accel_image,
                      nullptr, adjusted_source_image_rect,
                      unpack_premultiply_alpha_, unpack_flip_y_);
@@ -6228,8 +6251,8 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
   else
     function_type = kTexSubImage;
 
-  GLsizei width = source_sub_rect.Width();
-  GLsizei height = source_sub_rect.Height();
+  GLsizei width = source_sub_rect.width();
+  GLsizei height = source_sub_rect.height();
   if (!ValidateTexFunc(func_name, function_type, kSourceImageBitmap, target,
                        level, internalformat, width, height, depth, 0, format,
                        type, xoffset, yoffset, zoffset))
@@ -8696,7 +8719,8 @@ CanvasResourceProvider* WebGLRenderingContextBase::
   } else {
     // TODO(fserb): why is this a BITMAP?
     temp = CanvasResourceProvider::CreateBitmapProvider(
-        size, cc::PaintFlags::FilterQuality::kLow, CanvasResourceParams(),
+        SkImageInfo::MakeN32Premul(size.width(), size.height()),
+        cc::PaintFlags::FilterQuality::kLow,
         CanvasResourceProvider::ShouldInitialize::kNo);  // TODO: should this
                                                          // use the canvas's
   }
@@ -8794,8 +8818,8 @@ void WebGLRenderingContextBase::EnableOrDisable(GLenum capability,
 }
 
 IntSize WebGLRenderingContextBase::ClampedCanvasSize() const {
-  int width = Host()->Size().Width();
-  int height = Host()->Size().Height();
+  int width = Host()->Size().width();
+  int height = Host()->Size().height();
   return IntSize(Clamp(width, 1, max_viewport_dims_[0]),
                  Clamp(height, 1, max_viewport_dims_[1]));
 }

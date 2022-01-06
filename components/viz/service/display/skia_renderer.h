@@ -18,6 +18,7 @@
 #include "components/viz/service/display/display_resource_provider_skia.h"
 #include "components/viz/service/display/sync_query_collection.h"
 #include "components/viz/service/viz_service_export.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/latency/latency_info.h"
 
 class SkColorFilter;
@@ -371,6 +372,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   bool UsingSkiaForDelegatedInk() const;
   uint32_t debug_tint_modulate_count_ = 0;
+  bool use_real_color_space_for_stream_video_ = false;
 };
 
 }  // namespace viz

@@ -5,10 +5,22 @@
 import SwiftUI
 
 struct OverflowMenuView: View {
+  enum Dimensions {
+    static let destinationListHeight: CGFloat = 129
+  }
+
   @EnvironmentObject var model: OverflowMenuModel
   var body: some View {
-    Group {
-      OverflowMenuActionList(actions: model.actions)
+    VStack(
+      alignment: .leading,
+      // Leave no spaces above or below Divider, the two other sections will
+      // include proper spacing.
+      spacing: 0
+    ) {
+      OverflowMenuDestinationList(destinations: model.destinations)
+        .frame(height: Dimensions.destinationListHeight)
+      Divider()
+      OverflowMenuActionList(actionGroups: model.actionGroups)
     }.background(Color(.systemGroupedBackground).edgesIgnoringSafeArea(.top))
   }
 }

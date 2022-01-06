@@ -75,12 +75,15 @@ class GestureListenerManager::ResetScrollObserver : public WebContentsObserver {
   ResetScrollObserver(WebContents* web_contents,
                       GestureListenerManager* manager);
 
+  ResetScrollObserver(const ResetScrollObserver&) = delete;
+  ResetScrollObserver& operator=(const ResetScrollObserver&) = delete;
+
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
 
  private:
   GestureListenerManager* const manager_;
-  DISALLOW_COPY_AND_ASSIGN(ResetScrollObserver);
 };
 
 GestureListenerManager::ResetScrollObserver::ResetScrollObserver(
@@ -93,8 +96,8 @@ void GestureListenerManager::ResetScrollObserver::DidFinishNavigation(
   manager_->OnNavigationFinished(navigation_handle);
 }
 
-void GestureListenerManager::ResetScrollObserver::RenderProcessGone(
-    base::TerminationStatus status) {
+void GestureListenerManager::ResetScrollObserver::
+    PrimaryMainFrameRenderProcessGone(base::TerminationStatus status) {
   manager_->OnRenderProcessGone();
 }
 

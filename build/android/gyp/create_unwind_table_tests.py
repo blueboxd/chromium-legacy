@@ -8,12 +8,16 @@ This test suite contains tests for the custom unwind table creation for 32-bit
 arm builds.
 """
 
-import ctypes
 import io
 import unittest
+import unittest.mock
 
-from create_unwind_table import AddressCfi, FilterToNonTombstoneCfi, \
- FunctionCfi, ReadFunctionCfi
+from create_unwind_table import (
+    AddressCfi, AddressUnwind, FilterToNonTombstoneCfi, FunctionCfi,
+    EncodeAddressUnwind, EncodeAddressUnwinds, EncodedAddressUnwind,
+    EncodeAsBytes, EncodeFunctionOffsetTable, EncodeStackPointerUpdate,
+    EncodePop, EncodeUnwindInstructionTable, NullParser, PushOrSubSpParser,
+    ReadFunctionCfi, StoreSpParser, Uleb128Encode, UnwindType, VPushParser)
 
 
 class _TestReadFunctionCfi(unittest.TestCase):
@@ -89,3 +93,599 @@ class _TestReadFunctionCfi(unittest.TestCase):
                        '.cfa: sp 8 + .ra: .cfa - 4 + ^ r4: .cfa - 8 + ^'),
         )),
     ], list(ReadFunctionCfi(f)))
+
+
+class _TestEncodeAsBytes(unittest.TestCase):
+  def testOutOfBounds(self):
+    self.assertRaises(ValueError, lambda: EncodeAsBytes(1024))
+    self.assertRaises(ValueError, lambda: EncodeAsBytes(256))
+    self.assertRaises(ValueError, lambda: EncodeAsBytes(-1))
+
+  def testEncode(self):
+    self.assertEqual(bytes([0]), EncodeAsBytes(0))
+    self.assertEqual(bytes([255]), EncodeAsBytes(255))
+    self.assertEqual(bytes([0, 1]), EncodeAsBytes(0, 1))
+
+
+class _TestUleb128Encode(unittest.TestCase):
+  def testNegativeValue(self):
+    self.assertRaises(ValueError, lambda: Uleb128Encode(-1))
+
+  def testSingleByte(self):
+    self.assertEqual(bytes([0]), Uleb128Encode(0))
+    self.assertEqual(bytes([1]), Uleb128Encode(1))
+    self.assertEqual(bytes([127]), Uleb128Encode(127))
+
+  def testMultiBytes(self):
+    self.assertEqual(bytes([0b10000000, 0b1]), Uleb128Encode(128))
+    self.assertEqual(bytes([0b10000000, 0b10000000, 0b1]),
+                     Uleb128Encode(128**2))
+
+
+class _TestEncodeStackPointerUpdate(unittest.TestCase):
+  def testSingleByte(self):
+    self.assertEqual(bytes([0b00000000 | 0]), EncodeStackPointerUpdate(4))
+    self.assertEqual(bytes([0b01000000 | 0]), EncodeStackPointerUpdate(-4))
+
+    self.assertEqual(bytes([0b00000000 | 0b00111111]),
+                     EncodeStackPointerUpdate(0x100))
+    self.assertEqual(bytes([0b01000000 | 0b00111111]),
+                     EncodeStackPointerUpdate(-0x100))
+
+    self.assertEqual(bytes([0b00000000 | 3]), EncodeStackPointerUpdate(16))
+    self.assertEqual(bytes([0b01000000 | 3]), EncodeStackPointerUpdate(-16))
+
+    # 10110010 uleb128
+    # vsp = vsp + 0x204 + (uleb128 << 2)
+    self.assertEqual(bytes([0b10110010, 0b00000000]),
+                     EncodeStackPointerUpdate(0x204))
+    self.assertEqual(bytes([0b10110010, 0b00000001]),
+                     EncodeStackPointerUpdate(0x208))
+
+    # For vsp increments of 0x104-0x200, use 00xxxxxx twice.
+    self.assertEqual(bytes([0b00111111, 0b00111111]),
+                     EncodeStackPointerUpdate(0x200))
+    self.assertEqual(bytes([0b01111111, 0b01111111]),
+                     EncodeStackPointerUpdate(-0x200))
+
+    # Not multiple of 4.
+    self.assertRaises(AssertionError, lambda: EncodeStackPointerUpdate(101))
+    # offset=0 is meaningless.
+    self.assertRaises(AssertionError, lambda: EncodeStackPointerUpdate(0))
+
+
+class _TestEncodePop(unittest.TestCase):
+  def testSingleRegister(self):
+    # Should reject registers outside r4 ~ r15 range.
+    for r in 0, 1, 2, 3, 16:
+      self.assertRaises(AssertionError, lambda: EncodePop([r]))
+    # Should use
+    # 1000iiii iiiiiiii
+    # Pop up to 12 integer registers under masks {r15-r12}, {r11-r4}.
+    self.assertEqual(bytes([0b10000000, 0b00000001]), EncodePop([4]))
+    self.assertEqual(bytes([0b10000000, 0b00001000]), EncodePop([7]))
+    self.assertEqual(bytes([0b10000100, 0b00000000]), EncodePop([14]))
+    self.assertEqual(bytes([0b10001000, 0b00000000]), EncodePop([15]))
+
+  def testContinuousRegisters(self):
+    # 10101nnn
+    # Pop r4-r[4+nnn], r14.
+    self.assertEqual(bytes([0b10101000]), EncodePop([4, 14]))
+    self.assertEqual(bytes([0b10101001]), EncodePop([4, 5, 14]))
+    self.assertEqual(bytes([0b10101111]),
+                     EncodePop([4, 5, 6, 7, 8, 9, 10, 11, 14]))
+
+  def testDiscontinuousRegisters(self):
+    # 1000iiii iiiiiiii
+    # Pop up to 12 integer registers under masks {r15-r12}, {r11-r4}.
+    self.assertEqual(bytes([0b10001000, 0b00000001]), EncodePop([4, 15]))
+    self.assertEqual(bytes([0b10000100, 0b00011000]), EncodePop([7, 8, 14]))
+    self.assertEqual(bytes([0b10000111, 0b11111111]),
+                     EncodePop([4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]))
+    self.assertEqual(bytes([0b10000100, 0b10111111]),
+                     EncodePop([4, 5, 6, 7, 8, 9, 11, 14]))
+
+
+class _TestEncodeAddressUnwind(unittest.TestCase):
+  def testReturnToLr(self):
+    self.assertEqual(
+        bytes([0b10110000]),
+        EncodeAddressUnwind(
+            AddressUnwind(address_offset=0,
+                          unwind_type=UnwindType.RETURN_TO_LR,
+                          sp_offset=0,
+                          registers=tuple())))
+
+  def testNoAction(self):
+    self.assertEqual(
+        bytes([]),
+        EncodeAddressUnwind(
+            AddressUnwind(address_offset=0,
+                          unwind_type=UnwindType.NO_ACTION,
+                          sp_offset=0,
+                          registers=tuple())))
+
+  def testUpdateSpAndOrPopRegisters(self):
+    self.assertEqual(
+        bytes([0b0, 0b10101000]),
+        EncodeAddressUnwind(
+            AddressUnwind(address_offset=0,
+                          unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                          sp_offset=0x4,
+                          registers=(4, 14))))
+
+    self.assertEqual(
+        bytes([0b0]),
+        EncodeAddressUnwind(
+            AddressUnwind(address_offset=0,
+                          unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                          sp_offset=0x4,
+                          registers=tuple())))
+
+    self.assertEqual(
+        bytes([0b10101000]),
+        EncodeAddressUnwind(
+            AddressUnwind(address_offset=0,
+                          unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                          sp_offset=0,
+                          registers=(4, 14))))
+
+  def testRestoreSpFromRegisters(self):
+    self.assertEqual(
+        bytes([0b10010100, 0b0]),
+        EncodeAddressUnwind(
+            AddressUnwind(address_offset=0,
+                          unwind_type=UnwindType.RESTORE_SP_FROM_REGISTER,
+                          sp_offset=0x4,
+                          registers=(4, ))))
+
+    self.assertEqual(
+        bytes([0b10010100]),
+        EncodeAddressUnwind(
+            AddressUnwind(address_offset=0,
+                          unwind_type=UnwindType.RESTORE_SP_FROM_REGISTER,
+                          sp_offset=0,
+                          registers=(4, ))))
+
+    self.assertRaises(
+        AssertionError, lambda: EncodeAddressUnwind(
+            AddressUnwind(address_offset=0,
+                          unwind_type=UnwindType.RESTORE_SP_FROM_REGISTER,
+                          sp_offset=0x4,
+                          registers=tuple())))
+
+
+class _TestEncodeAddressUnwinds(unittest.TestCase):
+  def testEncodeOrder(self):
+    address_unwind1 = AddressUnwind(address_offset=0,
+                                    unwind_type=UnwindType.RETURN_TO_LR,
+                                    sp_offset=0,
+                                    registers=tuple())
+    address_unwind2 = AddressUnwind(
+        address_offset=4,
+        unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+        sp_offset=0,
+        registers=(4, 14))
+
+    def MockEncodeAddressUnwind(address_unwind):
+      return {
+          address_unwind1: bytes([1]),
+          address_unwind2: bytes([2]),
+      }[address_unwind]
+
+    with unittest.mock.patch("create_unwind_table.EncodeAddressUnwind",
+                             side_effect=MockEncodeAddressUnwind):
+      encoded_unwinds = EncodeAddressUnwinds((address_unwind1, address_unwind2))
+      self.assertEqual((
+          EncodedAddressUnwind(4,
+                               bytes([2]) + bytes([1])),
+          EncodedAddressUnwind(0, bytes([1])),
+      ), encoded_unwinds)
+
+
+class _TestNullParser(unittest.TestCase):
+  def testCfaChange(self):
+    parser = NullParser()
+    match = parser.GetBreakpadInstructionsRegex().search('.cfa: sp 0 + .ra: lr')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=0,
+                                                              cfa_sp_offset=0,
+                                                              match=match)
+
+    self.assertEqual(0, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=0,
+                      unwind_type=UnwindType.RETURN_TO_LR,
+                      sp_offset=0,
+                      registers=()), address_unwind)
+
+
+class _TestPushOrSubSpParser(unittest.TestCase):
+  def testCfaChange(self):
+    parser = PushOrSubSpParser()
+    match = parser.GetBreakpadInstructionsRegex().search('.cfa: sp 4 +')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=0,
+                                                              match=match)
+
+    self.assertEqual(4, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                      sp_offset=4,
+                      registers=()), address_unwind)
+
+  def testCfaAndRaChangePopOnly(self):
+    parser = PushOrSubSpParser()
+    match = parser.GetBreakpadInstructionsRegex().search(
+        '.cfa: sp 4 + .ra: .cfa -4 + ^')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=0,
+                                                              match=match)
+
+    self.assertEqual(4, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                      sp_offset=0,
+                      registers=(14, )), address_unwind)
+
+  def testCfaAndRaChangePopAndSpUpdate(self):
+    parser = PushOrSubSpParser()
+    match = parser.GetBreakpadInstructionsRegex().search(
+        '.cfa: sp 8 + .ra: .cfa -4 + ^')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=0,
+                                                              match=match)
+
+    self.assertEqual(8, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                      sp_offset=4,
+                      registers=(14, )), address_unwind)
+
+  def testCfaAndRaAndRegistersChangePopOnly(self):
+    parser = PushOrSubSpParser()
+    match = parser.GetBreakpadInstructionsRegex().search(
+        '.cfa: sp 12 + .ra: .cfa -4 + ^ r4: .cfa -12 + ^ r7: .cfa -8 + ^')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=0,
+                                                              match=match)
+
+    self.assertEqual(12, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                      sp_offset=0,
+                      registers=(4, 7, 14)), address_unwind)
+
+  def testCfaAndRaAndRegistersChangePopAndSpUpdate(self):
+    parser = PushOrSubSpParser()
+    match = parser.GetBreakpadInstructionsRegex().search(
+        '.cfa: sp 16 + .ra: .cfa -4 + ^ r4: .cfa -12 + ^ r7: .cfa -8 + ^')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=0,
+                                                              match=match)
+
+    self.assertEqual(16, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                      sp_offset=4,
+                      registers=(4, 7, 14)), address_unwind)
+
+  def testRegistersChange(self):
+    parser = PushOrSubSpParser()
+    match = parser.GetBreakpadInstructionsRegex().search(
+        'r4: .cfa -8 + ^ r7: .cfa -4 + ^')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=0,
+                                                              match=match)
+
+    self.assertEqual(0, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                      sp_offset=0,
+                      registers=(4, 7)), address_unwind)
+
+  def testCfaAndRegistersChange(self):
+    parser = PushOrSubSpParser()
+    match = parser.GetBreakpadInstructionsRegex().search(
+        '.cfa: sp 8 + r4: .cfa -8 + ^ r7: .cfa -4 + ^')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=0,
+                                                              match=match)
+
+    self.assertEqual(8, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                      sp_offset=0,
+                      registers=(4, 7)), address_unwind)
+
+  def testRegistersOrdering(self):
+    parser = PushOrSubSpParser()
+    match = parser.GetBreakpadInstructionsRegex().search(
+        'r10: .cfa -8 + ^ r7: .cfa -4 + ^')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=0,
+                                                              match=match)
+
+    self.assertEqual(0, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                      sp_offset=0,
+                      registers=(7, 10)), address_unwind)
+
+  def testPoppingCallerSaveRegisters(self):
+    """Regression test for pop unwinds that encode caller-save registers.
+
+    Callee-save registers: r0 ~ r3.
+    """
+    parser = PushOrSubSpParser()
+    match = parser.GetBreakpadInstructionsRegex().search(
+        '.cfa: sp 16 + .ra: .cfa -4 + ^ '
+        'r3: .cfa -16 + ^ r4: .cfa -12 + ^ r5: .cfa -8 + ^')
+
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=0,
+                                                              match=match)
+
+    self.assertEqual(16, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                      sp_offset=4,
+                      registers=(4, 5, 14)), address_unwind)
+
+
+class _TestVPushParser(unittest.TestCase):
+  def testCfaAndRegistersChange(self):
+    parser = VPushParser()
+    match = parser.GetBreakpadInstructionsRegex().search(
+        '.cfa: sp 40 + unnamed_register264: .cfa -40 + ^ '
+        'unnamed_register265: .cfa -32 + ^')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=24,
+                                                              match=match)
+
+    self.assertEqual(40, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.UPDATE_SP_AND_OR_POP_REGISTERS,
+                      sp_offset=16,
+                      registers=()), address_unwind)
+
+  def testRegistersChange(self):
+    parser = VPushParser()
+    match = parser.GetBreakpadInstructionsRegex().search(
+        'unnamed_register264: .cfa -40 + ^ unnamed_register265: .cfa -32 + ^')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=24,
+                                                              match=match)
+
+    self.assertEqual(24, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.NO_ACTION,
+                      sp_offset=0,
+                      registers=()), address_unwind)
+
+
+class _TestStoreSpParser(unittest.TestCase):
+  def testCfaAndRegistersChange(self):
+    parser = StoreSpParser()
+    match = parser.GetBreakpadInstructionsRegex().search('.cfa: r7 8 +')
+    self.assertIsNotNone(match)
+
+    address_unwind, new_cfa_sp_offset = parser.ParseFromMatch(address_offset=20,
+                                                              cfa_sp_offset=12,
+                                                              match=match)
+
+    self.assertEqual(8, new_cfa_sp_offset)
+    self.assertEqual(
+        AddressUnwind(address_offset=20,
+                      unwind_type=UnwindType.RESTORE_SP_FROM_REGISTER,
+                      sp_offset=-4,
+                      registers=(7, )), address_unwind)
+
+
+class _TestEncodeUnwindInstructionTable(unittest.TestCase):
+  def testSingleEntry(self):
+    table, offsets = EncodeUnwindInstructionTable([bytes([3])])
+
+    self.assertEqual(bytes([3]), table)
+    self.assertDictEqual({
+        bytes([3]): 0,
+    }, offsets)
+
+  def testMultipleEntries(self):
+    self.maxDiff = None
+    # Result should be sorted by score descending.
+    table, offsets = EncodeUnwindInstructionTable([
+        bytes([1, 2, 3]),
+        bytes([0, 3]),
+        bytes([3]),
+    ])
+    self.assertEqual(bytes([3, 0, 3, 1, 2, 3]), table)
+    self.assertDictEqual(
+        {
+            bytes([1, 2, 3]): 3,  # score = 1 / 3 = 0.67
+            bytes([0, 3]): 1,  # score = 1 / 2 = 0.5
+            bytes([3]): 0,  # score = 1 / 1 = 1
+        },
+        offsets)
+
+    # When scores are same, sort by sequence descending.
+    table, offsets = EncodeUnwindInstructionTable([
+        bytes([3]),
+        bytes([0, 3]),
+        bytes([0, 3]),
+        bytes([1, 2, 3]),
+        bytes([1, 2, 3]),
+        bytes([1, 2, 3]),
+    ])
+    self.assertEqual(bytes([3, 1, 2, 3, 0, 3]), table)
+    self.assertDictEqual(
+        {
+            bytes([3]): 0,  # score = 1 / 1 = 1
+            bytes([1, 2, 3]): 1,  # score = 3 / 3 = 1
+            bytes([0, 3]): 4,  # score = 2 / 2 = 1
+        },
+        offsets)
+
+
+class _TestFunctionOffsetTable(unittest.TestCase):
+  def testSingleEntry(self):
+    self.maxDiff = None
+    complete_instruction_sequence0 = bytes([3])
+    complete_instruction_sequence1 = bytes([1, 3])
+
+    sequence1 = (
+        EncodedAddressUnwind(0x200, complete_instruction_sequence1),
+        EncodedAddressUnwind(0x0, complete_instruction_sequence0),
+    )
+
+    address_unwind_sequences = [sequence1]
+
+    table, offsets = EncodeFunctionOffsetTable(
+        address_unwind_sequences, {
+            complete_instruction_sequence0: 52,
+            complete_instruction_sequence1: 50,
+        })
+
+    self.assertEqual(
+        bytes([
+            # (0x200, 50)
+            128,
+            4,
+            50,
+            # (0, 52)
+            0,
+            52,
+        ]),
+        table)
+
+    self.assertDictEqual({
+        sequence1: 0,
+    }, offsets)
+
+  def testMultipleEntry(self):
+    self.maxDiff = None
+    complete_instruction_sequence0 = bytes([3])
+    complete_instruction_sequence1 = bytes([1, 3])
+    complete_instruction_sequence2 = bytes([2, 3])
+
+    sequence1 = (
+        EncodedAddressUnwind(0x10, complete_instruction_sequence1),
+        EncodedAddressUnwind(0x0, complete_instruction_sequence0),
+    )
+    sequence2 = (
+        EncodedAddressUnwind(0x200, complete_instruction_sequence2),
+        EncodedAddressUnwind(0x0, complete_instruction_sequence0),
+    )
+    address_unwind_sequences = [sequence1, sequence2]
+
+    table, offsets = EncodeFunctionOffsetTable(
+        address_unwind_sequences, {
+            complete_instruction_sequence0: 52,
+            complete_instruction_sequence1: 50,
+            complete_instruction_sequence2: 80,
+        })
+
+    self.assertEqual(
+        bytes([
+            # (0x10, 50)
+            0x10,
+            50,
+            # (0, 52)
+            0,
+            52,
+            # (0x200, 80)
+            128,
+            4,
+            80,
+            # (0, 52)
+            0,
+            52,
+        ]),
+        table)
+
+    self.assertDictEqual({
+        sequence1: 0,
+        sequence2: 4,
+    }, offsets)
+
+  def testDuplicatedEntry(self):
+    self.maxDiff = None
+    complete_instruction_sequence0 = bytes([3])
+    complete_instruction_sequence1 = bytes([1, 3])
+    complete_instruction_sequence2 = bytes([2, 3])
+
+    sequence1 = (
+        EncodedAddressUnwind(0x10, complete_instruction_sequence1),
+        EncodedAddressUnwind(0x0, complete_instruction_sequence0),
+    )
+    sequence2 = (
+        EncodedAddressUnwind(0x200, complete_instruction_sequence2),
+        EncodedAddressUnwind(0x0, complete_instruction_sequence0),
+    )
+    sequence3 = sequence1
+
+    address_unwind_sequences = [sequence1, sequence2, sequence3]
+
+    table, offsets = EncodeFunctionOffsetTable(
+        address_unwind_sequences, {
+            complete_instruction_sequence0: 52,
+            complete_instruction_sequence1: 50,
+            complete_instruction_sequence2: 80,
+        })
+
+    self.assertEqual(
+        bytes([
+            # (0x10, 50)
+            0x10,
+            50,
+            # (0, 52)
+            0,
+            52,
+            # (0x200, 80)
+            128,
+            4,
+            80,
+            # (0, 52)
+            0,
+            52,
+        ]),
+        table)
+
+    self.assertDictEqual({
+        sequence1: 0,
+        sequence2: 4,
+    }, offsets)

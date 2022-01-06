@@ -1011,7 +1011,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     // opening a new tab and then writing to it, e.g.
     // window.open('javascript:document.write(1)').  This URL is never commited,
     // so it should be OK to ignore this URL change.
-    if (base::ios::IsRunningOnIOS13OrLater() && oldDocumentURL.IsAboutBlank() &&
+    if (oldDocumentURL.IsAboutBlank() &&
         !self.webStateImpl->GetNavigationManager()->GetLastCommittedItem() &&
         !self.webView.loading) {
       return;
@@ -1023,12 +1023,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       return;
     }
 
-    GURL documentOrigin = newURL.GetOrigin();
+    GURL documentOrigin = newURL.DeprecatedGetOriginAsURL();
     web::NavigationItem* committedItem =
         self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();
     GURL committedURL =
         committedItem ? committedItem->GetURL() : GURL::EmptyGURL();
-    GURL committedOrigin = committedURL.GetOrigin();
+    GURL committedOrigin = committedURL.DeprecatedGetOriginAsURL();
     DCHECK_EQ(documentOrigin, committedOrigin)
         << "Old and new URL detection system have a mismatch";
 
@@ -1797,7 +1797,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   if (base::FeatureList::IsEnabled(
           web::features::kCrashOnUnexpectedURLChange)) {
-    if (_documentURL.GetOrigin() != newURL.GetOrigin()) {
+    if (_documentURL.DeprecatedGetOriginAsURL() !=
+        newURL.DeprecatedGetOriginAsURL()) {
       if (!_documentURL.host().empty() &&
           (newURL.username().find(_documentURL.host()) != std::string::npos ||
            newURL.password().find(_documentURL.host()) != std::string::npos)) {
@@ -1810,8 +1811,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (!IsRestoreSessionUrl(_documentURL) && !IsRestoreSessionUrl(newURL)) {
     bool ignore_host_change =
         // On iOS13 document.write() can change URL origin for about:blank page.
-        (_documentURL.IsAboutBlank() && base::ios::IsRunningOnIOS13OrLater() &&
-         !self.webView.loading);
+        (_documentURL.IsAboutBlank() && !self.webView.loading);
     if (!ignore_host_change) {
       DCHECK_EQ(_documentURL.host(), newURL.host());
     }

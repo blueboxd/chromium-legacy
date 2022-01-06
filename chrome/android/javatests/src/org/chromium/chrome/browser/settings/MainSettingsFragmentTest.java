@@ -47,6 +47,7 @@ import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.about_settings.AboutChromeSettings;
 import org.chromium.chrome.browser.accessibility.settings.AccessibilitySettings;
@@ -71,14 +72,14 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.search_engines.settings.SearchEngineSettings;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
-import org.chromium.chrome.browser.signin.ui.SigninPromoController;
-import org.chromium.chrome.browser.signin.ui.SyncConsentActivityLauncher;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
 import org.chromium.chrome.browser.sync.settings.SyncPromoPreference;
 import org.chromium.chrome.browser.sync.settings.SyncPromoPreference.State;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
+import org.chromium.chrome.browser.ui.signin.SigninPromoController;
+import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -387,6 +388,8 @@ public class MainSettingsFragmentTest {
     @Test
     @MediumTest
     public void testSyncPromoNotShownAfterBeingDismissed() throws Exception {
+        HistogramDelta dismissedHistogram =
+                new HistogramDelta("Signin.SyncPromo.Dismissed.Count.Settings", 1);
         launchSettingsActivity();
         onViewWaiting(allOf(withId(R.id.signin_promo_view_container), isDisplayed()));
         onView(withId(R.id.signin_promo_close_button)).perform(click());
@@ -399,11 +402,14 @@ public class MainSettingsFragmentTest {
         // Launch settings activity again.
         mSettingsActivityTestRule.startSettingsActivity();
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
+        Assert.assertEquals(1, dismissedHistogram.getDelta());
     }
 
     @Test
     @MediumTest
     public void testSyncPromoShownIsNotOverCounted() {
+        HistogramDelta showCountHistogram =
+                new HistogramDelta("Signin.SyncPromo.Shown.Count.Settings", 1);
         int promoShowCount = SharedPreferencesManager.getInstance().readInt(
                 SigninPromoController.getPromoShowCountPreferenceName(SigninAccessPoint.SETTINGS));
         Assert.assertEquals(0, promoShowCount);
@@ -419,6 +425,7 @@ public class MainSettingsFragmentTest {
         Assert.assertEquals(1,
                 SharedPreferencesManager.getInstance().readInt(
                         ChromePreferenceKeys.SYNC_PROMO_TOTAL_SHOW_COUNT));
+        Assert.assertEquals(1, showCountHistogram.getDelta());
     }
 
     private void launchSettingsActivity() {

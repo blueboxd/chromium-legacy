@@ -325,8 +325,8 @@ target(link_target_type, "gles2_sources") {
     "//gpu/ipc/common",
     "//gpu/vulkan:buildflags",
     "//skia:buildflags",
-    "//third_party/angle:angle_commit_id",
     "//third_party/angle:angle_image_util",
+    "//third_party/angle:angle_version_info",
     "//third_party/libyuv",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/re2",
@@ -506,6 +506,8 @@ target(link_target_type, "gles2_sources") {
 
   if (is_win) {
     sources += [
+      "dxgi_shared_handle_manager.cc",
+      "dxgi_shared_handle_manager.h",
       "shared_image_backing_d3d.cc",
       "shared_image_backing_d3d.h",
       "shared_image_backing_factory_d3d.cc",

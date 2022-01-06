@@ -263,7 +263,7 @@ public class LibraryLoader {
                 // For devices avoiding the App Zygote in
                 // ChildConnectionAllocator.createVariableSize() the FIND_RESERVED search can be
                 // avoided: a random region is sufficient. TODO(pasko): Investigate whether it is
-                // worth coordinatiing with the ChildConnectionAllocator. To speed up process
+                // worth coordinating with the ChildConnectionAllocator. To speed up process
                 // creation.
                 int preferAddress = attemptProduceRelro ? Linker.PreferAddress.RESERVE_RANDOM
                                                         : Linker.PreferAddress.FIND_RESERVED;
@@ -381,22 +381,41 @@ public class LibraryLoader {
             }
         }
 
-        private String getLoadHistogramName() {
+        private void recordLinkerHistogramsAfterLibraryLoad() {
+            if (!useChromiumLinker()) return;
+            // When recording a sample in the App Zygote it gets copied to each forked process and
+            // hence gets duplicated in the uploads. Avoiding such duplication would require
+            // serializing the samples, sending them to the browser process and disambiguating by,
+            // for example, Zygote PID in ChildProcessConnection.java. A few rough performance
+            // estimations do not require this complexity.
+            getLinker().recordHistograms(creationAsString());
+        }
+
+        private String creationAsString() {
             switch (mCreatedIn) {
                 case CreatedIn.MAIN:
-                    return "ChromiumAndroidLinker.BrowserLoadTime2";
+                    return "Browser";
                 case CreatedIn.ZYGOTE:
-                    return "ChromiumAndroidLinker.ZygoteLoadTime2";
+                    return "Zygote";
                 case CreatedIn.CHILD_WITHOUT_ZYGOTE:
-                    return "ChromiumAndroidLinker.ChildLoadTime2";
+                    return "Child";
                 default:
                     assert false : "Must initialize as one of {Browser,Zygote,Child}";
                     return "";
             }
         }
 
+        private static final String LINKER_HISTOGRAM_PREFIX = "ChromiumAndroidLinker.";
+
         private void recordLoadTimeHistogram(long loadTimeMs) {
-            RecordHistogram.recordTimesHistogram(getLoadHistogramName(), loadTimeMs);
+            RecordHistogram.recordTimesHistogram(
+                    LINKER_HISTOGRAM_PREFIX + creationAsString() + "LoadTime2", loadTimeMs);
+        }
+
+        public void recordLoadThreadTimeHistogram(long threadLoadTimeMs) {
+            RecordHistogram.recordTimesHistogram(
+                    LINKER_HISTOGRAM_PREFIX + creationAsString() + "ThreadLoadTime",
+                    threadLoadTimeMs);
         }
     }
 
@@ -791,6 +810,7 @@ public class LibraryLoader {
         }
 
         linker.loadLibrary(library); // May throw UnsatisfiedLinkError.
+        getMediator().recordLinkerHistogramsAfterLibraryLoad();
     }
 
     @GuardedBy("mLock")
@@ -837,6 +857,7 @@ public class LibraryLoader {
             setLinkerImplementationIfNeededAlreadyLocked();
 
             long startTime = SystemClock.uptimeMillis();
+            long startThreadTime = SystemClock.currentThreadTimeMillis();
 
             if (useChromiumLinker() && !mFallbackToSystemLinker) {
                 if (DEBUG) Log.i(TAG, "Loading with the Chromium linker.");
@@ -852,6 +873,8 @@ public class LibraryLoader {
 
             long loadTimeMs = SystemClock.uptimeMillis() - startTime;
             getMediator().recordLoadTimeHistogram(loadTimeMs);
+            getMediator().recordLoadThreadTimeHistogram(
+                    SystemClock.currentThreadTimeMillis() - startThreadTime);
             if (DEBUG) Log.i(TAG, "Time to load native libraries: %d ms", loadTimeMs);
             mLoadState = LoadState.MAIN_DEX_LOADED;
         } catch (UnsatisfiedLinkError e) {

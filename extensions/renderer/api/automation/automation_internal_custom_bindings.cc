@@ -1528,6 +1528,46 @@ void AutomationInternalCustomBindings::AddRoutes() {
             v8::String::NewFromUtf8(isolate, current_state_string.c_str())
                 .ToLocalChecked());
       });
+  RouteNodeIDFunction(
+      "GetInvalidState",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        ax::mojom::InvalidState invalid_state = node->GetInvalidState();
+        if (invalid_state == ax::mojom::InvalidState::kNone)
+          return;
+        const std::string& invalid_state_string = ui::ToString(invalid_state);
+        result.Set(
+            v8::String::NewFromUtf8(isolate, invalid_state_string.c_str())
+                .ToLocalChecked());
+      });
+  RouteNodeIDFunction(
+      "GetIsButton",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        bool value = ui::IsButton(node->GetRole());
+        result.Set(v8::Boolean::New(isolate, value));
+      });
+  RouteNodeIDFunction(
+      "GetIsCheckBox",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        bool value = ui::IsCheckBox(node->GetRole());
+        result.Set(v8::Boolean::New(isolate, value));
+      });
+  RouteNodeIDFunction(
+      "GetIsComboBox",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        bool value = ui::IsComboBox(node->GetRole());
+        result.Set(v8::Boolean::New(isolate, value));
+      });
+  RouteNodeIDFunction(
+      "GetIsImage",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        bool value = ui::IsImage(node->GetRole());
+        result.Set(v8::Boolean::New(isolate, value));
+      });
   RouteNodeIDPlusStringBoolFunction(
       "GetNextTextMatch",
       [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
@@ -2098,8 +2138,10 @@ void AutomationInternalCustomBindings::UpdateOverallTreeChangeObserverFilter() {
 
 ui::AXNode* AutomationInternalCustomBindings::GetParent(
     ui::AXNode* node,
-    AutomationAXTreeWrapper** in_out_tree_wrapper) const {
-  if (node->HasStringAttribute(ax::mojom::StringAttribute::kAppId)) {
+    AutomationAXTreeWrapper** in_out_tree_wrapper,
+    bool should_use_app_id) const {
+  if (should_use_app_id &&
+      node->HasStringAttribute(ax::mojom::StringAttribute::kAppId)) {
     ui::AXNode* parent_app_node =
         AutomationAXTreeWrapper::GetParentTreeNodeForAppID(
             node->GetStringAttribute(ax::mojom::StringAttribute::kAppId), this);
@@ -2842,9 +2884,10 @@ gfx::Rect AutomationInternalCustomBindings::ComputeGlobalNodeBounds(
     bounds = tree_wrapper->tree()->RelativeToTreeBounds(node, bounds, offscreen,
                                                         clip_bounds);
 
+    bool should_use_app_id = tree_wrapper->tree()->root() == node;
     AutomationAXTreeWrapper* previous_tree_wrapper = tree_wrapper;
-    ui::AXNode* parent_of_root =
-        GetParent(tree_wrapper->tree()->root(), &tree_wrapper);
+    ui::AXNode* parent_of_root = GetParent(tree_wrapper->tree()->root(),
+                                           &tree_wrapper, should_use_app_id);
     if (parent_of_root == node)
       break;
 

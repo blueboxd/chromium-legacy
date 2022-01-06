@@ -23,7 +23,6 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "components/prefs/pref_service.h"
 #import "components/previous_session_info/previous_session_info.h"
-#include "components/signin/ios/browser/features.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -53,8 +52,7 @@
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 #import "ios/chrome/browser/first_run/first_run.h"
-#include "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
-#import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
+#import "ios/chrome/browser/geolocation/geolocation_logger.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
@@ -90,9 +88,7 @@
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
-#include "ios/chrome/browser/ui/first_run/default_browser_promo_field_trial.h"
-#import "ios/chrome/browser/ui/first_run/location_permissions_commands.h"
-#import "ios/chrome/browser/ui/first_run/location_permissions_coordinator.h"
+#include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
@@ -185,7 +181,6 @@ bool IsSigninForcedByPolicy() {
 }  // namespace
 
 @interface SceneController () <AppStateObserver,
-                               LocationPermissionsCommands,
                                PolicyWatcherBrowserAgentObserving,
                                SettingsNavigationControllerDelegate,
                                SceneURLLoadingServiceDelegate,
@@ -251,9 +246,6 @@ bool IsSigninForcedByPolicy() {
 // time it is accessed. Use -[startSigninCoordinatorWithCompletion:] to start
 // the coordinator.
 @property(nonatomic, strong) SigninCoordinator* signinCoordinator;
-
-@property(nonatomic, strong)
-    LocationPermissionsCoordinator* locationPermissionsCoordinator;
 
 // Additional product specific data used by UserFeedbackDataSource.
 // TODO(crbug.com/1117041): Move this into a UserFeedback config object.
@@ -884,7 +876,7 @@ bool IsSigninForcedByPolicy() {
 
   // Make sure the geolocation controller is created to observe permission
   // events.
-  [OmniboxGeolocationController sharedInstance];
+  [GeolocationLogger sharedInstance];
 }
 
 // Determines the mode (normal or incognito) the initial UI should be in.
@@ -1015,59 +1007,56 @@ bool IsSigninForcedByPolicy() {
          !self.sceneState.appState.postCrashLaunch &&
          !IsChromeLikelyDefaultBrowser() &&
          !HasUserOpenedSettingsFromFirstRunPromo() &&
-         !fre_default_browser_promo_field_trial::
-             IsInDefaultBrowserPromoAtFirstRunOnlyGroup();
+         !fre_field_trial::IsInDefaultBrowserPromoAtFirstRunOnlyGroup();
 }
 
 - (void)maybeShowDefaultBrowserPromo {
-  if (self.sceneState.appState.startupInformation.isFirstRun) {
+  if (self.sceneState.appState.startupInformation.isFirstRun ||
+      ![self potentiallyInterestedUser]) {
+    return;
+  }
+  // Show the Default Browser promo UI if the user's past behavior fits
+  // the categorization of potentially interested users or if the user is
+  // signed in. Do not show if it is determined that Chrome is already the
+  // default browser (checked in the if enclosing this comment) or if the user
+  // has already seen the promo UI. If the user was in the experiment group
+  // that showed the Remind Me Later button and tapped on it, then show the
+  // promo again if now is the right time.
+
+  BOOL isSignedIn = [self isSignedIn];
+
+  // Tailored promos take priority over general promo.
+  BOOL isMadeForIOSPromoEligible =
+      IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeMadeForIOS);
+  BOOL isAllTabsPromoEligible =
+      IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeAllTabs) &&
+      isSignedIn;
+  BOOL isStaySafePromoEligible =
+      IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeStaySafe);
+
+  BOOL isTailoredPromoEligibleUser =
+      !HasUserInteractedWithTailoredFullscreenPromoBefore() &&
+      (isMadeForIOSPromoEligible || isAllTabsPromoEligible ||
+       isStaySafePromoEligible);
+  if (isTailoredPromoEligibleUser && !UserInPromoCooldown()) {
+    self.sceneState.appState.shouldShowDefaultBrowserPromo = YES;
+    self.sceneState.appState.defaultBrowserPromoTypeToShow =
+        MostRecentInterestDefaultPromoType(!isSignedIn);
+    DCHECK(self.sceneState.appState.defaultBrowserPromoTypeToShow !=
+           DefaultPromoTypeGeneral);
     return;
   }
 
-  if ([self potentiallyInterestedUser]) {
-    // Show the Default Browser promo UI if the user's past behavior fits
-    // the categorization of potentially interested users or if the user is
-    // signed in. Do not show if it is determined that Chrome is already the
-    // default browser (checked in the if enclosing this comment) or if the user
-    // has already seen the promo UI. If the user was in the experiment group
-    // that showed the Remind Me Later button and tapped on it, then show the
-    // promo again if now is the right time.
-
-    BOOL isSignedIn = [self isSignedIn];
-
-    // Tailored promos take priority over general promo.
-    BOOL isMadeForIOSPromoEligible =
-        IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeMadeForIOS);
-    BOOL isAllTabsPromoEligible =
-        IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeAllTabs) &&
-        isSignedIn;
-    BOOL isStaySafePromoEligible =
-        IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeStaySafe);
-
-    BOOL isTailoredPromoEligibleUser =
-        !HasUserInteractedWithTailoredFullscreenPromoBefore() &&
-        (isMadeForIOSPromoEligible || isAllTabsPromoEligible ||
-         isStaySafePromoEligible);
-    if (isTailoredPromoEligibleUser && !UserInPromoCooldown()) {
-      self.sceneState.appState.shouldShowDefaultBrowserPromo = YES;
-      self.sceneState.appState.defaultBrowserPromoTypeToShow =
-          MostRecentInterestDefaultPromoType(!isSignedIn);
-      DCHECK(self.sceneState.appState.defaultBrowserPromoTypeToShow !=
-             DefaultPromoTypeGeneral);
-      return;
-    }
-
-    BOOL isGeneralPromoEligibleUser =
-        !HasUserInteractedWithFullscreenPromoBefore() &&
-        (IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeGeneral) ||
-         isSignedIn) &&
-        !UserInPromoCooldown();
-    if (isGeneralPromoEligibleUser ||
-        ShouldShowRemindMeLaterDefaultBrowserFullscreenPromo()) {
-      self.sceneState.appState.shouldShowDefaultBrowserPromo = YES;
-      self.sceneState.appState.defaultBrowserPromoTypeToShow =
-          DefaultPromoTypeGeneral;
-    }
+  BOOL isGeneralPromoEligibleUser =
+      !HasUserInteractedWithFullscreenPromoBefore() &&
+      (IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeGeneral) ||
+       isSignedIn) &&
+      !UserInPromoCooldown();
+  if (isGeneralPromoEligibleUser ||
+      ShouldShowRemindMeLaterDefaultBrowserFullscreenPromo()) {
+    self.sceneState.appState.shouldShowDefaultBrowserPromo = YES;
+    self.sceneState.appState.defaultBrowserPromoTypeToShow =
+        DefaultPromoTypeGeneral;
   }
 }
 
@@ -1192,13 +1181,6 @@ bool IsSigninForcedByPolicy() {
 }
 
 - (BOOL)isIncognitoForced {
-  // TODO(crbug.com/1182280):remove the decision only for testing and set up a
-  // proper scene controller in unittests.
-  if (!self.incognitoInterface) {
-    // ONLY for testing.
-    return NO;
-  }
-
   return IsIncognitoModeForced(
       self.incognitoInterface.browser->GetBrowserState()->GetPrefs());
 }
@@ -1555,16 +1537,6 @@ bool IsSigninForcedByPolicy() {
                                                       browser:mainBrowser
                                                   signinState:signinState];
   [self startSigninCoordinatorWithCompletion:nil];
-}
-
-- (void)showLocationPermissionsFromViewController:
-    (UIViewController*)baseViewController {
-  // TODO(crbug.com/1258089): Remove all location permission related code.
-}
-
-- (void)dismissLocationPermissionsExplanationModal {
-  [self.locationPermissionsCoordinator stop];
-  self.locationPermissionsCoordinator = nil;
 }
 
 - (void)
@@ -2754,6 +2726,7 @@ bool IsSigninForcedByPolicy() {
   }
 
   DCHECK(self.signinCoordinator);
+  self.sceneState.signinInProgress = YES;
 
   __block std::unique_ptr<ScopedUIBlocker> uiBlocker =
       std::make_unique<ScopedUIBlocker>(self.sceneState);
@@ -2766,6 +2739,8 @@ bool IsSigninForcedByPolicy() {
         [strongSelf.signinCoordinator stop];
         strongSelf.signinCoordinator = nil;
         uiBlocker.reset();
+
+        weakSelf.sceneState.signinInProgress = NO;
 
         if (completion) {
           completion(result == SigninCoordinatorResultSuccess);

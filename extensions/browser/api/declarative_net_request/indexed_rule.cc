@@ -199,6 +199,8 @@ flat_rule::ElementType GetElementType(dnr_api::ResourceType resource_type) {
       return flat_rule::ElementType_WEBSOCKET;
     case dnr_api::RESOURCE_TYPE_WEBTRANSPORT:
       return flat_rule::ElementType_WEBTRANSPORT;
+    case dnr_api::RESOURCE_TYPE_WEBBUNDLE:
+      return flat_rule::ElementType_WEBBUNDLE;
     case dnr_api::RESOURCE_TYPE_OTHER:
       return flat_rule::ElementType_OTHER;
   }
@@ -426,7 +428,8 @@ ParseResult ParseRedirect(dnr_api::Redirect redirect,
     GURL redirect_url = base_url.Resolve(*redirect.extension_path);
 
     // Sanity check that Resolve works as expected.
-    DCHECK_EQ(base_url.GetOrigin(), redirect_url.GetOrigin());
+    DCHECK_EQ(base_url.DeprecatedGetOriginAsURL(),
+              redirect_url.DeprecatedGetOriginAsURL());
 
     if (!redirect_url.is_valid())
       return ParseResult::ERROR_INVALID_EXTENSION_PATH;

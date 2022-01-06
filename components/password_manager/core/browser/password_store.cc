@@ -20,8 +20,8 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/post_task.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -119,11 +119,14 @@ PasswordStore::PasswordStore(std::unique_ptr<PasswordStoreBackend> backend)
   backend_ = backend_deleter_.get();
 }
 
-bool PasswordStore::Init(PrefService* prefs,
-                         base::RepeatingClosure sync_enabled_or_disabled_cb) {
+bool PasswordStore::Init(
+    PrefService* prefs,
+    std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper,
+    base::RepeatingClosure sync_enabled_or_disabled_cb) {
   main_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   DCHECK(main_task_runner_);
   prefs_ = prefs;
+  affiliated_match_helper_ = std::move(affiliated_match_helper);
 
   // TODO(crbug.bom/1226042): Backend might be null in tests, remove this after
   // tests switch to MockPasswordStoreInterface.
@@ -136,13 +139,7 @@ bool PasswordStore::Init(PrefService* prefs,
         std::move(sync_enabled_or_disabled_cb),
         base::BindOnce(&PasswordStore::OnInitCompleted, this));
   }
-
   return true;
-}
-
-void PasswordStore::SetAffiliatedMatchHelper(
-    std::unique_ptr<AffiliatedMatchHelper> helper) {
-  affiliated_match_helper_ = std::move(helper);
 }
 
 void PasswordStore::AddLogin(const PasswordForm& form) {
@@ -363,7 +360,7 @@ void PasswordStore::ShutdownOnUIThread() {
 
 std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
 PasswordStore::CreateSyncControllerDelegate() {
-  return backend_ ? backend_->CreateSyncControllerDelegateFactory() : nullptr;
+  return backend_ ? backend_->CreateSyncControllerDelegate() : nullptr;
 }
 
 PasswordStoreBackend* PasswordStore::GetBackendForTesting() {
@@ -381,6 +378,9 @@ void PasswordStore::OnInitCompleted(bool success) {
   base::UmaHistogramBoolean("PasswordManager.PasswordStoreInitResult", success);
   TRACE_EVENT_NESTABLE_ASYNC_END0(
       "passwords", "PasswordStore::InitOnBackgroundSequence", this);
+
+  if (affiliated_match_helper_)
+    affiliated_match_helper_->Initialize(this);
 }
 
 void PasswordStore::NotifyLoginsChangedOnMainSequence(

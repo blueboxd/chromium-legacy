@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequence_bound.h"
 #include "components/services/storage/public/mojom/local_storage_control.mojom.h"
@@ -71,7 +71,12 @@ class CONTENT_EXPORT DOMStorageContextWrapper
       StoragePartitionImpl* partition,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
+  DOMStorageContextWrapper() = delete;
+
   explicit DOMStorageContextWrapper(StoragePartitionImpl* partition);
+
+  DOMStorageContextWrapper(const DOMStorageContextWrapper&) = delete;
+  DOMStorageContextWrapper& operator=(const DOMStorageContextWrapper&) = delete;
 
   storage::mojom::SessionStorageControl* GetSessionStorageControl();
   storage::mojom::LocalStorageControl* GetLocalStorageControl();
@@ -192,8 +197,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control_;
 
   absl::optional<storage::StoragePolicyObserver> storage_policy_observer_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContextWrapper);
 };
 
 }  // namespace content

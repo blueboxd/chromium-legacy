@@ -38,8 +38,8 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/exo/shell_surface_util.h"
@@ -206,7 +206,7 @@ class AppServiceAppWindowBrowserTest
   }
 
   ChromeShelfController* controller_ = nullptr;
-  apps::AppServiceProxyChromeOs* app_service_proxy_ = nullptr;
+  apps::AppServiceProxy* app_service_proxy_ = nullptr;
 };
 
 // Test that we have the correct instance for Chrome apps.

@@ -59,10 +59,6 @@ const char kClientSideDetectionTagParamName[] = "reporter_omaha_tag";
 // Enables client side detection referrer chain.
 extern const base::Feature kClientSideDetectionReferrerChain;
 
-// Enables GAIA-keying of client side detection requests for Enhanced Safe
-// Browsing users.
-extern const base::Feature kClientSideDetectionWithToken;
-
 // Controls whether the delayed warning experiment is enabled.
 extern const base::Feature kDelayedWarnings;
 // True if mouse clicks should undelay the warnings immediately when delayed
@@ -85,10 +81,6 @@ extern const base::Feature kOmitNonUserGesturesFromReferrerChain;
 
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
-
-// Enables GAIA-keying of password protection requests for Enhanced Safe
-// Browsing users.
-extern const base::Feature kPasswordProtectionWithToken;
 
 // Controls whether Chrome prompts Enhanced Safe Browsing users for deep
 // scanning.
@@ -114,22 +106,11 @@ extern const base::Feature kSafeBrowsingPageLoadToken;
 extern const base::Feature
     kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid;
 
-// Controls whether Safe Browsing uses separate NetworkContexts for each
-// profile.
-extern const base::Feature kSafeBrowsingSeparateNetworkContexts;
-
-// Controls whether cookies are removed from certain communications with Safe
-// Browsing.
-extern const base::Feature kSafeBrowsingRemoveCookies;
-
 // Controls whether cookies are removed when the access token is present.
 extern const base::Feature kSafeBrowsingRemoveCookiesInAuthRequests;
 
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
-
-// Controls whether the referrer chain is attached to real time requests.
-extern const base::Feature kRealTimeUrlLookupReferrerChain;
 
 // Controls whether the referrer chain is attached to real time requests for
 // enterprise.
@@ -140,6 +121,9 @@ extern const base::Feature kRealTimeUrlLookupReferrerChainForEnterprise;
 // The feature is only set by Finch so that we can differentiate between
 // default and control groups of the experiment.
 extern const base::Feature kSimplifiedUrlDisplay;
+
+// Controls whether the integration of tailored security settings is enabled.
+extern const base::Feature kTailoredSecurityIntegration;
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.

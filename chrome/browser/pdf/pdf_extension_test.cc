@@ -41,6 +41,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -66,6 +67,10 @@
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/policy_constants.h"
 #include "components/viz/common/features.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/test/zoom_test_utils.h"
@@ -97,6 +102,7 @@
 #include "content/public/test/text_input_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/file_system/file_system_api.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_registry.h"
@@ -314,6 +320,17 @@ class PDFExtensionTestWithoutUnseasonedOverride
 
   WebContents* GetActiveWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  // Sets the keyboard focus on the plugin frame by clicking on the top left
+  // corner of a PDF document.
+  void SetKeyboardFocusOnPlugin(WebContents* guest_contents) {
+    content::FocusChangedObserver focus_observer(guest_contents);
+    content::SimulateMouseClickAt(
+        guest_contents, blink::WebInputEvent::kNoModifiers,
+        blink::WebMouseEvent::Button::kLeft,
+        ConvertPageCoordToScreenCoord(guest_contents, {1, 1}));
+    focus_observer.Wait();
   }
 
  protected:
@@ -1559,18 +1576,77 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, MAYBE_PdfZoomWithoutBubble) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionTest, SelectAllShortcut) {
-  // Load without the UI (i.e. with #toolbar=0) to guarantee that any mouse
-  // click will hit the plugin frame.
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(
-      embedded_test_server()->GetURL("/pdf/test.pdf#toolbar=0"));
+using PDFExtensionKeyEventTest = PDFExtensionTest;
 
-  // Set the keyboard focus on the plugin frame.
-  content::FocusChangedObserver focus_observer(guest_contents);
-  content::SimulateMouseClickAt(guest_contents, /*modifiers=*/0,
-                                blink::WebMouseEvent::Button::kLeft,
-                                gfx::Point(1, 1));
-  focus_observer.Wait();
+namespace {
+
+int GetViewportHeight(content::WebContents* guest_contents) {
+  int viewport_height = 0;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      guest_contents,
+      "window.domAutomationController.send(viewer.viewport.size.height);",
+      &viewport_height));
+  return viewport_height;
+}
+
+int GetViewportScrollPositionY(content::WebContents* guest_contents) {
+  int position_y = 0;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      guest_contents,
+      "window.domAutomationController.send(viewer.viewport.position.y);",
+      &position_y));
+  return position_y;
+}
+
+int GetViewportScrollPositionYAfterScrollEvent(
+    content::WebContents* guest_contents) {
+  int position_y = 0;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      guest_contents,
+      "viewer.shadowRoot.querySelector('#scroller').onscroll = () => {"
+      "  window.domAutomationController.send(viewer.viewport.position.y);"
+      "};",
+      &position_y));
+  return position_y;
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionKeyEventTest, ScrollWithSpaceShortcut) {
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(
+      embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
+  SetKeyboardFocusOnPlugin(guest_contents);
+
+  // Get the viewport size first since the scroll distance is based on the
+  // viewport height.
+  int viewport_height = GetViewportHeight(guest_contents);
+  ASSERT_GT(viewport_height, 0);
+
+  // The vertical scroll position is at 0 before scrolling.
+  EXPECT_EQ(0, GetViewportScrollPositionY(guest_contents));
+
+  // Press space key to scroll down.
+  content::SimulateKeyPress(guest_contents, ui::DomKey::FromCharacter(' '),
+                            ui::DomCode::SPACE, ui::VKEY_SPACE,
+                            /*control=*/false, /*shift=*/false, /*alt=*/false,
+                            /*command=*/false);
+  EXPECT_EQ(viewport_height,
+            GetViewportScrollPositionYAfterScrollEvent(guest_contents));
+
+  // Press shift + space key to scroll back up to top.
+  content::SimulateKeyPress(guest_contents, ui::DomKey::FromCharacter(' '),
+                            ui::DomCode::SPACE, ui::VKEY_SPACE,
+                            /*control=*/false, /*shift=*/true, /*alt=*/false,
+                            /*command=*/false);
+  EXPECT_EQ(0, GetViewportScrollPositionYAfterScrollEvent(guest_contents));
+}
+
+INSTANTIATE_TEST_SUITE_P(All, PDFExtensionKeyEventTest, testing::Values(true));
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, SelectAllShortcut) {
+  content::WebContents* guest_contents =
+      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  SetKeyboardFocusOnPlugin(guest_contents);
 
   content::RenderFrameHost* frame = GetPluginFrame(guest_contents);
   ASSERT_TRUE(frame);
@@ -1700,6 +1776,22 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, ContextMenuPrintCommand) {
   PrintObserver print_observer(guest_contents, plugin_frame);
   guest_contents->GetMainFrame()->GetRenderWidgetHost()->ShowContextMenuAtPoint(
       {1, 1}, ui::MENU_SOURCE_MOUSE);
+  print_observer.WaitForPrintPreview();
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PrintButton) {
+  content::WebContents* guest_contents =
+      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  content::RenderFrameHost* frame = GetPluginFrame(guest_contents);
+  ASSERT_TRUE(frame);
+
+  PrintObserver print_observer(guest_contents, frame);
+  constexpr char kClickPrintButtonScript[] = R"(
+    viewer.shadowRoot.querySelector('#toolbar')
+        .shadowRoot.querySelector('#print')
+        .click();
+  )";
+  EXPECT_TRUE(ExecuteScript(guest_contents, kClickPrintButtonScript));
   print_observer.WaitForPrintPreview();
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -2456,26 +2548,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionInternalLinkClickTest, ShiftLeft) {
   EXPECT_EQ("page=2&zoom=100,0,200", url.ref());
 }
 
-class PDFExtensionClipboardTest : public PDFExtensionTest,
-                                  public ui::ClipboardObserver {
+class PDFExtensionComboBoxTest : public PDFExtensionTest {
  public:
-  // PDFExtensionTest:
-  void SetUpOnMainThread() override {
-    PDFExtensionTest::SetUpOnMainThread();
-    ui::TestClipboard::CreateForCurrentThread();
-  }
-  void TearDownOnMainThread() override {
-    ui::Clipboard::DestroyClipboardForCurrentThread();
-    PDFExtensionTest::TearDownOnMainThread();
-  }
-
-  // ui::ClipboardObserver:
-  void OnClipboardDataChanged() override {
-    DCHECK(!clipboard_changed_);
-    clipboard_changed_ = true;
-    std::move(clipboard_quit_closure_).Run();
-  }
-
   void LoadTestComboBoxPdfGetGuestContents() {
     guest_contents_ = LoadPdfGetGuestContents(
         embedded_test_server()->GetURL("/pdf/combobox_form.pdf"));
@@ -2557,6 +2631,184 @@ class PDFExtensionClipboardTest : public PDFExtensionTest,
         false);
   }
 
+  WebContents* GetWebContentsForInputRouting() { return guest_contents_; }
+
+ private:
+  WebContents* guest_contents_ = nullptr;
+};
+
+class PDFExtensionSaveTest : public PDFExtensionComboBoxTest {
+ public:
+  void SetUpOnMainThread() override {
+    PDFExtensionComboBoxTest::SetUpOnMainThread();
+
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  }
+
+  void SaveEditedPdf() {
+    ASSERT_TRUE(content::ExecuteScript(
+        GetWebContentsForInputRouting(),
+        "var viewer = document.getElementById('viewer');"
+        "var toolbar = viewer.shadowRoot.getElementById('toolbar');"
+        "var downloads = toolbar.shadowRoot.getElementById('downloads');"
+        "downloads.shadowRoot.getElementById('download-edited').click();"));
+  }
+
+  void WaitForSavedPdf(const base::FilePath& path) {
+    while (!base::PathExists(path))
+      content::RunAllTasksUntilIdle();
+  }
+
+  base::FilePath GetDownloadDir() const { return temp_dir_.GetPath(); }
+
+ private:
+  base::ScopedTempDir temp_dir_;
+};
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionSaveTest, Save) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  base::FilePath save_path = GetDownloadDir().AppendASCII("edited.pdf");
+  ASSERT_FALSE(base::PathExists(save_path));
+
+  using FileChooser = extensions::FileSystemChooseEntryFunction;
+  FileChooser::SkipPickerAndAlwaysSelectPathForTest file_picker(save_path);
+
+  LoadTestComboBoxPdfGetGuestContents();
+  ClickLeftSideOfEditableComboBox();
+  TypeHello();
+  SaveEditedPdf();
+  WaitForSavedPdf(save_path);
+}
+
+class PDFExtensionSaveWithPolicyTest : public PDFExtensionSaveTest {
+ public:
+  // InProcessBrowserTest:
+  void SetUpInProcessBrowserTestFixture() override {
+    policy_provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+  }
+
+  void SetDownloadPolicyManagedPath(const base::FilePath& path) {
+    policy::PolicyMap policies;
+    policies.Set(policy::key::kDownloadDirectory,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD, base::Value(path.AsUTF8Unsafe()),
+                 nullptr);
+    policy_provider_.UpdateChromePolicy(policies);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void CreateConflictingFilenames(const base::FilePath& path, int count) {
+    for (int i = 0; i < count; ++i) {
+      base::FilePath unique_path = base::GetUniquePath(path);
+      ASSERT_TRUE(!unique_path.empty());
+      ASSERT_TRUE(base::WriteFile(unique_path, ""));
+    }
+  }
+
+  int CountPdfFilesInDir(const base::FilePath& dir) {
+    base::FileEnumerator file_enumerator(dir,
+                                         /*recursive=*/false,
+                                         base::FileEnumerator::FILES,
+                                         FILE_PATH_LITERAL("*.pdf"));
+
+    int count = 0;
+    for (base::FilePath file_path = file_enumerator.Next(); !file_path.empty();
+         file_path = file_enumerator.Next()) {
+      ++count;
+    }
+    return count;
+  }
+
+ private:
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
+};
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionSaveWithPolicyTest, SaveWithPolicy) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  base::FilePath save_path = GetDownloadDir().AppendASCII("combobox_form.pdf");
+  ASSERT_FALSE(base::PathExists(save_path));
+
+  SetDownloadPolicyManagedPath(GetDownloadDir());
+  DownloadPrefs::FromBrowserContext(profile())
+      ->SkipSanitizeDownloadTargetPathForTesting();
+
+  LoadTestComboBoxPdfGetGuestContents();
+  ClickLeftSideOfEditableComboBox();
+  TypeHello();
+  SaveEditedPdf();
+  WaitForSavedPdf(save_path);
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionSaveWithPolicyTest,
+                       SaveWithPolicyUniqueNumberSuffix) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  CreateConflictingFilenames(GetDownloadDir().AppendASCII("combobox_form.pdf"),
+                             5);
+  EXPECT_EQ(5, CountPdfFilesInDir(GetDownloadDir()));
+
+  base::FilePath save_path =
+      GetDownloadDir().AppendASCII("combobox_form (5).pdf");
+  ASSERT_FALSE(base::PathExists(save_path));
+
+  SetDownloadPolicyManagedPath(GetDownloadDir());
+  DownloadPrefs::FromBrowserContext(profile())
+      ->SkipSanitizeDownloadTargetPathForTesting();
+
+  LoadTestComboBoxPdfGetGuestContents();
+  ClickLeftSideOfEditableComboBox();
+  TypeHello();
+  SaveEditedPdf();
+  WaitForSavedPdf(save_path);
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionSaveWithPolicyTest,
+                       SaveWithPolicyUniqueTimeSuffix) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  CreateConflictingFilenames(GetDownloadDir().AppendASCII("combobox_form.pdf"),
+                             101);
+  EXPECT_EQ(101, CountPdfFilesInDir(GetDownloadDir()));
+
+  SetDownloadPolicyManagedPath(GetDownloadDir());
+  DownloadPrefs::FromBrowserContext(profile())
+      ->SkipSanitizeDownloadTargetPathForTesting();
+
+  LoadTestComboBoxPdfGetGuestContents();
+  ClickLeftSideOfEditableComboBox();
+  TypeHello();
+  SaveEditedPdf();
+  while (CountPdfFilesInDir(GetDownloadDir()) != 102)
+    content::RunAllTasksUntilIdle();
+}
+
+class PDFExtensionClipboardTest : public PDFExtensionComboBoxTest,
+                                  public ui::ClipboardObserver {
+ public:
+  // PDFExtensionTest:
+  void SetUpOnMainThread() override {
+    PDFExtensionTest::SetUpOnMainThread();
+    ui::TestClipboard::CreateForCurrentThread();
+  }
+  void TearDownOnMainThread() override {
+    ui::Clipboard::DestroyClipboardForCurrentThread();
+    PDFExtensionTest::TearDownOnMainThread();
+  }
+
+  // ui::ClipboardObserver:
+  void OnClipboardDataChanged() override {
+    DCHECK(!clipboard_changed_);
+    clipboard_changed_ = true;
+    std::move(clipboard_quit_closure_).Run();
+  }
+
   // Runs `action` and checks the Linux selection clipboard contains `expected`.
   void DoActionAndCheckSelectionClipboard(base::OnceClosure action,
                                           const std::string& expected) {
@@ -2580,8 +2832,6 @@ class PDFExtensionClipboardTest : public PDFExtensionTest,
                               }),
                               ui::ClipboardBuffer::kCopyPaste, expected);
   }
-
-  WebContents* GetWebContentsForInputRouting() { return guest_contents_; }
 
  private:
   // Runs `action` and checks `clipboard_buffer` contains `expected`.
@@ -2612,7 +2862,6 @@ class PDFExtensionClipboardTest : public PDFExtensionTest,
   }
 
   base::RepeatingClosure clipboard_quit_closure_;
-  WebContents* guest_contents_ = nullptr;
   bool clipboard_changed_ = false;
 };
 
@@ -3851,6 +4100,8 @@ INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionWebUICodeCacheJSTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionServiceWorkerJSTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionLinkClickTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionInternalLinkClickTest);
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionSaveTest);
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionSaveWithPolicyTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionClipboardTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
     PDFExtensionAccessibilityTextExtractionTest);

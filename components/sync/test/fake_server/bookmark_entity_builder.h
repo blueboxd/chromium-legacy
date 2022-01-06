@@ -92,7 +92,7 @@ class BookmarkEntityBuilder {
 
  private:
   // Creates an EntitySpecifics and pre-populates its BookmarkSpecifics.
-  sync_pb::EntitySpecifics CreateBaseEntitySpecifics(bool is_folder) const;
+  sync_pb::EntitySpecifics CreateBaseEntitySpecifics(bool is_folder);
 
   // Builds the parts of a LoopbackServerEntity common to both normal bookmarks
   // and folders.
@@ -130,9 +130,8 @@ class BookmarkEntityBuilder {
   gfx::Image favicon_;
   GURL icon_url_;
 
-  // TODO(crbug.com/1063350): update to kHierarchyFieldsInSpecifics.
   BookmarkGeneration bookmark_generation_ =
-      BookmarkGeneration::kValidGuidAndFullTitle;
+      BookmarkGeneration::kHierarchyFieldsInSpecifics;
 };
 
 }  // namespace fake_server

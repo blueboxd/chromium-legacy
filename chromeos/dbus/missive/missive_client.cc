@@ -12,11 +12,11 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chromeos/dbus/missive/fake_missive_client.h"
 #include "components/reporting/proto/interface.pb.h"
-#include "components/reporting/proto/record.pb.h"
-#include "components/reporting/proto/record_constants.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/util/status.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -27,7 +27,7 @@ namespace chromeos {
 
 using reporting::Priority;
 using reporting::Record;
-using reporting::SequencingInformation;
+using reporting::SequenceInformation;
 using reporting::SignedEncryptionInfo;
 using reporting::Status;
 
@@ -110,13 +110,11 @@ class MissiveClientImpl : public MissiveClient {
     return;
   }
 
-  void ReportSuccess(
-      const reporting::SequencingInformation& sequencing_information,
-      bool force_confirm) override {
+  void ReportSuccess(const reporting::SequenceInformation& sequence_information,
+                     bool force_confirm) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(origin_checker_);
     reporting::ConfirmRecordUploadRequest request;
-    *request.mutable_sequencing_information() =
-        std::move(sequencing_information);
+    *request.mutable_sequence_information() = std::move(sequence_information);
     request.set_force_confirm(force_confirm);
     dbus::MethodCall method_call(missive::kMissiveServiceInterface,
                                  missive::kConfirmRecordUpload);

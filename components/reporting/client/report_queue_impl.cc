@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_post_task.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
@@ -18,14 +17,15 @@
 #include "base/notreached.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/encryption/encryption_module.h"
-#include "components/reporting/proto/record.pb.h"
-#include "components/reporting/proto/record_constants.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/storage/storage_module_interface.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/status_macros.h"
@@ -33,11 +33,12 @@
 
 namespace reporting {
 
-std::unique_ptr<ReportQueueImpl> ReportQueueImpl::Create(
+void ReportQueueImpl::Create(
     std::unique_ptr<ReportQueueConfiguration> config,
-    scoped_refptr<StorageModuleInterface> storage) {
-  return base::WrapUnique<ReportQueueImpl>(
-      new ReportQueueImpl(std::move(config), storage));
+    scoped_refptr<StorageModuleInterface> storage,
+    base::OnceCallback<void(StatusOr<std::unique_ptr<ReportQueue>>)> cb) {
+  std::move(cb).Run(base::WrapUnique<ReportQueueImpl>(
+      new ReportQueueImpl(std::move(config), storage)));
 }
 
 ReportQueueImpl::~ReportQueueImpl() = default;

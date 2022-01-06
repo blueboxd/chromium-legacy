@@ -60,10 +60,7 @@ class CORE_EXPORT TextDecorationInfo {
   // Set data for one of the text decoration lines: over, under or
   // through. Must be called before trying to paint or compute bounds
   // for a line.
-  void SetPerLineData(TextDecoration line,
-                      float line_offset,
-                      float double_offset,
-                      int wavy_offset_factor);
+  void SetPerLineData(TextDecoration line, float line_offset);
 
   // These methods do not depend on SetDecorationIndex
   LayoutUnit Width() const { return width_; }
@@ -80,7 +77,7 @@ class CORE_EXPORT TextDecorationInfo {
   }
   bool ShouldAntialias() const { return antialias_; }
   float InkSkipClipUpper(float bounds_upper) const {
-    return -baseline_ + bounds_upper - local_origin_.Y();
+    return -baseline_ + bounds_upper - local_origin_.y();
   }
 
   // SetDecorationIndex must be called before using these methods.
@@ -103,10 +100,6 @@ class CORE_EXPORT TextDecorationInfo {
   // current decoration.
   absl::optional<Path> PrepareWavyStrokePath(TextDecoration line) const;
 
-  static float DoubleOffsetFromThickness(float thickness_pixels) {
-    return thickness_pixels + 1.0f;
-  }
-
  private:
   float ComputeUnderlineThickness(
       const TextDecorationThickness& applied_decoration_thickness,
@@ -114,6 +107,9 @@ class CORE_EXPORT TextDecorationInfo {
 
   FloatRect BoundsForDottedOrDashed(TextDecoration line) const;
   FloatRect BoundsForWavy(TextDecoration line) const;
+  float WavyDecorationSizing() const;
+  float ControlPointDistanceFromResolvedThickness() const;
+  float StepFromResolvedThickness() const;
 
   const ComputedStyle& style_;
   const absl::optional<AppliedTextDecoration> selection_text_decoration_;

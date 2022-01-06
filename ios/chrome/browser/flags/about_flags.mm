@@ -69,7 +69,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/download/features.h"
-#include "ios/chrome/browser/ui/first_run/default_browser_promo_field_trial.h"
+#include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_features.h"
@@ -310,16 +310,16 @@ const FeatureEntry::FeatureVariation kStartSurfaceVariations[] = {
 
 const FeatureEntry::FeatureParam kFREDefaultPromoTestingDefaultDelay[] = {
     {kFREDefaultPromoTestingDefaultDelayParam, "true"}};
-const FeatureEntry::FeatureParam kFREDefaultPromoTestingFREOnly[] = {
-    {kFREDefaultPromoTestingFREOnlyParam, "true"}};
+const FeatureEntry::FeatureParam kFREDefaultPromoTestingOnly[] = {
+    {kFREDefaultPromoTestingOnlyParam, "true"}};
 const FeatureEntry::FeatureParam kFREDefaultPromoTestingShortDelay[] = {
     {kFREDefaultPromoTestingShortDelayParam, "true"}};
 const FeatureEntry::FeatureVariation kFREDefaultPromoTestingVariations[] = {
     {"Wait 14 days after FRE default browser promo",
      kFREDefaultPromoTestingDefaultDelay,
      base::size(kFREDefaultPromoTestingDefaultDelay), nullptr},
-    {"FRE default browser promo only", kFREDefaultPromoTestingFREOnly,
-     base::size(kFREDefaultPromoTestingFREOnly), nullptr},
+    {"FRE default browser promo only", kFREDefaultPromoTestingOnly,
+     base::size(kFREDefaultPromoTestingOnly), nullptr},
     {"Wait 3 days after FRE default browser promo",
      kFREDefaultPromoTestingShortDelay,
      base::size(kFREDefaultPromoTestingShortDelay), nullptr},
@@ -395,10 +395,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebPageDefaultZoomFromDynamicTypeDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::kWebPageDefaultZoomFromDynamicType)},
-    {"webpage-text-accessibility",
-     flag_descriptions::kWebPageTextAccessibilityName,
-     flag_descriptions::kWebPageTextAccessibilityDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::kWebPageTextAccessibility)},
     {"webpage-alternative-text-zoom",
      flag_descriptions::kWebPageAlternativeTextZoomName,
      flag_descriptions::kWebPageAlternativeTextZoomDescription,
@@ -496,10 +492,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"shared-highlighting-ios", flag_descriptions::kSharedHighlightingIOSName,
      flag_descriptions::kSharedHighlightingIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSharedHighlightingIOS)},
-    {"enable-fre-default-browser-screen",
-     flag_descriptions::kEnableFREDefaultBrowserScreenName,
-     flag_descriptions::kEnableFREDefaultBrowserScreenDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableFREDefaultBrowserScreen)},
     {"enable-fre-ui-module-ios", flag_descriptions::kEnableFREUIModuleIOSName,
      flag_descriptions::kEnableFREUIModuleIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableFREUIModuleIOS)},
@@ -534,9 +526,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kScreenTimeIntegrationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kScreenTimeIntegration)},
 #endif
-    {"mice-web-signin", flag_descriptions::kMICEWebSignInName,
-     flag_descriptions::kMICEWebSignInDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(signin::kMICEWebSignIn)},
     {"modern-tab-strip", flag_descriptions::kModernTabStripName,
      flag_descriptions::kModernTabStripDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kModernTabStrip)},
@@ -545,11 +534,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillUseRendererIDsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUseUniqueRendererIDsOnIOS)},
-    {"restore-gaia-cookies-on-user-action",
-     flag_descriptions::kRestoreGaiaCookiesOnUserActionName,
-     flag_descriptions::kRestoreGaiaCookiesOnUserActionDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(signin::kRestoreGaiaCookiesOnUserAction)},
     {"minutes-delay-to-restore-gaia-cookies-if-deleted",
      flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieName,
      flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieDescription,
@@ -568,10 +552,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebViewNativeContextMenuName,
      flag_descriptions::kWebViewNativeContextMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kWebViewNativeContextMenu)},
-    {"location-permissions-prompt",
-     flag_descriptions::kLocationPermissionsPromptName,
-     flag_descriptions::kLocationPermissionsPromptDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kLocationPermissionsPrompt)},
     {"record-snapshot-size", flag_descriptions::kRecordSnapshotSizeName,
      flag_descriptions::kRecordSnapshotSizeDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kRecordSnapshotSize)},
@@ -663,6 +643,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"tabs-bulkactions-ios", flag_descriptions::kTabsBulkActionsName,
      flag_descriptions::kTabsBulkActionsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabsBulkActions)},
+    {"tabs-search-ios", flag_descriptions::kTabsSearchName,
+     flag_descriptions::kTabsSearchDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabsSearch)},
     {"incognito-brand-consistency-for-ios",
      flag_descriptions::kIncognitoBrandConsistencyForIOSName,
      flag_descriptions::kIncognitoBrandConsistencyForIOSDescription,
@@ -799,16 +782,33 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCredentialProviderExtensionPromoName,
      flag_descriptions::kCredentialProviderExtensionPromoDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCredentialProviderExtensionPromo)},
+    {"enable-discover-feed-shorter-cache",
+     flag_descriptions::kEnableDiscoverFeedShorterCacheName,
+     flag_descriptions::kEnableDiscoverFeedShorterCacheDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableDiscoverFeedShorterCache)},
+    {"shared-highlighting-v2", flag_descriptions::kIOSSharedHighlightingV2Name,
+     flag_descriptions::kIOSSharedHighlightingV2Description, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingV2)},
+    {"shared-highlighting-amp",
+     flag_descriptions::kIOSSharedHighlightingAmpName,
+     flag_descriptions::kIOSSharedHighlightingAmpDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingAmp)},
     {"enable-commerce-price-tracking",
      flag_descriptions::kCommercePriceTrackingName,
      flag_descriptions::kCommercePriceTrackingDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kCommercePriceTracking,
                                     kCommercePriceTrackingVariations,
                                     "CommercePriceTracking")},
+    {"web-feed-ios", flag_descriptions::kFollowingFeedInNtpName,
+     flag_descriptions::kFollowingFeedInNtpDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kFollowingFeedInNTP)},
     {"ntp-view-hierarchy-repair",
      flag_descriptions::kNTPViewHierarchyRepairName,
      flag_descriptions::kNTPViewHierarchyRepairDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNTPViewHierarchyRepair)},
+    {"single-ntp", flag_descriptions::kSingleNtpName,
+     flag_descriptions::kSingleNtpDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSingleNtp)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

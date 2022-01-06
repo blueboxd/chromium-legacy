@@ -12,7 +12,7 @@
 namespace ash {
 
 namespace {
-constexpr int kAuthIconSizeDp = 28;
+constexpr int kAuthIconSizeDp = 32;
 }
 
 AuthIconView::AuthIconView()
@@ -26,6 +26,26 @@ void AuthIconView::SetIcon(const gfx::VectorIcon& icon) {
       AshColorProvider::ContentLayerType::kIconColorPrimary);
 
   SetImage(gfx::CreateVectorIcon(icon, kAuthIconSizeDp, icon_color));
+}
+
+// views::View:
+void AuthIconView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() != ui::ET_GESTURE_TAP &&
+      event->type() != ui::ET_GESTURE_TAP_DOWN)
+    return;
+
+  if (on_tap_or_click_callback_) {
+    on_tap_or_click_callback_.Run();
+  }
+}
+
+// views::View:
+bool AuthIconView::OnMousePressed(const ui::MouseEvent& event) {
+  if (on_tap_or_click_callback_) {
+    on_tap_or_click_callback_.Run();
+    return true;
+  }
+  return false;
 }
 
 }  // namespace ash

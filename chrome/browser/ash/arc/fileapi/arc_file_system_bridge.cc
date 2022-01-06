@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_post_task.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/ash/arc/fileapi/arc_select_files_handler.h"
@@ -69,10 +69,9 @@ bool IsTestImageBuild() {
 
 // Returns FileSystemContext.
 scoped_refptr<storage::FileSystemContext> GetFileSystemContext(
-    content::BrowserContext* context,
-    const GURL& url) {
+    content::BrowserContext* context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::StoragePartition* storage = context->GetStoragePartitionForUrl(url);
+  content::StoragePartition* storage = context->GetDefaultStoragePartition();
   return storage->GetFileSystemContext();
 }
 
@@ -254,7 +253,7 @@ void ArcFileSystemBridge::GetMetadata(
     int flags,
     storage::FileSystemOperation::GetMetadataCallback callback) {
   scoped_refptr<storage::FileSystemContext> context =
-      GetFileSystemContext(profile_, url_decoded);
+      GetFileSystemContext(profile_);
   file_manager::util::FileSystemURLAndHandle file_system_url_and_handle =
       GetFileSystemURL(*context, url_decoded);
   content::GetIOThreadTaskRunner({})->PostTask(
@@ -286,7 +285,7 @@ void ArcFileSystemBridge::GetFileType(const std::string& url,
     return;
   }
   scoped_refptr<storage::FileSystemContext> context =
-      GetFileSystemContext(profile_, url_decoded);
+      GetFileSystemContext(profile_);
   file_manager::util::FileSystemURLAndHandle file_system_url_and_handle =
       GetFileSystemURL(*context, url_decoded);
   extensions::app_file_handler_util::GetMimeTypeForLocalPath(
@@ -484,7 +483,7 @@ bool ArcFileSystemBridge::HandleReadRequest(const std::string& id,
 
   const GURL& url = it_url->second;
   scoped_refptr<storage::FileSystemContext> context =
-      GetFileSystemContext(profile_, url);
+      GetFileSystemContext(profile_);
   file_manager::util::FileSystemURLAndHandle file_system_url_and_handle =
       GetFileSystemURL(*context, url);
   *it_forwarder = FileStreamForwarderPtr(new FileStreamForwarder(

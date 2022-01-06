@@ -19,7 +19,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/grit/chromium_strings.h"
@@ -49,12 +48,6 @@ const char kRestoreForCrashNotificationHistogramName[] =
     "Apps.RestoreForCrashNotification";
 const char kRestoreSettingHistogramName[] = "Apps.RestoreSetting";
 const char kRestoreInitSettingHistogramName[] = "Apps.RestoreInitSetting";
-
-constexpr char kWindowCountHistogramPrefix[] = "Apps.WindowCount.";
-constexpr char kRestoreHistogramSuffix[] = "Restore";
-constexpr char kNotRestoreHistogramSuffix[] = "NotRestore";
-constexpr char kCloseByUserHistogramSuffix[] = "CloseByUser";
-constexpr char kCloseNotByUserHistogramSuffix[] = "CloseNotByUser";
 
 // static
 FullRestoreService* FullRestoreService::GetForProfile(Profile* profile) {
@@ -137,8 +130,11 @@ void FullRestoreService::Init() {
   if (!can_be_inited_)
     return;
 
-  // If the restore ddata has not been loaded, wait for it.
-  if (!app_launch_handler_->IsRestoreDataLoaded())
+  // If the restore data has not been loaded, wait for it. For test cases,
+  // `app_launch_handler_` might be reset as null because test cases might be
+  // finished before Init is called, so check `app_launch_handler_` to prevent
+  // crash for test cases.
+  if (!app_launch_handler_ || !app_launch_handler_->IsRestoreDataLoaded())
     return;
 
   if (is_shut_down_)
@@ -221,8 +217,6 @@ void FullRestoreService::Close(bool by_user) {
     RecordRestoreAction(
         notification_->id(),
         by_user ? RestoreAction::kCloseByUser : RestoreAction::kCloseNotByUser);
-    RecordWindowCount(by_user ? kCloseByUserHistogramSuffix
-                              : kCloseNotByUserHistogramSuffix);
   }
   notification_ = nullptr;
 
@@ -247,7 +241,6 @@ void FullRestoreService::Click(const absl::optional<int>& button_index,
 
     // Restore if the user clicks the notification body.
     RecordRestoreAction(notification_->id(), RestoreAction::kRestore);
-    RecordWindowCount(kRestoreHistogramSuffix);
     Restore();
 
     // If the user selects restore, don't start the save timer. Wait for the
@@ -270,7 +263,6 @@ void FullRestoreService::Click(const absl::optional<int>& button_index,
   // Close the crash notification if the user clicks the cancel button of the
   // crash notification.
   RecordRestoreAction(notification_->id(), RestoreAction::kCancel);
-  RecordWindowCount(kNotRestoreHistogramSuffix);
   MaybeCloseNotification();
 }
 
@@ -280,6 +272,14 @@ void FullRestoreService::Observe(int type,
   DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
   app_launch_handler_.reset();
   ::full_restore::FullRestoreSaveHandler::GetInstance()->SetShutDown();
+
+  // The crash notification creates an crash lock for the browser session
+  // restore. So if the notification has been closed and the system is no longer
+  // crash, clear `crashed_lock_`. Otherwise, the crash flag might not be
+  // cleared, and the crash notification might be shown again after the normal
+  // shutdown process.
+  if (!notification_)
+    crashed_lock_.reset();
 }
 
 void FullRestoreService::OnActionPerformed(AcceleratorAction action) {
@@ -354,6 +354,13 @@ bool FullRestoreService::CanBeInited() {
 void FullRestoreService::MaybeShowRestoreNotification(const std::string& id) {
   if (!ShouldShowNotification())
     return;
+
+  // If the system is restored from crash, create the crash lock for the browser
+  // session restore to help set the browser saving flag.
+  ExitTypeService* exit_type_service =
+      ExitTypeService::GetInstanceForProfile(profile_);
+  if (id == kRestoreForCrashNotificationId && exit_type_service)
+    crashed_lock_ = exit_type_service->CreateCrashedLock();
 
   auto* accelerator_controller = ash::AcceleratorController::Get();
   if (accelerator_controller) {
@@ -454,12 +461,6 @@ void FullRestoreService::OnPreferenceChanged(const std::string& pref_name) {
 bool FullRestoreService::ShouldShowNotification() {
   return app_launch_handler_ && app_launch_handler_->HasRestoreData() &&
          !::first_run::IsChromeFirstRun() && !close_notification_;
-}
-
-void FullRestoreService::RecordWindowCount(const std::string& restore_action) {
-  base::UmaHistogramCounts100(
-      kWindowCountHistogramPrefix + restore_action,
-      ::full_restore::FullRestoreSaveHandler::GetInstance()->window_count());
 }
 
 ScopedRestoreForTesting::ScopedRestoreForTesting() {

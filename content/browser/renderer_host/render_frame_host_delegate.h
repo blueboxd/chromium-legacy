@@ -177,12 +177,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // A context menu should be shown, to be built using the context information
   // provided in the supplied params.
   virtual void ShowContextMenu(
-      RenderFrameHost* render_frame_host,
+      RenderFrameHost& render_frame_host,
       mojo::PendingAssociatedRemote<blink::mojom::ContextMenuClient>
           context_menu_client,
       const ContextMenuParams& params) {}
 
   // A JavaScript alert, confirmation or prompt dialog should be shown.
+  // Will only be called for active frames belonging to a primary page.
   virtual void RunJavaScriptDialog(RenderFrameHostImpl* render_frame_host,
                                    const std::u16string& message,
                                    const std::u16string& default_prompt,
@@ -190,6 +191,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                    bool disable_third_party_subframe_suppresion,
                                    JavaScriptDialogCallback callback) {}
 
+  // Will only be called for active frames belonging to a primary page.
   virtual void RunBeforeUnloadConfirm(RenderFrameHostImpl* render_frame_host,
                                       bool is_reload,
                                       JavaScriptDialogCallback callback) {}
@@ -299,9 +301,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Returns whether entering fullscreen with EnterFullscreenMode() is allowed.
   virtual bool CanEnterFullscreenMode();
-
-  // Returns whether this frame is already fullscreen.
-  virtual bool HasEnteredFullscreenMode();
 
   // Notification that the frame with the given host wants to enter fullscreen
   // mode. Must only be called if CanEnterFullscreenMode returns true.

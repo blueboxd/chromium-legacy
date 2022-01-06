@@ -10,6 +10,7 @@
 #include "base/base_export.h"
 #include "base/pending_task.h"
 #include "base/strings/string_piece.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 
@@ -42,13 +43,9 @@ class BASE_EXPORT TaskAnnotator {
   // giving one last chance for this TaskAnnotator to add metadata to
   // |pending_task| before it is moved into the queue. |task_queue_name| must
   // live for the duration of the process.
-  void WillQueueTask(const char* trace_event_name,
+  void WillQueueTask(perfetto::StaticString trace_event_name,
                      PendingTask* pending_task,
                      const char* task_queue_name);
-
-  // Run a previously queued task.
-  void NOT_TAIL_CALLED RunTask(const char* trace_event_name,
-                               PendingTask* pending_task);
 
   // Creates a process-wide unique ID to represent this task in trace events.
   // This will be mangled with a Process ID hash to reduce the likelyhood of
@@ -57,14 +54,51 @@ class BASE_EXPORT TaskAnnotator {
   // |queue_function == nullptr| in above methods).
   uint64_t GetTaskTraceID(const PendingTask& task) const;
 
+  // Run the given task, emitting the toplevel trace event and additional
+  // trace event arguments. Like for TRACE_EVENT macros, all of the arguments
+  // are used (i.e. lambdas are invoked) before this function exits, so it's
+  // safe to pass reference-capturing lambdas here.
+  template <typename... Args>
+  void RunTask(perfetto::StaticString event_name,
+               PendingTask& pending_task,
+               Args&&... args) {
+    TRACE_EVENT(
+        "toplevel", event_name,
+        [&](perfetto::EventContext& ctx) {
+          EmitTaskLocation(ctx, pending_task);
+          MaybeEmitIncomingTaskFlow(ctx, pending_task);
+          MaybeEmitIPCHashAndDelay(ctx, pending_task);
+        },
+        std::forward<Args>(args)...);
+    RunTaskImpl(pending_task);
+  }
+
  private:
   friend class TaskAnnotatorBacktraceIntegrationTest;
+
+  // Run a previously queued task.
+  void NOT_TAIL_CALLED RunTaskImpl(PendingTask& pending_task);
 
   // Registers an ObserverForTesting that will be invoked by all TaskAnnotators'
   // RunTask(). This registration and the implementation of BeforeRunTask() are
   // responsible to ensure thread-safety.
   static void RegisterObserverForTesting(ObserverForTesting* observer);
   static void ClearObserverForTesting();
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+  // TRACE_EVENT argument helper, writing the task location data into
+  // EventContext.
+  void EmitTaskLocation(perfetto::EventContext& ctx,
+                        const PendingTask& task) const;
+
+  // TRACE_EVENT argument helper, writing the incoming task flow information
+  // into EventContext if toplevel.flow category is enabled.
+  void MaybeEmitIncomingTaskFlow(perfetto::EventContext& ctx,
+                                 const PendingTask& task) const;
+
+  void MaybeEmitIPCHashAndDelay(perfetto::EventContext& ctx,
+                                const PendingTask& task) const;
+#endif  //  BUILDFLAG(ENABLE_BASE_TRACING)
 };
 
 class BASE_EXPORT TaskAnnotator::ScopedSetIpcHash {

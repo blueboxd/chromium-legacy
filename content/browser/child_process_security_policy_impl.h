@@ -50,6 +50,7 @@ namespace content {
 class BrowserContext;
 class IsolationContext;
 class ResourceContext;
+class SiteInfo;
 
 // ProcessLock is a core part of Site Isolation, which is used to determine
 // which documents are allowed to load in a process and which site data the
@@ -277,6 +278,11 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     // ChildProcessHost::kInvalidUniqueID if the handle is no longer valid.
     int child_id_;
   };
+
+  ChildProcessSecurityPolicyImpl(const ChildProcessSecurityPolicyImpl&) =
+      delete;
+  ChildProcessSecurityPolicyImpl& operator=(
+      const ChildProcessSecurityPolicyImpl&) = delete;
 
   // Object can only be created through GetInstance() so the constructor is
   // private.
@@ -549,12 +555,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // BrowsingInstanceId associated with the security state.
   void IncludeIsolationContext(int child_id,
                                const IsolationContext& isolation_context);
-
-  // Stores the number of RenderFrameHosts currently active on the
-  // RenderProcessHost corresponding to |child_id| so that it's accessible on
-  // the IO thread.
-  // Diagnostic for debugging https://crbug.com/1148542.
-  void SetRenderFrameHostCount(int child_id, int count);
 
   // Sets the process identified by |child_id| as only permitted to access data
   // for the origin specified by |site_info|'s process_lock_url(). Most callers
@@ -1029,8 +1029,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // improvement, and with it the BrowsingInstance cleanup here can also be
   // improved.
   base::TimeDelta browsing_instance_cleanup_delay_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicyImpl);
 };
 
 }  // namespace content

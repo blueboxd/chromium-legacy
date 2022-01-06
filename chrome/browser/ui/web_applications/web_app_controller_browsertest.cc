@@ -149,8 +149,7 @@ content::WebContents* WebAppControllerBrowserTest::OpenApplication(
 
   apps::AppLaunchParams params(
       app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceTest);
+      WindowOpenDisposition::NEW_WINDOW, apps::mojom::LaunchSource::kFromTest);
   content::WebContents* contents =
       apps::AppServiceProxyFactory::GetForProfile(profile())
           ->BrowserAppLauncher()
@@ -201,6 +200,9 @@ void WebAppControllerBrowserTest::SetUpOnMainThread() {
   cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 
   os_hooks_suppress_ = OsIntegrationManager::ScopedSuppressOsHooksForTesting();
+
+  web_app::test::WaitUntilReady(
+      web_app::WebAppProvider::GetForTest(browser()->profile()));
 }
 
 }  // namespace web_app

@@ -280,6 +280,9 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
       mojo::PendingRemote<network::mojom::CookieManager> cookie_manager);
 
+  InterceptionJob(const InterceptionJob&) = delete;
+  InterceptionJob& operator=(const InterceptionJob&) = delete;
+
   void GetResponseBody(std::unique_ptr<GetResponseBodyCallback> callback);
   void TakeResponseBodyPipe(TakeResponseBodyPipeCallback callback);
   void ContinueInterceptedRequest(
@@ -430,8 +433,6 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   // current request URL. Tracked for the purpose of computing the proper
   // SameSite cookies to return, which depends on the redirect chain.
   std::vector<GURL> url_chain_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterceptionJob);
 };
 
 void DevToolsURLLoaderInterceptor::CreateJob(
@@ -934,16 +935,26 @@ Response InterceptionJob::InnerContinueRequest(
   }
 
   if (state_ == State::kFollowRedirect) {
-    if (modifications->modified_url.isJust()) {
-      CancelRequest();
-      // Fall through to the generic logic of re-starting the request
-      // at the bottom of the method.
-    } else {
-      // TODO(caseq): report error if other modifications are present.
+    if (!modifications->modified_url.isJust()) {
+      // TODO(caseq): report error modifications other than headers are present.
       state_ = State::kRequestSent;
-      loader_->FollowRedirect({}, {}, {}, absl::nullopt);
+      std::vector<std::string> removed_headers;
+      net::HttpRequestHeaders modified_headers;
+      if (modifications->modified_headers) {
+        for (const auto& entry : *modifications->modified_headers) {
+          if (entry.second.empty())
+            removed_headers.push_back(entry.first);
+          else
+            modified_headers.SetHeader(entry.first, entry.second);
+        }
+      }
+      loader_->FollowRedirect(removed_headers, modified_headers, {},
+                              absl::nullopt);
       return Response::Success();
     }
+    CancelRequest();
+    // Fall through to the generic logic of re-starting the request
+    // at the bottom of the method.
   }
   if (state_ == State::kRedirectReceived) {
     // TODO(caseq): report error if other modifications are present.

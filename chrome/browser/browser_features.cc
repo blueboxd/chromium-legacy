@@ -19,6 +19,12 @@ namespace features {
 const base::Feature kClosedTabCache{"ClosedTabCache",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether or not to delegate color queries from the ThemeProvider to the
+// ColorProvider.
+const base::Feature kColorProviderRedirectionForThemeProvider = {
+    "ColorProviderRedirectionForThemeProvider",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Destroy profiles when their last browser window is closed, instead of when
 // the browser exits.
 const base::Feature kDestroyProfileOnBrowserClose{
@@ -61,7 +67,13 @@ const base::Feature kMuteNotificationSnoozeAction{
 // Shows a confirmation dialog when updates to PWAs identity (name and icon)
 // have been detected.
 const base::Feature kPwaUpdateDialogForNameAndIcon{
-    "PwaUpdateDialogForNameAndIcon", base::FEATURE_DISABLED_BY_DEFAULT};
+  "PwaUpdateDialogForNameAndIcon",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables taking snapshots of the user data directory after a major
@@ -108,5 +120,11 @@ bool ShouldTriggerNetworkDataMigration() {
 // descriptor.
 const base::Feature kWebUsbDeviceDetection{"WebUsbDeviceDetection",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID)
+// Enables Certificate Transparency on Android.
+const base::Feature kCertificateTransparencyAndroid{
+    "CertificateTransparencyAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 }  // namespace features

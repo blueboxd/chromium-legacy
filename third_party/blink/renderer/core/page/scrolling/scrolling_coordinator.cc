@@ -267,12 +267,12 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     // content depends on the page scale factor. Its scrollable content is
     // the layout viewport which is sized based on the minimum allowed page
     // scale so it actually can be smaller than its clip.
-    IntSize container_size = scrollable_area->VisibleContentRect().Size();
+    IntSize container_size = scrollable_area->VisibleContentRect().size();
     scroll_contents_size = scroll_contents_size.ExpandedTo(container_size);
 
     // This call has to go through the GraphicsLayer method to preserve
     // invalidation code there.
-    graphics_layer->SetSize(gfx::Size(scroll_contents_size));
+    graphics_layer->SetSize(ToGfxSize(scroll_contents_size));
   }
   if (cc::ScrollbarLayerBase* scrollbar_layer =
           GetScrollbarLayer(scrollable_area, kHorizontalScrollbar)) {

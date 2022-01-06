@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/media_notification_provider.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/scoped_observation.h"
@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
 #include "chrome/browser/ui/ash/ambient/ambient_client_impl.h"
 #include "chrome/browser/ui/ash/ash_shell_init.h"
+#include "chrome/browser/ui/ash/ash_web_view_factory_impl.h"
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/chrome_new_window_delegate_provider.h"
@@ -39,7 +40,6 @@
 #include "chrome/browser/ui/ash/in_session_auth_dialog_client.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/ash/media_client_impl.h"
-#include "chrome/browser/ui/ash/media_notification_provider_impl.h"
 #include "chrome/browser/ui/ash/microphone_mute_notification_delegate_impl.h"
 #include "chrome/browser/ui/ash/network/mobile_data_notifications.h"
 #include "chrome/browser/ui/ash/network/network_connect_delegate_chromeos.h"
@@ -62,6 +62,8 @@
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "chromeos/services/bluetooth_config/fast_pair_delegate.h"
+#include "chromeos/services/bluetooth_config/in_process_instance.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -148,10 +150,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   quick_answers_browser_client_ =
       std::make_unique<QuickAnswersBrowserClientImpl>();
 
-  media_notification_provider_ =
-      std::make_unique<MediaNotificationProviderImpl>();
-  ash::MediaNotificationProvider::Set(media_notification_provider_.get());
-
   ash_shell_init_ = std::make_unique<AshShellInit>();
 
   screen_orientation_delegate_ =
@@ -230,6 +228,15 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   }
 
   desks_client_ = std::make_unique<DesksClient>();
+
+  if (ash::features::IsBluetoothRevampEnabled()) {
+    chromeos::bluetooth_config::FastPairDelegate* delegate =
+        ash::features::IsFastPairEnabled()
+            ? ash::Shell::Get()->quick_pair_mediator()->GetFastPairDelegate()
+            : nullptr;
+
+    chromeos::bluetooth_config::Initialize(delegate);
+  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
@@ -274,6 +281,8 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
             detector);
   }
 
+  ash_web_view_factory_ = std::make_unique<AshWebViewFactoryImpl>();
+
   // Initialize TabScrubber after the Ash Shell has been initialized.
   TabScrubber::GetInstance();
 }
@@ -283,6 +292,9 @@ void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
+  if (ash::features::IsBluetoothRevampEnabled())
+    chromeos::bluetooth_config::Shutdown();
+
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   // ExoParts uses state from ash, delete it before ash so that exo can
   // uninstall correctly.
@@ -300,6 +312,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   tab_cluster_ui_client_.reset();
 
   // Initialized in PostProfileInit (which may not get called in some tests).
+  ash_web_view_factory_.reset();
   network_portal_notification_controller_.reset();
   display_settings_handler_.reset();
   media_client_.reset();
@@ -323,8 +336,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   ambient_client_.reset();
 
   cast_config_controller_media_router_.reset();
-  media_notification_provider_.reset();
-  ash::MediaNotificationProvider::Set(nullptr);
   if (chromeos::NetworkConnect::IsInitialized())
     chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();

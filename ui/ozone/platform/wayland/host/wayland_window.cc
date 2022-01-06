@@ -119,10 +119,10 @@ void WaylandWindow::UpdateWindowScale(bool update_bounds) {
   if (!output)
     return;
 
-  int32_t new_scale = output->scale_factor();
+  float new_scale = output->scale_factor();
   ui_scale_ = output->GetUIScaleFactor();
 
-  int32_t old_scale = window_scale();
+  float old_scale = window_scale();
   window_scale_ = new_scale;
 
   // We need to keep DIP size of the window the same whenever the scale changes.
@@ -138,8 +138,8 @@ gfx::AcceleratedWidget WaylandWindow::GetWidget() const {
   return accelerated_widget_;
 }
 
-void WaylandWindow::SetWindowScale(int32_t new_scale) {
-  DCHECK_GE(new_scale, 0);
+void WaylandWindow::SetWindowScale(float new_scale) {
+  DCHECK_GE(new_scale, 0.f);
   window_scale_ = new_scale;
 }
 
@@ -269,8 +269,7 @@ void WaylandWindow::SetBounds(const gfx::Rect& bounds_px) {
   bounds_px_ = adjusted_bounds_px;
 
   if (update_visual_size_immediately_)
-    UpdateVisualSize(bounds_px.size());
-
+    UpdateVisualSize(bounds_px.size(), window_scale());
   delegate_->OnBoundsChanged(bounds_px_);
 }
 
@@ -279,7 +278,7 @@ gfx::Rect WaylandWindow::GetBounds() const {
 }
 
 gfx::Rect WaylandWindow::GetBoundsInDIP() const {
-  return gfx::ScaleToRoundedRect(bounds_px_, 1.0 / window_scale());
+  return gfx::ScaleToRoundedRect(bounds_px_, 1.0f / window_scale());
 }
 
 void WaylandWindow::SetTitle(const std::u16string& title) {}
@@ -470,7 +469,8 @@ void WaylandWindow::HandlePopupConfigure(const gfx::Rect& bounds_dip) {
   NOTREACHED() << "Only shell popups must receive HandlePopupConfigure calls.";
 }
 
-void WaylandWindow::UpdateVisualSize(const gfx::Size& size_px) {
+void WaylandWindow::UpdateVisualSize(const gfx::Size& size_px,
+                                     float scale_factor) {
   if (visual_size_px_ == size_px)
     return;
   visual_size_px_ = size_px;
@@ -827,6 +827,8 @@ bool WaylandWindow::CommitOverlays(
         std::vector<gfx::Rect> opaque_region{region_px};
         (*iter)->wayland_surface()->SetOpaqueRegion(&opaque_region);
         (*iter)->wayland_surface()->SetOpacity((*overlay_iter)->opacity);
+        (*iter)->wayland_surface()->SetRoundedCorners(
+            (*overlay_iter)->rounded_corners);
         connection_->buffer_manager_host()->CommitBufferInternal(
             (*iter)->wayland_surface(), (*overlay_iter)->buffer_id,
             (*overlay_iter)->damage_region,
@@ -876,6 +878,8 @@ bool WaylandWindow::CommitOverlays(
         std::vector<gfx::Rect> opaque_region{region_px};
         (*iter)->wayland_surface()->SetOpaqueRegion(&opaque_region);
         (*iter)->wayland_surface()->SetOpacity((*overlay_iter)->opacity);
+        (*iter)->wayland_surface()->SetRoundedCorners(
+            (*overlay_iter)->rounded_corners);
         connection_->buffer_manager_host()->CommitBufferInternal(
             (*iter)->wayland_surface(), (*overlay_iter)->buffer_id,
             (*overlay_iter)->damage_region,
@@ -893,7 +897,8 @@ bool WaylandWindow::CommitOverlays(
   if (split == overlays.end() && overlays.front()->z_order == INT32_MIN)
     split = overlays.begin();
 
-  UpdateVisualSize((*split)->bounds_rect.size());
+  UpdateVisualSize((*split)->bounds_rect.size(),
+                   (*split)->surface_scale_factor);
 
   if (!wayland_overlay_delegation_enabled_) {
     root_surface_->SetViewportSource((*split)->crop_rect);
@@ -935,6 +940,8 @@ bool WaylandWindow::CommitOverlays(
     std::vector<gfx::Rect> opaque_region{region_px};
     primary_subsurface_->wayland_surface()->SetOpaqueRegion(&opaque_region);
     primary_subsurface_->wayland_surface()->SetOpacity((*split)->opacity);
+    primary_subsurface_->wayland_surface()->SetRoundedCorners(
+        (*split)->rounded_corners);
     connection_->buffer_manager_host()->CommitBufferInternal(
         primary_subsurface_->wayland_surface(), (*split)->buffer_id,
         (*split)->damage_region,
@@ -998,6 +1005,77 @@ void WaylandWindow::UpdateCursorShape(scoped_refptr<BitmapCursorOzone> cursor) {
   // The new cursor needs to be stored last to avoid deleting the old cursor
   // while it's still in use.
   cursor_ = cursor;
+}
+
+void WaylandWindow::ProcessPendingBoundsDip(uint32_t serial) {
+  if (pending_bounds_dip_.IsEmpty() &&
+      GetPlatformWindowState() == PlatformWindowState::kMinimized &&
+      pending_configures_.empty()) {
+    // In exo, widget creation is deferred until the surface has contents and
+    // |initial_show_state_| for a widget is ignored. Exo sends a configure
+    // callback with empty bounds expecting client to suggest a size.
+    // For the window activated from minimized state,
+    // the saved window placement should be set as window geometry.
+    gfx::Rect bounds_in_dip = GetBoundsInDIP();
+    // As per spec, width and height must be greater than zero.
+    if (bounds_in_dip.IsEmpty())
+      bounds_in_dip = gfx::Rect(0, 0, 1, 1);
+    SetWindowGeometry(bounds_in_dip);
+    AckConfigure(serial);
+    root_surface()->Commit();
+  } else if (pending_bounds_dip_ ==
+                 gfx::ScaleToRoundedRect(GetBounds(), 1.f / window_scale()) &&
+             pending_configures_.empty()) {
+    // If |pending_bounds_dip_| matches GetBounds(), and |pending_configures_|
+    // is empty, implying that the window is already rendering at
+    // |pending_bounds_dip_|, then a frame matching |pending_bounds_dip_| may
+    // not arrive soon, despite the window delegate receives the updated bounds.
+    // Without a new frame, UpdateVisualSize() is not invoked, leaving this
+    // |configure| unacknowledged.
+    //   E.g. With static window content, |configure| that does not
+    //     change window size will not cause the window to redraw.
+    // Hence, acknowledge this |configure| now to tell the Wayland compositor
+    // that this window has been configured.
+    SetWindowGeometry(pending_bounds_dip_);
+    AckConfigure(serial);
+    connection()->ScheduleFlush();
+  } else if (!pending_configures_.empty() &&
+             pending_bounds_dip_.size() ==
+                 pending_configures_.back().bounds_dip.size()) {
+    // There is an existing pending_configure with the same size, do not push a
+    // new one. Instead, update the serial of the pending_configure.
+    pending_configures_.back().serial = serial;
+  } else {
+    // Otherwise, push the pending |configure| to |pending_configures_|, wait
+    // for a frame update, which will invoke UpdateVisualSize().
+    DCHECK_LT(pending_configures_.size(), 100u);
+    pending_configures_.push_back({pending_bounds_dip_, serial});
+    // The Wayland compositor can generate xdg-shell.configure events more
+    // frequently than frame updates from gpu process. Throttle
+    // ApplyPendingBounds() such that we forward new bounds to
+    // PlatformWindowDelegate at most once per frame.
+    if (pending_configures_.size() <= 1)
+      ApplyPendingBounds();
+  }
+}
+
+bool WaylandWindow::ProcessVisualSizeUpdate(const gfx::Size& size_px,
+                                            float scale_factor) {
+  auto size_dip = gfx::ScaleToRoundedSize(size_px, 1.f / scale_factor);
+  auto result =
+      std::find_if(pending_configures_.begin(), pending_configures_.end(),
+                   [&size_dip](auto& configure) {
+                     return size_dip == configure.bounds_dip.size();
+                   });
+
+  if (result != pending_configures_.end()) {
+    SetWindowGeometry(gfx::Rect(size_dip));
+    AckConfigure(result->serial);
+    connection()->ScheduleFlush();
+    pending_configures_.erase(pending_configures_.begin(), ++result);
+    return true;
+  }
+  return false;
 }
 
 }  // namespace ui

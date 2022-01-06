@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/ash/arc/icon_decode_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -44,6 +44,7 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
   if (!query.empty())
     SetTitleTags(CalculateTags(query, title));
   set_id(kAppShortcutSearchPrefix + GetAppId() + "/" + data_->shortcut_id);
+  SetCategory(Category::kAppShortcuts);
   SetAccessibleName(ComputeAccessibleName());
   SetResultType(ash::AppListSearchResultType::kArcAppShortcut);
   SetDisplayType(ash::SearchResultDisplayType::kTile);

@@ -132,7 +132,9 @@ bool TestDestructionVersionUpdater::destructor_invoked_ = false;
 
 class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
  public:
-  TestPasswordsDelegate() { store_->Init(/*prefs=*/nullptr); }
+  TestPasswordsDelegate() {
+    store_->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
+  }
 
   void TearDown() {
     store_->ShutdownOnUIThread();
@@ -174,12 +176,6 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
         "test" + base::NumberToString(test_credential_counter_++));
     form.password_value = u"password";
     form.username_element = u"username_element";
-    // TODO(crbug.com/1223022): Once all places that operate changes on forms
-    // via UpdateLogin properly set |password_issues|, setting them to an empty
-    // map should be part of the default constructor.
-    form.password_issues =
-        base::flat_map<password_manager::InsecureType,
-                       password_manager::InsecurityMetadata>();
     store_->AddLogin(form);
     form.password_issues = {
         {password_manager::InsecureType::kLeaked,
@@ -383,11 +379,9 @@ SafetyCheckHandlerTest::GetSafetyCheckStatusChangedWithDataIfExists(
     if (!data.arg2()->GetAsDictionary(&dictionary)) {
       continue;
     }
-    int cur_new_state;
-    if (dictionary->GetInteger("newState", &cur_new_state) &&
-        cur_new_state == new_state) {
+    absl::optional<int> cur_new_state = dictionary->FindIntKey("newState");
+    if (cur_new_state == new_state)
       return dictionary;
-    }
   }
   return nullptr;
 }

@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/unguessable_token.h"
@@ -28,7 +29,6 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
-#include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/display_util.h"
@@ -302,7 +302,7 @@ std::unique_ptr<viz::ClientFrameSinkVideoCapturer>
 RenderWidgetHostViewBase::CreateVideoCapturer() {
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> video_capturer =
       GetHostFrameSinkManager()->CreateVideoCapturer();
-  video_capturer->ChangeTarget(GetFrameSinkId(), viz::SubtreeCaptureId());
+  video_capturer->ChangeTarget(GetFrameSinkId(), nullptr);
   return video_capturer;
 }
 
@@ -506,26 +506,6 @@ void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
   NOTREACHED();
 }
 
-display::ScreenInfos RenderWidgetHostViewBase::GetScreenInfos() {
-  // Get the latest info directly from display::Screen, like GetScreenInfo().
-  // TODO(crbug.com/1169312): Unify display info caching and change detection.
-  // GetScreenInfos should be made non-virtual to just return screen_infos_.
-  // GetScreenInfo should go away and callers should use GetScreenInfos.
-  // UpdateScreenInfo should be the only updater of screen_infos.
-  if (auto* screen = display::Screen::GetScreen()) {
-    gfx::NativeView native_view = GetNativeView();
-    const auto& display = native_view
-                              ? screen->GetDisplayNearestView(native_view)
-                              : screen->GetPrimaryDisplay();
-    return screen->GetScreenInfosNearestDisplay(display.id());
-  }
-
-  // If there is no screen, create fake ScreenInfos (for tests).
-  display::ScreenInfo screen_info;
-  screen_info.display_id = display::kDefaultDisplayId;
-  return display::ScreenInfos(screen_info);
-}
-
 void RenderWidgetHostViewBase::UpdateScreenInfo() {
   bool force_sync_visual_properties = false;
   // Delegate, which is usually WebContentsImpl, do not send rect updates for
@@ -546,8 +526,7 @@ void RenderWidgetHostViewBase::UpdateScreenInfo() {
       host()->delegate()->SendScreenRects();
   }
 
-  // TODO(crbug.com/1169312): Unify display info caching and change detection.
-  auto new_screen_infos = GetScreenInfos();
+  auto new_screen_infos = GetNewScreenInfosForUpdate();
 
   if (screen_infos_ == new_screen_infos && !force_sync_visual_properties)
     return;
@@ -571,12 +550,6 @@ void RenderWidgetHostViewBase::UpdateScreenInfo() {
     OnSynchronizedDisplayPropertiesChanged(has_rotation_changed);
     host()->NotifyScreenInfoChanged();
   }
-}
-
-float RenderWidgetHostViewBase::GetCurrentDeviceScaleFactor() const {
-  // TODO(enne): consolidate this GetCurrentDeviceScaleFactor() function with
-  // GetDeviceScaleFactor().
-  return screen_infos_.current().device_scale_factor;
 }
 
 void RenderWidgetHostViewBase::DidUnregisterFromTextInputManager(
@@ -620,14 +593,16 @@ base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void RenderWidgetHostViewBase::GetScreenInfo(display::ScreenInfo* screen_info) {
-  *screen_info = GetScreenInfos().current();
+display::ScreenInfo RenderWidgetHostViewBase::GetScreenInfo() const {
+  return screen_infos_.current();
+}
+
+display::ScreenInfos RenderWidgetHostViewBase::GetScreenInfos() const {
+  return screen_infos_;
 }
 
 float RenderWidgetHostViewBase::GetDeviceScaleFactor() {
-  display::ScreenInfo screen_info;
-  GetScreenInfo(&screen_info);
-  return screen_info.device_scale_factor;
+  return screen_infos_.current().device_scale_factor;
 }
 
 void RenderWidgetHostViewBase::OnAutoscrollStart() {
@@ -820,34 +795,25 @@ RenderWidgetHostViewBase::GetTouchSelectionControllerClientManager() {
   return nullptr;
 }
 
-void RenderWidgetHostViewBase::SetRecordContentToVisibleTimeRequest(
-    base::TimeTicks start_time,
-    bool destination_is_loaded,
-    bool show_reason_tab_switching,
-    bool show_reason_unoccluded,
-    bool show_reason_bfcache_restore) {
-  auto record_tab_switch_time_request =
-      blink::mojom::RecordContentToVisibleTimeRequest::New(
-          start_time, destination_is_loaded, show_reason_tab_switching,
-          show_reason_unoccluded, show_reason_bfcache_restore);
-
-  if (last_record_tab_switch_time_request_) {
-    blink::UpdateRecordContentToVisibleTimeRequest(
-        *record_tab_switch_time_request, *last_record_tab_switch_time_request_);
-  } else {
-    last_record_tab_switch_time_request_ =
-        std::move(record_tab_switch_time_request);
-  }
-}
-
-blink::mojom::RecordContentToVisibleTimeRequestPtr
-RenderWidgetHostViewBase::TakeRecordContentToVisibleTimeRequest() {
-  return std::move(last_record_tab_switch_time_request_);
-}
-
 void RenderWidgetHostViewBase::SynchronizeVisualProperties() {
   if (host())
     host()->SynchronizeVisualProperties();
+}
+
+display::ScreenInfos RenderWidgetHostViewBase::GetNewScreenInfosForUpdate() {
+  // RWHVChildFrame gets its ScreenInfos from the CrossProcessFrameConnector.
+  DCHECK(!IsRenderWidgetHostViewChildFrame());
+
+  if (auto* screen = display::Screen::GetScreen()) {
+    gfx::NativeView native_view = GetNativeView();
+    const auto& display = native_view
+                              ? screen->GetDisplayNearestView(native_view)
+                              : screen->GetPrimaryDisplay();
+    return screen->GetScreenInfosNearestDisplay(display.id());
+  }
+
+  // If there is no Screen, create fake ScreenInfos (for tests).
+  return display::ScreenInfos(display::ScreenInfo());
 }
 
 void RenderWidgetHostViewBase::DidNavigate() {
@@ -1000,6 +966,13 @@ bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
 
 ui::Compositor* RenderWidgetHostViewBase::GetCompositor() {
   return nullptr;
+}
+
+VisibleTimeRequestTrigger*
+RenderWidgetHostViewBase::GetVisibleTimeRequestTrigger() {
+  DCHECK(
+      !visible_time_request_trigger_.is_tab_switch_metrics2_feature_enabled());
+  return &visible_time_request_trigger_;
 }
 
 bool RenderWidgetHostViewBase::ShouldVirtualKeyboardOverlayContent() {

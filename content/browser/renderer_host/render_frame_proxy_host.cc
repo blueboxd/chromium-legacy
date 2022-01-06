@@ -31,6 +31,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/scoped_active_url.h"
+#include "content/browser/site_instance_group.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/disallow_activation_reason.h"
@@ -138,6 +139,8 @@ RenderFrameProxyHost::RenderFrameProxyHost(
     FrameTreeNode* frame_tree_node)
     : routing_id_(site_instance->GetProcess()->GetNextRoutingID()),
       site_instance_(site_instance),
+      site_instance_group_(
+          static_cast<SiteInstanceImpl*>(site_instance)->group()),
       process_(site_instance->GetProcess()),
       frame_tree_node_(frame_tree_node),
       render_frame_proxy_created_(false),
@@ -317,11 +320,7 @@ AgentSchedulingGroupHost& RenderFrameProxyHost::GetAgentSchedulingGroup() {
 void RenderFrameProxyHost::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  // A RenderFrameProxyHost is reused after a crash, so allow reuse of the
-  // receivers by resetting them before binding.
-  // TODO(dcheng): Maybe this should move to InvalidateMojoConnection()?
   if (interface_name == blink::mojom::RemoteFrameHost::Name_) {
-    remote_frame_host_receiver_.reset();
     remote_frame_host_receiver_.Bind(
         mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrameHost>(
             std::move(handle)));
@@ -356,7 +355,7 @@ void RenderFrameProxyHost::SetRenderFrameProxyCreated(bool created) {
   // Reset the mojo channels when the associated renderer is gone. It allows
   // reuse of the mojo channels when this RenderFrameProxyHost is reused.
   if (!render_frame_proxy_created_)
-    InvalidateMojoConnection();
+    TearDownMojoConnection();
 }
 
 const mojo::AssociatedRemote<blink::mojom::RemoteFrame>&
@@ -467,6 +466,16 @@ void RenderFrameProxyHost::DidFocusFrame() {
               ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_,
               ChromeTrackEvent::kSiteInstance,
               *static_cast<SiteInstanceImpl*>(GetSiteInstance()));
+  // If a fenced frame has requested focus something wrong has gone on. We do
+  // not support programmatic focus between the embedder and embeddee because
+  // that could be a side channel.
+  if (frame_tree_node_->frame_tree()->type() == FrameTree::Type::kFencedFrame &&
+      frame_tree_node_->render_manager()->GetProxyToOuterDelegate() == this) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RFPH_FOCUSED_FENCED_FRAME);
+    return;
+  }
+
   RenderFrameHostImpl* render_frame_host =
       frame_tree_node_->current_frame_host();
   // Do not focus inactive RenderFrameHost.
@@ -803,8 +812,9 @@ void RenderFrameProxyHost::BindRemoteMainFrameInterfaces(
     g_observer_for_testing->OnRemoteMainFrameBound(this);
 }
 
-void RenderFrameProxyHost::InvalidateMojoConnection() {
+void RenderFrameProxyHost::TearDownMojoConnection() {
   remote_frame_.reset();
+  remote_frame_host_receiver_.reset();
   remote_main_frame_.reset();
   remote_main_frame_host_receiver_.reset();
 }
@@ -817,9 +827,11 @@ void RenderFrameProxyHost::WriteIntoTrace(
   proto->set_is_render_frame_proxy_live(is_render_frame_proxy_live());
   auto* site_instance = GetSiteInstance();
   if (site_instance) {
-    proto->set_rvh_map_id(frame_tree_node_->frame_tree()
-                              ->GetRenderViewHostMapId(site_instance)
-                              .value());
+    proto->set_rvh_map_id(
+        frame_tree_node_->frame_tree()
+            ->GetRenderViewHostMapId(
+                static_cast<SiteInstanceImpl*>(site_instance)->group())
+            .value());
     proto->set_site_instance_id(site_instance->GetId().value());
   }
 }

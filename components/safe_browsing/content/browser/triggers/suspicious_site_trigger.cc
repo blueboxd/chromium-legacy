@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
+#include "base/metrics/histogram_macros_local.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/triggers/trigger_manager.h"
@@ -35,11 +36,11 @@ const int64_t kSuspiciousSiteCollectionPeriodMilliseconds = 5000;
 const char kSuspiciousSiteTriggerEventMetricName[] =
     "SafeBrowsing.Triggers.SuspiciousSite.Event";
 
-const char kSuspiciousSiteTriggerReportRejectionMetricName[] =
-    "SafeBrowsing.Triggers.SuspiciousSite.ReportRejectionReason";
+const char kSuspiciousSiteTriggerReportRejectionTestMetricName[] =
+    "SafeBrowsingTest.Triggers.SuspiciousSite.ReportRejectionReason";
 
-const char kSuspiciousSiteTriggerReportDelayStateMetricName[] =
-    "SafeBrowsing.Triggers.SuspiciousSite.DelayTimerState";
+const char kSuspiciousSiteTriggerReportDelayStateTestMetricName[] =
+    "SafeBrowsingTest.Triggers.SuspiciousSite.DelayTimerState";
 
 void NotifySuspiciousSiteTriggerDetected(
     const base::RepeatingCallback<content::WebContents*()>&
@@ -101,8 +102,8 @@ bool SuspiciousSiteTrigger::MaybeStartReport() {
           error_options, &reason)) {
     UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerEventMetricName,
                               SuspiciousSiteTriggerEvent::REPORT_START_FAILED);
-    UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerReportRejectionMetricName,
-                              reason);
+    LOCAL_HISTOGRAM_ENUMERATION(
+        kSuspiciousSiteTriggerReportRejectionTestMetricName, reason);
     return false;
   }
 
@@ -262,8 +263,9 @@ void SuspiciousSiteTrigger::SuspiciousSiteDetected() {
 void SuspiciousSiteTrigger::ReportDelayTimerFired() {
   UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerEventMetricName,
                             SuspiciousSiteTriggerEvent::REPORT_DELAY_TIMER);
-  UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerReportDelayStateMetricName,
-                            current_state_);
+  // This local histogram is used as a signal for testing.
+  LOCAL_HISTOGRAM_ENUMERATION(
+      kSuspiciousSiteTriggerReportDelayStateTestMetricName, current_state_);
   switch (current_state_) {
     case TriggerState::IDLE:
     case TriggerState::LOADING:

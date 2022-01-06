@@ -185,6 +185,8 @@ group("gn_all") {
   if (!is_ios) {
     deps += [
       "//cc:cc_unittests",
+      "//chrome/test:unit_tests",
+      "//components:components_browsertests",
       "//components/policy:policy_templates",
       "//components/url_formatter/tools:format_url",
       "//components/viz:viz_perftests",
@@ -193,10 +195,12 @@ group("gn_all") {
       "//content/test:content_browsertests",
       "//content/test:content_perftests",
       "//content/test:content_unittests",
+      "//device:device_unittests",
       "//gpu:gpu_benchmark",
       "//gpu:gpu_unittests",
       "//ipc:ipc_tests",
       "//media:media_unittests",
+      "//media/capture:capture_unittests",
       "//media/midi:midi_unittests",
       "//media/mojo:media_mojo_unittests",
       "//mojo",
@@ -251,11 +255,7 @@ group("gn_all") {
 
   if (!is_ios && !is_fuchsia) {
     deps += [
-      "//chrome/test:unit_tests",
-      "//components:components_browsertests",
-      "//device:device_unittests",
       "//google_apis/gcm:mcs_probe",
-      "//media/capture:capture_unittests",
       "//media/cast:cast_unittests",
       "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",
     ]
@@ -272,7 +272,7 @@ group("gn_all") {
       "//ios:all",
       "//third_party/crashpad/crashpad:crashpad_tests",
     ]
-  } else if (is_fuchsia) {
+  } else if (is_fuchsia && !is_chromecast) {
     deps += [
       ":d8_fuchsia",
       "//fuchsia:gn_all",
@@ -788,10 +788,6 @@ group("gn_all") {
     }
   }
 
-  if (is_linux && !is_chromecast && use_gtk) {
-    deps += [ "//ui/gtk:gtk_unittests" ]
-  }
-
   if (((is_linux || is_chromeos) && !is_chromecast) ||
       (is_win && use_libfuzzer) || (use_libfuzzer && is_mac)) {
     deps += [
@@ -844,10 +840,6 @@ group("gn_all") {
         ]
       }
     }
-  }
-
-  if (enable_vulkan) {
-    deps += [ "//gpu/vulkan/demo" ]
   }
 
   if (use_atk) {
@@ -914,13 +906,13 @@ if (is_fuchsia) {
     testonly = true
     binary = "//v8:d8"
     manifest = "//v8/gni/v8.cmx"
-    package_name_override = "d8"
+    package_name = "d8"
   }
 
-  fuchsia_package_runner("d8_fuchsia") {
+  fuchsia_package_installer("d8_fuchsia") {
     testonly = true
     package = ":d8_fuchsia_pkg"
-    package_name_override = "d8"
+    package_name = "d8"
   }
 }
 
@@ -988,6 +980,7 @@ if (is_chromeos_ash) {
       "//chrome",
       "//chrome/test/chromedriver",
       "//components/chromeos_camera:jpeg_decode_accelerator_unittest",
+      "//components/exo/wayland:wayland_client_integration_tests",
       "//components/exo/wayland:wayland_client_perftests",
       "//components/exo/wayland:wayland_client_tests",
       "//media:media_unittests",
@@ -1161,7 +1154,12 @@ if (!is_ios) {
     }
 
     if (is_fuchsia) {
-      data_deps += [ "//content/shell:content_shell_fuchsia" ]
+      data_deps += [
+        "//build/config/fuchsia:deployment_resources",
+        "//content/shell:content_shell_fuchsia",
+        "//content/shell:content_shell_pkg__archive-manifest",
+        "//content/shell:content_shell_pkg__archive-metadata",
+      ]
     }
 
     data = [
@@ -1224,7 +1222,6 @@ if (!is_ios) {
   _common_web_test_args += [
     "--seed",
     "4",
-    "--debug-rwt-logging",
     "--no-show-results",
     "--zero-tests-executed-ok",
     "--clobber-old-results",
@@ -1236,7 +1233,7 @@ if (!is_ios) {
 
   # https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_tests.md
   script_test("blink_web_tests") {
-    if (is_fuchsia || is_mac) {
+    if (is_mac) {
       run_under_python2 = true
     }
     script = _common_web_test_script

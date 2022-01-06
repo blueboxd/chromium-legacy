@@ -153,6 +153,7 @@ bool CopyOutputResult::ReadRGBAPlane(uint8_t* dest, int stride) const {
   const SkBitmap& bitmap = scoped_sk_bitmap.bitmap();
   if (!bitmap.readyToDraw())
     return false;
+
   DCHECK(bitmap.colorSpace());
   SkImageInfo image_info =
       SkImageInfo::MakeN32(bitmap.width(), bitmap.height(), kPremul_SkAlphaType,
@@ -178,8 +179,6 @@ CopyOutputSkBitmapResult::CopyOutputSkBitmapResult(Format format,
                                                    const gfx::Rect& rect,
                                                    SkBitmap bitmap)
     : CopyOutputResult(format, Destination::kSystemMemory, rect, false) {
-  DCHECK(format == Format::RGBA || format == Format::I420_PLANES);
-
   if (!rect.IsEmpty()) {
     DCHECK(!bitmap.pixelRef() || bitmap.pixelRef()->unique());
     DCHECK(!bitmap.readyToDraw() || bitmap.colorSpace());
@@ -218,20 +217,22 @@ const SkBitmap& CopyOutputSkBitmapResult::AsSkBitmap() const {
 CopyOutputSkBitmapResult::~CopyOutputSkBitmapResult() = default;
 
 CopyOutputTextureResult::CopyOutputTextureResult(
+    Format format,
     const gfx::Rect& rect,
     TextureResult texture_result,
     ReleaseCallbacks release_callbacks)
-    : CopyOutputResult(Format::RGBA, Destination::kNativeTextures, rect, false),
+    : CopyOutputResult(format, Destination::kNativeTextures, rect, false),
       texture_result_(std::move(texture_result)),
       release_callbacks_(std::move(release_callbacks)) {
   // If we're constructing empty result, all mailboxes must be zero.
   // Otherwise, the first mailbox must be non-zero.
   DCHECK_EQ(rect.IsEmpty(), texture_result_.planes[0].mailbox.IsZero());
+  if (format == Format::NV12_PLANES) {
+    DCHECK_EQ(rect.IsEmpty(), texture_result_.planes[1].mailbox.IsZero());
+  }
   // If we're constructing empty result, the callbacks must be empty.
-  DCHECK_EQ(rect.IsEmpty(), release_callbacks_.empty());
-  // Callbacks must either be empty, or contain exactly one callback (we support
-  // only one plane for now).
-  DCHECK(release_callbacks_.empty() || release_callbacks_.size() == 1);
+  // From definition of implication: p => q  <=>  !p || q.
+  DCHECK(!rect.IsEmpty() || release_callbacks_.empty());
   // Color space must be valid for non-empty results.
   DCHECK(rect.IsEmpty() || texture_result_.color_space.IsValid());
 }

@@ -379,6 +379,8 @@ component("net") {
     "cert/symantec_certs.h",
     "cert/test_root_certs.cc",
     "cert/test_root_certs.h",
+    "cert/trial_comparison_cert_verifier_util.cc",
+    "cert/trial_comparison_cert_verifier_util.h",
     "cert/x509_cert_types.cc",
     "cert/x509_cert_types.h",
     "cert/x509_certificate.cc",
@@ -1171,7 +1173,7 @@ component("net") {
     ]
   }
 
-  if (is_chromeos_ash && use_nss_certs) {
+  if ((is_chromeos_ash || is_chromeos_lacros) && use_nss_certs) {
     sources += [
       "cert/nss_cert_database_chromeos.cc",
       "cert/nss_cert_database_chromeos.h",
@@ -2139,6 +2141,8 @@ static_library("test_support") {
     "test/test_certificate_data.h",
     "test/test_data_directory.cc",
     "test/test_data_directory.h",
+    "test/test_doh_server.cc",
+    "test/test_doh_server.h",
     "test/test_with_task_environment.h",
     "test/url_request/ssl_certificate_error_job.cc",
     "test/url_request/ssl_certificate_error_job.h",
@@ -2280,6 +2284,35 @@ if (!is_ios && !is_android) {
     ]
 
     deps = [
+      ":net",
+      ":test_support",
+      "//base",
+      "//build/win:default_exe_manifest",
+    ]
+
+    if (is_mac) {
+      frameworks = [ "Security.framework" ]
+    }
+  }
+
+  proto_library("cert_verify_comparison_tool_proto") {
+    sources = [ "tools/cert_verify_tool/dumper.proto" ]
+
+    visibility = [ ":cert_verify_comparison_tool" ]
+  }
+
+  executable("cert_verify_comparison_tool") {
+    testonly = true
+    sources = [
+      "tools/cert_verify_tool/cert_verify_comparision_tool.cc",
+      "tools/cert_verify_tool/cert_verify_tool_util.cc",
+      "tools/cert_verify_tool/cert_verify_tool_util.h",
+      "tools/cert_verify_tool/verify_using_cert_verify_proc.cc",
+      "tools/cert_verify_tool/verify_using_cert_verify_proc.h",
+    ]
+
+    deps = [
+      ":cert_verify_comparison_tool_proto",
       ":net",
       ":test_support",
       "//base",
@@ -4850,7 +4883,6 @@ if (use_fuzzing_engine) {
       "socket/fuzzed_socket.h",
       "socket/fuzzed_socket_factory.cc",
       "socket/fuzzed_socket_factory.h",
-      "third_party/quiche/src/quic/platform/api/quic_fuzzed_data_provider.h",
     ]
     public_deps = [
       "//base/test:test_support",
@@ -5251,14 +5283,32 @@ fuzzer_test("net_websocket_frame_parser_fuzzer") {
   libfuzzer_options = [ "max_len=256" ]
 }
 
-fuzzer_test("net_web_socket_encoder_fuzzer") {
-  sources = [ "server/web_socket_encoder_fuzzer.cc" ]
-  deps = [
-    ":net_fuzzer_test_support",
-    "//net",
-    "//net/server:http_server",
-  ]
-  libfuzzer_options = [ "max_len=256" ]
+if (use_fuzzing_engine) {
+  # This is a separate target because //net/server:http_server
+  # wants to limit its visibility to a select number of target, but the
+  # "fuzzer_test" template expands on iOS to many targets that need to
+  # have the "deps" information propagated in order to support "fat"
+  # binaries.
+  source_set("net_web_socket_encoder_fuzzer_deps") {
+    testonly = true
+    visibility = [
+      ":net_web_socket_encoder_fuzzer",
+      ":net_web_socket_encoder_fuzzer_arch_executable",
+      ":net_web_socket_encoder_fuzzer_arch_executable_sources",
+      ":run_net_web_socket_encoder_fuzzer",
+    ]
+    public_deps = [
+      ":net_fuzzer_test_support",
+      "//net",
+      "//net/server:http_server",
+    ]
+  }
+
+  fuzzer_test("net_web_socket_encoder_fuzzer") {
+    sources = [ "server/web_socket_encoder_fuzzer.cc" ]
+    deps = [ ":net_web_socket_encoder_fuzzer_deps" ]
+    libfuzzer_options = [ "max_len=256" ]
+  }
 }
 
 fuzzer_test("net_http_chunked_decoder_fuzzer") {

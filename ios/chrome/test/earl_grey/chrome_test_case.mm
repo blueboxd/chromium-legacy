@@ -115,8 +115,6 @@ void ResetAuthentication() {
 
 }  // namespace
 
-GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
-
 @interface ChromeTestCase () <AppLaunchManagerObserver> {
   // Block to be executed during object tearDown.
   ProceduralBlock _tearDownHandler;
@@ -314,8 +312,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   [ChromeEarlGrey tearDownFakeSyncServer];
   // Switch from FakeChromeIdentityService to ChromeIdentityServiceImpl.
   TearDownMockAuthentication();
-  // Remove all identities in ChromeIdentityServiceImpl.
-  [ChromeEarlGrey signOutAndClearIdentities];
 }
 
 + (void)enableMockAuthentication {

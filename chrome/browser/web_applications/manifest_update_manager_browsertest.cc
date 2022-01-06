@@ -31,6 +31,7 @@
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_sync_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
@@ -105,7 +106,7 @@ constexpr char16_t kAnotherShortcutsItemName16[] = u"Timeline";
 constexpr char kAnotherShortcutsItemUrl[] = "/shortcut";
 constexpr char kAnotherShortcutsItemShortName[] = "H";
 constexpr char kAnotherShortcutsItemDescription[] = "Navigate home";
-constexpr char kAnotherIconSrc[] = "/launcher-icon-4x.png";
+constexpr char kAnotherIconSrc[] = "/banners/launcher-icon-4x.png";
 constexpr int kAnotherIconSize = 192;
 
 constexpr char kShortcutsItem[] = R"(
@@ -199,6 +200,16 @@ class UpdateCheckResultAwaiter {
   absl::optional<ManifestUpdateResult> result_;
 };
 
+void WaitForUpdatePendingCallback(const GURL& url) {
+  base::RunLoop run_loop;
+  ManifestUpdateTask::SetUpdatePendingCallbackForTesting(
+      base::BindLambdaForTesting([&](const GURL& update_url) {
+        if (url == update_url)
+          run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
 }  // namespace
 
 class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
@@ -228,6 +239,8 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     // Cannot construct RunLoop in constructor due to threading restrictions.
     shortcut_run_loop_.emplace();
+    web_app::test::WaitUntilReady(
+        web_app::WebAppProvider::GetForTest(browser()->profile()));
   }
 
   void OnShortcutInfoRetrieved(std::unique_ptr<ShortcutInfo> shortcut_info) {
@@ -431,6 +444,38 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
   ScopedOsHooksSuppress os_hooks_suppress_;
 };
 
+enum class UpdateDialogParam {
+  kDisabled = 0,
+  kEnabled = 1,
+};
+
+class ManifestUpdateManagerBrowserTest_UpdateDialog
+    : public ManifestUpdateManagerBrowserTest,
+      public testing::WithParamInterface<UpdateDialogParam> {
+ public:
+  ManifestUpdateManagerBrowserTest_UpdateDialog() {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kPwaUpdateDialogForNameAndIcon, IsUpdateDialogEnabled());
+  }
+
+  bool IsUpdateDialogEnabled() const {
+    return GetParam() == UpdateDialogParam::kEnabled;
+  }
+
+  static std::string ParamToString(
+      testing::TestParamInfo<UpdateDialogParam> param) {
+    switch (param.param) {
+      case UpdateDialogParam::kDisabled:
+        return "UpdateDialogDisabled";
+      case UpdateDialogParam::kEnabled:
+        return "UpdateDialogEnabled";
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckOutOfScopeNavigation) {
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL()),
@@ -616,33 +661,6 @@ class ManifestUpdateManagerAppIdentityBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_{
       features::kPwaUpdateDialogForNameAndIcon};
 };
-
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerAppIdentityBrowserTest,
-                       VerifyAppIdentityUpdatesWithDlgForUserInstalledApps) {
-  chrome::SetAutoAcceptAppIdentityUpdateForTesting(true);
-
-  constexpr char kManifestTemplate[] = R"(
-    {
-      "name": "$1",
-      "start_url": ".",
-      "scope": "/",
-      "display": "standalone",
-      "icons": $2
-    }
-  )";
-  OverrideManifest(kManifestTemplate, {"Test app name", kInstallableIconList});
-  AppId app_id = InstallWebApp();
-
-  OverrideManifest(kManifestTemplate,
-                   {"Different app name", kAnotherInstallableIconList});
-  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL()),
-            ManifestUpdateResult::kAppUpdated);
-  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
-                                      ManifestUpdateResult::kAppUpdated, 1);
-  EXPECT_EQ(GetProvider().registrar().GetAppShortName(app_id),
-            "Different app name");
-  CheckShortcutInfoUpdated(app_id, kAnotherInstallableIconTopLeftColor);
-}
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresStartUrlChange) {
@@ -1002,10 +1020,10 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
             http_server_.GetURL("/"));
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
-                       CheckDoesNotApplyIconURLChange) {
-  // This test changes the scope and also the icon list. The scope should update
-  // but the icons should not.
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_UpdateDialog,
+                       ScopeChangeWithProductIconChange) {
+  // This test changes the scope and also the icon list. The scope should
+  // update. The icon should update only if identity updates are allowed.
   constexpr char kManifestTemplate[] = R"(
     {
       "name": "Test app name",
@@ -1023,8 +1041,10 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
             ManifestUpdateResult::kAppUpdated);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
                                       ManifestUpdateResult::kAppUpdated, 1);
-  // The icon should not be updated.
-  CheckShortcutInfoUpdated(app_id, kInstallableIconTopLeftColor);
+  // The icon should be updated only if product icon updates are allowed.
+  CheckShortcutInfoUpdated(app_id, IsUpdateDialogEnabled()
+                                       ? kAnotherInstallableIconTopLeftColor
+                                       : kInstallableIconTopLeftColor);
   EXPECT_EQ(GetProvider().registrar().GetAppScope(app_id),
             http_server_.GetURL("/"));
 }
@@ -1458,43 +1478,6 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUpdated, 0);
 }
 
-enum class UpdateDialogParam {
-  kDisabled = 0,
-  kEnabled = 1,
-};
-
-class ManifestUpdateManagerBrowserTest_UpdateDialog
-    : public ManifestUpdateManagerBrowserTest,
-      public testing::WithParamInterface<UpdateDialogParam> {
- public:
-  ManifestUpdateManagerBrowserTest_UpdateDialog() {
-    if (IsUpdateDialogEnabled()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kPwaUpdateDialogForNameAndIcon);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kPwaUpdateDialogForNameAndIcon);
-    }
-  }
-
-  bool IsUpdateDialogEnabled() const {
-    return GetParam() == UpdateDialogParam::kEnabled;
-  }
-
-  static std::string ParamToString(
-      testing::TestParamInfo<UpdateDialogParam> param) {
-    switch (param.param) {
-      case UpdateDialogParam::kDisabled:
-        return "UpdateDialogDisabled";
-      case UpdateDialogParam::kEnabled:
-        return "UpdateDialogEnabled";
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_UpdateDialog,
                        CheckDoesNotUpdateGeneratedIcons_SyncFailure) {
   // The first "name" character is used to generate icons. Make it like a space
@@ -1802,15 +1785,35 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerWebAppsBrowserTest,
   EXPECT_FALSE(web_app->share_target().has_value());
 }
 
+enum class FileHandlingGateType {
+  kUsesPermission,
+  kUsesSetting,
+};
+
 // Functional tests. More tests for detecting file handler updates are
 // available in unit tests at ManifestUpdateTaskTest.
 class ManifestUpdateManagerBrowserTestWithFileHandling
-    : public ManifestUpdateManagerBrowserTest {
-  base::test::ScopedFeatureList scoped_feature_list_{
-      blink::features::kFileHandlingAPI};
+    : public ManifestUpdateManagerBrowserTest,
+      public testing::WithParamInterface<FileHandlingGateType> {
+ public:
+  ManifestUpdateManagerBrowserTestWithFileHandling() {
+    feature_list_.InitWithFeatures({blink::features::kFileHandlingAPI}, {});
+    feature_list_for_settings_.InitWithFeatureState(
+        features::kDesktopPWAsFileHandlingSettingsGated,
+        GetParam() == FileHandlingGateType::kUsesSetting);
+  }
+
+  bool UsesPermissions() {
+    return !base::FeatureList::IsEnabled(
+        features::kDesktopPWAsFileHandlingSettingsGated);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList feature_list_for_settings_;
 };
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithFileHandling,
                        CheckFindsAddedFileHandler) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -1858,7 +1861,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
   EXPECT_EQ("text/plain", file_handler.accept[0].mime_type);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithFileHandling,
                        CheckIgnoresUnchangedFileHandler) {
   constexpr char kFileHandlerManifestTemplate[] = R"(
     {
@@ -1892,7 +1895,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
   EXPECT_FALSE(web_app->file_handlers().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithFileHandling,
                        CheckFindsChangedFileExtension) {
   constexpr char kFileHandlerManifestTemplate[] = R"(
     {
@@ -1936,7 +1939,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
   EXPECT_TRUE(base::Contains(new_extensions, ".md"));
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithFileHandling,
                        FileHandlingPermissionResetsOnUpdate) {
   constexpr char kFileHandlerManifestTemplate[] = R"(
     {
@@ -1973,17 +1976,28 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
   auto* map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   const GURL url = GetAppURL();
-  const GURL origin = url.GetOrigin();
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            map->GetContentSetting(origin, origin,
-                                   ContentSettingsType::FILE_HANDLING));
-  // Set permission to ALLOW.
-  map->SetContentSettingDefaultScope(origin, origin,
-                                     ContentSettingsType::FILE_HANDLING,
-                                     CONTENT_SETTING_ALLOW);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(origin, origin,
-                                   ContentSettingsType::FILE_HANDLING));
+  const GURL origin = url.DeprecatedGetOriginAsURL();
+
+  if (UsesPermissions()) {
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+              map->GetContentSetting(origin, origin,
+                                     ContentSettingsType::FILE_HANDLING));
+    // Set permission to ALLOW.
+    map->SetContentSettingDefaultScope(origin, origin,
+                                       ContentSettingsType::FILE_HANDLING,
+                                       CONTENT_SETTING_ALLOW);
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              map->GetContentSetting(origin, origin,
+                                     ContentSettingsType::FILE_HANDLING));
+  } else {
+    ScopedRegistryUpdate update(&GetProvider().sync_bridge());
+    WebApp* app = update->UpdateApp(app_id);
+    ASSERT_TRUE(app);
+    EXPECT_EQ(ApiApprovalState::kRequiresPrompt,
+              app->file_handler_approval_state());
+    app->SetFileHandlerApprovalState(ApiApprovalState::kAllowed);
+  }
+
   // Update manifest, adding an extension to the file handler. Permission should
   // be downgraded to ASK. The time override is necessary to make sure the
   // manifest update isn't skipped due to throttling.
@@ -1994,14 +2008,26 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
   auto new_extensions = web_app->file_handlers()[0].accept[0].file_extensions;
   EXPECT_TRUE(base::Contains(new_extensions, ".md"));
   EXPECT_TRUE(base::Contains(new_extensions, ".txt"));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            map->GetContentSetting(origin, origin,
-                                   ContentSettingsType::FILE_HANDLING));
 
-  // Set permission to ALLOW.
-  map->SetContentSettingDefaultScope(origin, origin,
-                                     ContentSettingsType::FILE_HANDLING,
-                                     CONTENT_SETTING_ALLOW);
+  if (UsesPermissions()) {
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+              map->GetContentSetting(origin, origin,
+                                     ContentSettingsType::FILE_HANDLING));
+
+    // Set permission to ALLOW.
+    map->SetContentSettingDefaultScope(origin, origin,
+                                       ContentSettingsType::FILE_HANDLING,
+                                       CONTENT_SETTING_ALLOW);
+  } else {
+    ScopedRegistryUpdate update(&GetProvider().sync_bridge());
+    WebApp* app = update->UpdateApp(app_id);
+    ASSERT_TRUE(app);
+    EXPECT_EQ(ApiApprovalState::kRequiresPrompt,
+              app->file_handler_approval_state());
+
+    // Set back to allowed.
+    app->SetFileHandlerApprovalState(ApiApprovalState::kAllowed);
+  }
 
   // Update manifest, but keep same file handlers. Permission should be left on
   // ALLOW.
@@ -2012,9 +2038,15 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
   new_extensions = web_app->file_handlers()[0].accept[0].file_extensions;
   EXPECT_TRUE(base::Contains(new_extensions, ".md"));
   EXPECT_TRUE(base::Contains(new_extensions, ".txt"));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(origin, origin,
-                                   ContentSettingsType::FILE_HANDLING));
+
+  if (UsesPermissions()) {
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              map->GetContentSetting(origin, origin,
+                                     ContentSettingsType::FILE_HANDLING));
+  } else {
+    EXPECT_EQ(ApiApprovalState::kAllowed,
+              web_app->file_handler_approval_state());
+  }
 
   // Update manifest, asking for /fewer/ file types. Permission should be left
   // on ALLOW.
@@ -2025,9 +2057,14 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
   new_extensions = web_app->file_handlers()[0].accept[0].file_extensions;
   EXPECT_FALSE(base::Contains(new_extensions, ".md"));
   EXPECT_TRUE(base::Contains(new_extensions, ".txt"));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(origin, origin,
-                                   ContentSettingsType::FILE_HANDLING));
+  if (UsesPermissions()) {
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              map->GetContentSetting(origin, origin,
+                                     ContentSettingsType::FILE_HANDLING));
+  } else {
+    EXPECT_EQ(ApiApprovalState::kAllowed,
+              web_app->file_handler_approval_state());
+  }
 
 #if defined(OS_LINUX)
   // Make sure that blocking the permission also unregisters the MIME type on
@@ -2040,20 +2077,33 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
 #endif
 
   // Block the permission, update manifest, permission should still be block.
-  map->SetContentSettingDefaultScope(origin, origin,
-                                     ContentSettingsType::FILE_HANDLING,
-                                     CONTENT_SETTING_BLOCK);
+  if (UsesPermissions()) {
+    map->SetContentSettingDefaultScope(origin, origin,
+                                       ContentSettingsType::FILE_HANDLING,
+                                       CONTENT_SETTING_BLOCK);
+  } else {
+    ScopedRegistryUpdate update(&GetProvider().sync_bridge());
+    WebApp* app = update->UpdateApp(app_id);
+    ASSERT_TRUE(app);
+    app->SetFileHandlerApprovalState(ApiApprovalState::kDisallowed);
+  }
   OverrideManifest(kFileHandlerManifestTemplate, {".txt", "red"});
   time_override += base::Days(10);
   SetTimeOverride(time_override);
   EXPECT_EQ(ManifestUpdateResult::kAppUpdated, GetResultAfterPageLoad(url));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            map->GetContentSetting(origin, origin,
-                                   ContentSettingsType::FILE_HANDLING));
+
+  if (UsesPermissions()) {
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
+              map->GetContentSetting(origin, origin,
+                                     ContentSettingsType::FILE_HANDLING));
+  } else {
+    EXPECT_EQ(ApiApprovalState::kDisallowed,
+              web_app->file_handler_approval_state());
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
-                       BlockPermissionRemoveFileHandlers) {
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithFileHandling,
+                       BlockedPermissionPreservedOnUpdate) {
   constexpr char kFileHandlerManifestTemplate[] = R"(
     {
       "name": "Test app name",
@@ -2088,29 +2138,48 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
   auto* map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   const GURL url = GetAppURL();
-  const GURL origin = url.GetOrigin();
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            map->GetContentSetting(origin, origin,
-                                   ContentSettingsType::FILE_HANDLING));
-  // Set permission to BLOCK.
-  map->SetContentSettingDefaultScope(origin, origin,
-                                     ContentSettingsType::FILE_HANDLING,
-                                     CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            map->GetContentSetting(origin, origin,
-                                   ContentSettingsType::FILE_HANDLING));
+  const GURL origin = url.DeprecatedGetOriginAsURL();
+  if (UsesPermissions()) {
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+              map->GetContentSetting(origin, origin,
+                                     ContentSettingsType::FILE_HANDLING));
+    // Set permission to BLOCK.
+    map->SetContentSettingDefaultScope(origin, origin,
+                                       ContentSettingsType::FILE_HANDLING,
+                                       CONTENT_SETTING_BLOCK);
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
+              map->GetContentSetting(origin, origin,
+                                     ContentSettingsType::FILE_HANDLING));
 
-  // App should be updated to permission blocked by
-  // `WebAppInstallFinalizer::OnContentSettingChanged`.
-  EXPECT_TRUE(registrar.GetAppById(app_id)->file_handler_permission_blocked());
+    // App should be updated to permission blocked by
+    // `WebAppInstallFinalizer::OnContentSettingChanged`.
+    EXPECT_TRUE(
+        registrar.GetAppById(app_id)->file_handler_permission_blocked());
+  } else {
+    ScopedRegistryUpdate update(&GetProvider().sync_bridge());
+    WebApp* app = update->UpdateApp(app_id);
+    ASSERT_TRUE(app);
+    EXPECT_EQ(ApiApprovalState::kRequiresPrompt,
+              app->file_handler_approval_state());
+    // Disallow the API.
+    app->SetFileHandlerApprovalState(ApiApprovalState::kDisallowed);
+  }
+
   // Update manifest.
   OverrideManifest(kFileHandlerManifestTemplate, {".md", kInstallableIconList});
   EXPECT_EQ(ManifestUpdateResult::kAppUpdated, GetResultAfterPageLoad(url));
+
   // Manifest update task should preserve the permission blocked state.
-  EXPECT_TRUE(registrar.GetAppById(app_id)->file_handler_permission_blocked());
+  if (UsesPermissions()) {
+    EXPECT_TRUE(
+        registrar.GetAppById(app_id)->file_handler_permission_blocked());
+  } else {
+    EXPECT_EQ(ApiApprovalState::kDisallowed,
+              registrar.GetAppById(app_id)->file_handler_approval_state());
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithFileHandling,
                        CheckFindsDeletedFileHandler) {
   constexpr char kFileHandlerManifestTemplate[] = R"(
     {
@@ -2154,7 +2223,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
   EXPECT_TRUE(web_app->file_handlers().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithFileHandling,
                        CheckFileExtensionList) {
   constexpr char kFileHandlerManifestTemplate[] = R"(
     {
@@ -2188,7 +2257,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
 #endif  // defined(OS_LINUX)
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithFileHandling,
                        CheckFileExtensionsList) {
   constexpr char kFileHandlerManifestTemplate[] = R"(
     {
@@ -2222,7 +2291,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
 #endif  // defined(OS_LINUX)
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithFileHandling,
                        CheckFileExtensionsListWithTwoFileHandlers) {
   constexpr char kFileHandlerManifestTemplate[] = R"(
     {
@@ -2262,6 +2331,12 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
   EXPECT_EQ(u"LONGTYPE, TXT", associations_list);
 #endif  // defined(OS_LINUX)
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ManifestUpdateManagerBrowserTestWithFileHandling,
+    ::testing::Values(FileHandlingGateType::kUsesPermission,
+                      FileHandlingGateType::kUsesSetting));
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckFindsShortcutsMenuUpdated) {
@@ -2467,8 +2542,11 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   run_loop.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
-                       ShortcutIconContentChangeDoesNotApplyAppIconUpdate) {
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_UpdateDialog,
+                       ShortcutIconContentChangeWithProductIconChange) {
+  // This test changes the shortuct icon contents and also the product icon
+  // list. The shortcut icons should update. The icon should update only if
+  // identity updates are allowed.
   constexpr char kManifest[] = R"(
     {
       "name": "Test app name",
@@ -2513,8 +2591,10 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   OverrideManifest(kManifest, {kAnotherInstallableIconList});
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL()),
             ManifestUpdateResult::kAppUpdated);
-  // The icon should not be updated.
-  CheckShortcutInfoUpdated(app_id, kInstallableIconTopLeftColor);
+  // The icon should be updated only if product icon updates are allowed.
+  CheckShortcutInfoUpdated(app_id, IsUpdateDialogEnabled()
+                                       ? kAnotherInstallableIconTopLeftColor
+                                       : kInstallableIconTopLeftColor);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
                                       ManifestUpdateResult::kAppUpdated, 1);
 }
@@ -2638,7 +2718,7 @@ class ManifestUpdateManagerIconUpdatingBrowserTest
       features::kWebAppManifestIconUpdating};
 };
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerIconUpdatingBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_UpdateDialog,
                        CheckFindsIconContentChange) {
   constexpr char kManifest[] = R"(
     {
@@ -2648,39 +2728,52 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerIconUpdatingBrowserTest,
       "display": "standalone",
       "icons": [
         {
-          "src": "/web_apps/basic-192.png?ignore",
-          "sizes": "192x192",
+          "src": "/banners/256x256-green.png?ignore",
+          "sizes": "256x256",
           "type": "image/png"
         }
       ]
     }
   )";
+
+  if (IsUpdateDialogEnabled())
+    chrome::SetAutoAcceptAppIdentityUpdateForTesting(true);
+
   OverrideManifest(kManifest, {});
   AppId app_id = InstallWebApp();
 
-  // Replace the contents of basic-192.png with blue-192.png without changing
-  // the URL.
+  // Replace the green icon with a red icon without changing the URL.
   content::URLLoaderInterceptor url_interceptor(base::BindLambdaForTesting(
       [this](content::URLLoaderInterceptor::RequestParams* params)
           -> bool /*intercepted*/ {
         if (params->url_request.url ==
-            http_server_.GetURL("/web_apps/basic-192.png?ignore")) {
+            http_server_.GetURL("/banners/256x256-green.png?ignore")) {
           content::URLLoaderInterceptor::WriteResponse(
-              "chrome/test/data/web_apps/blue-192.png", params->client.get());
+              "chrome/test/data/banners/256x256-red.png", params->client.get());
           return true;
         }
         return false;
       }));
 
-  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL()),
-            ManifestUpdateResult::kAppUpdated);
-  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
-                                      ManifestUpdateResult::kAppUpdated, 1);
-  // The icon should have changed, as the file has been updated (but the url is
-  // the same).
-  CheckShortcutInfoUpdated(app_id, SK_ColorBLUE);
+  if (IsUpdateDialogEnabled()) {
+    EXPECT_EQ(GetResultAfterPageLoad(GetAppURL()),
+              ManifestUpdateResult::kAppUpdated);
+    histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                        ManifestUpdateResult::kAppUpdated, 1);
+    // The icon should have changed, as the file has been updated (but the url
+    // is the same).
+    CheckShortcutInfoUpdated(app_id, SK_ColorRED);
 
-  EXPECT_EQ(ReadAppIconPixel(app_id, /*size=*/192), SK_ColorBLUE);
+    EXPECT_EQ(ReadAppIconPixel(app_id, /*size=*/256), SK_ColorRED);
+  } else {
+    EXPECT_EQ(GetResultAfterPageLoad(GetAppURL()),
+              ManifestUpdateResult::kAppUpToDate);
+    histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                        ManifestUpdateResult::kAppUpdated, 0);
+    CheckShortcutInfoUpdated(app_id, SK_ColorGREEN);
+
+    EXPECT_EQ(ReadAppIconPixel(app_id, /*size=*/256), SK_ColorGREEN);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerIconUpdatingBrowserTest,
@@ -3134,13 +3227,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithProtocolHandling,
   EXPECT_TRUE(web_app->protocol_handlers().empty());
 }
 
-class ManifestUpdateManagerBrowserTestWithWebAppNoteTaking
-    : public ManifestUpdateManagerBrowserTest {
-  base::test::ScopedFeatureList scoped_feature_list_{
-      blink::features::kWebAppNoteTaking};
-};
-
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithWebAppNoteTaking,
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckFindsAddedNewNoteUrl) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -3179,7 +3266,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithWebAppNoteTaking,
             web_app->note_taking_new_note_url().spec());
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithWebAppNoteTaking,
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresUnchangedNewNoteUrl) {
   constexpr char kNewNoteUrlManifestTemplate[] = R"(
     {
@@ -3209,7 +3296,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithWebAppNoteTaking,
             web_app->note_taking_new_note_url().spec());
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithWebAppNoteTaking,
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckFindsChangedNewNoteUrl) {
   constexpr char kNewNoteUrlManifestTemplate[] = R"(
     {
@@ -3242,7 +3329,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithWebAppNoteTaking,
             web_app->note_taking_new_note_url().spec());
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithWebAppNoteTaking,
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckFindsDeletedNewNoteUrl) {
   constexpr char kNewNoteUrlManifestTemplate[] = R"(
     {
@@ -3409,6 +3496,143 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_ManifestId,
       GetProvider().registrar().GetAppById(app_id)->manifest_id().has_value());
 }
 
+// This test exercises the upgrade path for App Identity manifest updates with
+// the update pending while Chrome is in the process of shutting down.
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerAppIdentityBrowserTest,
+                       PRE_TestUpgradeDuringShutdownForAppIdentity) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "$1",
+      "start_url": "manifest_test_page.html",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $2
+    }
+  )";
+
+  constexpr char kIconList[] = R"(
+    [
+      { "src": "256x256-green.png", "sizes": "256x256", "type": "image/png" }
+    ]
+  )";
+  constexpr char kUpdatedSingleIconList[] = R"(
+    [
+      { "src": "256x256-red.png", "sizes": "256x256", "type": "image/png" }
+    ]
+  )";
+
+  // Simulate the user accepting the App Identity update dialog (when it
+  // appears).
+  chrome::SetAutoAcceptAppIdentityUpdateForTesting(true);
+
+  // Setup the web app, install it and immediately update the manifest.
+  OverrideManifest(kManifestTemplate, {"Test app name", kIconList});
+  AppId app_id = InstallWebApp();
+  OverrideManifest(kManifestTemplate,
+                   {"Different app name", kUpdatedSingleIconList});
+
+  // Navigate to the app in a dedicated PWA window. Note that this opens a
+  // second browser window.
+  GURL url = GetAppURL();
+  Browser* web_app_browser =
+      LaunchWebAppBrowserAndWait(browser()->profile(), app_id);
+
+  // Wait for the PWA to a) detect that an update is needed and b) start waiting
+  // on its window to close.
+  WaitForUpdatePendingCallback(url);
+
+  // Now close the initial browser opened during the test (leaving the PWA
+  // running).
+  CloseBrowserSynchronously(browser());
+
+  // Close the PWA window. This will fire the window close notifier that the PWA
+  // has been waiting for, triggering the manifest update to take effect.
+  UpdateCheckResultAwaiter result_awaiter(web_app_browser, url);
+  CloseBrowserSynchronously(web_app_browser);
+  EXPECT_EQ(std::move(result_awaiter).AwaitNextResult(),
+            ManifestUpdateResult::kAppUpdated);
+
+  // Check the histogram updated correctly. Remaining update checks need to
+  // happen post-restart, because GetProvider() DCHECKs when trying to use it
+  // during shutdown.
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerAppIdentityBrowserTest,
+                       TestUpgradeDuringShutdownForAppIdentity) {
+  // The app installed in the pre-test should be the only app installed.
+  auto app_ids = GetProvider().registrar().GetAppIds();
+  ASSERT_EQ(1u, app_ids.size());
+  AppId app_id = app_ids[0];
+
+  EXPECT_EQ("Different app name",
+            GetProvider().registrar().GetAppShortName(app_id));
+
+  constexpr SkColor kUpdatedIconTopLeftColor = SkColorSetRGB(0xFF, 0x00, 0x00);
+  CheckShortcutInfoUpdated(app_id, kUpdatedIconTopLeftColor);
+}
+
+// This test exercises the upgrade path for benign (non-App Identity) manifest
+// updates with the update pending while Chrome is in the process of shutting
+// down.
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerAppIdentityBrowserTest,
+                       PRE_TestUpgradeDuringShutdownForBenignUpdate) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": "manifest_test_page.html",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $1,
+      "background_color": "$2"
+    }
+  )";
+  OverrideManifest(kManifestTemplate, {kInstallableIconList, "blue"});
+  AppId app_id = InstallWebApp();
+  EXPECT_EQ(GetProvider().registrar().GetAppBackgroundColor(app_id),
+            SK_ColorBLUE);
+  OverrideManifest(kManifestTemplate, {kInstallableIconList, "red"});
+
+  // Navigate to the app in a dedicated PWA window. Note that this opens a
+  // second browser window.
+  GURL url = GetAppURL();
+  Browser* web_app_browser =
+      LaunchWebAppBrowserAndWait(browser()->profile(), app_id);
+
+  // Wait for the PWA to a) detect that an update is needed and b) start waiting
+  // on its window to close.
+  WaitForUpdatePendingCallback(url);
+
+  // Now close the initial browser opened during the test (leaving the PWA
+  // running).
+  CloseBrowserSynchronously(browser());
+
+  // Close the PWA window. This will fire the window close notifier that the PWA
+  // has been waiting for, triggering the manifest update to take effect.
+  UpdateCheckResultAwaiter result_awaiter(web_app_browser, url);
+  CloseBrowserSynchronously(web_app_browser);
+  EXPECT_EQ(std::move(result_awaiter).AwaitNextResult(),
+            ManifestUpdateResult::kAppUpdated);
+
+  // Check the histogram updated correctly. Remaining update checks need to
+  // happen post-restart, because GetProvider() DCHECKs when trying to use it
+  // during shutdown.
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerAppIdentityBrowserTest,
+                       TestUpgradeDuringShutdownForBenignUpdate) {
+  // The app installed in the pre-test should be the only app installed.
+  auto app_ids = GetProvider().registrar().GetAppIds();
+  ASSERT_EQ(1u, app_ids.size());
+  AppId app_id = app_ids[0];
+
+  EXPECT_EQ(GetProvider().registrar().GetAppBackgroundColor(app_id),
+            SK_ColorRED);
+}
+
 // Test that showing the AppIdentity update confirmation and allowing the update
 // sends the right signal back.
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerAppIdentityBrowserTest,
@@ -3446,5 +3670,329 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerAppIdentityBrowserTest,
 
   run_loop.Run();
 }
+
+enum AppIdTestParam {
+  kInvalid = 0,
+  kTypeWebApp = 1 << 1,
+  kTypeDefaultApp = 1 << 2,
+  kTypePolicyApp = 1 << 3,
+  kWithFlagNone = 1 << 4,
+  kWithFlagPolicyAppIdentity = 1 << 5,
+  kWithFlagAppIdDialog = 1 << 6,
+  kActionUpdateTitle = 1 << 7,
+  kActionUpdateSingleIcon = 1 << 8,
+  kActionUpdateTitleAndSingleIcon = 1 << 9,
+  kActionAddSingleIcon = 1 << 10,
+  kActionUpdateMultiIcons = 1 << 11,
+  kActionRemoveSingleIcon = 1 << 12,
+  kActionSwitchIconSize = 1 << 13,
+};
+
+class ManifestUpdateManagerBrowserTest_AppIdentityParameterized
+    : public ManifestUpdateManagerBrowserTest,
+      public testing::WithParamInterface<
+          std::tuple<AppIdTestParam, AppIdTestParam, AppIdTestParam>> {
+ public:
+  ManifestUpdateManagerBrowserTest_AppIdentityParameterized() {
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+    if (IsAppIdentityUpdateDialogEnabled()) {
+      enabled_features.push_back(features::kPwaUpdateDialogForNameAndIcon);
+    } else {
+      disabled_features.push_back(features::kPwaUpdateDialogForNameAndIcon);
+    }
+    if (IsPolicyAppIdentityOverrideEnabled()) {
+      enabled_features.push_back(
+          features::kWebAppManifestPolicyAppIdentityUpdate);
+    } else {
+      disabled_features.push_back(
+          features::kWebAppManifestPolicyAppIdentityUpdate);
+    }
+
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
+  bool IsWebApp() const {
+    return std::get<1>(GetParam()) & AppIdTestParam::kTypeWebApp;
+  }
+  bool IsDefaultApp() const {
+    return std::get<1>(GetParam()) & AppIdTestParam::kTypeDefaultApp;
+  }
+  bool IsPolicyApp() const {
+    return std::get<1>(GetParam()) & AppIdTestParam::kTypePolicyApp;
+  }
+
+  bool IsAppIdentityUpdateDialogEnabled() const {
+    return std::get<2>(GetParam()) & AppIdTestParam::kWithFlagAppIdDialog;
+  }
+  bool IsPolicyAppIdentityOverrideEnabled() const {
+    return std::get<2>(GetParam()) & AppIdTestParam::kWithFlagPolicyAppIdentity;
+  }
+
+  bool TitleUpdateRequested() const {
+    return std::get<0>(GetParam()) & AppIdTestParam::kActionUpdateTitle ||
+           std::get<0>(GetParam()) &
+               AppIdTestParam::kActionUpdateTitleAndSingleIcon;
+  }
+
+  bool AnyIconUpdateRequested() const {
+    return SingleIconAddRequested() || SingleIconRemoveRequested() ||
+           SingleIconUpdateRequested() || MultiIconUpdateRequested() ||
+           IconSwitchUpdateRequested();
+  }
+  bool SingleIconAddRequested() const {
+    return std::get<0>(GetParam()) & AppIdTestParam::kActionAddSingleIcon;
+  }
+  bool SingleIconRemoveRequested() const {
+    return std::get<0>(GetParam()) & AppIdTestParam::kActionRemoveSingleIcon;
+  }
+  bool SingleIconUpdateRequested() const {
+    return std::get<0>(GetParam()) & AppIdTestParam::kActionUpdateSingleIcon ||
+           std::get<0>(GetParam()) &
+               AppIdTestParam::kActionUpdateTitleAndSingleIcon;
+  }
+  bool MultiIconUpdateRequested() const {
+    return std::get<0>(GetParam()) & AppIdTestParam::kActionUpdateMultiIcons;
+  }
+  bool IconSwitchUpdateRequested() const {
+    return std::get<0>(GetParam()) & AppIdTestParam::kActionSwitchIconSize;
+  }
+
+  bool ExpectTitleUpdate() const {
+    if (!TitleUpdateRequested())
+      return false;
+
+    if (IsDefaultApp())
+      return true;
+    if (IsPolicyApp() && IsPolicyAppIdentityOverrideEnabled())
+      return true;
+    return IsAppIdentityUpdateDialogEnabled();
+  }
+
+  bool ExpectIconUpdate() const {
+    // Ideally, this should just check AnyIconUpdateRequested(), but adding and
+    // removing of icons results in kAppNotEligible when updating, even for
+    // Default apps. Therefore, only the supported upgrade paths must be
+    // enumerated here.
+    if (!SingleIconUpdateRequested() && !MultiIconUpdateRequested() &&
+        !IconSwitchUpdateRequested())
+      return false;
+
+    if (IsDefaultApp())
+      return true;
+    if (IsPolicyApp() && IsPolicyAppIdentityOverrideEnabled())
+      return true;
+    if (SingleIconUpdateRequested() && IsAppIdentityUpdateDialogEnabled())
+      return true;
+
+    return false;
+  }
+
+  ManifestUpdateResult ExpectedResultWhenNoUpdate() const {
+    if (SingleIconAddRequested() || SingleIconRemoveRequested())
+      return ManifestUpdateResult::kAppNotEligible;
+    return ManifestUpdateResult::kAppUpToDate;
+  }
+
+  static std::string ParamToString(
+      testing::TestParamInfo<
+          std::tuple<AppIdTestParam, AppIdTestParam, AppIdTestParam>>
+          param_info) {
+    std::string result = "";
+
+    AppIdTestParam action = std::get<0>(param_info.param);
+    if (action & AppIdTestParam::kActionUpdateTitle)
+      result += "UpdateTitle_";
+    if (action & AppIdTestParam::kActionUpdateSingleIcon)
+      result += "UpdateSingleIcon_";
+    if (action & AppIdTestParam::kActionUpdateTitleAndSingleIcon)
+      result += "UpdateTitleAndSingleIcon_";
+    if (action & AppIdTestParam::kActionRemoveSingleIcon)
+      result += "RemoveSingleIcon_";
+    if (action & AppIdTestParam::kActionAddSingleIcon)
+      result += "AddSingleIcon_";
+    if (action & AppIdTestParam::kActionUpdateMultiIcons)
+      result += "UpdateMultiIcons_";
+    if (action & AppIdTestParam::kActionSwitchIconSize)
+      result += "SwitchIcon_";
+
+    AppIdTestParam type = std::get<1>(param_info.param);
+    if (type & AppIdTestParam::kTypeWebApp)
+      result += "WebApp_";
+    if (type & AppIdTestParam::kTypeDefaultApp)
+      result += "DefaultApp_";
+    if (type & AppIdTestParam::kTypePolicyApp)
+      result += "PolicyApp_";
+
+    AppIdTestParam flags = std::get<2>(param_info.param);
+    result += "Flags_";
+    if (flags & AppIdTestParam::kWithFlagNone)
+      result += "None_";
+    if (flags & AppIdTestParam::kWithFlagPolicyAppIdentity)
+      result += "PolicyCanUpdate_";
+    if (flags & AppIdTestParam::kWithFlagAppIdDialog)
+      result += "WithAppIdDlg_";
+
+    return result;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(
+    ManifestUpdateManagerBrowserTest_AppIdentityParameterized,
+    CheckCombinations) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "$1",
+      "start_url": "manifest_test_page.html",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $2
+    }
+  )";
+
+  // Starting icon set always uses solid green icons.
+  constexpr SkColor kOriginalIconTopLeftColor = SkColorSetRGB(0x00, 0xFF, 0x00);
+  // The icons that get updated are all solid red.
+  constexpr SkColor kUpdatedIconTopLeftColor = SkColorSetRGB(0xFF, 0x00, 0x00);
+
+  // This is always the starting set of icons. Please note that some sizes will
+  // be auto-generated (see SizesToGenerate()), so the starting state when
+  // debugging will also consist of sizes 32, 48, 64, 96, 128. Size 256 would be
+  // autogenerated also, if it were not provided.
+  constexpr char kIconList[] = R"(
+    [
+      { "src": "256x256-green.png", "sizes": "256x256", "type": "image/png" },
+      { "src": "512x512-green.png", "sizes": "512x512", "type": "image/png" }
+    ]
+  )";
+
+  // If we are supposed to remove one icon, this is the end state (512 removed),
+  // plus auto-generated sizes (see comment in kIconList).
+  constexpr char kRemovedSingleIconList[] = R"(
+    [
+      { "src": "256x256-green.png", "sizes": "256x256", "type": "image/png" },
+    ]
+  )";
+  // If we are supposed to add one icon, this is the end state (128 added),
+  // plus auto-generated sizes (see comment in kIconList).
+  constexpr char kAddedSingleIconList[] = R"(
+    [
+      { "src": "128x128-red.png", "sizes": "256x256", "type": "image/png" },
+      { "src": "256x256-green.png", "sizes": "256x256", "type": "image/png" },
+      { "src": "512x512-green.png", "sizes": "512x512", "type": "image/png" }
+    ]
+  )";
+  // Updating one icon only changes the bits of size 256 to red.
+  constexpr char kUpdatedSingleIconList[] = R"(
+    [
+      { "src": "256x256-red.png", "sizes": "256x256", "type": "image/png" },
+      { "src": "512x512-green.png", "sizes": "512x512", "type": "image/png" }
+    ]
+  )";
+  // Updating multiple icons changes size 256 and size 512 to red.
+  constexpr char kUpdatedMultiIconList[] = R"(
+    [
+      { "src": "256x256-red.png", "sizes": "256x256", "type": "image/png" },
+      { "src": "512x512-red.png", "sizes": "512x512", "type": "image/png" }
+    ]
+  )";
+  // Icon switch involves removing a size and replacing it with another. Here,
+  // size 256 has been removed and size 128 added. Note that size 256 will still
+  // be found in the end state because it gets auto-generated.
+  constexpr char kIconSwitchList[] = R"(
+    [
+      { "src": "128x128-red.png", "sizes": "128x128", "type": "image/png" },
+      { "src": "512x512-green.png", "sizes": "512x512", "type": "image/png" }
+    ]
+  )";
+
+  testing::TestParamInfo<
+      std::tuple<AppIdTestParam, AppIdTestParam, AppIdTestParam>>
+      param(GetParam(), 0);
+
+  if (IsAppIdentityUpdateDialogEnabled())
+    chrome::SetAutoAcceptAppIdentityUpdateForTesting(true);
+
+  std::string app_name = "Test app name";
+  OverrideManifest(kManifestTemplate, {app_name, kIconList});
+
+  AppId app_id;
+  if (IsDefaultApp()) {
+    app_id = InstallDefaultApp();
+  } else if (IsPolicyApp()) {
+    app_id = InstallPolicyApp();
+  } else if (IsWebApp()) {
+    app_id = InstallWebApp();
+  } else {
+    NOTREACHED();
+  }
+
+  const WebApp* web_app = GetProvider().registrar().GetAppById(app_id);
+  ASSERT_TRUE(web_app);
+
+  if (TitleUpdateRequested())
+    app_name = "Different app name";
+
+  if (SingleIconUpdateRequested()) {
+    OverrideManifest(kManifestTemplate, {app_name, kUpdatedSingleIconList});
+  } else if (SingleIconAddRequested()) {
+    OverrideManifest(kManifestTemplate, {app_name, kAddedSingleIconList});
+  } else if (SingleIconRemoveRequested()) {
+    OverrideManifest(kManifestTemplate, {app_name, kRemovedSingleIconList});
+  } else if (MultiIconUpdateRequested()) {
+    OverrideManifest(kManifestTemplate, {app_name, kUpdatedMultiIconList});
+  } else if (IconSwitchUpdateRequested()) {
+    OverrideManifest(kManifestTemplate, {app_name, kIconSwitchList});
+  } else {
+    OverrideManifest(kManifestTemplate, {app_name, kIconList});
+  }
+
+  bool expectations_match = (TitleUpdateRequested() == ExpectTitleUpdate()) &&
+                            (AnyIconUpdateRequested() == ExpectIconUpdate());
+  if ((TitleUpdateRequested() || AnyIconUpdateRequested()) &&
+      expectations_match) {
+    ASSERT_EQ(ManifestUpdateResult::kAppUpdated,
+              GetResultAfterPageLoad(GetAppURL()));
+    histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                        ManifestUpdateResult::kAppUpdated, 1);
+  } else {
+    ASSERT_EQ(ExpectedResultWhenNoUpdate(),
+              GetResultAfterPageLoad(GetAppURL()));
+    histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                        ManifestUpdateResult::kAppUpdated, 0);
+  }
+
+  EXPECT_EQ(ExpectTitleUpdate() && expectations_match ? "Different app name"
+                                                      : "Test app name",
+            GetProvider().registrar().GetAppShortName(app_id));
+
+  CheckShortcutInfoUpdated(app_id, ExpectIconUpdate() && expectations_match
+                                       ? kUpdatedIconTopLeftColor
+                                       : kOriginalIconTopLeftColor);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ManifestUpdateManagerBrowserTest_AppIdentityParameterized,
+    testing::Combine(
+        testing::Values(AppIdTestParam::kActionUpdateTitle,
+                        AppIdTestParam::kActionUpdateSingleIcon,
+                        AppIdTestParam::kActionUpdateTitleAndSingleIcon,
+                        AppIdTestParam::kActionUpdateMultiIcons,
+                        AppIdTestParam::kActionAddSingleIcon,
+                        AppIdTestParam::kActionRemoveSingleIcon,
+                        AppIdTestParam::kActionSwitchIconSize),
+        testing::Values(AppIdTestParam::kTypeDefaultApp,
+                        AppIdTestParam::kTypePolicyApp,
+                        AppIdTestParam::kTypeWebApp),
+        testing::Values(AppIdTestParam::kWithFlagNone,
+                        AppIdTestParam::kWithFlagPolicyAppIdentity,
+                        AppIdTestParam::kWithFlagAppIdDialog,
+                        AppIdTestParam::kWithFlagPolicyAppIdentity |
+                            AppIdTestParam::kWithFlagAppIdDialog)),
+    ManifestUpdateManagerBrowserTest_AppIdentityParameterized::ParamToString);
 
 }  // namespace web_app

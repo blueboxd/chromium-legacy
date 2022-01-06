@@ -5,7 +5,7 @@
 #ifndef MEDIA_MOJO_CLIENTS_MOJO_VIDEO_DECODER_H_
 #define MEDIA_MOJO_CLIENTS_MOJO_VIDEO_DECODER_H_
 
-#include "base/containers/mru_cache.h"
+#include "base/containers/lru_cache.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -77,7 +77,6 @@ class MojoVideoDecoder final : public VideoDecoder,
   bool NeedsBitstreamConversion() const final;
   bool CanReadWithoutStalling() const final;
   int GetMaxDecodeRequests() const final;
-  bool IsOptimizedForRTC() const final;
 
   // mojom::VideoDecoderClient implementation.
   void OnVideoFrameDecoded(
@@ -145,7 +144,7 @@ class MojoVideoDecoder final : public VideoDecoder,
 
   // DecodeBuffer/VideoFrame timestamps for histogram/tracing purposes. Must be
   // large enough to account for any amount of frame reordering.
-  base::MRUCache<int64_t, base::TimeTicks> timestamps_;
+  base::LRUCache<int64_t, base::TimeTicks> timestamps_;
 
   mojo::Remote<mojom::VideoDecoder> remote_decoder_;
   std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;

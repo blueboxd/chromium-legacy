@@ -65,6 +65,16 @@
       "use_goma": true
     }
   },
+  "fuchsia-binary-size": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_debug": false,
+      "is_official_build": true,
+      "target_cpu": "arm64",
+      "target_os": "fuchsia",
+      "use_goma": true
+    }
+  },
   "fuchsia-compile-x64-dbg": {
     "gn_args": {
       "is_component_build": true,
@@ -90,6 +100,7 @@
       "symbol_level": 1,
       "target_cpu": "arm64",
       "target_os": "fuchsia",
+      "test_host_cpu": "arm64",
       "use_goma": true
     }
   },
@@ -102,6 +113,7 @@
       "symbol_level": 0,
       "target_cpu": "arm64",
       "target_os": "fuchsia",
+      "test_host_cpu": "arm64",
       "use_goma": true
     }
   },
@@ -114,6 +126,7 @@
       "symbol_level": 0,
       "target_cpu": "arm64",
       "target_os": "fuchsia",
+      "test_host_cpu": "arm64",
       "use_goma": true
     }
   },
@@ -158,6 +171,7 @@
       "symbol_level": 0,
       "target_cpu": "arm64",
       "target_os": "fuchsia",
+      "test_host_cpu": "arm64",
       "use_goma": true
     }
   },
@@ -596,6 +610,19 @@
       "use_goma": false
     }
   },
+  "linux-headless-shell-rel": {
+    "args_file": "//build/args/headless.gn",
+    "gn_args": {
+      "dcheck_always_on": false,
+      "enable_ffmpeg_video_decoders": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "media_use_ffmpeg": false,
+      "media_use_libvpx": false,
+      "proprietary_codecs": false,
+      "use_goma": true
+    }
+  },
   "linux-inverse-fieldtrials-fyi-rel": {
     "gn_args": {
       "blink_enable_generated_code_formatting": false,
@@ -687,19 +714,6 @@
       "use_goma": true
     }
   },
-  "linux-ozone-rel": {
-    "gn_args": {
-      "blink_enable_generated_code_formatting": false,
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "ozone_platform": "headless",
-      "symbol_level": 0,
-      "use_bundled_weston": true,
-      "use_goma": true,
-      "use_ozone": true
-    }
-  },
   "linux-perfetto-rel": {
     "gn_args": {
       "blink_enable_generated_code_formatting": false,
@@ -758,6 +772,36 @@
     }
   },
   "linux-rel-rts": {
+    "gn_args": {
+      "blink_enable_generated_code_formatting": false,
+      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
+      "dcheck_always_on": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 0,
+      "use_clang_coverage": true,
+      "use_dummy_lastchange": true,
+      "use_goma": true
+    }
+  },
+  "linux-stable-filter-combined-rel": {
+    "gn_args": {
+      "blink_enable_generated_code_formatting": false,
+      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
+      "dcheck_always_on": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 0,
+      "use_clang_coverage": true,
+      "use_dummy_lastchange": true,
+      "use_goma": true
+    }
+  },
+  "linux-stable-filter-rel": {
     "gn_args": {
       "blink_enable_generated_code_formatting": false,
       "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
@@ -874,6 +918,18 @@
     }
   },
   "linux_chromium_asan_rel_ng": {
+    "gn_args": {
+      "blink_enable_generated_code_formatting": false,
+      "dcheck_always_on": true,
+      "is_asan": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_lsan": true,
+      "symbol_level": 1,
+      "use_goma": true
+    }
+  },
+  "linux_chromium_asan_rel_ng-orchestrator": {
     "gn_args": {
       "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
@@ -1002,6 +1058,18 @@
     }
   },
   "linux_chromium_tsan_rel_ng": {
+    "gn_args": {
+      "blink_enable_generated_code_formatting": false,
+      "dcheck_always_on": true,
+      "enable_nacl": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_tsan": true,
+      "symbol_level": 1,
+      "use_goma": true
+    }
+  },
+  "linux_chromium_tsan_rel_ng-orchestrator": {
     "gn_args": {
       "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,

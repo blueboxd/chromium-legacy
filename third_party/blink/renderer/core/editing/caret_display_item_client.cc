@@ -50,6 +50,7 @@ CaretDisplayItemClient::~CaretDisplayItemClient() = default;
 void CaretDisplayItemClient::Trace(Visitor* visitor) const {
   visitor->Trace(layout_block_);
   visitor->Trace(previous_layout_block_);
+  DisplayItemClient::Trace(visitor);
 }
 
 namespace {
@@ -261,7 +262,7 @@ void CaretDisplayItemClient::PaintCaret(
                                                     display_item_type))
       return;
     recorder.emplace(context, *this, display_item_type,
-                     EnclosingIntRect(drawing_rect));
+                     ToGfxRect(EnclosingIntRect(drawing_rect)));
   }
 
   IntRect paint_rect = PixelSnappedIntRect(drawing_rect);
@@ -275,7 +276,7 @@ void CaretDisplayItemClient::RecordSelection(
     const PhysicalOffset& paint_offset) {
   PhysicalRect drawing_rect = local_rect_;
   drawing_rect.Move(paint_offset);
-  gfx::Rect paint_rect = PixelSnappedIntRect(drawing_rect);
+  gfx::Rect paint_rect = ToGfxRect(PixelSnappedIntRect(drawing_rect));
 
   // For the caret, the start and selection selection bounds are recorded as
   // the same edges, with the type marked as CENTER.

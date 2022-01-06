@@ -76,8 +76,12 @@ class MockPasswordStoreBackend : public PasswordStoreBackend {
   MOCK_METHOD(SmartBubbleStatsStore*, GetSmartBubbleStatsStore, (), (override));
   MOCK_METHOD(FieldInfoStore*, GetFieldInfoStore, (), (override));
   MOCK_METHOD(std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>,
-              CreateSyncControllerDelegateFactory,
+              CreateSyncControllerDelegate,
               (),
+              (override));
+  MOCK_METHOD(void,
+              GetSyncStatus,
+              (base::OnceCallback<void(bool)>),
               (override));
 };
 

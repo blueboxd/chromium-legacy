@@ -9,7 +9,7 @@
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/android/scoped_hardware_buffer_handle.h"
-#include "base/bind_post_task.h"
+#include "base/task/bind_post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -579,6 +579,7 @@ class SharedImageVideoImageReader::SharedImageRepresentationOverlayVideo
         // of returning a null GLImage here.
         gl_image_ = base::MakeRefCounted<VideoImage>();
       }
+      gl_image_->SetColorSpace(color_space());
     }
     return gl_image_.get();
   }

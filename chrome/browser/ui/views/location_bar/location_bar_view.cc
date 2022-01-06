@@ -344,8 +344,7 @@ void LocationBarView::Init() {
       params.types_enabled.push_back(PageActionIconType::kSharingHub);
     }
 #else
-    if (base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopOmnibox) &&
-        !is_popup_mode_)
+    if (sharing_hub::SharingHubOmniboxEnabled(profile_) && !is_popup_mode_)
       params.types_enabled.push_back(PageActionIconType::kSharingHub);
 #endif
   }
@@ -830,9 +829,11 @@ bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
 }
 
 PermissionChip* LocationBarView::DisplayChip(
-    permissions::PermissionPrompt::Delegate* delegate) {
+    permissions::PermissionPrompt::Delegate* delegate,
+    bool should_bubble_start_open) {
   DCHECK(delegate);
-  return AddChip(std::make_unique<PermissionRequestChip>(browser(), delegate));
+  return AddChip(std::make_unique<PermissionRequestChip>(
+      browser(), delegate, should_bubble_start_open));
 }
 
 PermissionChip* LocationBarView::DisplayQuietChip(
@@ -1245,9 +1246,8 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
   favicon::FaviconDriver* favicon_driver =
       favicon::ContentFaviconDriver::FromWebContents(web_contents);
   gfx::ImageSkia favicon = favicon_driver->GetFavicon().AsImageSkia();
-  button_drag_utils::SetURLAndDragImage(web_contents->GetURL(),
-                                        web_contents->GetTitle(), favicon,
-                                        nullptr, *sender->GetWidget(), data);
+  button_drag_utils::SetURLAndDragImage(
+      web_contents->GetURL(), web_contents->GetTitle(), favicon, nullptr, data);
 }
 
 int LocationBarView::GetDragOperationsForView(views::View* sender,
@@ -1413,10 +1413,16 @@ bool LocationBarView::ShowPageInfoDialog() {
     return false;
 
   DCHECK(GetWidget());
+
+  auto initialized_callback =
+      GetPageInfoDialogCreatedCallbackForTesting()
+          ? std::move(GetPageInfoDialogCreatedCallbackForTesting())
+          : base::DoNothing();
+
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
           this, gfx::Rect(), GetWidget()->GetNativeWindow(), contents,
-          entry->GetVirtualURL(),
+          entry->GetVirtualURL(), std::move(initialized_callback),
           base::BindOnce(&LocationBarView::OnPageInfoBubbleClosed,
                          weak_factory_.GetWeakPtr()));
   bubble->SetHighlightedButton(location_icon_view_);

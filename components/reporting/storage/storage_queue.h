@@ -18,14 +18,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "components/reporting/compression/compression_module.h"
 #include "components/reporting/encryption/encryption_module_interface.h"
-#include "components/reporting/proto/record.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/storage/storage_configuration.h"
 #include "components/reporting/storage/storage_uploader_interface.h"
 #include "components/reporting/util/status.h"
@@ -33,6 +33,18 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace reporting {
+
+namespace test {
+
+// Storage Queue operation kind used to associate operations with failures for
+// testing purposes
+enum class StorageQueueOperationKind {
+  kReadBlock,
+  kWriteBlock,
+  kWriteMetadata
+};
+
+}  // namespace test
 
 // Storage queue represents single queue of data to be collected and stored
 // persistently. It allows to add whole data records as necessary,
@@ -102,8 +114,10 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
   // CollectFilesForUpload.
   void Flush();
 
-  // Test only: makes specified records fail on reading.
-  void TestInjectBlockReadErrors(std::initializer_list<int64_t> sequencing_ids);
+  // Test only: makes specified records fail on specified operation kind.
+  void TestInjectErrorsForOperation(
+      const test::StorageQueueOperationKind operation_kind,
+      std::initializer_list<int64_t> sequencing_ids);
 
   // Access queue options.
   const QueueOptions& options() const { return options_; }
@@ -371,8 +385,9 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
   // Compression module.
   scoped_refptr<CompressionModule> compression_module_;
 
-  // Test only: records specified to fail on reading.
-  base::flat_set<int64_t> test_injected_fail_sequencing_ids_;
+  // Test only: records specified to fail for a given operation kind.
+  base::flat_map<test::StorageQueueOperationKind, base::flat_set<int64_t>>
+      test_injected_failures_;
 
   // Weak pointer factory (must be last member in class).
   base::WeakPtrFactory<StorageQueue> weakptr_factory_{this};

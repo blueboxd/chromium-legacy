@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_types.h"
@@ -703,9 +704,9 @@ void UserSelectionScreen::HandleNoPodFocused() {
 void UserSelectionScreen::OnAllowedInputMethodsChanged() {
   DCHECK_EQ(display_type_, DisplayedScreen::SIGN_IN_SCREEN);
   if (focused_pod_account_id_.is_valid()) {
-    std::string user_input_method =
-        lock_screen_utils::GetUserLastInputMethod(focused_pod_account_id_);
-    lock_screen_utils::EnforceDevicePolicyInputMethods(user_input_method);
+    std::string user_input_method_id =
+        lock_screen_utils::GetUserLastInputMethodId(focused_pod_account_id_);
+    lock_screen_utils::EnforceDevicePolicyInputMethods(user_input_method_id);
   } else {
     lock_screen_utils::EnforceDevicePolicyInputMethods(std::string());
   }
@@ -771,11 +772,31 @@ void UserSelectionScreen::ShowBannerMessage(const std::u16string& message,
 void UserSelectionScreen::ShowUserPodCustomIcon(
     const AccountId& account_id,
     const proximity_auth::ScreenlockBridge::UserPodCustomIconInfo& icon_info) {
+  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp))
+    return;
+
   view_->ShowUserPodCustomIcon(account_id, icon_info);
 }
 
 void UserSelectionScreen::HideUserPodCustomIcon(const AccountId& account_id) {
+  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp))
+    return;
+
   view_->HideUserPodCustomIcon(account_id);
+}
+
+void UserSelectionScreen::SetSmartLockState(const AccountId& account_id,
+                                            SmartLockState state) {
+  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp)) {
+    view_->SetSmartLockState(account_id, state);
+  }
+}
+
+void UserSelectionScreen::NotifySmartLockAuthResult(const AccountId& account_id,
+                                                    bool success) {
+  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp)) {
+    view_->NotifySmartLockAuthResult(account_id, success);
+  }
 }
 
 void UserSelectionScreen::EnableInput() {

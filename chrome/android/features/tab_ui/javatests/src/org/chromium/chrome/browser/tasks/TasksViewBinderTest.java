@@ -50,17 +50,17 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.DummyUiChromeActivityTestCase;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Tests for {@link TasksViewBinder}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class TasksViewBinderTest extends DummyUiChromeActivityTestCase {
+public class TasksViewBinderTest extends DummyUiActivityTestCase {
     private TasksView mTasksView;
     private PropertyModel mTasksViewPropertyModel;
     private AtomicBoolean mViewClicked = new AtomicBoolean();
@@ -177,20 +177,20 @@ public class TasksViewBinderTest extends DummyUiChromeActivityTestCase {
             mTasksViewPropertyModel.set(IS_FAKE_SEARCH_BOX_VISIBLE, true);
             mTasksViewPropertyModel.set(IS_LENS_BUTTON_VISIBLE, true);
         });
-        assertTrue(isViewVisible(R.id.lens_camera_button_end));
+        assertTrue(isViewVisible(R.id.lens_camera_button));
 
         mViewClicked.set(false);
-        onView(withId(R.id.lens_camera_button_end)).perform(click());
+        onView(withId(R.id.lens_camera_button)).perform(click());
         assertFalse(mViewClicked.get());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTasksViewPropertyModel.set(LENS_BUTTON_CLICK_LISTENER, mViewOnClickListener);
         });
-        onView(withId(R.id.lens_camera_button_end)).perform(click());
+        onView(withId(R.id.lens_camera_button)).perform(click());
         assertTrue(mViewClicked.get());
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mTasksViewPropertyModel.set(IS_LENS_BUTTON_VISIBLE, false));
-        assertFalse(isViewVisible(R.id.lens_camera_button_end));
+        assertFalse(isViewVisible(R.id.lens_camera_button));
     }
 
     @Test

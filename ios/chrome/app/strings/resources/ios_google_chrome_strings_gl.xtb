@@ -3,7 +3,7 @@
 <translationbundle lang="gl">
 <translation id="1096883626080133124">Realiza máis tarefas cunha versión de Chrome máis sinxela, segura e rápida</translation>
 <translation id="1282031177488366470">Axudar a mellorar o rendemento e as funcións de Chrome</translation>
-<translation id="1354592789402432496">O teu administrador require que inicies sesión cunha conta de organización. As contas que este restrinxe están ocultas.</translation>
+<translation id="1314663809820920746">Podes seguir vendo os marcadores, o historial, os contrasinais e o resto das opcións de configuración que teñas neste dispositivo. Se fas cambios, non se sincronizarán coa túa Conta de Google.</translation>
 <translation id="1479202195792305274">Chrome pode comprobar os teus contrasinais cando inicies sesión coa túa Conta de Google.</translation>
 <translation id="1493827051843127077">Define Chrome como predeterminado para sincronizar as pestanas, os contrasinais e a información de pago con todos os teus dispositivos</translation>
 <translation id="1504372625950710826">Chrome non puido buscar actualizacións. Verifica a conexión a Internet.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Non tes conexión. Chrome non puido buscar actualizacións</translation>
 <translation id="5716154293141027663">Abre Chrome cada vez que toques ligazóns noutras aplicacións</translation>
-<translation id="572883588166315317">A túa organización esixe que inicies para usar Chrome. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Consello sobre Chrome: Agora algúns botóns, como Atrás, Adiante e Buscar, están na parte inferior da pantalla.</translation>
-<translation id="5876773482963502140">Se permites que Chrome saiba cal é a túa localización, este enviaralla aos sitios aos que lles concedas a autorización pertinente. Os sitios poderán preguntarche pola túa localización se teñen información local que mostrarche (por exemplo, noticias ou tendas próximas).</translation>
 <translation id="5998675059699164418">A túa organización esixe que inicies para usar Chrome.</translation>
 <translation id="6054613632208573261">Utiliza Chrome de forma predeterminada</translation>
 <translation id="6063091872902370735">Permitir inicio de sesión en Chrome</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Indicar se queres borrar ou conservar os teus datos de Chrome neste dispositivo</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Todos os dereitos reservados.</translation>
 <translation id="840168496893712993">Algúns complementos fan que Chrome falle. Proba a desinstalalos.</translation>
+<translation id="8414886616817913619">A túa organización require que inicies sesión para usar Chrome. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Os datos seleccionados elimináronse de Chrome e dos dispositivos sincronizados. É posible que a túa conta de Google teña outras formas do historial de navegación, como buscas e actividade doutros servizos de Google, en history.google.com.</translation>
 <translation id="850555388806794946">Para facer que Chrome sexa o teu navegador predeterminado, sigue estes pasos:
   1. Abre Configuración

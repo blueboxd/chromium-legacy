@@ -250,6 +250,13 @@ class CrostiniManagerTest : public testing::Test {
     policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
         std::make_unique<SystemNotificationHelper>());
+
+    vm_tools::cicerone::OsRelease os_release;
+    base::HistogramTester histogram_tester{};
+    os_release.set_pretty_name("Debian GNU/Linux 10 (bullseye)");
+    os_release.set_version_id("11");
+    os_release.set_id("debian");
+    fake_cicerone_client_->set_lxd_container_os_release(os_release);
   }
 
   void TearDown() override {
@@ -1236,6 +1243,36 @@ TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForContainerStarted) {
       this);
   task_environment_.FastForwardBy(kLongTime);
   task_environment_.RunUntilIdle();
+  EXPECT_GE(fake_concierge_client_->create_disk_image_call_count(), 1);
+  EXPECT_GE(fake_concierge_client_->start_termina_vm_call_count(), 1);
+  ExpectCrostiniRestartResult(CrostiniResult::START_CONTAINER_TIMED_OUT);
+  ExpectRestarterUmaCount(1);
+}
+
+TEST_F(CrostiniManagerRestartTest,
+       HeartbeatKeepsContainerStartedFromTimingOut) {
+  fake_cicerone_client_->set_send_container_started_signal_delay(
+      base::TimeDelta::Max());
+  vm_tools::cicerone::LxdContainerStartingSignal signal;
+  signal.set_container_name(ContainerId::GetDefault().container_name);
+  signal.set_vm_name(ContainerId::GetDefault().vm_name);
+  signal.set_owner_id(CryptohomeIdForProfile(profile()));
+  signal.set_status(vm_tools::cicerone::LxdContainerStartingSignal::STARTING);
+
+  restart_id_ = crostini_manager()->RestartCrostini(
+      ContainerId::GetDefault(),
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+
+  task_environment_.FastForwardBy(base::Days(4));
+  crostini_manager_->OnLxdContainerStarting(signal);
+  task_environment_.FastForwardBy(base::Days(4));
+  ASSERT_EQ(0, restart_crostini_callback_count_);
+
+  task_environment_.FastForwardBy(base::Days(4));
+  ASSERT_EQ(1, restart_crostini_callback_count_);
+
   EXPECT_GE(fake_concierge_client_->create_disk_image_call_count(), 1);
   EXPECT_GE(fake_concierge_client_->start_termina_vm_call_count(), 1);
   ExpectCrostiniRestartResult(CrostiniResult::START_CONTAINER_TIMED_OUT);

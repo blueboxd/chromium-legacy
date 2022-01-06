@@ -5,10 +5,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/policy/core/common/policy_loader_ios_constants.h"
+#include "components/policy/policy_constants.h"
+#import "ios/chrome/browser/policy/policy_app_interface.h"
+#import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
-#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
 #import "ios/chrome/browser/ui/authentication/views/views_constants.h"
+#import "ios/chrome/browser/ui/elements/instruction_view_constants.h"
 #import "ios/chrome/browser/ui/first_run/first_run_app_interface.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
@@ -17,6 +21,7 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -127,15 +132,14 @@ GREYLayoutConstraint* BelowConstraint() {
 }
 
 - (void)tearDown {
-  [super tearDown];
+  [PolicyAppInterface clearPolicies];
   [FirstRunAppInterface setUMACollectionEnabled:NO];
   [FirstRunAppInterface resetUMACollectionEnabledByDefault];
+  [super tearDown];
 }
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(kLocationPermissionsPrompt);
-
   config.features_enabled.push_back(kEnableFREUIModuleIOS);
 
   // Show the First Run UI at startup.
@@ -210,6 +214,9 @@ GREYLayoutConstraint* BelowConstraint() {
           grey_accessibilityID(
               first_run::kFirstRunDefaultBrowserScreenAccessibilityIdentifier)]
       assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Scrolls down to |elementMatcher| in the scrollable content of the first run
@@ -275,16 +282,87 @@ GREYLayoutConstraint* BelowConstraint() {
   [self scrollToElementAndAssertVisibility:subtitle];
 }
 
+// Tests that the forced sign-in screen replaces the regular sign-in screen
+// in the FRE when the policy is enabled.
+- (void)testSignInScreenUIWhenForcedByPolicy {
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+
+  // Configure the policy to force sign-in.
+  std::string policy_data = "<dict>"
+                            "    <key>BrowserSignin</key>"
+                            "    <integer>2</integer>"
+                            "</dict>";
+  base::RemoveChars(policy_data, base::kWhitespaceASCII, &policy_data);
+
+  config.additional_args.push_back("--enable-forced-signin-policy");
+  config.additional_args.push_back(
+      "-" + base::SysNSStringToUTF8(kPolicyLoaderIOSConfigurationKey));
+  config.additional_args.push_back(policy_data);
+
+  // Relaunch the app to take the configuration into account.
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Add an identity to sign-in to enable the "Continue as ..." button in the
+  // sign-in screen.
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  // Go to the sign-in screen from the welcome screen.
+  [self verifyWelcomeScreenIsDisplayed];
+  [self scrollToElementAndAssertVisibility:GetAcceptButton()];
+  [[EarlGrey selectElementWithMatcher:GetAcceptButton()]
+      performAction:grey_tap()];
+
+  // Sanity check that the sign-in screen is being displayed.
+  [self verifySignInScreenIsDisplayed];
+
+  // Validate the Title text of the forced sign-in screen.
+  id<GREYMatcher> title =
+      grey_text(l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_TITLE));
+  [self scrollToElementAndAssertVisibility:title];
+
+  // Validate the Subtitle text of the forced sign-in screen.
+  id<GREYMatcher> subtitle = grey_text(
+      l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE_MANAGED));
+  [self scrollToElementAndAssertVisibility:subtitle];
+
+  // Scroll to the "Continue as ..." button to go to the bottom of the screen.
+  [self scrollToElementAndAssertVisibility:GetContinueButtonWithIdentity(
+                                               fakeIdentity)];
+
+  // Assert that there isn't the button to skip sign-in.
+  [[EarlGrey
+      selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                   IDS_IOS_FIRST_RUN_SIGNIN_DONT_SIGN_IN))]
+      assertWithMatcher:grey_nil()];
+
+  // Touch the continue button to go to the next screen.
+  [[EarlGrey
+      selectElementWithMatcher:GetContinueButtonWithIdentity(fakeIdentity)]
+      performAction:grey_tap()];
+
+  // Make sure that the next screen can be successfully displayed.
+  [self verifySyncScreenIsDisplayed];
+
+  // Sign out then wait for the sign-in screen to reappear if not already
+  // displayed. This is to avoid a conflict between the dismiss animation and
+  // the presentation animation of the sign-in screen UI which can be triggered
+  // simultaneously when tearing down the test case. The sign-in UI may be
+  // triggered again when tearing down because the browser is signed out. Making
+  // sure that sign-out is done and that the sign-in screen animation is done
+  // before tearing down avoids the conflict.
+  [ChromeEarlGreyAppInterface signOutAndClearIdentities];
+  [ChromeEarlGrey
+      waitForMatcher:
+          grey_accessibilityID(
+              first_run::kFirstRunSignInScreenAccessibilityIdentifier)];
+}
+
 // Checks that the default browser screen is displayed correctly.
 - (void)testDefaultBrowserScreenUI {
   if ([self isDefaultBrowserTestDisabled]) {
     return;
   }
-
-  AppLaunchConfiguration config = self.appConfigurationForTestCase;
-  config.features_enabled.push_back(kEnableFREDefaultBrowserScreen);
-  // Relaunch the app to take the configuration into account.
-  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   // Go to the default browser screen.
   [self verifyWelcomeScreenIsDisplayed];
@@ -314,15 +392,18 @@ GREYLayoutConstraint* BelowConstraint() {
   StringWithTag firstInstructionParsed = ParseStringWithTag(
       l10n_util::GetNSString(
           IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_FIRST_STEP),
-      first_run::kBeginBoldTag, first_run::kEndBoldTag);
+      instruction_view::kInstructionViewBeginBoldTag,
+      instruction_view::kInstructionViewEndBoldTag);
   StringWithTag secondInstructionParsed = ParseStringWithTag(
       l10n_util::GetNSString(
           IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_SECOND_STEP),
-      first_run::kBeginBoldTag, first_run::kEndBoldTag);
+      instruction_view::kInstructionViewBeginBoldTag,
+      instruction_view::kInstructionViewEndBoldTag);
   StringWithTag thirdInstructionParsed = ParseStringWithTag(
       l10n_util::GetNSString(
           IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_THIRD_STEP),
-      first_run::kBeginBoldTag, first_run::kEndBoldTag);
+      instruction_view::kInstructionViewBeginBoldTag,
+      instruction_view::kInstructionViewEndBoldTag);
 
   // Verify instruction order.
   id<GREYMatcher> firstInstruction = grey_text(firstInstructionParsed.string);
@@ -711,6 +792,26 @@ GREYLayoutConstraint* BelowConstraint() {
   GREYAssertFalse([FirstRunAppInterface isUMACollectionEnabled],
                   @"kMetricsReportingEnabled pref was unexpectedly true after "
                   @"leaving the UMA checkbox unchecked.");
+}
+
+// Checks that the sync screen doesn't appear when the SyncDisabled policy is
+// enabled.
+- (void)testSyncDisabled {
+  policy_test_utils::SetPolicy(true, policy::key::kSyncDisabled);
+
+  // Go to the sign-in screen.
+  [self scrollToElementAndAssertVisibility:GetAcceptButton()];
+  [[EarlGrey selectElementWithMatcher:GetAcceptButton()]
+      performAction:grey_tap()];
+
+  // Don't sign-in.
+  [[EarlGrey
+      selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                   IDS_IOS_FIRST_RUN_SIGNIN_DONT_SIGN_IN))]
+      performAction:grey_tap()];
+
+  // The Sync screen should not be displayed, so the NTP should be visible.
+  [self verifyFREIsDismissed];
 }
 
 @end

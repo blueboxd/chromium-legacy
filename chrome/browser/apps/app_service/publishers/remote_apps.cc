@@ -7,18 +7,15 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace apps {
 
-RemoteApps::RemoteApps(Profile* profile, Delegate* delegate)
-    : profile_(profile), delegate_(delegate) {
+RemoteApps::RemoteApps(AppServiceProxy* proxy, Delegate* delegate)
+    : profile_(proxy->profile()), delegate_(delegate) {
   DCHECK(delegate);
-  AppServiceProxyChromeOs* proxy =
-      AppServiceProxyFactory::GetForProfile(profile_);
 
   mojo::Remote<mojom::AppService>& app_service = proxy->AppService();
   if (!app_service.is_bound()) {
@@ -60,6 +57,7 @@ apps::mojom::AppPtr RemoteApps::Convert(
   app->show_in_management = mojom::OptionalBool::kFalse;
   app->show_in_search = mojom::OptionalBool::kTrue;
   app->show_in_shelf = mojom::OptionalBool::kFalse;
+  app->allow_uninstall = mojom::OptionalBool::kFalse;
   app->icon_key = icon_key_factory_.MakeIconKey(IconEffects::kNone);
   return app;
 }
@@ -87,7 +85,6 @@ void RemoteApps::LoadIcon(const std::string& app_id,
                           LoadIconCallback callback) {
   DCHECK(icon_type != mojom::IconType::kCompressed)
       << "Remote app should not be shown in management";
-  mojom::IconValuePtr icon = mojom::IconValue::New();
 
   bool is_placeholder_icon = false;
   gfx::ImageSkia icon_image = delegate_->GetIcon(app_id);
@@ -97,18 +94,20 @@ void RemoteApps::LoadIcon(const std::string& app_id,
   }
 
   if (icon_image.isNull()) {
-    std::move(callback).Run(std::move(icon));
+    std::move(callback).Run(mojom::IconValue::New());
     return;
   }
 
-  icon->icon_type = icon_type;
+  std::unique_ptr<IconValue> icon = std::make_unique<IconValue>();
+  icon->icon_type = ConvertMojomIconTypeToIconType(icon_type);
   icon->uncompressed = icon_image;
   icon->is_placeholder_icon = is_placeholder_icon;
   IconEffects icon_effects = (icon_type == mojom::IconType::kStandard)
                                  ? IconEffects::kCrOsStandardIcon
                                  : IconEffects::kResizeAndPad;
-  apps::ApplyIconEffects(icon_effects, size_hint_in_dip, std::move(icon),
-                         std::move(callback));
+  apps::ApplyIconEffects(
+      icon_effects, size_hint_in_dip, std::move(icon),
+      IconValueToMojomIconValueCallback(std::move(callback)));
 }
 
 void RemoteApps::Launch(const std::string& app_id,

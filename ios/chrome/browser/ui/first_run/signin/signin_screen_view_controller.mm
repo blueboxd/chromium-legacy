@@ -52,6 +52,10 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
 // opens a popover.
 @property(nonatomic, strong) UITextView* learnMoreTextView;
 
+// Popover shown when "Details" link is tapped.
+@property(nonatomic, strong)
+    EnterpriseInfoPopoverViewController* bubbleViewController;
+
 @end
 
 @implementation SigninScreenViewController
@@ -104,9 +108,12 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
 
   bool forceSignInEnabled =
       self.enterpriseSignInRestrictions & kEnterpriseForceSignIn;
+  bool signinRestricted =
+      self.enterpriseSignInRestrictions || forceSignInEnabled;
+
   self.bannerImage =
-      [UIImage imageNamed:forceSignInEnabled ? @"forced_signin_screen_banner"
-                                             : @"signin_screen_banner"];
+      [UIImage imageNamed:signinRestricted ? @"forced_signin_screen_banner"
+                                           : @"signin_screen_banner"];
   // Only add "Don't Sign In" button when signin is not required.
   if (!forceSignInEnabled) {
     self.secondaryActionString =
@@ -134,6 +141,17 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
   // Call super after setting up the strings and others, as required per super
   // class.
   [super viewDidLoad];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+
+  // Close popover when font size changed for accessibility because it does not
+  // resize properly and the arrow is not aligned.
+  if (self.bubbleViewController) {
+    [self.bubbleViewController dismissViewControllerAnimated:YES
+                                                  completion:nil];
+  }
 }
 
 #pragma mark - Properties
@@ -172,6 +190,8 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
     _learnMoreTextView.scrollEnabled = NO;
     _learnMoreTextView.editable = NO;
     _learnMoreTextView.adjustsFontForContentSizeCategory = YES;
+    _learnMoreTextView.textContainerInset = UIEdgeInsetsZero;
+    _learnMoreTextView.textContainer.lineFragmentPadding = 0;
     _learnMoreTextView.accessibilityIdentifier =
         kLearnMoreTextViewAccessibilityIdentifier;
 
@@ -277,21 +297,23 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
   }
 
   // Open signin popover.
-  EnterpriseInfoPopoverViewController* bubbleViewController =
-      [[EnterpriseInfoPopoverViewController alloc]
-                 initWithMessage:detailsMessage
-                  enterpriseName:nil  // TODO(crbug.com/1251986): Remove this
-                                      // variable.
-          isPresentingFromButton:NO
-                addLearnMoreLink:NO];
-  [self presentViewController:bubbleViewController animated:YES completion:nil];
+  self.bubbleViewController = [[EnterpriseInfoPopoverViewController alloc]
+             initWithMessage:detailsMessage
+              enterpriseName:nil  // TODO(crbug.com/1251986): Remove this
+                                  // variable.
+      isPresentingFromButton:NO
+            addLearnMoreLink:NO];
+  [self presentViewController:self.bubbleViewController
+                     animated:YES
+                   completion:nil];
 
   // Set the anchor and arrow direction of the bubble.
-  bubbleViewController.popoverPresentationController.sourceView =
+  self.bubbleViewController.popoverPresentationController.sourceView =
       self.learnMoreTextView;
-  bubbleViewController.popoverPresentationController.sourceRect =
+  self.bubbleViewController.popoverPresentationController.sourceRect =
       TextViewLinkBound(textView, characterRange);
-  bubbleViewController.popoverPresentationController.permittedArrowDirections =
+  self.bubbleViewController.popoverPresentationController
+      .permittedArrowDirections =
       UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
 
   // The handler is already handling the tap.

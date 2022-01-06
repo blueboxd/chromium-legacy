@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
@@ -46,11 +46,11 @@ class FrameScheduler : public FrameOrWorkerScheduler {
 
     // Notify that the list of active features for this frame has changed.
     // See SchedulingPolicy::Feature for the list of features and the meaning
-    // of individual features.
+    // of individual features that disables back-forward cache.
     // Note that this method is not called when the frame navigates — it is
     // the responsibility of the observer to detect this and act reset features
     // accordingly.
-    virtual void UpdateActiveSchedulerTrackedFeatures(
+    virtual void UpdateBackForwardCacheDisablingFeatures(
         uint64_t features_mask) = 0;
 
     virtual const base::UnguessableToken& GetAgentClusterId() const = 0;

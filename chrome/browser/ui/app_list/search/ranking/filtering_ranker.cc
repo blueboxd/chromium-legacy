@@ -20,11 +20,15 @@ FilteringRanker::FilteringRanker() {}
 
 FilteringRanker::~FilteringRanker() {}
 
-void FilteringRanker::Start(const std::u16string& query) {
+void FilteringRanker::Start(const std::u16string& query,
+                            ResultsMap& results,
+                            CategoriesMap& categories) {
   last_query_ = query;
 }
 
-void FilteringRanker::Rank(ResultsMap& results, ProviderType provider) {
+void FilteringRanker::Rank(ResultsMap& results,
+                           CategoriesMap& categories,
+                           ProviderType provider) {
   // Don't perform any filtering on zero-state.
   if (last_query_.empty())
     return;

@@ -1141,8 +1141,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Helper to recursively find live-regions and fire a change event on them
   void FireLiveRegionChangeRecursive();
 
-  // Returns the parent node that makes this node inaccessible.
-  AXPlatformNodeWin* GetLowestAccessibleElement();
+  // Returns the first ancestor node that is accessible for UIA.
+  AXPlatformNodeWin* GetLowestAccessibleElementForUIA();
 
   // Returns the first |IsTextOnlyObject| descendant using
   // depth-first pre-order traversal.
@@ -1192,7 +1192,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   absl::optional<LONG> ComputeUIALandmarkType() const;
 
-  bool IsInaccessibleDueToAncestor() const;
+  bool IsInaccessibleForUIA() const;
 
   bool ShouldHideChildrenForUIA() const;
 
@@ -1242,9 +1242,13 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                            SanitizeStringAttributeForIA2);
 
  private:
+  AXPlatformNodeWin* GetParentPlatformNodeWin() const;
+
   bool IsWebAreaForPresentationalIframe();
   bool ShouldNodeHaveFocusableState() const;
   int GetAnnotationTypeImpl() const;
+  void AugmentNameWithImageAnnotationIfApplicable(std::wstring* name) const;
+
   // Get the value attribute as a Bstr, this means something different depending
   // on the type of element being queried. (e.g. kColorWell uses kColorValue).
   static BSTR GetValueAttributeAsBstr(AXPlatformNodeWin* target);
@@ -1389,6 +1393,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Helper method getting the selected status.
   bool ISelectionItemProviderIsSelected() const;
 
+  // Helper method for IsInaccessibleForUIA.
+  bool IsNodeInaccessibleForUIA() const;
+
   //
   // Getters for UIA GetTextAttributeValue
   //
@@ -1425,7 +1432,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
       AXPlatformNodeBase* node,
       ax::mojom::MarkerType marker_type,
       int offset_ranges_amount,
-      std::vector<std::pair<int, int>>* ranges);
+      std::vector<std::pair<int, int>>* ranges,
+      const absl::optional<ax::mojom::HighlightType>& highlight_type);
 
   enum class MarkerTypeRangeResult {
     // The MarkerType does not overlap the range.
@@ -1441,7 +1449,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   MarkerTypeRangeResult GetMarkerTypeFromRange(
       const absl::optional<int>& start_offset,
       const absl::optional<int>& end_offset,
-      ax::mojom::MarkerType marker_type);
+      ax::mojom::MarkerType marker_type,
+      const absl::optional<ax::mojom::HighlightType>& highlight_type =
+          absl::nullopt);
 
   bool IsAncestorComboBox();
 

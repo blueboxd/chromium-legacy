@@ -16,13 +16,25 @@
 #include "content/common/child_process.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/service_process_host.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
 
 namespace content {
 
 namespace {
+
+// Changes to this function should be reviewed by a security person.
+bool ShouldEnableSandbox(sandbox::mojom::Sandbox sandbox) {
+  if (sandbox == sandbox::mojom::Sandbox::kAudio)
+    return GetContentClient()->browser()->ShouldSandboxAudioService();
+  if (sandbox == sandbox::mojom::Sandbox::kNetwork)
+    return GetContentClient()->browser()->ShouldSandboxNetworkService();
+  return true;
+}
 
 // Internal helper to track running service processes.
 class ServiceProcessTracker {
@@ -162,14 +174,17 @@ class UtilityProcessClient : public UtilityProcessHost::Client {
 // TODO(crbug.com/977637): Once UtilityProcessHost is used only by service
 // processes, its logic can be inlined here.
 void LaunchServiceProcess(mojo::GenericPendingReceiver receiver,
-                          ServiceProcessHost::Options options) {
+                          ServiceProcessHost::Options options,
+                          sandbox::mojom::Sandbox sandbox) {
   UtilityProcessHost* host = new UtilityProcessHost(
       std::make_unique<UtilityProcessClient>(*receiver.interface_name()));
   host->SetName(!options.display_name.empty()
                     ? options.display_name
                     : base::UTF8ToUTF16(*receiver.interface_name()));
   host->SetMetricsName(*receiver.interface_name());
-  host->SetSandboxType(options.sandbox_type);
+  if (!ShouldEnableSandbox(sandbox))
+    sandbox = sandbox::mojom::Sandbox::kNoSandbox;
+  host->SetSandboxType(sandbox);
   host->SetExtraCommandLineSwitches(std::move(options.extra_switches));
   if (options.child_flags)
     host->set_child_flags(*options.child_flags);
@@ -196,21 +211,22 @@ void ServiceProcessHost::RemoveObserver(Observer* observer) {
 
 // static
 void ServiceProcessHost::Launch(mojo::GenericPendingReceiver receiver,
-                                Options options) {
+                                Options options,
+                                sandbox::mojom::Sandbox sandbox) {
   DCHECK(receiver.interface_name().has_value());
   if (GetUIThreadTaskRunner({})->BelongsToCurrentThread()) {
-    LaunchServiceProcess(std::move(receiver), std::move(options));
+    LaunchServiceProcess(std::move(receiver), std::move(options), sandbox);
   } else {
     GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&LaunchServiceProcess, std::move(receiver),
-                                  std::move(options)));
+                                  std::move(options), sandbox));
   }
 }
 
 void LaunchUtilityProcessServiceDeprecated(
     const std::string& service_name,
     const std::u16string& display_name,
-    sandbox::policy::SandboxType sandbox_type,
+    sandbox::mojom::Sandbox sandbox_type,
     mojo::ScopedMessagePipeHandle service_pipe,
     base::OnceCallback<void(base::ProcessId)> callback) {
   UtilityProcessHost* host = new UtilityProcessHost();

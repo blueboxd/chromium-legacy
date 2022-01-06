@@ -1177,20 +1177,25 @@ if (enable_java_templates) {
   #    }
   #  }
   template("java_group") {
+    forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
     _build_config_vars = [
       "input_jars_paths",
       "mergeable_android_manifests",
       "proguard_configs",
     ]
-    forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
+    _invoker_deps = []
+    if (defined(invoker.deps)) {
+      _invoker_deps += invoker.deps
+    }
+    if (defined(invoker.public_deps)) {
+      _invoker_deps += invoker.public_deps
+    }
     write_build_config("$target_name$build_config_target_suffix") {
       forward_variables_from(invoker, _build_config_vars)
       type = "group"
       build_config = "$target_gen_dir/${invoker.target_name}.build_config.json"
       supports_android = true
-      if (defined(invoker.deps)) {
-        possible_config_deps = invoker.deps
-      }
+      possible_config_deps = _invoker_deps
     }
     foreach(_group_name,
             [
@@ -1199,7 +1204,7 @@ if (enable_java_templates) {
               "assetres",
             ]) {
       java_lib_group("${target_name}__${_group_name}") {
-        forward_variables_from(invoker, [ "deps" ])
+        deps = _invoker_deps
         group_name = _group_name
       }
     }
@@ -2604,6 +2609,8 @@ if (enable_java_templates) {
           resources_config_paths += invoker.resources_config_paths
         }
       }
+    } else {
+      not_needed(invoker, [ "resources_config_paths" ])
     }
 
     if (!_is_bundle_module) {
@@ -2742,6 +2749,12 @@ if (enable_java_templates) {
 
     _java_target = "${_template_name}__java"
 
+    if (_is_bundle_module) {
+      _add_view_trace_events =
+          defined(invoker.add_view_trace_events) &&
+          invoker.add_view_trace_events && enable_trace_event_bytecode_rewriting
+    }
+
     java_library_impl(_java_target) {
       forward_variables_from(invoker,
                              [
@@ -2787,6 +2800,7 @@ if (enable_java_templates) {
                                  "version_code",
                                  "version_name",
                                ])
+        add_view_trace_events = _add_view_trace_events
       } else {
         type = "android_apk"
       }
@@ -3561,6 +3575,7 @@ if (enable_java_templates) {
     android_apk_or_module(target_name) {
       forward_variables_from(invoker,
                              [
+                               "add_view_trace_events",
                                "aapt_locale_allowlist",
                                "additional_jar_files",
                                "alternative_android_sdk_dep",
@@ -4500,6 +4515,11 @@ if (enable_java_templates) {
   #    default_modules_for_testing: (optional): A list of DFM that the wrapper
   #      script should install. This is for local testing only, and does not
   #      affect the actual DFM in production.
+  #
+  #    add_view_trace_events: (optional): If true will add an additional step to
+  #      add trace events to all Android views contained in the bundle. It also
+  #      requires build argument enable_trace_event_bytecode_rewriting = true.
+  #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
   #      base_module_target = "//chrome/android:chrome_public_apk"
@@ -4689,6 +4709,11 @@ if (enable_java_templates) {
 
     if (_proguard_enabled) {
       _proguard_mapping_path = "${_bundle_path}.mapping"
+      _add_view_trace_events =
+          defined(invoker.add_view_trace_events) &&
+          invoker.add_view_trace_events && enable_trace_event_bytecode_rewriting
+    } else {
+      not_needed(invoker, [ "add_view_trace_events" ])
     }
 
     write_build_config(_build_config_target) {
@@ -4699,6 +4724,7 @@ if (enable_java_templates) {
       module_build_configs = _module_build_configs
 
       if (_proguard_enabled) {
+        add_view_trace_events = _add_view_trace_events
         proguard_mapping_path = _proguard_mapping_path
       }
     }
@@ -4707,6 +4733,43 @@ if (enable_java_templates) {
       # If this Bundle uses a static library, the static library APK will
       # create the synchronized dex file path.
       if (!_uses_static_library_synchronized_proguard) {
+        if (_add_view_trace_events) {
+          _trace_event_rewriter_target =
+              "//build/android/bytecode:trace_event_adder"
+          _rewritten_jar_target_name = "${target_name}__trace_event_rewritten"
+          _rewriter_path = root_build_dir + "/bin/helper/trace_event_adder"
+          _stamp = "${target_gen_dir}/${target_name}.trace_event_rewrite.stamp"
+          action_with_pydeps(_rewritten_jar_target_name) {
+            script = "//build/android/gyp/trace_event_bytecode_rewriter.py"
+            inputs = [
+              _rewriter_path,
+              _build_config,
+            ]
+            outputs = [ _stamp ]
+            depfile = "$target_gen_dir/$_rewritten_jar_target_name.d"
+            args = [
+              "--stamp",
+              rebase_path(_stamp, root_build_dir),
+              "--depfile",
+              rebase_path(depfile, root_build_dir),
+              "--script",
+              rebase_path(_rewriter_path, root_build_dir),
+              "--classpath",
+              "@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
+              "--classpath",
+              "@FileArg($_rebased_build_config:android:sdk_jars)",
+              "--input-jars",
+              "@FileArg($_rebased_build_config:deps_info:device_classpath)",
+              "--output-jars",
+              "@FileArg($_rebased_build_config:deps_info:trace_event_rewritten_device_classpath)",
+            ]
+            deps = [
+                     _trace_event_rewriter_target,
+                     ":$_build_config_target",
+                   ] + _module_java_targets
+          }
+        }
+
         dex(_dex_target) {
           forward_variables_from(invoker,
                                  [
@@ -4718,6 +4781,7 @@ if (enable_java_templates) {
           if (defined(expected_proguard_config)) {
             top_target_name = _target_name
           }
+          add_view_trace_events = _add_view_trace_events
           enable_multidex = _enable_multidex
           proguard_enabled = true
           proguard_mapping_path = _proguard_mapping_path
@@ -4725,6 +4789,9 @@ if (enable_java_templates) {
           build_config = _build_config
 
           deps = _module_java_targets + [ ":$_build_config_target" ]
+          if (_add_view_trace_events) {
+            deps += [ ":${_rewritten_jar_target_name}" ]
+          }
           modules = _modules
         }
       }

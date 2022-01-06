@@ -161,8 +161,8 @@ class PasswordManagerSyncTest : public SyncTest {
   // |signed_in_account_| as a side effect.
   void SetupSyncTransportWithoutPasswordAccountStorage() {
     ASSERT_TRUE(signed_in_account_.IsEmpty());
-    // Setup Sync for a secondary account (i.e. in transport mode).
-    signed_in_account_ = secondary_account_helper::SignInSecondaryAccount(
+    // Setup Sync for an unconsented account (i.e. in transport mode).
+    signed_in_account_ = secondary_account_helper::SignInUnconsentedAccount(
         GetProfile(0), &test_url_loader_factory_, kTestUserEmail);
     ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
     ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -182,9 +182,9 @@ class PasswordManagerSyncTest : public SyncTest {
   // Should only be called after SetupSyncTransportWithPasswordAccountStorage().
   void SignOut() {
     ASSERT_FALSE(signed_in_account_.IsEmpty());
-    secondary_account_helper::SignOutSecondaryAccount(
-        GetProfile(0), &test_url_loader_factory_,
-        signed_in_account_.account_id);
+    secondary_account_helper::SignOutAccount(GetProfile(0),
+                                             &test_url_loader_factory_,
+                                             signed_in_account_.account_id);
     signed_in_account_ = AccountInfo();
   }
 
@@ -215,12 +215,6 @@ class PasswordManagerSyncTest : public SyncTest {
     form.username_value = base::UTF8ToUTF16(username);
     form.password_value = base::UTF8ToUTF16(password);
     form.date_created = base::Time::Now();
-    // TODO(crbug.com/1223022): Once all places that operate changes on forms
-    // via UpdateLogin properly set |password_issues|, setting them to an empty
-    // map should be part of the default constructor.
-    form.password_issues =
-        base::flat_map<password_manager::InsecureType,
-                       password_manager::InsecurityMetadata>();
     return form;
   }
 

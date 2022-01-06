@@ -88,6 +88,7 @@ class WebContentsViewMac : public WebContentsView,
                              RenderViewHost* new_host) override;
   void SetOverscrollControllerEnabled(bool enabled) override;
   bool CloseTabAfterEventTrackingIfNeeded() override;
+  void OnCapturerCountChanged() override;
 
   // RenderViewHostDelegateView:
   void StartDragging(const DropData& drop_data,
@@ -100,7 +101,7 @@ class WebContentsViewMac : public WebContentsView,
   void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void TakeFocus(bool reverse) override;
-  void ShowContextMenu(RenderFrameHost* render_frame_host,
+  void ShowContextMenu(RenderFrameHost& render_frame_host,
                        const ContextMenuParams& params) override;
   void ShowPopupMenu(
       RenderFrameHost* render_frame_host,

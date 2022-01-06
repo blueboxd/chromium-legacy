@@ -118,6 +118,9 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
         callback_(std::move(callback)),
         error_callback_(std::move(error_callback)) {}
 
+  ProfileEntryDeleter(const ProfileEntryDeleter&) = delete;
+  ProfileEntryDeleter& operator=(const ProfileEntryDeleter&) = delete;
+
   void RestrictToProfilePath(const std::string& profile_path) {
     restrict_to_profile_path_ = profile_path;
   }
@@ -240,8 +243,6 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
   std::map<std::string, std::string> profile_delete_entries_;
 
   base::WeakPtrFactory<ProfileEntryDeleter> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileEntryDeleter);
 };
 
 // NetworkConfigurationHandler
@@ -658,7 +659,8 @@ void NetworkConfigurationHandler::ClearPropertiesSuccessCallback(
 
   for (size_t i = 0; i < result.GetList().size(); ++i) {
     bool success = false;
-    result.GetBoolean(i, &success);
+    if (result.GetList()[i].is_bool())
+      success = result.GetList()[i].GetBool();
     if (!success) {
       // If a property was cleared that has never been set, the clear will fail.
       // We do not track which properties have been set, so just log the error.
@@ -685,10 +687,11 @@ void NetworkConfigurationHandler::ClearPropertiesErrorCallback(
 }
 
 // static
-NetworkConfigurationHandler* NetworkConfigurationHandler::InitializeForTest(
+std::unique_ptr<NetworkConfigurationHandler>
+NetworkConfigurationHandler::InitializeForTest(
     NetworkStateHandler* network_state_handler,
     NetworkDeviceHandler* network_device_handler) {
-  NetworkConfigurationHandler* handler = new NetworkConfigurationHandler();
+  auto handler = base::WrapUnique(new NetworkConfigurationHandler());
   handler->Init(network_state_handler, network_device_handler);
   return handler;
 }

@@ -9,7 +9,8 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/apps/app_service/icon_key_util.h"
+#include "chrome/browser/apps/app_service/app_icon/icon_key_util.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
@@ -18,8 +19,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
-
-class Profile;
 
 namespace base {
 class Location;
@@ -36,7 +35,7 @@ class WebAppsCrosapi : public KeyedService,
                        public apps::PublisherBase,
                        public crosapi::mojom::AppPublisher {
  public:
-  explicit WebAppsCrosapi(Profile* profile);
+  explicit WebAppsCrosapi(AppServiceProxy* proxy);
   ~WebAppsCrosapi() override;
 
   WebAppsCrosapi(const WebAppsCrosapi&) = delete;
@@ -65,7 +64,8 @@ class WebAppsCrosapi : public KeyedService,
                            int32_t event_flags,
                            apps::mojom::IntentPtr intent,
                            apps::mojom::LaunchSource launch_source,
-                           apps::mojom::WindowInfoPtr window_info) override;
+                           apps::mojom::WindowInfoPtr window_info,
+                           LaunchAppWithIntentCallback callback) override;
   void LaunchAppWithFiles(const std::string& app_id,
                           int32_t event_flags,
                           apps::mojom::LaunchSource launch_source,
@@ -88,6 +88,8 @@ class WebAppsCrosapi : public KeyedService,
                                  int command_id,
                                  const std::string& shortcut_id,
                                  int64_t display_id) override;
+  void SetPermission(const std::string& app_id,
+                     apps::mojom::PermissionPtr permission) override;
 
   // crosapi::mojom::AppPublisher overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
@@ -116,7 +118,7 @@ class WebAppsCrosapi : public KeyedService,
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
   mojo::Receiver<crosapi::mojom::AppPublisher> receiver_{this};
   mojo::Remote<crosapi::mojom::AppController> controller_;
-  Profile* const profile_;
+  AppServiceProxy* const proxy_;
   bool should_notify_initialized_ = true;
   base::WeakPtrFactory<WebAppsCrosapi> weak_factory_{this};
 };

@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 151: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests property access on a cached DOMWindow after the associated frame is navigated. Test should not crash and properties read from the cached DOMWindow should be identical to properties through the 'current' DOMWindow.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -163,11 +162,13 @@ PASS oldChildWindow.onreset is newChildWindow.onreset
 PASS oldChildWindow.onresize is newChildWindow.onresize
 PASS oldChildWindow.onscroll is newChildWindow.onscroll
 PASS oldChildWindow.onsearch is newChildWindow.onsearch
+PASS oldChildWindow.onsecuritypolicyviolation is newChildWindow.onsecuritypolicyviolation
 PASS oldChildWindow.onseeked is newChildWindow.onseeked
 PASS oldChildWindow.onseeking is newChildWindow.onseeking
 PASS oldChildWindow.onselect is newChildWindow.onselect
 PASS oldChildWindow.onselectionchange is newChildWindow.onselectionchange
 PASS oldChildWindow.onselectstart is newChildWindow.onselectstart
+PASS oldChildWindow.onslotchange is newChildWindow.onslotchange
 PASS oldChildWindow.onstalled is newChildWindow.onstalled
 PASS oldChildWindow.onstorage is newChildWindow.onstorage
 PASS oldChildWindow.onsubmit is newChildWindow.onsubmit

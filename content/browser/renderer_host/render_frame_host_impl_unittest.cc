@@ -4,7 +4,10 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
+#include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_render_view_host.h"
@@ -232,7 +235,7 @@ TEST_F(RenderFrameHostImplTest, PolicyContainerLifecycle) {
   std::unique_ptr<WebContentsImpl> new_contents(
       WebContentsImpl::CreateWithOpener(params, child_frame));
   RenderFrameHostImpl* new_frame =
-      new_contents->GetFrameTree()->root()->current_frame_host();
+      new_contents->GetPrimaryFrameTree().root()->current_frame_host();
 
   ASSERT_NE(new_frame->policy_container_host(), nullptr);
   EXPECT_EQ(new_frame->policy_container_host()->referrer_policy(),
@@ -339,6 +342,28 @@ TEST_F(RenderFrameHostImplTest, ChildOfAnonymousIsAnonymous) {
       grandchild_frame->GetNetworkIsolationKey().GetNonce().has_value());
   EXPECT_EQ(main_test_rfh()->GetPage().anonymous_iframes_nonce(),
             grandchild_frame->GetNetworkIsolationKey().GetNonce().value());
+}
+
+TEST_F(RenderFrameHostImplTest, NoBeforeUnloadCheckForBrowserInitiated) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAvoidUnnecessaryBeforeUnloadCheck);
+  contents()->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(
+          GURL("https://example.com/navigation.html")));
+  EXPECT_FALSE(
+      contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
+}
+
+TEST_F(RenderFrameHostImplTest, BeforeUnloadCheckForBrowserInitiated) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAvoidUnnecessaryBeforeUnloadCheck);
+  contents()->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(
+          GURL("https://example.com/navigation.html")));
+  EXPECT_TRUE(
+      contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
 }
 
 }  // namespace content

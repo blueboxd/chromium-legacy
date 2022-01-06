@@ -12,9 +12,9 @@
 #include <utility>
 
 #include "base/check_op.h"
-#include "base/single_thread_task_runner.h"
 #include "base/system/sys_info.h"
 #include "base/task/current_thread.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gin/debug_impl.h"
@@ -110,9 +110,10 @@ IsolateHolder::~IsolateHolder() {
 // static
 void IsolateHolder::Initialize(ScriptMode mode,
                                v8::ArrayBuffer::Allocator* allocator,
-                               const intptr_t* reference_table) {
+                               const intptr_t* reference_table,
+                               const std::string js_command_line_flags) {
   CHECK(allocator);
-  V8Initializer::Initialize(mode);
+  V8Initializer::Initialize(mode, js_command_line_flags);
   g_array_buffer_allocator = allocator;
   g_reference_table = reference_table;
 }

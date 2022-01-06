@@ -84,7 +84,7 @@ sk_sp<PaintFilter> FELighting::CreateImageFilter() {
   sk_sp<PaintFilter> input(paint_filter_builder::Build(
       InputEffect(0), OperatingInterpolationSpace()));
   switch (light_source_->GetType()) {
-    case LS_DISTANT: {
+    case kLsDistant: {
       DistantLightSource* distant_light_source =
           static_cast<DistantLightSource*>(light_source_.get());
       float azimuth_rad = Deg2rad(distant_light_source->Azimuth());
@@ -96,27 +96,27 @@ sk_sp<PaintFilter> FELighting::CreateImageFilter() {
           GetLightingType(), direction, light_color.Rgb(), surface_scale_,
           GetFilterConstant(), specular_exponent_, std::move(input), rect);
     }
-    case LS_POINT: {
+    case kLsPoint: {
       PointLightSource* point_light_source =
           static_cast<PointLightSource*>(light_source_.get());
       const FloatPoint3D position = point_light_source->GetPosition();
       const SkPoint3 sk_position =
-          SkPoint3::Make(position.X(), position.Y(), position.Z());
+          SkPoint3::Make(position.x(), position.y(), position.z());
       return sk_make_sp<LightingPointPaintFilter>(
           GetLightingType(), sk_position, light_color.Rgb(), surface_scale_,
           GetFilterConstant(), specular_exponent_, std::move(input), rect);
     }
-    case LS_SPOT: {
+    case kLsSpot: {
       SpotLightSource* spot_light_source =
           static_cast<SpotLightSource*>(light_source_.get());
       const SkPoint3 location =
-          SkPoint3::Make(spot_light_source->GetPosition().X(),
-                         spot_light_source->GetPosition().Y(),
-                         spot_light_source->GetPosition().Z());
+          SkPoint3::Make(spot_light_source->GetPosition().x(),
+                         spot_light_source->GetPosition().y(),
+                         spot_light_source->GetPosition().z());
       const SkPoint3 target =
-          SkPoint3::Make(spot_light_source->Direction().X(),
-                         spot_light_source->Direction().Y(),
-                         spot_light_source->Direction().Z());
+          SkPoint3::Make(spot_light_source->Direction().x(),
+                         spot_light_source->Direction().y(),
+                         spot_light_source->Direction().z());
       float specular_exponent = spot_light_source->SpecularExponent();
       float limiting_cone_angle = spot_light_source->LimitingConeAngle();
       if (!limiting_cone_angle || limiting_cone_angle > 90 ||

@@ -111,6 +111,32 @@ const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
   NOTREACHED();
   return gfx::kNoneIcon;
 }
+
+const gfx::VectorIcon& GetBlockedIconIdDesktop(RequestType type) {
+  switch (type) {
+    case RequestType::kGeolocation:
+      return vector_icons::kLocationOffIcon;
+    case RequestType::kNotifications:
+      return vector_icons::kNotificationsOffIcon;
+    case RequestType::kArSession:
+    case RequestType::kVrSession:
+      return vector_icons::kVrHeadsetOffIcon;
+    case RequestType::kCameraStream:
+      return vector_icons::kVideocamOffIcon;
+    case RequestType::kClipboard:
+      return vector_icons::kContentPasteOffIcon;
+    case RequestType::kIdleDetection:
+      return vector_icons::kDevicesOffIcon;
+    case RequestType::kMicStream:
+      return vector_icons::kMicOffIcon;
+    case RequestType::kMidiSysex:
+      return vector_icons::kMidiOffIcon;
+    default:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return gfx::kNoneIcon;
+}
 #endif  // !defined(OS_ANDROID)
 
 absl::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists(
@@ -242,6 +268,12 @@ IconId GetIconId(RequestType type) {
   return GetIconIdDesktop(type);
 #endif
 }
+
+#if !defined(OS_ANDROID)
+IconId GetBlockedIconId(RequestType type) {
+  return GetBlockedIconIdDesktop(type);
+}
+#endif
 
 const char* PermissionKeyForRequestType(permissions::RequestType request_type) {
   switch (request_type) {

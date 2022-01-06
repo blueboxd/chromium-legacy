@@ -62,7 +62,7 @@ void ViewPainter::PaintRootGroup(const PaintInfo& paint_info,
           context, client, DisplayItem::kDocumentRootBackdrop)) {
     DrawingRecorder recorder(context, client,
                              DisplayItem::kDocumentRootBackdrop,
-                             pixel_snapped_background_rect);
+                             ToGfxRect(pixel_snapped_background_rect));
     context.FillRect(
         pixel_snapped_background_rect, base_background_color,
         PaintAutoDarkMode(layout_view_.StyleRef(),
@@ -80,6 +80,9 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   bool painting_background_in_contents_space =
       BoxDecorationData::IsPaintingBackgroundInContentsSpace(paint_info,
                                                              layout_view_);
+
+  Element* element = DynamicTo<Element>(layout_view_.GetNode());
+  bool has_region_capture_data = element && element->GetRegionCaptureCropId();
   bool paints_scroll_hit_test =
       !painting_background_in_contents_space &&
       layout_view_.FirstFragment().PaintProperties()->Scroll();
@@ -100,7 +103,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   }
 
   if (!layout_view_.HasBoxDecorationBackground() && !has_hit_test_data &&
-      !paints_scroll_hit_test)
+      !paints_scroll_hit_test && !has_region_capture_data)
     return;
 
   // The background rect always includes at least the visible content size.
@@ -204,6 +207,13 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
                            *background_client);
   }
 
+  if (has_region_capture_data) {
+    BoxPainter(layout_view_)
+        .RecordRegionCaptureData(paint_info,
+                                 PhysicalRect(pixel_snapped_background_rect),
+                                 *background_client);
+  }
+
   // Record the scroll hit test after the non-scrolling background so
   // background squashing is not affected. Hit test order would be equivalent
   // if this were immediately before the non-scrolling background.
@@ -243,7 +253,7 @@ void ViewPainter::PaintRootElementGroup(
   }
   DrawingRecorder recorder(context, background_client,
                            DisplayItem::kDocumentBackground,
-                           pixel_snapped_background_rect);
+                           ToGfxRect(pixel_snapped_background_rect));
 
   const Document& document = layout_view_.GetDocument();
   const LocalFrameView& frame_view = *layout_view_.GetFrameView();
@@ -302,7 +312,7 @@ void ViewPainter::PaintRootElementGroup(
       // With transforms, paint offset is encoded in paint property nodes but we
       // can use the |paint_rect|'s adjusted location as the offset from the
       // view to the root element.
-      background_image_offset = PhysicalOffset(paint_rect.Location());
+      background_image_offset = PhysicalOffset(paint_rect.origin());
     } else {
       background_image_offset = -root_object->FirstFragment().PaintOffset();
     }
@@ -328,7 +338,7 @@ void ViewPainter::PaintRootElementGroup(
     return;
   }
 
-  recorder.UniteVisualRect(paint_rect);
+  recorder.UniteVisualRect(ToGfxRect(paint_rect));
 
   BoxPainterBase::FillLayerOcclusionOutputList reversed_paint_list;
   bool should_draw_background_in_separate_buffer =

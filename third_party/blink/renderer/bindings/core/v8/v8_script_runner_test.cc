@@ -66,7 +66,7 @@ class V8ScriptRunnerTest : public testing::Test {
   unsigned TagForTimeStamp(SingleCachedMetadataHandler* cache_handler) const {
     return V8CodeCache::TagForTimeStamp(cache_handler);
   }
-  void SetCacheTimeStamp(mojom::CodeCacheHost* code_cache_host,
+  void SetCacheTimeStamp(CodeCacheHost* code_cache_host,
                          SingleCachedMetadataHandler* cache_handler) {
     V8CodeCache::SetCacheTimeStamp(code_cache_host, cache_handler);
   }
@@ -95,7 +95,9 @@ class V8ScriptRunnerTest : public testing::Test {
     V8CodeCache::ProduceCache(
         isolate,
         ExecutionContext::GetCodeCacheHostFromContext(execution_context),
-        compiled_script.ToLocalChecked(), source_code, produce_cache_options);
+        compiled_script.ToLocalChecked(), source_code.CacheHandler(),
+        source_code.Source().length(), source_code.Url(),
+        source_code.StartPosition(), produce_cache_options);
     return true;
   }
 
@@ -120,7 +122,9 @@ class V8ScriptRunnerTest : public testing::Test {
     V8CodeCache::ProduceCache(
         isolate,
         ExecutionContext::GetCodeCacheHostFromContext(execution_context),
-        compiled_script.ToLocalChecked(), source_code, produce_cache_options);
+        compiled_script.ToLocalChecked(), source_code.CacheHandler(),
+        source_code.Source().length(), source_code.Url(),
+        source_code.StartPosition(), produce_cache_options);
     return true;
   }
 

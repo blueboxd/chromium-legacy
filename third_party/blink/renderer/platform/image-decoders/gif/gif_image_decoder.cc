@@ -207,7 +207,7 @@ void GIFImageDecoder::InitializeNewFrame(wtf_size_t index) {
   // frame rect, we set the frame rect to be the image's full size.
   // The original frame rect is not used, anyway.
   IntSize full_image_size = Size();
-  frame.SetOriginalFrameRect(IntRect(IntPoint(), full_image_size));
+  frame.SetOriginalFrameRect(IntRect(gfx::Point(), full_image_size));
 
   SkCodec::FrameInfo frame_info;
   bool frame_info_received = codec_->getFrameInfo(index, &frame_info);
@@ -242,7 +242,7 @@ void GIFImageDecoder::Decode(wtf_size_t index) {
     wtf_size_t required_previous_frame_index =
         frame.RequiredPreviousFrameIndex();
     if (required_previous_frame_index == kNotFound) {
-      frame.AllocatePixelData(Size().Width(), Size().Height(),
+      frame.AllocatePixelData(Size().width(), Size().height(),
                               ColorSpaceForSkImages());
       frame.ZeroFillPixelData();
       prior_frame_ = SkCodec::kNoFrame;

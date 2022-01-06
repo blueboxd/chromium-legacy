@@ -3,7 +3,7 @@
 <translationbundle lang="es">
 <translation id="1096883626080133124">Haz más cosas con Google Chrome: funciona más rápido que nunca y es sencillo y seguro.</translation>
 <translation id="1282031177488366470">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
-<translation id="1354592789402432496">Tu administrador requiere que inicies sesión con una cuenta de organización. Las cuentas restringidas por tu administrador están ocultas.</translation>
+<translation id="1314663809820920746">Podrás seguir viendo todos tus marcadores, el historial, las contraseñas y otros ajustes en este dispositivo. Si realizas cambios, no se sincronizarán con tu cuenta de Google.</translation>
 <translation id="1479202195792305274">Chrome puede comprobar tus contraseñas cuando inicias sesión con tu cuenta de Google.</translation>
 <translation id="1493827051843127077">Selecciona Chrome como navegador principal para sincronizar tus pestañas, contraseñas e información de pago en todos tus dispositivos</translation>
 <translation id="1504372625950710826">Chrome no ha podido comprobar si hay actualizaciones. Revisa tu conexión a Internet.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Sin conexión, Chrome no puede comprobar si hay actualizaciones</translation>
 <translation id="5716154293141027663">Abre Chrome siempre que toques enlaces en otras aplicaciones</translation>
-<translation id="572883588166315317">Tu organización requiere que inicies sesión para usar Chrome. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="5854621639439811139">Consejo sobre Chrome. Algunos botones ahora se encuentran en la parte inferior de la pantalla, como Atrás, Adelante y Buscar.</translation>
-<translation id="5876773482963502140">Si permites que Chrome acceda a tu ubicación, la enviará a los sitios que permitas. Los sitios podrían solicitar conocer tu ubicación si tienen información local que mostrarte, como tiendas cercanas o noticias.</translation>
 <translation id="5998675059699164418">Tu organización requiere que inicies sesión para usar Chrome.</translation>
 <translation id="6054613632208573261">Usa Chrome de forma predeterminada</translation>
 <translation id="6063091872902370735">Permitir el inicio de sesión en Chrome</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Elige si quieres borrar o conservar tus datos de Chrome en este dispositivo</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Todos los derechos reservados.</translation>
 <translation id="840168496893712993">Algunos complementos hacen que Chrome falle. Prueba a desinstalarlos.</translation>
+<translation id="8414886616817913619">Tu organización requiere que inicies sesión para usar Chrome. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Los datos seleccionados se han eliminado de Chrome y de los dispositivos sincronizados. Es posible que tu cuenta de Google tenga otras formas del historial de navegación, como las búsquedas o la actividad de otros servicios de Google en la página history.google.com.</translation>
 <translation id="850555388806794946">Para establecer Chrome como navegador predeterminado, haz lo siguiente:
   1. Abre Configuración

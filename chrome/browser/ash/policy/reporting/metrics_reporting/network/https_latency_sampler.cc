@@ -4,23 +4,22 @@
 
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/network/https_latency_sampler.h"
 
-#include "base/bind_post_task.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/bind_post_task.h"
 #include "chrome/browser/ash/net/network_diagnostics/https_latency_routine.h"
 
 namespace reporting {
 namespace {
 
-using RoutineResultPtr = chromeos::network_diagnostics::mojom::RoutineResultPtr;
+using RoutineResultPtr = ::ash::network_diagnostics::mojom::RoutineResultPtr;
 
 void ConvertMojomRoutineResultToTelemetry(
     const RoutineResultPtr& routine_result,
     HttpsLatencyRoutineData* https_latency_data) {
-  using chromeos::network_diagnostics::mojom::RoutineProblems;
+  using ::ash::network_diagnostics::mojom::RoutineProblems;
   using HttpsLatencyProblemMojom =
-      chromeos::network_diagnostics::mojom::HttpsLatencyProblem;
-  using RoutineVerdictMojom =
-      chromeos::network_diagnostics::mojom::RoutineVerdict;
+      ::ash::network_diagnostics::mojom::HttpsLatencyProblem;
+  using RoutineVerdictMojom = ::ash::network_diagnostics::mojom::RoutineVerdict;
 
   switch (routine_result->verdict) {
     case RoutineVerdictMojom::kNoProblem:
@@ -31,6 +30,7 @@ void ConvertMojomRoutineResultToTelemetry(
       break;
     case RoutineVerdictMojom::kNotRun:
       https_latency_data->set_verdict(RoutineVerdict::NOT_RUN);
+      break;
   }
 
   if (!routine_result->problems ||
@@ -64,8 +64,7 @@ void ConvertMojomRoutineResultToTelemetry(
 HttpsLatencySampler::HttpsLatencySampler() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   https_latency_routine_getter_ = base::BindRepeating([]() {
-    return std::make_unique<
-        chromeos::network_diagnostics::HttpsLatencyRoutine>();
+    return std::make_unique<ash::network_diagnostics::HttpsLatencyRoutine>();
   });
 }
 
@@ -73,17 +72,17 @@ HttpsLatencySampler::~HttpsLatencySampler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void HttpsLatencySampler::CollectTelemetry(TelemetryCallback callback) {
+void HttpsLatencySampler::Collect(MetricCallback callback) {
   CHECK(base::SequencedTaskRunnerHandle::IsSet());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  telemetry_callbacks_.push(std::move(callback));
+  metric_callbacks_.push(std::move(callback));
   if (is_routine_running_) {
     return;
   }
 
   https_latency_routine_ = https_latency_routine_getter_.Run();
-  chromeos::network_diagnostics::RoutineResultCallback routine_callback =
+  ash::network_diagnostics::RoutineResultCallback routine_callback =
       base::BindOnce(&HttpsLatencySampler::OnHttpsLatencyRoutineCompleted,
                      weak_ptr_factory_.GetWeakPtr());
   https_latency_routine_->RunRoutine(base::BindPostTask(
@@ -104,14 +103,15 @@ void HttpsLatencySampler::OnHttpsLatencyRoutineCompleted(
   https_latency_routine_.reset();
   is_routine_running_ = false;
 
-  TelemetryData telemetry_data;
-  auto* https_latency_data =
-      telemetry_data.mutable_networks_telemetry()->mutable_https_latency_data();
+  MetricData metric_data;
+  auto* https_latency_data = metric_data.mutable_telemetry_data()
+                                 ->mutable_networks_telemetry()
+                                 ->mutable_https_latency_data();
   ConvertMojomRoutineResultToTelemetry(routine_result, https_latency_data);
 
-  while (!telemetry_callbacks_.empty()) {
-    std::move(telemetry_callbacks_.front()).Run(telemetry_data);
-    telemetry_callbacks_.pop();
+  while (!metric_callbacks_.empty()) {
+    std::move(metric_callbacks_.front()).Run(metric_data);
+    metric_callbacks_.pop();
   }
 }
 }  // namespace reporting

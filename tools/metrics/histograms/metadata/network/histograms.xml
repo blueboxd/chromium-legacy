@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -418,7 +419,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Cellular.PSim.SetupFlowResult"
-    enum="PSimSetupFlowResult" expires_after="2022-03-01">
+    enum="PSimSetupFlowResult" expires_after="2022-05-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>hsuregan@chromium.org</owner>
@@ -593,7 +594,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.DnsProxy.DnsOverHttpsQuery.HttpErrors"
-    enum="DnsProxy.HttpError" expires_after="2021-12-01">
+    enum="DnsProxy.HttpError" expires_after="2022-04-03">
   <owner>garrick@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -615,7 +616,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.DnsProxy.Query.Failed{Stage}Duration" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-04-03">
   <owner>garrick@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -651,7 +652,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.DnsProxy.Query.{Stage}Duration" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-04-03">
   <owner>garrick@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -687,7 +688,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.DnsProxy.{Family}Nameservers" units="units"
-    expires_after="2021-12-01">
+    expires_after="2022-04-03">
   <owner>garrick@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -702,7 +703,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.DnsProxy.{ProcessType}.Event"
-    enum="DnsProxy.ProcessEvent" expires_after="2021-12-01">
+    enum="DnsProxy.ProcessEvent" expires_after="2022-04-03">
   <owner>garrick@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -720,7 +721,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.DnsProxy.{Type}Query.Errors"
-    enum="DnsProxy.QueryError" expires_after="2021-12-01">
+    enum="DnsProxy.QueryError" expires_after="2022-04-03">
   <owner>garrick@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -735,7 +736,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.DnsProxy.{Type}Query.FailedResolveDuration" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-04-03">
   <owner>garrick@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -756,7 +757,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.DnsProxy.{Type}Query.ResolveDuration" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-04-03">
   <owner>garrick@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -777,7 +778,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.DnsProxy.{Type}Query.Results"
-    enum="DnsProxy.QueryResult" expires_after="2021-12-01">
+    enum="DnsProxy.QueryResult" expires_after="2022-04-03">
   <owner>garrick@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1288,7 +1289,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.DevicePresenceStatus"
-    enum="BooleanPresent" expires_after="2022-01-30">
+    enum="BooleanPresent" expires_after="2022-04-24">
   <owner>stevenjb@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1656,11 +1657,71 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Network.Shill.Vpn.Driver" enum="VPNDriver"
     expires_after="2022-04-10">
-  <owner>akhouderchah@chromium.org</owner>
+  <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
     Chrome OS network usage metric sampled on each successful VPN connection
     that tracks the VPN connection type.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.L2tpIpsec.EspEncryptionAlgorithm"
+    enum="VPNIPsecEncryptionAlgorithm" expires_after="2022-06-30">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network usage metric emitted on each successful L2TP/IPsec VPN
+    connection that tracks the encryption algorithm used by the ESP protocol in
+    this connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.L2tpIpsec.EspIntegrityAlgorithm"
+    enum="VPNIPsecIntegrirtyAlgorithm" expires_after="2022-06-30">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network usage metric emitted on each successful L2TP/IPsec VPN
+    connection that tracks the integrity algorithm used by the ESP protocol in
+    this connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.L2tpIpsec.IkeDHGroup" enum="VPNIPsecDHGroup"
+    expires_after="2022-06-30">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network usage metric emitted on each successful L2TP/IPsec VPN
+    connection that tracks the DH group used by the IKE protocol in this
+    connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.L2tpIpsec.IkeEncryptionAlgorithm"
+    enum="VPNIPsecEncryptionAlgorithm" expires_after="2022-06-30">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network usage metric emitted on each successful L2TP/IPsec VPN
+    connection that tracks the encryption algorithm used by the IKE protocol in
+    this connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.L2tpIpsec.IkeIntegrityAlgorithm"
+    enum="VPNIPsecIntegrirtyAlgorithm" expires_after="2022-06-30">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network usage metric emitted on each successful L2TP/IPsec VPN
+    connection that tracks the integrity algorithm used by the IKE protocol in
+    this connection.
   </summary>
 </histogram>
 
@@ -1678,7 +1739,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Network.Shill.Vpn.RemoteAuthenticationType"
     enum="VPNRemoteAuthenticationType" expires_after="2022-05-01">
-  <owner>akhouderchah@chromium.org</owner>
+  <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
     Chrome OS network usage metric sampled on each successful VPN connection
@@ -1688,7 +1749,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Network.Shill.Vpn.TimeOnline" units="seconds"
     expires_after="2022-04-24">
-  <owner>akhouderchah@chromium.org</owner>
+  <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
     Chrome OS network metric sampling the time spent using VPN to transport
@@ -1701,8 +1762,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.TimeToConfig" units="ms"
-    expires_after="2021-12-01">
-  <owner>akhouderchah@chromium.org</owner>
+    expires_after="2022-04-24">
+  <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
     Chrome OS network performance metric sampling the time to configure Layer 3
@@ -1711,8 +1772,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.TimeToOnline" units="ms"
-    expires_after="2021-12-01">
-  <owner>akhouderchah@chromium.org</owner>
+    expires_after="2022-04-24">
+  <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that a
@@ -1722,7 +1783,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Network.Shill.Vpn.UserAuthenticationType"
     enum="VPNUserAuthenticationType" expires_after="2022-04-24">
-  <owner>akhouderchah@chromium.org</owner>
+  <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
     Chrome OS network usage metric sampled on each successful VPN connection
@@ -3012,6 +3073,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>yhirano@chromium.org</owner>
   <summary>
     Records the result of the Cross-Origin Resource Policy check.
+  </summary>
+</histogram>
+
+<histogram name="NetworkService.DeletedOldCacheData" enum="Boolean"
+    expires_after="2022-05-18">
+  <owner>wfh@chromium.org</owner>
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    Reports whether or not any old cache data was found and deleted from the
+    http_cache_path when creating a network context within the network service.
+    This is reported each time a network context is created in the network
+    service with a valid http_cache_path and http_cache_enabled is set to true.
   </summary>
 </histogram>
 

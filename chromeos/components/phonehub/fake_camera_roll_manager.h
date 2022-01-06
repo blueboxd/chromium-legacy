@@ -6,6 +6,7 @@
 #define CHROMEOS_COMPONENTS_PHONEHUB_FAKE_CAMERA_ROLL_MANAGER_H_
 
 #include "chromeos/components/phonehub/camera_roll_manager.h"
+#include "chromeos/components/phonehub/proto/phonehub_api.pb.h"
 
 namespace chromeos {
 namespace phonehub {
@@ -15,9 +16,23 @@ class FakeCameraRollManager : public CameraRollManager {
   FakeCameraRollManager();
   ~FakeCameraRollManager() override;
 
+  void OnCameraRollOnboardingUiDismissed() override;
+  void SetIsCameraRollAvailableToBeEnabled(bool can_enable);
+  void SetIsCameraRollAccessible(bool accessiable);
+  void EnableCameraRollFeatureInSystemSetting() override;
+
   using CameraRollManager::SetCurrentItems;
 
   using CameraRollManager::ClearCurrentItems;
+
+ private:
+  void ComputeAndUpdateUiState() override;
+  // CameraRollManager:
+  void DownloadItem(
+      const proto::CameraRollItemMetadata& item_metadata) override;
+  bool has_dismissed_onboarding_dialog_ = false;
+  bool is_avaiable_to_be_enabled_ = true;
+  bool is_camera_roll_accessible_ = true;
 };
 
 }  // namespace phonehub

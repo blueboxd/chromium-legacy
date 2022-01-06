@@ -49,7 +49,6 @@
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />தற்போதைய அமைப்புகளைப்<ph name="END_LINK" />பற்றிய அறிக்கையை அனுப்பி, Chromeஐ இன்னும் சிறந்ததாக்க உதவவும்</translation>
 <translation id="2151406531797534936">Chromeமை இப்போது மீண்டும் தொடங்கவும்</translation>
 <translation id="2189289170880510015">Chromeமின் மிக முக்கியமான சில தனியுரிமை விருப்பங்களைப் பிரத்தியேகமாக்குங்கள்</translation>
-<translation id="2246246234298806438">உள்ளமைக்கப்பட்ட PDF வியூவர் இல்லையென்றால், Google Chrome அச்சிடல் மாதிரிக்காட்சியைக் காண்பிக்காது.</translation>
 <translation id="2290014774651636340">Google API விசைகள் காணப்படவில்லை. Google Chrome இன் சில செயல்பாடுகள் முடக்கப்படும்.</translation>
 <translation id="2290095356545025170">Google Chrome நிறுவல் நீக்கம் செய்வதில் உறுதியாக உள்ளீர்களா?</translation>
 <translation id="2309047409763057870">இது Google Chrome இன் இரண்டாம் நிலை நிறுவல் என்பதால், அதை இயல்புநிலை உலாவியாக அமைக்க முடியாது.</translation>
@@ -60,7 +59,6 @@
 <translation id="2429317896000329049">உங்கள் களத்திற்கு ஒத்திசைவு இல்லாததால், Google Chrome ஆல் உங்கள் தரவை ஒத்திசைக்க முடியவில்லை.</translation>
 <translation id="2467438592969358367">Google Chrome உங்கள் கடவுச்சொற்களை ஏற்ற விரும்புகிறது. இதை அனுமதிக்க, உங்கள் Windows கடவுச்சொல்லை உள்ளிடவும்.</translation>
 <translation id="2485422356828889247">நிறுவல் நீக்கு</translation>
-<translation id="2518751521812750372">Chromeமை மூடியதும், அது குக்கீகளையும் நீங்கள் பார்வையிட்ட பக்கங்களின் தளத் தரவையும் தானாகவே அழிக்கும்</translation>
 <translation id="2534507159460261402">Google Pay (Chromeக்கு நகலெடுக்கப்பட்டது)</translation>
 <translation id="2574930892358684005">இந்த Chrome சுயவிவரத்தில் <ph name="EXISTING_USER" /> ஏற்கெனவே உள்நுழைந்துள்ளார். நீங்கள் உலாவுவதைத் தனிப்பட்டதாக வைத்திருக்க, உங்களுக்கு ஒரு புதிய சுயவிவரத்தை Chrome உருவாக்க முடியும்.</translation>
 <translation id="2580411288591421699">நடப்பில் இயங்கிக்கொண்டிருக்கும் அதே Google Chrome பதிப்பை நிறுவ முடியாது. Google Chromeமை மூடிவிட்டு மீண்டும் முயற்சி செய்க.</translation>
@@ -89,6 +87,7 @@
 <translation id="3037838751736561277">Google Chrome பின்புலப் பயன்முறையில் இயங்குகிறது.</translation>
 <translation id="3059710691562604940">’பாதுகாப்பு உலாவல்‘ அம்சம் முடக்கப்பட்டுள்ளது. அதை இயக்குமாறு Chrome பரிந்துரைக்கிறது.</translation>
 <translation id="3065168410429928842">Chrome தாவல்</translation>
+<translation id="3069821012350118710">நீங்கள் Chromeமை மூடும் வரை உங்கள் தகவல்கள் நீங்கள் பார்வையிட்ட தளங்களில் இருந்து அழிக்கப்படாது</translation>
 <translation id="3080151273017101988">Google Chrome மூடப்பட்டிருக்கும்போது பின்புல ஆப்ஸை இயக்க அனுமதி</translation>
 <translation id="3089968997497233615">புதிய, இன்னும் பாதுகாப்பான Google Chrome பதிப்பு தற்போது கிடைக்கிறது.</translation>
 <translation id="3100998948628680988">உங்கள் Chrome சுயவிவரத்திற்குப் பெயரிடுங்கள்</translation>
@@ -99,6 +98,7 @@
 <translation id="3379938682270551431">{0,plural, =0{இப்போது Chrome மீண்டும் தொடங்கும்}=1{ஒரு வினாடியில் Chrome மீண்டும் தொடங்கும்}other{# வினாடிகளில் Chrome மீண்டும் தொடங்கும்}}</translation>
 <translation id="3395323229510056640">Chrome OS தொடர்பான உதவி பெறுக</translation>
 <translation id="3396977131400919238">நிறுவலின்போது இயக்கமுறைமையில் பிழை ஏற்பட்டது. Google Chromeமை மீண்டும் பதிவிறக்குக.</translation>
+<translation id="3428747202529429621">Chromeமைப் பயன்படுத்தும்போது இது பாதுகாப்பை வழங்கும், அத்துடன் நீங்கள் பிற Google ஆப்ஸில் உள்நுழைந்திருக்கும்போது உங்கள் பாதுகாப்பை மேம்படுத்துவதற்காக இதைப் பயன்படுத்தலாம்</translation>
 <translation id="3434246496373299699">Google கணக்கைப் பயன்படுத்தி நீங்கள் உள்நுழையும்போது Chrome உங்கள் கடவுச்சொற்களைச் சரிபார்க்க முடியும்</translation>
 <translation id="3451115285585441894">Chrome இல் சேர்க்கிறது...</translation>
 <translation id="345171907106878721">உங்களை Chrome இல் சேர்க்கவும்</translation>
@@ -189,6 +189,7 @@
 <translation id="5804318322022881572">Chromeஐத் தொடங்க முடியவில்லை. மீண்டும் முயலவும்.</translation>
 <translation id="5867197326698922595">Google Chrome கடவுச்சொற்களைத் திருத்த முயல்கிறது.</translation>
 <translation id="5895138241574237353">மறுதொடக்கம்</translation>
+<translation id="5901850848447342934">Chromeமை மூடும்போது <ph name="BEGIN_BOLD" />பெரும்பாலான தளங்களில் இருந்து வெளியேற்றப்படுவீர்கள்<ph name="END_BOLD" />. ஒத்திசைவு முடக்கத்தில் இருந்தால் <ph name="BEGIN_BOLD" />Google சேவைகள், Chrome ஆகியவற்றில் இருந்தும் வெளியேற்றப்படுவீர்கள்<ph name="END_BOLD" />.</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - நெட்வொர்க் உள்நுழைவு</translation>
 <translation id="5940385492829620908">உங்களின் இணையம், புக்மார்க்குகள் மற்றும் பிற Chrome உருப்படிகள் இங்கே உள்ளன.</translation>
 <translation id="5941830788786076944">Google Chrome ஐ இயல்புநிலை உலாவியாக அமை</translation>
@@ -198,11 +199,11 @@
 <translation id="6145313976051292476">PDFகளை Chromeமில் திற</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome பீட்டா</translation>
-<translation id="61852838583753520">&amp;Chrome OS ஐப் புதுப்பி</translation>
 <translation id="6235018212288296708">mDNS ட்ராஃபிக்கை அனுமதிப்பதற்கான, Google Chrome க்கான உள்வரும் விதி.</translation>
 <translation id="6291089322031436445">Chrome Dev ஆப்ஸ்</translation>
 <translation id="6291549208091401781">உங்கள் கம்ப்யூட்டரில் ஏற்கனவே எல்லாப் பயனர்களுக்கும் Google Chrome நிறுவப்பட்டுள்ளது.</translation>
 <translation id="6368958679917195344">கூடுதலான <ph name="BEGIN_LINK_CROS_OSS" />ஓப்பன் சோர்ஸ் மென்பொருள்களால்<ph name="END_LINK_CROS_OSS" /> Chrome OS ஐ உருவாக்குவது சாத்தியமானது.</translation>
+<translation id="6412673304250309937">Chromeமில் சேமிக்கப்பட்டுள்ள பாதுகாப்பில்லாத தளங்களின் பட்டியலைப் பயன்படுத்தி URLகளைச் சரிபார்க்கும். தளம் உங்கள் கடவுச்சொல்லைத் திருட முயன்றலோ தீங்குவிளைவிக்கும் ஃபைலை நீங்கள் பதிவிறக்கினாலோ Chromeமானது பக்க உள்ளடக்கத்தின் சிறிய பகுதிகள் உட்பட URLகளையும் பாதுகாப்பு உலாவலுக்கு அனுப்பக்கூடும்.</translation>
 <translation id="6418662306461808273">ஏற்கெனவே உள்ள Chrome சுயவிவரத்திற்கு மாறவா?</translation>
 <translation id="6506909944137591434">உங்களைச் சுற்றியுள்ள இடங்களின் 3D வரைபடத்தை உருவாக்க, Chromeமிற்கு கேமரா அணுகல் தேவை</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
@@ -279,11 +280,11 @@
 <translation id="8614913330719544658">Google Chrome பதிலளிக்கவில்லை. இப்போது மீண்டும் தொடங்கவா?</translation>
 <translation id="861702415419836452">உங்களைச் சுற்றியுள்ள இடங்களின் 3D வரைபடத்தை உருவாக்க, Chromeமுக்கு உங்கள் கேமராவை அணுக அனுமதி தேவை</translation>
 <translation id="8625237574518804553">{0,plural, =1{ஒரு நிமிடத்தில் Chrome மீண்டும் தொடங்கும்}other{# நிமிடங்களில் Chrome மீண்டும் தொடங்கும்}}</translation>
+<translation id="8629311577791198377">அனைத்து Chrome சாளரங்களையும் மூடும்போது, குக்கீகளும் தளத் தரவுகளும் தானாகவே அழிக்கப்படும்</translation>
 <translation id="8641606876632989680">களவாடப்பட்ட கடவுச்சொல் முலம் நீங்கள் உள்நுழையும்போது Chrome உங்களுக்குத் தெரியப்படுத்தும்</translation>
 <translation id="8669527147644353129">Google Chrome உதவி</translation>
 <translation id="8679801911857917785">Chrome ஐத் தொடங்கும்போது காண்பிக்கப்படும் பக்கத்தையும் இது கட்டுப்படுத்துகிறது.</translation>
 <translation id="8686817260976772516">Chrome சுயவிவரங்களைப் பயன்படுத்தி உங்கள் Chrome தொடர்பான அனைத்தையும் தனித்தனியாக வைத்துக்கொள்ளலாம். நண்பர்களுக்காகவும் குடும்பத்திற்காகவும் சுயவிவரங்களை உருவாக்கலாம் அல்லது பணி மற்றும் பொழுதுபோக்கிற்காக அவற்றைத் தனித்தனியாக வைத்துக்கொள்ளலாம்.</translation>
-<translation id="870251953148363156">&amp;Google Chrome ஐப் புதுப்பி</translation>
 <translation id="873133009373065397">இயல்புநிலை உலாவியைக் கண்டறியவோ அமைக்கவோ Google Chrome ஆல் முடியவில்லை</translation>
 <translation id="8823341990149967727">Chrome காலாவதியானது</translation>
 <translation id="8834965163890861871">Google Chrome கடவுச்சொற்களைத் திருத்த முயல்கிறது. இதை அனுமதிக்க உங்கள் Windows கடவுச்சொல்லை உள்ளிடவும்.</translation>

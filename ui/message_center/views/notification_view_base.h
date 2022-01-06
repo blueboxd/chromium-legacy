@@ -20,12 +20,13 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_observer.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/layout/box_layout_view.h"
 
 namespace views {
+class BoxLayoutView;
 class Label;
 class LabelButton;
 class ProgressBar;
-class RadioButton;
 }  // namespace views
 
 namespace message_center {
@@ -99,6 +100,10 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
     kContentRow,
     kActionButtonsRow,
     kInlineReply,
+    kMainRightView,
+    kHeaderLeftContent,
+    kCollapsedSummaryView,
+    kAppIconViewContainer,
   };
 
   NotificationViewBase(const NotificationViewBase&) = delete;
@@ -108,8 +113,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   void Activate();
 
   // MessageView:
-  void AddLayerBeneathView(ui::Layer* layer) override;
-  void RemoveLayerBeneathView(ui::Layer* layer) override;
   void Layout() override;
   void OnFocus() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -117,9 +120,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void PreferredSizeChanged() override;
   void UpdateWithNotification(const Notification& notification) override;
-  void UpdateCornerRadius(int top_radius, int bottom_radius) override;
   NotificationControlButtonsView* GetControlButtonsView() const override;
   bool IsExpanded() const override;
   void SetExpanded(bool expanded) override;
@@ -142,28 +143,28 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   explicit NotificationViewBase(const Notification& notification);
 
   // Control buttons view contains settings button, close button, etc.
-  std::unique_ptr<NotificationControlButtonsView> CreateControlButtonsView();
+  views::Builder<NotificationControlButtonsView> CreateControlButtonsBuilder();
 
   // Header row contains app_icon, app_name, control buttons, etc.
-  std::unique_ptr<NotificationHeaderView> CreateHeaderRow();
+  views::Builder<NotificationHeaderView> CreateHeaderRowBuilder();
 
   // Left content view contains most of the contents, including title, message,
   // compacted title and message, progress bar and status for progress
   // notification, etc.
-  std::unique_ptr<views::View> CreateLeftContentView();
+  views::Builder<views::BoxLayoutView> CreateLeftContentBuilder();
 
   // Right content contains notification icon and small image.
-  std::unique_ptr<views::View> CreateRightContentView();
+  views::Builder<views::View> CreateRightContentBuilder();
 
   // Content row contains all the main content in a notification. This view will
   // be hidden when settings are shown.
-  std::unique_ptr<views::View> CreateContentRow();
+  views::Builder<views::View> CreateContentRowBuilder();
 
   // Image container view contains the expanded notification image.
-  std::unique_ptr<views::View> CreateImageContainerView();
+  views::Builder<views::View> CreateImageContainerBuilder();
 
   // Inline settings view contains inline settings.
-  std::unique_ptr<views::View> CreateInlineSettingsView();
+  views::Builder<views::BoxLayoutView> CreateInlineSettingsBuilder();
 
   // Actions row contains inline action buttons and inline textfield.
   std::unique_ptr<views::View> CreateActionsRow();
@@ -187,9 +188,14 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
 
   virtual void UpdateViewForExpandedState(bool expanded);
 
+  virtual void CreateOrUpdateHeaderView(const Notification& notification);
+
   virtual void CreateOrUpdateTitleView(const Notification& notification) = 0;
 
   virtual void CreateOrUpdateSmallIconView(
+      const Notification& notification) = 0;
+
+  virtual void CreateOrUpdateInlineSettingsViews(
       const Notification& notification) = 0;
 
   // Add view to `left_content_` in its appropriate position according to
@@ -207,19 +213,44 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // inline settings or vice versa.
   virtual void ToggleInlineSettings(const ui::Event& event);
 
+  // This function is called when user clicks on the notification action
+  // buttons.
+  virtual void ActionButtonPressed(size_t index, const ui::Event& event);
+
   NotificationControlButtonsView* control_buttons_view() {
     return control_buttons_view_;
   }
   NotificationHeaderView* header_row() { return header_row_; }
-  views::View* left_content() { return left_content_; }
-  views::Label* message_view() { return message_view_; }
-  views::View* inline_settings_row() const { return settings_row_; }
-  views::View* image_container_view() { return image_container_view_; }
-  views::View* action_buttons_row() { return action_buttons_row_; }
-  views::RadioButton* block_all_button() { return block_all_button_; }
-  bool inline_settings_enabled() const { return inline_settings_enabled_; }
 
-  bool IsExpandable() const;
+  views::View* content_row() { return content_row_; }
+  const views::View* content_row() const { return content_row_; }
+
+  views::View* left_content() { return left_content_; }
+  views::View* right_content() { return right_content_; }
+
+  views::Label* message_view() { return message_view_; }
+  const views::Label* message_view() const { return message_view_; }
+
+  views::View* inline_settings_row() { return settings_row_; }
+  const views::View* inline_settings_row() const { return settings_row_; }
+
+  views::View* image_container_view() { return image_container_view_; }
+  const views::View* image_container_view() const {
+    return image_container_view_;
+  }
+
+  views::View* action_buttons_row() { return action_buttons_row_; }
+  const views::View* action_buttons_row() const { return action_buttons_row_; }
+
+  const views::Label* status_view() const { return status_view_; }
+  const std::vector<views::View*> item_views() const { return item_views_; }
+
+  bool inline_settings_enabled() const { return inline_settings_enabled_; }
+  void set_inline_settings_enabled(bool inline_settings_enabled) {
+    inline_settings_enabled_ = inline_settings_enabled;
+  }
+
+  virtual bool IsExpandable() const = 0;
 
   virtual void SetExpandButtonEnabled(bool enabled);
 
@@ -232,7 +263,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, AppNameWebNotification);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, AppNameWebAppNotification);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, CreateOrUpdateTest);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, ExpandLongMessage);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest,
+                           ManuallyExpandedOrCollapsed);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, InlineSettings);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest,
                            InlineSettingsInkDropAnimation);
@@ -256,19 +288,16 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, UpdateButtonCountTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, UpdateButtonsStateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, UpdateInSettings);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, UpdateType);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, UseImageAsIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestIconSizing);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, LeftContentResizeForIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, InlineSettingsNotBlock);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, InlineSettingsBlockAll);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestAccentColor);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, ExpandLongMessage);
 
   friend class NotificationViewBaseTest;
 
-  class NotificationViewPathGenerator;
-
-  void CreateOrUpdateContextTitleView(const Notification& notification);
   void CreateOrUpdateMessageView(const Notification& notification);
   void CreateOrUpdateCompactTitleMessageView(const Notification& notification);
   void CreateOrUpdateProgressBarView(const Notification& notification);
@@ -277,18 +306,10 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   void CreateOrUpdateIconView(const Notification& notification);
   void CreateOrUpdateImageView(const Notification& notification);
   void CreateOrUpdateActionButtonViews(const Notification& notification);
-  void CreateOrUpdateInlineSettingsViews(const Notification& notification);
 
   void HeaderRowPressed();
-  void ActionButtonPressed(size_t index, const ui::Event& event);
 
   void ToggleExpanded();
-
-  // Returns the list of children which need to have their layers created or
-  // destroyed when the ink drop is visible.
-  std::vector<views::View*> GetChildrenForLayerAdjustment() const;
-
-  views::InkDropContainerView* const ink_drop_container_;
 
   // View containing close and settings buttons
   NotificationControlButtonsView* control_buttons_view_ = nullptr;
@@ -346,15 +367,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // Counter for view layouting, which is used during the CreateOrUpdate*
   // phases to keep track of the view ordering. See crbug.com/901045
   int left_content_count_;
-
-  // Views for inline settings.
-  views::RadioButton* block_all_button_ = nullptr;
-  views::RadioButton* dont_block_button_ = nullptr;
-  views::LabelButton* settings_done_button_ = nullptr;
-
-  // Owned by views properties. Guaranteed to be not null for the lifetime of
-  // |this| because views properties are the last thing cleaned up.
-  NotificationViewPathGenerator* highlight_path_generator_ = nullptr;
 
   std::unique_ptr<ui::EventHandler> click_activator_;
 

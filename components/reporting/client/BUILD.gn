@@ -51,15 +51,18 @@ static_library("report_queue") {
     "//components/reporting/proto:record_constants",
     "//components/reporting/proto:record_proto",
     "//components/reporting/storage:storage_module",
+    "//components/reporting/storage:storage_module_interface",
     "//components/reporting/storage:storage_uploader_interface",
     "//components/reporting/util:status",
     "//components/reporting/util:status_macros",
-    "//third_party/protobuf:protobuf_lite",
   ]
 }
 
 static_library("report_queue_provider") {
   sources = [
+    "dm_token_retriever.h",
+    "empty_dm_token_retriever.cc",
+    "empty_dm_token_retriever.h",
     "report_queue_provider.cc",
     "report_queue_provider.h",
   ]
@@ -70,16 +73,19 @@ static_library("report_queue_provider") {
     "//components/reporting/proto:record_constants",
     "//components/reporting/proto:record_proto",
     "//components/reporting/storage:storage_module",
+    "//components/reporting/storage:storage_module_interface",
+    "//components/reporting/storage_selector",
     "//components/reporting/util:shared_queue",
     "//components/reporting/util:status",
     "//components/reporting/util:status_macros",
-    "//third_party/protobuf:protobuf_lite",
   ]
 }
 
 static_library("test_support") {
   testonly = true
   sources = [
+    "mock_dm_token_retriever.cc",
+    "mock_dm_token_retriever.h",
     "mock_report_queue.cc",
     "mock_report_queue.h",
     "mock_report_queue_provider.cc",
@@ -94,6 +100,7 @@ static_library("test_support") {
     "//components/reporting/proto:record_constants",
     "//components/reporting/proto:record_proto",
     "//components/reporting/proto:test_proto",
+    "//components/reporting/storage:test_support",
     "//components/reporting/util:status",
     "//components/reporting/util:status_macros",
     "//testing/gmock",
@@ -106,6 +113,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "empty_dm_token_retriever_unittest.cc",
     "report_queue_configuration_unittest.cc",
     "report_queue_factory_unittest.cc",
     "report_queue_impl_unittest.cc",
@@ -125,6 +133,7 @@ source_set("unit_tests") {
     "//components/reporting/proto:record_constants",
     "//components/reporting/proto:record_proto",
     "//components/reporting/proto:test_proto",
+    "//components/reporting/storage:storage_module_interface",
     "//components/reporting/storage:test_support",
     "//components/reporting/util:status",
     "//components/reporting/util:status_macros",

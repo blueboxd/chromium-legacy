@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -71,6 +72,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records the reason each file was uploaded to Safe Browsing for deep
     scanning. This is logged on every deep scan.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.DeepScanType" enum="SBDeepScanType"
+    expires_after="2022-09-01">
+  <owner>domfc@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    Records the type of scan each time a download item starts a deep scan. This
+    is logged on every deep scan.
   </summary>
 </histogram>
 
@@ -331,6 +342,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram name="SBClientDownload.SavePackageFileCount" units="files"
+    expires_after="2022-09-01">
+  <owner>domfc@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    Records the number of files corresponding to a single save package being
+    scanned. This is logged on every save package deep scan.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.ServerRequestsDeepScanningPrompt"
     enum="BooleanRequested" expires_after="2022-03-01">
   <owner>drubery@chromium.org</owner>
@@ -423,6 +444,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="SBClientDownload.ZipFileSuccess" enum="BooleanSuccess"
     expires_after="M83">
+  <obsolete>
+    Removed 10-2021 due to lack of use.
+  </obsolete>
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -541,7 +565,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="SBClientPhishing.Classifier.Event"
     enum="SBPhishingClassifierEvent" expires_after="2022-04-24">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Records events in the phishing classifier including reasons that prevents
@@ -592,6 +616,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="SBClientPhishing.ClientModelVersionFetched" units="version"
     expires_after="2021-11-21">
+  <obsolete>
+    Removed 10-2021 since models are no longer fetched by this mechanism.
+  </obsolete>
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -671,7 +698,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientPhishing.FlatBufferScorer.CreationStatus"
-    enum="SBClientPhishingScorerCreationStatus" expires_after="M97">
+    enum="SBClientPhishingScorerCreationStatus" expires_after="2022-10-25">
   <owner>bhatiarohit@google.com</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -765,7 +792,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="SBClientPhishing.PhishingDetectionDuration" units="ms"
     expires_after="2022-04-24">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Records the duration it takes for client side phishing detection to finish.

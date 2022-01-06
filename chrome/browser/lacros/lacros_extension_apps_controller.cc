@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -115,9 +116,10 @@ void LacrosExtensionAppsController::LoadIcon(const std::string& app_id,
       lacros_extension_apps_utility::DemuxId(app_id, &profile, &extension);
   if (success && icon_key) {
     LoadIconFromExtension(
-        icon_type, size_hint_in_dip, profile, extension->id(),
+        apps::ConvertMojomIconTypeToIconType(icon_type), size_hint_in_dip,
+        profile, extension->id(),
         static_cast<apps::IconEffects>(icon_key->icon_effects),
-        std::move(callback));
+        apps::IconValueToMojomIconValueCallback(std::move(callback)));
     return;
   }
 
@@ -190,9 +192,13 @@ void LacrosExtensionAppsController::Launch(
   extensions::LaunchContainer launch_container = extensions::GetLaunchContainer(
       extensions::ExtensionPrefs::Get(profile), extension);
   auto params = apps::CreateAppLaunchParamsForIntent(
-      extension->id(), ui::EF_NONE,
-      apps::GetAppLaunchSource(launch_params->launch_source),
-      display::kInvalidDisplayId, launch_container, std::move(intent));
+      extension->id(), ui::EF_NONE, launch_params->launch_source,
+      display::kInvalidDisplayId, launch_container, std::move(intent), profile);
+  if (launch_params->intent && launch_params->intent->files.has_value()) {
+    for (const auto& file : launch_params->intent->files.value()) {
+      params.launch_files.push_back(file->file_path);
+    }
+  }
   OpenApplication(profile, std::move(params));
 
   // TODO(https://crbug.com/1225848): Store the resulting instance token, which
@@ -223,6 +229,12 @@ void LacrosExtensionAppsController::StopApp(const std::string& app_id) {
            extension->id())) {
     app_window->GetBaseWindow()->Close();
   }
+}
+
+void LacrosExtensionAppsController::SetPermission(
+    const std::string& app_id,
+    apps::mojom::PermissionPtr permission) {
+  NOTIMPLEMENTED();
 }
 
 void LacrosExtensionAppsController::FinishedEnableFlow(

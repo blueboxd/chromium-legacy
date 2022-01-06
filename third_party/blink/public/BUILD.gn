@@ -393,7 +393,6 @@ source_set("blink_headers") {
     "web/web_settings.h",
     "web/web_shared_worker.h",
     "web/web_shared_worker_client.h",
-    "web/web_swap_result.h",
     "web/web_testing_support.h",
     "web/web_text_check_client.h",
     "web/web_text_checking_completion.h",
@@ -424,7 +423,10 @@ source_set("blink_headers") {
   }
 
   if (is_win) {
-    sources += [ "web/win/web_font_rendering.h" ]
+    sources += [
+      "platform/web_font_prewarmer.h",
+      "web/win/web_font_rendering.h",
+    ]
   }
 
   public_configs = [

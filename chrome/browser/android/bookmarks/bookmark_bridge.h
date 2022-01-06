@@ -50,7 +50,7 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
 
   void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
-  jlong GetBookmarkIdForWebContents(
+  base::android::ScopedJavaLocalRef<jobject> GetBookmarkIdForWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jweb_contents,
@@ -89,6 +89,10 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       jboolean get_normal,
       const base::android::JavaParamRef<jobject>& j_result_obj);
 
+  base::android::ScopedJavaLocalRef<jobject> GetReadingListFolder(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   void GetAllFoldersWithDepths(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -114,6 +118,12 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   base::android::ScopedJavaLocalRef<jobject> GetPartnerFolderId(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+
+  base::android::ScopedJavaLocalRef<jstring> GetBookmarkGuidByIdForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong id,
+      jint type);
 
   void GetChildIDs(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
@@ -199,11 +209,13 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       const base::android::JavaParamRef<jobject>& j_folder_id_obj,
       const base::android::JavaParamRef<jobject>& j_callback_obj,
       const base::android::JavaParamRef<jobject>& j_result_obj);
+
   void SearchBookmarks(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,
                        const base::android::JavaParamRef<jobject>& j_list,
                        const base::android::JavaParamRef<jstring>& j_query,
                        const base::android::JavaParamRef<jobjectArray>& j_tags,
+                       jint type,
                        jint max_results);
 
   base::android::ScopedJavaLocalRef<jobject> AddFolder(

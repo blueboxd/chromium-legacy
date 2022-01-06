@@ -37,6 +37,9 @@ struct TestHpkeKey {
 
   // Contains a copy of the public key of `full_hpke_key`.
   PublicKey public_key;
+
+  // Contains a base64-encoded copy of `public_key.key`
+  std::string base64_encoded_public_key;
 };
 
 testing::AssertionResult PublicKeysEqual(const std::vector<PublicKey>& expected,
@@ -54,7 +57,16 @@ testing::AssertionResult SharedInfoEqual(
     const AggregatableReportSharedInfo& expected,
     const AggregatableReportSharedInfo& actual);
 
-AggregatableReportRequest CreateExampleRequest();
+std::vector<url::Origin> GetExampleProcessingOrigins();
+
+// Returns an example report request, using the given parameters. If the first
+// signature is used, example processing origins will be used.
+AggregatableReportRequest CreateExampleRequest(
+    AggregationServicePayloadContents::ProcessingType processing_type =
+        AggregationServicePayloadContents::ProcessingType::kTwoParty);
+AggregatableReportRequest CreateExampleRequest(
+    AggregationServicePayloadContents::ProcessingType processing_type,
+    std::vector<url::Origin> processing_origins);
 
 AggregatableReportRequest CloneReportRequest(
     const AggregatableReportRequest& request);
@@ -66,7 +78,8 @@ TestHpkeKey GenerateKey(std::string key_id = "example_id");
 
 }  // namespace aggregation_service
 
-// The strings "ABCD1234" and "EFGH5678", respectively, Base64-decoded to bytes.
+// The strings "ABCD1234" and "EFGH5678", Base64-decoded to bytes. Note that
+// both of these strings are valid Base64.
 const std::vector<uint8_t> kABCD1234AsBytes = {0, 16, 131, 215, 109, 248};
 const std::vector<uint8_t> kEFGH5678AsBytes = {16, 81, 135, 231, 174, 252};
 

@@ -3,17 +3,30 @@
 // found in the LICENSE file.
 
 import 'chrome://oobe/screens/common/app_downloading.m.js';
+import 'chrome://oobe/screens/common/autolaunch.m.js';
+import 'chrome://oobe/screens/common/device_disabled.m.js';
+import 'chrome://oobe/screens/common/family_link_notice.m.js';
 import 'chrome://oobe/screens/common/fingerprint_setup.m.js';
 import 'chrome://oobe/screens/common/gesture_navigation.m.js';
 import 'chrome://oobe/screens/common/marketing_opt_in.m.js';
 import 'chrome://oobe/screens/common/parental_handoff.m.js';
+import 'chrome://oobe/screens/common/signin_fatal_error.m.js';
 import 'chrome://oobe/screens/common/sync_consent.m.js';
 import 'chrome://oobe/screens/common/tpm_error.m.js';
 import 'chrome://oobe/screens/common/user_creation.m.js';
+import 'chrome://oobe/screens/common/oobe_reset.m.js';
+import 'chrome://oobe/screens/common/wrong_hwid.m.js';
 import 'chrome://oobe/screens/login/active_directory_password_change.m.js';
+import 'chrome://oobe/screens/login/encryption_migration.m.js';
+import 'chrome://oobe/screens/login/gaia_password_changed.m.js';
+import 'chrome://oobe/screens/login/lacros_data_migration.m.js';
 import 'chrome://oobe/screens/login/management_transition.m.js';
 import 'chrome://oobe/screens/oobe/auto_enrollment_check.m.js';
+import 'chrome://oobe/screens/oobe/demo_preferences.m.js';
+import 'chrome://oobe/screens/oobe/demo_setup.m.js';
 import 'chrome://oobe/screens/oobe/hid_detection.m.js';
+import 'chrome://oobe/screens/oobe/oobe_eula.m.js';
+import 'chrome://oobe/screens/oobe/welcome.m.js';
 import 'chrome://oobe/screens/oobe/packaged_license.m.js';
 
 import {Oobe} from './cr_ui.m.js';

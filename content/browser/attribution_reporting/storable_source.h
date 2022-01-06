@@ -51,7 +51,7 @@ class CONTENT_EXPORT StorableSource {
     kMaxValue = kFalsely,
   };
 
-  StorableSource(uint64_t impression_data,
+  StorableSource(uint64_t source_event_id,
                  url::Origin impression_origin,
                  url::Origin conversion_origin,
                  url::Origin reporting_origin,
@@ -67,8 +67,8 @@ class CONTENT_EXPORT StorableSource {
   StorableSource& operator=(StorableSource&& other);
   ~StorableSource();
 
-  uint64_t impression_data() const WARN_UNUSED_RESULT {
-    return impression_data_;
+  uint64_t source_event_id() const WARN_UNUSED_RESULT {
+    return source_event_id_;
   }
 
   const url::Origin& impression_origin() const WARN_UNUSED_RESULT {
@@ -122,7 +122,7 @@ class CONTENT_EXPORT StorableSource {
   net::SchemefulSite ImpressionSite() const WARN_UNUSED_RESULT;
 
  private:
-  uint64_t impression_data_;
+  uint64_t source_event_id_;
   url::Origin impression_origin_;
   url::Origin conversion_origin_;
   url::Origin reporting_origin_;
@@ -140,7 +140,7 @@ class CONTENT_EXPORT StorableSource {
   std::vector<int64_t> dedup_keys_;
 
   // When adding new members, the corresponding `operator==()` definition in
-  // `conversion_test_utils.h` should also be updated.
+  // `attribution_test_utils.h` should also be updated.
 };
 
 }  // namespace content

@@ -15,7 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/notreached.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chromeos/services/ime/constants.h"
 #include "chromeos/services/ime/decoder/decoder_engine.h"
 #include "chromeos/services/ime/decoder/system_engine.h"
@@ -118,6 +118,7 @@ void ImeService::ConnectToInputMethod(
     return;
   }
   if (!features::IsSystemChinesePhysicalTypingEnabled() &&
+      !features::IsSystemJapanesePhysicalTypingEnabled() &&
       !features::IsSystemKoreanPhysicalTypingEnabled() &&
       !features::IsSystemLatinPhysicalTypingEnabled()) {
     std::move(callback).Run(/*bound=*/false);
@@ -161,6 +162,9 @@ bool ImeService::IsFeatureEnabled(const char* feature_name) {
   }
   if (strcmp(feature_name, "SystemChinesePhysicalTyping") == 0) {
     return features::IsSystemChinesePhysicalTypingEnabled();
+  }
+  if (strcmp(feature_name, "SystemJapanesePhysicalTyping") == 0) {
+    return features::IsSystemJapanesePhysicalTypingEnabled();
   }
   if (strcmp(feature_name, "SystemKoreanPhysicalTyping") == 0) {
     return features::IsSystemKoreanPhysicalTypingEnabled();

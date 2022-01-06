@@ -205,7 +205,7 @@ locale.  The strings in this file are specific to iOS.
         You can always choose what to sync in <ph name="BEGIN_LINK">BEGIN_LINK</ph>settings<ph name="END_LINK">END_LINK</ph>.
       </message>
       <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_MANAGED_SETTINGS" desc="Explanation text on the sync consent dialog to explain the user they can customize sync settings when sync types are limited. [iOS only]">
-        <ph name="BEGIN_LINK">BEGIN_LINK</ph>See what you can sync<ph name="END_LINK">END_LINK</ph>.
+        <ph name="BEGIN_LINK">BEGIN_LINK</ph>See What You Can Sync<ph name="END_LINK">END_LINK</ph>.
       </message>
       <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_ADD_ACCOUNT" desc="Title of the button to add an account [Length: 15m] [iOS only]">
         Add Account
@@ -535,7 +535,7 @@ locale.  The strings in this file are specific to iOS.
         Search bar is now easier to reach
       </message>
       <message name="IDS_IOS_CAMERA_USAGE_DESCRIPTION" desc="Specifies the reason for accessing the user's camera while the app is in use [Length: unlimited] [iOS only].">
-        This lets you take and upload photos, as well as scan QR codes.
+        This lets you take and upload photos.
       </message>
       <message name="IDS_IOS_CARD_STACK_SCROLLED_NOTIFICATION" desc="The accessibility description for page scrolled notification [iOS only]">
         <ph name="INCOGNITO">$1<ex>Incognito</ex></ph> Tabs <ph name="FIRST_VISIBLE_TAB">$2<ex>3</ex></ph> through <ph name="LAST_VISIBLE_TAB">$3<ex>5</ex></ph> of <ph name="NUMBER_OF_OPEN_TABS">$4<ex>12</ex></ph>
@@ -651,6 +651,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CONTENT_CONTEXT_COPYIMAGE" desc="The name of the Copy Image command in the content area context menu.">
         Copy Image
       </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_HIDELINKPREVIEW" desc="The title of the iOS menu item for hidding the preview of the link. This is displayed when the user is long pressing on a link and a preview of the link is displayed.">
+        Hide Link Preview
+      </message>
       <message name="IDS_IOS_CONTENT_COPYIMAGE_ALERT_COPYING" desc="The title of the alert while the image to be copied is being downloaded.">
         Copying...
       </message>
@@ -660,7 +663,6 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CONTENT_CONTEXT_OPEN_ALL_LINKS" desc="The iOS menu item for opening a list of links in new tabs. Shorter than the desktop version [iOS only]">
         Open all
       </message>
-
       <message name="IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW" desc="The iOS menu item for opening a link in a new window. [iOS only]">
         Open in New Window
       </message>
@@ -678,6 +680,9 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE" desc="The name of the Save Image As command in the content area context menu">
         Save Image
+      </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_SHOWLINKPREVIEW" desc="The title of the iOS menu item for showing the preview of the link. This is displayed when the user is long pressing on a link and no preview of the link is shown.">
+        Show Link Preview
       </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_CLOSEALLTABS" desc="The iOS context menu item for closing all the tabs in the grid. [iOS only]">
         Close All Tabs
@@ -1172,12 +1177,6 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_KEYBOARD_PREVIOUS_TAB" desc="Title of the keyboard shortcut to switch to the previous tab in the tab strip. [Length: 20 em] [iOS only]">
         Previous Tab
       </message>
-      <message name="IDS_IOS_LOCATION_MODAL_TITLE" desc="The title of the locaton permissions modal [Length: unlimited] [iOS only].">
-          Use Your Current Location
-      </message>
-      <message name="IDS_IOS_LOCATION_MODAL_PRIMARY_BUTTON" desc="The primary button of the locaton permissions modal [Length: unlimited] [iOS only].">
-          Allow Location...
-      </message>
       <message name="IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_TEXT" desc="Text for the LongPress Toolbar Tip in-product help promotion, explaining that the user can long press on the toolbar's button to display more options. [iOS only]">
         Touch &amp; hold for more tab options
       </message>
@@ -1380,7 +1379,7 @@ See your search engine’s instructions for deleting your search history, if app
         Sign Out and Turn Off Sync
       </message>
       <message name="IDS_IOS_OPTIONS_ACCOUNTS_RESTRICTED_IDENTITIES" desc="Message shown in the settings account switcher when enterprise policy has restricted some unseen identities. [iOS only]">
-          Your organization allows you to sign in only with certain accounts. Accounts that aren't allowed are hidden. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+          Your organization allows you to sign in only with certain accounts. Accounts that aren't allowed are hidden. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn More<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_OPTIONS_ADVANCED_TAB_LABEL" desc="The title of the Advanced section of the Settings page.  [Length: 20em] [iOS only]">
         Advanced
@@ -1761,9 +1760,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_READING_LIST_EDIT_BUTTON" desc="Label of the button to edit the reading list entries (delete, mark as read/unread) [Length: 20em]" meaning="Start editing the reading list entries. [Length: 20em]">
         Edit
       </message>
-      <message name="IDS_IOS_READING_LIST_EMPTY_MESSAGE" desc="Message to explain to the user how to add entries to the reading list" meaning="[Length: unlimited]">
-        Your reading list is available offline. To add a page to your reading list, tap  <ph name="SHARE_OPENING_ICON">SHARE_OPENING_ICON<ex>(menu icon)</ex></ph>  then <ph name="ADD_TO_READING_LIST_TEXT">ADD_TO_READING_LIST_TEXT<ex>Add to Reading List</ex></ph>.
-      </message>
       <message name="IDS_IOS_READING_LIST_JUST_NOW" desc="String indicating that an event (adding item, distillation) happened less than one minute ago. [Length: 25em]">
         Just now
       </message>
@@ -1869,6 +1865,39 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SAVE_PASSWORDS" desc="Title for the switch item in Settings that can be toggled to enable or disable saving passwords. [Length: 15em] [iOS only]">
         Save Passwords
       </message>
+      <message name="IDS_IOS_OFFER_TO_SAVE_PASSWORDS" desc="Title for the switch item in Settings that can be toggled allowing users to be prompted if they want to save their passwords when logging into webpages. [Length: 25em] [iOS only]">
+        Offer To Save Passwords
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_ADD_PASSWORD_MANUALLY_TITLE" desc="Title of the view that allow user to enter the details for a new password credential to add it to the list the passwords. [iOS only]">
+        Add Password
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_SAVE_BUTTON" desc="Save button text for adding a new credential manually via settings [Length: 10em]">
+        Save
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_WEBSITE_PLACEHOLDER_TEXT" desc="Placeholder text for the website field when adding a new credential manually via settings [Length: 10em]">
+        example.com
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_USERNAME_PLACEHOLDER_TEXT" desc="Placeholder text for the username field indicating that the field is optional when adding a new credential manually via settings [Length: 10em]">
+        optional
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_PASSWORD_PLACEHOLDER_TEXT" desc="Placeholder text for the password field when adding a new credential manually via settings [Length: 10em]">
+        password
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_VIEW_PASSWORD_BUTTON" desc="View Password button text for viewing an existing credential. [Length: 10em]">
+        View Password
+      </message>
+      <message name="IDS_IOS_SETTINGS_ADD_PASSWORD_DESCRIPTION" desc="Footer text shown when the user is trying to add a new credential manually via settings [iOS only]" meaning="Telling user to ensure provided password matches password on the website.">
+        Make sure you're saving your current password for this site.
+      </message>
+      <message name="IDS_IOS_SETTINGS_PASSWORDS_MISSING_TLD_DESCRIPTION" desc="Footer text shown when the website field data misses the top-level domain when creating a new credential via settings [iOS only]" meaning="Suggesting user to add the top-level domain in the website text.">
+        Did you mean <ph name="WEBSITE">$1<ex>twitter.com</ex></ph>?
+      </message>
+      <message name="IDS_IOS_SETTINGS_PASSWORDS_DUPLICATE_SECTION_ALERT_DESCRIPTION" desc="Text shown alerting the user that a similar credential exists with the same username/website combination when adding a new credential [iOS only]">
+        You already saved a password for "<ph name="USERNAME">$1<ex>johndoe</ex></ph>" at <ph name="WEBSITE">$2<ex>twitter.com</ex></ph>
+      </message>
+      <message name="IDS_IOS_SETTINGS_PASSWORDS_DUPLICATE_SECTION_ALERT_DESCRIPTION_WITHOUT_USERNAME" desc="Text shown alerting the user that a similar credential exists with the same website combination when adding a new credential [iOS only]">
+        You already saved a password for <ph name="WEBSITE">$1<ex>twitter.com</ex></ph>
+      </message>
       <message name="IDS_IOS_LEAK_CHECK_SWITCH" desc="Title for the switch toggling whether Chrome should check that entered credentials have been part of a leak.">
         Warn you if passwords are exposed in a data breach
       </message>
@@ -1879,7 +1908,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Passwords
       </message>
       <message name="IDS_IOS_ENTERPRISE_MANAGED_BY_YOUR_ORGANIZATION" desc="Text displayed to inform the user that the browser is managed by Enterprise policies (without link). [iOS only]">
-        Managed by your organization.
+        Managed by your organization
       </message>
       <message name="IDS_IOS_ENTERPRISE_MANAGED_INFO" desc="Text displayed to inform the user that the browser is managed by one or more Enterprise policies. [iOS only]">
         Managed by your organization. Some features may be unavailable. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
@@ -1897,7 +1926,8 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Managed by <ph name="MANAGER">$1<ex>Google</ex></ph>. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_DESC_WITHOUT_COMPANY_NAME" desc="Text displayed to inform the user that the browser is managed by Enterprise policies without company name. [iOS only]">
-        Managed by your organization. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+        Managed by your organization.
+<ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn More<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_MESSAGE" desc="Text displayed to inform the user that the setting is managed by an Enterprise policy. [iOS only]">
         This setting is enforced by your administrator.
@@ -1905,14 +1935,11 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_SYNC_EVERYTHING_MESSAGE" desc="Text displayed to inform the user that the setting 'sync everything' is managed by an Enterprise policy. [iOS only]">
         Your organization doesn't allow for you to sync everything.
       </message>
-      <message name="IDS_IOS_ENTERPRISE_MANAGED_SYNC_DETAILS" desc="Text displayed to inform the user that syncable types are limited (i.e. managed). Includes a details link. [iOS only]">
-        Your organization limits what you can sync. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Details<ph name="END_LINK">END_LINK</ph>
-      </message>
-      <message name="IDS_IOS_ENTERPRISE_MANAGED_SYNC_DETAILS_POPOVER" desc="Text displayed in the popover to inform the user that syncable types are limited (i.e. managed).">
-          When you turn on sync, the data may be limited by what your organization has allowed.
+      <message name="IDS_IOS_ENTERPRISE_MANAGED_SYNC" desc="Text displayed to inform the user that syncable types are limited (i.e. managed). [iOS only]">
+        Your organization limits what you can sync.
       </message>
       <message name="IDS_IOS_ENTERPRISE_SIGNED_OUT" desc="Text displayed in an alert when the user is signed out due to browser sign-in becoming disabled by policy. [iOS only]">
-        You've Been Signed Out
+        You're Signed Out
       </message>
       <message name="IDS_IOS_ENTERPRISE_SIGNED_OUT_CONTINUE" desc="The text in the 'Continue' button, displayed in an alert when the user is signed out due to browser sign-in becoming disabled by policy.">
         Continue
@@ -2671,6 +2698,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TAB_SWITCHER_NO_LOCAL_NON_INCOGNITO_TABS_TITLE" desc="Title explaining that there are no opened tabs. [iOS only]">
         No Open Tabs
       </message>
+      <message name="IDS_IOS_TAB_SWITCHER_PRICE_CARD" desc="Acessibility label to describe the UI which displays a price drop in the Tab Switching UI when it is identified. [iOS only]">
+        Now <ph name="PRICE">$1<ex>$42</ex></ph> was <ph name="PREVIOUS_PRICE">$2<ex>$50</ex></ph>.
+      </message>
       <message name="IDS_IOS_TAB_SWITCHER_SYNC_IN_PROGRESS_PROMO" desc="Label explaining that the tabs are currently being synced. [iOS only]">
         Syncing your tabs...
       </message>
@@ -2760,6 +2790,9 @@ New Search
 </message>
       <message name="IDS_IOS_TOOLS_MENU_NEW_TAB" desc="The iOS menu item for opening a new tab [iOS only]" meaning="Tools menu entry to create a new tab. [Length: Unlimited]">
         New Tab
+      </message>
+      <message name="IDS_IOS_TOOLS_MENU_PASSWORDS" desc="The iOS menu item for opening the passwords list [iOS only]">
+        Passwords
       </message>
       <message name="IDS_IOS_TOOLS_MENU_PASTE_AND_GO" desc="The iOS menu item for pasting a URL or text in the omnibox and navigating to the page or searching for the text">
         Paste and Go

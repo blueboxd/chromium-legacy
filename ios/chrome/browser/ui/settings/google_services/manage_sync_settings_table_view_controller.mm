@@ -12,12 +12,18 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_view_controller_model_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+@interface ManageSyncSettingsTableViewController () <
+    PopoverLabelViewControllerDelegate>
+@end
 
 @implementation ManageSyncSettingsTableViewController
 
@@ -71,6 +77,7 @@
   } else if ([cell isKindOfClass:[TableViewInfoButtonCell class]]) {
     TableViewInfoButtonCell* managedCell =
         base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
+    managedCell.textLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
     [managedCell.trailingButton addTarget:self
                                    action:@selector(didTapManagedUIInfoButton:)
                          forControlEvents:UIControlEventTouchUpInside];
@@ -163,9 +170,8 @@
 - (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
   EnterpriseInfoPopoverViewController* bubbleViewController =
       [[EnterpriseInfoPopoverViewController alloc]
-          initWithMessage:
-              l10n_util::GetNSString(
-                  IDS_IOS_ENTERPRISE_MANAGED_SETTING_SYNC_EVERYTHING_MESSAGE)
+          initWithMessage:l10n_util::GetNSString(
+                              IDS_IOS_ENTERPRISE_MANAGED_SYNC)
            enterpriseName:nil];
   [self presentViewController:bubbleViewController animated:YES completion:nil];
 
@@ -178,6 +184,14 @@
       buttonView.bounds;
   bubbleViewController.popoverPresentationController.permittedArrowDirections =
       UIPopoverArrowDirectionAny;
+  bubbleViewController.delegate = self;
+}
+
+#pragma mark - PopoverLabelViewControllerDelegate
+
+- (void)didTapLinkURL:(NSURL*)URL {
+  GURL convertedURL = net::GURLWithNSURL(URL);
+  [self view:nil didTapLinkURL:convertedURL];
 }
 
 @end

@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_macros.h"
@@ -194,6 +194,11 @@ std::string DesktopSessionProxy::GetCapabilities() const {
   if (options_.enable_remote_open_url() && IsRemoteOpenUrlSupported()) {
     result += " ";
     result += protocol::kRemoteOpenUrlCapability;
+  }
+
+  if (options_.enable_remote_webauthn()) {
+    result += " ";
+    result += protocol::kRemoteWebAuthnCapability;
   }
 
   return result;

@@ -35,10 +35,16 @@ const base::Feature kClientSideDetectionDocumentScanning{
     "ClientSideDetectionDocumentScanning", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kClientSideDetectionForAndroid{
-    "ClientSideDetectionModelOnAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ClientSideDetectionModelOnAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable only for Android
+#if defined(OS_ANDROID)
+const base::Feature kClientSideDetectionModelIsFlatBuffer{
+    "ClientSideDetectionModelIsFlatBuffer", base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kClientSideDetectionModelIsFlatBuffer{
     "ClientSideDetectionModelIsFlatBuffer", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 extern const base::Feature kClientSideDetectionModelVersion{
     "ClientSideDetectionModel", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -58,9 +64,6 @@ const base::Feature kFileAnalysisMimeTypeSniff{
 const base::Feature kFileTypePoliciesTag{"FileTypePoliciesTag",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kClientSideDetectionWithToken{
-    "SafeBrowsingCSDRequestWithToken", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kDelayedWarnings{"SafeBrowsingDelayedWarnings",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -73,6 +76,9 @@ const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks{
 
 const base::Feature kSimplifiedUrlDisplay{"SimplifiedUrlDisplay",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTailoredSecurityIntegration{
+    "TailoredSecurityIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOmitNonUserGesturesFromReferrerChain{
     "SafeBrowsingOmitNonUserGesturesFromReferrerChain",
@@ -87,10 +93,6 @@ const base::Feature kPasswordProtectionForSignedInUsers {
 #endif
 };
 
-const base::Feature kPasswordProtectionWithToken{
-    "SafeBrowsingPasswordProtectionRequestWithToken",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kPromptEsbForDeepScanning{
     "SafeBrowsingPromptEsbForDeepScanning", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -98,14 +100,10 @@ const base::Feature kSafeBrowsingCTDownloadWarning{
     "SafeBrowsingCTDownloadWarning", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingEnterpriseCsd{
-    "SafeBrowsingEnterpriseCsd", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingEnterpriseCsd", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingDisableConsumerCsdForEnterprise{
     "SafeBrowsingDisableConsumerCsdForEnterprise",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kRealTimeUrlLookupReferrerChain{
-    "SafeBrowsingRealTimeUrlLookupReferrerChain",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRealTimeUrlLookupReferrerChainForEnterprise{
@@ -118,13 +116,7 @@ const base::Feature kSafeBrowsingPageLoadToken{
 const base::Feature
     kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid{
         "SafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid",
-        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kSafeBrowsingSeparateNetworkContexts{
-    "SafeBrowsingSeparateNetworkContexts", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kSafeBrowsingRemoveCookies{
-    "SafeBrowsingRemoveCookies", base::FEATURE_ENABLED_BY_DEFAULT};
+        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingRemoveCookiesInAuthRequests{
     "SafeBrowsingRemoveCookiesInAuthRequests",
@@ -168,18 +160,14 @@ constexpr struct {
     {&kClientSideDetectionModelIsFlatBuffer, true},
     {&kClientSideDetectionModelVersion, true},
     {&kClientSideDetectionReferrerChain, true},
-    {&kClientSideDetectionWithToken, true},
     {&kDelayedWarnings, true},
     {&kFileTypePoliciesTag, true},
     {&kOmitNonUserGesturesFromReferrerChain, true},
     {&kPasswordProtectionForSignedInUsers, true},
-    {&kPasswordProtectionWithToken, true},
-    {&kRealTimeUrlLookupReferrerChain, true},
     {&kRealTimeUrlLookupReferrerChainForEnterprise, true},
     {&kSafeBrowsingPageLoadToken, true},
     {&kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid, true},
     {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
-    {&kSafeBrowsingSeparateNetworkContexts, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

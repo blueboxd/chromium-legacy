@@ -23,7 +23,7 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_background_task.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 // TODO(b/174811949): Hide behind ChromeOS build flag.
-#include "chrome/browser/ash/web_applications/chrome_camera_app_ui_constants.h"
+#include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_constants.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/external_install_options.h"
@@ -60,21 +60,28 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/webui/camera_app_ui/url_constants.h"
+#include "ash/webui/connectivity_diagnostics/url_constants.h"
+#include "ash/webui/firmware_update_ui/url_constants.h"
 #include "ash/webui/help_app_ui/url_constants.h"
 #include "ash/webui/media_app_ui/url_constants.h"
 #include "ash/webui/os_feedback_ui/url_constants.h"
+#include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/shimless_rma/url_constants.h"
 #include "ash/webui/shortcut_customization_ui/url_constants.h"
-#include "chrome/browser/ash/web_applications/camera_system_web_app_info.h"
+#include "chrome/browser/ash/web_applications/camera_app/camera_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/connectivity_diagnostics_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/crosh_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/diagnostics_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/eche_app_info.h"
 #include "chrome/browser/ash/web_applications/file_manager_web_app_info.h"
+#include "chrome/browser/ash/web_applications/firmware_update_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_web_app_info.h"
 #include "chrome/browser/ash/web_applications/media_app/media_web_app_info.h"
 #include "chrome/browser/ash/web_applications/os_feedback_system_web_app_info.h"
+#include "chrome/browser/ash/web_applications/os_flags_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/os_settings_web_app_info.h"
+#include "chrome/browser/ash/web_applications/os_url_handler_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_info.h"
 #include "chrome/browser/ash/web_applications/print_management_web_app_info.h"
 #include "chrome/browser/ash/web_applications/projector_system_web_app_info.h"
@@ -83,9 +90,6 @@
 #include "chrome/browser/ash/web_applications/shortcut_customization_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/terminal_system_web_app_info.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
-#include "chromeos/components/camera_app_ui/url_constants.h"
-#include "chromeos/components/connectivity_diagnostics/url_constants.h"
-#include "chromeos/components/personalization_app/personalization_app_url_constants.h"
 #include "chromeos/strings/grit/chromeos_strings.h"  // nogncheck
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ash/web_applications/demo_mode_web_app_info.h"
@@ -139,6 +143,11 @@ SystemAppDelegateMap CreateSystemWebApps(Profile* profile) {
       std::make_unique<FileManagerSystemAppDelegate>(profile));
   info_vec.emplace_back(
       std::make_unique<ProjectorSystemWebAppDelegate>(profile));
+  info_vec.emplace_back(
+      std::make_unique<OsUrlHandlerSystemWebAppDelegate>(profile));
+  info_vec.emplace_back(
+      std::make_unique<FirmwareUpdateSystemAppDelegate>(profile));
+  info_vec.emplace_back(std::make_unique<OsFlagsSystemWebAppDelegate>(profile));
 
 #if !defined(OFFICIAL_BUILD)
   info_vec.emplace_back(std::make_unique<TelemetrySystemAppDelegate>(profile));
@@ -467,7 +476,7 @@ absl::optional<SystemAppType> SystemWebAppManager::GetCapturingSystemAppForURL(
     replacements.ClearQuery();
     replacements.ClearRef();
     if (url.ReplaceComponents(replacements).spec() !=
-        chromeos::kChromeUICameraAppMainURL)
+        ash::kChromeUICameraAppMainURL)
       return absl::nullopt;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

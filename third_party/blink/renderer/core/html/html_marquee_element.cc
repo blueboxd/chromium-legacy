@@ -73,8 +73,7 @@ void HTMLMarqueeElement::DidAddUserAgentShadowRoot(ShadowRoot& shadow_root) {
   auto* mover = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   shadow_root.AppendChild(mover);
 
-  mover->AppendChild(
-      HTMLSlotElement::CreateUserAgentDefaultSlot(GetDocument()));
+  mover->AppendChild(MakeGarbageCollected<HTMLSlotElement>(GetDocument()));
   mover_ = mover;
 }
 

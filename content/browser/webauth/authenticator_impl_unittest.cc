@@ -1950,6 +1950,11 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
  public:
   AuthenticatorContentBrowserClientTest() = default;
 
+  AuthenticatorContentBrowserClientTest(
+      const AuthenticatorContentBrowserClientTest&) = delete;
+  AuthenticatorContentBrowserClientTest& operator=(
+      const AuthenticatorContentBrowserClientTest&) = delete;
+
   struct TestCase {
     AttestationConveyancePreference attestation_requested;
     EnterprisePolicy enterprise_policy;
@@ -2146,8 +2151,6 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
   }
 
   ContentBrowserClient* old_client_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthenticatorContentBrowserClientTest);
 };
 
 // Test that credentials can be created and used from an extension origin when
@@ -3731,8 +3734,7 @@ TEST_F(AuthenticatorImplTest, AllowListWithDuplicateCredentialIds) {
       device::CredentialType::kPublicKey,
       std::vector<uint8_t>(kTestCredentialIdLength, 2),
       {device::FidoTransportProtocol::kUsbHumanInterfaceDevice});
-  // Same ID as `cred_a` and `cred_b` but with different transports. Transport
-  // hints from descriptors with equal IDs should be merged.
+  // Same ID as `cred_a` and `cred_b` but with different transports.
   device::PublicKeyCredentialDescriptor cred_c(
       device::CredentialType::kPublicKey,
       std::vector<uint8_t>(kTestCredentialIdLength, 1),
@@ -3760,12 +3762,19 @@ TEST_F(AuthenticatorImplTest, AllowListWithDuplicateCredentialIds) {
             AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(virtual_device_factory_->mutable_state()->allow_list_history.size(),
             1u);
+  // Transport hints from descriptors with equal IDs should be merged.
   device::PublicKeyCredentialDescriptor cred_a_and_c(
       device::CredentialType::kPublicKey,
-      std::vector<uint8_t>(kTestCredentialIdLength, 1));
+      std::vector<uint8_t>(kTestCredentialIdLength, 1),
+      // The union of the empty transports in `cred_a` plus the non-empty set
+      // from `cred_c` should still be empty, since empty set is interpreted to
+      // mean "any available transport".
+      {});
   device::PublicKeyCredentialDescriptor cred_b_and_d(
       device::CredentialType::kPublicKey,
-      std::vector<uint8_t>(kTestCredentialIdLength, 2));
+      std::vector<uint8_t>(kTestCredentialIdLength, 2),
+      {device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
+       device::FidoTransportProtocol::kBluetoothLowEnergy});
   EXPECT_THAT(
       virtual_device_factory_->mutable_state()->allow_list_history.at(0),
       testing::UnorderedElementsAre(cred_a_and_c, cred_b_and_d));
@@ -3789,8 +3798,7 @@ TEST_F(AuthenticatorImplTest, ExcludeListWithDuplicateCredentialIds) {
       device::CredentialType::kPublicKey,
       std::vector<uint8_t>(kTestCredentialIdLength, 2),
       {device::FidoTransportProtocol::kUsbHumanInterfaceDevice});
-  // Same ID as `cred_a` and `cred_b` but with different transports. Transport
-  // hints from descriptors with equal IDs should be merged.
+  // Same ID as `cred_a` and `cred_b` but with different transports.
   device::PublicKeyCredentialDescriptor cred_c(
       device::CredentialType::kPublicKey,
       std::vector<uint8_t>(kTestCredentialIdLength, 1),
@@ -3816,12 +3824,19 @@ TEST_F(AuthenticatorImplTest, ExcludeListWithDuplicateCredentialIds) {
   EXPECT_EQ(
       virtual_device_factory_->mutable_state()->exclude_list_history.size(),
       1u);
+  // Transport hints from descriptors with equal IDs should be merged.
   device::PublicKeyCredentialDescriptor cred_a_and_c(
       device::CredentialType::kPublicKey,
-      std::vector<uint8_t>(kTestCredentialIdLength, 1));
+      std::vector<uint8_t>(kTestCredentialIdLength, 1),
+      // The union of the empty transports in `cred_a` plus the non-empty set
+      // from `cred_c` should still be empty, since empty set is interpreted to
+      // mean "any available transport".
+      {});
   device::PublicKeyCredentialDescriptor cred_b_and_d(
       device::CredentialType::kPublicKey,
-      std::vector<uint8_t>(kTestCredentialIdLength, 2));
+      std::vector<uint8_t>(kTestCredentialIdLength, 2),
+      {device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
+       device::FidoTransportProtocol::kBluetoothLowEnergy});
   EXPECT_THAT(
       virtual_device_factory_->mutable_state()->exclude_list_history.at(0),
       testing::UnorderedElementsAre(cred_a_and_c, cred_b_and_d));
@@ -4383,6 +4398,56 @@ TEST_F(AuthenticatorImplTest, GoogleLegacyAppidSupport) {
   }
 }
 
+// Regression test for crbug.com/1257281.
+// Tests that a request is not cancelled when an authenticator returns
+// CTAP2_ERR_KEEPALIVE_CANCEL after selecting another authenticator for a
+// request.
+TEST_F(AuthenticatorImplTest, CancellingAuthenticatorDoesNotTerminateRequest) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+  for (auto request_type : {device::FidoRequestType::kMakeCredential,
+                            device::FidoRequestType::kGetAssertion}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "request_type="
+                 << (request_type == device::FidoRequestType::kMakeCredential
+                         ? "make_credential"
+                         : "get_assertion"));
+    // Make a device that supports getting a PUAT with UV.
+    auto discovery =
+        std::make_unique<device::test::MultipleVirtualFidoDeviceFactory>();
+    device::test::MultipleVirtualFidoDeviceFactory::DeviceDetails device_1;
+    device_1.config.internal_uv_support = true;
+    device_1.config.pin_uv_auth_token_support = true;
+    device_1.config.user_verification_succeeds = true;
+    device_1.config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
+    device_1.state->fingerprints_enrolled = true;
+    PublicKeyCredentialRequestOptionsPtr dummy_options =
+        GetTestPublicKeyCredentialRequestOptions();
+    ASSERT_TRUE(device_1.state->InjectRegistration(
+        dummy_options->allow_credentials[0].id(), kTestRelyingPartyId));
+    discovery->AddDevice(std::move(device_1));
+
+    // Make a device that does not support PUATs but can still handle the
+    // request. This device will not respond to the request.
+    device::test::MultipleVirtualFidoDeviceFactory::DeviceDetails device_2;
+    device_2.config.internal_uv_support = false;
+    device_2.config.pin_uv_auth_token_support = false;
+    device_2.config.ctap2_versions = {device::Ctap2Version::kCtap2_0};
+    device_2.state->simulate_press_callback =
+        base::BindRepeating([](VirtualFidoDevice* ignore) { return false; });
+    discovery->AddDevice(std::move(device_2));
+    AuthenticatorEnvironmentImpl::GetInstance()
+        ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery));
+
+    if (request_type == device::FidoRequestType::kMakeCredential) {
+      MakeCredentialResult result = AuthenticatorMakeCredential();
+      EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+    } else {
+      GetAssertionResult result = AuthenticatorGetAssertion();
+      EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+    }
+  }
+}
+
 static constexpr char kTestPIN[] = "1234";
 static constexpr char16_t kTestPIN16[] = u"1234";
 
@@ -4466,6 +4531,9 @@ class UVAuthenticatorImplTest : public AuthenticatorImplTest {
  public:
   UVAuthenticatorImplTest() = default;
 
+  UVAuthenticatorImplTest(const UVAuthenticatorImplTest&) = delete;
+  UVAuthenticatorImplTest& operator=(const UVAuthenticatorImplTest&) = delete;
+
   void SetUp() override {
     AuthenticatorImplTest::SetUp();
     old_client_ = SetBrowserClientForTesting(&test_client_);
@@ -4532,8 +4600,6 @@ class UVAuthenticatorImplTest : public AuthenticatorImplTest {
 
  private:
   ContentBrowserClient* old_client_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(UVAuthenticatorImplTest);
 };
 
 using PINReason = device::pin::PINEntryReason;
@@ -4631,6 +4697,9 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
  public:
   PINAuthenticatorImplTest() = default;
 
+  PINAuthenticatorImplTest(const PINAuthenticatorImplTest&) = delete;
+  PINAuthenticatorImplTest& operator=(const PINAuthenticatorImplTest&) = delete;
+
   void SetUp() override {
     UVAuthenticatorImplTest::SetUp();
     old_client_ = SetBrowserClientForTesting(&test_client_);
@@ -4696,8 +4765,6 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
 
  private:
   ContentBrowserClient* old_client_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(PINAuthenticatorImplTest);
 };
 
 static constexpr device::UserVerificationRequirement kUVLevel[3] = {
@@ -5596,6 +5663,11 @@ class InternalUVAuthenticatorImplTest : public UVAuthenticatorImplTest {
 
   InternalUVAuthenticatorImplTest() = default;
 
+  InternalUVAuthenticatorImplTest(const InternalUVAuthenticatorImplTest&) =
+      delete;
+  InternalUVAuthenticatorImplTest& operator=(
+      const InternalUVAuthenticatorImplTest&) = delete;
+
   void SetUp() override {
     UVAuthenticatorImplTest::SetUp();
     NavigateAndCommit(GURL(kTestOrigin1));
@@ -5635,9 +5707,6 @@ class InternalUVAuthenticatorImplTest : public UVAuthenticatorImplTest {
                  << "supports_pin=" << test_case.supports_pin);
     SCOPED_TRACE(UVToString(test_case.uv));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InternalUVAuthenticatorImplTest);
 };
 
 TEST_F(InternalUVAuthenticatorImplTest, MakeCredential) {
@@ -6148,9 +6217,7 @@ TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialUvBlockedFallBackToPin) {
 class BlockingAuthenticatorRequestDelegate
     : public AuthenticatorRequestClientDelegate {
  public:
-  explicit BlockingAuthenticatorRequestDelegate(
-      base::OnceClosure* const callback)
-      : callback_(callback) {}
+  BlockingAuthenticatorRequestDelegate() = default;
 
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
@@ -6161,24 +6228,20 @@ class BlockingAuthenticatorRequestDelegate
   }
 
   bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
-    if (callback_ && *callback_) {
-      std::move(*callback_).Run();
-    }
+    // Post a task to cancel the request to give the second authenticator a
+    // chance to return a status from the cancelled request.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(cancel_callback_));
     return true;
   }
 
-  void Cancel() { std::move(cancel_callback_).Run(); }
-
  private:
-  base::OnceClosure* const callback_;
   base::OnceClosure cancel_callback_;
 };
 
 class BlockingDelegateContentBrowserClient : public ContentBrowserClient {
  public:
-  explicit BlockingDelegateContentBrowserClient(
-      base::OnceClosure* const callback)
-      : callback_(callback) {}
+  BlockingDelegateContentBrowserClient() = default;
 
   WebAuthenticationDelegate* GetWebAuthenticationDelegate() override {
     return &web_authentication_delegate_;
@@ -6187,17 +6250,13 @@ class BlockingDelegateContentBrowserClient : public ContentBrowserClient {
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
       RenderFrameHost* render_frame_host) override {
-    auto ret =
-        std::make_unique<BlockingAuthenticatorRequestDelegate>(callback_);
+    auto ret = std::make_unique<BlockingAuthenticatorRequestDelegate>();
     delegate_ = ret.get();
     return ret;
   }
 
-  void Cancel() { delegate_->Cancel(); }
-
  private:
   TestWebAuthenticationDelegate web_authentication_delegate_;
-  base::OnceClosure* const callback_;
   BlockingAuthenticatorRequestDelegate* delegate_ = nullptr;
 };
 
@@ -6222,9 +6281,7 @@ class BlockingDelegateAuthenticatorImplTest : public AuthenticatorImplTest {
   }
 
  protected:
-  base::OnceClosure blocked_on_error_callback_;
-  BlockingDelegateContentBrowserClient test_client_{
-      &blocked_on_error_callback_};
+  BlockingDelegateContentBrowserClient test_client_;
 
  private:
   ContentBrowserClient* old_client_ = nullptr;
@@ -6234,9 +6291,8 @@ TEST_F(BlockingDelegateAuthenticatorImplTest, PostCancelMessage) {
   // Create a fingerprint-reading device and a UP-only device. Advance the
   // first till it's waiting for a fingerprint then simulate a touch on the
   // UP device that claims that it failed due to an excluded credential.
-  // When the error is showing in the UI, have the fingerprint device resolve
+  // This will cancel the request on the fingerprint device, which will resolve
   // the UV with an error. Don't crash (crbug.com/1225899).
-
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
   options->exclude_credentials = GetTestCredentials();
@@ -6259,6 +6315,8 @@ TEST_F(BlockingDelegateAuthenticatorImplTest, PostCancelMessage) {
   device_2.state->pin = kTestPIN;
   device_2.state->fingerprints_enrolled = true;
   device_2.state->uv_retries = 8;
+  device_2.state->cancel_response_code =
+      device::CtapDeviceResponseCode::kCtap2ErrOperationDenied;
   device_2.state->simulate_press_callback =
       base::BindLambdaForTesting([&](VirtualFidoDevice* ignore) -> bool {
         // If asked for a fingerprint, fail the makeCredential request by
@@ -6277,15 +6335,6 @@ TEST_F(BlockingDelegateAuthenticatorImplTest, PostCancelMessage) {
   discovery->AddDevice(std::move(device_2));
   AuthenticatorEnvironmentImpl::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery));
-
-  blocked_on_error_callback_ = base::BindLambdaForTesting([&]() {
-    // When the UI should show an error, have the second authenticator reply
-    // to the fingerprint touch and cancel the transaction.
-    std::move(state_2->transact_callback)
-        .Run(std::vector<uint8_t>{static_cast<uint8_t>(
-            device::CtapDeviceResponseCode::kCtap2ErrOperationDenied)});
-    test_client_.Cancel();
-  });
 
   EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
             AuthenticatorStatus::CREDENTIAL_EXCLUDED);
@@ -6407,6 +6456,11 @@ class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
  public:
   ResidentKeyAuthenticatorImplTest() = default;
 
+  ResidentKeyAuthenticatorImplTest(const ResidentKeyAuthenticatorImplTest&) =
+      delete;
+  ResidentKeyAuthenticatorImplTest& operator=(
+      const ResidentKeyAuthenticatorImplTest&) = delete;
+
   void SetUp() override {
     UVAuthenticatorImplTest::SetUp();
     old_client_ = SetBrowserClientForTesting(&test_client_);
@@ -6447,8 +6501,6 @@ class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
 
  private:
   ContentBrowserClient* old_client_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ResidentKeyAuthenticatorImplTest);
 };
 
 TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredentialRkRequired) {

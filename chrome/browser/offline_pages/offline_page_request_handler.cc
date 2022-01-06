@@ -16,8 +16,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -723,14 +723,8 @@ void OfflinePageRequestHandler::OpenFile(
   if (!stream_)
     stream_ = std::make_unique<net::FileStream>(file_task_runner_);
 
-  int flags =
-      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_ASYNC;
-#if defined(OS_ANDROID)
-  if (!file_path.IsContentUri())
-    flags |= base::File::FLAG_EXCLUSIVE_READ;
-#else
-  flags |= base::File::FLAG_EXCLUSIVE_READ;
-#endif  // defined(OS_ANDROID)
+  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
+              base::File::FLAG_ASYNC | base::File::FLAG_WIN_EXCLUSIVE_READ;
   int result = stream_->Open(file_path, flags, callback);
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);

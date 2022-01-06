@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/chromeos_buildflags.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -287,6 +287,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void OnDisconnectError(ErrorCallback error_callback,
                          const std::string& error_name,
                          const std::string& error_message);
+
+  // Called by dbus:: on successful completion of the D-Bus method to remove the
+  // device.
+  void OnForgetSuccess(base::OnceClosure callback);
 
   // The dbus object path of the device object.
   dbus::ObjectPath object_path_;

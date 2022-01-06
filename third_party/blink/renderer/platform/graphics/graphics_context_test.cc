@@ -50,13 +50,13 @@ namespace {
   EXPECT_EQ(a.width(), b.width()); \
   EXPECT_EQ(a.height(), b.height());
 
-#define EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, opaqueRect)         \
-  {                                                              \
-    for (int y = opaqueRect.Y(); y < opaqueRect.MaxY(); ++y)     \
-      for (int x = opaqueRect.X(); x < opaqueRect.MaxX(); ++x) { \
-        int alpha = *bitmap.getAddr32(x, y) >> 24;               \
-        EXPECT_EQ(255, alpha);                                   \
-      }                                                          \
+#define EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, opaqueRect)          \
+  {                                                               \
+    for (int y = opaqueRect.y(); y < opaqueRect.bottom(); ++y)    \
+      for (int x = opaqueRect.x(); x < opaqueRect.right(); ++x) { \
+        int alpha = *bitmap.getAddr32(x, y) >> 24;                \
+        EXPECT_EQ(255, alpha);                                    \
+      }                                                           \
   }
 
 #define EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, opaqueRect) \
@@ -141,8 +141,8 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
   // Draw a path that gets clipped. This should destroy the opaque area, but
   // only inside the clip.
   Path path;
-  path.MoveTo(FloatPoint(10, 10));
-  path.AddLineTo(FloatPoint(40, 40));
+  path.MoveTo(gfx::PointF(10, 10));
+  path.AddLineTo(gfx::PointF(40, 40));
   PaintFlags flags;
   flags.setColor(transparent.Rgb());
   flags.setBlendMode(SkBlendMode::kSrcOut);
@@ -206,7 +206,6 @@ TEST_F(GraphicsContextDarkModeTest, DarkModeOff) {
 TEST_F(GraphicsContextDarkModeTest, SimpleInvertForTesting) {
   DarkModeSettings settings;
   settings.mode = DarkModeInversionAlgorithm::kSimpleInvertForTesting;
-  settings.grayscale = false;
   settings.contrast = 0;
 
   DrawColorsToContext(true, settings);
@@ -221,7 +220,6 @@ TEST_F(GraphicsContextDarkModeTest, SimpleInvertForTesting) {
 TEST_F(GraphicsContextDarkModeTest, InvertBrightness) {
   DarkModeSettings settings;
   settings.mode = DarkModeInversionAlgorithm::kInvertBrightness;
-  settings.grayscale = false;
   settings.contrast = 0;
 
   DrawColorsToContext(true, settings);
@@ -236,7 +234,6 @@ TEST_F(GraphicsContextDarkModeTest, InvertBrightness) {
 TEST_F(GraphicsContextDarkModeTest, InvertLightness) {
   DarkModeSettings settings;
   settings.mode = DarkModeInversionAlgorithm::kInvertLightness;
-  settings.grayscale = false;
   settings.contrast = 0;
 
   DrawColorsToContext(true, settings);
@@ -247,25 +244,9 @@ TEST_F(GraphicsContextDarkModeTest, InvertLightness) {
   EXPECT_EQ(0xffe1e1e1, bitmap_.getColor(3, 0));
 }
 
-// Invert lightness plus grayscale.
-TEST_F(GraphicsContextDarkModeTest, InvertLightnessPlusGrayscale) {
-  DarkModeSettings settings;
-  settings.mode = DarkModeInversionAlgorithm::kInvertLightness;
-  settings.grayscale = true;
-  settings.contrast = 0;
-
-  DrawColorsToContext(true, settings);
-
-  EXPECT_EQ(SK_ColorWHITE, bitmap_.getColor(0, 0));
-  EXPECT_EQ(SK_ColorBLACK, bitmap_.getColor(1, 0));
-  EXPECT_EQ(0xffe6e6e6, bitmap_.getColor(2, 0));
-  EXPECT_EQ(0xffe1e1e1, bitmap_.getColor(3, 0));
-}
-
 TEST_F(GraphicsContextDarkModeTest, InvertLightnessPlusContrast) {
   DarkModeSettings settings;
   settings.mode = DarkModeInversionAlgorithm::kInvertLightness;
-  settings.grayscale = false;
   settings.contrast = 0.2;
 
   DrawColorsToContext(true, settings);

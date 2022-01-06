@@ -9,14 +9,16 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
 #include "build/branding_buildflags.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
 #include "ui/views/widget/widget.h"
@@ -49,6 +51,7 @@ apps::mojom::AppPtr StandaloneBrowserApps::GetStandaloneBrowserApp() {
   app->show_in_shelf = apps::mojom::OptionalBool::kTrue;
   app->show_in_search = apps::mojom::OptionalBool::kTrue;
   app->show_in_management = apps::mojom::OptionalBool::kTrue;
+  app->allow_uninstall = apps::mojom::OptionalBool::kFalse;
   return app;
 }
 
@@ -101,10 +104,12 @@ void StandaloneBrowserApps::LoadIcon(const std::string& app_id,
                                      LoadIconCallback callback) {
   if (icon_key &&
       icon_key->resource_id != apps::mojom::IconKey::kInvalidResourceId) {
-    LoadIconFromResource(icon_type, size_hint_in_dip, icon_key->resource_id,
-                         /*is_placeholder_icon=*/false,
-                         static_cast<IconEffects>(icon_key->icon_effects),
-                         std::move(callback));
+    LoadIconFromResource(
+        ConvertMojomIconTypeToIconType(icon_type), size_hint_in_dip,
+        icon_key->resource_id,
+        /*is_placeholder_icon=*/false,
+        static_cast<IconEffects>(icon_key->icon_effects),
+        apps::IconValueToMojomIconValueCallback(std::move(callback)));
     return;
   }
   // On failure, we still run the callback, with the zero IconValue.
@@ -128,7 +133,7 @@ void StandaloneBrowserApps::GetMenuModel(const std::string& app_id,
 
 void StandaloneBrowserApps::StopApp(const std::string& app_id) {
   DCHECK_EQ(extension_misc::kLacrosAppId, app_id);
-  if (!features::IsBrowserAppInstanceTrackingEnabled()) {
+  if (!web_app::IsWebAppsCrosapiEnabled()) {
     return;
   }
   DCHECK(browser_app_instance_registry_);

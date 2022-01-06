@@ -4,6 +4,7 @@
 
 /**
  * @fileoverview Handles automation intents for speech feedback.
+ * Braille is *not* handled in this module.
  */
 
 goog.provide('IntentHandler');
@@ -104,7 +105,7 @@ IntentHandler = class {
           const ancestors = enteredAncestors.concat(exitedAncestors);
           while ((ancestor = ancestors.pop()) &&
                  !AutomationPredicate.rootOrEditableRoot(ancestor)) {
-            const roleInfo = Output.ROLE_INFO[ancestor.role];
+            const roleInfo = OutputRoleInfo[ancestor.role];
             if (roleInfo && roleInfo['inherits'] === 'abstractSpan') {
               // Let the caller handle this case.
               return false;
@@ -128,9 +129,7 @@ IntentHandler = class {
         // information e.g. if we've entered a suggestion, insertion, or
         // deletion.
         new Output()
-            .withContextFirst()
-            .withRichSpeechAndBraille(
-                newRange, prevRange, OutputEventType.NAVIGATE)
+            .withRichSpeech(newRange, prevRange, OutputEventType.NAVIGATE)
             .go();
 
         // Handled.
@@ -158,7 +157,7 @@ IntentHandler = class {
         }
 
         new Output()
-            .withRichSpeechAndBraille(
+            .withRichSpeech(
                 cursors.Range.fromNode(node), null, OutputEventType.NAVIGATE)
             .go();
         return true;
@@ -166,15 +165,14 @@ IntentHandler = class {
 
       case IntentTextBoundaryType.WORD_END:
       case IntentTextBoundaryType.WORD_START: {
-        const shouldMoveToPreviousWord =
-            intent.textBoundary === IntentTextBoundaryType.WORD_END;
         let prevRange = null;
         if (prev) {
-          prevRange = prev.createWordRange(shouldMoveToPreviousWord);
+          prevRange = prev.createWordRange(false);
         }
-        const newRange = cur.createWordRange(shouldMoveToPreviousWord);
+
+        const newRange = cur.createWordRange(
+            intent.textBoundary === IntentTextBoundaryType.WORD_END);
         new Output()
-            .withContextFirst()
             .withSpeech(newRange, prevRange, OutputEventType.NAVIGATE)
             .go();
         return true;

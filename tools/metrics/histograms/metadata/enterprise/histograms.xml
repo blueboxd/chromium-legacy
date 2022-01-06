@@ -11,15 +11,25 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
 
 <histograms>
+
+<variants name="CleanupHandler">
+  <variant name="BrowsingData" summary="Handler for browsing data"/>
+  <variant name="Clipboard" summary="Handler for clipboard"/>
+  <variant name="Extension" summary="Handler for extensions"/>
+  <variant name="Files" summary="Handler for files"/>
+  <variant name="OpenWindows" summary="Handler for open browser windows"/>
+  <variant name="PrintJobs" summary="Handler for print jobs"/>
+</variants>
 
 <variants name="Enterprise_RemoteCommandType">
   <variant name=".BrowserClearBrowsingData" summary="Clear Browsing Data"/>
@@ -63,7 +73,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.ActiveDirectoryJoin"
-    enum="ActiveDirectoryDomainJoinType" expires_after="M97">
+    enum="ActiveDirectoryDomainJoinType" expires_after="M104">
   <owner>fsandrade@chromium.org</owner>
   <owner>tomdobro@chromium.org</owner>
   <summary>
@@ -733,6 +743,36 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.DeviceTrust.RotateSigningKey.Tries" units="tries"
+    expires_after="2022-07-01">
+  <owner>hmare@google.com</owner>
+  <owner>rogerta@chromium.org</owner>
+  <owner>seblalancette@chromium.org</owner>
+  <summary>
+    Recorded when a device attempts to rotate its device trust signing key.
+    Chrome will retry a fixed number of times until the operation either
+    succeeds or fails. A value of 1 means the rotation worked on the first try.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.DeviceTrust.RotateSigningKey.{Nonce}.Status"
+    enum="DeviceTrustKeyRotationStatus" expires_after="2022-07-01">
+  <owner>hmare@google.com</owner>
+  <owner>rogerta@chromium.org</owner>
+  <owner>seblalancette@chromium.org</owner>
+  <summary>
+    Recorded when a device attempts to rotate its device trust signing key.
+    {Nonce}
+  </summary>
+  <token key="Nonce">
+    <variant name="NoNonce"
+        summary="This occurs right after the device is enrolled with CBCM."/>
+    <variant name="WithNonce"
+        summary="This occurs when a device receives a command from the admin
+                 console."/>
+  </token>
+</histogram>
+
 <histogram name="Enterprise.Dlp.CaptureModeInitBlocked" enum="BooleanBlocked"
     expires_after="2022-05-01">
   <owner>poromov@chromium.org</owner>
@@ -846,6 +886,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Recorded when Data Leak Prevention event with &quot;report&quot; level was
     reported. Identifies which restriction was reported.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Dlp.ReportedWarnLevelRestriction"
+    enum="EnterpriseDlpPolicyRestriction" expires_after="2022-05-01">
+  <owner>jkopanski@chromium.org</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Recorded when Data Leak Prevention event with &quot;warn&quot; level was
+    reported. Identifies which restriction was reported.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Dlp.ReportedWarnProceedLevelRestriction"
+    enum="EnterpriseDlpPolicyRestriction" expires_after="2022-05-01">
+  <owner>jkopanski@chromium.org</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Recorded when Data Leak Prevention event with &quot;warn&quot; level was
+    reported after a user proceeded with a restricted action. Identifies which
+    restriction was reported.
   </summary>
 </histogram>
 
@@ -1538,6 +1599,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.LoginApiCleanup.{CleanupHandler}.Success"
+    enum="BooleanSuccess" expires_after="2022-12-31">
+  <owner>jityao@google.com</owner>
+  <owner>hendrich@chromium.org</owner>
+  <summary>ChromeOS only. Records if cleanup handler succeeded.</summary>
+  <token key="CleanupHandler" variants="CleanupHandler"/>
+</histogram>
+
+<histogram name="Enterprise.LoginApiCleanup.{CleanupHandler}.Timing" units="ms"
+    expires_after="2022-12-31">
+  <owner>jityao@google.com</owner>
+  <owner>hendrich@chromium.org</owner>
+  <summary>
+    ChromeOS only. Records the duration the cleanup handler took.
+  </summary>
+  <token key="CleanupHandler" variants="CleanupHandler"/>
+</histogram>
+
 <histogram
     name="Enterprise.MachineLevelUserCloudPolicyEnrollment.RequestFailureTime"
     units="ms" expires_after="2022-06-01">
@@ -1664,6 +1743,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.Policies.SourceConflicts" enum="PolicyAtomicGroups"
     expires_after="2021-11-01">
+  <obsolete>
+    Removed in Oct 2021.
+  </obsolete>
   <owner>ydago@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -2097,7 +2179,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.UserPolicyChromeOS.ChildUser.OAuthTokenError"
-    enum="GoogleServiceAuthError" expires_after="2022-02-20">
+    enum="GoogleServiceAuthError" expires_after="2022-04-24">
   <owner>agawronska@chromium.org</owner>
   <owner>michaelpg@chromium.org</owner>
   <summary>Failure reason for OAuth token fetch for child user.</summary>

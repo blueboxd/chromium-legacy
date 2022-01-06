@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.view.View;
@@ -234,7 +235,6 @@ public class TopToolbarCoordinator implements Toolbar {
             mStartSurfaceToolbarCoordinator.setTabSwitcherListener(tabSwitcherClickHandler);
             mStartSurfaceToolbarCoordinator.setOnTabSwitcherLongClickHandler(
                     tabSwitcherLongClickHandler);
-            mStartSurfaceToolbarCoordinator.onNativeLibraryReady();
         }
 
         mToolbarLayout.setTabModelSelector(mTabModelSelectorSupplier.get());
@@ -677,6 +677,18 @@ public class TopToolbarCoordinator implements Toolbar {
         mToolbarLayout.onStartSurfaceStateChanged(
                 mStartSurfaceToolbarCoordinator.shouldShowRealSearchBox(toolbarHeight),
                 mStartSurfaceToolbarCoordinator.isOnHomepage());
+    }
+
+    /**
+     * This method should be called when there is a possibility that logo became available or
+     * was changed.
+     * @param logoImage The logo image.
+     * @param contentDescription The accessibility text describing the logo.
+     */
+    public void onLogoAvailable(Bitmap logoImage, String contentDescription) {
+        if (mStartSurfaceToolbarCoordinator != null) {
+            mStartSurfaceToolbarCoordinator.onLogoImageAvailable(logoImage, contentDescription);
+        }
     }
 
     @Override

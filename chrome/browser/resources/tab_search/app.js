@@ -71,7 +71,7 @@ export class TabSearchAppElement extends PolymerElement {
         value: {
           includeScore: true,
           includeMatches: true,
-          ignoreLocation: true,
+          ignoreLocation: false,
           threshold: 0.0,
           distance: 200,
           keys: [
@@ -130,10 +130,14 @@ export class TabSearchAppElement extends PolymerElement {
     /** @private {!Array<!TabData>} */
     this.recentlyClosedTabs_ = [];
 
+    /** @private {number} */
+    this.windowShownTimestamp_ = Date.now();
+
     /** @private {!Function} */
     this.visibilityChangedListener_ = () => {
       // Refresh Tab Search's tab data when transitioning into a visible state.
       if (document.visibilityState === 'visible') {
+        this.windowShownTimestamp_ = Date.now();
         this.updateTabs_();
       } else {
         this.onDocumentHidden_();
@@ -147,6 +151,9 @@ export class TabSearchAppElement extends PolymerElement {
     this.recentlyClosedTitleItem_ = new TitleItem(
         loadTimeData.getString('recentlyClosed'), true /*expandable*/,
         true /*expanded*/);
+
+    /** @private {number} */
+    this.filteredOpenTabsCount_ = 0;
   }
 
   /** @override */
@@ -155,6 +162,7 @@ export class TabSearchAppElement extends PolymerElement {
 
     // Update option values for fuzzy search from feature params.
     this.fuzzySearchOptions_ = Object.assign({}, this.fuzzySearchOptions_, {
+      useFuzzySearch: loadTimeData.getBoolean('useFuzzySearch'),
       ignoreLocation: loadTimeData.getBoolean('searchIgnoreLocation'),
       threshold: loadTimeData.getValue('searchThreshold'),
       distance: loadTimeData.getInteger('searchDistance'),
@@ -382,25 +390,33 @@ export class TabSearchAppElement extends PolymerElement {
    * @private
    */
   tabItemAction_(itemData, tabIndex) {
+    const state = this.searchText_ ? 'Filtered' : 'Unfiltered';
+    let action;
     switch (itemData.type) {
       case TabItemType.OPEN_TAB:
         this.apiProxy_.switchToTab(
             {tabId: /** @type {!TabData} */ (itemData).tab.tabId},
             !!this.searchText_, tabIndex);
-        return;
+        action = 'SwitchTab';
+        break;
       case TabItemType.RECENTLY_CLOSED_TAB:
         this.apiProxy_.openRecentlyClosedEntry(
             /** @type {!TabData} */ (itemData).tab.tabId, !!this.searchText_,
-            true);
-        return;
+            true, tabIndex - this.filteredOpenTabsCount_);
+        action = 'OpenRecentlyClosedEntry';
+        break;
       case TabItemType.RECENTLY_CLOSED_TAB_GROUP:
         this.apiProxy_.openRecentlyClosedEntry(
             /** @type {!TabGroupData} */ (itemData).tabGroup.sessionId,
-            !!this.searchText_, false);
-        return;
+            !!this.searchText_, false, tabIndex - this.filteredOpenTabsCount_);
+        action = 'OpenRecentlyClosedEntry';
+        break;
       default:
         throw new Error('ItemData is of invalid type.');
     }
+    chrome.metricsPrivate.recordTime(
+        `Tabs.TabSearch.WebUI.TimeTo${action}In${state}List`,
+        Math.round(Date.now() - this.windowShownTimestamp_));
   }
 
   /**
@@ -635,14 +651,13 @@ export class TabSearchAppElement extends PolymerElement {
               a.tab.lastActiveTimeTicks.internalValue) :
           0;
     });
-
     const filteredOpenTabs =
         fuzzySearch(this.searchText_, this.openTabs_, this.fuzzySearchOptions_);
-    let filteredRecentlyClosedItems = fuzzySearch(
-        this.searchText_,
-        this.recentlyClosedTabs_.concat(this.recentlyClosedTabGroups_),
-        this.fuzzySearchOptions_);
-    filteredRecentlyClosedItems.sort((a, b) => {
+    this.filteredOpenTabsCount_ = filteredOpenTabs.length;
+
+    const recentlyClosedItems =
+        this.recentlyClosedTabs_.concat(this.recentlyClosedTabGroups_);
+    recentlyClosedItems.sort((a, b) => {
       const aTime = this.getRecentlyClosedItemLastActiveTime_(a);
       const bTime = this.getRecentlyClosedItemLastActiveTime_(b);
 
@@ -650,6 +665,8 @@ export class TabSearchAppElement extends PolymerElement {
           Number(bTime.internalValue - aTime.internalValue) :
           0;
     });
+    let filteredRecentlyClosedItems = fuzzySearch(
+        this.searchText_, recentlyClosedItems, this.fuzzySearchOptions_);
 
     // Limit the number of recently closed items to the default display count
     // when no search text has been specified. Filter out recently closed tabs

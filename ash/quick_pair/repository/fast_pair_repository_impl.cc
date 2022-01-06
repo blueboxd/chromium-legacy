@@ -179,11 +179,12 @@ void FastPairRepositoryImpl::AssociateAccountKey(
     scoped_refptr<Device> device,
     const std::vector<uint8_t>& account_key) {
   QP_LOG(INFO) << __func__;
+  DCHECK(device->classic_address());
   GetDeviceMetadata(
       device->metadata_id,
       base::BindOnce(&FastPairRepositoryImpl::AddToFootprints,
                      weak_ptr_factory_.GetWeakPtr(), device->metadata_id,
-                     device->address, account_key));
+                     device->classic_address().value(), account_key));
 }
 
 void FastPairRepositoryImpl::AddToFootprints(
@@ -214,7 +215,7 @@ void FastPairRepositoryImpl::OnAddToFootprintsComplete(
   saved_device_registry_->SaveAccountKey(mac_address, account_key);
 }
 
-void FastPairRepositoryImpl::DeleteAssociatedDevice(
+bool FastPairRepositoryImpl::DeleteAssociatedDevice(
     const device::BluetoothDevice* device) {
   QP_LOG(INFO) << __func__;
   absl::optional<const std::vector<uint8_t>> account_key =
@@ -223,13 +224,14 @@ void FastPairRepositoryImpl::DeleteAssociatedDevice(
     QP_LOG(VERBOSE)
         << __func__
         << ": Cannot find matching account key for unpaired device.";
-    return;
+    return false;
   }
 
   QP_LOG(INFO) << __func__ << ": Removing device from Footprints.";
   footprints_fetcher_->DeleteUserDevice(base::HexEncode(*account_key),
                                         base::DoNothing());
   // TODO(jonmann): Handle saving pending update to disk + retries.
+  return true;
 }
 
 }  // namespace quick_pair

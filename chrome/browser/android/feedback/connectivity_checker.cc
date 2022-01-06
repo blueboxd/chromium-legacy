@@ -9,7 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -135,7 +135,7 @@ void ConnectivityChecker::StartAsyncCheck() {
   request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   request->load_flags = net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
   url_loader_ = network::SimpleURLLoader::Create(std::move(request),
-                                                 NO_TRAFFIC_ANNOTATION_YET);
+                                                 MISSING_TRAFFIC_ANNOTATION);
   url_loader_->DownloadHeadersOnly(
       shared_url_loader_factory_.get(),
       base::BindOnce(&ConnectivityChecker::OnURLLoadComplete,

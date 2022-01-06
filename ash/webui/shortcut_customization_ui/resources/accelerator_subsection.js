@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './accelerator_row.js'
+import './accelerator_row.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
 import {fakeSubCategories} from './fake_data.js';
-import {AcceleratorInfo} from './shortcut_types.js';
+import {AcceleratorInfo, AcceleratorState, AcceleratorType} from './shortcut_types.js';
 
 /**
  * @fileoverview
@@ -54,7 +54,7 @@ export class AcceleratorSubsectionElement extends PolymerElement {
         type: Array,
         value: [],
       }
-    }
+    };
   }
 
   /** @override */
@@ -94,11 +94,15 @@ export class AcceleratorSubsectionElement extends PolymerElement {
     // updates as one which results in strange behaviors with updating
     // individual subsections. An atomic replacement makes ensures each
     // subsection's accelerators are kept distinct from each other.
-    let tempAccelContainer = [];
+    const tempAccelContainer = [];
     layoutInfos.forEach((value) => {
       const acceleratorInfos =
-          this.lookupManager_.getAccelerators(value.source, value.action);
-
+          this.lookupManager_.getAccelerators(value.source, value.action)
+              .filter((accel) => {
+                // Hide accelerators that are default and disabled.
+                return !(accel.type === AcceleratorType.kDefault &&
+                    accel.state === AcceleratorState.kDisabledByUser);
+              });
       const accel =
           /**@type {!Object<string, number, number, Array<!AcceleratorInfo>>}*/
           ({

@@ -3,7 +3,7 @@
 <translationbundle lang="lv">
 <translation id="1096883626080133124">Vairāk iespēju vienkāršajā un drošajā pārlūkā Google Chrome, kas tagad ir vēl ātrāks</translation>
 <translation id="1282031177488366470">Palīdzēt uzlabot Chrome funkcijas un veiktspēju</translation>
-<translation id="1354592789402432496">Administrators pieprasa pierakstīšanos ar organizācijas kontu. Konti, kuru lietošanu administrators ir aizliedzis, ir paslēpti.</translation>
+<translation id="1314663809820920746">Šajā ierīcē joprojām varat skatīt visas savas grāmatzīmes, vēsturi, paroles un citus iestatījumus. Ja veiksiet izmaiņas, tās netiks sinhronizētas ar jūsu Google kontu.</translation>
 <translation id="1479202195792305274">Pārlūkprogrammā Chrome var pārbaudīt jūsu paroles, ja esat pierakstījies savā Google kontā.</translation>
 <translation id="1493827051843127077">Lai visās ierīcēs sinhronizētu savas cilnes, paroles un maksājumu informāciju, iestatiet pārlūku Chrome kā noklusējuma pārlūku</translation>
 <translation id="1504372625950710826">Pārlūkā Chrome nevarēja pārbaudīt atjauninājumu pieejamību. Pārbaudiet interneta savienojumu.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Pārlūkā Chrome nevar pārbaudīt atjauninājumu pieejamību.</translation>
 <translation id="5716154293141027663">Tiks atvērts pārlūks Chrome ikreiz, kad pieskarsieties saitēm citās lietotnēs.</translation>
-<translation id="572883588166315317">Saskaņā ar jūsu organizācijas prasībām, lai izmantotu pārlūku Chrome, jums ir jāpierakstās. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Chrome padoms. Tagad ekrāna apakšdaļā ir dažas pogas, piemēram, Atpakaļ, Pārsūtīt un Meklēt.</translation>
-<translation id="5876773482963502140">Ja atļaujat pārlūkam Chrome piekļūt jūsu atrašanās vietas informācijai, pārlūkā Chrome šī informācija tiek nosūtīta uz visām vietnēm, kurām piešķirat atļauju. Vietnēs var tikt lūgta atļauja piekļūt atrašanās vietas informācijai, lai rādītu jums vietēju informāciju, piemēram, vietējās ziņas vai informāciju par tuvumā esošiem veikaliem.</translation>
 <translation id="5998675059699164418">Saskaņā ar jūsu organizācijas prasībām, lai izmantotu pārlūku Chrome, jums ir jāpierakstās.</translation>
 <translation id="6054613632208573261">Chrome izmantošana pēc noklusējuma</translation>
 <translation id="6063091872902370735">Atļaut pierakstīšanos pārlūkā Chrome</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Izvēlieties, vai notīrīt Chrome datus no šīs ierīces vai tos paturēt</translation>
 <translation id="8370517070665726704">Autortiesības: <ph name="YEAR" /> Google LLC. Visas tiesības paturētas.</translation>
 <translation id="840168496893712993">Daži papildinājumi var izraisīt pārlūka Chrome avarēšanu. Lūdzu, atinstalējiet tos.</translation>
+<translation id="8414886616817913619">Saskaņā ar jūsu organizācijas prasībām, lai izmantotu pārlūku Chrome, jums ir jāpierakstās. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="8459495907675268833">Atlasītie dati ir noņemti no pārlūka Chrome un sinhronizētajām ierīcēm. Jūsu Google kontam vietnē history.google.com var būt citu veidu pārlūkošanas vēstures dati, piemēram, meklēšanas vaicājumi un darbības citos Google pakalpojumos.</translation>
 <translation id="850555388806794946">Lai iestatītu Chrome kā noklusējuma pārlūku, veiciet tālāk norādītās darbības.
   1. Atveriet iestatījumus.

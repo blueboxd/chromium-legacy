@@ -908,7 +908,8 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   // getting focused. Make sure to clear internal references before that happens
   // so there is not stale-pointer usage. See crbug.com/884402.
   // TODO(crbug.com/1222096): We should figure out a better way of handling
-  // user info changes such as avatar changes. They should not cause view re-layouting.
+  // user info changes such as avatar changes. They should not cause view
+  // re-layouting.
   main_view_->RemoveAllChildViews();
 
   // Build user state list. Preserve previous state if the user already exists.
@@ -1075,6 +1076,26 @@ void LockContentsView::OnFingerprintAuthResult(const AccountId& account_id,
   big_view->auth_user()->NotifyFingerprintAuthResult(success);
 }
 
+void LockContentsView::OnSmartLockStateChanged(const AccountId& account_id,
+                                               SmartLockState state) {
+  LoginBigUserView* big_view =
+      TryToFindBigUser(account_id, true /*require_auth_active*/);
+  if (!big_view || !big_view->auth_user())
+    return;
+
+  big_view->auth_user()->SetSmartLockState(state);
+}
+
+void LockContentsView::OnSmartLockAuthResult(const AccountId& account_id,
+                                             bool success) {
+  LoginBigUserView* big_view =
+      TryToFindBigUser(account_id, true /*require_auth_active*/);
+  if (!big_view || !big_view->auth_user())
+    return;
+
+  big_view->auth_user()->NotifySmartLockAuthResult(success);
+}
+
 void LockContentsView::OnAuthEnabledForUser(const AccountId& user) {
   LockContentsView::UserState* state = FindStateForUser(user);
   if (!state) {
@@ -1170,8 +1191,6 @@ void LockContentsView::OnForceOnlineSignInForUser(const AccountId& user) {
 void LockContentsView::OnShowEasyUnlockIcon(
     const AccountId& user,
     const EasyUnlockIconInfo& icon_info) {
-  // Do not update EasyUnlockIconState if the Smart Lock revamp is enabled since
-  // it will be removed post launch.
   if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp))
     return;
 
@@ -2083,11 +2102,6 @@ void LockContentsView::OnBigUserChanged() {
 }
 
 void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
-  // Do not update EasyUnlockIconState if the Smart Lock revamp is enabled since
-  // it will be removed post launch.
-  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp))
-    return;
-
   // Try to find an big view for |user|. If there is none, there is no state to
   // update.
   LoginBigUserView* big_view =

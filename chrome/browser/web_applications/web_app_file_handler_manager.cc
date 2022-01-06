@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/web_app_file_handler_registration.h"
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -118,7 +119,7 @@ void WebAppFileHandlerManager::EnableAndRegisterOsFileHandlers(
 
 void WebAppFileHandlerManager::DisableAndUnregisterOsFileHandlers(
     const AppId& app_id,
-    base::OnceCallback<void(bool)> callback) {
+    ResultCallback callback) {
   // Updating prefs must be done on the UI Thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   UpdateBoolWebAppPref(profile_->GetPrefs(), app_id, kFileHandlersEnabled,
@@ -131,9 +132,9 @@ void WebAppFileHandlerManager::DisableAndUnregisterOsFileHandlers(
 
   if (!ShouldRegisterFileHandlersWithOs() || !file_handlers ||
       disable_os_integration_for_testing_) {
-    // This bool signals if there was not an error. Exiting early here is WAI,
-    // so this is a success.
-    std::move(callback).Run(true);
+    // This enumeration signals if there was not an error. Exiting early here is
+    // WAI, so this is a success.
+    std::move(callback).Run(Result::kOk);
     return;
   }
 
@@ -146,7 +147,7 @@ void WebAppFileHandlerManager::DisableAndUnregisterOsFileHandlers(
   // the new file handlers. It is therefore important that |callback| not be
   // dropped on the floor.
   // https://crbug.com/1201993
-  std::move(callback).Run(true);
+  std::move(callback).Run(Result::kOk);
 #else
   UnregisterFileHandlersWithOs(app_id, profile_, std::move(callback));
 #endif
@@ -296,8 +297,15 @@ const absl::optional<GURL> WebAppFileHandlerManager::GetMatchingFileHandlerURL(
     return absl::nullopt;
 
   const WebApp* web_app = registrar_->GetAppById(app_id);
-  if (web_app && web_app->file_handler_permission_blocked())
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsFileHandlingSettingsGated)) {
+    if (web_app && web_app->file_handler_approval_state() ==
+                       ApiApprovalState::kDisallowed) {
+      return absl::nullopt;
+    }
+  } else if (web_app && web_app->file_handler_permission_blocked()) {
     return absl::nullopt;
+  }
 
   const apps::FileHandlers* file_handlers = GetAllFileHandlers(app_id);
   if (!file_handlers)

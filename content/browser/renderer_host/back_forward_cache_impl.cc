@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/metrics/field_trial_params.h"
@@ -25,6 +26,8 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/visible_time_request_trigger.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -33,6 +36,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/frame/event_page_show_persisted.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom-shared.h"
 #if defined(OS_ANDROID)
@@ -344,7 +348,7 @@ void RestoreBrowserControlsState(RenderFrameHostImpl* cached_rfh) {
     // If we currently aren't showing the controls let the cached renderer
     // know, so that it then reacts correctly to the SHOW controls message
     // that might follow during DidCommitNavigation.
-    cached_rfh->UpdateBrowserControlsState(
+    cached_rfh->GetPage().UpdateBrowserControlsState(
         cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kHidden,
         // Do not animate as we want this to happen "instantaneously"
         false);
@@ -357,7 +361,11 @@ void RequestRecordTimeToVisible(RenderFrameHostImpl* rfh,
   // cases like page navigating back with window.history.back(), while being
   // hidden.
   if (rfh->delegate()->GetVisibility() != Visibility::HIDDEN) {
-    rfh->GetView()->SetRecordContentToVisibleTimeRequest(
+    auto* trigger = rfh->GetRenderWidgetHost()->GetVisibleTimeRequestTrigger();
+    // The only way this should be null is if there is no RenderWidgetHostView.
+    DCHECK(rfh->GetView());
+    DCHECK(trigger);
+    trigger->SetRecordContentToVisibleTimeRequest(
         navigation_start, false /* destination_is_loaded */,
         false /* show_reason_tab_switching */,
         false /* show_reason_unoccluded */,
@@ -577,7 +585,7 @@ void BackForwardCacheImpl::UpdateCanStoreToIncludeCacheControlNoStore(
   if (!AllowStoringPagesWithCacheControlNoStore())
     return;
   // If the page didn't have cache-control: no-store, do nothing.
-  if (!render_frame_host->scheduler_tracked_features().Has(
+  if (!render_frame_host->GetBackForwardCacheDisablingFeatures().Has(
           WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore)) {
     return;
   }
@@ -638,6 +646,9 @@ BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStorePageNow(
   }
   DVLOG(1) << "CanStorePageNow: " << rfh->GetLastCommittedURL() << " : "
            << result.ToString();
+  TRACE_EVENT("navigation", "BackForwardCacheImpl::CanPotentiallyStorePageNow",
+              ChromeTrackEvent::kBackForwardCacheCanStoreDocumentResult,
+              result);
   return result;
 }
 
@@ -740,7 +751,7 @@ BackForwardCacheImpl::CanPotentiallyStorePageLater(RenderFrameHostImpl* rfh) {
   // Do not store if activation navigations are disabled by the
   // NavigatorDelegate as a workaround for the following bug.
   // TODO(https://crbug.com/1234857): Remove this when the bug is fixed.
-  if (rfh->frame_tree_node()
+  if (rfh->frame_tree()
           ->navigator()
           .GetDelegate()
           ->IsActivationNavigationDisallowedForBug1234857()) {
@@ -759,7 +770,7 @@ BackForwardCacheImpl::CanPotentiallyStorePageLater(RenderFrameHostImpl* rfh) {
 
   BlockListedFeatures cache_control_no_store_feature(
       WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore);
-  if (!Intersection(rfh->scheduler_tracked_features(),
+  if (!Intersection(rfh->GetBackForwardCacheDisablingFeatures(),
                     cache_control_no_store_feature)
            .Empty()) {
     if (!AllowStoringPagesWithCacheControlNoStore()) {
@@ -796,6 +807,9 @@ BackForwardCacheImpl::CanPotentiallyStorePageLater(RenderFrameHostImpl* rfh) {
 
   DVLOG(1) << "CanPotentiallyStorePageLater: " << rfh->GetLastCommittedURL()
            << " : " << result.ToString();
+  TRACE_EVENT(
+      "navigation", "BackForwardCacheImpl::CanPotentiallyStorePageLater",
+      ChromeTrackEvent::kBackForwardCacheCanStoreDocumentResult, result);
   return result;
 }
 
@@ -869,7 +883,7 @@ void BackForwardCacheImpl::CanStoreRenderFrameHostLater(
   // since the first time it's used.
   WebSchedulerTrackedFeatures banned_features =
       Intersection(GetDisallowedFeatures(rfh, RequestedFeatures::kOnlySticky),
-                   rfh->scheduler_tracked_features());
+                   rfh->GetBackForwardCacheDisablingFeatures());
   if (!banned_features.Empty()) {
     if (!ShouldIgnoreBlocklists()) {
       result->NoDueToFeatures(banned_features);
@@ -895,7 +909,7 @@ void BackForwardCacheImpl::CheckDynamicBlocklistedFeaturesOnSubtree(
   // on whether we should store a page in the back-forward cache or not.
   WebSchedulerTrackedFeatures banned_features =
       Intersection(GetDisallowedFeatures(rfh, RequestedFeatures::kAll),
-                   rfh->scheduler_tracked_features());
+                   rfh->GetBackForwardCacheDisablingFeatures());
   if (!banned_features.Empty() && !ShouldIgnoreBlocklists() &&
       rfh->render_view_host()->DidReceiveBackForwardCacheAck()) {
     result->NoDueToFeatures(banned_features);
@@ -935,7 +949,7 @@ void BackForwardCacheImpl::StoreEntry(
 
   entry->render_frame_host()->DidEnterBackForwardCache();
   if (AllowStoringPagesWithCacheControlNoStore()) {
-    if (entry->render_frame_host()->scheduler_tracked_features().Has(
+    if (entry->render_frame_host()->GetBackForwardCacheDisablingFeatures().Has(
             WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore)) {
       // Start monitoring the cookie change only when cache-control:no-store
       // header is present.
@@ -997,6 +1011,10 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
     int navigation_entry_id,
     blink::mojom::PageRestoreParamsPtr page_restore_params) {
   TRACE_EVENT0("navigation", "BackForwardCache::RestoreEntry");
+  blink::RecordUMAEventPageShowPersisted(
+      blink::EventPageShowPersisted::
+          kYesInBrowser_BackForwardCache_RestoreEntry_Attempt);
+
   // Select the RenderFrameHostImpl matching the navigation entry.
   auto matching_entry =
       std::find_if(entries_.begin(), entries_.end(),
@@ -1029,6 +1047,9 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
 
   RestoreBrowserControlsState(entry->render_frame_host());
 
+  blink::RecordUMAEventPageShowPersisted(
+      blink::EventPageShowPersisted::
+          kYesInBrowser_BackForwardCache_RestoreEntry_Succeed);
   return entry;
 }
 
@@ -1132,7 +1153,7 @@ BackForwardCacheImpl::Entry* BackForwardCacheImpl::GetEntry(
   if (AllowStoringPagesWithCacheControlNoStore() &&
       (*matching_entry)
           ->render_frame_host()
-          ->scheduler_tracked_features()
+          ->GetBackForwardCacheDisablingFeatures()
           .Has(WebSchedulerTrackedFeature::
                    kMainResourceHasCacheControlNoStore)) {
     auto* render_frame_host = (*matching_entry)->render_frame_host();
@@ -1262,6 +1283,9 @@ void BackForwardCacheImpl::WillCommitNavigationToCachedEntry(
           },
           base::TimeTicks::Now(), std::move(done_callback)));
 
+  blink::RecordUMAEventPageShowPersisted(
+      blink::EventPageShowPersisted::
+          kYesInBrowser_BackForwardCache_WillCommitNavigationToCachedEntry);
   for (auto* rvh : bfcache_entry.render_view_hosts()) {
     rvh->PrepareToLeaveBackForwardCache(cb);
   }
@@ -1279,18 +1303,6 @@ bool BackForwardCacheImpl::IsBrowsingInstanceInBackForwardCacheForDebugging(
             ->GetSiteInstance()
             ->GetBrowsingInstanceId() == browsing_instance_id) {
       return true;
-    }
-  }
-  return false;
-}
-
-bool BackForwardCacheImpl::IsSiteInstanceInBackForwardCacheForDebugging(
-    SiteInstanceId site_instance_id) {
-  for (std::unique_ptr<Entry>& entry : entries_) {
-    for (auto& proxy_map_entry : entry->proxy_hosts()) {
-      if (proxy_map_entry.first == site_instance_id) {
-        return true;
-      }
     }
   }
   return false;
@@ -1314,11 +1326,8 @@ bool BackForwardCacheImpl::IsMediaSessionPlaybackStateChangedAllowed() {
 }
 
 bool BackForwardCacheImpl::IsMediaSessionServiceAllowed() {
-  return base::FeatureList::IsEnabled(kBackForwardCacheMediaSessionService);
-}
-
-bool BackForwardCacheImpl::IsMediaPlayAllowed() {
-  return base::FeatureList::IsEnabled(kBackForwardCacheMediaPlay);
+  return base::FeatureList::IsEnabled(
+      features::kBackForwardCacheMediaSessionService);
 }
 
 bool BackForwardCache::DisabledReason::operator<(

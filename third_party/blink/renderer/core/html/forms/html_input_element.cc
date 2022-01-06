@@ -75,6 +75,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_font_provider.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -94,6 +95,8 @@ namespace blink {
 namespace {
 
 const unsigned kMaxEmailFieldLength = 254;
+
+static bool is_default_font_prewarmed_ = false;
 
 }  // namespace
 
@@ -408,6 +411,15 @@ void HTMLInputElement::InitializeTypeInParsing() {
     input_type_->WarnIfValueIsInvalid(default_value);
 
   input_type_view_->UpdateView();
+
+  // Prewarm the default font family. Do this while parsing because the style
+  // recalc calls |TextControlInnerEditorElement::CreateInnerEditorStyle| which
+  // needs the primary font.
+  if (!is_default_font_prewarmed_ && new_type_name == input_type_names::kText) {
+    FontCache::PrewarmFamily(LayoutThemeFontProvider::SystemFontFamily(
+        CSSValueID::kWebkitSmallControl));
+    is_default_font_prewarmed_ = true;
+  }
 }
 
 void HTMLInputElement::UpdateType() {
@@ -1213,7 +1225,8 @@ void HTMLInputElement::setValue(const String& value,
 
   if (value_changed) {
     NotifyFormStateChanged();
-    if (value.IsEmpty() && HasBeenPasswordField() && GetDocument().GetPage()) {
+    if (sanitized_value.IsEmpty() && HasBeenPasswordField() &&
+        GetDocument().GetPage()) {
       GetDocument().GetPage()->GetChromeClient().PasswordFieldReset(*this);
     }
   }
@@ -2173,6 +2186,30 @@ void HTMLInputElement::MaybeReportPiiMetrics() {
     UseCounter::Count(GetDocument(),
                       WebFeature::kEmailFieldFilled_PatternMatch);
   }
+}
+
+// Show a browser picker for this input element (crbug.com/939561).
+// https://github.com/whatwg/html/issues/6909
+void HTMLInputElement::showPicker(ExceptionState& exception_state) {
+  LocalFrame* frame = GetDocument().GetFrame();
+  // In cross-origin iframes it should throw a "SecurityError" DOMException
+  // except on file and color. In same-origin iframes it should work fine.
+  // https://github.com/whatwg/html/issues/6909#issuecomment-917138991
+  if (type() != input_type_names::kFile && type() != input_type_names::kColor &&
+      frame && frame->IsCrossOriginToMainFrame()) {
+    exception_state.ThrowSecurityError(
+        "HTMLInputElement::showPicker() called from cross-origin iframe.");
+    return;
+  }
+
+  if (!LocalFrame::HasTransientUserActivation(frame)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "HTMLInputElement::showPicker() requires a user gesture.");
+    return;
+  }
+
+  input_type_view_->OpenPopupView();
 }
 
 }  // namespace blink

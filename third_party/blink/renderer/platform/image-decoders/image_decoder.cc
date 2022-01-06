@@ -378,10 +378,10 @@ bool ImageDecoder::IsSizeAvailable() {
 
   const IntSize size = DecodedSize();
   const wtf_size_t decoded_size_bytes =
-      size.Width() * size.Height() * decoded_bytes_per_pixel;
+      size.width() * size.height() * decoded_bytes_per_pixel;
   if (decoded_size_bytes > max_decoded_bytes_) {
-    LOG(WARNING) << "Blocked decode of oversized image: " << size.Width() << "x"
-                 << size.Height();
+    LOG(WARNING) << "Blocked decode of oversized image: " << size.width() << "x"
+                 << size.height();
     return SetFailed();
   }
 #endif
@@ -395,7 +395,7 @@ cc::ImageHeaderMetadata ImageDecoder::MakeMetadataForDecodeAcceleration()
   cc::ImageHeaderMetadata image_metadata{};
   image_metadata.image_type = FileExtensionToImageType(FilenameExtension());
   image_metadata.yuv_subsampling = GetYUVSubsampling();
-  image_metadata.image_size = static_cast<gfx::Size>(size_);
+  image_metadata.image_size = ToGfxSize(size_);
   image_metadata.has_embedded_color_profile = HasEmbeddedColorProfile();
   return image_metadata;
 }
@@ -432,7 +432,7 @@ ImageFrame* ImageDecoder::DecodeFrameBufferAtIndex(wtf_size_t index) {
     if (frame->GetStatus() == ImageFrame::kFrameComplete) {
       BitmapImageMetrics::CountDecodedImageFrameTime(
           FilenameExtension(), metrics_time_delta_,
-          frame->OriginalFrameRect().Size().Area(),
+          frame->OriginalFrameRect().size().Area(),
           metrics_first_ && (index == 0));
       metrics_frame_index_ = kNotFound;
       metrics_time_delta_ = base::TimeDelta();
@@ -473,8 +473,8 @@ wtf_size_t ImageDecoder::FrameBytesAtIndex(wtf_size_t index) const {
     decoded_bytes_per_pixel = 8;
   }
   IntSize size = FrameSizeAtIndex(index);
-  base::CheckedNumeric<wtf_size_t> area = size.Width();
-  area *= size.Height();
+  base::CheckedNumeric<wtf_size_t> area = size.width();
+  area *= size.height();
   area *= decoded_bytes_per_pixel;
   return area.ValueOrDie();
 }
@@ -569,7 +569,7 @@ void ImageDecoder::CorrectAlphaWhenFrameBufferSawNoAlpha(wtf_size_t index) {
 
   // When this frame spans the entire image rect we can SetHasAlpha to false,
   // since there are logically no transparent pixels outside of the frame rect.
-  if (buffer.OriginalFrameRect().Contains(IntRect(IntPoint(), Size()))) {
+  if (buffer.OriginalFrameRect().Contains(IntRect(gfx::Point(), Size()))) {
     buffer.SetHasAlpha(false);
     buffer.SetRequiredPreviousFrameIndex(kNotFound);
   } else if (buffer.RequiredPreviousFrameIndex() != kNotFound) {
@@ -627,7 +627,7 @@ bool ImageDecoder::InitFrameBuffer(wtf_size_t frame_index) {
       buffer->RequiredPreviousFrameIndex();
   if (required_previous_frame_index == kNotFound) {
     // This frame doesn't rely on any previous data.
-    if (!buffer->AllocatePixelData(Size().Width(), Size().Height(),
+    if (!buffer->AllocatePixelData(Size().width(), Size().height(),
                                    ColorSpaceForSkImages())) {
       return false;
     }
@@ -651,7 +651,7 @@ bool ImageDecoder::InitFrameBuffer(wtf_size_t frame_index) {
       // We want to clear the previous frame to transparent, without
       // affecting pixels in the image outside of the frame.
       const IntRect& prev_rect = prev_buffer->OriginalFrameRect();
-      DCHECK(!prev_rect.Contains(IntRect(IntPoint(), Size())));
+      DCHECK(!prev_rect.Contains(IntRect(gfx::Point(), Size())));
       buffer->ZeroFillFrameRect(prev_rect);
     }
   }
@@ -719,7 +719,7 @@ wtf_size_t ImageDecoder::FindRequiredPreviousFrame(wtf_size_t frame_index,
   const ImageFrame* curr_buffer = &frame_buffer_cache_[frame_index];
   if ((frame_rect_is_opaque ||
        curr_buffer->GetAlphaBlendSource() == ImageFrame::kBlendAtopBgcolor) &&
-      curr_buffer->OriginalFrameRect().Contains(IntRect(IntPoint(), Size())))
+      curr_buffer->OriginalFrameRect().Contains(IntRect(gfx::Point(), Size())))
     return kNotFound;
 
   // The starting state for this frame depends on the previous frame's
@@ -753,7 +753,7 @@ wtf_size_t ImageDecoder::FindRequiredPreviousFrame(wtf_size_t frame_index,
       // this frame is a blank frame, so it can again be decoded alone.
       // Otherwise, the previous frame contributes to this frame.
       return (prev_buffer->OriginalFrameRect().Contains(
-                  IntRect(IntPoint(), Size())) ||
+                  IntRect(gfx::Point(), Size())) ||
               (prev_buffer->RequiredPreviousFrameIndex() == kNotFound))
                  ? kNotFound
                  : prev_frame;

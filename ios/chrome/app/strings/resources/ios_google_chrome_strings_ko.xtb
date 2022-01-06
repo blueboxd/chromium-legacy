@@ -3,7 +3,7 @@
 <translationbundle lang="ko">
 <translation id="1096883626080133124">더욱 심플하고 안전하며 그 어느 때보다도 빠른 Chrome을 더욱 다양하게 활용하세요</translation>
 <translation id="1282031177488366470">Chrome의 기능 및 성능 개선에 참여</translation>
-<translation id="1354592789402432496">관리자가 조직 계정으로 로그인할 것을 요구합니다. 관리자가 제한한 계정은 표시되지 않습니다.</translation>
+<translation id="1314663809820920746">북마크, 방문 기록, 비밀번호 및 기타 설정은 모두 이 기기에서 계속 확인할 수 있습니다. 변경할 경우 변경사항이 내 Google 계정에 동기화되지는 않습니다.</translation>
 <translation id="1479202195792305274">Google 계정으로 로그인하면 Chrome에서 비밀번호를 확인할 수 있습니다.</translation>
 <translation id="1493827051843127077">Chrome을 모든 기기에서 탭, 비밀번호, 결제 정보를 동기화할 기본값으로 설정합니다.</translation>
 <translation id="1504372625950710826">Chrome에서 업데이트를 확인할 수 없습니다. 인터넷 연결 상태를 확인해 보세요.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">오프라인 상태이므로 Chrome에서 업데이트를 확인할 수 없습니다.</translation>
 <translation id="5716154293141027663">다른 앱에서 링크를 탭할 때마다 Chrome을 엽니다.</translation>
-<translation id="572883588166315317">조직에서 Chrome을 사용하려면 로그인할 것을 요구합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="5854621639439811139">Chrome 도움말. 뒤로, 앞으로, 검색과 같은 일부 버튼이 화면 하단으로 이동했습니다.</translation>
-<translation id="5876773482963502140">위치 정보 사용을 허용하면 Chrome이 권한이 부여된 사이트에 위치 정보를 전송합니다. 근처 상점 또는 뉴스와 같이 표시할 지역 정보가 있는 경우 사이트에서 위치를 요청할 수 있습니다.</translation>
 <translation id="5998675059699164418">조직에서 Chrome을 사용하려면 로그인해야 합니다.</translation>
 <translation id="6054613632208573261">Chrome을 기본 브라우저로 사용</translation>
 <translation id="6063091872902370735">Chrome 로그인 허용</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">이 기기에서 내 Chrome 데이터를 삭제할지 또는 유지할지 선택하세요</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="840168496893712993">일부 부가기능으로 Chrome이 비정상 종료됩니다. 해당 부가기능을 제거하세요.</translation>
+<translation id="8414886616817913619">조직에서 Chrome을 사용하려면 로그인할 것을 요구합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">선택한 데이터가 Chrome 및 동기화된 기기에서 삭제되었습니다. history.google.com에서 검색이나 기타 Google 서비스에서의 활동 등 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>
 <translation id="850555388806794946">Chrome을 기본 브라우저로 설정하려면 다음 단계를 따르세요.
   1. 설정을 엽니다.

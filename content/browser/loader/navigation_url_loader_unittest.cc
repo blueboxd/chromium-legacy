@@ -31,6 +31,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/navigation/navigation_params.h"
@@ -62,7 +63,6 @@ class NavigationURLLoaderTest : public testing::Test {
             std::string() /* headers */, net::LOAD_NORMAL,
             false /* skip_service_worker */,
             blink::mojom::RequestContextType::LOCATION,
-            network::mojom::RequestDestination::kDocument,
             blink::mojom::MixedContentContextType::kBlockable,
             false /* is_form_submission */,
             false /* was_initiated_by_link_click */,
@@ -77,6 +77,8 @@ class NavigationURLLoaderTest : public testing::Test {
     auto common_params = blink::CreateCommonNavigationParams();
     common_params->url = url;
     common_params->initiator_origin = url::Origin::Create(url);
+    common_params->request_destination =
+        network::mojom::RequestDestination::kDocument;
 
     StoragePartition* storage_partition =
         browser_context_->GetDefaultStoragePartition();
@@ -102,7 +104,7 @@ class NavigationURLLoaderTest : public testing::Test {
             false /* is_pdf */));
     return NavigationURLLoader::Create(
         browser_context_.get(), storage_partition, std::move(request_info),
-        nullptr, nullptr, nullptr, nullptr, delegate,
+        nullptr, nullptr, nullptr, delegate,
         NavigationURLLoader::LoaderType::kRegular, mojo::NullRemote(),
         storage_partition->CreateURLLoaderNetworkObserverForNavigationRequest(
             FrameTreeNode::kFrameTreeNodeInvalidId /* frame_tree_node_id */),

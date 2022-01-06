@@ -12,7 +12,7 @@
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "content/browser/interest_group/bidding_interest_group.h"
+#include "content/browser/interest_group/storage_interest_group.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "sql/database.h"
@@ -42,16 +42,6 @@ class CONTENT_EXPORT InterestGroupStorage {
   // After a failed interest group update, delay the next update until
   // kUpdateFailedBackoffPeriod time has passed.
   static constexpr base::TimeDelta kUpdateFailedBackoffPeriod = base::Hours(1);
-
-  // Maximum number of interest groups, or interest group owners to keep in the
-  // database.
-  // TODO(crbug.com/1197209): Adjust these limits in response to usage.
-  static const size_t kMaxOwners = 1000;
-  static const size_t kMaxOwnerInterestGroups = 1000;
-
-  // Maximum number of operations allowed between maintenance calls.
-  // TODO(crbug.com/1257634): Add unit test to verify this count is respected.
-  static const size_t kMaxOpsBeforeMaintenance = 1000000;
 
   // Constructs an interest group storage based on a SQLite database in the
   // `path`/InterestGroups file. If the path passed in is empty, then the
@@ -91,19 +81,30 @@ class CONTENT_EXPORT InterestGroupStorage {
   void RecordInterestGroupWin(const url::Origin& owner,
                               const std::string& name,
                               const std::string& ad_json);
+  // Records the K-anonymity data for an interest group owner/name combination.
+  void UpdateInterestGroupNameKAnonymity(
+      const StorageInterestGroup::KAnonymityData& data,
+      const absl::optional<base::Time>& update_sent_time);
+  // Records the K-anonymity data for an interest group update URL.
+  void UpdateInterestGroupUpdateURLKAnonymity(
+      const StorageInterestGroup::KAnonymityData& data,
+      const absl::optional<base::Time>& update_sent_time);
+  // Records the K-anonymity data for an ad.
+  void UpdateAdKAnonymity(const StorageInterestGroup::KAnonymityData& data,
+                          const absl::optional<base::Time>& update_sent_time);
   // Gets a list of all interest group owners. Each owner will only appear
   // once.
   std::vector<url::Origin> GetAllInterestGroupOwners();
   // Gets a list of all interest groups with their bidding information
   // associated with the provided owner.
-  std::vector<BiddingInterestGroup> GetInterestGroupsForOwner(
+  std::vector<StorageInterestGroup> GetInterestGroupsForOwner(
       const url::Origin& owner);
   // Like GetInterestGroupsForOwner(), but doesn't return any interest groups
   // that are currently rate-limited for updates. Additionally, this will update
   // the `next_update_after` field such that a subsequent
   // ClaimInterestGroupsForUpdate() call with the same `owner` won't return
   // anything until after the success rate limit period passes.
-  std::vector<BiddingInterestGroup> ClaimInterestGroupsForUpdate(
+  std::vector<StorageInterestGroup> ClaimInterestGroupsForUpdate(
       const url::Origin& owner);
 
   // Clear out storage for the matching owning origin. If the callback is empty
@@ -111,7 +112,7 @@ class CONTENT_EXPORT InterestGroupStorage {
   void DeleteInterestGroupData(
       const base::RepeatingCallback<bool(const url::Origin&)>& origin_matcher);
 
-  std::vector<BiddingInterestGroup> GetAllInterestGroupsUnfilteredForTesting();
+  std::vector<StorageInterestGroup> GetAllInterestGroupsUnfilteredForTesting();
 
   base::Time GetLastMaintenanceTimeForTesting() const;
 
@@ -123,6 +124,17 @@ class CONTENT_EXPORT InterestGroupStorage {
   void DatabaseErrorCallback(int extended_error, sql::Statement* stmt);
 
   const base::FilePath path_to_database_;
+  // Maximum number of interest groups, or interest group owners to keep in the
+  // database.
+  // Set by the related blink::feature parameters kInterestGroupStorageMaxOwners
+  // and kInterestGroupStorageMaxGroupsPerOwner.
+  const size_t max_owners_;
+  const size_t max_owner_interest_groups_;
+
+  // Maximum number of operations allowed between maintenance calls.
+  // Set by the related blink::feature parameter
+  // kInterestGroupStorageMaxOpsBeforeMaintenance.
+  const size_t max_ops_before_maintenance_;
 
   std::unique_ptr<sql::Database> db_ GUARDED_BY_CONTEXT(sequence_checker_);
   base::DelayTimer db_maintenance_timer_ GUARDED_BY_CONTEXT(sequence_checker_);

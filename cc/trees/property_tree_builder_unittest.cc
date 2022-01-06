@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/keyframe/keyframed_animation_curve.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/test/geometry_util.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
@@ -52,8 +53,8 @@ class PropertyTreeBuilderTest : public LayerTreeImplTestBase,
     // TODO(https://crbug.com/939968) This call should be handled by
     // FakeLayerTreeHost instead of manually pushing the properties from the
     // layer tree host to the pending tree.
-    host()->PushLayerTreePropertiesTo(host_impl()->pending_tree());
-
+    LayerTreeHost::PushLayerTreePropertiesTo(host()->pending_commit_state(),
+                                             host_impl()->pending_tree());
     UpdateDrawProperties(host_impl()->pending_tree());
   }
 
@@ -452,8 +453,7 @@ TEST_F(PropertyTreeBuilderTest, TextureLayerSnapping) {
   auto child_screen_space_transform = ImplOf(child)->ScreenSpaceTransform();
   EXPECT_NE(child_screen_space_transform, fractional_translate);
   fractional_translate.RoundTranslationComponents();
-  EXPECT_TRANSFORMATION_MATRIX_EQ(child_screen_space_transform,
-                                  fractional_translate);
+  EXPECT_TRANSFORM_EQ(child_screen_space_transform, fractional_translate);
   gfx::RectF layer_bounds_in_screen_space = MathUtil::MapClippedRect(
       child_screen_space_transform, gfx::RectF(gfx::SizeF(child->bounds())));
   EXPECT_EQ(layer_bounds_in_screen_space, gfx::RectF(11.f, 20.f, 100.f, 100.f));

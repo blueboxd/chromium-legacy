@@ -11,7 +11,6 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -107,7 +106,7 @@ absl::optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
   // TODO(crbug/1113502): Plumb through better launch sources from callsites.
   apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
       app_id.value(), /*event_flags=*/0,
-      apps::mojom::AppLaunchSource::kSourceChromeInternal, display_id,
+      apps::mojom::LaunchSource::kFromChromeInternal, display_id,
       /*fallback_container=*/
       ConvertDisplayModeToAppLaunchContainer(display_mode));
 
@@ -215,8 +214,9 @@ Browser* LaunchSystemWebAppImpl(Profile* profile,
   if (!provider)
     return nullptr;
 
-  DCHECK(url.GetOrigin() ==
-         provider->registrar().GetAppLaunchUrl(params.app_id).GetOrigin());
+  DCHECK(url.DeprecatedGetOriginAsURL() == provider->registrar()
+                                               .GetAppLaunchUrl(params.app_id)
+                                               .DeprecatedGetOriginAsURL());
 
   Browser* browser = nullptr;
   Browser::Type browser_type = Browser::TYPE_APP;

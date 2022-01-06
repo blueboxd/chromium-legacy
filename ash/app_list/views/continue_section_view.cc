@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_model.h"
@@ -50,9 +51,11 @@ std::unique_ptr<views::Label> CreateContinueLabel(const std::u16string& text) {
 }  // namespace
 
 ContinueSectionView::ContinueSectionView(AppListViewDelegate* view_delegate,
-                                         int columns)
-    : view_delegate_(view_delegate) {
+                                         int columns,
+                                         bool tablet_mode) {
   DCHECK(view_delegate);
+
+  AppListModelProvider::Get()->AddObserver(this);
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -64,20 +67,31 @@ ContinueSectionView::ContinueSectionView(AppListViewDelegate* view_delegate,
 
   // TODO(https://crbug.com/1204551): Localized strings.
   // TODO(https://crbug.com/1204551): Styling.
-  auto* continue_label = AddChildView(CreateContinueLabel(u"Continue"));
-  continue_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  continue_label->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(0, kHeaderHorizontalPadding)));
+  if (!tablet_mode) {
+    auto* continue_label = AddChildView(CreateContinueLabel(u"Continue"));
+    continue_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    continue_label->SetBorder(
+        views::CreateEmptyBorder(gfx::Insets(0, kHeaderHorizontalPadding)));
+  }
 
   suggestions_container_ =
       AddChildView(std::make_unique<ContinueTaskContainerView>(
           view_delegate, columns,
           base::BindRepeating(
               &ContinueSectionView::OnSearchResultContainerResultsChanged,
-              base::Unretained(this))));
+              base::Unretained(this)),
+          tablet_mode));
 }
 
-ContinueSectionView::~ContinueSectionView() = default;
+ContinueSectionView::~ContinueSectionView() {
+  AppListModelProvider::Get()->RemoveObserver(this);
+}
+
+void ContinueSectionView::OnActiveAppListModelsChanged(
+    AppListModel* model,
+    SearchModel* search_model) {
+  UpdateSuggestionTasks();
+}
 
 size_t ContinueSectionView::GetTasksSuggestionsCount() const {
   return static_cast<size_t>(suggestions_container_->num_results());
@@ -99,7 +113,7 @@ ContinueTaskView* ContinueSectionView::GetTaskViewAtForTesting(
 
 void ContinueSectionView::UpdateSuggestionTasks() {
   suggestions_container_->SetResults(
-      view_delegate_->GetSearchModel()->results());
+      AppListModelProvider::Get()->search_model()->results());
 }
 
 void ContinueSectionView::OnSearchResultContainerResultsChanged() {

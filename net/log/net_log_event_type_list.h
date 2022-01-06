@@ -2097,6 +2097,14 @@ EVENT_TYPE(QUIC_SESSION_TRANSPORT_PARAMETERS_SENT)
 //   }
 EVENT_TYPE(QUIC_SESSION_TRANSPORT_PARAMETERS_RESUMED)
 
+// A WebTransport client state has changed.
+//   {
+//     "last_state": <The last client state>
+//     "next_state": <The next client state>
+//     "error": <Optionally, error codes and details when an error happened>
+//   }
+EVENT_TYPE(QUIC_SESSION_WEBTRANSPORT_CLIENT_STATE_CHANGED)
+
 // QUIC with TLS gets 0-RTT rejected.
 EVENT_TYPE(QUIC_SESSION_ZERO_RTT_REJECTED)
 
@@ -4019,7 +4027,22 @@ EVENT_TYPE(CHECK_CORS_PREFLIGHT_CACHE)
 //  }
 EVENT_TYPE(CORS_PREFLIGHT_RESULT)
 
+// This event identifies the NetLogSource() for a URLRequest of the preflight
+// request.
+EVENT_TYPE(CORS_PREFLIGHT_URL_REQUEST)
+
 // This event is logged when PreflightController gets CORS preflight result
 // from preflight cache.
 // The parameters are the same as for CORS_PREFLIGHT_RESULT.
 EVENT_TYPE(CORS_PREFLIGHT_CACHED_RESULT)
+
+// ------------------------------------------------------------------------
+// Initiator
+// ------------------------------------------------------------------------
+
+// This event is logged to indicate the initiator of the network event.
+// The event contains the following parameters:
+//   {
+//     "source_dependency": <Source identifier for the attached event>
+//   }
+EVENT_TYPE(CREATED_BY)

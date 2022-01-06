@@ -127,8 +127,7 @@ web_app::AppId CreateSettingsSystemWebApp(Profile* profile) {
       profile, web_app::SystemAppType::SETTINGS);
   apps::AppLaunchParams params(
       settings_app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceTest);
+      WindowOpenDisposition::NEW_WINDOW, apps::mojom::LaunchSource::kFromTest);
   params.restore_id = kSettingsWindowId;
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->BrowserAppLauncher()
@@ -414,8 +413,9 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchEmptyDeskTemplate) {
 
   ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
 
-  auto desk_template = std::make_unique<ash::DeskTemplate>(kDeskUuid);
-  desk_template->set_template_name(kDeskName);
+  auto desk_template = std::make_unique<ash::DeskTemplate>(
+      kDeskUuid.AsLowercaseString(), ash::DeskTemplateSource::kUser,
+      base::UTF16ToUTF8(kDeskName), base::Time::Now());
   SetAndLaunchTemplate(std::move(desk_template));
 
   EXPECT_EQ(1, desks_controller->GetActiveDeskIndex());
@@ -443,8 +443,9 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchMultipleEmptyDeskTemplates) {
 
   ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
 
-  auto desk_template = std::make_unique<ash::DeskTemplate>(kDeskUuid);
-  desk_template->set_template_name(kDeskName);
+  auto desk_template = std::make_unique<ash::DeskTemplate>(
+      kDeskUuid.AsLowercaseString(), ash::DeskTemplateSource::kUser,
+      base::UTF16ToUTF8(kDeskName), base::Time::Now());
   SetTemplate(std::move(desk_template));
 
   auto check_launch_template_desk_name =

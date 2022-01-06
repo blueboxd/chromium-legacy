@@ -15,9 +15,9 @@
 #include "base/cxx17_backports.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "cc/base/switches.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_context.h"
@@ -74,6 +74,7 @@
 
 #if defined(OS_WIN)
 #include "base/strings/utf_string_conversions.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox.h"
 #endif
@@ -527,7 +528,7 @@ std::unique_ptr<LoginDelegate> WebTestContentBrowserClient::CreateLoginDelegate(
     const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
-    bool is_main_frame,
+    bool is_request_for_primary_main_frame,
     const GURL& url,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     bool first_auth_attempt,
@@ -573,9 +574,9 @@ void WebTestContentBrowserClient::BindWebTestControlHost(
 #if defined(OS_WIN)
 bool WebTestContentBrowserClient::PreSpawnChild(
     sandbox::TargetPolicy* policy,
-    sandbox::policy::SandboxType sandbox_type,
+    sandbox::mojom::Sandbox sandbox_type,
     ChildSpawnFlags flags) {
-  if (sandbox_type == sandbox::policy::SandboxType::kRenderer) {
+  if (sandbox_type == sandbox::mojom::Sandbox::kRenderer) {
     // Add sideloaded font files for testing. See also DIR_WINDOWS_FONTS
     // addition in |StartSandboxedProcess|.
     std::vector<std::string> font_files = switches::GetSideloadFontFiles();
@@ -593,6 +594,13 @@ bool WebTestContentBrowserClient::PreSpawnChild(
 std::string WebTestContentBrowserClient::GetAcceptLangs(
     BrowserContext* context) {
   return content::GetShellLanguage();
+}
+
+bool WebTestContentBrowserClient::IsInterestGroupAPIAllowed(
+    content::BrowserContext* browser_context,
+    const url::Origin& top_frame_origin,
+    const GURL& api_url) {
+  return true;
 }
 
 void WebTestContentBrowserClient::GetHyphenationDictionary(

@@ -109,8 +109,12 @@ Polymer({
     this.getRoutineSectionElem_().stopTests();
   },
 
-  displayRoutines_() {
-    return this.routines_ && this.routines_.length > 0;
+  /**
+   * @protected
+   * @return {boolean}
+   */
+  hasRoutines_() {
+    return this.routineGroups_ && this.routineGroups_.length > 0;
   },
 
   /** @private */
@@ -141,7 +145,8 @@ Polymer({
     this.macAddress_ = network.macAddress || '';
 
     if (this.testSuiteStatus === TestSuiteStatus.kNotRunning) {
-      let isArcEnabled = loadTimeData.getBoolean('enableArcNetworkDiagnostics');
+      const isArcEnabled =
+          loadTimeData.getBoolean('enableArcNetworkDiagnostics');
       this.routineGroups_ = getRoutineGroups(network.type, isArcEnabled);
       this.getRoutineSectionElem_().runTests();
     }

@@ -12,8 +12,8 @@
 #include "base/containers/flat_set.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/supervised_user/kids_management_url_checker_client.h"
 #include "chrome/browser/supervised_user/supervised_user_denylist.h"
@@ -293,10 +293,12 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   // Allow navigations to allowed origins (currently families.google.com and
   // accounts.google.com).
   static const base::NoDestructor<base::flat_set<GURL>> kAllowedOrigins(
-      base::flat_set<GURL>({GURL(kFamiliesUrl).GetOrigin(),
-                            GURL(kFamiliesSecureUrl).GetOrigin(),
-                            GURL(kAccountsGoogleUrl).GetOrigin()}));
-  if (base::Contains(*kAllowedOrigins, effective_url.GetOrigin()))
+      base::flat_set<GURL>(
+          {GURL(kFamiliesUrl).DeprecatedGetOriginAsURL(),
+           GURL(kFamiliesSecureUrl).DeprecatedGetOriginAsURL(),
+           GURL(kAccountsGoogleUrl).DeprecatedGetOriginAsURL()}));
+  if (base::Contains(*kAllowedOrigins,
+                     effective_url.DeprecatedGetOriginAsURL()))
     return ALLOW;
 
   // Check Play Store terms of service.

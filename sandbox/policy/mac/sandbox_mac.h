@@ -10,11 +10,16 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "sandbox/policy/export.h"
-#include "sandbox/policy/sandbox_type.h"
 
 namespace base {
 class FilePath;
 }
+
+namespace sandbox {
+namespace mojom {
+enum class Sandbox;
+}  // namespace mojom
+}  // namespace sandbox
 
 namespace sandbox {
 namespace policy {
@@ -29,7 +34,7 @@ SANDBOX_POLICY_EXPORT base::FilePath GetCanonicalPath(
 // It CHECKs that the sandbox profile is a valid type, so it always returns a
 // valid result, or crashes.
 SANDBOX_POLICY_EXPORT std::string GetSandboxProfile(
-    SandboxType sandbox_type);
+    sandbox::mojom::Sandbox sandbox_type);
 
 class SANDBOX_POLICY_EXPORT SandboxMac {
  public:
@@ -38,14 +43,14 @@ class SANDBOX_POLICY_EXPORT SandboxMac {
   // Valid |sandbox_type| values are defined by the enum SandboxType, or can be
   // defined by the embedder via
   // ContentClient::GetSandboxProfileForProcessType().
-  static void Warmup(SandboxType sandbox_type);
+  static void Warmup(sandbox::mojom::Sandbox sandbox_type);
 
   // Turns on the OS X sandbox for this process.
   // |sandbox_type| - type of Sandbox to use. See SandboxWarmup() for legal
   // values.
   //
   // Returns true on success, false if an error occurred enabling the sandbox.
-  static bool Enable(SandboxType sandbox_type);
+  static bool Enable(sandbox::mojom::Sandbox sandbox_type);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SandboxMac);

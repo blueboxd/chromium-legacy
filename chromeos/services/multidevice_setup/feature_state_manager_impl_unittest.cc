@@ -89,6 +89,12 @@ multidevice::RemoteDeviceRef CreateTestHostDevice(
 }  // namespace
 
 class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
+ public:
+  MultiDeviceSetupFeatureStateManagerImplTest(
+      const MultiDeviceSetupFeatureStateManagerImplTest&) = delete;
+  MultiDeviceSetupFeatureStateManagerImplTest& operator=(
+      const MultiDeviceSetupFeatureStateManagerImplTest&) = delete;
+
  protected:
   MultiDeviceSetupFeatureStateManagerImplTest()
       : test_local_device_(CreateTestLocalDevice()),
@@ -247,6 +253,8 @@ class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
   }
 
  private:
+  base::test::TaskEnvironment task_environment_;
+
   multidevice::RemoteDeviceRef test_local_device_;
   multidevice::RemoteDeviceRef test_host_device_;
 
@@ -261,8 +269,6 @@ class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
   std::unique_ptr<FakeFeatureStateManagerObserver> fake_observer_;
 
   std::unique_ptr<FeatureStateManager> manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupFeatureStateManagerImplTest);
 };
 
 TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, BetterTogetherSuite) {
@@ -550,7 +556,7 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, SmartLock) {
 TEST_F(MultiDeviceSetupFeatureStateManagerImplTest,
        PhoneHubBluetoothAddressNotSynced) {
   SetupFeatureStateManager(/*is_secondary_user=*/false,
-                           /*empty_bluetooth_address=*/true);
+                           /*empty_mac_address=*/true);
 
   const std::vector<mojom::Feature> kAllPhoneHubFeatures{
       mojom::Feature::kPhoneHub, mojom::Feature::kPhoneHubCameraRoll,

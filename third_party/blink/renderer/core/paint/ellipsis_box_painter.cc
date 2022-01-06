@@ -51,9 +51,9 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
   DCHECK(ellipsis_box_.KnownToHaveNoOverflow());
   IntRect visual_rect = EnclosingIntRect(box_rect);
   if (!ellipsis_box_.IsHorizontal())
-    visual_rect.SetSize(visual_rect.Size().TransposedSize());
+    visual_rect.set_size(visual_rect.size().TransposedSize());
   DrawingRecorder recorder(context, ellipsis_box_, paint_info.phase,
-                           visual_rect);
+                           ToGfxRect(visual_rect));
 
   GraphicsContextStateSaver state_saver(context);
   if (!ellipsis_box_.IsHorizontal())
@@ -86,7 +86,7 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
   context.GetPaintController().SetTextPainted();
 
   if (!font.ShouldSkipDrawing())
-    PaintTimingDetector::NotifyTextPaint(visual_rect);
+    PaintTimingDetector::NotifyTextPaint(ToGfxRect(visual_rect));
 }
 
 }  // namespace blink

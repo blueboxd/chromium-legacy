@@ -74,27 +74,6 @@ CommandUtil.SharingActionElementId = {
 };
 
 /**
- * Helper function that for the given event returns the source of a share
- * action. If the source cannot be determined, this function returns
- * CommandUtil.SharingActionSourceForUMA.UNKNOWN.
- * @param {!Event} event The event that triggered share action.
- * @return {!FileTasks.SharingActionSourceForUMA}
- */
-CommandUtil.getSharingActionSource = event => {
-  const id = event.target.id;
-  switch (id) {
-    case CommandUtil.SharingActionElementId.CONTEXT_MENU:
-      return FileTasks.SharingActionSourceForUMA.CONTEXT_MENU;
-    case CommandUtil.SharingActionElementId.SHARE_SHEET:
-      return FileTasks.SharingActionSourceForUMA.SHARE_SHEET;
-    default: {
-      console.error('Unrecognized event.target.id for sharing action "%s"', id);
-      return FileTasks.SharingActionSourceForUMA.UNKNOWN;
-    }
-  }
-};
-
-/**
  * Helper function that for the given event returns the launch source of the
  * sharesheet. If the source cannot be determined, this function returns
  * chrome.fileManagerPrivate.SharesheetLaunchSource.UNKNOWN.
@@ -1778,6 +1757,7 @@ CommandHandler.COMMANDS_['open-with'] = new class extends FilesCommand {
 CommandHandler.COMMANDS_['invoke-sharesheet'] = new class extends FilesCommand {
   execute(event, fileManager) {
     const entries = fileManager.selectionHandler.selection.entries;
+    FileTasks.recordSharingFileTypesUMA_(entries);
     const launchSource = CommandUtil.getSharesheetLaunchSource(event);
     chrome.fileManagerPrivate.invokeSharesheet(entries, launchSource, () => {
       if (chrome.runtime.lastError) {
@@ -2106,8 +2086,14 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends FilesCommand {
     }
 
     const selectionEntries = fileManager.getSelection().entries;
-    fileManager.fileOperationManager.zipSelection(
-        selectionEntries, /** @type {!DirectoryEntry} */ (dirEntry));
+    if (window.isSWA) {
+      chrome.fileManagerPrivate.startIOTask(
+          chrome.fileManagerPrivate.IOTaskType.ZIP, selectionEntries,
+          {destinationFolder: /** @type {!DirectoryEntry} */ (dirEntry)});
+    } else {
+      fileManager.fileOperationManager.zipSelection(
+          selectionEntries, /** @type {!DirectoryEntry} */ (dirEntry));
+    }
   }
 
   /** @override */
@@ -2141,8 +2127,6 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends FilesCommand {
 CommandHandler.COMMANDS_['share'] = new class extends FilesCommand {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
-    FileTasks.recordSharingActionUMA_(
-        CommandUtil.getSharingActionSource(event), entries);
     const actionsController = fileManager.actionsController;
 
     fileManager.actionsController.getActionsForEntries(entries).then(
@@ -2737,8 +2721,10 @@ CommandHandler.COMMANDS_['inspect-element'] = new class extends FilesCommand {
 CommandHandler.COMMANDS_['inspect-background'] =
     new class extends FilesCommand {
   execute(event, fileManager) {
-    chrome.fileManagerPrivate.openInspector(
-        chrome.fileManagerPrivate.InspectionType.BACKGROUND);
+    if (!window.isSWA) {
+      chrome.fileManagerPrivate.openInspector(
+          chrome.fileManagerPrivate.InspectionType.BACKGROUND);
+    }
   }
 };
 

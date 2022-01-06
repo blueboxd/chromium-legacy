@@ -3,7 +3,7 @@
 <translationbundle lang="da">
 <translation id="1096883626080133124">Få mere fra hånden med Google Chrome, der er enkel, sikker og hurtigere end nogensinde</translation>
 <translation id="1282031177488366470">Hjælp med at forbedre Chromes funktioner og effektivitet</translation>
-<translation id="1354592789402432496">Din administrator kræver, at du logger ind med en organisationskonto. Konti, der er begrænset af din administrator, skjules.</translation>
+<translation id="1314663809820920746">Du kan stadig se al din historik samt alle dine bogmærker, adgangskoder og andre indstillinger på din enhed. Hvis du foretager nogen ændringer, bliver de dog ikke synkroniseret med din Google-konto.</translation>
 <translation id="1479202195792305274">Chrome kan tjekke dine adgangskoder, når du er logget ind med din Google-konto.</translation>
 <translation id="1493827051843127077">Angiv Chrome som standardbrowser for at synkronisere faner, adgangskoder og betalingsoplysninger på alle dine enheder</translation>
 <translation id="1504372625950710826">Chrome kunne ikke søge efter opdateringer. Prøv at tjekke din internetforbindelse.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Offline – Chrome kan ikke søge efter opdateringer</translation>
 <translation id="5716154293141027663">Åbn Chrome, hver gang du trykker på links i andre apps</translation>
-<translation id="572883588166315317">Din organisation kræver, at du logger ind for at bruge Chrome. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Chrome-tip. Nogle knapper som f.eks. Tilbage, Frem og Søg findes nu nederst på skærmen.</translation>
-<translation id="5876773482963502140">Hvis du giver Chrome tilladelse til at kende din lokation, sender Chrome den til de websites, du giver tilladelse til. Websites kan anmode om adgang til din lokation, når de vil vise dig lokale oplysninger, f.eks. butikker i nærheden eller nyheder.</translation>
 <translation id="5998675059699164418">Din organisation kræver, at du logger ind for at bruge Chrome.</translation>
 <translation id="6054613632208573261">Brug Chrome som standard</translation>
 <translation id="6063091872902370735">Tillad login via Chrome</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Vælg, om du vil rydde dine Chrome-data fra denne enhed eller beholde dem</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Alle rettigheder forbeholdes.</translation>
 <translation id="840168496893712993">Nogle tilføjelser får Chrome til at gå ned. Prøv at afinstallere dem.</translation>
+<translation id="8414886616817913619">Din organisation kræver, at du logger ind for at bruge Chrome. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">De valgte data er fjernet fra Chrome og synkroniserede enheder. Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og aktivitet fra andre Google-tjenester, på history.google.com.</translation>
 <translation id="850555388806794946">Sådan gør du Chrome til din standardbrowser:
   1. Åbn Indstillinger

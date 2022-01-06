@@ -42,7 +42,6 @@ void FakeInstallFinalizer::FinalizeInstall(
 
 void FakeInstallFinalizer::FinalizeUpdate(
     const WebApplicationInfo& web_app_info,
-    content::WebContents* web_contents,
     InstallFinalizedCallback callback) {
   Finalize(web_app_info, InstallResultCode::kSuccessAlreadyInstalled,
            std::move(callback));
@@ -74,12 +73,8 @@ void FakeInstallFinalizer::UninstallExternalWebAppByUrl(
                      }));
 }
 
-void FakeInstallFinalizer::UninstallFromSyncBeforeRegistryUpdate(
-    std::vector<AppId> web_apps) {
-  NOTREACHED();
-}
-void FakeInstallFinalizer::UninstallFromSyncAfterRegistryUpdate(
-    std::vector<std::unique_ptr<WebApp>> web_apps,
+void FakeInstallFinalizer::UninstallWithoutRegistryUpdateFromSync(
+    const std::vector<AppId>& web_apps,
     RepeatingUninstallCallback callback) {
   NOTREACHED();
 }
@@ -94,6 +89,11 @@ void FakeInstallFinalizer::UninstallWebApp(
     webapps::WebappUninstallSource uninstall_source,
     UninstallWebAppCallback) {
   NOTIMPLEMENTED();
+}
+
+void FakeInstallFinalizer::RetryIncompleteUninstalls(
+    const std::vector<AppId>& apps_to_uninstall) {
+  NOTREACHED();
 }
 
 bool FakeInstallFinalizer::WasPreinstalledWebAppUninstalled(

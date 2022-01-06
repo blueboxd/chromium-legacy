@@ -130,20 +130,21 @@ void TabDragDropDelegate::DragUpdate(const gfx::Point& location_in_screen) {
   tab_dragging_recorder_->RequestNext();
 }
 
-void TabDragDropDelegate::Drop(const gfx::Point& location_in_screen,
-                               const ui::OSExchangeData& drop_data) {
+void TabDragDropDelegate::DropAndDeleteSelf(
+    const gfx::Point& location_in_screen,
+    const ui::OSExchangeData& drop_data) {
   tab_dragging_recorder_.reset();
 
   auto closure = base::BindOnce(&TabDragDropDelegate::OnNewBrowserWindowCreated,
-                                base::Unretained(this), location_in_screen);
-  NewWindowDelegate::GetPrimary()->NewWindowForWebUITabDrop(
+                                base::Owned(this), location_in_screen);
+  NewWindowDelegate::GetPrimary()->NewWindowForDetachingTab(
       source_window_, drop_data, std::move(closure));
 }
 
 void TabDragDropDelegate::OnNewBrowserWindowCreated(
     const gfx::Point& location_in_screen,
     aura::Window* new_window) {
-  DCHECK(new_window);
+  DCHECK(new_window) << "New browser window creation for tab detaching failed.";
 
   const gfx::Rect area =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(

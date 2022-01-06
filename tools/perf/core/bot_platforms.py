@@ -561,7 +561,7 @@ WIN_10_AMD = PerfPlatform('win-10_amd-perf', 'Windows AMD chipset',
                           _WIN_10_AMD_BENCHMARK_CONFIGS, 1, 'win')
 WIN_10_AMD_LAPTOP = PerfPlatform('win-10_amd_laptop-perf',
                                  'Windows 10 Laptop with AMD chipset.',
-                                 _WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS, 1, 'win')
+                                 _WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS, 2, 'win')
 WIN_7 = PerfPlatform('Win 7 Perf', 'N/A', _WIN_7_BENCHMARK_CONFIGS, 2, 'win')
 WIN_7_GPU = PerfPlatform('Win 7 Nvidia GPU Perf', 'N/A',
                          _WIN_7_GPU_BENCHMARK_CONFIGS, 3, 'win')
@@ -663,17 +663,19 @@ FUCHSIA_PERF_FYI = PerfPlatform('fuchsia-perf-fyi',
 LINUX_PERF_CALIBRATION = PerfPlatform(
     'linux-perf-calibration',
     'Ubuntu-18.04, 8 core, NVIDIA Quadro P400',
-    _LINUX_PERF_CALIBRATION_BENCHMARK_CONFIGS,
+    _LINUX_BENCHMARK_CONFIGS,
     28,
     'linux',
+    executables=_LINUX_EXECUTABLE_CONFIGS,
     is_calibration=True)
 
 ANDROID_PIXEL2_PERF_CALIBRATION = PerfPlatform(
     'android-pixel2-perf-calibration',
     'Android OPM1.171019.021',
-    _ANDROID_PIXEL2_PERF_CALIBRATION_BENCHMARK_CONFIGS,
+    _ANDROID_PIXEL2_BENCHMARK_CONFIGS,
     42,
     'android',
+    executables=_ANDROID_PIXEL2_EXECUTABLE_CONFIGS,
     is_calibration=True)
 
 ALL_PLATFORMS = {

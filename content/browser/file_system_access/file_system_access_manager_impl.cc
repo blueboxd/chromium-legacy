@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_post_task.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
@@ -20,6 +19,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
@@ -48,6 +48,7 @@
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/file_system/file_system_util.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -86,7 +87,7 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
   }
 
   url::Origin embedding_origin =
-      url::Origin::Create(web_contents->GetLastCommittedURL());
+      web_contents->GetMainFrame()->GetLastCommittedOrigin();
   if (embedding_origin != requesting_origin) {
     // Third party iframes are not allowed to show a file picker.
     std::move(callback).Run(

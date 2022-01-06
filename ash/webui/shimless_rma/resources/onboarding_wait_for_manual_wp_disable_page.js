@@ -85,15 +85,13 @@ export class OnboardingWaitForManualWpDisablePageElement extends
   /** @return {!Promise<!StateResult>} */
   onNextButtonClick() {
     if (!this.hwwpEnabled_) {
-      // TODO(crbug.com/1218180): Replace with a state specific function e.g.
-      // WriteProtectManuallyDisabled()
-      return this.shimlessRmaService_.transitionNextState();
+      return this.shimlessRmaService_.writeProtectManuallyDisabled();
     } else {
       return Promise.reject(
           new Error('Hardware Write Protection is not disabled.'));
     }
   }
-};
+}
 
 customElements.define(
     OnboardingWaitForManualWpDisablePageElement.is,

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/policy/status_collector/app_info_generator.h"
 
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -227,7 +228,8 @@ const em::AppInfo AppInfoGenerator::ConvertToAppInfo(
     // For web apps, publisher id is the start url.
     GURL start_url(update.PublisherId());
     DCHECK(start_url.is_valid());
-    const std::string launch_origin = start_url.GetOrigin().spec();
+    const std::string launch_origin =
+        start_url.DeprecatedGetOriginAsURL().spec();
     info.set_app_id(launch_origin);
     info.set_app_name(launch_origin);
   }

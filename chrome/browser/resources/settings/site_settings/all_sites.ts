@@ -464,7 +464,6 @@ class AllSitesElement extends AllSitesElementBase {
     };
 
     if (actionScope === 'origin') {
-      this.browserProxy.recordAction(AllSitesAction2.REMOVE_ORIGIN);
       this.browserProxy.clearOriginDataAndCookies(this.toUrl(origin)!.href);
       this.resetPermissionsForOrigin_(origin);
 
@@ -476,7 +475,6 @@ class AllSitesElement extends AllSitesElementBase {
           siteGroupToUpdate.origins.find(o => o.origin === origin)!.numCookies;
 
     } else {
-      this.browserProxy.recordAction(AllSitesAction2.REMOVE_SITE_GROUP);
       this.browserProxy.clearEtldPlus1DataAndCookies(
           siteGroupToUpdate.etldPlus1);
       siteGroupToUpdate.origins.forEach(originEntry => {

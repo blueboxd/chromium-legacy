@@ -1,17 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="1018219910092211213">Δεν είναι δυνατή η επίλυση του DNS.</translation>
 <translation id="1018656279737460067">Ακυρώθηκε</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> νήματα, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1059913517121127803">Δεν ήταν δυνατή η έναρξη της σάρωσης</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Εντοπίστηκε τείχος προστασίας</translation>
 <translation id="1075811647922107217">Μέγεθος σελίδας</translation>
-<translation id="110351136513869678">Επισκεφτείτε τις ρυθμίσεις για διαμόρφωση.</translation>
+<translation id="1094693127011229778">Η διεύθυνση IP δεν είναι διαθέσιμη.</translation>
 <translation id="1119447706177454957">Εσωτερικό σφάλμα</translation>
 <translation id="1124772482545689468">Χρήστης</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1175697296044146566">Η διαχείριση της συσκευής <ph name="DEVICE_TYPE" /> γίνεται από <ph name="MANAGER" />.</translation>
+<translation id="1175951029573070619">Μέτριο (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="1195447618553298278">Άγνωστο σφάλμα.</translation>
 <translation id="1204296502688602597">Λανθάνων χρόνος DNS</translation>
@@ -21,6 +23,7 @@
 <translation id="1270369111467284986">Η πύλη υποδοχής είναι ύποπτη</translation>
 <translation id="1290331692326790741">Ασθενές σήμα</translation>
 <translation id="1301069673413256657">GSM</translation>
+<translation id="1310380015393971138">Δεν υπάρχει διαθέσιμο δίκτυο <ph name="NETWORK_NAME" /></translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">Εγχώριο δίκτυο, χωρίς περιαγωγή </translation>
 <translation id="1327977588028644528">Πύλη</translation>
@@ -39,6 +42,8 @@
 <translation id="150962533380566081">Μη έγκυρος κωδικός PUK.</translation>
 <translation id="1510238584712386396">Λειτουργία εκκίνησης</translation>
 <translation id="155865706765934889">Επιφάνεια Αφής</translation>
+<translation id="1567064801249837505">Λευκώματα</translation>
+<translation id="1572585716423026576">Ορισμός ως ταπετσαρία</translation>
 <translation id="1621067168122174824">Εκτέλεση δοκιμής φόρτισης</translation>
 <translation id="1639239467298939599">Γίνεται φόρτωση</translation>
 <translation id="1641857168437328880">Τροφοδότης εγγράφων (Μίας όψης)</translation>
@@ -51,23 +56,23 @@
 <translation id="1717874160321062422">Διαχειρίζεται από <ph name="FIRST_MANAGER" /> και <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Διακομιστές ονομάτων</translation>
 <translation id="1731082422893354635">Επιφάνεια αφής Bluetooth</translation>
+<translation id="1753496554272155572">Έξοδος από προεπισκόπηση ταπετσαρίας</translation>
+<translation id="175763766237925754">Καλό (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1792647875738159689">Ακύρωση σάρωσης</translation>
 <translation id="1851218745569890714">Συνεδρίαση με βίντεο</translation>
 <translation id="1874612839560830905">MTU</translation>
-<translation id="1881378885488531302">Δεν είναι δυνατή η λήψη της διεύθυνσης IP</translation>
 <translation id="1887850431809612466">Έκδοση υλικού</translation>
-<translation id="1901646112321215184">Δεν έχουν διαμορφωθεί διακομιστές DNS</translation>
 <translation id="1905710495812624430">Έγινε υπέρβαση του μέγιστου αριθμού επιτρεπόμενων προσπαθειών.</translation>
 <translation id="1908234395526491708">Σφάλματα αιτήματος UDP</translation>
 <translation id="1930797645656624981">Υπηρεσία μεθόδου εισαγωγής Chrome OS</translation>
 <translation id="1947737735496445907">Εκτυπώθηκε</translation>
-<translation id="197386857804679933">Επισκεφτείτε τις Ρυθμίσεις για επανασύνδεση</translation>
 <translation id="1979103255016296513">Εκπρόθεσμη αλλαγή κωδικού πρόσβασης</translation>
 <translation id="1999615961760456652">Πύλη υποδοχής</translation>
 <translation id="2006864819935886708">Συνδεσιμότητα</translation>
 <translation id="2008685064673031089">Αναζήτηση Prime</translation>
+<translation id="2016697457005847575">Δοκιμή βημάτων αντιμετώπισης προβλημάτων</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Περισσότερες ρυθμίσεις</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, έκδοση <ph name="MILESTONE_VERSION" /></translation>
@@ -86,6 +91,7 @@
 <translation id="2323506179655536734">ΠΑΡΑΒΛΕΦΘΗΚΕ</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Ενεργοποιήστε το Bluetooth, για να εντοπίσετε κοντινές συσκευές</translation>
+<translation id="2346474577291266260">Τέλειο (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2364498172489649528">Επιτυχία</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Αποστολή αναφοράς σχολίων</translation>
@@ -99,6 +105,7 @@
 <translation id="2505327257735685095">Ανανέωση της τρέχουσας εικόνας ταπετσαρίας</translation>
 <translation id="2517472476991765520">Σάρωση</translation>
 <translation id="2570743873672969996">Εκτέλεση δοκιμής <ph name="TEST_NAME" />…</translation>
+<translation id="2584559707064218956">Για να ρυθμίσετε το δίκτυο, μεταβείτε στις Ρυθμίσεις.</translation>
 <translation id="2585245331261708204">Πληρ. ενημέρ. Chrome OS</translation>
 <translation id="2619761439309613843">Ημερήσια ανανέωση</translation>
 <translation id="2620436844016719705">Σύστημα</translation>
@@ -110,13 +117,11 @@
 <translation id="2860473693272905224">Τοποθετήστε μια άλλη σελίδα στον σαρωτή</translation>
 <translation id="2872961005593481000">Τερματισμός λειτουργίας</translation>
 <translation id="2878387241690264070">Εκφόρτιση <ph name="RATE" /> σε <ph name="NUM_SECONDS" /> δευτερόλεπτα.</translation>
-<translation id="2927511423571448384">Δεν είναι δυνατή η σύνδεση μέσω τείχους προστασίας σε ιστοτόπους HTTP (θύρα 80) από Android</translation>
 <translation id="3008341117444806826">ΑΝΑΝΕΩΣΗ</translation>
 <translation id="3009958530611748826">Επιλέξτε έναν φάκελο στον οποίο θέλετε να γίνεται αποθήκευση.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Σημείο λήξης</translation>
 <translation id="3069085583900247081">Αποτυχία δοκιμής</translation>
-<translation id="3076387335132326640">Χρησιμοποιείτε ανοικτό δίκτυο</translation>
 <translation id="3083667275341675831">Διαγνωστικά συνδεσιμότητας</translation>
 <translation id="3091839911843451378">Σφάλμα - Σταμάτησε</translation>
 <translation id="3102119246920354026">Κρυφή μνήμη</translation>
@@ -147,9 +152,10 @@
 <translation id="3532980081107202182">Απομένουν περίπου <ph name="MIN_REMAINING" /> λεπτά</translation>
 <translation id="3565064564551103223">IP που επιτρέπονται</translation>
 <translation id="357889014807611375">Wi-Fi με ογκοχρέωση</translation>
-<translation id="3582041541988388905">Δεν εντοπίστηκε σύνδεση <ph name="NETWORK_NAME" /></translation>
+<translation id="3583278742022654445">Ασθενές σήμα. Δοκιμάστε να πλησιάσετε περισσότερο την πηγή του σήματος Wi-Fi.</translation>
 <translation id="3595596368722241419">Μπαταρία πλήρης</translation>
 <translation id="360565022852130722">Η ασφάλεια του δικτύου Wi-Fi βασίζεται σε αδύναμο πρωτόκολλο WEP 802.1x.</translation>
+<translation id="3606583719724308068">Υψηλός λανθάνων χρόνος σε ιστοτόπους HTTPS</translation>
 <translation id="3689839747745352263">Δοκιμή <ph name="TEST_NAME" /></translation>
 <translation id="3708186454126126312">Συνδέθηκαν στο παρελθόν</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> αξιολογήσεις)</translation>
@@ -158,6 +164,7 @@
 <translation id="38114475217616659">Εκκαθάριση όλου του ιστορικού</translation>
 <translation id="3820172043799983114">Μη έγκυρο PIN.</translation>
 <translation id="3838338534323494292">Νέος κωδικός πρόσβασης</translation>
+<translation id="385051799172605136">Πίσω</translation>
 <translation id="3858860766373142691">Όνομα</translation>
 <translation id="3865414814144988605">Ανάλυση</translation>
 <translation id="387301095347517405">Ο αριθμός των φορών που η μπαταρία σας ολοκλήρωσε έναν πλήρη κύκλο φόρτισης</translation>
@@ -169,11 +176,13 @@
 <translation id="39823212440917567">Οι εργασίες εκτύπωσης που είναι παλαιότερες των <ph name="NUMBER_OF_DAYS" /> ημερών θα καταργηθούν.</translation>
 <translation id="4003384961948020559">Σφάλμα - Το σημείο εξόδου είναι γεμάτο</translation>
 <translation id="4034824040120875894">Εκτυπωτής</translation>
+<translation id="4044093238444069296">Δεν είναι δυνατή η επικοινωνία με την πύλη.</translation>
 <translation id="404928562651467259">ΠΡΟΕΙΔΟΠΟΙΗΣΗ</translation>
 <translation id="409427325554347132">Αποθήκευση λεπτομερειών δοκιμής</translation>
 <translation id="4111761024568264522">Οθόνη αφής USB</translation>
 <translation id="4131410914670010031">Ασπρόμαυρο</translation>
 <translation id="4145784616224233563">Τείχος προστασίας HTTP</translation>
+<translation id="4147897805161313378">Φωτογραφίες Google</translation>
 <translation id="4155551848414053977">Βεβαιωθείτε ότι ο σαρωτής είναι ενεργοποιημένος και διαθέσιμος μέσω του δικτύου σας ή μέσω άμεσης σύνδεσης.</translation>
 <translation id="4170700058716978431">ΑΠΕΤΥΧΕ</translation>
 <translation id="4176463684765177261">Απενεργοποιημένο</translation>
@@ -190,6 +199,7 @@
 <translation id="4378551569595875038">Σύνδεση…</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Το Drive μου</translation>
+<translation id="4428374560396076622">Το δίκτυο <ph name="NETWORK_NAME" /> είναι εκτός λειτουργίας.</translation>
 <translation id="4429881212383817840">Το εισιτήριο Kerberos θα λήξει σύντομα</translation>
 <translation id="4431821876790500265">Προβολή αναφοράς</translation>
 <translation id="445059817448385655">Παλιός κωδικός πρόσβασης</translation>
@@ -204,7 +214,6 @@
 <translation id="455835558791489930">Μπαταρία <ph name="CHARGE_VALUE" /> mAh</translation>
 <translation id="4561801978359312462">Ξεκλείδωτη SIM</translation>
 <translation id="4562494484721939086">Εκτός υπηρεσίας</translation>
-<translation id="4567024731344774461">Δεν είναι δυνατή η επίλυση DNS από Android</translation>
 <translation id="458794348635939462">Αποτυχία επίλυσης όλων των κεντρικών υπολογιστών.</translation>
 <translation id="4593212453765072419">Απαιτείται έλεγχος ταυτότητας του διακομιστή μεσολάβησης</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> από <ph name="TOTAL_PAGE_NUMBER" />. Πατήστε enter, για να ακυρώσετε την εργασία εκτύπωσης.</translation>
@@ -229,7 +238,6 @@
 <translation id="484790837831576105">(Android) Επίλυση DNS</translation>
 <translation id="4848429997038228357">ΕΚΤΕΛΕΙΤΑΙ</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Απομένει {0} προσπάθεια}other{<ph name="ERROR_MESSAGE" /> Απομένουν {0} προσπάθειες}}</translation>
-<translation id="4871137769558798671">Δεν είναι δυνατή η σύνδεση μέσω τείχους προστασίας σε ιστοτόπους HTTPS (θύρα 443)</translation>
 <translation id="4880328057631981605">Όνομα σημείου πρόσβασης</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">Επιλέξτε άμεσα έναν νέο</translation>
@@ -237,6 +245,7 @@
 <translation id="4917385247580444890">Ισχυρό</translation>
 <translation id="4917889632206600977">Διακοπή - Τελείωσε το χαρτί</translation>
 <translation id="4921665434385737356">Φόρτιση κατά <ph name="RATE" /> σε <ph name="NUM_SECONDS" /> δευτερόλεπτα.</translation>
+<translation id="4930320165497208503">Για να ρυθμίσετε ή να ενημερώσετε μια σύνδεση, μεταβείτε στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Ημερομηνία</translation>
 <translation id="498186245079027698">Ελέγξτε τον σαρωτή και δοκιμάστε ξανά. Βεβαιωθείτε ότι υπάρχει αρκετός τοπικός αποθηκευτικός χώρος για την αποθήκευση των αρχείων που σαρώνονται.</translation>
 <translation id="4985509611418653372">Εκτέλεση</translation>
@@ -273,6 +282,7 @@
 <translation id="5332948983412042822">Επιλέξτε έναν νέο τώρα</translation>
 <translation id="5333530671332546086">Άγνωστη κατάσταση πύλης</translation>
 <translation id="5346687412805619883">Τοπικό δίκτυο</translation>
+<translation id="5358174242040570474">Κάτι δεν πήγε καλά. Δοκιμάστε να επιλέξετε ξανά μια ταπετσαρία ή να επαναλάβετε το άνοιγμα της εφαρμογής.</translation>
 <translation id="5372659122375744710">Το δίκτυο Wi-Fi δεν είναι ασφαλές.</translation>
 <translation id="5401938042319910061">Εκτέλεση όλων των ρουτινών</translation>
 <translation id="5423849171846380976">Ενεργοποιημένο</translation>
@@ -287,7 +297,6 @@
 <translation id="5502931783115429516">Το Android δεν εκτελείται</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
-<translation id="5546352997259770619">Χαμηλή ισχύς σήματος, προσπαθήστε να πλησιάσετε στο σημείο πρόσβασης</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Επανάληψη σάρωσης</translation>
 <translation id="5669267381087807207">Ενεργοπ.</translation>
@@ -295,7 +304,6 @@
 <translation id="5691511426247308406">Οικογένεια</translation>
 <translation id="5701381305118179107">Κέντρο</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> από <ph name="TOTAL_PAGES" /></translation>
-<translation id="5715997777752246116">Δεν έχουν διαμορφωθεί διακομιστές ονομάτων</translation>
 <translation id="5760715441271661976">Κατάσταση πύλης</translation>
 <translation id="5784136236926853061">Υψηλός λανθάνων χρόνος HTTP</translation>
 <translation id="5832805196449965646">Προσθήκη ατόμου</translation>
@@ -339,15 +347,14 @@
 <translation id="636850387210749493">Εγγραφή επιχείρησης</translation>
 <translation id="6379086450106841622">Οθόνη αφής</translation>
 <translation id="6388847657025262518">Ο τροφοδότης εγγράφων του σαρωτή έχει κολλήσει. Ελέγξτε τον τροφοδότη και δοκιμάστε ξανά.</translation>
-<translation id="6395640744968320699">Δεν είναι δυνατή η σύνδεση μέσω τείχους προστασίας σε ιστοτόπους HTTP (θύρα 80)</translation>
 <translation id="641081527798843608">Αντιστοιχία θέματος</translation>
 <translation id="6423239382391657905">Άνοιγμα VPN</translation>
+<translation id="6439505561246192797">Αδύναμο (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6456394469623773452">Καλό</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Επανάληψη σάρωσης σελίδας;}=1{Επανάληψη σάρωσης σελίδας {PAGE_NUMBER};}other{Επανάληψη σάρωσης σελίδας {PAGE_NUMBER};}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">Διαχείριση από τον τομέα <ph name="MANAGER" /></translation>
 <translation id="649050271426829538">Διακοπή - Εμπλοκή χαρτιού</translation>
-<translation id="6498608540383876992">Δεν είναι δυνατή η επικοινωνία με την πύλη</translation>
 <translation id="6516990319416533844">Για να δοκιμάσετε τον ρυθμό φόρτισης της μπαταρίας, αφήστε την μπαταρία να εξαντληθεί για σύντομο χρονικό διάστημα</translation>
 <translation id="6517239166834772319">Εξερεύνηση</translation>
 <translation id="6527081081771465939">Άγνωστο πρωτόκολλο ασφαλείας Wi-Fi</translation>
@@ -357,14 +364,13 @@
 <translation id="6574762126505704998">Πλήρωση</translation>
 <translation id="6575134580692778371">Δεν διαμορφώθηκε</translation>
 <translation id="6596816719288285829">Διεύθυνση IP</translation>
-<translation id="6603230386432466813">Αντιμετωπίζετε προβλήματα κατά τη σύνδεση;</translation>
 <translation id="6618744767048954150">Σε εξέλιξη</translation>
 <translation id="6620487321149975369">Οι εργασίες εκτύπωσης θα εμφανίζονται στο ιστορικό, εκτός εάν καταργηθούν μη αυτόματα.</translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="6657585470893396449">Κωδικός Πρόσβασης</translation>
 <translation id="6704062477274546131">Επίλυση DNS</translation>
-<translation id="6714650824879092633">Το δίκτυο <ph name="NETWORK_NAME" /> έχει απενεργοποιηθεί</translation>
 <translation id="6747215703636344499">Διακοπή - Ο δίσκος εξόδου είναι γεμάτος</translation>
+<translation id="6749473226660745022">Φωτογραφίες</translation>
 <translation id="6756731097889387912">Δεν ήταν δυνατή η ακύρωση της σάρωσης.</translation>
 <translation id="6766275201586212568">Αποτυχημένες αναλύσεις DNS</translation>
 <translation id="6768237774506518020">Υψηλό ποσοστό αποτυχίας ανάλυσης DNS</translation>
@@ -376,13 +382,13 @@
 <translation id="6957231940976260713">Όνομα υπηρεσίας</translation>
 <translation id="6961170852793647506">Για να ξεκινήσετε, τοποθετήστε το έγγραφό σας στον σαρωτή</translation>
 <translation id="6977381486153291903">Έκδοση υλικολογισμικού</translation>
-<translation id="6982876849933694860">Για να ρυθμίσετε μια νέα σύνδεση, μεταβείτε στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="7028979494427204405">Ο τομέας <ph name="MANAGER" /> διαχειρίζεται αυτήν τη συσκευή και έχει πρόσβαση σε όλη τη δραστηριότητα των χρηστών, συμπεριλαμβανομένων των ιστοσελίδων που επισκέπτεστε, των κωδικών πρόσβασης και του ηλεκτρονικού ταχυδρομείου.</translation>
 <translation id="7040230719604914234">Χειριστής</translation>
 <translation id="7058278511608979688">Λήξη και αποθήκευση</translation>
 <translation id="7059230779847288458">Φόρτιση, απομένουν <ph name="TIME_VALUE" /> μέχρι την ολοκλήρωση</translation>
 <translation id="708426984172631313">ΔΙΑΚΟΠΗΚΕ</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="710028965487274708">Αποτυχία - Ο έλεγχος ταυτότητας απέτυχε</translation>
 <translation id="7134436342991564651">{0,plural, =1{Διακομιστής ονομάτων}other{Διακομιστές ονομάτων}}</translation>
 <translation id="7143207342074048698">Σύνδεση</translation>
 <translation id="7144878232160441200">Επανάληψη</translation>
@@ -395,7 +401,7 @@
 <translation id="7271040990581020067">Ο σαρωτής χρησιμοποιείται αυτήν τη στιγμή. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Συλλογές ταπετσαρίας</translation>
-<translation id="7292680402155138244">Υψηλός λανθάνων χρόνος στους ιστοτόπους HTTPS (θύρα 443)</translation>
+<translation id="7297226631177386107">Δεν είναι δυνατή η σύνδεση μέσω τείχους προστασίας σε ιστοτόπους HTTPS</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -428,6 +434,7 @@
 <translation id="7762130827864645708">Η αλλαγή του κωδικού πρόσβασής σας ήταν επιτυχής. Χρησιμοποιείτε στο εξής τον νέο κωδικό πρόσβασης.</translation>
 <translation id="7763470514545477072">Αντιστοιχία επιθήματος τομέα</translation>
 <translation id="7769672763586021400">Αναγνωριστικό μοντέλου</translation>
+<translation id="7784116172884276937">Δεν έχουν ρυθμιστεί διακομιστές DNS.</translation>
 <translation id="7805768142964895445">Κατάσταση</translation>
 <translation id="7819857487979277519">PSK (WPA ή RSN)</translation>
 <translation id="7835501727204647447">Εγκατάσταση CloudReady</translation>
@@ -437,36 +444,34 @@
 <translation id="7882358943899516840">Τύπος παρόχου</translation>
 <translation id="7882501334836096755">Δημόσιο κλειδί</translation>
 <translation id="7890841768028788197">Ενσωματωμένη οθόνη αφής</translation>
-<translation id="7895471513946376273">Ανακαλύψτε εργαλεία σχεδίασης</translation>
 <translation id="7936303884198020182">Δεν βρέθηκαν διακομιστές ονομάτων.</translation>
 <translation id="7943235353293548836">Χρονικό διάστημα συνεχούς μηνύματος keepalive</translation>
 <translation id="7955587717700691983">Πληκτρολόγιο Bluetooth</translation>
 <translation id="7960831585769876809">Θερμοκρασία</translation>
+<translation id="7977800524392185497">Για να συμμετάσχετε σε ένα δίκτυο <ph name="NETWORK_NAME" />, μεταβείτε στις Ρυθμίσεις.</translation>
 <translation id="7978412674231730200">Ιδιωτικό κλειδί</translation>
 <translation id="7994702968232966508">Μέθοδος EAP</translation>
-<translation id="8020238979854764615">Παρουσιάστηκε σφάλμα. Δοκιμάστε ξανά επιλέγοντας άλλες εικόνες.</translation>
 <translation id="802154636333426148">Η λήψη απέτυχε</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="8041089156583427627">Αποστολή σχολίων</translation>
 <translation id="8075838845814659848">Υπόλοιπο φόρτισης</translation>
+<translation id="8082366717211101304">Δεν είναι δυνατή η επίλυση DNS από εφαρμογές Android.</translation>
 <translation id="808894953321890993">Αλλαγή κωδικού πρόσβασης</translation>
+<translation id="8104083085214006426">Χρησιμοποιείτε ένα ανοιχτό και μη ασφαλές δίκτυο.</translation>
 <translation id="811820734797650957">(Android) Η πύλη λαμβάνει ping</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8132480444149501833">Αίτημα για μετρητές επισκεψιμότητας</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
-<translation id="8177708084858970226">Δεν είναι δυνατή η επίλυση DNS</translation>
 <translation id="8206859287963243715">Κινητό</translation>
 <translation id="8208861521865154048">Προνόμια</translation>
 <translation id="8230672074305416752">Αποτυχία ping της προεπιλεγμένης πύλης δικτύου.</translation>
 <translation id="8246209727385807362">Άγνωστη εταιρεία κινητής τηλεφωνίας</translation>
 <translation id="8286154143153872371">Συνδεθείτε σε ένα δίκτυο και επαναφορτώστε τη σελίδα για να δείτε την ταπετσαρία.</translation>
 <translation id="8291967909914612644">Χώρα παρόχου αρχικής σελίδας</translation>
-<translation id="829270796093605079">Δείτε εργαλεία σχεδίασης</translation>
 <translation id="8294431847097064396">Πηγή</translation>
 <translation id="8297006494302853456">Αδύναμο</translation>
 <translation id="8302368968391049045">Τείχος προστασίας HTTPS</translation>
 <translation id="8318753676953949627">Δεν υπάρχουν εικόνες</translation>
-<translation id="8346875532700229909">Δεν είναι δυνατή η επικοινωνία με την πύλη από Android</translation>
 <translation id="8347227221149377169">Εργασίες εκτύπωσης</translation>
 <translation id="8352772353338965963">Προσθέστε έναν λογαριασμό στη σύνδεση σε πολλούς λογαριασμούς. Όλοι οι συνδεδεμένοι λογαριασμοί μπορούν να προσπελαστούν χωρίς κωδικό πρόσβασης, επομένως αυτή η δυνατότητα πρέπει να χρησιμοποιείται μόνο με αξιόπιστους λογαριασμούς.</translation>
 <translation id="8364946094152050673">Κενά ονόματα διακομιστών</translation>
@@ -476,10 +481,12 @@
 <translation id="8422748173858722634">Αριθμός ΙΜΕΙ</translation>
 <translation id="8428073762635678092">Ενσωματωμένο πληκτρολόγιο</translation>
 <translation id="843568408673868420">Συνδεσιμότητα στο διαδίκτυο</translation>
+<translation id="844521431886043384">Το DNS δεν έχει ρυθμιστεί.</translation>
 <translation id="8461329675984532579">Όνομα παρόχου αρχικής σελίδας</translation>
 <translation id="8475690821716466388">Η ασφάλεια του δικτύου Wi-Fi βασίζεται σε ένα αδύναμο πρωτόκολλο WEP PSK.</translation>
 <translation id="8477551185774834963">Ο λανθάνων χρόνος DNS έχει υπερβεί ελαφρώς το επιτρεπόμενο ελάχιστο όριο.</translation>
 <translation id="8483248364096924578">Διεύθυνση IP</translation>
+<translation id="8491311378305535241">Δεν είναι δυνατή η σύνδεση μέσω τείχους προστασίας σε ιστοτόπους HTTP μέσω εφαρμογών Android</translation>
 <translation id="8498220429738806196">Μετρητές επισκεψιμότητας</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>
 <translation id="8503836310948963452">Απομένουν λίγα μόνο λεπτά…</translation>
@@ -505,6 +512,7 @@
 <translation id="8818152010000655963">Ταπετσαρία</translation>
 <translation id="8834539327799336565">Συνδεδεμένες αυτήν τη στιγμή</translation>
 <translation id="8845001906332463065">Λήψη βοήθειας</translation>
+<translation id="8855781559874488009">Δεν είναι δυνατή η σύνδεση μέσω τείχους προστασίας σε ιστοτόπους HTTP.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Επιτυχία δοκιμής</translation>
 <translation id="8898840733695078011">Ισχύς σήματος</translation>
@@ -530,12 +538,14 @@
 <translation id="910415269708673980">Ανανέωση εισιτηρίου για το <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Σάρωση σελίδας <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Ξεκλείδωμα</translation>
+<translation id="9122602430962285795">Για επανασύνδεση, μεταβείτε στις Ρυθμίσεις.</translation>
 <translation id="9126720536733509015">Αποθηκεύστε πολλές σελίδες σε ένα PDF</translation>
 <translation id="9137526406337347448">Υπηρεσίες Google</translation>
 <translation id="9149391708638971077">Εκτέλεση δοκιμής μνήμης</translation>
 <translation id="9173638680043580060">Απομένει λιγότερο από ένα λεπτό</translation>
 <translation id="917720651393141712">Δοκιμή</translation>
 <translation id="9190063653747922532">L2TP/IPsec + ήδη κοινόχρηστο κλειδί</translation>
+<translation id="9204237731135241582">Δεν είναι δυνατή η επικοινωνία με την πύλη από εφαρμογές Android.</translation>
 <translation id="9211490828691860325">Όλα τα γραφεία</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Μη ενεργοποιημένο</translation>

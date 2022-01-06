@@ -5,8 +5,14 @@
 #include "chrome/browser/chromeos/extensions/file_manager/system_notification_manager.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/webui/file_manager/url_constants.h"
+#include "base/files/file.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/file_manager/copy_or_move_io_task.h"
+#include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
@@ -20,7 +26,13 @@
 #include "chromeos/disks/disk.h"
 #include "components/arc/arc_prefs.h"
 #include "content/public/test/browser_task_environment.h"
+#include "storage/browser/file_system/file_system_url.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/test/async_file_test_helper.h"
+#include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace file_manager {
 
@@ -30,6 +42,7 @@ namespace file_manager_private = extensions::api::file_manager_private;
 struct TestNotificationStrings {
   std::u16string title;
   std::u16string message;
+  std::vector<std::u16string> buttons;
 };
 
 // Notification platform bridge implementation for testing.
@@ -49,13 +62,17 @@ class TestNotificationPlatformBridgeDelegator
     notification_ids_.insert(notification.id());
     strings.title = notification.title();
     strings.message = notification.message();
+    for (const message_center::ButtonInfo& button : notification.buttons())
+      strings.buttons.push_back(button.title);
     notifications_[notification.id()] = strings;
+    delegates_[notification.id()] = notification.delegate();
   }
 
   void Close(NotificationHandler::Type notification_type,
              const std::string& notification_id) override {
     notification_ids_.erase(notification_id);
     notifications_.erase(notification_id);
+    delegates_.erase(notification_id);
   }
 
   void GetDisplayed(GetDisplayedNotificationsCallback callback) const override {
@@ -73,10 +90,24 @@ class TestNotificationPlatformBridgeDelegator
     return result;
   }
 
+  void ClickButtonIndexById(const std::string& notification_id,
+                            int button_index) {
+    absl::optional<int> index(button_index);
+    absl::optional<std::u16string> empty_reply(u"");
+
+    const auto& notification = delegates_.find(notification_id);
+    if (notification != delegates_.end()) {
+      notification->second->Click(index, empty_reply);
+    }
+  }
+
  private:
   std::set<std::string> notification_ids_;
   // Used to map a notification id to its displayed title and message.
   std::map<std::string, TestNotificationStrings> notifications_;
+  // Used to map a notification id to its delegate to verify click handlers.
+  std::map<std::string, scoped_refptr<message_center::NotificationDelegate>>
+      delegates_;
 };
 
 // DeviceEventRouter implementation for testing.
@@ -103,7 +134,9 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
   bool IsExternalStorageDisabled() override { return true; }
 };
 
-class SystemNotificationManagerTest : public ::testing::Test {
+class SystemNotificationManagerTest
+    : public io_task::IOTaskController::Observer,
+      public ::testing::Test {
  public:
   SystemNotificationManagerTest() {}
 
@@ -127,12 +160,32 @@ class SystemNotificationManagerTest : public ::testing::Test {
         std::make_unique<SystemNotificationManager>(profile_);
     device_event_router_ = std::make_unique<DeviceEventRouterImpl>(
         notification_manager_.get(), profile_);
+
+    // SystemNotificationManager needs the IOTaskController to be able to cancel
+    // the task.
+    notification_manager_->SetIOTaskController(&io_task_controller);
+    io_task_controller.AddObserver(this);
+
+    ASSERT_TRUE(dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(dir_.GetPath().IsAbsolute());
+    file_system_context = storage::CreateFileSystemContextForTesting(
+        /*quota_manager_proxy=*/nullptr, dir_.GetPath());
   }
 
   void TearDown() override {
+    io_task_controller.RemoveObserver(this);
+
     profile_manager_->DeleteAllTestingProfiles();
     profile_ = nullptr;
     profile_manager_.reset();
+  }
+
+  // IOTaskController::Observer override:
+  // In production code the observer is EventRouter which forwards the status to
+  // SystemNotificationManager.
+  void OnIOTaskStatus(const io_task::ProgressStatus& status) override {
+    task_statuses[status.task_id].push_back(status.state);
+    notification_manager_->HandleIOTaskProgress(status);
   }
 
   TestingProfile* GetProfile() { return profile_; }
@@ -148,6 +201,14 @@ class SystemNotificationManagerTest : public ::testing::Test {
   NotificationDisplayService* GetNotificationDisplayService() {
     return static_cast<NotificationDisplayService*>(
         notification_display_service_);
+  }
+
+  size_t GetNotificationCount() {
+    auto* notification_display_service = GetNotificationDisplayService();
+    notification_display_service->GetDisplayed(
+        base::BindOnce(&SystemNotificationManagerTest::GetNotificationsCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return notification_count;
   }
 
   void GetNotificationsCallback(std::set<std::string> displayed_notifications,
@@ -171,6 +232,28 @@ class SystemNotificationManagerTest : public ::testing::Test {
         .Build();
   }
 
+  // Creates a file or directory to use in the test.
+  storage::FileSystemURL CreateTestFile(const std::string& path) {
+    const blink::StorageKey storage_key =
+        blink::StorageKey::CreateFromStringForTesting(
+            ash::file_manager::kChromeUIFileManagerURL);
+
+    auto file_url = file_system_context->CreateCrackedFileSystemURL(
+        storage_key, storage::kFileSystemTypeTest,
+        base::FilePath::FromUTF8Unsafe(path));
+
+    if (base::EndsWith(path, "/")) {
+      CHECK(base::File::FILE_OK ==
+            storage::AsyncFileTestHelper::CreateDirectory(
+                file_system_context.get(), file_url));
+    } else {
+      CHECK(base::File::FILE_OK == storage::AsyncFileTestHelper::CreateFile(
+                                       file_system_context.get(), file_url));
+    }
+
+    return file_url;
+  }
+
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
@@ -182,10 +265,21 @@ class SystemNotificationManagerTest : public ::testing::Test {
   std::unique_ptr<SystemNotificationManager> notification_manager_;
   std::unique_ptr<DeviceEventRouterImpl> device_event_router_;
 
+  // Temporary directory used to test IOTask progress.
+  base::ScopedTempDir dir_;
+
  public:
   size_t notification_count;
   // notification_platform_bridge is owned by NotificationDisplayService.
   TestNotificationPlatformBridgeDelegator* notification_platform_bridge;
+
+  // Used for tests with IOTask:
+  io_task::IOTaskController io_task_controller;
+  scoped_refptr<storage::FileSystemContext> file_system_context;
+
+  // Keep track of the task state transitions.
+  std::map<io_task::IOTaskId, std::vector<io_task::State>> task_statuses;
+
   base::WeakPtrFactory<SystemNotificationManagerTest> weak_ptr_factory_{this};
 };
 
@@ -194,6 +288,7 @@ constexpr char kMountPath[] = "/mnt/media/sda1";
 std::u16string kRemovableDeviceTitle = u"Removable device detected";
 
 TEST_F(SystemNotificationManagerTest, ExternalStorageDisabled) {
+  base::HistogramTester histogram_tester;
   // Send a removable volume mounted event.
   GetDeviceEventRouter()->OnDeviceAdded(kDevicePath);
   // Get the number of notifications from the NotificationDisplayService.
@@ -213,12 +308,17 @@ TEST_F(SystemNotificationManagerTest, ExternalStorageDisabled) {
       u"account.";
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message, kExternalStorageDisabledMesssage);
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_EXTERNAL_STORAGE_DISABLED, 1);
 }
 
 constexpr char kDeviceLabel[] = "MyUSB";
 std::u16string kFormatTitle = u"Format MyUSB";
 
 TEST_F(SystemNotificationManagerTest, FormatStart) {
+  base::HistogramTester histogram_tester;
   GetDeviceEventRouter()->OnFormatStarted(kDevicePath, kDeviceLabel,
                                           /*success=*/true);
   // Get the number of notifications from the NotificationDisplayService.
@@ -236,9 +336,13 @@ TEST_F(SystemNotificationManagerTest, FormatStart) {
   std::u16string kFormatStartMesssage = u"Formatting MyUSB\x2026";
   EXPECT_EQ(notification_strings.title, kFormatTitle);
   EXPECT_EQ(notification_strings.message, kFormatStartMesssage);
+  histogram_tester.ExpectUniqueSample(kNotificationShowHistogramName,
+                                      DeviceNotificationUmaType::FORMAT_START,
+                                      1);
 }
 
 TEST_F(SystemNotificationManagerTest, FormatSuccess) {
+  base::HistogramTester histogram_tester;
   GetDeviceEventRouter()->OnFormatCompleted(kDevicePath, kDeviceLabel,
                                             /*success=*/true);
   // Get the number of notifications from the NotificationDisplayService.
@@ -257,9 +361,13 @@ TEST_F(SystemNotificationManagerTest, FormatSuccess) {
   std::u16string kFormatSuccessMesssage = u"Formatted MyUSB";
   EXPECT_EQ(notification_strings.title, kFormatTitle);
   EXPECT_EQ(notification_strings.message, kFormatSuccessMesssage);
+  histogram_tester.ExpectUniqueSample(kNotificationShowHistogramName,
+                                      DeviceNotificationUmaType::FORMAT_SUCCESS,
+                                      1);
 }
 
 TEST_F(SystemNotificationManagerTest, FormatFail) {
+  base::HistogramTester histogram_tester;
   GetDeviceEventRouter()->OnFormatCompleted(kDevicePath, kDeviceLabel,
                                             /*success=*/false);
   // Get the number of notifications from the NotificationDisplayService.
@@ -277,12 +385,16 @@ TEST_F(SystemNotificationManagerTest, FormatFail) {
   std::u16string kFormatFailedMesssage = u"Could not format MyUSB";
   EXPECT_EQ(notification_strings.title, kFormatTitle);
   EXPECT_EQ(notification_strings.message, kFormatFailedMesssage);
+  histogram_tester.ExpectUniqueSample(kNotificationShowHistogramName,
+                                      DeviceNotificationUmaType::FORMAT_FAIL,
+                                      1);
 }
 
 constexpr char kPartitionLabel[] = "OEM";
 std::u16string kPartitionTitle = u"Format OEM";
 
 TEST_F(SystemNotificationManagerTest, PartitionFail) {
+  base::HistogramTester histogram_tester;
   GetDeviceEventRouter()->OnPartitionCompleted(kDevicePath, kPartitionLabel,
                                                /*success=*/false);
   // Get the number of notifications from the NotificationDisplayService.
@@ -301,9 +413,13 @@ TEST_F(SystemNotificationManagerTest, PartitionFail) {
   std::u16string kPartitionFailMesssage = u"Could not format OEM";
   EXPECT_EQ(notification_strings.title, kPartitionTitle);
   EXPECT_EQ(notification_strings.message, kPartitionFailMesssage);
+  histogram_tester.ExpectUniqueSample(kNotificationShowHistogramName,
+                                      DeviceNotificationUmaType::PARTITION_FAIL,
+                                      1);
 }
 
 TEST_F(SystemNotificationManagerTest, RenameFail) {
+  base::HistogramTester histogram_tester;
   GetDeviceEventRouter()->OnRenameCompleted(kDevicePath, kPartitionLabel,
                                             /*success=*/false);
   // Get the number of notifications from the NotificationDisplayService.
@@ -321,9 +437,14 @@ TEST_F(SystemNotificationManagerTest, RenameFail) {
   EXPECT_EQ(notification_strings.title, u"Renaming failed");
   EXPECT_EQ(notification_strings.message,
             u"Aw, Snap! There was an error during renaming.");
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(kNotificationShowHistogramName,
+                                      DeviceNotificationUmaType::RENAME_FAIL,
+                                      1);
 }
 
 TEST_F(SystemNotificationManagerTest, DeviceHardUnplugged) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<chromeos::disks::Disk> disk =
       CreateTestDisk(kDevicePath, kMountPath, /*is_read_only_hardware=*/false,
                      /*is_mounted=*/true);
@@ -345,9 +466,16 @@ TEST_F(SystemNotificationManagerTest, DeviceHardUnplugged) {
   EXPECT_EQ(notification_strings.message,
             u"In the future, be sure to eject your removable device in the "
             u"Files app before unplugging it. Otherwise, you might lose data.");
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_HARD_UNPLUGGED, 1);
 }
 
+constexpr char kRemovableDeviceNotificationId[] = "swa-removable-device-id";
+
 TEST_F(SystemNotificationManagerTest, DeviceNavigation) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -370,17 +498,28 @@ TEST_F(SystemNotificationManagerTest, DeviceNavigation) {
   TestNotificationStrings notification_strings;
   notification_strings =
       notification_platform_bridge->GetNotificationStringsById(
-          "swa-removable-device-id");
+          kRemovableDeviceNotificationId);
+  notification_platform_bridge->ClickButtonIndexById(
+      kRemovableDeviceNotificationId,
+      /*button_index=*/0);
   // Check: the expected strings match.
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Explore the device\x2019s content in the Files app.");
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_NAVIGATION, 1);
+  histogram_tester.ExpectUniqueSample(
+      kNotificationUserActionHistogramName,
+      DeviceNotificationUserActionUmaType::OPEN_MEDIA_DEVICE_NAVIGATION, 1);
 }
 
 // Test for notification generated when enterprise read-only policy is set.
 // Condition that triggers that is a mount event for a removable device
 // and the volume has read only set.
 TEST_F(SystemNotificationManagerTest, DeviceNavigationReadOnlyPolicy) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -403,18 +542,29 @@ TEST_F(SystemNotificationManagerTest, DeviceNavigationReadOnlyPolicy) {
   TestNotificationStrings notification_strings;
   notification_strings =
       notification_platform_bridge->GetNotificationStringsById(
-          "swa-removable-device-id");
+          kRemovableDeviceNotificationId);
+  notification_platform_bridge->ClickButtonIndexById(
+      kRemovableDeviceNotificationId,
+      /*button_index=*/0);
   // Check: the expected strings match.
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Explore the device's content in the Files app. The content is "
             u"restricted by an admin and can\x2019t be modified.");
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_NAVIGATION_READONLY_POLICY, 1);
+  histogram_tester.ExpectUniqueSample(
+      kNotificationUserActionHistogramName,
+      DeviceNotificationUserActionUmaType::OPEN_MEDIA_DEVICE_NAVIGATION, 1);
 }
 
 // Test for notification generated when ARC++ is enabled on the device.
 // Condition that triggers that is a mount event for a removable device
 // when the removable access for ARC++ is disabled.
 TEST_F(SystemNotificationManagerTest, DeviceNavigationAllowAppAccess) {
+  base::HistogramTester histogram_tester;
   // Set the ARC++ enbled preference on the testing profile.
   PrefService* const service = GetProfile()->GetPrefs();
   service->SetBoolean(arc::prefs::kArcEnabled, true);
@@ -440,18 +590,62 @@ TEST_F(SystemNotificationManagerTest, DeviceNavigationAllowAppAccess) {
   TestNotificationStrings notification_strings;
   notification_strings =
       notification_platform_bridge->GetNotificationStringsById(
-          "swa-removable-device-id");
+          kRemovableDeviceNotificationId);
+  notification_platform_bridge->ClickButtonIndexById(
+      kRemovableDeviceNotificationId,
+      /*button_index=*/0);
   // Check: the expected strings match.
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Explore the device\x2019s content in the Files app. For device "
             u"preferences, go to Settings.");
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_NAVIGATION_ALLOW_APP_ACCESS, 1);
+  histogram_tester.ExpectUniqueSample(
+      kNotificationUserActionHistogramName,
+      DeviceNotificationUserActionUmaType::OPEN_MEDIA_DEVICE_NAVIGATION_ARC, 1);
+}
+
+TEST_F(SystemNotificationManagerTest,
+       DeviceNavigationAllowAppAccessSecondButton) {
+  base::HistogramTester histogram_tester;
+  // Set the ARC++ enbled preference on the testing profile.
+  PrefService* const service = GetProfile()->GetPrefs();
+  service->SetBoolean(arc::prefs::kArcEnabled, true);
+  std::unique_ptr<Volume> volume(Volume::CreateForTesting(
+      base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
+      VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
+      /*read_only=*/false, base::FilePath(FILE_PATH_LITERAL("/device/test")),
+      kDeviceLabel, "FAT32"));
+  file_manager_private::MountCompletedEvent event;
+  event.event_type = file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT;
+  event.should_notify = true;
+  event.status = file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS;
+  GetSystemNotificationManager()->HandleMountCompletedEvent(event,
+                                                            *volume.get());
+  // Get the number of notifications from the NotificationDisplayService.
+  NotificationDisplayServiceFactory::GetForProfile(GetProfile())
+      ->GetDisplayed(base::BindOnce(
+          &SystemNotificationManagerTest::GetNotificationsCallback,
+          weak_ptr_factory_.GetWeakPtr()));
+  // Check: We have one notification.
+  ASSERT_EQ(1, notification_count);
+  notification_platform_bridge->ClickButtonIndexById(
+      kRemovableDeviceNotificationId,
+      /*button_index=*/1);
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(
+      kNotificationUserActionHistogramName,
+      DeviceNotificationUserActionUmaType::OPEN_SETTINGS_FOR_ARC_STORAGE, 1);
 }
 
 // Test for notification generated when ARC++ is enabled on the device.
 // Condition that triggers that is a mount event for a removable device
 // when the removable access for ARC++ is enabled.
 TEST_F(SystemNotificationManagerTest, DeviceNavigationAppsHaveAccess) {
+  base::HistogramTester histogram_tester;
   // Set the ARC++ enbled preference on the testing profile.
   PrefService* const service = GetProfile()->GetPrefs();
   service->SetBoolean(arc::prefs::kArcEnabled, true);
@@ -478,12 +672,16 @@ TEST_F(SystemNotificationManagerTest, DeviceNavigationAppsHaveAccess) {
   TestNotificationStrings notification_strings;
   notification_strings =
       notification_platform_bridge->GetNotificationStringsById(
-          "swa-removable-device-id");
+          kRemovableDeviceNotificationId);
   // Check: the expected strings match.
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Explore the device\x2019s content in the Files app. Play Store "
             u"applications have access to this device.");
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_NAVIGATION_APPS_HAVE_ACCESS, 1);
 }
 
 constexpr char kDeviceFailNotificationId[] = "swa-device-fail-id";
@@ -496,6 +694,7 @@ constexpr char kDeviceFailNotificationId[] = "swa-device-fail-id";
 // method. Both parent and child unknown volume filesystems generate
 // the same nofication.
 TEST_F(SystemNotificationManagerTest, DeviceUnsupportedDefault) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -525,11 +724,16 @@ TEST_F(SystemNotificationManagerTest, DeviceUnsupportedDefault) {
   EXPECT_EQ(
       notification_strings.message,
       u"Sorry, your external storage device is not supported at this time.");
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(kNotificationShowHistogramName,
+                                      DeviceNotificationUmaType::DEVICE_FAIL,
+                                      1);
 }
 
 // The named version of the device unsupported notification is
 // generated when the device includes a device label.
 TEST_F(SystemNotificationManagerTest, DeviceUnsupportedNamed) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -558,6 +762,10 @@ TEST_F(SystemNotificationManagerTest, DeviceUnsupportedNamed) {
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Sorry, the device MyUSB is not supported at this time.");
+  // Check that the correct UMA was emitted.
+  histogram_tester.ExpectUniqueSample(kNotificationShowHistogramName,
+                                      DeviceNotificationUmaType::DEVICE_FAIL,
+                                      1);
 }
 
 // Multipart device unsupported notifications are generated when there is
@@ -567,6 +775,7 @@ TEST_F(SystemNotificationManagerTest, DeviceUnsupportedNamed) {
 //       1) A device navigation notification for the supported file system
 //       2) The multipart device unsupported notification.
 TEST_F(SystemNotificationManagerTest, MultipartDeviceUnsupportedDefault) {
+  base::HistogramTester histogram_tester;
   // Build a supported file system volume and mount it.
   std::unique_ptr<Volume> volume1(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
@@ -589,7 +798,7 @@ TEST_F(SystemNotificationManagerTest, MultipartDeviceUnsupportedDefault) {
   // Get the strings for the displayed notification.
   TestNotificationStrings notification_strings =
       notification_platform_bridge->GetNotificationStringsById(
-          "swa-removable-device-id");
+          kRemovableDeviceNotificationId);
   // Check: the expected strings match.
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
@@ -620,12 +829,17 @@ TEST_F(SystemNotificationManagerTest, MultipartDeviceUnsupportedDefault) {
   EXPECT_EQ(notification_strings.message,
             u"Sorry, at least one partition on your external storage device "
             u"could not be mounted.");
+  // A DEVICE_NAVIGATION UMA is emitted during the setup so just check for the
+  // occurrence of the DEVICE_FAIL sample instead.
+  histogram_tester.ExpectBucketCount(kNotificationShowHistogramName,
+                                     DeviceNotificationUmaType::DEVICE_FAIL, 1);
 }
 
 // The named version of the multipart device unsupported notification is
 // generated when the device label exists and at least one partition can be
 // mounted on a device with an unsupported file system on another partition.
 TEST_F(SystemNotificationManagerTest, MultipartDeviceUnsupportedNamed) {
+  base::HistogramTester histogram_tester;
   // Build a supported file system volume and mount it.
   std::unique_ptr<Volume> volume1(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
@@ -665,6 +879,10 @@ TEST_F(SystemNotificationManagerTest, MultipartDeviceUnsupportedNamed) {
   EXPECT_EQ(notification_strings.message,
             u"Sorry, at least one partition on the device MyUSB could not be "
             u"mounted.");
+  // A DEVICE_NAVIGATION UMA is emitted during the setup so just check for the
+  // occurrence of the DEVICE_FAIL sample instead.
+  histogram_tester.ExpectBucketCount(kNotificationShowHistogramName,
+                                     DeviceNotificationUmaType::DEVICE_FAIL, 1);
 }
 
 // Device fail unknown notifications are generated when the type of filesystem
@@ -674,6 +892,7 @@ TEST_F(SystemNotificationManagerTest, MultipartDeviceUnsupportedNamed) {
 // These notifications are similar to the device unsupported notifications,
 // the difference being an unknown vs. unsupported file system.
 TEST_F(SystemNotificationManagerTest, DeviceFailUnknownDefault) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -698,15 +917,26 @@ TEST_F(SystemNotificationManagerTest, DeviceFailUnknownDefault) {
   notification_strings =
       notification_platform_bridge->GetNotificationStringsById(
           kDeviceFailNotificationId);
+  notification_platform_bridge->ClickButtonIndexById(kDeviceFailNotificationId,
+                                                     /*button_index=*/0);
   // Check: the expected strings match.
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Sorry, your external storage device could not be recognized.");
+  EXPECT_EQ(notification_strings.buttons.size(), 1);
+  EXPECT_EQ(notification_strings.buttons[0], u"Format this device");
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_FAIL_UNKNOWN, 1);
+  histogram_tester.ExpectUniqueSample(
+      kNotificationUserActionHistogramName,
+      DeviceNotificationUserActionUmaType::OPEN_MEDIA_DEVICE_FAIL, 1);
 }
 
 // The named version of the device fail unknown notification is
 // generated when the device includes a device label.
 TEST_F(SystemNotificationManagerTest, DeviceFailUnknownNamed) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -731,10 +961,20 @@ TEST_F(SystemNotificationManagerTest, DeviceFailUnknownNamed) {
   notification_strings =
       notification_platform_bridge->GetNotificationStringsById(
           kDeviceFailNotificationId);
+  notification_platform_bridge->ClickButtonIndexById(kDeviceFailNotificationId,
+                                                     /*button_index=*/0);
   // Check: the expected strings match.
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Sorry, the device MyUSB could not be recognized.");
+  EXPECT_EQ(notification_strings.buttons.size(), 1);
+  EXPECT_EQ(notification_strings.buttons[0], u"Format this device");
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_FAIL_UNKNOWN, 1);
+  histogram_tester.ExpectUniqueSample(
+      kNotificationUserActionHistogramName,
+      DeviceNotificationUserActionUmaType::OPEN_MEDIA_DEVICE_FAIL, 1);
 }
 
 // Device fail unknown read only notifications are generated when
@@ -742,6 +982,7 @@ TEST_F(SystemNotificationManagerTest, DeviceFailUnknownNamed) {
 // The default notification message is generated when there is
 // no device label.
 TEST_F(SystemNotificationManagerTest, DeviceFailUnknownReadOnlyDefault) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -770,11 +1011,17 @@ TEST_F(SystemNotificationManagerTest, DeviceFailUnknownReadOnlyDefault) {
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Sorry, your external storage device could not be recognized.");
+  // Device is read-only, expect no buttons present.
+  EXPECT_EQ(notification_strings.buttons.size(), 0);
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_FAIL_UNKNOWN_READONLY, 1);
 }
 
 // The named version of the read only device fail unknown notification is
 // generated when the device includes a device label.
 TEST_F(SystemNotificationManagerTest, DeviceFailUnknownReadOnlyNamed) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/mount/path1")),
       VolumeType::VOLUME_TYPE_TESTING, chromeos::DeviceType::DEVICE_TYPE_USB,
@@ -803,6 +1050,9 @@ TEST_F(SystemNotificationManagerTest, DeviceFailUnknownReadOnlyNamed) {
   EXPECT_EQ(notification_strings.title, kRemovableDeviceTitle);
   EXPECT_EQ(notification_strings.message,
             u"Sorry, the device MyUSB could not be recognized.");
+  histogram_tester.ExpectUniqueSample(
+      kNotificationShowHistogramName,
+      DeviceNotificationUmaType::DEVICE_FAIL_UNKNOWN_READONLY, 1);
 }
 
 TEST_F(SystemNotificationManagerTest, TestCopyEvents) {
@@ -897,6 +1147,93 @@ TEST_F(SystemNotificationManagerTest, CopyProgress) {
                      weak_ptr_factory_.GetWeakPtr()));
   // Check: We have zero notifications (copy progress has been closed).
   ASSERT_EQ(0, notification_count);
+}
+
+storage::FileSystemURL CreateFileSystemURL(std::string url) {
+  return storage::FileSystemURL::CreateForTest(GURL(url));
+}
+
+TEST_F(SystemNotificationManagerTest, HandleIOTaskProgressCopy) {
+  // The system notification only sees the IOTask ProgressStatus.
+  file_manager::io_task::ProgressStatus status;
+  status.task_id = 1;
+  status.state = file_manager::io_task::State::kQueued;
+  status.type = file_manager::io_task::OperationType::kCopy;
+  status.total_bytes = 100;
+  status.bytes_transferred = 0;
+  status.sources.emplace_back(CreateTestFile("src_file.txt"), absl::nullopt);
+  status.destination_folder = CreateTestFile("dest_dir/");
+
+  // Send the copy begin/queued progress.
+  auto* notification_manager = GetSystemNotificationManager();
+  notification_manager->HandleIOTaskProgress(status);
+
+  // Check: We have the 1 notification.
+  ASSERT_EQ(1, GetNotificationCount());
+
+  TestNotificationStrings notification_strings =
+      notification_platform_bridge->GetNotificationStringsById(
+          "swa-file-operation-1");
+
+  // Check: the expected strings match.
+  EXPECT_EQ(notification_strings.title, u"Files");
+  EXPECT_EQ(notification_strings.message, u"Copying src_file.txt\x2026");
+
+  // Send the copy progress.
+  status.bytes_transferred = 30;
+  status.state = file_manager::io_task::State::kInProgress;
+  notification_manager->HandleIOTaskProgress(status);
+
+  // Check: We have the same notification.
+  ASSERT_EQ(1, GetNotificationCount());
+  notification_strings =
+      notification_platform_bridge->GetNotificationStringsById(
+          "swa-file-operation-1");
+  EXPECT_EQ(notification_strings.title, u"Files");
+  EXPECT_EQ(notification_strings.message, u"Copying src_file.txt\x2026");
+
+  // Send the success progress status.
+  status.bytes_transferred = 100;
+  status.state = file_manager::io_task::State::kSuccess;
+  notification_manager->HandleIOTaskProgress(status);
+
+  // Notification should disappear.
+  ASSERT_EQ(0, GetNotificationCount());
+}
+
+TEST_F(SystemNotificationManagerTest, CancelButtonIOTask) {
+  // The system notification only sees the IOTask ProgressStatus.
+  file_manager::io_task::ProgressStatus status;
+  status.task_id = 1;
+  status.state = file_manager::io_task::State::kQueued;
+  status.type = file_manager::io_task::OperationType::kCopy;
+  status.total_bytes = 100;
+  status.bytes_transferred = 0;
+  auto src = CreateTestFile("src_file.txt");
+  status.sources.emplace_back(src, absl::nullopt);
+  auto dst = CreateTestFile("dest_dir/");
+  status.destination_folder = dst;
+
+  auto task = std::make_unique<file_manager::io_task::CopyOrMoveIOTask>(
+      file_manager::io_task::OperationType::kCopy,
+      std::vector<storage::FileSystemURL>({src}), dst, GetProfile(),
+      file_system_context);
+
+  // Send the copy begin/queued progress.
+  const io_task::IOTaskId task_id = io_task_controller.Add(std::move(task));
+
+  // Check: We have the 1 notification.
+  ASSERT_EQ(1, GetNotificationCount());
+
+  // Click on the cancel button.
+  notification_platform_bridge->ClickButtonIndexById("swa-file-operation-1",
+                                                     /*button_index=*/0);
+
+  // Notification should disappear.
+  ASSERT_EQ(0, GetNotificationCount());
+
+  // The last status observed should be Cancelled.
+  ASSERT_EQ(io_task::State::kCancelled, task_statuses[task_id].back());
 }
 
 std::u16string kGoogleDrive = u"Google Drive";

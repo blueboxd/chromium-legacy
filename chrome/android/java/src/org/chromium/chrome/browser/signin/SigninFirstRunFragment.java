@@ -20,12 +20,16 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFragment;
-import org.chromium.chrome.browser.signin.ui.SigninUtils;
-import org.chromium.chrome.browser.signin.ui.fre.FreUMADialogCoordinator;
-import org.chromium.chrome.browser.signin.ui.fre.SigninFirstRunCoordinator;
+import org.chromium.chrome.browser.firstrun.MobileFreProgress;
+import org.chromium.chrome.browser.ui.signin.SigninUtils;
+import org.chromium.chrome.browser.ui.signin.fre.FreUMADialogCoordinator;
+import org.chromium.chrome.browser.ui.signin.fre.SigninFirstRunCoordinator;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -36,11 +40,8 @@ import org.chromium.ui.widget.TextViewWithClickableSpans;
  * This fragment handles the sign-in without sync consent during the FRE.
  */
 public class SigninFirstRunFragment extends Fragment implements FirstRunFragment,
-                                                                SigninFirstRunCoordinator.Listener,
+                                                                SigninFirstRunCoordinator.Delegate,
                                                                 FreUMADialogCoordinator.Listener {
-    private static final String FOOTER_LINK_OPEN = "<LINK>";
-    private static final String FOOTER_LINK_CLOSE = "</LINK>";
-
     @VisibleForTesting
     static final int ADD_ACCOUNT_REQUEST_CODE = 1;
 
@@ -65,16 +66,10 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
         final View view = inflater.inflate(R.layout.signin_first_run_view, container, false);
         mSigninFirstRunCoordinator =
                 new SigninFirstRunCoordinator(requireContext(), view, mModalDialogManager, this);
-        mAllowCrashUpload = true;
         notifyCoordinatorWhenNativeAndPolicyAreLoaded();
-        final NoUnderlineClickableSpan footerLinkSpan =
-                new NoUnderlineClickableSpan(getResources(), this::onFooterLinkClicked);
-        final SpannableString footerString = SpanApplier.applySpans(
-                getString(R.string.signin_fre_footer),
-                new SpanApplier.SpanInfo(FOOTER_LINK_OPEN, FOOTER_LINK_CLOSE, footerLinkSpan));
-        TextViewWithClickableSpans footerView = view.findViewById(R.id.signin_fre_footer);
-        footerView.setText(footerString);
-        footerView.setMovementMethod(LinkMovementMethod.getInstance());
+
+        mAllowCrashUpload = true;
+        setUpFooter(view.findViewById(R.id.signin_fre_footer));
         return view;
     }
 
@@ -101,9 +96,10 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
         notifyCoordinatorWhenNativeAndPolicyAreLoaded();
     }
 
-    /** Implements {@link SigninFirstRunCoordinator.Listener}. */
+    /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
     @Override
     public void addAccount() {
+        recordFreProgressHistogram(MobileFreProgress.WELCOME_ADD_ACCOUNT);
         AccountManagerFacadeProvider.getInstance().createAddAccountIntent(
                 (@Nullable Intent intent) -> {
                     if (intent != null) {
@@ -117,6 +113,12 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
                 });
     }
 
+    /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
+    @Override
+    public void recordFreProgressHistogram(@MobileFreProgress int state) {
+        getPageDelegate().recordFreProgressHistogram(state);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == ADD_ACCOUNT_REQUEST_CODE && resultCode == Activity.RESULT_OK
@@ -128,7 +130,7 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
         }
     }
 
-    /** Implements {@link SigninFirstRunCoordinator.Listener}. */
+    /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
     @Override
     public void acceptTermsOfService() {
         getPageDelegate().acceptTermsOfService(mAllowCrashUpload);
@@ -148,7 +150,25 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
         }
     }
 
-    private void onFooterLinkClicked(View view) {
-        new FreUMADialogCoordinator(requireContext(), mModalDialogManager, this);
+    private void setUpFooter(TextViewWithClickableSpans footerView) {
+        final Callback<View> onTermsOfServiceSpanClickListener = view -> {
+            CustomTabActivity.showInfoPage(requireContext(),
+                    LocalizationUtils.substituteLocalePlaceholder(
+                            getString(R.string.google_terms_of_service_url)));
+        };
+        final Callback<View> onUmaDialogSpanClickListener = view -> {
+            new FreUMADialogCoordinator(
+                    requireContext(), mModalDialogManager, this, mAllowCrashUpload);
+        };
+        final NoUnderlineClickableSpan clickableTermsOfServiceSpan =
+                new NoUnderlineClickableSpan(getResources(), onTermsOfServiceSpanClickListener);
+        final NoUnderlineClickableSpan clickableUMADialogSpan =
+                new NoUnderlineClickableSpan(getResources(), onUmaDialogSpanClickListener);
+        final SpannableString footerString = SpanApplier.applySpans(
+                getString(R.string.signin_fre_footer),
+                new SpanApplier.SpanInfo("<LINK1>", "</LINK1>", clickableTermsOfServiceSpan),
+                new SpanApplier.SpanInfo("<LINK2>", "</LINK2>", clickableUMADialogSpan));
+        footerView.setText(footerString);
+        footerView.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

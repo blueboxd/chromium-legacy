@@ -47,6 +47,7 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
+#include "content/browser/renderer_host/visible_time_request_trigger.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
@@ -562,15 +563,20 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   if (!host_->is_hidden())
     return;
 
+  auto* visible_time_request_trigger = host_->GetVisibleTimeRequestTrigger();
+  // The only way this should be null is if there is no RenderWidgetHostView.
+  DCHECK(visible_time_request_trigger);
+
   if (old_visibility == Visibility::OCCLUDED) {
-    SetRecordContentToVisibleTimeRequest(
+    visible_time_request_trigger->SetRecordContentToVisibleTimeRequest(
         base::TimeTicks::Now(), false /* destination_is_loaded */,
         false /* show_reason_tab_switching */,
         true /* show_reason_unoccluded */,
         false /* show_reason_bfcache_restore */);
   }
 
-  auto tab_switch_start_state = TakeRecordContentToVisibleTimeRequest();
+  auto tab_switch_start_state =
+      visible_time_request_trigger->TakeRecordContentToVisibleTimeRequest();
   bool has_saved_frame = delegated_frame_host_->HasSavedFrame();
 
   bool show_reason_bfcache_restore =
@@ -739,6 +745,10 @@ void RenderWidgetHostViewAura::RenderProcessGone() {
 
 void RenderWidgetHostViewAura::ShowWithVisibility(
     Visibility web_contents_visibility) {
+  // Make sure we grab updated ScreenInfos before synchronizing visual
+  // properties, in case they have changed or this is the initial show.
+  UpdateScreenInfo();
+
   // If the viz::LocalSurfaceId is invalid, we may have been evicted,
   // and no other visual properties have since been changed. Allocate a new id
   // and start synchronizing.
@@ -1670,23 +1680,21 @@ void RenderWidgetHostViewAura::GetActiveTextInputControlLayoutBounds(
     absl::optional<gfx::Rect>* control_bounds,
     absl::optional<gfx::Rect>* selection_bounds) {
   if (text_input_manager_) {
-    const ui::mojom::TextInputState* state =
-        text_input_manager_->GetTextInputState();
-    if (state) {
-      if (state->edit_context_control_bounds) {
-        *control_bounds =
-            ConvertRectToScreen(state->edit_context_control_bounds.value());
-        TRACE_EVENT1(
-            "ime",
-            "RenderWidgetHostViewAura::GetActiveTextInputControlLayoutBounds",
-            "control_bounds_rect", control_bounds->value().ToString());
-      }
-      // Selection bounds are currently populated only for EditContext.
-      // For editable elements we use GetCompositionCharacterBounds.
-      if (state->edit_context_selection_bounds) {
-        *selection_bounds =
-            ConvertRectToScreen(state->edit_context_selection_bounds.value());
-      }
+    const absl::optional<gfx::Rect> text_control_bounds =
+        text_input_manager_->GetTextControlBounds();
+    if (text_control_bounds) {
+      *control_bounds = ConvertRectToScreen(text_control_bounds.value());
+      TRACE_EVENT1(
+          "ime",
+          "RenderWidgetHostViewAura::GetActiveTextInputControlLayoutBounds",
+          "control_bounds_rect", control_bounds->value().ToString());
+    }
+    // Selection bounds are currently populated only for EditContext.
+    // For editable elements we use GetCompositionCharacterBounds.
+    const absl::optional<gfx::Rect> text_selection_bounds =
+        text_input_manager_->GetTextSelectionBounds();
+    if (text_selection_bounds) {
+      *selection_bounds = ConvertRectToScreen(text_selection_bounds.value());
     }
   }
 }

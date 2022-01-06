@@ -9,23 +9,25 @@
 #include <memory>
 #include <string>
 
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
 class BrowserContext;
-class ConversionManager;
+class AttributionManager;
 
 namespace attribution_reporter_android {
 
 // Exposed separately from the JNI functions to allow for easier testing.
-CONTENT_EXPORT void ReportAppImpression(ConversionManager& conversion_manager,
+CONTENT_EXPORT void ReportAppImpression(AttributionManager& attribution_manager,
                                         BrowserContext* context,
                                         const std::string& source_package_name,
                                         const std::string& source_event_id,
                                         const std::string& destination,
                                         const std::string& report_to,
-                                        int64_t expiry);
+                                        int64_t expiry,
+                                        base::Time reportTime);
 
 }  // namespace attribution_reporter_android
 

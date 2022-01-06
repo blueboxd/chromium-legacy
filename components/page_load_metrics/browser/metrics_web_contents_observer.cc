@@ -840,7 +840,7 @@ void MetricsWebContentsObserver::OnVisibilityChanged(
 // This will occur when the process for the main RenderFrameHost exits, either
 // normally or from a crash. We eagerly log data from the last committed load if
 // we have one.
-void MetricsWebContentsObserver::RenderProcessGone(
+void MetricsWebContentsObserver::PrimaryMainFrameRenderProcessGone(
     base::TerminationStatus status) {
   // Other code paths will be run for normal renderer shutdown. Note that we
   // sometimes get the STILL_RUNNING value on fast shutdown.
@@ -937,7 +937,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     mojom::CpuTimingPtr cpu_timing,
     mojom::DeferredResourceCountsPtr new_deferred_resource_data,
     mojom::InputTimingPtr input_timing_delta,
-    const blink::MobileFriendliness& mobile_friendliness) {
+    const absl::optional<blink::MobileFriendliness>& mobile_friendliness) {
   PageLoadTracker* tracker = GetPageLoadTracker(render_frame_host);
   // We may receive notifications from frames that have been navigated away
   // from. In that case the PageLoadTracker is already destroyed in
@@ -990,7 +990,7 @@ void MetricsWebContentsObserver::UpdateTiming(
     mojom::CpuTimingPtr cpu_timing,
     mojom::DeferredResourceCountsPtr new_deferred_resource_data,
     mojom::InputTimingPtr input_timing_delta,
-    const blink::MobileFriendliness& mobile_friendliness) {
+    const absl::optional<blink::MobileFriendliness>& mobile_friendliness) {
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_receivers_.GetCurrentTargetFrame();
   OnTimingUpdated(render_frame_host, std::move(timing), std::move(metadata),

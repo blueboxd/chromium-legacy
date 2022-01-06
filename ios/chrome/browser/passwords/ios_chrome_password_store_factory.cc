@@ -10,16 +10,16 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/no_destructor.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_store_built_in_backend.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
-#include "components/password_manager/core/browser/password_store_impl.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/application_context.h"
@@ -31,6 +31,9 @@
 #include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+
+using password_manager::AffiliatedMatchHelper;
+using password_manager::AffiliationService;
 
 // static
 scoped_refptr<password_manager::PasswordStoreInterface>
@@ -84,9 +87,16 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
 
   scoped_refptr<password_manager::PasswordStore> store =
       base::MakeRefCounted<password_manager::PasswordStore>(
-          std::make_unique<password_manager::PasswordStoreImpl>(
+          std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
               std::move(login_db)));
-  if (!store->Init(ChromeBrowserState::FromBrowserState(context)->GetPrefs())) {
+
+  AffiliationService* affiliation_service =
+      IOSChromeAffiliationServiceFactory::GetForBrowserState(context);
+  std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper =
+      std::make_unique<AffiliatedMatchHelper>(affiliation_service);
+
+  if (!store->Init(ChromeBrowserState::FromBrowserState(context)->GetPrefs(),
+                   std::move(affiliated_match_helper))) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
     LOG(WARNING) << "Could not initialize password store.";
@@ -98,10 +108,6 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
       ChromeBrowserState::FromBrowserState(context)->GetPrefs(),
       base::Seconds(60), base::NullCallback());
 
-  password_manager::AffiliationService* affiliation_service =
-      IOSChromeAffiliationServiceFactory::GetForBrowserState(context);
-  password_manager::EnableAffiliationBasedMatching(store.get(),
-                                                   affiliation_service);
   DelayReportingPasswordStoreMetrics(
       ChromeBrowserState::FromBrowserState(context));
   return store;

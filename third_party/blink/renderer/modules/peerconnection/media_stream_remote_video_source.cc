@@ -9,7 +9,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
@@ -289,8 +289,10 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
 
 MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::unique_ptr<TrackObserver> observer)
-    : MediaStreamVideoSource(std::move(task_runner)),
+    std::unique_ptr<TrackObserver> observer,
+    scoped_refptr<MetronomeProvider> metronome_provider)
+    : MediaStreamVideoSource(std::move(task_runner),
+                             std::move(metronome_provider)),
       observer_(std::move(observer)) {
   // The callback will be automatically cleared when 'observer_' goes out of
   // scope and no further callbacks will occur.

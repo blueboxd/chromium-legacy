@@ -14,6 +14,7 @@
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
 #include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
+#include <stylus-unstable-v2-client-protocol.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #include <wayland-client-core.h>
@@ -30,6 +31,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/unguessable_token.h"
 #include "skia/ext/legacy_display_globals.h"
@@ -89,6 +91,12 @@ const char kYInvert[] = "y-invert";
 
 // Specifies if client should use xdg or zxdg_v6 or rely on wl_shell.
 const char kXdg[] = "xdg";
+
+// In cases where we can't easily change the environment variables, such as tast
+// tests, this flag specifies the socket to pass to wl_display_connect.
+//
+// When attaching to exo, this will usually be: /var/run/chrome/wayland-0
+const char kWaylandSocket[] = "wayland_socket";
 
 }  // namespace switches
 
@@ -178,6 +186,9 @@ void RegistryHandler(void* data,
   } else if (strcmp(interface, "xdg_wm_base") == 0) {
     globals->xdg_wm_base.reset(static_cast<xdg_wm_base*>(
         wl_registry_bind(registry, id, &xdg_wm_base_interface, version)));
+  } else if (strcmp(interface, "zcr_stylus_v2") == 0) {
+    globals->stylus.reset(static_cast<zcr_stylus_v2*>(
+        wl_registry_bind(registry, id, &zcr_stylus_v2_interface, version)));
   }
 }
 
@@ -400,6 +411,10 @@ bool ClientBase::InitParams::FromCommandLine(
   y_invert = command_line.HasSwitch(switches::kYInvert);
 
   use_xdg = command_line.HasSwitch(switches::kXdg);
+
+  if (command_line.HasSwitch(switches::kWaylandSocket))
+    wayland_socket = command_line.GetSwitchValueASCII(switches::kWaylandSocket);
+
   return true;
 }
 
@@ -444,7 +459,8 @@ bool ClientBase::Init(const InitParams& params) {
   y_invert_ = params.y_invert;
   has_transform_ = params.has_transform;
 
-  display_.reset(wl_display_connect(nullptr));
+  display_.reset(wl_display_connect(
+      params.wayland_socket ? params.wayland_socket->c_str() : nullptr));
   if (!display_) {
     LOG(ERROR) << "wl_display_connect failed";
     return false;
@@ -505,12 +521,16 @@ bool ClientBase::Init(const InitParams& params) {
       base::ScopedFD drm_fd(open(dri_render_node.c_str(), O_RDWR));
       if (drm_fd.get() < 0)
         continue;
+
       drmVersionPtr drm_version = drmGetVersion(drm_fd.get());
       if (!drm_version) {
         LOG(ERROR) << "Can't get version for device: '" << dri_render_node
                    << "'";
         return false;
       }
+      // We can't actually use the virtual GEM, so discard it like we do in CrOS
+      if (base::LowerCaseEqualsASCII("vgem", drm_version->name))
+        continue;
       if (strstr(drm_version->name, params.use_drm_value.c_str())) {
         drm_fd_ = std::move(drm_fd);
         break;
@@ -779,6 +799,8 @@ bool ClientBase::Init(const InitParams& params) {
     wl_touch* touch = wl_seat_get_touch(globals_.seat.get());
     wl_touch_add_listener(touch, &kTouchListener, this);
   }
+  if (params.use_stylus)
+    SetupPointerStylus();
 
   return true;
 }
@@ -1030,11 +1052,11 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     for (size_t i = 0;
          i < static_cast<size_t>(gbm_bo_get_plane_count(buffer->bo.get()));
          ++i) {
-      base::ScopedFD fd(gbm_bo_get_plane_fd(buffer->bo.get(), i));
+      base::ScopedFD plane_i_fd(gbm_bo_get_plane_fd(buffer->bo.get(), i));
       uint32_t stride = gbm_bo_get_stride_for_plane(buffer->bo.get(), i);
       uint32_t offset = gbm_bo_get_offset(buffer->bo.get(), i);
-      zwp_linux_buffer_params_v1_add(buffer->params.get(), fd.get(), i, offset,
-                                     stride, modifier >> 32, modifier);
+      zwp_linux_buffer_params_v1_add(buffer->params.get(), plane_i_fd.get(), i,
+                                     offset, stride, modifier >> 32, modifier);
     }
     uint32_t flags = 0;
     if (y_invert)
@@ -1236,6 +1258,34 @@ void ClientBase::SetupAuraShellIfAvailable() {
   }
 
   zaura_surface_set_frame(aura_surface.get(), ZAURA_SURFACE_FRAME_TYPE_NORMAL);
+}
+
+void ClientBase::SetupPointerStylus() {
+  if (!globals_.stylus) {
+    LOG(ERROR) << "Can't find stylus interface";
+    return;
+  }
+
+  wl_pointer_ = base::WrapUnique(
+      static_cast<wl_pointer*>(wl_seat_get_pointer(globals_.seat.get())));
+
+  zcr_pointer_stylus_ = base::WrapUnique(
+      static_cast<zcr_pointer_stylus_v2*>(zcr_stylus_v2_get_pointer_stylus(
+          globals_.stylus.get(), wl_pointer_.get())));
+  if (!zcr_pointer_stylus_) {
+    LOG(ERROR) << "Can't get pointer stylus";
+    return;
+  }
+
+  static zcr_pointer_stylus_v2_listener kPointerStylusV2Listener = {
+      [](void* data, struct zcr_pointer_stylus_v2* x, uint32_t y) {},
+      [](void* data, struct zcr_pointer_stylus_v2* x, uint32_t y,
+         wl_fixed_t z) {},
+      [](void* data, struct zcr_pointer_stylus_v2* x, uint32_t y, wl_fixed_t z,
+         wl_fixed_t a) {},
+  };
+  zcr_pointer_stylus_v2_add_listener(zcr_pointer_stylus_.get(),
+                                     &kPointerStylusV2Listener, this);
 }
 
 }  // namespace clients

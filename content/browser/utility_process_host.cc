@@ -14,8 +14,8 @@
 #include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/i18n/base_i18n_switches.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/chromeos_buildflags.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
@@ -35,6 +35,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "media/base/media_switches.h"
 #include "media/webrtc/webrtc_features.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -67,7 +68,7 @@ UtilityProcessHost::UtilityProcessHost()
     : UtilityProcessHost(nullptr /* client */) {}
 
 UtilityProcessHost::UtilityProcessHost(std::unique_ptr<Client> client)
-    : sandbox_type_(sandbox::policy::SandboxType::kUtility),
+    : sandbox_type_(sandbox::mojom::Sandbox::kUtility),
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
       child_flags_(ChildProcessHost::CHILD_ALLOW_SELF),
 #else
@@ -91,8 +92,7 @@ base::WeakPtr<UtilityProcessHost> UtilityProcessHost::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void UtilityProcessHost::SetSandboxType(
-    sandbox::policy::SandboxType sandbox_type) {
+void UtilityProcessHost::SetSandboxType(sandbox::mojom::Sandbox sandbox_type) {
   sandbox_type_ = sandbox_type;
 }
 
@@ -293,7 +293,7 @@ bool UtilityProcessHost::StartProcess() {
 #endif
       network::switches::kUseFirstPartySet,
       network::switches::kIpAddressSpaceOverrides,
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
       switches::kSchedulerBoostUrgent,
 #endif
     };
@@ -328,8 +328,9 @@ bool UtilityProcessHost::StartProcess() {
         std::make_unique<UtilitySandboxedProcessLauncherDelegate>(
             sandbox_type_, env_, *cmd_line);
 
+    auto snapshot_files = GetV8SnapshotFilesToPreload(*cmd_line);
     process_->LaunchWithPreloadedFiles(std::move(delegate), std::move(cmd_line),
-                                       GetV8SnapshotFilesToPreload(), true);
+                                       std::move(snapshot_files), true);
   }
 
   return true;

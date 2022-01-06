@@ -74,8 +74,9 @@ class SkTypeface;
 namespace base {
 namespace trace_event {
 class ProcessMemoryDump;
-}
-}
+}  // namespace trace_event
+struct Feature;
+}  // namespace base
 
 namespace blink {
 
@@ -84,6 +85,9 @@ class FontFaceCreationParams;
 class FontFallbackMap;
 class FontGlobalContext;
 class SimpleFontData;
+class WebFontPrewarmer;
+
+PLATFORM_EXPORT extern const base::Feature kAsyncFontAccess;
 
 enum class AlternateFontName {
   kAllowAlternate,
@@ -177,6 +181,16 @@ class PLATFORM_EXPORT FontCache {
 
   sk_sp<SkFontMgr> FontManager() { return font_manager_; }
   static void SetFontManager(sk_sp<SkFontMgr>);
+
+#if defined(OS_WIN)
+  static WebFontPrewarmer* GetFontPrewarmer() { return prewarmer_; }
+  static void SetFontPrewarmer(WebFontPrewarmer* prewarmer) {
+    prewarmer_ = prewarmer;
+  }
+  static void PrewarmFamily(const AtomicString& family_name);
+#else
+  static void PrewarmFamily(const AtomicString& family_name) {}
+#endif
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // These are needed for calling QueryRenderStyleForStrike, since
@@ -367,6 +381,7 @@ class PLATFORM_EXPORT FontCache {
   static SkFontMgr* static_font_manager_;
 
 #if defined(OS_WIN)
+  static WebFontPrewarmer* prewarmer_;
   static bool antialiased_text_enabled_;
   static bool lcd_text_enabled_;
   static HashMap<String, sk_sp<SkTypeface>, CaseFoldingHash>* sideloaded_fonts_;

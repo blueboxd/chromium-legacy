@@ -36,6 +36,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
                                  adjust_inline_size_if_needed) {
     if (parent_space.IsInsideBalancedColumns())
       space_.EnsureRareData()->is_inside_balanced_columns = true;
+    if (!parent_space.ShouldCacheResult())
+      space_.EnsureRareData()->should_cache_result = false;
   }
 
   // The setters on this builder are in the writing mode of parent_writing_mode.
@@ -78,10 +80,12 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 #if DCHECK_IS_ON()
     is_available_size_set_ = true;
 #endif
-    space_.available_size_ = available_size;
 
-    if (UNLIKELY(!is_in_parallel_flow_)) {
-      space_.available_size_.Transpose();
+    if (LIKELY(is_in_parallel_flow_)) {
+      space_.available_size_ = available_size;
+    } else {
+      space_.available_size_ = {available_size.block_size,
+                                available_size.inline_size};
       if (adjust_inline_size_if_needed_)
         AdjustInlineSizeIfNeeded(&space_.available_size_.inline_size);
     }
@@ -188,6 +192,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   void SetIsInColumnBfc() { space_.EnsureRareData()->is_in_column_bfc = true; }
+
+  void SetMinBlockSizeShouldEncompassIntrinsicSize() {
+    space_.EnsureRareData()->min_block_size_should_encompass_intrinsic_size =
+        true;
+  }
 
   void SetMinBreakAppeal(NGBreakAppeal min_break_appeal) {
     if (!space_.HasRareData() && min_break_appeal == kBreakAppealLastResort)
@@ -449,6 +458,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     DCHECK_GE(target_stretch_block_sizes.descent, LayoutUnit());
     space_.EnsureRareData()->SetTargetStretchBlockSizes(
         target_stretch_block_sizes);
+  }
+
+  void SetShouldNotCacheResult() {
+    space_.EnsureRareData()->should_cache_result = false;
   }
 
   // Creates a new constraint space.

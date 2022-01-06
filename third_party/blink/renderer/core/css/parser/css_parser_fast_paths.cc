@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_revert_layer_value.h"
 #include "third_party/blink/renderer/core/css/css_revert_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_value_clamping_utils.h"
@@ -643,7 +644,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
                value_id == CSSValueID::kInlineEnd)) ||
              value_id == CSSValueID::kNone;
     case CSSPropertyID::kForcedColorAdjust:
-      return value_id == CSSValueID::kNone || value_id == CSSValueID::kAuto;
+      return value_id == CSSValueID::kNone || value_id == CSSValueID::kAuto ||
+             (value_id == CSSValueID::kPreserveParentColor &&
+              RuntimeEnabledFeatures::ForcedColorsPreserveParentColorEnabled());
     case CSSPropertyID::kImageRendering:
       return value_id == CSSValueID::kAuto ||
              value_id == CSSValueID::kWebkitOptimizeContrast ||
@@ -1146,7 +1149,9 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
     if (!EqualIgnoringASCIICase(string, "initial") &&
         !EqualIgnoringASCIICase(string, "inherit") &&
         !EqualIgnoringASCIICase(string, "unset") &&
-        !EqualIgnoringASCIICase(string, "revert"))
+        !EqualIgnoringASCIICase(string, "revert") &&
+        (!RuntimeEnabledFeatures::CSSCascadeLayersEnabled() ||
+         !EqualIgnoringASCIICase(string, "revert-layer")))
       return nullptr;
 
     // Parse CSS-wide keyword shorthands using the CSSPropertyParser.
@@ -1171,6 +1176,9 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
     return cssvalue::CSSUnsetValue::Create();
   if (value_id == CSSValueID::kRevert)
     return cssvalue::CSSRevertValue::Create();
+  if (RuntimeEnabledFeatures::CSSCascadeLayersEnabled() &&
+      value_id == CSSValueID::kRevertLayer)
+    return cssvalue::CSSRevertLayerValue::Create();
   if (CSSParserFastPaths::IsValidKeywordPropertyAndValue(property_id, value_id,
                                                          parser_mode))
     return CSSIdentifierValue::Create(value_id);

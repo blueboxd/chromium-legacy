@@ -1722,12 +1722,6 @@ class ComputedStyle : public ComputedStyleBase,
       return true;
     return false;
   }
-  bool HasBorderColorReferencingCurrentColor() const {
-    return (BorderLeftWidth() && BorderLeftColor().IsCurrentColor()) ||
-           (BorderRightWidth() && BorderRightColor().IsCurrentColor()) ||
-           (BorderTopWidth() && BorderTopColor().IsCurrentColor()) ||
-           (BorderBottomWidth() && BorderBottomColor().IsCurrentColor());
-  }
 
   bool RadiiEqual(const ComputedStyle& o) const {
     return BorderTopLeftRadius() == o.BorderTopLeftRadius() &&
@@ -1739,7 +1733,8 @@ class ComputedStyle : public ComputedStyleBase,
   bool BorderLeftEquals(const ComputedStyle& o) const {
     return BorderLeftWidthInternal() == o.BorderLeftWidthInternal() &&
            BorderLeftStyle() == o.BorderLeftStyle() &&
-           BorderLeftColor() == o.BorderLeftColor();
+           ResolvedColor(BorderLeftColor()) ==
+               o.ResolvedColor(o.BorderLeftColor());
   }
   bool BorderLeftEquals(const BorderValue& o) const {
     return BorderLeftWidthInternal() == o.Width() &&
@@ -1759,7 +1754,8 @@ class ComputedStyle : public ComputedStyleBase,
   bool BorderRightEquals(const ComputedStyle& o) const {
     return BorderRightWidthInternal() == o.BorderRightWidthInternal() &&
            BorderRightStyle() == o.BorderRightStyle() &&
-           BorderRightColor() == o.BorderRightColor();
+           ResolvedColor(BorderRightColor()) ==
+               o.ResolvedColor(o.BorderRightColor());
   }
   bool BorderRightEquals(const BorderValue& o) const {
     return BorderRightWidthInternal() == o.Width() &&
@@ -1790,7 +1786,8 @@ class ComputedStyle : public ComputedStyleBase,
   bool BorderTopEquals(const ComputedStyle& o) const {
     return BorderTopWidthInternal() == o.BorderTopWidthInternal() &&
            BorderTopStyle() == o.BorderTopStyle() &&
-           BorderTopColor() == o.BorderTopColor();
+           ResolvedColor(BorderTopColor()) ==
+               o.ResolvedColor(o.BorderTopColor());
   }
   bool BorderTopEquals(const BorderValue& o) const {
     return BorderTopWidthInternal() == o.Width() &&
@@ -1810,7 +1807,8 @@ class ComputedStyle : public ComputedStyleBase,
   bool BorderBottomEquals(const ComputedStyle& o) const {
     return BorderBottomWidthInternal() == o.BorderBottomWidthInternal() &&
            BorderBottomStyle() == o.BorderBottomStyle() &&
-           BorderBottomColor() == o.BorderBottomColor();
+           ResolvedColor(BorderBottomColor()) ==
+               o.ResolvedColor(o.BorderBottomColor());
   }
   bool BorderBottomEquals(const BorderValue& o) const {
     return BorderBottomWidthInternal() == o.Width() &&
@@ -1878,7 +1876,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
   void SetBorderRadius(const IntSize& s) {
     SetBorderRadius(
-        LengthSize(Length::Fixed(s.Width()), Length::Fixed(s.Height())));
+        LengthSize(Length::Fixed(s.width()), Length::Fixed(s.height())));
   }
 
   bool CanRenderBorderImage() const;
@@ -2144,7 +2142,7 @@ class ComputedStyle : public ComputedStyleBase,
   CursorList* Cursors() const { return CursorDataInternal().Get(); }
   CORE_EXPORT void AddCursor(StyleImage*,
                              bool hot_spot_specified,
-                             const IntPoint& hot_spot = IntPoint());
+                             const gfx::Point& hot_spot = gfx::Point());
   void SetCursorList(CursorList*);
   void ClearCursorList();
 
@@ -2671,10 +2669,7 @@ class ComputedStyle : public ComputedStyleBase,
     return EBoxSizing::kContentBox;
   }
 
-  bool ForceDark() const {
-    return DarkColorScheme() && ColorSchemeForced() &&
-           !HasFilterInducingProperty();
-  }
+  bool ForceDark() const { return DarkColorScheme() && ColorSchemeForced(); }
 
  private:
   EClear Clear() const { return ClearInternal(); }
@@ -3012,6 +3007,7 @@ class ComputedStyle : public ComputedStyleBase,
       const ComputedStyle& new_style);
 
   bool ShouldForceColor(const StyleColor& unforced_color) const;
+  bool ShouldPreserveParentColor() const;
 
   void ClearBackgroundImage();
 

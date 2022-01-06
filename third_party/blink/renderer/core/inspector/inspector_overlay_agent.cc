@@ -102,10 +102,10 @@ bool ParseQuad(std::unique_ptr<protocol::Array<double>> quad_array,
   const size_t kCoordinatesInQuad = 8;
   if (!quad_array || quad_array->size() != kCoordinatesInQuad)
     return false;
-  quad->SetP1(FloatPoint((*quad_array)[0], (*quad_array)[1]));
-  quad->SetP2(FloatPoint((*quad_array)[2], (*quad_array)[3]));
-  quad->SetP3(FloatPoint((*quad_array)[4], (*quad_array)[5]));
-  quad->SetP4(FloatPoint((*quad_array)[6], (*quad_array)[7]));
+  quad->set_p1(FloatPoint((*quad_array)[0], (*quad_array)[1]));
+  quad->set_p2(FloatPoint((*quad_array)[2], (*quad_array)[3]));
+  quad->set_p3(FloatPoint((*quad_array)[4], (*quad_array)[5]));
+  quad->set_p4(FloatPoint((*quad_array)[6], (*quad_array)[7]));
   return true;
 }
 
@@ -266,20 +266,20 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
     overlay_->PaintOverlayPage();
 
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      layer_->SetBounds(gfx::Size(size));
+      layer_->SetBounds(ToGfxSize(size));
       DEFINE_STATIC_LOCAL(
           Persistent<LiteralDebugNameClient>, debug_name_client,
           (MakeGarbageCollected<LiteralDebugNameClient>("InspectorOverlay")));
       RecordForeignLayer(graphics_context, *debug_name_client,
                          DisplayItem::kForeignLayerDevToolsOverlay, layer_,
-                         IntPoint(), &PropertyTreeState::Root());
+                         gfx::Point(), &PropertyTreeState::Root());
       return;
     }
 
     frame_overlay.Invalidate();
     DrawingRecorder recorder(graphics_context, frame_overlay,
                              DisplayItem::kFrameOverlay,
-                             IntRect(IntPoint(), size));
+                             gfx::Rect(ToGfxSize(size)));
     // The overlay frame is has a standalone paint property tree. Paint it in
     // its root space into a paint record, then draw the record into the proper
     // target space in the overlaid frame.
@@ -387,7 +387,11 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       inspect_mode_protocol_config_(&agent_state_, std::vector<uint8_t>()) {}
 
 InspectorOverlayAgent::~InspectorOverlayAgent() {
-  DCHECK(!overlay_page_ && !inspect_tool_ && !hinge_ && !persistent_tool_);
+  DCHECK(!overlay_page_);
+  DCHECK(!inspect_tool_);
+  DCHECK(!hinge_);
+  DCHECK(!persistent_tool_);
+  DCHECK(!frame_overlay_);
 }
 
 void InspectorOverlayAgent::Trace(Visitor* visitor) const {
@@ -398,6 +402,7 @@ void InspectorOverlayAgent::Trace(Visitor* visitor) const {
   visitor->Trace(overlay_host_);
   visitor->Trace(resize_timer_);
   visitor->Trace(dom_agent_);
+  visitor->Trace(frame_overlay_);
   visitor->Trace(inspect_tool_);
   visitor->Trace(persistent_tool_);
   visitor->Trace(hinge_);
@@ -465,7 +470,10 @@ Response InspectorOverlayAgent::disable() {
   }
   resize_timer_.Stop();
   resize_timer_active_ = false;
-  frame_overlay_.reset();
+
+  if (frame_overlay_)
+    frame_overlay_.Release()->Destroy();
+
   persistent_tool_ = nullptr;
   PickTheRightTool();
   SetNeedsUnbufferedInput(false);
@@ -1164,8 +1172,8 @@ static std::unique_ptr<protocol::DictionaryValue> BuildObjectForSize(
     const IntSize& size) {
   std::unique_ptr<protocol::DictionaryValue> result =
       protocol::DictionaryValue::create();
-  result->setInteger("width", size.Width());
-  result->setInteger("height", size.Height());
+  result->setInteger("width", size.width());
+  result->setInteger("height", size.height());
   return result;
 }
 
@@ -1289,9 +1297,9 @@ void InspectorOverlayAgent::Reset(
 
   IntRect viewport_in_screen =
       GetFrame()->GetPage()->GetChromeClient().ViewportToScreen(
-          IntRect(IntPoint(), viewport_size), GetFrame()->View());
+          IntRect(gfx::Point(), viewport_size), GetFrame()->View());
   reset_data->setObject("viewportSize",
-                        BuildObjectForSize(viewport_in_screen.Size()));
+                        BuildObjectForSize(viewport_in_screen.size()));
   reset_data->setObject("viewportSizeForMediaQueries",
                         BuildObjectForSize(viewport_size_for_media_queries));
 
@@ -1487,7 +1495,7 @@ void InspectorOverlayAgent::DisableFrameOverlay() {
   if (IsVisible() || !frame_overlay_)
     return;
 
-  frame_overlay_.reset();
+  frame_overlay_.Release()->Destroy();
   auto& client = GetFrame()->GetPage()->GetChromeClient();
   client.SetCursorOverridden(false);
   client.SetCursor(PointerCursor(), GetFrame());
@@ -1500,7 +1508,7 @@ void InspectorOverlayAgent::EnsureEnableFrameOverlay() {
   if (frame_overlay_)
     return;
 
-  frame_overlay_ = std::make_unique<FrameOverlay>(
+  frame_overlay_ = MakeGarbageCollected<FrameOverlay>(
       GetFrame(), std::make_unique<InspectorPageOverlayDelegate>(*this));
 }
 

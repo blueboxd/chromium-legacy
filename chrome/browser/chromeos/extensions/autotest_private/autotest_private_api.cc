@@ -174,6 +174,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/compositor/throughput_tracker_host.h"
@@ -1912,7 +1913,8 @@ AutotestPrivateGetRegisteredSystemWebAppsFunction::Run() {
     api::autotest_private::SystemApp system_app;
     web_app::SystemWebAppDelegate* delegate = type_and_info.second.get();
     system_app.internal_name = delegate->GetInternalName();
-    system_app.url = delegate->GetInstallUrl().GetOrigin().spec();
+    system_app.url =
+        delegate->GetInstallUrl().DeprecatedGetOriginAsURL().spec();
     result.push_back(std::move(system_app));
   }
 
@@ -1994,7 +1996,7 @@ ExtensionFunction::ResponseAction AutotestPrivateLaunchAppFunction::Run() {
   if (!controller)
     return RespondNow(Error("Controller not available"));
   controller->LaunchApp(ash::ShelfID(params->app_id),
-                        ash::ShelfLaunchSource::LAUNCH_FROM_UNKNOWN,
+                        ash::ShelfLaunchSource::LAUNCH_FROM_INTERNAL,
                         0, /* event_flags */
                         display::Screen::GetScreen()->GetPrimaryDisplay().id());
   return RespondNow(NoArguments());
@@ -3258,7 +3260,7 @@ AutotestPrivateGetAllInstalledAppsFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetAllInstalledAppsFunction";
 
   Profile* const profile = Profile::FromBrowserContext(browser_context());
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
   std::vector<api::autotest_private::App> installed_apps;

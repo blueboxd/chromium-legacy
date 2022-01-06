@@ -159,6 +159,7 @@ public class ContentViewRenderView
                 mSurfaceData.setSurfaceDataNeedsDestroy(ContentViewRenderView.this.mCurrent);
             }
             ContentViewRenderView.this.mCurrent = mSurfaceData;
+            updateNeedsDidSwapBuffersCallback();
             ContentViewRenderViewJni.get().surfaceCreated(mNativeContentViewRenderView);
         }
 
@@ -493,6 +494,12 @@ public class ContentViewRenderView
             for (Runnable r : callbacks) {
                 r.run();
             }
+            updateNeedsDidSwapBuffersCallback();
+        }
+
+        public boolean hasSurfaceRedrawNeededCallbacks() {
+            return mSurfaceRedrawNeededCallbacks != null
+                    && !mSurfaceRedrawNeededCallbacks.isEmpty();
         }
 
         public View getView() {
@@ -558,6 +565,7 @@ public class ContentViewRenderView
                 mSurfaceRedrawNeededCallbacks = new ArrayList<>();
             }
             mSurfaceRedrawNeededCallbacks.add(drawingFinished);
+            updateNeedsDidSwapBuffersCallback();
             ContentViewRenderViewJni.get().setNeedsRedraw(mNativeContentViewRenderView);
         }
 
@@ -663,9 +671,19 @@ public class ContentViewRenderView
 
     // This is a child of ContentViewRenderView and parent of SurfaceView/TextureView.
     // This exists to avoid resizing SurfaceView/TextureView when the soft keyboard is displayed.
+    // Also has workaround for SurfaceView `onAttachedToWindow` visual glitch.
     private class SurfaceParent extends FrameLayout {
+        // This view is used to cover up any SurfaceView/TextureView for a few frames immediately
+        // after `onAttachedToWindow`. This is the workaround a bug in SurfaceView (on some versions
+        // of android) which punches a hole before the surface below has any content, resulting in
+        // black for a few frames. `mCoverView` is a workaround for this bug. It covers up
+        // SurfaceView/TextureView with the background color, and is removed after a few swaps.
+        private final View mCoverView;
+        private int mNumSwapsUntilHideCover;
+
         public SurfaceParent(Context context) {
             super(context);
+            mCoverView = new View(context);
         }
 
         @Override
@@ -694,6 +712,38 @@ public class ContentViewRenderView
         protected void onSizeChanged(int w, int h, int oldw, int oldh) {
             mPhysicalWidth = w;
             mPhysicalHeight = h;
+        }
+
+        @Override
+        protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            mNumSwapsUntilHideCover = 2;
+            // Add as the top child covering up any other children.
+            addView(mCoverView,
+                    new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                            FrameLayout.LayoutParams.MATCH_PARENT));
+            if (mNativeContentViewRenderView != 0) {
+                ContentViewRenderViewJni.get().setNeedsRedraw(mNativeContentViewRenderView);
+            }
+        }
+
+        @Override
+        protected void onDetachedFromWindow() {
+            super.onDetachedFromWindow();
+            mNumSwapsUntilHideCover = 0;
+            removeView(mCoverView);
+        }
+
+        /** @return true if should keep swapping frames */
+        public boolean didSwapFrame() {
+            if (mNumSwapsUntilHideCover <= 0) return false;
+            mNumSwapsUntilHideCover--;
+            if (mNumSwapsUntilHideCover == 0) removeView(mCoverView);
+            return mNumSwapsUntilHideCover > 0;
+        }
+
+        public void updateCoverViewColor(int color) {
+            mCoverView.setBackgroundColor(color);
         }
     }
 
@@ -859,6 +909,7 @@ public class ContentViewRenderView
 
         mBackgroundColor = color;
         super.setBackgroundColor(color);
+        mSurfaceParent.updateCoverViewColor(color);
         if (mRequested != null) {
             mRequested.setBackgroundColor(color);
         }
@@ -926,7 +977,7 @@ public class ContentViewRenderView
 
         while (!mPendingRunnables.isEmpty()) {
             TrackedRunnable runnable = mPendingRunnables.get(0);
-            removeCallbacks(runnable);
+            mSurfaceParent.removeCallbacks(runnable);
             runnable.run();
             assert !mPendingRunnables.contains(runnable);
         }
@@ -957,7 +1008,9 @@ public class ContentViewRenderView
     @CalledByNative
     private boolean didSwapFrame() {
         assert mCurrent != null;
-        return mCurrent.didSwapFrame();
+        boolean ret = mCurrent.didSwapFrame();
+        ret = ret || mSurfaceParent.didSwapFrame();
+        return ret;
     }
 
     @CalledByNative
@@ -965,6 +1018,14 @@ public class ContentViewRenderView
         assert mCurrent != null;
         if (!sizeMatches) return;
         mCurrent.runSurfaceRedrawNeededCallbacks();
+    }
+
+    // Should be called any time inputs used to compute `needsDidSwapBuffersCallback` change.
+    private void updateNeedsDidSwapBuffersCallback() {
+        boolean needsDidSwapBuffersCallback =
+                mCurrent != null && mCurrent.hasSurfaceRedrawNeededCallbacks();
+        ContentViewRenderViewJni.get().setDidSwapBuffersCallbackEnabled(
+                mNativeContentViewRenderView, needsDidSwapBuffersCallback);
     }
 
     private void evictCachedSurface() {
@@ -1042,5 +1103,6 @@ public class ContentViewRenderView
         void updateBackgroundColor(long nativeContentViewRenderView);
         void setRequiresAlphaChannel(
                 long nativeContentViewRenderView, boolean requiresAlphaChannel);
+        void setDidSwapBuffersCallbackEnabled(long nativeContentViewRenderView, boolean enabled);
     }
 }

@@ -23,6 +23,7 @@ using CompositingReasons = uint64_t;
   V(Canvas)                                                                   \
   V(Plugin)                                                                   \
   V(IFrame)                                                                   \
+  V(DocumentTransitionContentElement)                                         \
   /* This is used for pre-CompositAfterPaint + CompositeSVG only. */          \
   V(SVGRoot)                                                                  \
   V(BackfaceVisibilityHidden)                                                 \
@@ -199,14 +200,6 @@ inline bool RequiresSquashing(CompositingReasons reasons) {
   return !RequiresCompositing(reasons) &&
          (reasons & CompositingReason::kComboSquashableReasons);
 }
-
-struct CompositingReasonsStats {
-  int overlap_layers = 0;
-  int active_animation_layers = 0;
-  int assumed_overlap_layers = 0;
-  int indirect_composited_layers = 0;
-  int total_composited_layers = 0;
-};
 
 }  // namespace blink
 

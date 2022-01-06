@@ -79,8 +79,9 @@ class ServiceWorkerMetrics {
     PERIODIC_SYNC = 33,
     CONTENT_DELETE = 34,
     PUSH_SUBSCRIPTION_CHANGE = 35,
+    FETCH_FENCED_FRAME = 36,
     // Add new events to record here.
-    kMaxValue = PUSH_SUBSCRIPTION_CHANGE,
+    kMaxValue = FETCH_FENCED_FRAME,
   };
 
   // Not used for UMA.
@@ -139,6 +140,10 @@ class ServiceWorkerMetrics {
     kMaxValue = kRedirect,
   };
 
+  ServiceWorkerMetrics() = delete;
+  ServiceWorkerMetrics(const ServiceWorkerMetrics&) = delete;
+  ServiceWorkerMetrics& operator=(const ServiceWorkerMetrics&) = delete;
+
   // Converts an event type to a string. Used for tracing.
   static const char* EventTypeToString(EventType event_type);
 
@@ -193,9 +198,6 @@ class ServiceWorkerMetrics {
   // check timed out.
   static void RecordOfflineCapableReason(blink::ServiceWorkerStatusCode status,
                                          int status_code);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };
 
 }  // namespace content

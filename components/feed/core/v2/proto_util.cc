@@ -23,10 +23,10 @@
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/feed_feature_list.h"
+#include "components/reading_list/features/reading_list_switches.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
-#include "components/reading_list/features/reading_list_switches.h"
 #endif
 
 namespace feed {
@@ -124,15 +124,18 @@ feedwire::Request CreateFeedQueryRequest(
   request.set_request_version(feedwire::Request::FEED_QUERY);
 
   feedwire::FeedRequest& feed_request = *request.mutable_feed_request();
-  feed_request.add_client_capability(feedwire::Capability::BASE_UI);
   feed_request.add_client_capability(feedwire::Capability::CARD_MENU);
   feed_request.add_client_capability(feedwire::Capability::LOTTIE_ANIMATIONS);
   feed_request.add_client_capability(
       feedwire::Capability::LONG_PRESS_CARD_MENU);
   feed_request.add_client_capability(feedwire::Capability::SHARE);
-  if (stream_type.IsWebFeed()) {
-    feed_request.add_client_capability(feedwire::Capability::WEB_FEEDS);
+
+  // TODO(crbug.com/1225676): Enable by default once fix is launched.
+  if (!request_metadata.chrome_info.start_surface ||
+      base::FeatureList::IsEnabled(kEnableOpenInNewTabFromStartSurfaceFeed)) {
+    feed_request.add_client_capability(feedwire::Capability::OPEN_IN_TAB);
   }
+
   for (auto capability : GetFeedConfig().experimental_capabilities)
     feed_request.add_client_capability(capability);
   if (base::FeatureList::IsEnabled(kInterestFeedV2Hearts)) {
@@ -153,11 +156,11 @@ feedwire::Request CreateFeedQueryRequest(
         feedwire::Capability::AMP_GROUP_DATASTORE);
   }
 
-#if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(reading_list::switches::kReadLater)) {
     feed_request.add_client_capability(feedwire::Capability::READ_LATER);
+  } else {
+    feed_request.add_client_capability(feedwire::Capability::DOWNLOAD_LINK);
   }
-#endif
 
   *feed_request.mutable_client_info() = CreateClientInfo(request_metadata);
   feedwire::FeedQuery& query = *feed_request.mutable_feed_query();
@@ -199,6 +202,17 @@ void SetNoticeCardAcknowledged(feedwire::Request* request,
         ->mutable_feed_query()
         ->mutable_chrome_fulfillment_info()
         ->set_notice_card_acknowledged(true);
+  }
+}
+
+void SetCardSpecificNoticeAcknowledged(
+    feedwire::Request* request,
+    const RequestMetadata& request_metadata) {
+  for (const auto& key : request_metadata.acknowledged_notice_keys) {
+    request->mutable_feed_request()
+        ->mutable_feed_query()
+        ->mutable_chrome_fulfillment_info()
+        ->add_acknowledged_notice_key(key);
   }
 }
 
@@ -297,6 +311,7 @@ feedwire::Request CreateFeedQueryRefreshRequest(
         ->set_web_feed_token(kChromeFollowToken);
   }
   SetNoticeCardAcknowledged(&request, request_metadata);
+  SetCardSpecificNoticeAcknowledged(&request, request_metadata);
   return request;
 }
 

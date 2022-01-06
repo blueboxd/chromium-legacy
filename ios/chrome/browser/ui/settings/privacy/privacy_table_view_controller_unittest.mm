@@ -11,7 +11,6 @@
 #include "components/content_settings/core/common/features.h"
 #include "components/handoff/pref_names_ios.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/ios/browser/features.h"
 #include "components/strings/grit/components_strings.h"
 #import "components/sync/driver/mock_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
@@ -154,8 +153,7 @@ TEST_F(PrivacyTableViewControllerTest, TestModelFooterWithSyncDisabled) {
 TEST_F(PrivacyTableViewControllerTest, TestModelFooterWithSyncEnabled) {
   ON_CALL(*mock_sync_service()->GetMockUserSettings(), IsFirstSetupComplete())
       .WillByDefault(Return(true));
-  ON_CALL(*mock_sync_service(), IsAuthenticatedAccountPrimary())
-      .WillByDefault(Return(true));
+  ON_CALL(*mock_sync_service(), HasSyncConsent()).WillByDefault(Return(true));
 
   CreateController();
   CheckController();

@@ -266,6 +266,28 @@ chrome.automation.RoleType = {
   MARK: 'mark',
   MARQUEE: 'marquee',
   MATH: 'math',
+  MATH_MLFRACTION: 'mathMLFraction',
+  MATH_MLIDENTIFIER: 'mathMLIdentifier',
+  MATH_MLMATH: 'mathMLMath',
+  MATH_MLMULTISCRIPTS: 'mathMLMultiscripts',
+  MATH_MLNONE_SCRIPT: 'mathMLNoneScript',
+  MATH_MLNUMBER: 'mathMLNumber',
+  MATH_MLOPERATOR: 'mathMLOperator',
+  MATH_MLOVER: 'mathMLOver',
+  MATH_MLPRESCRIPT_DELIMITER: 'mathMLPrescriptDelimiter',
+  MATH_MLROOT: 'mathMLRoot',
+  MATH_MLROW: 'mathMLRow',
+  MATH_MLSQUARE_ROOT: 'mathMLSquareRoot',
+  MATH_MLSTRING_LITERAL: 'mathMLStringLiteral',
+  MATH_MLSUB: 'mathMLSub',
+  MATH_MLSUB_SUP: 'mathMLSubSup',
+  MATH_MLSUP: 'mathMLSup',
+  MATH_MLTABLE: 'mathMLTable',
+  MATH_MLTABLE_CELL: 'mathMLTableCell',
+  MATH_MLTABLE_ROW: 'mathMLTableRow',
+  MATH_MLTEXT: 'mathMLText',
+  MATH_MLUNDER: 'mathMLUnder',
+  MATH_MLUNDER_OVER: 'mathMLUnderOver',
   MENU: 'menu',
   MENU_BAR: 'menuBar',
   MENU_ITEM: 'menuItem',
@@ -443,6 +465,7 @@ chrome.automation.DescriptionFromType = {
   RELATED_ELEMENT: 'relatedElement',
   RUBY_ANNOTATION: 'rubyAnnotation',
   SUMMARY: 'summary',
+  SVG_DESC_ELEMENT: 'svgDescElement',
   TABLE_CAPTION: 'tableCaption',
   TITLE: 'title',
 };
@@ -482,6 +505,15 @@ chrome.automation.AriaCurrentState = {
   LOCATION: 'location',
   DATE: 'date',
   TIME: 'time',
+};
+
+/**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-InvalidState
+ */
+chrome.automation.InvalidState = {
+  FALSE: 'false',
+  TRUE: 'true',
 };
 
 /**
@@ -1854,6 +1886,34 @@ chrome.automation.AutomationNode.prototype.containerLiveAtomic;
 chrome.automation.AutomationNode.prototype.containerLiveBusy;
 
 /**
+ * Whether or not this node is a button.
+ * @type {boolean}
+ * @see https://developer.chrome.com/extensions/automation#type-isButton
+ */
+chrome.automation.AutomationNode.prototype.isButton;
+
+/**
+ * Whether or not this node is a checkbox.
+ * @type {boolean}
+ * @see https://developer.chrome.com/extensions/automation#type-isCheckBox
+ */
+chrome.automation.AutomationNode.prototype.isCheckBox;
+
+/**
+ * Whether or not this node is a combobox.
+ * @type {boolean}
+ * @see https://developer.chrome.com/extensions/automation#type-isComboBox
+ */
+chrome.automation.AutomationNode.prototype.isComboBox;
+
+/**
+ * Whether or not this node is an image.
+ * @type {boolean}
+ * @see https://developer.chrome.com/extensions/automation#type-isImage
+ */
+chrome.automation.AutomationNode.prototype.isImage;
+
+/**
  * Aria auto complete.
  * @type {(string|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-autoComplete
@@ -2055,6 +2115,13 @@ chrome.automation.AutomationNode.prototype.nonAtomicTextFieldRoot;
  * @see https://developer.chrome.com/extensions/automation#type-ariaCurrentState
  */
 chrome.automation.AutomationNode.prototype.ariaCurrentState;
+
+/**
+ * Indicates invalid-state.
+ * @type {(!chrome.automation.InvalidState|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-invalidState
+ */
+chrome.automation.AutomationNode.prototype.invalidState;
 
 /**
  * The application id for a tree rooted at this node.

@@ -141,6 +141,24 @@ void FlossAdapterClient::Init(dbus::Bus* bus,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&HandleExported, adapter::kOnSspRequest));
 
+  callbacks->ExportMethod(
+      adapter::kCallbackInterface, adapter::kOnBondStateChanged,
+      base::BindRepeating(&FlossAdapterClient::OnBondStateChanged,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HandleExported, adapter::kOnBondStateChanged));
+
+  callbacks->ExportMethod(
+      adapter::kConnectionCallbackInterface, adapter::kOnDeviceConnected,
+      base::BindRepeating(&FlossAdapterClient::OnDeviceConnected,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HandleExported, adapter::kOnDeviceConnected));
+
+  callbacks->ExportMethod(
+      adapter::kConnectionCallbackInterface, adapter::kOnDeviceDisconnected,
+      base::BindRepeating(&FlossAdapterClient::OnDeviceDisconnected,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HandleExported, adapter::kOnDeviceDisconnected));
+
   dbus::MethodCall register_callback(kAdapterInterface,
                                      adapter::kRegisterCallback);
 
@@ -149,6 +167,18 @@ void FlossAdapterClient::Init(dbus::Bus* bus,
 
   object_proxy->CallMethodWithErrorResponse(
       &register_callback, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::BindOnce(&FlossAdapterClient::DefaultResponse,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     adapter::kRegisterCallback));
+
+  dbus::MethodCall register_connection_callback(
+      kAdapterInterface, adapter::kRegisterConnectionCallback);
+
+  dbus::MessageWriter writer2(&register_connection_callback);
+  writer2.AppendObjectPath(dbus::ObjectPath(kExportedCallbacksPath));
+
+  object_proxy->CallMethodWithErrorResponse(
+      &register_connection_callback, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::BindOnce(&FlossAdapterClient::DefaultResponse,
                      weak_ptr_factory_.GetWeakPtr(),
                      adapter::kRegisterCallback));
@@ -253,6 +283,72 @@ void FlossAdapterClient::OnSspRequest(
   for (auto& observer : observers_) {
     observer.AdapterSspRequest(
         device, cod, static_cast<BluetoothSspVariant>(variant), passkey);
+  }
+
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
+}
+
+void FlossAdapterClient::OnBondStateChanged(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader msg(method_call);
+  uint32_t status;
+  std::string address;
+  uint32_t bond_state;
+
+  if (!(msg.PopUint32(&status) && msg.PopString(&address) &&
+        msg.PopUint32(&bond_state))) {
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, kErrorInvalidParameters,
+            /*error_message=*/std::string()));
+    return;
+  }
+
+  for (auto& observer : observers_) {
+    observer.DeviceBondStateChanged(
+        FlossDeviceId({address, ""}), status,
+        static_cast<FlossAdapterClient::BondState>(bond_state));
+  }
+
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
+}
+
+void FlossAdapterClient::OnDeviceConnected(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader msg(method_call);
+  FlossDeviceId device;
+
+  if (!ParseFlossDeviceId(&msg, &device)) {
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, kErrorInvalidParameters, std::string()));
+    return;
+  }
+
+  for (auto& observer : observers_) {
+    observer.AdapterDeviceConnected(device);
+  }
+
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
+}
+
+void FlossAdapterClient::OnDeviceDisconnected(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader msg(method_call);
+  FlossDeviceId device;
+
+  if (!ParseFlossDeviceId(&msg, &device)) {
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, kErrorInvalidParameters, std::string()));
+    return;
+  }
+
+  for (auto& observer : observers_) {
+    observer.AdapterDeviceDisconnected(device);
   }
 
   std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));

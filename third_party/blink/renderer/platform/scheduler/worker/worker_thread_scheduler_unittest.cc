@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/test/fake_task.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -461,7 +461,8 @@ class FrameSchedulerDelegateWithUkmSourceId : public FrameScheduler::Delegate {
 
   void UpdateTaskTime(base::TimeDelta time) override {}
 
-  void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override {}
+  void UpdateBackForwardCacheDisablingFeatures(
+      uint64_t features_mask) override {}
 
   const base::UnguessableToken& GetAgentClusterId() const override {
     return base::UnguessableToken::Null();

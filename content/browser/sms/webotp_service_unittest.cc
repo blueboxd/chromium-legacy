@@ -14,8 +14,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -132,6 +132,10 @@ class Service {
 };
 
 class WebOTPServiceTest : public RenderViewHostTestHarness {
+ public:
+  WebOTPServiceTest(const WebOTPServiceTest&) = delete;
+  WebOTPServiceTest& operator=(const WebOTPServiceTest&) = delete;
+
  protected:
   WebOTPServiceTest() {
     ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
@@ -285,8 +289,6 @@ class WebOTPServiceTest : public RenderViewHostTestHarness {
  private:
   base::HistogramTester histogram_tester_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebOTPServiceTest);
 };
 
 }  // namespace

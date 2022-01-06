@@ -234,7 +234,7 @@ TEST(ErrorReportTest, NetworkTimeQueryingFeatureInfo) {
 
   std::unique_ptr<network_time::FieldTrialTest> field_trial_test(
       new network_time::FieldTrialTest());
-  field_trial_test->SetNetworkQueriesWithVariationsService(
+  field_trial_test->SetFeatureParams(
       true, 0.0, network_time::NetworkTimeTracker::FETCHES_ON_DEMAND_ONLY);
 
   scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory =
@@ -387,7 +387,7 @@ TEST(ErrorReportTest, TrialDebugInfo) {
       net::TrustStoreMac::TRUST_SETTINGS_DICT_CONTAINS_APPLICATION |
       net::TrustStoreMac::TRUST_SETTINGS_DICT_CONTAINS_RESULT;
   debug_info->mac_trust_impl =
-      cert_verifier::mojom::CertVerifierDebugInfo::MacTrustImplType::kMruCache;
+      cert_verifier::mojom::CertVerifierDebugInfo::MacTrustImplType::kLruCache;
 #endif
 #if defined(OS_WIN)
   debug_info->win_platform_debug_info =

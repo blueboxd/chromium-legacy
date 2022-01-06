@@ -9,7 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
 #include "remoting/base/running_samples.h"
 #include "remoting/codec/webrtc_video_encoder.h"
@@ -64,10 +64,6 @@ class WebrtcVideoEncoderWrapper : public webrtc::VideoEncoder {
 
   // Notifies WebRTC that this encoder has dropped a frame.
   void NotifyFrameDropped();
-
-  // Sets whether top-off is active, and fires a notification if the setting
-  // changes.
-  void SetTopOffActive(bool active);
 
   // Returns whether the frame should be encoded at low quality, to reduce
   // latency for large frame updates. This is only done here for VP8, as VP9

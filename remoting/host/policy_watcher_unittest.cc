@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/mock_log.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -24,6 +24,8 @@
 namespace remoting {
 
 namespace key = ::policy::key;
+
+using testing::_;
 
 MATCHER_P(IsPolicies, dict, "") {
   bool equal = arg->Equals(dict);
@@ -41,6 +43,11 @@ MATCHER_P(IsPolicies, dict, "") {
     *result_listener << "Actual policy: " << actual_value << ".";
   }
   return equal;
+}
+
+MATCHER_P(ContainsSubstring, substring, "") {
+  const std::string& log_message = ::testing::get<0>(arg);
+  return log_message.find(substring) != std::string::npos;
 }
 
 class MockPolicyCallback {
@@ -319,6 +326,8 @@ class PolicyWatcherTest : public testing::Test {
     dict.SetBoolKey(key::kRemoteAccessHostAllowGnubbyAuth, true);
     dict.SetBoolKey(key::kRemoteAccessHostAllowUiAccessForRemoteAssistance,
                     false);
+    dict.SetInteger(key::kRemoteAccessHostClipboardSizeBytes, -1);
+    dict.SetBoolKey(key::kRemoteAccessHostAllowRemoteSupportConnections, true);
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     dict.SetBoolKey(key::kRemoteAccessHostAllowFileTransfer, true);
     dict.SetBoolKey(key::kRemoteAccessHostEnableUserInterface, true);
@@ -506,13 +515,21 @@ TEST_P(MisspelledPolicyTest, WarningLogged) {
   const char* misspelled_policy_name = GetParam();
   base::test::MockLog mock_log;
 
-  ON_CALL(mock_log,
-          Log(testing::_, testing::_, testing::_, testing::_, testing::_))
-      .WillByDefault(testing::Return(true));
+  ON_CALL(mock_log, Log(_, _, _, _, _)).WillByDefault(testing::Return(true));
 
-  EXPECT_CALL(mock_log,
-              Log(logging::LOG_WARNING, testing::_, testing::_, testing::_,
-                  testing::HasSubstr(misspelled_policy_name)))
+#if defined(OS_WIN)
+  // The PolicyWatcher on Windows tries to open a handle to the Chrome policy
+  // registry key on Windows which fails on the Chromium bots. The warning that
+  // gets logged cases the subsequent log assertion to fail so this check was
+  // added so the test runs locally and in the bot environment.
+  EXPECT_CALL(mock_log, Log(logging::LOG_WARNING, _, _, _, _))
+      .With(testing::Args<4>(
+          ContainsSubstring("Failed to open Chrome policy registry key")))
+      .Times(testing::AtMost(1));
+#endif
+
+  EXPECT_CALL(mock_log, Log(logging::LOG_WARNING, _, _, _, _))
+      .With(testing::Args<4>(ContainsSubstring(misspelled_policy_name)))
       .Times(1);
 
   EXPECT_CALL(mock_policy_callback_,
@@ -749,6 +766,13 @@ TEST_F(PolicyWatcherTest, SchemaTypeCheck) {
       schema->GetKnownProperty("RemoteAccessHostUdpPortRange");
   EXPECT_TRUE(string_schema.valid());
   EXPECT_EQ(string_schema.type(), base::Value::Type::STRING);
+
+  // Check one, random "integer" policy to see if the type propagated correctly
+  // from policy_templates.json file.
+  const policy::Schema int_schema =
+      schema->GetKnownProperty("RemoteAccessHostClipboardSizeBytes");
+  EXPECT_TRUE(int_schema.valid());
+  EXPECT_EQ(int_schema.type(), base::Value::Type::INTEGER);
 
   // And check one, random "boolean" policy to see if the type propagated
   // correctly from policy_templates.json file.

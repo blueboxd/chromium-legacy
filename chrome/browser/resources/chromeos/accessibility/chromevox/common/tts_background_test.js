@@ -68,6 +68,13 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
   // Repetitions for the pound sterling shouldn't be summarized.
   assertEquals(
       'pound sterling pound sterling pound sterling', preprocess('£££'));
+
+  // Negative currency values.
+  assertEquals('-1 dollar', preprocess('-$1'));
+  assertEquals('-1.12 dollar', preprocess('-$1.12'));
+  assertEquals('-1,123.58 dollar', preprocess('-$1,123.58'));
+  assertEquals('-1,123,581.3 dollar', preprocess('-$1,123,581.3'));
+  assertEquals('-1,123.58 pound sterling', preprocess('-£1,123.58'));
 });
 
 TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
@@ -486,4 +493,34 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'InterjectUtterances', function() {
     {textString: 'there.', queueMode: QueueMode.QUEUE},
     {textString: 'How are you?', queueMode: QueueMode.QUEUE}
   ]);
+});
+
+SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Mute', function() {
+  // Fake out setTimeout for our purposes.
+  let lastSetTimeoutCallback;
+  window.setTimeout = (callback, delay) => {
+    lastSetTimeoutCallback = callback;
+  };
+
+  // Mock this to ensure no events are triggered.
+  chrome.tts.speak = () => {};
+  // Push some text into the speech queue and verify state.
+  tts.speak('Hello', QueueMode.FLUSH, {});
+  tts.speak('world.', QueueMode.QUEUE, {});
+  this.expectUtteranceQueueIsLike([
+    {textString: 'Hello', queueMode: QueueMode.FLUSH},
+    {textString: 'world.', queueMode: QueueMode.QUEUE}
+  ]);
+
+  // Toggle speech off.
+  tts.toggleSpeechOnOrOff();
+
+  // The above call should have resulted in a setTimeout; call it.
+  assertTrue(!!lastSetTimeoutCallback);
+  lastSetTimeoutCallback();
+  lastSetTimeoutCallback = undefined;
+
+  // Make assertions.
+  assertEquals(null, tts.currentUtterance_);
+  this.expectUtteranceQueueIsLike([]);
 });

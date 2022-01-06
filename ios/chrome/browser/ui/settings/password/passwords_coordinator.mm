@@ -224,6 +224,18 @@
   [self.passwordsViewController setMostRecentlyUpdatedPasswordDetails:password];
 }
 
+- (void)dismissAddViewControllerAndShowPasswordDetails:
+            (const password_manager::PasswordForm&)password
+                                           coordinator:(AddPasswordCoordinator*)
+                                                           coordinator {
+  DCHECK(self.addPasswordCoordinator &&
+         self.addPasswordCoordinator == coordinator);
+  [self passwordDetailsTableViewControllerDidFinish:coordinator];
+  [self showDetailedViewForForm:password];
+  [self.passwordDetailsCoordinator
+          showPasswordDetailsInEditModeWithoutAuthentication];
+}
+
 #pragma mark Private
 
 - (scoped_refptr<IOSChromePasswordCheckManager>)passwordCheckManager {

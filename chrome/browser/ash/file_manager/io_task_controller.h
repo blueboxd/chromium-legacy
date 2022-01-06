@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "storage/browser/file_system/file_system_file_util.h"
 
@@ -25,8 +25,6 @@ namespace io_task {
 // be used from one sequence.
 class IOTaskController {
  public:
-  using IOTaskId = uint64_t;
-
   IOTaskController();
   IOTaskController(const IOTaskController& other) = delete;
   IOTaskController operator=(const IOTaskController& other) = delete;

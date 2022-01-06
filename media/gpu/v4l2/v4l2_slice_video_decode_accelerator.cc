@@ -24,8 +24,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -274,16 +274,6 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
   if (reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS) {
     supports_requests_ = true;
     VLOGF(1) << "Using request API";
-    DCHECK(!media_fd_.is_valid());
-    // Let's try to open the media device
-    // TODO(crbug.com/985230): remove this hardcoding, replace with V4L2Device
-    // integration.
-    int media_fd = open("/dev/media-dec0", O_RDWR, 0);
-    if (media_fd < 0) {
-      PLOG(ERROR) << "Failed to open media device";
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-    }
-    media_fd_ = base::ScopedFD(media_fd);
   } else {
     VLOGF(1) << "Using config store";
   }
@@ -455,8 +445,6 @@ void V4L2SliceVideoDecodeAccelerator::DestroyTask() {
 
   DestroyInputBuffers();
   DestroyOutputs(false);
-
-  media_fd_.reset();
 
   input_queue_ = nullptr;
   output_queue_ = nullptr;
@@ -1160,11 +1148,19 @@ bool V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChange() {
 
   DCHECK_EQ(state_, kIdle);
   DCHECK(decoder_display_queue_.empty());
+
+#if DCHECK_IS_ON()
   // All output buffers should've been returned from decoder and device by now.
   // The only remaining owner of surfaces may be display (client), and we will
   // dismiss them when destroying output buffers below.
+  const size_t num_imported_buffers =
+      std::count_if(output_buffer_map_.begin(), output_buffer_map_.end(),
+                    [](const OutputRecord& output_record) {
+                      return output_record.output_frame != nullptr;
+                    });
   DCHECK_EQ(output_queue_->FreeBuffersCount() + surfaces_at_display_.size(),
-            output_buffer_map_.size());
+            num_imported_buffers);
+#endif  // DCHECK_IS_ON()
 
   if (!StopDevicePoll()) {
     LOG(ERROR) << "Failed StopDevicePoll()";
@@ -1538,6 +1534,9 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
   if (IsDestroyPending())
+    return;
+
+  if (surface_set_change_pending_)
     return;
 
   const auto iter =
@@ -2209,8 +2208,8 @@ bool V4L2SliceVideoDecodeAccelerator::IsSupportedProfile(
   DCHECK(device_);
   if (supported_profiles_.empty()) {
     SupportedProfiles profiles = GetSupportedProfiles();
-    for (const SupportedProfile& profile : profiles)
-      supported_profiles_.push_back(profile.profile);
+    for (const SupportedProfile& entry : profiles)
+      supported_profiles_.push_back(entry.profile);
   }
   return std::find(supported_profiles_.begin(), supported_profiles_.end(),
                    profile) != supported_profiles_.end();

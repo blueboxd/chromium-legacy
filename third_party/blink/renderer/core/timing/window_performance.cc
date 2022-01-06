@@ -426,7 +426,6 @@ void WindowPerformance::RegisterEventTiming(const Event& event,
 
 void WindowPerformance::ReportEventTimings(
     uint64_t frame_index,
-    WebSwapResult result,
     base::TimeTicks presentation_timestamp) {
   DCHECK(pending_presentation_promise_count_);
   --pending_presentation_promise_count_;
@@ -562,11 +561,11 @@ bool WindowPerformance::SetInteractionIdAndRecordLatency(
 
 void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          const String& url,
-                                         const FloatRect& rect,
+                                         const gfx::RectF& rect,
                                          base::TimeTicks start_time,
                                          base::TimeTicks load_time,
                                          const AtomicString& identifier,
-                                         const IntSize& intrinsic_size,
+                                         const gfx::Size& intrinsic_size,
                                          const AtomicString& id,
                                          Element* element) {
   if (!DomWindow())
@@ -574,7 +573,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, url, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(load_time), identifier,
-      intrinsic_size.Width(), intrinsic_size.Height(), id, element);
+      intrinsic_size.width(), intrinsic_size.height(), id, element);
   TRACE_EVENT2("loading", "PerformanceElementTiming", "data",
                entry->ToTracedValue(), "frame",
                ToTraceValue(DomWindow()->GetFrame()));
@@ -639,16 +638,20 @@ void WindowPerformance::OnLargestContentfulPaintUpdated(
     base::TimeTicks paint_time,
     uint64_t paint_size,
     base::TimeTicks load_time,
+    base::TimeTicks first_animated_frame_time,
     const AtomicString& id,
     const String& url,
     Element* element) {
   base::TimeDelta render_timestamp = MonotonicTimeToTimeDelta(paint_time);
   base::TimeDelta load_timestamp = MonotonicTimeToTimeDelta(load_time);
+  base::TimeDelta first_animated_frame_timestamp =
+      MonotonicTimeToTimeDelta(first_animated_frame_time);
+  // TODO(yoav): Should we modify start to represent the animated frame?
   base::TimeDelta start_timestamp =
       render_timestamp.is_zero() ? load_timestamp : render_timestamp;
   auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
       start_timestamp.InMillisecondsF(), render_timestamp, paint_size,
-      load_timestamp, id, url, element);
+      load_timestamp, first_animated_frame_timestamp, id, url, element);
   if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
     NotifyObserversOfEntry(*entry);
   AddLargestContentfulPaint(entry);

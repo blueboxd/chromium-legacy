@@ -3,7 +3,7 @@
 <translationbundle lang="bs">
 <translation id="1096883626080133124">Obavite više s jednostavnim i sigurnim Google Chromeom koji je brži nego ikad</translation>
 <translation id="1282031177488366470">Pomozite nam da poboljšamo funkcije i performanse Chromea</translation>
-<translation id="1354592789402432496">Vaš administrator zahtijeva da se prijavite pomoću računa organizacije. Računi koje je ograničio vaš administrator su skriveni.</translation>
+<translation id="1314663809820920746">I dalje ćete moći pregledati sve oznake, historiju, lozinke i druge postavke na ovom uređaju. Ako nešto promijenite, te promjene se neće sinhronizirati s vašim Google računom.</translation>
 <translation id="1479202195792305274">Chrome može provjeravati vaše lozinke kada se prijavite pomoću Google računa.</translation>
 <translation id="1493827051843127077">Postavite Chrome kao zadani preglednik da sinhronizirate kartice, lozinke i informacije o plaćanju na svim uređajima</translation>
 <translation id="1504372625950710826">Chrome nije mogao provjeriti ima li ažuriranja. Predlažemo da provjerite internetsku vezu.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Van mreže, Chrome ne može provjeravati ima li ažuriranja</translation>
 <translation id="5716154293141027663">Otvorite Chrome kad god dodirnete linkove u drugim aplikacijama</translation>
-<translation id="572883588166315317">Vaša organizacija zahtijeva da se prijavite da koristite Chrome. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Chrome savjet. Neka dugmad se sada nalaze na dnu ekrana, kao što su dugmad za nazad, naprijed i pretraživanje.</translation>
-<translation id="5876773482963502140">Ako dozvolite Chromeu da zna vašu lokaciju, poslat će je svim web lokacijama koje dozvolite. Web lokacije mogu tražiti vašu lokaciju kada imaju lokalne informacije koje vam mogu prikazati, kao što su prodavnice u blizini ili vijesti.</translation>
 <translation id="5998675059699164418">Vaša organizacija zahtijeva da se prijavite da koristite Chrome.</translation>
 <translation id="6054613632208573261">Koristite Chrome kao zadanu opciju</translation>
 <translation id="6063091872902370735">Omogućite prijavu pomoću Chromea</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Odaberite želite li obrisati podatke Chromea s ovog uređaja ili ih želite zadržati</translation>
 <translation id="8370517070665726704">Autorska prava <ph name="YEAR" /> Google LLC. Sva prava su zadržana.</translation>
 <translation id="840168496893712993">Neki dodaci uzrokuju pad aplikacije Chromea. Pokušajte ih deinstalirati.</translation>
+<translation id="8414886616817913619">Vaša organizacija zahtijeva da se prijavite da koristite Chrome. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Odabrani podaci su uklonjeni iz Chromea i sinhroniziranih uređaja. Vaš Google račun može imati druge oblike historije pregledanja, kao što su pretraživanja i aktivnosti s drugih Googleovih usluga na history.google.com.</translation>
 <translation id="850555388806794946">Da postavite Chrome kao zadani preglednik:
   1. Otvorite Postavke

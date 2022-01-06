@@ -9,6 +9,8 @@
 #include "ash/public/cpp/projector/projector_annotator_controller.h"
 #include "ash/public/cpp/projector/projector_controller.h"
 #include "ash/public/cpp/test/mock_projector_controller.h"
+#include "ash/webui/projector_app/annotator_tool.h"
+#include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
@@ -17,8 +19,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/components/projector_app/annotator_tool.h"
-#include "chromeos/components/projector_app/projector_app_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test.h"
@@ -87,10 +87,10 @@ class ProjectorAnnotatorControllerTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ProjectorAnnotatorControllerTest, SetTool) {
-  chromeos::AnnotatorTool expected_tool;
+  AnnotatorTool expected_tool;
   expected_tool.color = SK_ColorBLACK;
   expected_tool.size = 5;
-  expected_tool.type = chromeos::AnnotatorToolType::kPen;
+  expected_tool.type = AnnotatorToolType::kPen;
 
   base::RunLoop run_loop;
   base::RepeatingClosure quit_closure = run_loop.QuitClosure();
@@ -104,13 +104,13 @@ IN_PROC_BROWSER_TEST_F(ProjectorAnnotatorControllerTest, SetTool) {
 // chrome://projector/annotator/annotator_embedder.html while doing a screen
 // capture with annotator tools enabled.
 IN_PROC_BROWSER_TEST_F(ProjectorAnnotatorControllerTest, TwoAnnotators) {
-  chromeos::AnnotatorTool expected_tool;
+  AnnotatorTool expected_tool;
   expected_tool.color = SK_ColorGREEN;
   expected_tool.size = 6;
-  expected_tool.type = chromeos::AnnotatorToolType::kMarker;
+  expected_tool.type = AnnotatorToolType::kMarker;
 
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), GURL(chromeos::kChromeUITrustedAnnotatorUrl)));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(kChromeUITrustedAnnotatorUrl)));
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);

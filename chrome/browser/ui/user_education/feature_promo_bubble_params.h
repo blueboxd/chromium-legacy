@@ -73,6 +73,7 @@ struct FeaturePromoBubbleParams {
     BOTTOM_CENTER,
     LEFT_CENTER,
     RIGHT_CENTER,
+    NONE
   };
 
   // Determines position relative to the anchor element, and where the bubble's
@@ -95,17 +96,9 @@ struct FeaturePromoBubbleParams {
   // If true, |allow_focus| must be true for keyboard accessibility.
   bool allow_snooze = false;
 
-  // Determines if this IPH has a close button which can dismiss it. This is
-  // intended to be true for tutorial use cases.
-  bool show_close_button = false;
-
-  // Changes the bubble timeout before and after hovering the bubble,
-  // respectively. If a timeout is not provided a default will be used. If
-  // |timeout_after_interaction| is 0, |timeout_no_interaction| is used in
-  // both cases. If both are 0, the bubble never times out. A bubble with
-  // buttons never times out regardless of the values.
-  absl::optional<base::TimeDelta> timeout_no_interaction;
-  absl::optional<base::TimeDelta> timeout_after_interaction;
+  // Changes the bubble timeout. If a timeout is not provided a default will
+  // be used. If the timeout is 0, the bubble never times out.
+  absl::optional<base::TimeDelta> timeout;
 };
 
 #endif  // CHROME_BROWSER_UI_USER_EDUCATION_FEATURE_PROMO_BUBBLE_PARAMS_H_

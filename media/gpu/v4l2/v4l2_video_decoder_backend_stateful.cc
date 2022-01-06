@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "media/base/video_codecs.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
@@ -620,11 +620,16 @@ bool V4L2StatefulVideoDecoderBackend::ApplyResolution(
   return true;
 }
 
-void V4L2StatefulVideoDecoderBackend::OnChangeResolutionDone(bool success) {
+void V4L2StatefulVideoDecoderBackend::OnChangeResolutionDone(CroStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(3);
 
-  if (!success) {
+  if (status == CroStatus::Codes::kResetRequired) {
+    // TODO(b/192523692): Handle the aborted situation.
+    return;
+  }
+
+  if (status != CroStatus::Codes::kOk) {
     client_->OnBackendError();
     return;
   }
@@ -691,8 +696,8 @@ bool V4L2StatefulVideoDecoderBackend::IsSupportedProfile(
     VideoDecodeAccelerator::SupportedProfiles profiles =
         device->GetSupportedDecodeProfiles(base::size(kSupportedInputFourccs),
                                            kSupportedInputFourccs);
-    for (const auto& profile : profiles)
-      supported_profiles_.push_back(profile.profile);
+    for (const auto& entry : profiles)
+      supported_profiles_.push_back(entry.profile);
   }
   return std::find(supported_profiles_.begin(), supported_profiles_.end(),
                    profile) != supported_profiles_.end();

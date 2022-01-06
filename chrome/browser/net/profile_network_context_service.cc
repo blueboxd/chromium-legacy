@@ -268,6 +268,11 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
       base::BindRepeating(&ProfileNetworkContextService::
                               UpdateSplitAuthCacheByNetworkIsolationKey,
                           base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kCorsNonWildcardRequestHeadersSupport,
+      base::BindRepeating(&ProfileNetworkContextService::
+                              UpdateCorsNonWildcardRequestHeadersSupport,
+                          base::Unretained(this)));
 }
 
 ProfileNetworkContextService::~ProfileNetworkContextService() = default;
@@ -460,6 +465,19 @@ void ProfileNetworkContextService::UpdateSplitAuthCacheByNetworkIsolationKey() {
       split_auth_cache_by_network_isolation_key));
 }
 
+void ProfileNetworkContextService::
+    UpdateCorsNonWildcardRequestHeadersSupport() {
+  const bool value = profile_->GetPrefs()->GetBoolean(
+      prefs::kCorsNonWildcardRequestHeadersSupport);
+
+  profile_->ForEachStoragePartition(base::BindRepeating(
+      [](bool value, content::StoragePartition* storage_partition) {
+        storage_partition->GetNetworkContext()
+            ->SetCorsNonWildcardRequestHeadersSupport(value);
+      },
+      value));
+}
+
 // static
 network::mojom::CookieManagerParamsPtr
 ProfileNetworkContextService::CreateCookieManagerParams(
@@ -562,7 +580,7 @@ ProfileNetworkContextService::CreateClientCertStore() {
   // dependency is explicit. See https://crbug.com/1018972.
   profile_->GetResourceContext();
 
-  return std::make_unique<chromeos::ClientCertStoreAsh>(
+  return std::make_unique<ash::ClientCertStoreAsh>(
       std::move(certificate_provider), use_system_key_slot, username_hash,
       base::BindRepeating(&CreateCryptoModuleBlockingPasswordDelegate,
                           kCryptoModulePasswordClientAuth));
@@ -572,14 +590,14 @@ ProfileNetworkContextService::CreateClientCertStore() {
           base::BindRepeating(&CreateCryptoModuleBlockingPasswordDelegate,
                               kCryptoModulePasswordClientAuth));
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  CertDbInitializer* cert_db_initializer =
-      CertDbInitializerFactory::GetForProfileIfExists(profile_);
-  if (!cert_db_initializer || !profile_->IsMainProfile()) {
+  if (!profile_->IsMainProfile()) {
     // TODO(crbug.com/1148298): return some cert store for secondary profiles in
     // Lacros-Chrome.
     return nullptr;
   }
 
+  CertDbInitializer* cert_db_initializer =
+      CertDbInitializerFactory::GetForBrowserContext(profile_);
   store = std::make_unique<ClientCertStoreLacros>(cert_db_initializer,
                                                   std::move(store));
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)

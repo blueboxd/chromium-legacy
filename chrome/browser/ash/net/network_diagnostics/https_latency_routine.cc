@@ -19,7 +19,7 @@
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
-namespace chromeos {
+namespace ash {
 namespace network_diagnostics {
 namespace {
 
@@ -180,15 +180,21 @@ void HttpsLatencyRoutine::AnalyzeResultsAndExecuteCallback() {
   } else if (failed_connection_) {
     set_verdict(mojom::RoutineVerdict::kProblem);
     problems_.emplace_back(mojom::HttpsLatencyProblem::kFailedHttpsRequests);
-  } else if (median_latency <= kProblemLatencyMs &&
-             median_latency > kPotentialProblemLatencyMs) {
-    set_verdict(mojom::RoutineVerdict::kProblem);
-    problems_.emplace_back(mojom::HttpsLatencyProblem::kHighLatency);
-  } else if (median_latency > kProblemLatencyMs) {
-    set_verdict(mojom::RoutineVerdict::kProblem);
-    problems_.emplace_back(mojom::HttpsLatencyProblem::kVeryHighLatency);
   } else {
-    set_verdict(mojom::RoutineVerdict::kNoProblem);
+    auto https_latency_result_value =
+        mojom::HttpsLatencyResultValue::New(median_latency);
+    set_result_value(mojom::RoutineResultValue::NewHttpsLatencyResultValue(
+        std::move(https_latency_result_value)));
+    if (median_latency <= kProblemLatencyMs &&
+        median_latency > kPotentialProblemLatencyMs) {
+      set_verdict(mojom::RoutineVerdict::kProblem);
+      problems_.emplace_back(mojom::HttpsLatencyProblem::kHighLatency);
+    } else if (median_latency > kProblemLatencyMs) {
+      set_verdict(mojom::RoutineVerdict::kProblem);
+      problems_.emplace_back(mojom::HttpsLatencyProblem::kVeryHighLatency);
+    } else {
+      set_verdict(mojom::RoutineVerdict::kNoProblem);
+    }
   }
   set_problems(mojom::RoutineProblems::NewHttpsLatencyProblems(problems_));
   ExecuteCallback();
@@ -251,4 +257,4 @@ void HttpsLatencyRoutine::OnHttpsRequestComplete(bool connected) {
 }
 
 }  // namespace network_diagnostics
-}  // namespace chromeos
+}  // namespace ash

@@ -114,13 +114,6 @@ void DidCreateScriptLoader(
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // If a URLLoaderFactory for AppCache is supplied, use that.
-  if (subresource_loader_params &&
-      subresource_loader_params->pending_appcache_loader_factory) {
-    subresource_loader_factories->pending_appcache_factory() =
-        std::move(subresource_loader_params->pending_appcache_loader_factory);
-  }
-
   // Prepare the controller service worker info to pass to the renderer.
   blink::mojom::ControllerServiceWorkerInfoPtr controller;
   base::WeakPtr<ServiceWorkerObjectHost> controller_service_worker_object_host;
@@ -158,6 +151,8 @@ bool ShouldCreateWebUILoader(RenderFrameHost* creator_render_frame_host) {
     return true;
   if (requesting_scheme == kChromeUIUntrustedScheme)
     return true;
+  if (requesting_scheme == kChromeDevToolsScheme)
+    return true;
   return false;
 }
 
@@ -177,7 +172,6 @@ void WorkerScriptFetcher::CreateAndStart(
     network::mojom::RequestDestination request_destination,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     ServiceWorkerMainResourceHandle* service_worker_handle,
-    base::WeakPtr<AppCacheHost> appcache_host,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override,
     StoragePartitionImpl* storage_partition,
@@ -188,6 +182,7 @@ void WorkerScriptFetcher::CreateAndStart(
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(storage_partition);
+  DCHECK(devtools_agent_host);
   DCHECK(request_destination == network::mojom::RequestDestination::kWorker ||
          request_destination ==
              network::mojom::RequestDestination::kSharedWorker)
@@ -282,7 +277,7 @@ void WorkerScriptFetcher::CreateAndStart(
       std::move(resource_request), std::move(factory_bundle_for_browser),
       std::move(subresource_loader_factories),
       std::move(service_worker_context), service_worker_handle,
-      std::move(appcache_host), std::move(blob_url_loader_factory),
+      std::move(blob_url_loader_factory),
       std::move(url_loader_factory_override), worker_source_id,
       devtools_agent_host, devtools_worker_token, std::move(callback));
 }
@@ -300,7 +295,6 @@ void WorkerScriptFetcher::CreateScriptLoader(
         subresource_loader_factories,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     ServiceWorkerMainResourceHandle* service_worker_handle,
-    base::WeakPtr<AppCacheHost> appcache_host,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override,
     ukm::SourceId worker_source_id,
@@ -308,6 +302,7 @@ void WorkerScriptFetcher::CreateScriptLoader(
     const base::UnguessableToken& devtools_worker_token,
     WorkerScriptFetcher::CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(devtools_agent_host);
 
   RenderProcessHost* factory_process =
       RenderProcessHost::FromID(worker_process_id);
@@ -375,13 +370,9 @@ void WorkerScriptFetcher::CreateScriptLoader(
     factory_bundle_for_browser_info->set_bypass_redirect_checks(
         bypass_redirect_checks);
 
-    // TODO(crbug.com/1143102): make this unconditional when dedicated workers
-    // are supported.
-    if (devtools_agent_host) {
-      devtools_instrumentation::WillCreateURLLoaderFactoryForWorkerMainScript(
-          devtools_agent_host, devtools_worker_token,
-          &factory_params->factory_override);
-    }
+    devtools_instrumentation::WillCreateURLLoaderFactoryForWorkerMainScript(
+        devtools_agent_host, devtools_worker_token,
+        &factory_params->factory_override);
     factory_process->CreateURLLoaderFactory(std::move(default_factory_receiver),
                                             std::move(factory_params));
 
@@ -414,9 +405,8 @@ void WorkerScriptFetcher::CreateScriptLoader(
   auto* script_fetcher = new WorkerScriptFetcher(
       std::make_unique<WorkerScriptLoaderFactory>(
           worker_process_id, worker_token, trusted_isolation_info,
-          service_worker_handle, std::move(appcache_host),
-          browser_context_getter, std::move(url_loader_factory),
-          worker_source_id),
+          service_worker_handle, browser_context_getter,
+          std::move(url_loader_factory), worker_source_id),
       std::move(resource_request),
       base::BindOnce(DidCreateScriptLoader, std::move(callback),
                      std::move(subresource_loader_factories),
@@ -474,8 +464,8 @@ WorkerScriptFetcher::CreateFactoryBundle(
       break;
   }
 
-  // Create WebUI loader for chrome:// or chrome-untrusted:// workers from WebUI
-  // frames of the same scheme.
+  // Create WebUI loader for chrome://, chrome-untrusted://, or devtools://
+  // workers from WebUI frames of the same scheme.
   if (ShouldCreateWebUILoader(creator_render_frame_host)) {
     auto requesting_scheme =
         creator_render_frame_host->GetLastCommittedOrigin().scheme();
@@ -570,7 +560,7 @@ void WorkerScriptFetcher::OnStartLoadingResponseBody(
   if (script_loader && script_loader->default_loader_used_) {
     // If the default network loader was used to handle the URL load request we
     // need to see if the request interceptors want to potentially create a new
-    // loader for the response, e.g. AppCache's fallback.
+    // loader for the response, e.g. SXG or WebBundles.
     DCHECK(!response_url_loader_);
     mojo::PendingReceiver<network::mojom::URLLoaderClient>
         response_client_receiver;

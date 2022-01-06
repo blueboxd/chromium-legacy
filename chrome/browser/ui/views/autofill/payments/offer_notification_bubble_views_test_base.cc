@@ -28,14 +28,13 @@ OfferNotificationBubbleViewsTestBase::OfferNotificationBubbleViewsTestBase(
   if (promo_code_flag_enabled) {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         /*enabled_features=*/
-        {{features::kAutofillEnableOfferNotification, {}},
-         {features::kAutofillEnableOfferNotificationForPromoCodes, {}},
+        {{features::kAutofillEnableOfferNotificationForPromoCodes, {}},
          {commerce::kRetailCoupons,
           {{commerce::kRetailCouponsWithCodeParam, "true"}}}},
         /*disabled_features=*/{});
   } else {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kAutofillEnableOfferNotification},
+        /*enabled_features=*/{},
         /*disabled_features=*/{
             features::kAutofillEnableOfferNotificationForPromoCodes,
             commerce::kRetailCoupons});
@@ -78,7 +77,8 @@ OfferNotificationBubbleViewsTestBase::CreateCardLinkedOfferDataWithDomains(
   offer_data_entry->expiry = AutofillClock::Now() + base::Days(2);
   offer_data_entry->merchant_origins = {};
   for (auto url : domains)
-    offer_data_entry->merchant_origins.emplace_back(url.GetOrigin());
+    offer_data_entry->merchant_origins.emplace_back(
+        url.DeprecatedGetOriginAsURL());
   offer_data_entry->eligible_instrument_id = {kCreditCardInstrumentId};
 
   return offer_data_entry;
@@ -93,7 +93,8 @@ OfferNotificationBubbleViewsTestBase::CreatePromoCodeOfferDataWithDomains(
   offer_data_entry->expiry = AutofillClock::Now() + base::Days(2);
   offer_data_entry->merchant_origins = {};
   for (auto url : domains)
-    offer_data_entry->merchant_origins.emplace_back(url.GetOrigin());
+    offer_data_entry->merchant_origins.emplace_back(
+        url.DeprecatedGetOriginAsURL());
   offer_data_entry->offer_details_url = GURL("https://www.google.com/");
   offer_data_entry->promo_code = GetDefaultTestPromoCode();
   offer_data_entry->display_strings.value_prop_text =

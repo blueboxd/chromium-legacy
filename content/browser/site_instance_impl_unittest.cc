@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/site_info.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -501,6 +502,10 @@ TEST_F(SiteInstanceTest, DefaultSiteInstanceProperties) {
   // platforms.
   scoped_command_line.GetProcessCommandLine()->AppendSwitch(
       switches::kDisableSiteIsolation);
+  // If --site-per-process was manually appended, remove it; this interferes
+  // with default SiteInstances.
+  scoped_command_line.GetProcessCommandLine()->RemoveSwitch(
+      switches::kSitePerProcess);
 
   auto site_instance = SiteInstanceImpl::CreateForUrlInfo(
       &browser_context, UrlInfo::CreateForTesting(GURL("http://foo.com")));

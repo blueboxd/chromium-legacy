@@ -38,24 +38,34 @@ static constexpr double kMaximumScalePreventsZoomingThreshold = 1.2;
 // it takes more than 5ms.
 static constexpr base::TimeDelta kTimeBudgetForBadTapTarget =
     base::Milliseconds(5);
+static constexpr base::TimeDelta kEvaluationDelay = base::Milliseconds(3000);
+static constexpr base::TimeDelta kEvaluationInterval = base::Minutes(1);
 
 MobileFriendlinessChecker::MobileFriendlinessChecker(LocalFrameView& frame_view)
     : frame_view_(&frame_view),
-      font_size_check_enabled_(frame_view_->GetFrame().GetWidgetForLocalRoot()),
-      tap_target_check_enabled_(
-          frame_view_->GetFrame().GetWidgetForLocalRoot()),
+      enabled_(frame_view_->GetFrame().GetWidgetForLocalRoot()),
       viewport_scalar_(
-          font_size_check_enabled_
-              ? frame_view_->GetPage()
-                    ->GetChromeClient()
-                    .WindowToViewportScalar(&frame_view_->GetFrame(), 1)
-              : 0),
-      fcp_detected_(false) {}
+          enabled_ ? frame_view_->GetPage()
+                         ->GetChromeClient()
+                         .WindowToViewportScalar(&frame_view_->GetFrame(), 1)
+                   : 0),
+      timer_(frame_view_->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
+             this,
+             &MobileFriendlinessChecker::Activate) {}
 
 MobileFriendlinessChecker::~MobileFriendlinessChecker() = default;
 
-void MobileFriendlinessChecker::NotifyFirstContentfulPaint() {
-  fcp_detected_ = true;
+void MobileFriendlinessChecker::NotifyPaint() {
+  if (timer_.IsActive() || !enabled_ ||
+      base::TimeTicks::Now() - last_evaluated_ < kEvaluationInterval) {
+    return;
+  }
+
+  timer_.StartOneShot(kEvaluationDelay, FROM_HERE);
+}
+
+void MobileFriendlinessChecker::WillBeRemovedFromFrame() {
+  timer_.Stop();
 }
 
 namespace {
@@ -187,11 +197,11 @@ int ExtractAndCountAllTapTargets(
         object = object->NextInPreOrder();
         continue;
       }
-      const int top = ClampTo<int>(rect.Y() - finger_radius + scroll_offset);
+      const int top = ClampTo<int>(rect.y() - finger_radius + scroll_offset);
       const int bottom =
-          ClampTo<int>(rect.MaxY() + finger_radius + scroll_offset);
-      const int left = ClampTo<int>(rect.X() - finger_radius);
-      const int right = ClampTo<int>(rect.MaxX() + finger_radius);
+          ClampTo<int>(rect.bottom() + finger_radius + scroll_offset);
+      const int left = ClampTo<int>(rect.x() - finger_radius);
+      const int right = ClampTo<int>(rect.right() + finger_radius);
       const int center = right / 2 + left / 2;
       if (top > max_height) {
         break;
@@ -301,7 +311,7 @@ int MobileFriendlinessChecker::ComputeBadTapTargetsRatio() {
 
   // This is like DOMWindow::scrollY() but without layout update.
   const int scroll_y = AdjustForAbsoluteZoom::AdjustScroll(
-      frame_view_->LayoutViewport()->GetScrollOffset().Height(),
+      frame_view_->LayoutViewport()->GetScrollOffset().height(),
       frame_view_->GetFrame().PageZoomFactor());
   const int screen_height =
       frame_view_->LayoutViewport()->GetLayoutBox()->Size().Height().ToInt();
@@ -340,31 +350,30 @@ int MobileFriendlinessChecker::ComputeBadTapTargetsRatio() {
   return bad_tap_targets * 100.0 / all_tap_targets;
 }
 
-void MobileFriendlinessChecker::EvaluateNow() {
-  // This checker has nothing to do.
-  if (!tap_target_check_enabled_ && !font_size_check_enabled_)
-    return;
-
+void MobileFriendlinessChecker::Activate(TimerBase*) {
   // If detached, there's no need to calculate any metrics.
-  // Or if this is before FCP, there's nothing to evaluate.
-  if (!frame_view_->GetChromeClient() || !fcp_detected_)
+  if (!frame_view_->GetChromeClient())
     return;
 
-  if (tap_target_check_enabled_)
-    mobile_friendliness_.bad_tap_targets_ratio = ComputeBadTapTargetsRatio();
+  frame_view_->RegisterForLifecycleNotifications(this);
+  frame_view_->ScheduleAnimation();
+}
 
-  if (font_size_check_enabled_)
-    mobile_friendliness_.small_text_ratio = text_area_sizes_.SmallTextRatio();
-
+void MobileFriendlinessChecker::DidFinishLifecycleUpdate(
+    const LocalFrameView&) {
+  mobile_friendliness_.bad_tap_targets_ratio = ComputeBadTapTargetsRatio();
+  mobile_friendliness_.small_text_ratio = text_area_sizes_.SmallTextRatio();
   mobile_friendliness_.text_content_outside_viewport_percentage =
       ComputeContentOutsideViewport();
 
   frame_view_->DidChangeMobileFriendliness(mobile_friendliness_);
+  frame_view_->UnregisterFromLifecycleNotifications(this);
+  last_evaluated_ = base::TimeTicks::Now();
 }
 
 void MobileFriendlinessChecker::NotifyViewportUpdated(
     const ViewportDescription& viewport) {
-  if (viewport.type != ViewportDescription::Type::kViewportMeta)
+  if (viewport.type != ViewportDescription::Type::kViewportMeta || !enabled_)
     return;
 
   const double zoom = viewport.zoom_is_explicit ? viewport.zoom : 1.0;
@@ -400,7 +409,7 @@ int MobileFriendlinessChecker::TextAreaWithFontSize::SmallTextRatio() const {
 
 void MobileFriendlinessChecker::NotifyInvalidatePaint(
     const LayoutObject& object) {
-  if (font_size_check_enabled_)
+  if (enabled_)
     ComputeSmallTextRatio(object);
 }
 
@@ -435,7 +444,7 @@ void MobileFriendlinessChecker::ComputeSmallTextRatio(
 }
 
 int MobileFriendlinessChecker::ComputeContentOutsideViewport() {
-  int frame_width = frame_view_->GetPage()->GetVisualViewport().Size().Width();
+  int frame_width = frame_view_->GetPage()->GetVisualViewport().Size().width();
   if (frame_width == 0) {
     return 0;
   }
@@ -450,7 +459,7 @@ int MobileFriendlinessChecker::ComputeContentOutsideViewport() {
                              .FinalConstraints()
                              .initial_scale;
   int content_width =
-      root_frame_viewport->LayoutViewport().ContentsSize().Width() *
+      root_frame_viewport->LayoutViewport().ContentsSize().width() *
       initial_scale;
   int max_scroll_offset = content_width - frame_width;
 
@@ -461,6 +470,7 @@ int MobileFriendlinessChecker::ComputeContentOutsideViewport() {
 
 void MobileFriendlinessChecker::Trace(Visitor* visitor) const {
   visitor->Trace(frame_view_);
+  visitor->Trace(timer_);
 }
 
 }  // namespace blink

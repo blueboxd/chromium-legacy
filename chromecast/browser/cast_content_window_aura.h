@@ -28,8 +28,7 @@ class CastContentWindowAura : public CastContentWindow,
                               public content::WebContentsObserver,
                               public aura::WindowObserver {
  public:
-  CastContentWindowAura(base::WeakPtr<Delegate> delegate,
-                        mojom::CastWebViewParamsPtr params,
+  CastContentWindowAura(mojom::CastWebViewParamsPtr params,
                         CastWindowManager* window_manager);
 
   CastContentWindowAura(const CastContentWindowAura&) = delete;
@@ -53,7 +52,7 @@ class CastContentWindowAura : public CastContentWindow,
   // content::WebContentsObserver implementation:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void MainFrameWasResized(bool width_changed) override;
+  void PrimaryMainFrameWasResized(bool width_changed) override;
 
   // aura::WindowObserver implementation:
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;

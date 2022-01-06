@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/no_destructor.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/tick_clock.h"
@@ -39,15 +40,7 @@
 #include "url/gurl.h"
 
 namespace autofill_assistant {
-
 namespace {
-
-// The initial progress to set when autostarting and showing the "Loading..."
-// message.
-static constexpr int kAutostartInitialProgress = 5;
-
-// Experiment for toggling the new progress bar.
-const char kProgressBarExperiment[] = "4400697";
 
 // Experiment for non-sticky TTSButtonState. The TTSButtonState is reset to
 // DEFAULT whenever tts/status message changes even when the button was
@@ -60,7 +53,6 @@ bool ShouldSuppressKeyboardForState(AutofillAssistantState state) {
     case AutofillAssistantState::RUNNING:
       return true;
 
-    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
     case AutofillAssistantState::PROMPT:
     case AutofillAssistantState::BROWSE:
     case AutofillAssistantState::MODAL_DIALOG:
@@ -79,7 +71,8 @@ Controller::Controller(
     const base::TickClock* tick_clock,
     base::WeakPtr<RuntimeManagerImpl> runtime_manager,
     std::unique_ptr<Service> service,
-    std::unique_ptr<AutofillAssistantTtsController> tts_controller)
+    std::unique_ptr<AutofillAssistantTtsController> tts_controller,
+    ukm::UkmRecorder* ukm_recorder)
     : content::WebContentsObserver(web_contents),
       client_(client),
       tick_clock_(tick_clock),
@@ -88,9 +81,10 @@ Controller::Controller(
                        : ServiceImpl::Create(web_contents->GetBrowserContext(),
                                              client_)),
       navigating_to_new_document_(web_contents->IsWaitingForResponse()),
-      tts_controller_(std::move(tts_controller)) {
+      tts_controller_(std::move(tts_controller)),
+      ukm_recorder_(ukm_recorder) {
   user_model_.AddObserver(this);
-  tts_controller_->SetTtsEventDelegate(this);
+  tts_controller_->SetTtsEventDelegate(weak_ptr_factory_.GetWeakPtr());
 }
 
 Controller::~Controller() {
@@ -147,8 +141,8 @@ Service* Controller::GetService() {
 
 WebController* Controller::GetWebController() {
   if (!web_controller_) {
-    web_controller_ =
-        WebController::CreateForWebContents(web_contents(), &user_data_);
+    web_controller_ = WebController::CreateForWebContents(
+        web_contents(), &user_data_, &log_info_);
   }
   return web_controller_.get();
 }
@@ -172,6 +166,10 @@ content::WebContents* Controller::GetWebContents() {
 
 std::string Controller::GetEmailAddressForAccessTokenAccount() {
   return client_->GetEmailAddressForAccessTokenAccount();
+}
+
+ukm::UkmRecorder* Controller::GetUkmRecorder() {
+  return ukm_recorder_;
 }
 
 std::string Controller::GetDisplayStringsLocale() {
@@ -308,15 +306,11 @@ std::vector<Details> Controller::GetDetails() const {
   return details;
 }
 
-int Controller::GetProgress() const {
-  return progress_;
-}
-
-absl::optional<int> Controller::GetProgressActiveStep() const {
+int Controller::GetProgressActiveStep() const {
   return progress_active_step_;
 }
 
-absl::optional<ShowProgressBarProto::StepProgressBarConfiguration>
+ShowProgressBarProto::StepProgressBarConfiguration
 Controller::GetStepProgressBarConfiguration() const {
   return step_progress_bar_configuration_;
 }
@@ -342,46 +336,26 @@ const InfoBox* Controller::GetInfoBox() const {
   return info_box_.get();
 }
 
-void Controller::SetProgress(int progress) {
-  // Progress can only increase.
-  if (progress_ >= progress)
-    return;
-
-  progress_ = progress;
-  for (ControllerObserver& observer : observers_) {
-    observer.OnProgressChanged(progress);
-  }
-}
-
 bool Controller::SetProgressActiveStepIdentifier(
     const std::string& active_step_identifier) {
-  if (!step_progress_bar_configuration_.has_value()) {
-    return false;
-  }
-
-  auto it = std::find_if(
-      step_progress_bar_configuration_->annotated_step_icons().cbegin(),
-      step_progress_bar_configuration_->annotated_step_icons().cend(),
+  const auto it = base::ranges::find_if(
+      step_progress_bar_configuration_.annotated_step_icons(),
       [&](const ShowProgressBarProto::StepProgressBarIcon& icon) {
         return icon.identifier() == active_step_identifier;
       });
-  if (it == step_progress_bar_configuration_->annotated_step_icons().cend()) {
+  if (it == step_progress_bar_configuration_.annotated_step_icons().cend()) {
     return false;
   }
 
   SetProgressActiveStep(std::distance(
-      step_progress_bar_configuration_->annotated_step_icons().cbegin(), it));
+      step_progress_bar_configuration_.annotated_step_icons().cbegin(), it));
   return true;
 }
 
 void Controller::SetProgressActiveStep(int active_step) {
-  if (!step_progress_bar_configuration_.has_value()) {
-    return;
-  }
-
   // Default step progress bar has 2 steps.
   int max_step = std::max(
-      2, step_progress_bar_configuration_->annotated_step_icons().size());
+      2, step_progress_bar_configuration_.annotated_step_icons().size());
 
   int new_active_step = active_step;
   if (active_step < 0 || active_step > max_step) {
@@ -389,8 +363,7 @@ void Controller::SetProgressActiveStep(int active_step) {
   }
 
   // Step can only increase.
-  if (progress_active_step_.has_value() &&
-      *progress_active_step_ >= new_active_step) {
+  if (progress_active_step_ >= new_active_step) {
     return;
   }
 
@@ -426,15 +399,12 @@ void Controller::SetStepProgressBarConfiguration(
     const ShowProgressBarProto::StepProgressBarConfiguration& configuration) {
   step_progress_bar_configuration_ = configuration;
   if (!configuration.annotated_step_icons().empty() &&
-      progress_active_step_.has_value() &&
-      configuration.annotated_step_icons().size() < *progress_active_step_) {
+      configuration.annotated_step_icons().size() < progress_active_step_) {
     progress_active_step_ = configuration.annotated_step_icons().size();
   }
   for (ControllerObserver& observer : observers_) {
     observer.OnStepProgressBarConfigurationChanged(configuration);
-    if (progress_active_step_.has_value()) {
-      observer.OnProgressActiveStepChanged(*progress_active_step_);
-    }
+    observer.OnProgressActiveStepChanged(progress_active_step_);
     observer.OnProgressBarErrorStateChanged(progress_bar_error_state_);
   }
 }
@@ -577,6 +547,10 @@ bool Controller::ShouldShowWarning() {
 
 void Controller::SetShowFeedbackChip(bool show_feedback_chip) {
   show_feedback_chip_on_graceful_shutdown_ = show_feedback_chip;
+}
+
+ProcessedActionStatusDetailsProto& Controller::GetLogInfo() {
+  return log_info_;
 }
 
 void Controller::AddNavigationListener(
@@ -985,7 +959,6 @@ void Controller::OnUrlChange() {
 bool Controller::ShouldCheckScripts() {
   return state_ == AutofillAssistantState::TRACKING ||
          state_ == AutofillAssistantState::STARTING ||
-         state_ == AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT ||
          ((state_ == AutofillAssistantState::PROMPT ||
            state_ == AutofillAssistantState::BROWSE) &&
           (!script_tracker_ || !script_tracker_->running()));
@@ -1165,6 +1138,14 @@ void Controller::ExecuteScript(const std::string& script_path,
                                AutofillAssistantState end_state) {
   DCHECK(!script_tracker()->running());
 
+  // To prevent state from persisting across direct actions, we need to
+  // explicitly clear it each time before we run a script (b/195417453). Note
+  // that for cases where a JITT script transitions into a regular script,
+  // preserving state is important, so we can't clear this indiscriminately.
+  if (context->GetDirectAction()) {
+    ResetState();
+  }
+
   if (!start_message.empty())
     SetStatusMessage(start_message);
 
@@ -1178,8 +1159,7 @@ void Controller::ExecuteScript(const std::string& script_path,
   // the script.
   script_tracker_->ClearRunnableScripts();
   SetUserActions(nullptr);
-  // TODO(crbug.com/806868): Consider making ClearRunnableScripts part of
-  // ExecuteScripts to simplify the controller.
+
   script_tracker()->ExecuteScript(
       script_path, &user_data_, std::move(context),
       base::BindOnce(&Controller::OnScriptExecuted,
@@ -1247,28 +1227,48 @@ void Controller::OnScriptExecuted(const std::string& script_path,
   EnterState(end_state);
 }
 
-bool Controller::MaybeAutostartScript(
+void Controller::ResetState() {
+  // TODO(b/204963552): this list is incomplete. It would be much better if,
+  // instead of selectively clearing fields, we'd solve this in a more holistic
+  // way.
+  bubble_message_.clear();
+  tts_message_.clear();
+  status_message_.clear();
+  details_.clear();
+  info_box_.reset();
+  progress_bar_error_state_ = false;
+  progress_active_step_ = 0;
+  step_progress_bar_configuration_ =
+      ShowProgressBarProto::StepProgressBarConfiguration();
+  viewport_mode_ = ViewportMode::NO_RESIZE;
+  peek_mode_ = ConfigureBottomSheetProto::HANDLE;
+  overlay_behavior_ = ConfigureUiStateProto::DEFAULT;
+  touchable_element_area()->Clear();
+}
+
+void Controller::MaybeAutostartScript(
     const std::vector<ScriptHandle>& runnable_scripts) {
-  // Under specific conditions, we can directly run a non-interrupt script
-  // without first displaying it. This is meant to work only at the very
-  // beginning, when no scripts have run, and only if there's exactly one
-  // autostartable script.
-  if (!allow_autostart())
-    return false;
+  // We are still waiting for preconditions to match.
+  if (runnable_scripts.empty())
+    return;
 
   int autostart_index = -1;
   for (size_t i = 0; i < runnable_scripts.size(); i++) {
     if (runnable_scripts[i].autostart) {
       if (autostart_index != -1) {
-        // To many autostartable scripts.
-        return false;
+        OnScriptError(GetDisplayStringUTF8(ClientSettingsProto::DEFAULT_ERROR,
+                                           GetSettings()),
+                      Metrics::DropOutReason::MULTIPLE_AUTOSTARTABLE_SCRIPTS);
+        return;
       }
       autostart_index = i;
     }
   }
 
-  if (autostart_index == -1)
-    return false;
+  if (autostart_index == -1) {
+    UpdateDirectActions(runnable_scripts);
+    return;
+  }
 
   // Copying the strings is necessary, as ExecuteScript will invalidate
   // runnable_scripts by calling ScriptTracker::ClearRunnableScripts.
@@ -1277,10 +1277,10 @@ bool Controller::MaybeAutostartScript(
   std::string path = runnable_scripts[autostart_index].path;
   std::string start_message = runnable_scripts[autostart_index].start_message;
   bool needs_ui = runnable_scripts[autostart_index].needs_ui;
+  // TODO(b/204037940): remove prompt state after script execution.
   ExecuteScript(path, start_message, needs_ui,
                 std::make_unique<TriggerContext>(),
                 AutofillAssistantState::PROMPT);
-  return true;
 }
 
 void Controller::InitFromParameters() {
@@ -1312,14 +1312,8 @@ void Controller::InitFromParameters() {
       trigger_context_->GetScriptParameters().GetPasswordChangeUsername();
   if (password_change_username) {
     DCHECK(GetDeeplinkURL().is_valid());  // |deeplink_url_| must be set.
-    user_data_.selected_login_.emplace(GetDeeplinkURL().GetOrigin(),
-                                       *password_change_username);
-  }
-
-  if (trigger_context_->HasExperimentId(kProgressBarExperiment)) {
-    ShowProgressBarProto::StepProgressBarConfiguration mock_configuration;
-    mock_configuration.set_use_step_progress_bar(true);
-    SetStepProgressBarConfiguration(mock_configuration);
+    user_data_.selected_login_.emplace(
+        GetDeeplinkURL().DeprecatedGetOriginAsURL(), *password_change_username);
   }
 
   const absl::optional<bool> enable_tts =
@@ -1389,18 +1383,8 @@ void Controller::ShowFirstMessageAndStart() {
           ? l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
                                       base::UTF8ToUTF16(GetCurrentURL().host()))
           : status_message_);
-  if (step_progress_bar_configuration_.has_value() &&
-      step_progress_bar_configuration_->use_step_progress_bar()) {
-    if (!progress_active_step_.has_value()) {
-      // Set default progress unless already specified in
-      // |progress_active_step_|.
-      progress_active_step_ = 0;
-    }
-    SetStepProgressBarConfiguration(*step_progress_bar_configuration_);
-    SetProgressActiveStep(*progress_active_step_);
-  } else {
-    SetProgress(kAutostartInitialProgress);
-  }
+  SetStepProgressBarConfiguration(step_progress_bar_configuration_);
+  SetProgressActiveStep(progress_active_step_);
   EnterState(AutofillAssistantState::STARTING);
 }
 
@@ -1755,11 +1739,12 @@ void Controller::SetTermsAndConditions(
   }
 }
 
-void Controller::SetLoginOption(std::string identifier) {
+void Controller::SetLoginOption(const std::string& identifier) {
   if (!collect_user_data_options_)
     return;
 
-  user_data_.login_choice_identifier_.assign(identifier);
+  user_model_.SetSelectedLoginChoiceByIdentifier(
+      identifier, *collect_user_data_options_, &user_data_);
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_, UserData::FieldChange::LOGIN_CHOICE);
@@ -1924,7 +1909,6 @@ void Controller::OnNoRunnableScriptsForPage() {
       break;
 
     case AutofillAssistantState::PROMPT:
-    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
       // The user has navigated to a page that has no scripts or the scripts
       // have reached a state from which they cannot recover through a DOM
       // change.
@@ -1938,6 +1922,22 @@ void Controller::OnNoRunnableScriptsForPage() {
       // other states, for example in BROWSE state.
       break;
   }
+}
+
+void Controller::UpdateDirectActions(
+    const std::vector<ScriptHandle>& runnable_scripts) {
+  auto user_actions = std::make_unique<std::vector<UserAction>>();
+  for (const auto& script : runnable_scripts) {
+    if (script.direct_action.empty())
+      continue;
+
+    UserAction user_action;
+    user_action.direct_action() = script.direct_action;
+    user_action.SetCallback(base::BindOnce(
+        &Controller::OnScriptSelected, weak_ptr_factory_.GetWeakPtr(), script));
+    user_actions->emplace_back(std::move(user_action));
+  }
+  SetUserActions(std::move(user_actions));
 }
 
 void Controller::OnRunnableScriptsChanged(
@@ -1954,55 +1954,20 @@ void Controller::OnRunnableScriptsChanged(
 
   // Script selection is disabled when a script is already running. We will
   // check again and maybe update when the current script has finished.
-  if (script_tracker()->running() || state_ == AutofillAssistantState::STOPPED)
+  if (script_tracker()->running())
     return;
 
-  if (MaybeAutostartScript(runnable_scripts)) {
-    return;
-  }
-
-  // Show the initial prompt if available.
-  for (const auto& script : runnable_scripts) {
-    // runnable_scripts is ordered by priority.
-    if (!script.initial_prompt.empty()) {
-      SetStatusMessage(script.initial_prompt);
-      break;
-    }
-  }
-
-  // Update the set of user actions to report.
-  auto user_actions = std::make_unique<std::vector<UserAction>>();
-  for (const auto& script : runnable_scripts) {
-    UserAction user_action;
-    user_action.chip() = script.chip;
-    user_action.direct_action() = script.direct_action;
-    if (!user_action.has_triggers())
-      continue;
-
-    user_action.SetCallback(base::BindOnce(
-        &Controller::OnScriptSelected, weak_ptr_factory_.GetWeakPtr(), script));
-    user_actions->emplace_back(std::move(user_action));
-  }
-
-  // Change state, if necessary.
   switch (state_) {
-    case AutofillAssistantState::TRACKING:
-    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
-    case AutofillAssistantState::PROMPT:
-    case AutofillAssistantState::BROWSE:
-      // Don't change state
-      break;
-
     case AutofillAssistantState::STARTING:
-      if (!user_actions->empty())
-        EnterState(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT);
-      break;
-
+      MaybeAutostartScript(runnable_scripts);
+      return;
+    case AutofillAssistantState::TRACKING:
+      UpdateDirectActions(runnable_scripts);
+      return;
     default:
-      if (!user_actions->empty())
-        EnterState(AutofillAssistantState::PROMPT);
+      // In other states we ignore the script update.
+      break;
   }
-  SetUserActions(std::move(user_actions));
 }
 
 void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -2156,7 +2121,8 @@ void Controller::DocumentAvailableInMainFrame(
   OnUrlChange();
 }
 
-void Controller::RenderProcessGone(base::TerminationStatus status) {
+void Controller::PrimaryMainFrameRenderProcessGone(
+    base::TerminationStatus status) {
   client_->Shutdown(Metrics::DropOutReason::RENDER_PROCESS_GONE);
 }
 
@@ -2253,7 +2219,6 @@ bool Controller::StateNeedsUI(AutofillAssistantState state) {
   // require it.
   switch (state) {
     case AutofillAssistantState::PROMPT:
-    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
     case AutofillAssistantState::MODAL_DIALOG:
     case AutofillAssistantState::STARTING:
       return true;

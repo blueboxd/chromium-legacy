@@ -85,9 +85,11 @@ SpdySessionPool::SpdySessionPool(
     size_t session_max_recv_window_size,
     int session_max_queued_capped_frames,
     const spdy::SettingsMap& initial_settings,
+    bool enable_http2_settings_grease,
     const absl::optional<GreasedHttp2Frame>& greased_http2_frame,
     bool http2_end_stream_with_data_frame,
     bool enable_priority_update,
+    bool go_away_on_ip_change,
     SpdySessionPool::TimeFunc time_func,
     NetworkQualityEstimator* network_quality_estimator)
     : http_server_properties_(http_server_properties),
@@ -103,9 +105,11 @@ SpdySessionPool::SpdySessionPool(
       session_max_recv_window_size_(session_max_recv_window_size),
       session_max_queued_capped_frames_(session_max_queued_capped_frames),
       initial_settings_(initial_settings),
+      enable_http2_settings_grease_(enable_http2_settings_grease),
       greased_http2_frame_(greased_http2_frame),
       http2_end_stream_with_data_frame_(http2_end_stream_with_data_frame),
       enable_priority_update_(enable_priority_update),
+      go_away_on_ip_change_(go_away_on_ip_change),
       time_func_(time_func),
       push_delegate_(nullptr),
       network_quality_estimator_(network_quality_estimator) {
@@ -481,19 +485,15 @@ void SpdySessionPool::OnIPAddressChanged() {
     if (!*it)
       continue;
 
-// For OSs that terminate TCP connections upon relevant network changes,
-// attempt to preserve active streams by marking all sessions as going
-// away, rather than explicitly closing them. Streams may still fail due
-// to a generated TCP reset.
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
-    (*it)->MakeUnavailable();
-    (*it)->StartGoingAway(kLastStreamId, ERR_NETWORK_CHANGED);
-    (*it)->MaybeFinishGoingAway();
-#else
-    (*it)->CloseSessionOnError(ERR_NETWORK_CHANGED,
-                               "Closing current sessions.");
-    DCHECK((*it)->IsDraining());
-#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+    if (go_away_on_ip_change_) {
+      (*it)->MakeUnavailable();
+      (*it)->StartGoingAway(kLastStreamId, ERR_NETWORK_CHANGED);
+      (*it)->MaybeFinishGoingAway();
+    } else {
+      (*it)->CloseSessionOnError(ERR_NETWORK_CHANGED,
+                                 "Closing current sessions.");
+      DCHECK((*it)->IsDraining());
+    }
     DCHECK(!IsSessionAvailable(*it));
   }
 }
@@ -663,9 +663,9 @@ std::unique_ptr<SpdySession> SpdySessionPool::CreateSession(
       enable_ping_based_connection_checking_, is_http2_enabled_,
       is_quic_enabled_, session_max_recv_window_size_,
       session_max_queued_capped_frames_, initial_settings_,
-      greased_http2_frame_, http2_end_stream_with_data_frame_,
-      enable_priority_update_, time_func_, push_delegate_,
-      network_quality_estimator_, net_log);
+      enable_http2_settings_grease_, greased_http2_frame_,
+      http2_end_stream_with_data_frame_, enable_priority_update_, time_func_,
+      push_delegate_, network_quality_estimator_, net_log);
 }
 
 base::WeakPtr<SpdySession> SpdySessionPool::InsertSession(

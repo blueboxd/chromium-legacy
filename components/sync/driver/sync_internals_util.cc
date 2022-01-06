@@ -359,7 +359,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   Stat<std::string>* invalidator_id =
       section_identity->AddStringStat("Invalidator Client ID");
   Stat<std::string>* username = section_identity->AddStringStat("Username");
-  Stat<bool>* user_is_primary = section_identity->AddBoolStat("Is Primary");
+  Stat<bool>* user_has_consent = section_identity->AddBoolStat("Sync Consent");
 
   Section* section_credentials =
       section_list.AddSection("Credentials", /*is_sensitive=*/false);
@@ -522,8 +522,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   if (is_status_valid && !full_status.invalidator_client_id.empty())
     invalidator_id->Set(full_status.invalidator_client_id);
   if (!is_local_sync_enabled_state) {
-    username->Set(service->GetAuthenticatedAccountInfo().email);
-    user_is_primary->Set(service->IsAuthenticatedAccountPrimary());
+    username->Set(service->GetAccountInfo().email);
+    user_has_consent->Set(service->HasSyncConsent());
   }
 
   // Credentials.

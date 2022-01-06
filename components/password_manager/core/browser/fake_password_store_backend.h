@@ -60,7 +60,8 @@ class FakePasswordStoreBackend : public PasswordStoreBackend {
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
   FieldInfoStore* GetFieldInfoStore() override;
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
-  CreateSyncControllerDelegateFactory() override;
+  CreateSyncControllerDelegate() override;
+  void GetSyncStatus(base::OnceCallback<void(bool)> callback) override;
 
   LoginsResult GetAllLoginsInternal();
   LoginsResult GetAutofillableLoginsInternal();

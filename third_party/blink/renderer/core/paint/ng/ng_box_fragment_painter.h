@@ -70,7 +70,7 @@ class CORE_EXPORT NGBoxFragmentPainter : public BoxPainterBase {
                                                 const PhysicalRect&,
                                                 const BoxDecorationData&);
 
-  IntRect VisualRect(const PhysicalOffset& paint_offset);
+  gfx::Rect VisualRect(const PhysicalOffset& paint_offset);
 
  protected:
   LayoutRectOutsets ComputeBorders() const override;
@@ -308,6 +308,9 @@ class CORE_EXPORT NGBoxFragmentPainter : public BoxPainterBase {
     return display_item_client_;
   }
   PhysicalRect InkOverflowIncludingFilters() const;
+
+  static bool ShouldHitTestCulledInlineAncestors(const HitTestContext& hit_test,
+                                                 const NGFragmentItem& item);
 
   const NGPhysicalBoxFragment& box_fragment_;
   const DisplayItemClient& display_item_client_;

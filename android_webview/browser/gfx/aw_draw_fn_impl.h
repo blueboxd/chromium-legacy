@@ -71,8 +71,6 @@ class AwDrawFnImpl {
       scoped_secondary_cb_draw_;
 
   absl::optional<VulkanGLInterop> interop_;
-
-  bool skip_next_post_draw_vk_ = false;
 };
 
 }  // namespace android_webview

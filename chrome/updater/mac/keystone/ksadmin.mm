@@ -20,11 +20,14 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/strings/string_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/updater/app/app.h"
+#include "chrome/updater/mac/keystone/ks_tickets.h"
+#include "chrome/updater/mac/mac_util.h"
 #include "chrome/updater/mac/update_service_proxy.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/update_service.h"
@@ -87,12 +90,36 @@ std::map<std::string, std::string> ParseCommandLine(int argc, char* argv[]) {
   return result;
 }
 
+bool HasSwitch(const std::string& arg,
+               const std::map<std::string, std::string>& switches) {
+  if (base::Contains(switches, arg))
+    return true;
+  const static std::map<std::string, std::vector<std::string>> aliases = {
+      {kCommandDelete, {"d"}},        {kCommandInstall, {"i"}},
+      {kCommandList, {"l"}},          {kCommandKsadminVersion, {"k"}},
+      {kCommandPrintTag, {"G"}},      {kCommandPrintTickets, {"print", "p"}},
+      {kCommandRegister, {"r"}},      {kCommandSystemStore, {"S"}},
+      {kCommandUserInitiated, {"F"}}, {kCommandUserStore, {"U"}},
+  };
+  if (!base::Contains(aliases, arg))
+    return false;
+  for (const auto& alias : aliases.at(arg)) {
+    if (base::Contains(switches, alias))
+      return true;
+  }
+  return false;
+}
+
+UpdaterScope Scope(const std::map<std::string, std::string>& switches) {
+  return HasSwitch(kCommandSystemStore, switches) ? UpdaterScope::kSystem
+                                                  : UpdaterScope::kUser;
+}
+
 class KSAdminApp : public App {
  public:
   explicit KSAdminApp(const std::map<std::string, std::string>& switches)
-      : service_proxy_(
-            base::MakeRefCounted<UpdateServiceProxy>(GetUpdaterScope())),
-        switches_(switches) {}
+      : switches_(switches),
+        service_proxy_(base::MakeRefCounted<UpdateServiceProxy>(Scope())) {}
 
  private:
   ~KSAdminApp() override = default;
@@ -107,11 +134,14 @@ class KSAdminApp : public App {
   void PrintVersion();
   void PrintTickets();
 
-  bool HasSwitch(const std::string& arg);
-  std::string SwitchValue(const std::string& arg);
+  UpdaterScope Scope() const;
+  bool HasSwitch(const std::string& arg) const;
+  std::string SwitchValue(const std::string& arg) const;
 
-  scoped_refptr<UpdateServiceProxy> service_proxy_;
+  NSDictionary<NSString*, KSTicket*>* LoadTicketStore();
+
   const std::map<std::string, std::string> switches_;
+  scoped_refptr<UpdateServiceProxy> service_proxy_;
 };
 
 void KSAdminApp::PrintUsage(const std::string& error_message) {
@@ -150,7 +180,7 @@ void KSAdminApp::Register() {
   RegistrationRequest registration;
   registration.app_id = SwitchValue(kCommandProductId);
   registration.brand_code = "";  // TODO(crbug.com/1250524): Implement.
-  registration.tag = SwitchValue(kCommandTag);
+  registration.ap = SwitchValue(kCommandTag);
   registration.version = base::Version(SwitchValue(kCommandVersion));
   registration.existence_checker_path =
       base::FilePath(SwitchValue(kCommandXCPath));
@@ -204,26 +234,11 @@ void KSAdminApp::CheckForUpdates() {
           base::BindOnce(&KSAdminApp::Shutdown, this)));
 }
 
-bool KSAdminApp::HasSwitch(const std::string& arg) {
-  if (base::Contains(switches_, arg))
-    return true;
-  const static std::map<std::string, std::vector<std::string>> aliases = {
-      {kCommandDelete, {"d"}},        {kCommandInstall, {"i"}},
-      {kCommandList, {"l"}},          {kCommandKsadminVersion, {"k"}},
-      {kCommandPrintTag, {"G"}},      {kCommandPrintTickets, {"print", "p"}},
-      {kCommandRegister, {"r"}},      {kCommandSystemStore, {"S"}},
-      {kCommandUserInitiated, {"F"}}, {kCommandUserStore, {"U"}},
-  };
-  if (!base::Contains(aliases, arg))
-    return false;
-  for (const auto& alias : aliases.at(arg)) {
-    if (base::Contains(switches_, alias))
-      return true;
-  }
-  return false;
+bool KSAdminApp::HasSwitch(const std::string& arg) const {
+  return updater::HasSwitch(arg, switches_);
 }
 
-std::string KSAdminApp::SwitchValue(const std::string& arg) {
+std::string KSAdminApp::SwitchValue(const std::string& arg) const {
   if (base::Contains(switches_, arg))
     return switches_.at(arg);
   const static std::map<std::string, std::string> aliases = {
@@ -239,14 +254,47 @@ std::string KSAdminApp::SwitchValue(const std::string& arg) {
   return base::Contains(switches_, alias) ? switches_.at(alias) : "";
 }
 
+UpdaterScope KSAdminApp::Scope() const {
+  return updater::Scope(switches_);
+}
+
 void KSAdminApp::Delete() {
   // TODO(crbug.com/1250524): Implement.
   Shutdown(1);
 }
 
+NSDictionary<NSString*, KSTicket*>* KSAdminApp::LoadTicketStore() {
+  return [KSTicketStore
+      readStoreWithPath:base::SysUTF8ToNSString(
+                            GetKeystoneFolderPath(Scope())
+                                ->Append(FILE_PATH_LITERAL("TicketStore"))
+                                .Append(
+                                    FILE_PATH_LITERAL("Keystone.ticketstore"))
+                                .AsUTF8Unsafe())];
+}
+
 void KSAdminApp::PrintTag() {
-  // TODO(crbug.com/1250524): Implement.
-  Shutdown(1);
+  // TODO(crbug.com/1250524): Print tag pointed by matching ticket in Chromium
+  // Updater if such ticket exists, and suppress printing the legacy tag.
+  std::string app_id = SwitchValue(kCommandProductId);
+  if (app_id.empty()) {
+    PrintUsage("productid missing");
+    return;
+  }
+
+  int exit_code = 0;
+  @autoreleasepool {
+    NSDictionary<NSString*, KSTicket*>* store = LoadTicketStore();
+    KSTicket* ticket =
+        [store objectForKey:[base::SysUTF8ToNSString(app_id) lowercaseString]];
+    if (ticket) {
+      printf("%s\n", base::SysNSStringToUTF8([ticket determineTag]).c_str());
+    } else {
+      printf("No ticket for %s\n", app_id.c_str());
+      exit_code = 1;
+    }
+  }
+  Shutdown(exit_code);
 }
 
 void KSAdminApp::PrintVersion() {
@@ -255,8 +303,20 @@ void KSAdminApp::PrintVersion() {
 }
 
 void KSAdminApp::PrintTickets() {
-  // TODO(crbug.com/1250524): Implement.
-  Shutdown(1);
+  // TODO(crbug.com/1250524): Print tickets owned by Chromium Updater. If there
+  // are any, suppress printing any legacy tickets.
+  @autoreleasepool {
+    NSDictionary<NSString*, KSTicket*>* store = LoadTicketStore();
+    if (store.count > 0) {
+      for (NSString* key in store) {
+        printf("%s\n",
+               base::SysNSStringToUTF8([store[key] description]).c_str());
+      }
+    } else {
+      printf("No tickets\n");
+    }
+  }
+  Shutdown(0);
 }
 
 void KSAdminApp::FirstTaskRun() {
@@ -289,12 +349,11 @@ void KSAdminApp::FirstTaskRun() {
 int KSAdminAppMain(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
   base::CommandLine::Init(argc, argv);
-  // TODO(crbug.com/1250524): GetUpdaterScope() won't work: callers do not pass
-  // --system but rather --system-store. Check also other GetUpdaterScope calls
-  // in this code.
-  updater::InitLogging(GetUpdaterScope(), FILE_PATH_LITERAL("updater.log"));
+  std::map<std::string, std::string> command_line =
+      ParseCommandLine(argc, argv);
+  updater::InitLogging(Scope(command_line), FILE_PATH_LITERAL("updater.log"));
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
-  return base::MakeRefCounted<KSAdminApp>(ParseCommandLine(argc, argv))->Run();
+  return base::MakeRefCounted<KSAdminApp>(command_line)->Run();
 }
 
 }  // namespace updater

@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
@@ -848,7 +848,8 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingContainerHosts(
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerContainerHost* container_host = it->GetContainerHost();
     DCHECK(container_host->IsContainerForClient());
-    if (!blink::ServiceWorkerScopeMatches(
+    if (container_host->key() != registration->key() ||
+        !blink::ServiceWorkerScopeMatches(
             registration->scope(), container_host->GetUrlForScopeMatch())) {
       continue;
     }

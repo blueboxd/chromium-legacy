@@ -4,19 +4,17 @@
 
 #include "chrome/browser/apps/app_service/app_service_proxy_chromeos.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "chrome/browser/apps/app_service/app_platform_metrics.h"
-#include "chrome/browser/apps/app_service/app_platform_metrics_service.h"
-#include "chrome/browser/apps/app_service/app_service_metrics.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
-#include "chrome/browser/apps/app_service/publishers/borealis_apps.h"
-#include "chrome/browser/apps/app_service/publishers/built_in_chromeos_apps.h"
-#include "chrome/browser/apps/app_service/publishers/crostini_apps.h"
-#include "chrome/browser/apps/app_service/publishers/extension_apps_chromeos.h"
-#include "chrome/browser/apps/app_service/publishers/plugin_vm_apps.h"
-#include "chrome/browser/apps/app_service/publishers/standalone_browser_apps.h"
+#include "chrome/browser/apps/app_service/instance_registry_updater.h"
+#include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
+#include "chrome/browser/apps/app_service/metrics/app_platform_metrics_service.h"
+#include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
@@ -26,38 +24,35 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
 #include "chrome/browser/web_applications/app_service/web_apps.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "components/account_id/account_id.h"
 #include "components/app_restore/features.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
-#include "components/services/app_service/app_service_impl.h"
+#include "components/services/app_service/app_service_mojom_impl.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/user_manager/user.h"
 #include "extensions/common/constants.h"
 
 namespace apps {
 
-namespace {
-
-bool g_omit_built_in_apps_for_testing_ = false;
-bool g_omit_plugin_vm_apps_for_testing_ = false;
-
-}  // anonymous namespace
-
 AppServiceProxyChromeOs::AppServiceProxyChromeOs(Profile* profile)
     : AppServiceProxyBase(profile) {
-  if (features::IsBrowserAppInstanceTrackingEnabled()) {
+  if (web_app::IsWebAppsCrosapiEnabled()) {
     browser_app_instance_tracker_ =
         std::make_unique<apps::BrowserAppInstanceTracker>(profile_,
                                                           app_registry_cache_);
     browser_app_instance_registry_ =
         std::make_unique<apps::BrowserAppInstanceRegistry>(
             *browser_app_instance_tracker_);
+    browser_app_instance_app_service_updater_ =
+        std::make_unique<apps::InstanceRegistryUpdater>(
+            *browser_app_instance_registry_, instance_registry_);
   }
-  Initialize();
 }
 
 AppServiceProxyChromeOs::~AppServiceProxyChromeOs() {
@@ -110,34 +105,7 @@ void AppServiceProxyChromeOs::Initialize() {
 
   Observe(&AppRegistryCache());
 
-  // The AppServiceProxy is also a publisher, of a variety of app types. That
-  // responsibility isn't intrinsically part of the AppServiceProxy, but doing
-  // that here, for each such app type, is as good a place as any.
-  if (!g_omit_built_in_apps_for_testing_) {
-    built_in_chrome_os_apps_ =
-        std::make_unique<BuiltInChromeOsApps>(app_service_, profile_);
-  }
-  // TODO(b/170591339): Allow borealis to provide apps for the non-primary
-  // profile.
-  if (guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)) {
-    borealis_apps_ = std::make_unique<BorealisApps>(app_service_, profile_);
-  }
-  crostini_apps_ = std::make_unique<CrostiniApps>(app_service_, profile_);
-  extension_apps_ = std::make_unique<ExtensionAppsChromeOs>(
-      app_service_, profile_, &instance_registry_);
-  if (!g_omit_plugin_vm_apps_for_testing_) {
-    plugin_vm_apps_ = std::make_unique<PluginVmApps>(app_service_, profile_);
-  }
-  // Lacros does not support multi-signin, so only create for the primary
-  // profile. This also avoids creating an instance for the lock screen app
-  // profile and ensures there is only one instance of StandaloneBrowserApps.
-  if (crosapi::browser_util::IsLacrosEnabled() &&
-      chromeos::ProfileHelper::IsPrimaryProfile(profile_)) {
-    standalone_browser_apps_ = std::make_unique<StandaloneBrowserApps>(
-        app_service_, profile_, browser_app_instance_registry_.get());
-  }
-  web_apps_ = std::make_unique<web_app::WebApps>(app_service_,
-                                                 &instance_registry_, profile_);
+  publisher_host_ = std::make_unique<PublisherHost>(this);
 
   if (!profile_->AsTestingProfile()) {
     app_platform_metrics_service_ =
@@ -147,12 +115,6 @@ void AppServiceProxyChromeOs::Initialize() {
         base::BindOnce(&AppServiceProxyChromeOs::InitAppPlatformMetrics,
                        weak_ptr_factory_.GetWeakPtr()));
   }
-
-  // Asynchronously add app icon source, so we don't do too much work in the
-  // constructor.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&AppServiceProxyChromeOs::AddAppIconSource,
-                                weak_ptr_factory_.GetWeakPtr(), profile_));
 }
 
 apps::InstanceRegistry& AppServiceProxyChromeOs::InstanceRegistry() {
@@ -250,33 +212,24 @@ void AppServiceProxyChromeOs::SetArcIsRegistered() {
   }
 
   arc_is_registered_ = true;
-  extension_apps_->ObserveArc();
+  if (publisher_host_) {
+    publisher_host_->SetArcIsRegistered();
+  }
 }
 
 void AppServiceProxyChromeOs::FlushMojoCallsForTesting() {
-  app_service_impl_->FlushMojoCallsForTesting();
-  if (built_in_chrome_os_apps_) {
-    built_in_chrome_os_apps_->FlushMojoCallsForTesting();
+  app_service_mojom_impl_->FlushMojoCallsForTesting();
+
+  if (publisher_host_) {
+    publisher_host_->FlushMojoCallsForTesting();
   }
-  crostini_apps_->FlushMojoCallsForTesting();
-  extension_apps_->FlushMojoCallsForTesting();
-  if (plugin_vm_apps_)
-    plugin_vm_apps_->FlushMojoCallsForTesting();
-  if (standalone_browser_apps_) {
-    standalone_browser_apps_->FlushMojoCallsForTesting();
-  }
-  if (web_apps_) {
-    web_apps_->FlushMojoCallsForTesting();
-  }
-  if (borealis_apps_) {
-    borealis_apps_->FlushMojoCallsForTesting();
-  }
+
   receivers_.FlushForTesting();
 }
 
-void AppServiceProxyChromeOs::ReInitializeCrostiniForTesting(Profile* profile) {
-  if (app_service_.is_connected()) {
-    crostini_apps_->ReInitializeForTesting(app_service_, profile);
+void AppServiceProxyChromeOs::ReInitializeCrostiniForTesting() {
+  if (app_service_.is_connected() && publisher_host_) {
+    publisher_host_->ReInitializeCrostiniForTesting(this);  // IN-TEST
   }
 }
 
@@ -304,13 +257,9 @@ void AppServiceProxyChromeOs::Shutdown() {
 
   uninstall_dialogs_.clear();
 
-  if (app_service_.is_connected()) {
-    extension_apps_->Shutdown();
-    if (web_apps_) {
-      web_apps_->Shutdown();
-    }
+  if (publisher_host_) {
+    publisher_host_->Shutdown();
   }
-  borealis_apps_.reset();
 }
 
 void AppServiceProxyChromeOs::UninstallImpl(
@@ -426,9 +375,10 @@ void AppServiceProxyChromeOs::LoadIconForDialog(
 
   // Load the family link kite logo icon for the app pause dialog or the app
   // block dialog for the child profile.
-  LoadIconFromResource(icon_type, kIconSize, IDR_SUPERVISED_USER_ICON,
-                       kAllowPlaceholderIcon, IconEffects::kNone,
-                       std::move(callback));
+  LoadIconFromResource(ConvertMojomIconTypeToIconType(icon_type), kIconSize,
+                       IDR_SUPERVISED_USER_ICON, kAllowPlaceholderIcon,
+                       IconEffects::kNone,
+                       IconValueToMojomIconValueCallback(std::move(callback)));
 }
 
 void AppServiceProxyChromeOs::OnLoadIconForBlockDialog(
@@ -533,27 +483,6 @@ void AppServiceProxyChromeOs::PerformPostLaunchTasks(
   if (apps_util::IsHumanLaunch(launch_source)) {
     ash::full_restore::FullRestoreService::MaybeCloseNotification(profile_);
   }
-}
-
-ScopedOmitBuiltInAppsForTesting::ScopedOmitBuiltInAppsForTesting()
-    : previous_omit_built_in_apps_for_testing_(
-          g_omit_built_in_apps_for_testing_) {
-  g_omit_built_in_apps_for_testing_ = true;
-}
-
-ScopedOmitBuiltInAppsForTesting::~ScopedOmitBuiltInAppsForTesting() {
-  g_omit_built_in_apps_for_testing_ = previous_omit_built_in_apps_for_testing_;
-}
-
-ScopedOmitPluginVmAppsForTesting::ScopedOmitPluginVmAppsForTesting()
-    : previous_omit_plugin_vm_apps_for_testing_(
-          g_omit_plugin_vm_apps_for_testing_) {
-  g_omit_plugin_vm_apps_for_testing_ = true;
-}
-
-ScopedOmitPluginVmAppsForTesting::~ScopedOmitPluginVmAppsForTesting() {
-  g_omit_plugin_vm_apps_for_testing_ =
-      previous_omit_plugin_vm_apps_for_testing_;
 }
 
 }  // namespace apps

@@ -17,10 +17,11 @@ import '../../settings_shared_css.js';
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Route, RouteObserverBehavior, Router} from '../../router.js';
+import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
 import {routes} from '../os_route.m.js';
 import {PrefsBehavior} from '../prefs_behavior.js';
+import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 import {BatteryStatus, DevicePageBrowserProxy, DevicePageBrowserProxyImpl, ExternalStorage, getDisplayApi, IdleBehavior, LidClosedBehavior, NoteAppInfo, NoteAppLockScreenSupport, PowerManagementSettings, PowerSource, StorageSpaceState} from './device_page_browser_proxy.js';
 
@@ -87,6 +88,12 @@ Polymer({
       readOnly: true,
     },
 
+    hapticClickSensitivityValues_: {
+      type: Array,
+      value: [1, 3, 5],
+      readOnly: true,
+    },
+
     /**
      * TODO(zentaro): Remove this conditional once the feature is launched.
      * @private
@@ -110,6 +117,28 @@ Polymer({
     },
 
     /**
+     * TODO(gavinwill): Remove this conditional once the feature is launched.
+     * @private
+     */
+    allowTouchpadHapticFeedback_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('allowTouchpadHapticFeedback');
+      },
+    },
+
+    /**
+     * TODO(gavinwill): Remove this conditional once the feature is launched.
+     * @private
+     */
+    allowTouchpadHapticClickSettings_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('allowTouchpadHapticClickSettings');
+      },
+    },
+
+    /**
      * Used by DeepLinkingBehavior to focus this page's deep links.
      * @type {!Set<!chromeos.settings.mojom.Setting>}
      */
@@ -122,6 +151,8 @@ Polymer({
         chromeos.settings.mojom.Setting.kTouchpadAcceleration,
         chromeos.settings.mojom.Setting.kTouchpadScrollAcceleration,
         chromeos.settings.mojom.Setting.kTouchpadSpeed,
+        chromeos.settings.mojom.Setting.kTouchpadHapticFeedback,
+        chromeos.settings.mojom.Setting.kTouchpadHapticClickSensitivity,
         chromeos.settings.mojom.Setting.kPointingStickAcceleration,
         chromeos.settings.mojom.Setting.kPointingStickSpeed,
         chromeos.settings.mojom.Setting.kPointingStickSwapPrimaryButtons,
@@ -204,5 +235,12 @@ Polymer({
     this.setPrefValue(
         'settings.touchpad.natural_scroll',
         !this.getPref('settings.touchpad.natural_scroll').value);
+  },
+
+  /** @private */
+  onTouchpadHapticFeedbackRowClicked_: function() {
+    this.setPrefValue(
+        'settings.touchpad.haptic_feedback',
+        !this.getPref('settings.touchpad.haptic_feedback').value);
   },
 });

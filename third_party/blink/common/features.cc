@@ -18,6 +18,11 @@ namespace features {
 const base::Feature kAutomaticLazyFrameLoadingToEmbeds{
     "AutomaticLazyFrameLoadingToEmbeds", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows pages with DedicatedWorker to stay eligible for the back/forward
+// cache.
+const base::Feature kBackForwardCacheDedicatedWorker{
+    "BackForwardCacheDedicatedWorker", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable intervention for download that was initiated from or occurred in an ad
 // frame without user activation.
 const base::Feature kBlockingDownloadsInAdFrameWithoutUserActivation{
@@ -54,8 +59,16 @@ const base::Feature kPaintHolding{"PaintHolding",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable defer commits to avoid flash of unstyled content, for all navigation.
-const base::Feature kPaintHoldingCrossOrigin{"PaintHoldingCrossOrigin",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+// Disabled on Mobile to allow for a delayed Finch roll-out. Enabled on
+// Desktop platforms.
+const base::Feature kPaintHoldingCrossOrigin {
+  "PaintHoldingCrossOrigin",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enable eagerly setting up a CacheStorage interface pointer and
 // passing it to service workers on startup as an optimization.
@@ -168,14 +181,7 @@ const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",
 // Note that default enabling this does not expose the portal
 // element on its own, but does allow its use with an origin trial. This was the
 // case for the M85 Android only origin trial (https://crbug.com/1040212).
-const base::Feature kPortals {
-  "Portals",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When kPortals is enabled, allow portals to load content that is third-party
 // (cross-origin) to the hosting page. Otherwise has no effect.
@@ -356,7 +362,7 @@ const base::Feature kServiceWorkerUpdateDelay{
 // Enable the use of Speculation Rules in access the private prefetch proxy
 // (chrome/browser/prefetch/prefetch_proxy/).
 // https://crbug.com/1190167
-const base::Feature kSpeculationRulesPrefetchProxy{
+const base::Feature kSpeculationRulesPrefetchProxy {
   "SpeculationRulesPrefetchProxy",
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -447,10 +453,10 @@ const base::Feature kBlockingFocusWithoutUserActivation{
     "BlockingFocusWithoutUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // A server-side switch for the REALTIME_AUDIO thread priority of
-// RealtimeAudioWorkletThread object. When disabled, it will use the NORMAL
-// priority thread.
+// RealtimeAudioWorkletThread object. This can be controlled by a field trial,
+// it will use the NORMAL priority thread when disabled.
 const base::Feature kAudioWorkletThreadRealtimePriority{
-    "AudioWorkletThreadRealtimePriority", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AudioWorkletThreadRealtimePriority", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // A feature to reduce the set of resources fetched by No-State Prefetch.
 const base::Feature kLightweightNoStatePrefetch {
@@ -577,8 +583,6 @@ const base::Feature kSubresourceRedirectSrcVideo{
 
 // When enabled, enforces new interoperable semantics for 3D transforms.
 // See crbug.com/1008483.
-const base::Feature kTransformInterop{"TransformInterop",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kBackfaceVisibilityInterop{
     "BackfaceVisibilityInterop", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -636,6 +640,11 @@ const base::Feature kWebviewAccelerateSmallCanvases{
 // and modules. Needed for the experiment in http://crbug.com/1045052.
 const base::Feature kDiscardCodeCacheAfterFirstUse{
     "DiscardCodeCacheAfterFirstUse", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCacheCodeOnIdle{"CacheCodeOnIdle",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kCacheCodeOnIdleDelayParam{&kCacheCodeOnIdle,
+                                                         "delay-in-ms", 0};
 
 // Kill switch for the new element.offsetParent behavior.
 // TODO(crbug.com/920069): Remove this once the feature has
@@ -823,6 +832,10 @@ const base::Feature kWebAppEnableLinkCapturing{
 const base::Feature kWebAppEnableManifestId{"WebAppEnableManifestId",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the "translations" manifest field for web apps.
+const base::Feature kWebAppEnableTranslations{
+    "WebAppEnableTranslations", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls URL handling feature in web apps. Controls parsing of "url_handlers"
 // field in web app manifests. See explainer for more information:
 // https://github.com/WICG/pwa-url-handler/blob/master/explainer.md
@@ -835,14 +848,6 @@ const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
 // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/main/URLProtocolHandler/explainer.md
 const base::Feature kWebAppEnableProtocolHandlers{
     "WebAppEnableProtocolHandlers", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Whether web apps are able to be treated as note-taking apps. Controls parsing
-// of "note_taking" dictionary field and "new_note_url" entry in web app
-// manifests. Also controls whether the parsed field is used in browser. See
-// incubation spec:
-// https://wicg.github.io/manifest-incubations/#note_taking-member
-const base::Feature kWebAppNoteTaking{"WebAppNoteTaking",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Makes network loading tasks unfreezable so that they can be processed while
 // the page is frozen.
@@ -908,6 +913,11 @@ const base::Feature kEnablePenetratingImageSelection{
 const base::Feature kDocumentTransition{"DocumentTransition",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, uses the code-path to drive shared/root element transitions
+// from the renderer process.
+const base::Feature kDocumentTransitionRenderer{
+    "DocumentTransitionRenderer", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Used to configure a per-origin allowlist of performance.mark events that are
 // permitted to be included in slow reports traces. See crbug.com/1181774.
 const base::Feature kBackgroundTracingPerformanceMark{
@@ -918,7 +928,7 @@ const base::FeatureParam<std::string>
 
 // New compositing algorithm. See renderer/core/paint/README.md.
 const base::Feature kCompositeAfterPaint{"CompositeAfterPaint",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the Sanitizer API is available.
 const base::Feature kSanitizerAPI{"SanitizerAPI",
@@ -945,6 +955,13 @@ const base::Feature kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes{
 // API exposure will be disabled regardless of the OT config.
 const base::Feature kInterestGroupStorage{"InterestGroupStorage",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+// TODO(crbug.com/1197209): Adjust these limits in response to usage.
+const base::FeatureParam<int> kInterestGroupStorageMaxOwners{
+    &kInterestGroupStorage, "max_owners", 1000};
+const base::FeatureParam<int> kInterestGroupStorageMaxGroupsPerOwner{
+    &kInterestGroupStorage, "max_groups_per_owner", 1000};
+const base::FeatureParam<int> kInterestGroupStorageMaxOpsBeforeMaintenance{
+    &kInterestGroupStorage, "max_ops_before_maintenance", 1000000};
 
 // Enable the availability of the ad interest group API as part of the
 // origin trial for FLEDGE or PARAKEET.
@@ -1012,11 +1029,6 @@ const base::Feature kThirdPartyStoragePartitioning{
 const base::Feature kDesktopPWAsSubApps{"DesktopPWAsSubApps",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables reporting all JavaScript frameworks via a manual traversal to detect
-// the properties and attributes required.
-const base::Feature kReportAllJavaScriptFrameworks{
-    "ReportAllJavaScriptFrameworks", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Suppresses console errors for CORS problems which report an associated
 // inspector issue anyway.
 const base::Feature kCORSErrorsIssueOnly{"CORSErrorsIssueOnly",
@@ -1055,23 +1067,23 @@ const base::Feature kForceMajorVersion100InUserAgent{
 
 // Enable `sec-ch-device-memory` client hint.
 const base::Feature kClientHintsDeviceMemory{"ClientHintsDeviceMemory",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable `sec-ch-dpr` client hint.
 const base::Feature kClientHintsDPR{"ClientHintsDPR",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable `sec-ch-width` client hint.
-const base::Feature kClientHintsResourceWidth{
-    "ClientHintsResourceWidth", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kClientHintsResourceWidth{"ClientHintsResourceWidth",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable `sec-ch-viewport-width` client hint.
-const base::Feature kClientHintsViewportWidth{
-    "ClientHintsViewportWidth", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kClientHintsViewportWidth{"ClientHintsViewportWidth",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allows third party use of WebSQL (`DOMWindowWebDatabase::openDatabase`).
 const base::Feature kWebSQLInThirdPartyContextEnabled{
-    "WebSQLInThirdPartyContextEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
+    "WebSQLInThirdPartyContextEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable legacy `device-memory` client hint.
 const base::Feature kClientHintsDeviceMemory_DEPRECATED{
@@ -1092,6 +1104,42 @@ const base::Feature kClientHintsViewportWidth_DEPRECATED{
 // https://drafts.csswg.org/css-cascade-5/#layering
 const base::Feature kCSSCascadeLayers{"CSSCascadeLayers",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, the setTimeout(..., 0) will not clamp to 1ms.
+// Tracking bug: https://crbug.com/402694.
+const base::Feature kSetTimeoutWithoutClamp{"SetTimeoutWithoutClamp",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+bool IsSetTimeoutWithoutClampEnabled() {
+  return base::FeatureList::IsEnabled(blink::features::kSetTimeoutWithoutClamp);
+}
+
+const base::Feature kTabSwitchMetrics2{"TabSwitchMetrics2",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls where third_party/blink/renderer/core/frame/deprecation.cc logs to.
+const base::Feature kDeprecationWillLogToConsole{
+    "DeprecationWillLogToConsole", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDeprecationWillLogToDevToolsIssue{
+    "DeprecationWillLogToDevToolsIssue", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables reporting and web-exposure (respectively) of the time the first frame
+// of an animated image was painted.
+const base::Feature kLCPAnimatedImagesReporting{
+    "LCPAnimatedImagesReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Throws when `kWebSQLInThirdPartyContextEnabled` is disabled.
+const base::Feature kWebSQLInThirdPartyContextThrowsWhenDisabled{
+    "WebSQLInThirdPartyContextThrowsWhenDisabled",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// https://blog.whatwg.org/newline-normalizations-in-form-submission
+const base::Feature kLateFormNewlineNormalization{
+    "LateFormNewlineNormalization", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// TODO(crbug.com/1185950): Remove this flag when the feature is fully launched
+// and released to stable with no issues.
+const base::Feature kAutoExpandDetailsElement{"AutoExpandDetailsElement",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

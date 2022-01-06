@@ -272,6 +272,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kDnsOverHttpsTemplates] =
       settings_api::PrefType::PREF_TYPE_STRING;
 
+  // Privacy Review
+  (*s_allowlist)[::prefs::kPrivacyReviewShowWelcomeCard] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
   // Privacy Sandbox page
   (*s_allowlist)[::prefs::kPrivacySandboxApisEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -666,6 +670,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::ash::prefs::kSystemBluetoothAdapterEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::ash::prefs::kFastPairEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::ash::prefs::kVpnConfigAllowed] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[arc::prefs::kAlwaysOnVpnPackage] =
@@ -731,6 +737,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kTouchpadSensitivity] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::prefs::kTouchpadScrollSensitivity] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[::prefs::kTouchpadHapticFeedback] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kTouchpadHapticClickSensitivity] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::prefs::kPrimaryMouseButtonRight] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;

@@ -332,12 +332,8 @@ GtkUi::GtkUi() {
   CHECK(LoadGtk());
 
   auto* delegate = ui::LinuxUiDelegate::GetInstance();
-  // TODO(thomasanderson): This should be replaced with DCHECK(delegate) once
-  // fully migrated to ozone.
-  auto backend = delegate ? delegate->GetBackend() : ui::LinuxUiBackend::kX11;
-  platform_ = CreateGtkUiPlatform(backend);
-
-  SelectFileDialogImpl::Initialize();
+  DCHECK(delegate);
+  platform_ = CreateGtkUiPlatform(delegate->GetBackend());
 
   // Avoid GTK initializing atk-bridge, and let AuraLinux implementation
   // do it once it is ready.
@@ -345,6 +341,10 @@ GtkUi::GtkUi() {
   env->SetVar("NO_AT_BRIDGE", "1");
   GtkInitFromCommandLine(*base::CommandLine::ForCurrentProcess());
   native_theme_ = NativeThemeGtk::instance();
+
+  // This creates an extra thread that may race against GtkInitFromCommandLine,
+  // so this must be done after to avoid the race condition.
+  SelectFileDialogImpl::Initialize();
 
   window_frame_actions_ = {
       {ActionSource::kDoubleClick, Action::kToggleMaximize},
@@ -371,7 +371,7 @@ void GtkUi::Initialize() {
   // instance instead of using GtkUi context factory. This step is made upon
   // CreateInputMethod call. If the factory is not set, use the GtkUi context
   // factory.
-  if (!features::IsUsingOzonePlatform() ||
+  if (!features::IsUsingOzonePlatform() || GetPlatform()->PreferGtkIme() ||
       !ui::OzonePlatform::GetInstance()->CreateInputMethod(
           nullptr, gfx::kNullAcceleratedWidget)) {
     if (!ui::LinuxInputMethodContextFactory::instance())

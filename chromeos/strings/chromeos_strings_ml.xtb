@@ -1,17 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
+<translation id="1018219910092211213">DNS പരിഹരിക്കാനാകുന്നില്ല</translation>
 <translation id="1018656279737460067">റദ്ദാക്കി</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> ത്രെഡുകൾ, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1059913517121127803">സ്‌കാൻ ചെയ്യൽ ആരംഭിക്കാനായില്ല</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">ഫയര്‍വാള്‍ കണ്ടെത്തി</translation>
 <translation id="1075811647922107217">പേജിന്റെ വലുപ്പം</translation>
-<translation id="110351136513869678">കോൺഫിഗർ ചെയ്യാൻ ക്രമീകരണം സന്ദർശിക്കുക</translation>
+<translation id="1094693127011229778">IP വിലാസം ലഭ്യമല്ല</translation>
 <translation id="1119447706177454957">ആന്തരിക പിശക്</translation>
 <translation id="1124772482545689468">ഉപയോക്താവ്</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1175697296044146566">ഈ <ph name="DEVICE_TYPE" /> മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER" /> ആണ്.</translation>
+<translation id="1175951029573070619">ശരാശരി (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
 <translation id="1195447618553298278">അജ്ഞാത പിശക്.</translation>
 <translation id="1204296502688602597">DNS പ്രതികരണ സമയം</translation>
@@ -21,6 +23,7 @@
 <translation id="1270369111467284986">ക്യാപ്റ്റീവ് പോർട്ടൽ ആണെന്ന് സംശയിക്കുന്നു</translation>
 <translation id="1290331692326790741">ദുർബലമായ സിഗ്നൽ</translation>
 <translation id="1301069673413256657">GSM</translation>
+<translation id="1310380015393971138"><ph name="NETWORK_NAME" /> നെറ്റ്‌വർക്ക് ഒന്നും ലഭ്യമല്ല</translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">ഹോം നെറ്റ്‍വര്‍ക്ക്, റോമിംഗ് അല്ല</translation>
 <translation id="1327977588028644528">ഗേറ്റ്‌വേ</translation>
@@ -39,6 +42,8 @@
 <translation id="150962533380566081">അസാധുവായ PUK.</translation>
 <translation id="1510238584712386396">ലോഞ്ചർ</translation>
 <translation id="155865706765934889">ടച്ച്‌പാഡ്</translation>
+<translation id="1567064801249837505">ആൽബങ്ങൾ</translation>
+<translation id="1572585716423026576">വാൾപേപ്പറായി സജ്ജീകരിക്കുക</translation>
 <translation id="1621067168122174824">ചാർജ് ടെസ്റ്റ് റൺ ചെയ്യുക</translation>
 <translation id="1639239467298939599">ലോഡുചെയ്യുന്നു</translation>
 <translation id="1641857168437328880">ഡോക്യുമെന്റ് ഫീഡർ (ഒരു വശമുള്ളത്)</translation>
@@ -51,23 +56,23 @@
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" />, <ph name="SECOND_MANAGER" /> എന്നിവ മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="1726100011689679555">നെയിം സെർവറുകൾ</translation>
 <translation id="1731082422893354635">Bluetooth ടച്ച്പാഡ്</translation>
+<translation id="1753496554272155572">വാൾപേപ്പർ പ്രിവ്യൂവിൽ നിന്ന് പുറത്ത് കടക്കുക</translation>
+<translation id="175763766237925754">നല്ലത് (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1792647875738159689">സ്കാൻ ചെയ്യൽ റദ്ദാക്കുന്നു</translation>
 <translation id="1851218745569890714">വീഡിയോ കോൺഫറൻസിംഗ്</translation>
 <translation id="1874612839560830905">MTU</translation>
-<translation id="1881378885488531302">IP വിലാസം നേടാനായില്ല</translation>
 <translation id="1887850431809612466">ഹാർഡ്‌വെയർ അവലോകനം</translation>
-<translation id="1901646112321215184">DNS സെർവറുകളൊന്നും കോൺഫിഗർ ചെയ്‌തിട്ടില്ല</translation>
 <translation id="1905710495812624430">അനുവദനീയമായ പരമാവധി ശ്രമങ്ങൾ നടത്തിക്കഴിഞ്ഞു.</translation>
 <translation id="1908234395526491708">പരാജയപ്പെട്ട UDP അഭ്യർത്ഥനകൾ</translation>
 <translation id="1930797645656624981">Chrome OS ഇൻപുട്ട് രീതി സേവനം</translation>
 <translation id="1947737735496445907">പ്രിന്റ് ചെയ്‌തു</translation>
-<translation id="197386857804679933">വീണ്ടും കണക്റ്റ് ചെയ്യാൻ ക്രമീകരണം സന്ദർശിക്കുക</translation>
 <translation id="1979103255016296513">പാസ്‌വേഡ് മാറ്റേണ്ട സമയം കഴിഞ്ഞു</translation>
 <translation id="1999615961760456652">ക്യാപ്‌റ്റീവ് പോർട്ടൽ</translation>
 <translation id="2006864819935886708">കണക്റ്റിവിറ്റി</translation>
 <translation id="2008685064673031089">പ്രധാന തിരയൽ</translation>
+<translation id="2016697457005847575">ട്രബിള്‍ഷൂട്ടിംഗ് ഘട്ടങ്ങൾ പരീക്ഷിക്കുക</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">കൂടുതൽ ക്രമീകരണങ്ങൾ</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, പതിപ്പ് <ph name="MILESTONE_VERSION" /></translation>
@@ -86,6 +91,7 @@
 <translation id="2323506179655536734">ഒഴിവാക്കി</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">സമീപത്തുള്ള ഉപകരണങ്ങൾ കണ്ടെത്താൻ Bluetooth ഓണാക്കുക</translation>
+<translation id="2346474577291266260">വളരെ മികച്ചത് (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2364498172489649528">വിജയിച്ചു</translation>
 <translation id="2380886658946992094">നിയമപരം</translation>
 <translation id="2391082728065870591">ഫീഡ്‌ബാക്ക് റിപ്പോർട്ട് അയയ്‌ക്കുക</translation>
@@ -99,8 +105,9 @@
 <translation id="2505327257735685095">നിലവിലെ വാൾപേപ്പർ ചിത്രം റീഫ്രഷ് ചെയ്യുക</translation>
 <translation id="2517472476991765520">സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> പരീക്ഷണം റൺ ചെയ്യുന്നു...</translation>
+<translation id="2584559707064218956">സജ്ജീകരിക്കാൻ ക്രമീകരണത്തിലേക്ക് പോകുക</translation>
 <translation id="2585245331261708204">Chrome OS-ൽ പുതിയത്</translation>
-<translation id="2619761439309613843">പ്രതിദിന റീഫ്രഷ് ചെയ്യൽ</translation>
+<translation id="2619761439309613843">ദിവസവുമുള്ള പുതുക്കൽ</translation>
 <translation id="2620436844016719705">സിസ്റ്റം</translation>
 <translation id="2740531572673183784">ശരി</translation>
 <translation id="2751739896257479635">രണ്ടാം ഘട്ട EAP പരിശോധിച്ചുറപ്പിക്കൽ</translation>
@@ -110,13 +117,11 @@
 <translation id="2860473693272905224">സ്‌കാനറിൽ മറ്റൊരു പേജ് വയ്ക്കുക</translation>
 <translation id="2872961005593481000">അടയ്ക്കുക</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> സെക്കൻഡിൽ <ph name="RATE" /> ഡിസ്ചാർജ് ചെയ്തു.</translation>
-<translation id="2927511423571448384">Android-ൽ നിന്ന് ഫയർവാളിലൂടെ HTTP (പോർട്ട് 80) വെബ്‌സൈറ്റുകളിലേക്ക് കണക്റ്റ് ചെയ്യാനാകുന്നില്ല</translation>
-<translation id="3008341117444806826">റീഫ്രഷ് ചെയ്യുക</translation>
+<translation id="3008341117444806826">പുതുക്കിയെടുക്കുക</translation>
 <translation id="3009958530611748826">സംരക്ഷിക്കാൻ ഒരു ഫോൾഡർ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">എൻഡ്പോയിന്റ്</translation>
 <translation id="3069085583900247081">ടെസ്റ്റ് പരാജയപ്പെട്ടു</translation>
-<translation id="3076387335132326640">നിങ്ങൾ ഓപ്പൺ നെറ്റ്‌വർക്ക് ആണ് ഉപയോഗിക്കുന്നത്</translation>
 <translation id="3083667275341675831">കണക്റ്റിവിറ്റി തകരാർ കണ്ടെത്തൽ</translation>
 <translation id="3091839911843451378">പ്രിന്റ് ചെയ്യാനായില്ല - പ്രവർത്തനം നിർത്തി</translation>
 <translation id="3102119246920354026">കാഷെ</translation>
@@ -147,9 +152,10 @@
 <translation id="3532980081107202182">ഏകദേശം <ph name="MIN_REMAINING" /> മിനിറ്റ് ശേഷിക്കുന്നു</translation>
 <translation id="3565064564551103223">അനുവദനീയമായ IP-കൾ</translation>
 <translation id="357889014807611375">മീറ്റർ ചെയ്‌ത വൈഫൈ</translation>
-<translation id="3582041541988388905"><ph name="NETWORK_NAME" /> കണക്ഷനുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
+<translation id="3583278742022654445">സിഗ്‌നൽ ശക്തി ദുർബലമാണ്. വൈഫൈ സിഗ്നൽ ഉറവിടത്തിന് കൂടുതൽ അടുത്തേക്ക് നീക്കി ശ്രമിക്കുക.</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
 <translation id="360565022852130722">ദുർബലമായ WEP 802.1x പ്രോട്ടോക്കോൾ ഉപയോഗിച്ചാണ് വെെഫെെ നെറ്റ്‌വർക്ക് സുരക്ഷിതമാക്കിയിരിക്കുന്നത്</translation>
+<translation id="3606583719724308068">HTTPS വെബ്‌സൈറ്റുകളിലേക്ക് കണക്റ്റ് ചെയ്യാൻ ഉയർന്ന പ്രതികരണ സമയം</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> പരിശോധന</translation>
 <translation id="3708186454126126312">മുമ്പ് കണക്റ്റ് ചെയ്തവ</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> റിവ്യൂകൾ)</translation>
@@ -158,6 +164,7 @@
 <translation id="38114475217616659">എല്ലാ ചരിത്രവും മായ്ക്കുക</translation>
 <translation id="3820172043799983114">പിൻ നമ്പർ തെറ്റാണ്.</translation>
 <translation id="3838338534323494292">പുതിയ പാസ്‌വേഡ്</translation>
+<translation id="385051799172605136">പിന്നോട്ട്</translation>
 <translation id="3858860766373142691">പേര്</translation>
 <translation id="3865414814144988605">റെസല്യൂഷൻ</translation>
 <translation id="387301095347517405">നിങ്ങളുടെ ബാറ്ററി പൂർണ്ണമായി ചാർജ് ചെയ്തതിന്റെ എണ്ണം</translation>
@@ -169,11 +176,13 @@
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> ദിവസം മുമ്പുള്ള പ്രിന്റ് ജോലികൾ നീക്കം ചെയ്യും</translation>
 <translation id="4003384961948020559">പ്രിന്റ് ചെയ്യാനായില്ല - ഔട്ട്പുട്ട് നിറഞ്ഞിരിക്കുന്നു</translation>
 <translation id="4034824040120875894">പ്രിന്റർ</translation>
+<translation id="4044093238444069296">ഗേറ്റ്‌വേയുമായി ബന്ധപ്പെടാനാകുന്നില്ല</translation>
 <translation id="404928562651467259">മുന്നറിയിപ്പ്</translation>
 <translation id="409427325554347132">ടെസ്‌റ്റ് വിശദാംശങ്ങൾ സംരക്ഷിക്കുക</translation>
 <translation id="4111761024568264522">USB ടച്ച്പാഡ്</translation>
 <translation id="4131410914670010031">കറുപ്പും വെള്ളയും</translation>
 <translation id="4145784616224233563">HTTP ഫയര്‍വാള്‍</translation>
+<translation id="4147897805161313378">Google Photos</translation>
 <translation id="4155551848414053977">സ്‌കാനർ ഓണാക്കിയിട്ടുണ്ടെന്നും നിങ്ങളുടെ നെറ്റ്‌വർക്കോ നേരിട്ടുള്ള കണക്ഷനോ വഴി അത് ലഭ്യമാണെന്നും ഉറപ്പാക്കുക</translation>
 <translation id="4170700058716978431">പരാജയപ്പെട്ടു</translation>
 <translation id="4176463684765177261">അപ്രാപ്തമാക്കി</translation>
@@ -190,6 +199,7 @@
 <translation id="4378551569595875038">കണക്റ്റിംഗ്...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">എന്റെ ഡ്രൈവ്</translation>
+<translation id="4428374560396076622"><ph name="NETWORK_NAME" /> ഓഫാണ്</translation>
 <translation id="4429881212383817840">Kerberos ടിക്കറ്റ് ഉടൻ കാലഹരണപ്പെടും</translation>
 <translation id="4431821876790500265">റിപ്പോർട്ട് കാണുക</translation>
 <translation id="445059817448385655">പഴയ പാസ്‌വേഡ്</translation>
@@ -204,7 +214,6 @@
 <translation id="455835558791489930"><ph name="CHARGE_VALUE" />mAh ബാറ്ററി</translation>
 <translation id="4561801978359312462">സിം അൺലോക്ക് ചെയ്തു</translation>
 <translation id="4562494484721939086">സേവനമില്ല</translation>
-<translation id="4567024731344774461">Android-ൽ നിന്ന് DNS പരിഹരിക്കാനാകുന്നില്ല</translation>
 <translation id="458794348635939462">എല്ലാ ഹോസ്‌റ്റുകളും പരിഹരിക്കാനായില്ല</translation>
 <translation id="4593212453765072419">പ്രോക്‌സി പ്രാമാണീകരണം ആവശ്യമാണ്</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, ആകെയുള്ള <ph name="TOTAL_PAGE_NUMBER" /> എണ്ണത്തിൽ <ph name="PRINTED_PAGE_NUMBER" /> എണ്ണം. പ്രിന്റ് ജോലി റദ്ദാക്കാൻ എന്റർ അമർത്തുക.</translation>
@@ -229,7 +238,6 @@
 <translation id="484790837831576105">(Android) DNS റെസല്യൂഷൻ</translation>
 <translation id="4848429997038228357">റൺ ചെയ്യുന്നു</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} ശ്രമം ശേഷിക്കുന്നു}other{<ph name="ERROR_MESSAGE" /> {0} ശ്രമങ്ങൾ ശേഷിക്കുന്നു}}</translation>
-<translation id="4871137769558798671">ഫയർവാളിലൂടെ HTTPS (പോർട്ട് 443) വെബ്‌സൈറ്റുകളിലേക്ക് കണക്റ്റ് ചെയ്യാനാകുന്നില്ല</translation>
 <translation id="4880328057631981605">ആ‌ക്‌സസ് പോയിന്‍റിന്‍റെ പേര്</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">പുതിയ പാസ്‌വേഡ് പെട്ടെന്ന് തിരഞ്ഞെടുക്കുക</translation>
@@ -237,6 +245,7 @@
 <translation id="4917385247580444890">ശക്തം</translation>
 <translation id="4917889632206600977">പ്രിന്റ് ജോലി നിർത്തി - പേപ്പറില്ല</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> സെക്കന്റിൽ <ph name="RATE" /> ചാർജ് ചെയ്‌തു.</translation>
+<translation id="4930320165497208503">കണക്ഷൻ സജ്ജീകരിക്കാനോ അപ്ഡേറ്റ് ചെയ്യാനോ <ph name="BEGIN_LINK" />ക്രമീകരണത്തിലേക്ക്<ph name="END_LINK" /> പോകുക.</translation>
 <translation id="4932733599132424254">തീയതി</translation>
 <translation id="498186245079027698">സ്കാനർ പരിശോധിച്ച ശേഷം വീണ്ടും ശ്രമിക്കുക. സ്കാൻ ചെയ്ത ഫയലുകൾ സംരക്ഷിക്കാൻ മതിയായ ലോക്കൽ സ്പെയ്‍സ് ഉണ്ടെന്ന് ഉറപ്പാക്കുക.</translation>
 <translation id="4985509611418653372">റൺ ചെയ്യുക</translation>
@@ -272,6 +281,7 @@
 <translation id="5332948983412042822">പുതിയ പാസ്‌വേഡ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="5333530671332546086">അജ്ഞാത പോര്‍ട്ടല്‍ നില</translation>
 <translation id="5346687412805619883">ലോക്കൽ നെറ്റ്‌വർക്ക്</translation>
+<translation id="5358174242040570474">എന്തോ കുഴപ്പമുണ്ടായി. വാൾപേപ്പർ വീണ്ടും തിരഞ്ഞെടുത്ത് നോക്കുക അല്ലെങ്കിൽ ആപ്പ് വീണ്ടും തുറക്കുക.</translation>
 <translation id="5372659122375744710">വെെഫെെ നെറ്റ്‌വർക്ക് സുരക്ഷിതമല്ല</translation>
 <translation id="5401938042319910061">എല്ലാ ദിനചര്യകളും റൺ ചെയ്യുക</translation>
 <translation id="5423849171846380976">സജീവമാക്കി</translation>
@@ -286,7 +296,6 @@
 <translation id="5502931783115429516">Android റൺ ചെയ്യുന്നില്ല</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
-<translation id="5546352997259770619">സിഗ്‌നൽ ശക്തി കുറവാണ്, ആക്‌സസ് പോയിന്റിന് അടുത്തേക്ക് നീങ്ങാൻ ശ്രമിക്കുക</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">വീണ്ടും സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="5669267381087807207">സജീവമാക്കുന്നു</translation>
@@ -294,7 +303,6 @@
 <translation id="5691511426247308406">കുടുംബം</translation>
 <translation id="5701381305118179107">മധ്യഭാഗം</translation>
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" />-ൽ <ph name="CURRENT_PAGE" /></translation>
-<translation id="5715997777752246116">നെയിം സെർവറുകളൊന്നും കോൺഫിഗർ ചെയ്‌തിട്ടില്ല</translation>
 <translation id="5760715441271661976">പോര്‍ട്ടല്‍ നില</translation>
 <translation id="5784136236926853061">ഉയർന്ന HTTP പ്രതികരണ സമയം</translation>
 <translation id="5832805196449965646">വ്യക്തിയെ ചേർക്കുക</translation>
@@ -338,15 +346,14 @@
 <translation id="636850387210749493">സംരംഭ വിവരപ്പട്ടിക</translation>
 <translation id="6379086450106841622">ടച്ച്സ്ക്രീൻ</translation>
 <translation id="6388847657025262518">ഈ സ്‌കാനറിന്റെ ഡോക്യുമെന്റ് ഫീഡർ ജാമായി. ഫീഡർ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
-<translation id="6395640744968320699">ഫയർവാളിലൂടെ HTTP (പോർട്ട് 80) വെബ്‌സൈറ്റുകളിലേക്ക് കണക്റ്റ് ചെയ്യാനാകുന്നില്ല</translation>
 <translation id="641081527798843608">പൊരുത്തപ്പെടുന്ന വിഷയം</translation>
 <translation id="6423239382391657905">VPNതുറക്കുക</translation>
+<translation id="6439505561246192797">ദുർബലം (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6456394469623773452">മിഴിവുള്ളതാക്കുക</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{പേജ് വീണ്ടും സ്‌കാൻ ചെയ്യണോ?}=1{{PAGE_NUMBER}-ാം പേജ് വീണ്ടും സ്‌കാൻ ചെയ്യണോ?}other{{PAGE_NUMBER}-ാം പേജ് വീണ്ടും സ്‌കാൻ ചെയ്യണോ?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="649050271426829538">പ്രിന്റ് ജോലി നിർത്തി - പേപ്പർ ജാമായി</translation>
-<translation id="6498608540383876992">ഗേറ്റ്‌വേയുമായി ബന്ധപ്പെടാനാകുന്നില്ല</translation>
 <translation id="6516990319416533844">ബാറ്ററിയുടെ ചാർജ് ചെയ്യൽ റേറ്റ് പരിശോധിക്കാൻ, അൽപ്പനേരം ബാറ്ററി ചാർജ് കുറയുന്നത് വരെ കാത്തിരിക്കുക</translation>
 <translation id="6517239166834772319">അടുത്തറിയുക</translation>
 <translation id="6527081081771465939">അജ്ഞാതമായ വെെഫെെ സുരക്ഷാ പ്രോട്ടോക്കോൾ</translation>
@@ -356,14 +363,13 @@
 <translation id="6574762126505704998">ഫിൽ</translation>
 <translation id="6575134580692778371">ക്രമീകരിച്ചിട്ടില്ല</translation>
 <translation id="6596816719288285829">IP വിലാസം</translation>
-<translation id="6603230386432466813">കണക്റ്റ് ചെയ്യാൻ പ്രശ്‌നം നേരിടുന്നുണ്ടോ?</translation>
 <translation id="6618744767048954150">റൺ ചെയ്യുന്നു</translation>
 <translation id="6620487321149975369">നേരിട്ട് നീക്കം ചെയ്തില്ലെങ്കിൽ പ്രിന്റ് ജോലികൾ ചരിത്രത്തിൽ ദൃശ്യമാകും</translation>
 <translation id="6643016212128521049">മായ്‌ക്കുക</translation>
 <translation id="6657585470893396449">പാസ്‌വേഡ്</translation>
 <translation id="6704062477274546131">DNS റെസല്യൂഷൻ</translation>
-<translation id="6714650824879092633"><ph name="NETWORK_NAME" /> പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="6747215703636344499">പ്രിന്റ് ജോലി നിർത്തി - ഔട്ട്പുട്ട് നിറഞ്ഞിരിക്കുന്നു</translation>
+<translation id="6749473226660745022">ഫോട്ടോകൾ</translation>
 <translation id="6756731097889387912">സ്‌കാൻ ചെയ്യൽ റദ്ദാക്കാനായില്ല</translation>
 <translation id="6766275201586212568">പരാജയപ്പെട്ട DNS റെസല്യൂഷനുകൾ</translation>
 <translation id="6768237774506518020">ഉയർന്ന DNS റെസല്യൂഷൻ ഫെയ്‌ലിയർ നിരക്ക്</translation>
@@ -375,13 +381,13 @@
 <translation id="6957231940976260713">സേവനത്തിന്‍റെ പേര്</translation>
 <translation id="6961170852793647506">ആരംഭിക്കാൻ, നിങ്ങളുടെ ഡോക്യുമെന്റ് സ്‌കാനറിൽ വയ്ക്കുക</translation>
 <translation id="6977381486153291903">ഫേംവെയർ പുനഃപരിശോധന</translation>
-<translation id="6982876849933694860">ഒരു പുതിയ കണക്ഷൻ സജ്ജീകരിക്കാൻ <ph name="BEGIN_LINK" />ക്രമീകരണത്തിലേക്ക്<ph name="END_LINK" /> പോകുക.</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> ഈ ഉപകരണം മാനേജ് ചെയ്യുന്നു, സന്ദർശിച്ച വെബ്‌പേജുകൾ, പാസ്‌വേഡുകൾ, ഇമെയിൽ എന്നിവയുൾപ്പെടെ ഉപയോക്താവിന്റെ എല്ലാ ആക്‌റ്റിവിറ്റികളിലേക്കും ആക്‌സസും ഉണ്ടായിരിക്കും.</translation>
 <translation id="7040230719604914234">ഓപ്പറേറ്റർ</translation>
 <translation id="7058278511608979688">അവസാനിപ്പിച്ച് സംരക്ഷിക്കുക</translation>
 <translation id="7059230779847288458">ചാർജ് ചെയ്യുന്നു, പൂർത്തിയാകാൻ <ph name="TIME_VALUE" /> ശേഷിക്കുന്നു</translation>
 <translation id="708426984172631313">നിർത്തി</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="710028965487274708">പരാജയപ്പെട്ടു - അംഗീകരിക്കൽ പ്രക്രിയ നടന്നില്ല</translation>
 <translation id="7134436342991564651">{0,plural, =1{നെയിം സെർവർ}other{നെയിം സെർവറുകൾ}}</translation>
 <translation id="7143207342074048698">കണക്റ്റിംഗ്</translation>
 <translation id="7144878232160441200">വീണ്ടും ശ്രമിക്കുക</translation>
@@ -389,12 +395,12 @@
 <translation id="7162487448488904999">ഗാലറി</translation>
 <translation id="7172721935181587524">ഒരു ചിത്രം</translation>
 <translation id="7177485034254901881">ഈ <ph name="DEVICE_TYPE" /> മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER" /> ആണ്. അഡ്മിൻമാർ ഉപകരണം വിദൂരമായി കോൺഫിഗർ ചെയ്‌തേക്കാം.</translation>
-<translation id="7180611975245234373">റീഫ്രഷ് ചെയ്യുക</translation>
+<translation id="7180611975245234373">പുതുക്കുക</translation>
 <translation id="7216409898977639127">സെല്ലുലാര്‍‌ സേവനദാതാവ്</translation>
 <translation id="7271040990581020067">സ്‌കാനർ നിലവിൽ ഉപയോഗത്തിലാണ്. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">വാൾപേപ്പർ ശേഖരങ്ങൾ</translation>
-<translation id="7292680402155138244">HTTPS (പോർട്ട് 443) വെബ്‌സൈറ്റുകളിലേക്ക് കണക്റ്റ് ചെയ്യാൻ ഉയർന്ന പ്രതികരണ സമയം</translation>
+<translation id="7297226631177386107">HTTPS വെബ്സൈറ്റുകളിലേക്ക് ഫയര്‍വാള്‍ മുഖേന കണക്റ്റ് ചെയ്യാനാകുന്നില്ല</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -427,6 +433,7 @@
 <translation id="7762130827864645708">നിങ്ങൾ പാസ്‌വേഡ് മാറ്റി. ഇപ്പോൾ മുതൽ പുതിയ പാസ്‌വേഡ് ഉപയോഗിക്കുക.</translation>
 <translation id="7763470514545477072">ഡൊമെയ്ന്‍ സഫിക്സ് പൊരുത്തം</translation>
 <translation id="7769672763586021400">മോഡൽ ഐഡി</translation>
+<translation id="7784116172884276937">DNS സെർവറുകളൊന്നും സജ്ജീകരിച്ചിട്ടില്ല</translation>
 <translation id="7805768142964895445">നില</translation>
 <translation id="7819857487979277519">PSK (WPA അല്ലെങ്കിൽ RSN)</translation>
 <translation id="7835501727204647447">CloudReady ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
@@ -436,36 +443,34 @@
 <translation id="7882358943899516840">പ്രൊവൈഡര്‍ തരം:</translation>
 <translation id="7882501334836096755">എല്ലാവർക്കുമായുള്ള കീ</translation>
 <translation id="7890841768028788197">ആന്തരിക ടച്ച്സ്ക്രീൻ</translation>
-<translation id="7895471513946376273">ഡ്രോയിംഗ്, ഡിസൈൻ ടൂളുകൾ കണ്ടെത്തുക</translation>
 <translation id="7936303884198020182">നെയിം സെർവറുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="7943235353293548836">സജീവമായി നിലനിർത്താനുള്ള സ്ഥിര ഇടവേള</translation>
 <translation id="7955587717700691983">Bluetooth കീബോർഡ്</translation>
 <translation id="7960831585769876809">താപനില</translation>
+<translation id="7977800524392185497"><ph name="NETWORK_NAME" /> നെറ്റ്‌വർക്കിൽ ചേരാൻ, ക്രമീകരണത്തിലേക്ക് പോകുക</translation>
 <translation id="7978412674231730200">സ്വകാര്യ കീ</translation>
 <translation id="7994702968232966508">EAP രീതി</translation>
-<translation id="8020238979854764615">ഒരു പിശകുണ്ടായി. മറ്റ് ചിത്രങ്ങൾ തിരഞ്ഞെടുത്ത് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="802154636333426148">ഡൗൺലോഡ് പരാജയപ്പെട്ടു</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="8041089156583427627">ഫീഡ്ബാക്ക് അയയ്ക്കുക</translation>
 <translation id="8075838845814659848">ശേഷിക്കുന്ന ചാർജ്</translation>
+<translation id="8082366717211101304">Android ആപ്പുകളിൽ നിന്ന് DNS പരിഹരിക്കാനാകില്ല</translation>
 <translation id="808894953321890993">പാസ്‌വേഡ് മാറ്റുക</translation>
+<translation id="8104083085214006426">ഓപ്പണും സുരക്ഷിതമല്ലാത്തതുമായ നെറ്റ്‌വർക്ക് ആണ് നിങ്ങൾ ഉപയോഗിക്കുന്നത്</translation>
 <translation id="811820734797650957">(Android) ഗേറ്റ്‌വേ പിംഗ് ചെയ്യാനാകും</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8132480444149501833">ട്രാഫിക് കൗണ്ടറുകൾ അഭ്യർത്ഥിക്കുക</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
-<translation id="8177708084858970226">DNS പരിഹരിക്കാനാകുന്നില്ല</translation>
 <translation id="8206859287963243715">സെല്ലുലാര്‍‌</translation>
 <translation id="8208861521865154048">പെർക്കുകൾ</translation>
 <translation id="8230672074305416752">ഡിഫോൾട്ട് നെറ്റ്‌വർക്ക് ഗേറ്റ്‍വേ പിംഗ് ചെയ്യാനായില്ല</translation>
-<translation id="8246209727385807362">അജ്ഞാത സേവനദാതാവ്</translation>
+<translation id="8246209727385807362">അജ്ഞാത കാരിയർ</translation>
 <translation id="8286154143153872371">വാൾപേപ്പർ കാണാൻ ഒരു നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റ് ചെയ്‌ത് പേജ് റീലോഡ് ചെയ്യുക.</translation>
 <translation id="8291967909914612644">ഹോം പ്രൊവൈഡറിന്റെ രാജ്യം</translation>
-<translation id="829270796093605079">ഡിസൈൻ ടൂളുകൾ കണ്ടെത്തുക</translation>
 <translation id="8294431847097064396">ഉറവിടം</translation>
 <translation id="8297006494302853456">ദുര്‍ബലം</translation>
 <translation id="8302368968391049045">HTTPS ഫയര്‍വാള്‍</translation>
 <translation id="8318753676953949627">ഇമേജുകളൊന്നുമില്ല</translation>
-<translation id="8346875532700229909">Android-ൽ നിന്ന് ഗേറ്റ്‌വേയുമായി ബന്ധപ്പെടാനാകുന്നില്ല</translation>
 <translation id="8347227221149377169">പ്രിന്റ് ജോലികൾ</translation>
 <translation id="8352772353338965963">ഒന്നിലധികം സൈൻ-ഇന്നിനായി ഒരു അക്കൗണ്ട് ചേർക്കുക. സൈൻ-ഇൻ ചെയ്‌ത അക്കൗണ്ടുകളെല്ലാം ഒരു പാസ്‌വേഡില്ലാതെ ആക്‌സസ് ചെയ്യാനാകുമെന്നതിനാൽ ഈ സവിശേഷത പരിചയമുള്ള അക്കൗണ്ടുകളിൽ മാത്രമേ ഉപയോഗിക്കാവൂ.</translation>
 <translation id="8364946094152050673">ശൂന്യമായ നെയിം സെർവറുകൾ</translation>
@@ -475,10 +480,12 @@
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">ആന്തരിക കീബോർഡ്</translation>
 <translation id="843568408673868420">ഇന്റർനെറ്റ് കണക്റ്റിവിറ്റി</translation>
+<translation id="844521431886043384">DNS സജ്ജീകരിച്ചിട്ടില്ല</translation>
 <translation id="8461329675984532579">ഹോം പ്രൊവൈഡറിന്റെ പേര്</translation>
 <translation id="8475690821716466388">ദുർബലമായ WEP PSK പ്രോട്ടോക്കോൾ ഉപയോഗിച്ചാണ് വെെഫെെ നെറ്റ്‌വർക്ക് സുരക്ഷിതമാക്കിയിരിക്കുന്നത്</translation>
 <translation id="8477551185774834963">DNS പ്രതികരണ സമയം അനുവദിക്കപ്പെട്ട പരിധിയേക്കാൾ അൽപ്പം മുകളിലാണ്</translation>
 <translation id="8483248364096924578">IP വിലാസം</translation>
+<translation id="8491311378305535241">Android ആപ്പുകളിൽ നിന്ന് HTTPS വെബ്സൈറ്റുകളിലേക്ക് ഫയര്‍വാള്‍ മുഖേന കണക്റ്റ് ചെയ്യാനാകുന്നില്ല</translation>
 <translation id="8498220429738806196">ട്രാഫിക് കൗണ്ടറുകൾ</translation>
 <translation id="8503813439785031346">ഉപയോക്തൃനാമം</translation>
 <translation id="8503836310948963452">കുറച്ച് മിനിറ്റുകൾ കൂടി മാത്രം…</translation>
@@ -504,6 +511,7 @@
 <translation id="8818152010000655963">വാൾപേപ്പർ</translation>
 <translation id="8834539327799336565">നിലവിൽ കണക്റ്റ് ചെയ്‌തവ</translation>
 <translation id="8845001906332463065">സഹായം നേടുക</translation>
+<translation id="8855781559874488009">HTTP വെബ്സൈറ്റുകളിലേക്ക് ഫയര്‍വാള്‍ മുഖേന കണക്റ്റ് ചെയ്യാനാകുന്നില്ല</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">ടെസ്റ്റ് പൂർത്തിയായി</translation>
 <translation id="8898840733695078011">സിഗ്‌നൽ ശക്തി</translation>
@@ -526,15 +534,17 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9088306295921699330">നിലവിലെ ഉപയോഗം</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
-<translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> എന്നതിനുള്ള ടിക്കറ്റ് റീഫ്രഷ് ചെയ്യുക</translation>
+<translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> എന്നതിനുള്ള ടിക്കറ്റ് പുതുക്കിയെടുക്കുക</translation>
 <translation id="9106415115617144481"><ph name="PAGE_NUMBER" />-ാമത്തെ പേജ് സ്‌കാൻ ചെയ്യുന്നു</translation>
 <translation id="9111102763498581341">അണ്‍ലോക്ക് ചെയ്യുക</translation>
+<translation id="9122602430962285795">വീണ്ടും കണക്റ്റ് ചെയ്യാൻ, ക്രമീകരണത്തിലേക്ക് പോകുക</translation>
 <translation id="9126720536733509015">ഒരു PDF-ൽ ഒന്നിലധികം പേജുകൾ സംരക്ഷിക്കുക</translation>
 <translation id="9137526406337347448">Google സേവനങ്ങൾ</translation>
 <translation id="9149391708638971077">മെമ്മറി ടെസ്റ്റ് റണ്‍ ചെയ്യുക</translation>
 <translation id="9173638680043580060">ഒരു മിനിറ്റിലും താഴെ ശേഷിക്കുന്നു</translation>
 <translation id="917720651393141712">ടെസ്‌റ്റ്</translation>
 <translation id="9190063653747922532">L2TP/IPsec + മുമ്പ് പങ്കിട്ട കീ</translation>
+<translation id="9204237731135241582">Android ആപ്പുകളിൽ നിന്ന് ഗേറ്റ്‌വേയുമായി ബന്ധപ്പെടാനാകുന്നില്ല</translation>
 <translation id="9211490828691860325">എല്ലാ ഡെസ്കുകളും</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">സജീവമാക്കിയില്ല</translation>

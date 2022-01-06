@@ -38,7 +38,7 @@ class PLATFORM_EXPORT PaintChunker final {
 #endif
 
   void StartMarkingClientsForValidation(
-      Vector<const DisplayItemClient*>& clients_to_validate);
+      HeapVector<Member<const DisplayItemClient>>& clients_to_validate);
   void MarkClientForValidation(const DisplayItemClient& client);
   void StopMarkingClientsForValidation();
 
@@ -85,14 +85,15 @@ class PLATFORM_EXPORT PaintChunker final {
 
   // The id will be used when we need to create a new current chunk.
   // Otherwise it's ignored. Returns true if a new chunk is added.
+  bool AddRegionCaptureDataToCurrentChunk(const PaintChunk::Id& id,
+                                          const DisplayItemClient& client,
+                                          const RegionCaptureCropId& crop_id,
+                                          const gfx::Rect& bounds);
+
+  // The id will be used when we need to create a new current chunk.
+  // Otherwise it's ignored. Returns true if a new chunk is added.
   void AddSelectionToCurrentChunk(absl::optional<PaintedSelectionBound> start,
                                   absl::optional<PaintedSelectionBound> end);
-
-  // Returns true if a new chunk is created.
-  bool ProcessBackgroundColorCandidate(const PaintChunk::Id&,
-                                       const DisplayItemClient&,
-                                       Color color,
-                                       float area);
 
   // Returns true if a new chunk is created.
   bool EnsureChunk() {
@@ -110,11 +111,16 @@ class PLATFORM_EXPORT PaintChunker final {
   // Returns true if a new chunk is created.
   bool EnsureCurrentChunk(const PaintChunk::Id&, const DisplayItemClient&);
 
+  void ProcessBackgroundColorCandidate(const PaintChunk::Id&,
+                                       const DisplayItemClient&,
+                                       Color color,
+                                       float area);
+
   void FinalizeLastChunkProperties();
 
   Vector<PaintChunk>* chunks_ = nullptr;
-  Vector<const DisplayItemClient*>* clients_to_validate_ = nullptr;
-
+  WeakPersistent<HeapVector<Member<const DisplayItemClient>>>
+      clients_to_validate_ = nullptr;
   // The id specified by UpdateCurrentPaintChunkProperties(). If it is not
   // nullopt, we will use it as the id of the next new chunk. Otherwise we will
   // use the id of the first display item of the new chunk as the id.

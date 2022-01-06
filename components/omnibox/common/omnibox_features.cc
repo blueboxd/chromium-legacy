@@ -93,16 +93,8 @@ const base::Feature kUIExperimentMaxAutocompleteMatches{
 // there are no more non-URL matches available.) If enabled, there is a
 // companion parameter - OmniboxMaxURLMatches - which specifies the maximum
 // desired number of URL-type matches.
-const bool kOmniboxMaxURLMatchesEnabledByDefault =
-#if defined(OS_IOS) || defined(OS_ANDROID)
-    false;
-#else
-    true;
-#endif
-const base::Feature kOmniboxMaxURLMatches{
-    "OmniboxMaxURLMatches", kOmniboxMaxURLMatchesEnabledByDefault
-                                ? base::FEATURE_ENABLED_BY_DEFAULT
-                                : base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOmniboxMaxURLMatches{"OmniboxMaxURLMatches",
+                                          enabled_by_default_desktop_android};
 
 // Feature used to cap max suggestions to a dynamic limit based on how many URLs
 // would be shown. E.g., show up to 10 suggestions if doing so would display no
@@ -112,10 +104,16 @@ const base::Feature kDynamicMaxAutocomplete{"OmniboxDynamicMaxAutocomplete",
 
 // If enabled, when the user clears the whole omnibox text (i.e. via Backspace),
 // Chrome will request remote ZeroSuggest suggestions for the OTHER page
-// classification (contextual web).
+// classification (contextual web), which does NOT include the SRP.
 const base::Feature kClobberTriggersContextualWebZeroSuggest{
     "OmniboxClobberTriggersContextualWebZeroSuggest",
     enabled_by_default_desktop_only};
+
+// If enabled, when the user clears the whole omnibox text (i.e. via Backspace),
+// Chrome will request remote ZeroSuggest suggestions for the SRP (search
+// results page).
+const base::Feature kClobberTriggersSRPZeroSuggest{
+    "OmniboxClobberTriggersSRPZeroSuggest", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Used to adjust the age threshold since the last visit in order to consider a
 // normalized keyword search term as a zero-prefix suggestion. If disabled, the
@@ -140,6 +138,11 @@ const base::Feature kOmniboxTrendingZeroPrefixSuggestionsOnNTP{
 //  - Default (search queries)
 //  - SRP specific toggle (enables SRP on top of Web Pages for features below)
 //  - On-Content Suggestions
+//
+// TODO(tommycli): It's confusing whether Contextual Web includes SRP or not.
+// `kOnFocusSuggestionsContextualWebAllowSRP` suggests it's included, but
+// `kClobberTriggersContextualWebZeroSuggest` suggests it's not. Make this
+// consistent, probably by renaming flags to distinguish between OTHER and SRP.
 const base::Feature kOnFocusSuggestionsContextualWeb{
     "OmniboxOnFocusSuggestionsContextualWeb",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -225,8 +228,8 @@ const base::Feature kDocumentProviderAso{"OmniboxDocumentProviderAso",
 // Allows Omnibox to dynamically adjust number of offered suggestions to fill in
 // the space between Omnibox and the soft keyboard. The number of suggestions
 // shown will be no less than minimum for the platform (eg. 5 for Android).
-const base::Feature kAdaptiveSuggestionsCount{
-    "OmniboxAdaptiveSuggestionsCount", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAdaptiveSuggestionsCount{"OmniboxAdaptiveSuggestionsCount",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, clipboard suggestion will not show the clipboard content until
 // the user clicks the reveal button.
@@ -290,7 +293,7 @@ const base::Feature kWebUIOmniboxPopup{"WebUIOmniboxPopup",
 // marked.
 const base::Feature kIntranetRedirectBehaviorPolicyRollout{
     "OmniboxDNSInterceptionChecksPolicyRollout",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, use Assistant for omnibox voice query recognition instead of
 // Android's built-in voice recognition service. Only works on Android.

@@ -397,18 +397,10 @@ message SupportedScriptProto {
     // be executed. No precondition means that a script can run in any case.
     optional ScriptPreconditionProto precondition = 3;
 
-    // Text display at the same time as the script is proposed. If more than one
-    // script has an initial prompt, the prompt of the highest-priority script
-    // wins.
-    optional string initial_prompt = 4;
-
     // Display priority of the script. Lowest number has highest priority, which
     // means a script with priority 0 should be displayed before a script with
     // priority 1.
     optional int32 priority = 5;
-
-    // An optional chip to display.
-    optional ChipProto chip = 12;
 
     // Optionally map this script to a direct action.
     optional DirectActionProto direct_action = 13;
@@ -428,7 +420,7 @@ message SupportedScriptProto {
     // scripts started by direct actions.
     optional bool needs_ui = 15 [default = true];
 
-    reserved 1, 2, 6, 7, 10, 11, 16 to 18;
+    reserved 1, 2, 4, 6, 7, 10 to 12, 16 to 18;
   }
   optional PresentationProto presentation = 2;
 
@@ -948,6 +940,8 @@ message ProcessedActionProto {
     UploadDomProto.Result upload_dom_result = 33;
     // Should be set as a result of CheckOptionElementProto.
     CheckOptionElementProto.Result check_option_element_result = 35;
+    // Should be set as a result of SendKeystrokeEventsProto.
+    SendKeystrokeEventsProto.Result send_key_stroke_events_result = 36;
   }
 
   // Reports information about navigation that happened while
@@ -961,16 +955,11 @@ message ProcessedActionProto {
   // Collects the timing stats related to the action execution.
   optional ActionTimingStats timing_stats = 32;
 
-  // If true, the user triggered, during the client action, at least one user
-  // action, such as a prompt choice, through a direct action instead of
-  // selecting a chip on the UI. This is meant for monitoring and debugging.
-  optional bool direct_action = 24;
-
   // Tracks whether the action triggered a slow website warning and whether it
   // was shown to the user.
   optional SlowWarningStatus slow_warning_status = 34;
 
-  reserved 3, 4, 6 to 14, 16 to 18, 26, 27, 29, 30;
+  reserved 3, 4, 6 to 14, 16 to 18, 24, 26, 27, 29, 30;
 }
 
 // Extended information about the action status, which provides more details
@@ -993,6 +982,9 @@ message ProcessedActionStatusDetailsProto {
 
   // Additional information from the |WebController|.
   optional WebControllerErrorInfoProto web_controller_error_info = 5;
+
+  // Additional information from the |ElementFinder|.
+  repeated ElementFinderInfoProto element_finder_info = 6;
 
   reserved 4;
 }
@@ -1223,6 +1215,25 @@ message WebControllerErrorInfoProto {
   optional WebAction failed_web_action = 1;
 }
 
+message ElementFinderInfoProto {
+  // Tracking ID of the |Selector|.
+  optional int64 tracking_id = 1;
+
+  // If the Selector fails to be resolved, this index holds the starting index
+  // of filters currently being applied.
+  optional int32 failed_filter_index_range_start = 2;
+
+  // If a filter failed, this index holds the filter that was supposed to be
+  // applied next.
+  optional int32 failed_filter_index_range_end = 3;
+
+  // The original status of |ElementFinder|.
+  optional ProcessedActionStatusProto status = 4;
+
+  // If set, the document could not be resolved.
+  optional bool get_document_failed = 5;
+}
+
 // The pseudo type values come from
 // https://chromedevtools.github.io/devtools-protocol/tot/DOM#type-PseudoType.
 enum PseudoType {
@@ -1251,6 +1262,12 @@ message SelectorProto {
   // the output of the previous filter as input. The root of these filters is
   // the main frame's document.
   repeated Filter filters = 9;
+
+  // An ID that's used to identify selector in logs, as they pass through
+  // different layers. It is passed to the client only as FYI. Client might
+  // choose to echo back these ids when reporting specific selectors as
+  // matching or not matching.
+  optional int64 tracking_id = 10;
 
   // A filter that starts with one or more elements and returns one on more
   // elements. Filters are meant to be applied sequentially.
@@ -1796,10 +1813,6 @@ message UploadDomProto {
 // Shows the progress bar.
 message ShowProgressBarProto {
   oneof progress_indicator {
-    // Value between 0 and 100 indicating the current progress. Values above 100
-    // will be capped to 100, values below 0 will be capped to 0 by the client.
-    int32 progress = 6;
-
     // Value between 0 and |N| (where N is the size of the initial
     // |step_icons|) indicating the current step the flow is in, marking
     // all previous steps as complete. The active step will not be marked as
@@ -1839,20 +1852,16 @@ message ShowProgressBarProto {
   // progress bar being rerendered. The previous configuration will be carried
   // over in each new progress |ShowProgressBarAction|.
   message StepProgressBarConfiguration {
-    // This boolean should always be true, unless you wish to switch to the
-    // old progress bar during the flow. This is not recommended!
-    optional bool use_step_progress_bar = 1;
-
     // Set the icons for the new progress bar. The size of the |step_icons|
     // gives the length of the progress bar. As such an empty list is not
     // supported. The list needs to be at least 2 items long.
     repeated StepProgressBarIcon annotated_step_icons = 3;
 
-    reserved 2;
+    reserved 1, 2;
   }
   optional StepProgressBarConfiguration step_progress_bar_configuration = 9;
 
-  reserved 1 to 5;
+  reserved 1 to 6;
 }
 
 // Contain all arguments to perform a highlight element action.
@@ -2083,9 +2092,6 @@ message PromptProto {
     // The chip to display to the UI.
     optional ChipProto chip = 11;
 
-    // Map this choice to a direct action.
-    optional DirectActionProto direct_action = 12;
-
     // Auto-select this choice when the condition is met.
     optional ElementConditionProto auto_select_when = 15;
 
@@ -2100,7 +2106,7 @@ message PromptProto {
     // be transmitted as-is by the client without interpreting.
     optional bytes server_payload = 5;
 
-    reserved 4, 6, 8, 13, 14, 17;
+    reserved 4, 6, 8, 12 to 14, 17;
   }
   repeated Choice choices = 4;
 
@@ -2344,9 +2350,40 @@ message PopupListSectionProto {
   optional string no_selection_error_message = 6;
 }
 
+message AutofillEntryProto {
+  // The value that this data point holds.
+  optional string value = 1;
+  // The value should be used exactly as specified. Use this only in
+  // exceptional circumstances, as you will lose any of the additional
+  // processing done automatically by Autofill, such as:
+  // - Setting a NAME_FULL will split it and also set NAME_FIRST, NAME_MIDDLE
+  //   and NAME_LAST as applicable.
+  // - Setting a PHONE_HOME_WHOLE_NUMBER will also set PHONE_HOME_NUMBER,
+  //   PHONE_HOME_CITY_CODE, PHONE_HOME_COUNTRY_CODE and
+  //   PHONE_HOME_CITY_AND_NUMBER.
+  optional bool raw = 2;
+}
+
+message ProfileProto {
+  // The values, where the key is one of autofill::ServerFieldType.
+  map<int32, AutofillEntryProto> values = 2;
+
+  reserved 1;
+}
+
+message PaymentInstrumentProto {
+  // The values for the card, where the key is one of autofill::ServerFieldType.
+  map<int32, AutofillEntryProto> card_values = 2;
+  // The values for the billing address, where the key is one of
+  // autofill::ServerFieldType.
+  map<int32, AutofillEntryProto> address_values = 3;
+
+  reserved 1;
+}
+
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
-// Next: 34
+// Next: 38
 message CollectUserDataProto {
   enum TermsAndConditionsState {
     // No choice has been made yet.
@@ -2378,8 +2415,6 @@ message CollectUserDataProto {
   // Optional specification for the confirm button (defaults to standard confirm
   // chip if not specified).
   optional ChipProto confirm_chip = 33;
-  // Optionally allows confirming through the given direct actions.
-  optional DirectActionProto confirm_direct_action = 10;
   // The initial state of the terms & conditions choice.
   optional TermsAndConditionsState terms_and_conditions_state = 8;
   // When 'false', hide the terms and conditions box in the UI.
@@ -2445,7 +2480,17 @@ message CollectUserDataProto {
   repeated RequiredDataPiece required_credit_card_data_piece = 35;
   repeated RequiredDataPiece required_billing_address_data_piece = 36;
 
-  reserved 7, 14, 15, 26;
+  message UserDataProto {
+    repeated ProfileProto available_contacts = 1;
+    repeated ProfileProto available_addresses = 4;
+    repeated PaymentInstrumentProto available_payment_instruments = 2;
+    // The locale to be used when creating this data. This can have influence
+    // on the potential processing by Autofill.
+    optional string locale = 3;
+  }
+  optional UserDataProto user_data = 37;
+
+  reserved 7, 10, 14, 15, 26;
 }
 
 // Stop Autofill Assistant.
@@ -2739,8 +2784,7 @@ message ShowFormProto {
   // form inputs are valid.
   optional ChipProto chip = 2;
 
-  // Optionally allow confirming the prompt using given direct actions.
-  optional DirectActionProto direct_action = 3;
+  reserved 3;
 }
 
 message FormProto {
@@ -2816,6 +2860,12 @@ message CounterInputProto {
     // must contain |initial_value| or it will otherwise default to the first
     // value.
     optional int32 initial_value = 4 [default = 0];
+
+    // The weight of adding 1 in this counter. Defaults to 1. Incrementing by 1
+    // in counter has an effect of incrementing by |size| in the counter
+    // section. For example, a family ticket in showtimes counts as |size|
+    // tickets in total amount restriction.
+    optional int32 size = 9 [default = 1];
 
     reserved 7;
   }
@@ -3016,6 +3066,7 @@ message GetElementStatusProto {
   message MatchOptions {
     optional bool case_sensitive = 1;
     optional bool remove_space = 2;
+    optional string find_and_remove_re2 = 3;
   }
 
   message MatchExpectation {

@@ -28,6 +28,10 @@
 
 namespace ash {
 
+// The delay time of closing the splash window when a lacros-browser window is
+// launched.
+constexpr base::TimeDelta kSplashWindowCloseDelayTime = base::Seconds(1);
+
 WebKioskAppLauncher::WebKioskAppLauncher(
     Profile* profile,
     WebKioskAppLauncher::Delegate* delegate,
@@ -99,15 +103,16 @@ void WebKioskAppLauncher::OnAppDataObtained(
 
 void WebKioskAppLauncher::OnLacrosWindowCreated(
     crosapi::mojom::CreationResult result) {
-  if (result == crosapi::mojom::CreationResult::kSuccess) {
-    delegate_->OnAppWindowCreated();
-  } else {
+  if (result != crosapi::mojom::CreationResult::kSuccess) {
+    exo::WMHelper::GetInstance()->RemoveExoWindowObserver(this);
     LOG(ERROR) << "The lacros window failed to be created. Result: " << result;
     delegate_->OnLaunchFailed(KioskAppLaunchError::Error::kUnableToLaunch);
   }
 }
 
 void WebKioskAppLauncher::CreateNewLacrosWindow() {
+  DCHECK(exo::WMHelper::HasInstance());
+  exo::WMHelper::GetInstance()->AddExoWindowObserver(this);
   crosapi::BrowserManager::Get()->NewFullscreenWindow(
       GetCurrentApp()->GetLaunchableUrl(),
       base::BindOnce(&WebKioskAppLauncher::OnLacrosWindowCreated,
@@ -123,8 +128,7 @@ void WebKioskAppLauncher::LaunchApp() {
   // TODO(crbug.com/1101667): Currently, this source has log spamming by
   // LOG(WARNING) to make it easy to debug and develop. Get rid of the log
   // spamming when it gets stable enough.
-  if (base::FeatureList::IsEnabled(features::kWebKioskEnableLacros) &&
-      crosapi::browser_util::IsLacrosEnabled()) {
+  if (crosapi::browser_util::IsLacrosEnabledInWebKioskSession()) {
     LOG(WARNING) << "Using lacros-chrome for web kiosk session.";
     delegate_->OnAppLaunched();
     if (crosapi::BrowserManager::Get()->IsRunning()) {
@@ -151,7 +155,7 @@ void WebKioskAppLauncher::LaunchApp() {
   CHECK(browser_->window());
   browser_->window()->Show();
 
-  WebKioskAppManager::Get()->InitSession(browser_);
+  WebKioskAppManager::Get()->InitSession(browser_, browser_->profile());
   delegate_->OnAppLaunched();
   delegate_->OnAppWindowCreated();
 }
@@ -168,6 +172,22 @@ void WebKioskAppLauncher::OnStateChanged() {
     observation_.Reset();
     CreateNewLacrosWindow();
   }
+}
+
+void WebKioskAppLauncher::OnExoWindowCreated(aura::Window* window) {
+  CHECK(crosapi::browser_util::IsLacrosWindow(window));
+  exo::WMHelper::GetInstance()->RemoveExoWindowObserver(this);
+  WebKioskAppManager::Get()->InitSession(nullptr, profile_);
+
+  // NOTE: There is a known issue (crbug/1220680) that causes an obvious twinkle
+  // when an exo window is launched in a fullscreen mode. This short delay is
+  // just a temporary workaround, and should be removed after the issue is
+  // solved.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&KioskAppLauncher::Delegate::OnAppWindowCreated,
+                     base::Unretained(delegate_)),
+      kSplashWindowCloseDelayTime);
 }
 
 void WebKioskAppLauncher::SetDataRetrieverFactoryForTesting(

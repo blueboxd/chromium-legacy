@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -82,7 +82,7 @@ class NavigationBodyLoader : public WebNavigationBodyLoader,
   // WebNavigationBodyLoader implementation.
   void SetDefersLoading(WebLoaderFreezeMode mode) override;
   void StartLoadingBody(WebNavigationBodyLoader::Client* client,
-                        mojom::CodeCacheHost* code_cache_host) override;
+                        CodeCacheHost* code_cache_host) override;
 
   // network::mojom::URLLoaderClient implementation.
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;

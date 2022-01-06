@@ -99,10 +99,12 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
   auto* service = GetBrowserSwitcherService(web_ui);
   source->AddInteger("launchDelay", service->prefs().GetDelay());
 
-  std::string browser_name = service->driver()->GetBrowserName();
-  source->AddString("browserName", browser_name);
+  std::string alt_browser_name = service->driver()->GetBrowserName();
+  source->AddString("altBrowserName", alt_browser_name);
 
-  if (browser_name.empty()) {
+  source->AddLocalizedString("browserName", IDS_PRODUCT_NAME);
+
+  if (alt_browser_name.empty()) {
     // Browser name could not be auto-detected. Say "alternative browser"
     // instead of naming the browser.
     source->AddLocalizedString(
@@ -175,7 +177,7 @@ class BrowserSwitchHandler : public content::WebUIMessageHandler {
       const std::vector<std::string>& changed_prefs);
 
   // For the internals page: tell JS to update all the page contents.
-  void UpdateEverything();
+  void SendDataChangedEvent();
 
   // Launches the given URL in the configured alternative browser. Acts as a
   // bridge for |AlternativeBrowserDriver::TryLaunch()|. Then, if that succeeds,
@@ -298,17 +300,17 @@ void BrowserSwitchHandler::OnJavascriptDisallowed() {
 
 void BrowserSwitchHandler::OnAllRulesetsParsed(
     browser_switcher::BrowserSwitcherService* service) {
-  UpdateEverything();
+  SendDataChangedEvent();
 }
 
 void BrowserSwitchHandler::OnBrowserSwitcherPrefsChanged(
     browser_switcher::BrowserSwitcherPrefs* prefs,
     const std::vector<std::string>& changed_prefs) {
-  UpdateEverything();
+  SendDataChangedEvent();
 }
 
-void BrowserSwitchHandler::UpdateEverything() {
-  CallJavascriptFunction("updateEverything", base::Value());
+void BrowserSwitchHandler::SendDataChangedEvent() {
+  FireWebUIListener("data-changed");
 }
 
 void BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab(

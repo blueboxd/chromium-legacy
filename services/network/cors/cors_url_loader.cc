@@ -209,12 +209,6 @@ absl::optional<CorsErrorStatus> CheckRedirectLocation(
 }
 
 constexpr const char kTimingAllowOrigin[] = "Timing-Allow-Origin";
-
-// Whether the sync client optimization is used for communication between the
-// CorsURLLoader and URLLoader.
-constexpr base::Feature kURLLoaderSyncClient{"URLLoaderSyncClient",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace
 
 CorsURLLoader::CorsURLLoader(
@@ -234,6 +228,7 @@ CorsURLLoader::CorsURLLoader(
     PreflightController* preflight_controller,
     const base::flat_set<std::string>* allowed_exempt_headers,
     bool allow_any_cors_exempt_header,
+    NonWildcardRequestHeadersSupport non_wildcard_request_headers_support,
     const net::IsolationInfo& isolation_info,
     mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer)
     : receiver_(this, std::move(loader_receiver)),
@@ -251,6 +246,8 @@ CorsURLLoader::CorsURLLoader(
       allowed_exempt_headers_(allowed_exempt_headers),
       skip_cors_enabled_scheme_check_(skip_cors_enabled_scheme_check),
       allow_any_cors_exempt_header_(allow_any_cors_exempt_header),
+      non_wildcard_request_headers_support_(
+          non_wildcard_request_headers_support),
       isolation_info_(isolation_info),
       devtools_observer_(std::move(devtools_observer)),
       // CORS preflight related events are logged in a series of URL_REQUEST
@@ -263,8 +260,7 @@ CorsURLLoader::CorsURLLoader(
 
   receiver_.set_disconnect_handler(
       base::BindOnce(&CorsURLLoader::OnMojoDisconnect, base::Unretained(this)));
-  request_.net_log_params =
-      network::ResourceRequest::NetLogParams(net_log_.source().id);
+  request_.net_log_create_info = net_log_.source();
   DCHECK(network_loader_factory_);
   DCHECK(origin_access_list_);
   DCHECK(preflight_controller_);
@@ -298,13 +294,25 @@ void CorsURLLoader::FollowRedirect(
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const absl::optional<GURL>& new_url) {
+  // If this is a navigation from a renderer, then its a service worker
+  // passthrough of a navigation request.  Since this case uses manual
+  // redirect mode FollowRedirect() should never be called.
+  if (process_id_ != mojom::kBrowserProcessId &&
+      request_.mode == mojom::RequestMode::kNavigate) {
+    mojo::ReportBadMessage(
+        "CorsURLLoader: navigate from non-browser-process should not call "
+        "FollowRedirect");
+    HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
+    return;
+  }
+
   if (!network_loader_ || !deferred_redirect_url_) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
     return;
   }
 
-  if (new_url &&
-      (new_url->GetOrigin() != deferred_redirect_url_->GetOrigin())) {
+  if (new_url && (new_url->DeprecatedGetOriginAsURL() !=
+                  deferred_redirect_url_->DeprecatedGetOriginAsURL())) {
     NOTREACHED() << "Can only change the URL within the same origin.";
     HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
     return;
@@ -684,8 +692,8 @@ void CorsURLLoader::StartRequest() {
       request_,
       PreflightController::WithTrustedHeaderClient(
           options_ & mojom::kURLLoadOptionUseHeaderClient),
-      PreflightController::WithNonWildcardRequestHeadersSupport(false),
-      tainted_, net::NetworkTrafficAnnotationTag(traffic_annotation_),
+      non_wildcard_request_headers_support_, tainted_,
+      net::NetworkTrafficAnnotationTag(traffic_annotation_),
       network_loader_factory_, isolation_info_, std::move(devtools_observer),
       net_log_);
 }
@@ -718,7 +726,7 @@ void CorsURLLoader::StartNetworkRequest(
   // |network_client_receiver_| shares this object's lifetime.
   network_loader_.reset();
   if (sync_network_loader_factory_ &&
-      base::FeatureList::IsEnabled(kURLLoaderSyncClient)) {
+      base::FeatureList::IsEnabled(features::kURLLoaderSyncClient)) {
     sync_network_loader_factory_->CreateLoaderAndStartWithSyncClient(
         network_loader_.BindNewPipeAndPassReceiver(), request_id_, options_,
         request_, network_client_receiver_.BindNewPipeAndPassRemote(),

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace ash {
@@ -37,7 +37,7 @@ void SearchResultContainerView::SetResults(
 void SearchResultContainerView::Update() {
   update_factory_.InvalidateWeakPtrs();
   num_results_ = DoUpdate();
-  Layout();
+  InvalidateLayout();
   if (delegate_)
     delegate_->OnSearchResultContainerResultsChanged();
 }

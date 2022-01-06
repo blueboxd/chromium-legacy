@@ -3,7 +3,7 @@
 <translationbundle lang="it">
 <translation id="1096883626080133124">Aumenta la tua produttività grazie a Google Chrome, che ti offre semplicità, sicurezza e velocità senza precedenti</translation>
 <translation id="1282031177488366470">Contribuisci a migliorare le funzionalità e le prestazioni di Chrome</translation>
-<translation id="1354592789402432496">Il tuo amministratore richiede l'accesso con un account dell'organizzazione. Gli account limitati dal tuo amministratore sono nascosti.</translation>
+<translation id="1314663809820920746">Puoi trovare ancora tutti i tuoi preferiti, la cronologia, le password e altre impostazioni su questo dispositivo. Le eventuali modifiche apportate non verranno sincronizzate con il tuo Account Google.</translation>
 <translation id="1479202195792305274">Chrome può controllare le tue password quando accedi con il tuo Account Google.</translation>
 <translation id="1493827051843127077">Imposta Chrome come browser predefinito per la sincronizzazione di schede, password e dati di pagamento su tutti i tuoi dispositivi</translation>
 <translation id="1504372625950710826">Chrome non ha potuto verificare la disponibilità di aggiornamenti. Verifica la tua connessione a Internet.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Offline. Chrome non può controllare la disponibilità di aggiornamenti</translation>
 <translation id="5716154293141027663">Apri Chrome ogni volta che tocchi link in altre app</translation>
-<translation id="572883588166315317">La tua organizzazione richiede l'accesso per usare Chrome. <ph name="BEGIN_LINK" />Scopri di più<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Suggerimento per Chrome. Alcuni pulsanti ora si trovano nella parte inferiore della schermata, ad esempio Indietro, Avanti e Cerca.</translation>
-<translation id="5876773482963502140">Se consenti a Chrome di conoscere la tua posizione, Chrome la invia ai siti autorizzati. I siti possono chiederti la posizione in presenza di informazioni locali da mostrarti, ad esempio notizie o negozi nelle vicinanze.</translation>
 <translation id="5998675059699164418">La tua organizzazione richiede l'accesso per usare Chrome.</translation>
 <translation id="6054613632208573261">Usa Chrome per impostazione predefinita</translation>
 <translation id="6063091872902370735">Consenti l'accesso a Chrome</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Scegli se cancellare i tuoi dati di Chrome da questo dispositivo o se conservarli</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC Tutti i diritti riservati.</translation>
 <translation id="840168496893712993">Alcuni componenti aggiuntivi provocano l'arresto anomalo di Chrome. Prova a disinstallarli.</translation>
+<translation id="8414886616817913619">La tua organizzazione richiede l'accesso per usare Chrome. <ph name="BEGIN_LINK" />Scopri di più<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">I dati selezionati sono stati rimossi da Chrome e dai dispositivi sincronizzati. Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, ad esempio ricerche e attività, di altri servizi Google alla pagina history.google.com.</translation>
 <translation id="850555388806794946">Per impostare Chrome come browser predefinito:
   1. Apri le Impostazioni.

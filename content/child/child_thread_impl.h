@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/variations/child_process_field_trial_syncer.h"
@@ -275,6 +275,9 @@ class ChildThreadImpl::Options::Builder {
  public:
   Builder();
 
+  Builder(const Builder&) = delete;
+  Builder& operator=(const Builder&) = delete;
+
   Builder& InBrowserProcess(const InProcessChildThreadParams& params);
   Builder& ConnectToBrowser(bool connect_to_browser);
   Builder& WithLegacyIPCChannel(bool with_legacy_ipc_channel);
@@ -288,8 +291,6 @@ class ChildThreadImpl::Options::Builder {
 
  private:
   struct Options options_;
-
-  DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 }  // namespace content

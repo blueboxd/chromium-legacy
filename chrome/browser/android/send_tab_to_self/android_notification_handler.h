@@ -30,7 +30,7 @@ class AndroidNotificationHandler : public ReceivingUiHandler {
   explicit AndroidNotificationHandler(Profile* profile);
   ~AndroidNotificationHandler() override;
 
-  const Profile* profile() const override;
+  Profile* profile() { return profile_; }
 
   void UpdateWebContents(content::WebContents* web_contents);
 

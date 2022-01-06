@@ -109,7 +109,7 @@ preprocess_if_expr("preprocess") {
     "appearance_page/appearance_browser_proxy.ts",
     "appearance_page/fonts_browser_proxy.ts",
     "autofill_page/merge_exceptions_store_copies_mixin.ts",
-    "autofill_page/merge_passwords_store_copies_behavior.js",
+    "autofill_page/merge_passwords_store_copies_mixin.ts",
     "autofill_page/multi_store_exception_entry.ts",
     "autofill_page/multi_store_id_handler.ts",
     "autofill_page/multi_store_password_ui_entry.ts",
@@ -117,7 +117,6 @@ preprocess_if_expr("preprocess") {
     "autofill_page/password_manager_proxy.ts",
     "autofill_page/show_password_mixin.ts",
     "base_mixin.ts",
-    "chrome_cleanup_page/chrome_cleanup_proxy.ts",
     "clear_browsing_data_dialog/clear_browsing_data_browser_proxy.ts",
     "controls/cr_policy_pref_mixin.ts",
     "controls/pref_control_mixin.ts",
@@ -129,7 +128,6 @@ preprocess_if_expr("preprocess") {
     "global_scroll_target_mixin.ts",
     "hats_browser_proxy.ts",
     "i18n_setup.ts",
-    "incompatible_applications_page/incompatible_applications_browser_proxy.ts",
     "lazy_load.ts",
     "lifetime_browser_proxy.ts",
     "metrics_browser_proxy.ts",
@@ -137,8 +135,8 @@ preprocess_if_expr("preprocess") {
     "on_startup_page/startup_urls_page_browser_proxy.ts",
     "open_window_proxy.ts",
     "page_visibility.ts",
-    "people_page/sync_browser_proxy.js",
-    "people_page/profile_info_browser_proxy.js",
+    "people_page/sync_browser_proxy.ts",
+    "people_page/profile_info_browser_proxy.ts",
     "prefs/prefs_mixin.ts",
     "prefs/prefs.ts",
     "prefs/prefs_types.ts",
@@ -164,16 +162,20 @@ preprocess_if_expr("preprocess") {
     "site_settings/website_usage_browser_proxy.ts",
   ]
 
+  if (is_chromeos_ash || is_chromeos_lacros) {
+    in_files += [ "autofill_page/blocking_request_manager.ts" ]
+  }
+
   if (is_chromeos_ash) {
     in_files += [
-      "autofill_page/blocking_request_manager.ts",
-      "people_page/account_manager_browser_proxy.js",
+      "people_page/account_manager_browser_proxy.ts",
       "site_settings/android_info_browser_proxy.ts",
     ]
   } else {
     if (!is_chromeos_lacros) {
       in_files += [
         "default_browser_page/default_browser_browser_proxy.ts",
+        "people_page/import_data_browser_proxy.ts",
         "system_page/system_page_browser_proxy.ts",
       ]
     }
@@ -182,8 +184,14 @@ preprocess_if_expr("preprocess") {
       "languages_page/languages_browser_proxy.ts",
       "languages_page/languages_settings_metrics_proxy.ts",
       "languages_page/languages_types.ts",
-      "people_page/import_data_browser_proxy.ts",
       "people_page/manage_profile_browser_proxy.ts",
+    ]
+  }
+
+  if (is_win) {
+    in_files += [
+      "chrome_cleanup_page/chrome_cleanup_proxy.ts",
+      "incompatible_applications_page/incompatible_applications_browser_proxy.ts",
     ]
   }
 }
@@ -263,11 +271,13 @@ preprocess_if_expr("preprocess_generated") {
     "privacy_page/security_page.ts",
     "privacy_page/disable_safebrowsing_dialog.ts",
     "privacy_page/privacy_review/privacy_review_clear_on_exit_fragment.ts",
+    "privacy_page/privacy_review/privacy_review_cookies_fragment.ts",
     "privacy_page/privacy_review/privacy_review_description_item.ts",
     "privacy_page/privacy_review/privacy_review_fragment_shared_css.ts",
     "privacy_page/privacy_review/privacy_review_history_sync_fragment.ts",
     "privacy_page/privacy_review/privacy_review_msbb_fragment.ts",
     "privacy_page/privacy_review/privacy_review_page.ts",
+    "privacy_page/privacy_review/privacy_review_safe_browsing_fragment.ts",
     "privacy_page/privacy_review/privacy_review_welcome_fragment.ts",
     "privacy_page/privacy_review/step_indicator.ts",
     "privacy_page/security_keys_bio_enroll_dialog.ts",
@@ -343,21 +353,23 @@ preprocess_if_expr("preprocess_generated") {
     in_files += [ "languages_page/edit_dictionary_page.ts" ]
   }
 
+  if (is_chromeos_ash || is_chromeos_lacros) {
+    in_files += [ "controls/password_prompt_dialog.ts" ]
+  }
+
   if (!is_chromeos) {
     in_files += [
       "default_browser_page/default_browser_page.ts",
+      "people_page/import_data_dialog.ts",
       "system_page/system_page.ts",
     ]
   }
 
-  if (is_chromeos_ash) {
-    in_files += [ "controls/password_prompt_dialog.ts" ]
-  } else {
+  if (!is_chromeos_ash) {
     in_files += [
       "languages_page/add_languages_dialog.ts",
       "languages_page/languages_page.ts",
       "languages_page/languages_subpage.ts",
-      "people_page/import_data_dialog.ts",
       "people_page/manage_profile.ts",
     ]
   }
@@ -381,10 +393,7 @@ grit("resources") {
 }
 
 group("closure_compile") {
-  deps = [
-    ":closure_compile_local",
-    "people_page:closure_compile",
-  ]
+  deps = [ ":closure_compile_local" ]
 
   if (is_chromeos_ash) {
     deps += [ "chromeos:closure_compile_module" ]
@@ -410,7 +419,6 @@ js_library("settings") {
   deps = [
     ":i18n_setup",
     ":lifetime_browser_proxy",
-    "people_page:sync_browser_proxy",
   ]
   extra_deps = [ ":build_ts" ]
 }
@@ -515,6 +523,7 @@ html_to_js("web_components_local") {
 ts_library("build_ts") {
   root_dir = "$target_gen_dir/$preprocess_folder"
   out_dir = "$target_gen_dir/tsc"
+  composite = true
   tsconfig_base = "tsconfig_base.json"
   in_files = [
     "a11y_page/a11y_page.ts",
@@ -536,7 +545,7 @@ ts_library("build_ts") {
     "autofill_page/credit_card_edit_dialog.ts",
     "autofill_page/credit_card_list_entry.ts",
     "autofill_page/merge_exceptions_store_copies_mixin.ts",
-    "autofill_page/merge_passwords_store_copies_behavior.js",
+    "autofill_page/merge_passwords_store_copies_mixin.ts",
     "autofill_page/multi_store_exception_entry.ts",
     "autofill_page/multi_store_id_handler.ts",
     "autofill_page/multi_store_password_ui_entry.ts",
@@ -601,10 +610,10 @@ ts_library("build_ts") {
     "open_window_proxy.ts",
     "page_visibility.ts",
     "people_page/people_page.ts",
-    "people_page/profile_info_browser_proxy.js",
+    "people_page/profile_info_browser_proxy.ts",
     "people_page/signout_dialog.ts",
     "people_page/sync_account_control.ts",
-    "people_page/sync_browser_proxy.js",
+    "people_page/sync_browser_proxy.ts",
     "people_page/sync_controls.ts",
     "people_page/sync_encryption_options.ts",
     "people_page/sync_page.ts",
@@ -620,11 +629,13 @@ ts_library("build_ts") {
     "privacy_page/privacy_page_browser_proxy.ts",
     "privacy_page/privacy_page.ts",
     "privacy_page/privacy_review/privacy_review_clear_on_exit_fragment.ts",
+    "privacy_page/privacy_review/privacy_review_cookies_fragment.ts",
     "privacy_page/privacy_review/privacy_review_description_item.ts",
     "privacy_page/privacy_review/privacy_review_fragment_shared_css.ts",
     "privacy_page/privacy_review/privacy_review_history_sync_fragment.ts",
     "privacy_page/privacy_review/privacy_review_msbb_fragment.ts",
     "privacy_page/privacy_review/privacy_review_page.ts",
+    "privacy_page/privacy_review/privacy_review_safe_browsing_fragment.ts",
     "privacy_page/privacy_review/privacy_review_welcome_fragment.ts",
     "privacy_page/privacy_review/step_indicator.ts",
     "privacy_page/privacy_review_promo.ts",
@@ -721,11 +732,16 @@ ts_library("build_ts") {
     ]
   }
 
-  if (is_chromeos_ash) {
+  if (is_chromeos_ash || is_chromeos_lacros) {
     in_files += [
       "autofill_page/blocking_request_manager.ts",
       "controls/password_prompt_dialog.ts",
-      "people_page/account_manager_browser_proxy.js",
+    ]
+  }
+
+  if (is_chromeos_ash) {
+    in_files += [
+      "people_page/account_manager_browser_proxy.ts",
       "site_settings/android_info_browser_proxy.ts",
     ]
   } else {
@@ -733,6 +749,8 @@ ts_library("build_ts") {
       in_files += [
         "default_browser_page/default_browser_browser_proxy.ts",
         "default_browser_page/default_browser_page.ts",
+        "people_page/import_data_browser_proxy.ts",
+        "people_page/import_data_dialog.ts",
         "system_page/system_page_browser_proxy.ts",
         "system_page/system_page.ts",
       ]
@@ -745,8 +763,6 @@ ts_library("build_ts") {
       "languages_page/languages_settings_metrics_proxy.ts",
       "languages_page/languages_subpage.ts",
       "languages_page/languages_types.ts",
-      "people_page/import_data_browser_proxy.ts",
-      "people_page/import_data_dialog.ts",
       "people_page/manage_profile_browser_proxy.ts",
       "people_page/manage_profile.ts",
     ]
@@ -777,7 +793,7 @@ ts_library("build_ts") {
     "//tools/typescript/definitions/runtime.d.ts",
     "//tools/typescript/definitions/settings_private.d.ts",
   ]
-  if (is_chromeos_ash) {
+  if (is_chromeos_ash || is_chromeos_lacros) {
     definitions +=
         [ "//tools/typescript/definitions/quick_unlock_private.d.ts" ]
   }

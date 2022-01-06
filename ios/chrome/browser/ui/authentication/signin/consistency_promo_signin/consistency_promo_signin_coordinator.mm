@@ -5,10 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_promo_signin_coordinator.h"
 
 #import "base/mac/foundation_util.h"
-#import "base/metrics/histogram_functions.h"
-#import "base/metrics/histogram_macros.h"
 #import "components/prefs/pref_service.h"
-#import "components/signin/public/base/account_consistency_method.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
@@ -52,10 +49,6 @@
 // Navigation controller for the consistency promo.
 @property(nonatomic, strong)
     ConsistencySheetNavigationController* navigationController;
-// Interaction transition to swipe from left to right to pop a view controller
-// from |self.navigationController|.
-@property(nonatomic, strong)
-    UIPercentDrivenInteractiveTransition* interactionTransition;
 // Coordinator for the first screen.
 @property(nonatomic, strong)
     ConsistencyDefaultAccountCoordinator* defaultAccountCoordinator;
@@ -79,11 +72,6 @@
   // Observer for changes to the user's Google identities.
   std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserverBridge;
-}
-
-// Returns the number of times the web sign-in has been displayed.
-+ (int)displayCountWithPrefService:(PrefService*)prefService {
-  return prefService->GetInteger(prefs::kSigninBottomSheetShownCount);
 }
 
 #pragma mark - SigninCoordinator
@@ -126,12 +114,6 @@
   self.navigationController = [[ConsistencySheetNavigationController alloc]
       initWithRootViewController:self.defaultAccountCoordinator.viewController];
   self.navigationController.delegate = self;
-  UIScreenEdgePanGestureRecognizer* edgeSwipeGesture =
-      [[UIScreenEdgePanGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector(swipeAction:)];
-  edgeSwipeGesture.edges = UIRectEdgeLeft;
-  [self.navigationController.view addGestureRecognizer:edgeSwipeGesture];
   self.navigationController.modalPresentationStyle = UIModalPresentationCustom;
   self.navigationController.transitioningDelegate = self;
   [self.baseViewController presentViewController:self.navigationController
@@ -139,11 +121,6 @@
                                       completion:nil];
   RecordConsistencyPromoUserAction(
       signin_metrics::AccountConsistencyPromoAction::SHOWN);
-  PrefService* prefService = browserState->GetPrefs();
-  int displayCount = [self.class displayCountWithPrefService:prefService] + 1;
-  prefService->SetInteger(prefs::kSigninBottomSheetShownCount, displayCount);
-  base::UmaHistogramExactLinear(kSigninAccountConsistencyPromoActionShownCount,
-                                displayCount, 100);
 }
 
 - (void)stop {
@@ -179,9 +156,6 @@
   switch (signinResult) {
     case SigninCoordinatorResultSuccess: {
       PrefService* prefService = self.browser->GetBrowserState()->GetPrefs();
-      int displayCount = [self.class displayCountWithPrefService:prefService];
-      base::UmaHistogramExactLinear(
-          kSigninAccountConsistencyPromoActionSignedInCount, displayCount, 100);
       // Reset dismissal count.
       prefService->SetInteger(prefs::kSigninWebSignDismissalCount, 0);
       break;
@@ -319,44 +293,6 @@
       signin_metrics::AccountConsistencyPromoAction::ADD_ACCOUNT_COMPLETED);
   [self.addAccountCoordinator stop];
   self.addAccountCoordinator = nil;
-}
-
-#pragma mark - SwipeGesture
-
-// Called when the swipe gesture is active. This method controls the sliding
-// between two view controls in |self.navigationController|.
-- (void)swipeAction:(UIScreenEdgePanGestureRecognizer*)gestureRecognizer {
-  if (!gestureRecognizer.view) {
-    self.interactionTransition = nil;
-    return;
-  }
-  UIView* view = gestureRecognizer.view;
-  CGFloat percentage =
-      [gestureRecognizer translationInView:view].x / view.bounds.size.width;
-  switch (gestureRecognizer.state) {
-    case UIGestureRecognizerStateBegan:
-      self.interactionTransition =
-          [[UIPercentDrivenInteractiveTransition alloc] init];
-      [self.navigationController popViewControllerAnimated:YES];
-      [self.interactionTransition updateInteractiveTransition:percentage];
-      break;
-    case UIGestureRecognizerStateChanged:
-      [self.interactionTransition updateInteractiveTransition:percentage];
-      break;
-    case UIGestureRecognizerStateEnded:
-      if (percentage > .5 &&
-          gestureRecognizer.state != UIGestureRecognizerStateCancelled) {
-        [self.interactionTransition finishInteractiveTransition];
-      } else {
-        [self.interactionTransition cancelInteractiveTransition];
-      }
-      self.interactionTransition = nil;
-      break;
-    case UIGestureRecognizerStatePossible:
-    case UIGestureRecognizerStateCancelled:
-    case UIGestureRecognizerStateFailed:
-      break;
-  }
 }
 
 - (void)signinWithIdentity:(ChromeIdentity*)identity {
@@ -534,7 +470,7 @@
                                (UINavigationController*)navigationController
     interactionControllerForAnimationController:
         (id<UIViewControllerAnimatedTransitioning>)animationController {
-  return self.interactionTransition;
+  return self.navigationController.interactionTransition;
 }
 
 - (void)navigationController:(UINavigationController*)navigationController

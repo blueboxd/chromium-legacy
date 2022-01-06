@@ -137,7 +137,7 @@ html.breadcrumb-elider-expanded #directory-tree {
 }
 
 #directory-tree[files-ng] .tree-item[section-start]::before {
-  border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
+  border-bottom: 1px solid var(--cros-separator-color);
   content: '';
   display: block;
   margin: 8px 0;
@@ -156,7 +156,7 @@ html.breadcrumb-elider-expanded #directory-tree {
   border-inline-start-width: 0 !important;
   border-radius: 0 20px 20px 0;
   box-sizing: border-box;
-  color: var(--google-grey-700);
+  color: var(--cros-text-color-primary);
   display: flex;
   height: 32px;
   margin-inline-end: 6px;
@@ -193,7 +193,7 @@ html[dir='rtl'] #directory-tree .tree-row > .file-row {
 #directory-tree .tree-row > .file-row > .item-icon {
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
-  background-color: currentColor;
+  background-color: var(--cros-icon-color-primary);
   background-image: none;
   flex: none;
   height: 20px;
@@ -201,6 +201,10 @@ html[dir='rtl'] #directory-tree .tree-row > .file-row {
   position: relative;
   right: -4px;
   width: 20px;
+}
+
+#directory-tree .tree-row[active] > .file-row > .item-icon {
+  background-color: var(--cros-icon-color-selection);
 }
 
 #directory-tree .tree-row > .file-row > .item-icon[style*='background-image'] {
@@ -270,12 +274,12 @@ html[dir='rtl'] #directory-tree .tree-row > .file-row {
 
 html:not(.col-resize) #directory-tree
     .tree-row:not([active]):not([selected]):hover > .file-row {
-  background-color: var(--google-grey-100);
+  background-color: var(--cros-ripple-color);
 }
 
 html.pointer-active #directory-tree
     .tree-row:not([active]):not([selected]) > .file-row:active {
-  background-color: var(--google-grey-100);
+  background-color: var(--cros-ripple-color);
 }
 
 html.pointer-active #directory-tree
@@ -292,16 +296,16 @@ html.drag-drop-active #directory-tree .tree-item.denies > .tree-row > .file-row 
 }
 
 html.drag-drop-active #directory-tree .tree-item.accepts > .tree-row > .file-row {
-  background-color: var(--google-grey-100);
+  background-color: var(--cros-ripple-color);
 }
 
 html.focus-outline-visible #directory-tree:focus .tree-row[selected] > .file-row {
-  border: 1px solid var(--google-blue-600);
+  border: 1px solid var(--cros-focus-ring-color);
 }
 
 #directory-tree .tree-row[active] > .file-row {
-  background-color: var(--google-blue-50);
-  color: var(--google-blue-600);
+  background-color: var(--cros-highlight-color);
+  color: var(--cros-text-color-selection);
 }
 
 #directory-tree .tree-row > .align-right-icon {
@@ -459,7 +463,6 @@ body.files-ng div.splitter.splitter-active .splitter-button .icon {
 /* Breadcrumbs and things under the title but above the list view. */
 .dialog-header {
   align-items: center;
-  background: rgb(51, 103, 214);
   box-sizing: border-box;
   color: white;
   display: flex;
@@ -471,21 +474,20 @@ body.files-ng div.splitter.splitter-active .splitter-button .icon {
 
 .dialog-header.files-ng {
   background: none;
-  border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
-  color: var(--google-grey-700);
+  border-bottom: 1px solid var(--cros-separator-color);
+  color: var(--cros-text-color-secondary);
   font-size: 14px;
   height: 56px;
   overflow: hidden;
 }
 
 body.check-select .dialog-header {
-  background: white;
-  border-bottom: 1px solid rgb(219, 219, 219);
+  border-bottom: 1px solid var(--cros-separator-color);
   border-top: 1px solid transparent;
 }
 
 body.check-select .dialog-header.files-ng {
-  color: var(--google-blue-600);
+  color: var(--cros-text-color-prominent);
 }
 
 /* Display a grey border during check-select mode if we're in a dialog. (This
@@ -515,12 +517,14 @@ body[type='open-multi-file'].check-select .dialog-header {
 
 .dialog-header.files-ng cr-button,
 .dialog-header.files-ng button {
-  --hover-bg-color: rgba(0, 0, 0, 4%);
-  --ink-color: rgba(0, 0, 0, 88%);
+  --active-bg: var(--cros-ripple-color);
+  --hover-bg-color: var(--cros-ripple-color);
+  --ink-color: var(--cros-ripple-color);
+  --ripple-opacity: 100%;
   --text-color: currentColor;
   border: 1px solid transparent;
   border-radius: 18px;
-  color: var(--google-grey-700);
+  color: var(--cros-text-color-primary);
   height: 36px;
   margin: 0 6px;
   min-width: 36px;
@@ -538,12 +542,14 @@ html.pointer-active .dialog-header.files-ng cr-button:not(:active):hover {
   width: 48px;
 }
 
-.dialog-header.files-ng *[menu-shown] {
-  background-color: rgba(0, 0, 0, 12%);
+.dialog-header.files-ng button[menu-shown] {
+  background: linear-gradient(var(--cros-ripple-color),
+                              var(--cros-ripple-color)),
+              var(--cros-ripple-color);
 }
 
 .dialog-header.files-ng button:not([menu-shown]):not(:active):hover {
-  background-color: rgba(0, 0, 0, 4%);
+  background-color: var(--cros-ripple-color);
 }
 
 html.pointer-active .dialog-header.files-ng button:not([menu-shown]):not(:active):hover {
@@ -552,12 +558,14 @@ html.pointer-active .dialog-header.files-ng button:not([menu-shown]):not(:active
 }
 
 .dialog-header.files-ng button:active {
-  background-color: rgba(0, 0, 0, 12%);
+  background: linear-gradient(var(--cros-ripple-color),
+                              var(--cros-ripple-color)),
+              var(--cros-ripple-color);
 }
 
 html.focus-outline-visible .dialog-header.files-ng cr-button:not(:active):focus,
 html.focus-outline-visible .dialog-header.files-ng button:not(:active):focus {
-  border: 1px solid var(--google-blue-600);
+  border: 1px solid var(--cros-focus-ring-color);
 }
 
 .dialog-header.files-ng files-ripple,
@@ -567,7 +575,7 @@ html.focus-outline-visible .dialog-header.files-ng button:not(:active):focus {
 
 body.check-select button,
 body.check-select button:hover {
-  color: rgb(90, 90, 90);
+  color: var(--cros-text-color-primary);
 }
 
 .dialog-header .icon-button > paper-ripple,
@@ -576,14 +584,14 @@ body.check-select button:hover {
 }
 
 body.check-select .dialog-header button paper-ripple {
-  color: rgb(90, 90, 90);
+  color: var(--cros-text-color-primary);
 }
 
 /** Avoid highlighting if element doesn't have focus by tab (tabindex=-1)
  *  or if focusing during mouse click event ":active" pseudo-selector. */
 html.focus-outline-visible.files-ng .dialog-header
     .menu-button:focus:not([tabindex='-1']):not(:active) {
-  background-color: rgba(255, 255, 255, 20%);
+  background-color: transparent;
 }
 
 body.check-select .dialog-header
@@ -677,7 +685,7 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
 .dialog-header.files-ng #search-wrapper.has-cursor,
 .dialog-header.files-ng #search-wrapper.has-text,
 .dialog-header.files-ng #search-wrapper.hide-pending {
-  background-color: var(--google-grey-100);
+  background-color: var(--cros-textfield-background-color);
   margin-inline-end: 16px;
 }
 
@@ -931,7 +939,7 @@ body.check-select #files-selected-label {
 }
 
 #cancel-selection-button {
-  --ink-color: currentColor;
+  --ink-color: var(--cros-ripple-color);
   border: none;
   box-shadow: none;
   color: currentColor;
@@ -947,7 +955,7 @@ body.files-ng #cancel-selection-button {
 }
 
 html.focus-outline-visible body.files-ng #cancel-selection-button:focus:not([tabindex='-1']):not(:active) {
-  border: 1px solid var(--google-blue-600);
+  border: 1px solid var(--cros-icon-color-prominent);
 }
 
 body.files-ng #cancel-selection-button > span#cancel-selection-label {
@@ -958,7 +966,7 @@ body.files-ng #cancel-selection-button .icon-arrow-back {
   -webkit-mask-image: url(../images/files/ui/list_check.svg);
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
-  background-color: var(--google-blue-600);
+  background-color: var(--cros-icon-color-prominent);
   flex: none;
   height: 20px;
   width: 20px;
@@ -999,9 +1007,9 @@ body.check-select #search-button {
 
 .dialog-header.files-ng #search-box cr-input {
   --cr-input-border-bottom: transparent;
-  --cr-input-color: var(--google-grey-800);
+  --cr-input-color: var(--cros-text-color-primary);
   --cr-input-focus-color: transparent;
-  --cr-input-placeholder-color: rgba(0, 0, 0, 50%);
+  --cr-input-placeholder-color: var(--cros-text-color-secondary);
 }
 
 .dialog-header.files-ng #search-box cr-input::part(input) {
@@ -1408,7 +1416,7 @@ html[dir='rtl'] .breadcrumbs .separator {
 }
 
 body.files-ng #read-only-indicator {
-  background-color: var(--google-grey-100);
+  background-color: var(--cros-highlight-color-hover);
   margin-inline-start: 12px;
   padding-inline-end: 16px;
   padding-inline-start: 12px;
@@ -1420,6 +1428,7 @@ body.check-select #read-only-indicator {
 
 .dialog-header.files-ng #read-only-icon {
   -webkit-mask-image: url(../images/files/ui/visibility_ng.svg);
+  background-color: var(--cros-icon-color-secondary);
   height: 20px;
   margin-inline-end: 8px;
   width: 20px;
@@ -2341,10 +2350,9 @@ body.files-ng #drag-container {
 }
 
 body.files-ng #drag-container .drag-box {
-  background-color: white;
+  background-color: var(--cros-bg-color-elevation-2);
   border-radius: 2px;
-  box-shadow: 0 1px 2px 0 rgba(var(--google-grey-800-rgb), 30%),
-              0 2px 6px 2px rgba(var(--google-grey-800-rgb), 15%);
+  box-shadow: var(--cros-elevation-2-shadow);
   box-sizing: border-box;
   height: 40px;
   position: absolute;
@@ -2373,11 +2381,11 @@ body.files-ng #drag-container .detail-icon {
 }
 
 body.files-ng #drag-container .detail-icon[file-type-icon] {
-  color: var(--google-grey-700);
+  color: var(--cros-icon-color-primary);
 }
 
 body.files-ng #drag-container .label {
-  color: var(--google-grey-900);
+  color: var(--cros-text-color-primary);
   overflow: hidden;
   padding: 0 10px;
   text-overflow: ellipsis;
@@ -2385,9 +2393,9 @@ body.files-ng #drag-container .label {
 }
 
 body.files-ng #drag-container .drag-bubble {
-  background-color: var(--google-blue-600);
+  background-color: var(--cros-icon-color-prominent);
   border-radius: 12px;
-  color: white;
+  color: var(--cros-bg-color);
   font-size: 14px;
   font-weight: 700;
   height: 24px;
@@ -2963,8 +2971,7 @@ files-tooltip:not(:defined) {
 
 #banners > *:not([hidden]) {
   border-radius: 8px;
-  box-shadow: 0 1px 2px 0 rgba(var(--google-grey-800-rgb), 0.3),
-              0 1px 3px 1px rgba(var(--google-grey-800-rgb), 0.15);
+  box-shadow: var(--cros-elevation-1-shadow);
   height: auto;
   margin-bottom: 4px;
   margin-inline-end: 16px;

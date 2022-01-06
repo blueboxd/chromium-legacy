@@ -40,6 +40,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.modules.image_editor.ImageEditorModuleProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -138,6 +140,15 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
                 } else {
                     mBottomSheet.getContentView().removeOnLayoutChangeListener(
                             ShareSheetCoordinator.this::onLayoutChange);
+                }
+            }
+
+            @Override
+            public void onSheetStateChanged(@SheetState int state, @StateChangeReason int reason) {
+                if (state == SheetState.HIDDEN) {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "Sharing.SharingHubAndroid.CloseReason", reason,
+                            StateChangeReason.MAX_VALUE + 1);
                 }
             }
         };
@@ -411,6 +422,11 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         List<String> availableActivities = new ArrayList<String>();
         Map<String, ResolveInfo> resolveInfos = new HashMap<String, ResolveInfo>();
 
+        // The system can return ResolveInfos which refer to activities exported
+        // by Chrome - especially the Print activity. We don't want to offer
+        // these as "third party" targets, so filter them out.
+        availableResolveInfos = filterOutOwnResolveInfos(availableResolveInfos);
+
         // Sort the resolve infos by package name: on the backend, we store them by activity name,
         // but there's no particular reason activity names would be unique, and when we get them
         // from the system they're in arbitrary order. Here we sort them by package name (which *is*
@@ -439,11 +455,29 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         });
     }
 
+    // Returns a new list of ResovleInfos containing only the elements of the
+    // supplied list which are not references to activities from the current
+    // package.
+    private List<ResolveInfo> filterOutOwnResolveInfos(List<ResolveInfo> infos) {
+        String currentPackageName = ContextUtils.getApplicationContext().getPackageName();
+        List<ResolveInfo> remaining = new ArrayList<ResolveInfo>();
+        for (ResolveInfo info : infos) {
+            if (!info.activityInfo.packageName.equals(currentPackageName)) {
+                remaining.add(info);
+            }
+        }
+        return remaining;
+    }
+
     private int numberOf3PTilesToShow(Activity activity) {
         final boolean shouldFixMore =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_USAGE_RANKING_FIXED_MORE);
 
-        if (!shouldFixMore) return ShareSheetPropertyModelBuilder.MAX_NUM_APPS;
+        if (!shouldFixMore) {
+            // + 1 to allow for the More item, which takes up an app slot in
+            // the share ranking backend.
+            return ShareSheetPropertyModelBuilder.MAX_NUM_APPS + 1;
+        }
 
         int screenWidth =
                 ContextUtils.getApplicationContext().getResources().getDisplayMetrics().widthPixels;

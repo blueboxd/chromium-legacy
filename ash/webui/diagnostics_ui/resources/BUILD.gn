@@ -120,7 +120,10 @@ js_library("diagnostics_app") {
 }
 
 js_library("diagnostics_browser_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
+  deps = [
+    ":diagnostics_types",
+    "//ui/webui/resources/js:cr.m",
+  ]
 }
 
 js_library("diagnostics_card") {
@@ -299,10 +302,12 @@ js_library("network_info") {
 js_library("network_list") {
   deps = [
     ":connectivity_card",
+    ":diagnostics_browser_proxy",
     ":diagnostics_types",
     ":mojo_interface_provider",
     ":network_card",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 

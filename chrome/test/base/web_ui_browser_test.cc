@@ -48,13 +48,9 @@
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/filename_util.h"
-#include "printing/buildflags/buildflags.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/browser/printing/print_preview_dialog_controller.h"
-#endif
 
 using content::RenderFrameHost;
 using content::WebContents;
@@ -405,32 +401,6 @@ class PrintContentBrowserClient : public ChromeContentBrowserClient {
 };
 #endif
 
-void BaseWebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), browse_to));
-
-  PrintContentBrowserClient new_client(
-      this, preload_test_fixture_, preload_test_name_);
-  content::ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&new_client);
-
-  chrome::Print(browser());
-  new_client.Wait();
-
-  SetBrowserClientForTesting(old_client);
-
-  printing::PrintPreviewDialogController* tab_controller =
-      printing::PrintPreviewDialogController::GetInstance();
-  ASSERT_TRUE(tab_controller);
-  WebContents* preview_dialog = tab_controller->GetPrintPreviewForContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_TRUE(preview_dialog);
-  SetWebUIInstance(preview_dialog->GetWebUI());
-#else
-  NOTREACHED();
-#endif
-}
-
 BaseWebUIBrowserTest::BaseWebUIBrowserTest() = default;
 
 void BaseWebUIBrowserTest::set_preload_test_fixture(
@@ -530,6 +500,12 @@ void BaseWebUIBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
 
 void BaseWebUIBrowserTest::SetUpOnMainThread() {
   JavaScriptBrowserTest::SetUpOnMainThread();
+
+  base::FilePath pak_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &pak_path));
+  pak_path = pak_path.AppendASCII("browser_tests.pak");
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      pak_path, ui::kScaleFactorNone);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDevtoolsCodeCoverage)) {

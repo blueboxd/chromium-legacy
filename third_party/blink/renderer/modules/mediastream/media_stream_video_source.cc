@@ -10,12 +10,14 @@
 #include <numeric>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/token.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
@@ -47,7 +49,15 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
 
 MediaStreamVideoSource::MediaStreamVideoSource(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : WebPlatformMediaStreamSource(std::move(task_runner)), state_(NEW) {}
+    : MediaStreamVideoSource(std::move(task_runner),
+                             /*metronome_provider=*/nullptr) {}
+
+MediaStreamVideoSource::MediaStreamVideoSource(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<MetronomeProvider> metronome_provider)
+    : WebPlatformMediaStreamSource(std::move(task_runner)),
+      state_(NEW),
+      metronome_provider_(std::move(metronome_provider)) {}
 
 MediaStreamVideoSource::~MediaStreamVideoSource() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
@@ -508,6 +518,12 @@ bool MediaStreamVideoSource::SupportsEncodedOutput() const {
   return false;
 }
 
+void MediaStreamVideoSource::Crop(
+    const base::Token& crop_id,
+    base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
+  std::move(callback).Run(media::mojom::CropRequestResult::kErrorGeneric);
+}
+
 VideoCaptureFeedbackCB MediaStreamVideoSource::GetFeedbackCallback() const {
   // Each source implementation has to implement its own feedback callbacks.
   return base::DoNothing();
@@ -516,8 +532,8 @@ VideoCaptureFeedbackCB MediaStreamVideoSource::GetFeedbackCallback() const {
 scoped_refptr<VideoTrackAdapter> MediaStreamVideoSource::GetTrackAdapter() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   if (!track_adapter_) {
-    track_adapter_ =
-        base::MakeRefCounted<VideoTrackAdapter>(io_task_runner(), GetWeakPtr());
+    track_adapter_ = base::MakeRefCounted<VideoTrackAdapter>(
+        io_task_runner(), metronome_provider_, GetWeakPtr());
   }
   return track_adapter_;
 }

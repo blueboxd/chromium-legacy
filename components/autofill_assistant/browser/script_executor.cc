@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -456,13 +456,6 @@ void ScriptExecutor::Prompt(
   }
 
   if (user_actions != nullptr) {
-    for (auto& user_action : *user_actions) {
-      if (!user_action.HasCallback())
-        continue;
-
-      user_action.AddInterceptor(base::BindOnce(
-          &ScriptExecutor::OnChosen, weak_ptr_factory_.GetWeakPtr()));
-    }
     delegate_->SetUserActions(std::move(user_actions));
   }
 }
@@ -484,14 +477,6 @@ void ScriptExecutor::SetBrowseDomainsAllowlist(
   delegate_->SetBrowseDomainsAllowlist(std::move(domains));
 }
 
-void ScriptExecutor::OnChosen(UserAction::Callback callback,
-                              std::unique_ptr<TriggerContext> context) {
-  if (context->GetDirectAction()) {
-    current_action_data_.direct_action = true;
-  }
-  std::move(callback).Run(std::move(context));
-}
-
 void ScriptExecutor::RetrieveElementFormAndFieldData(
     const Selector& selector,
     base::OnceCallback<void(const ClientStatus&,
@@ -510,10 +495,6 @@ void ScriptExecutor::SetTouchableElementArea(
     const ElementAreaProto& touchable_element_area) {
   touchable_element_area_ =
       std::make_unique<ElementAreaProto>(touchable_element_area);
-}
-
-void ScriptExecutor::SetProgress(int progress) {
-  delegate_->SetProgress(progress);
 }
 
 bool ScriptExecutor::SetProgressActiveStepIdentifier(
@@ -645,6 +626,10 @@ WebController* ScriptExecutor::GetWebController() const {
 
 std::string ScriptExecutor::GetEmailAddressForAccessTokenAccount() const {
   return delegate_->GetEmailAddressForAccessTokenAccount();
+}
+
+ukm::UkmRecorder* ScriptExecutor::GetUkmRecorder() const {
+  return delegate_->GetUkmRecorder();
 }
 
 void ScriptExecutor::SetDetails(std::unique_ptr<Details> details,
@@ -998,7 +983,6 @@ void ScriptExecutor::OnProcessedAction(
 
   auto& processed_action = processed_actions_.back();
   processed_action.set_run_time_ms(run_time.InMilliseconds());
-  processed_action.set_direct_action(current_action_data_.direct_action);
   *processed_action.mutable_navigation_info() =
       current_action_data_.navigation_info;
 
@@ -1367,6 +1351,10 @@ std::ostream& operator<<(std::ostream& out,
   result.success ? out << "succeeded. " : out << "failed. ";
   out << "at_end = " << result.at_end;
   return out;
+}
+
+ProcessedActionStatusDetailsProto& ScriptExecutor::GetLogInfo() {
+  return delegate_->GetLogInfo();
 }
 
 }  // namespace autofill_assistant

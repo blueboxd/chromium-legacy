@@ -1011,7 +1011,7 @@ void CreditCardAccessManager::FetchVirtualCard() {
 
   // Send a risk-based unmasking request to server to attempt to fetch the card.
   absl::optional<GURL> last_committed_url_origin =
-      client_->GetLastCommittedURL().GetOrigin();
+      client_->GetLastCommittedURL().DeprecatedGetOriginAsURL();
   if (!last_committed_url_origin.has_value()) {
     accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError);
     AutofillMetrics::LogServerCardUnmaskResult(
@@ -1025,8 +1025,6 @@ void CreditCardAccessManager::FetchVirtualCard() {
   virtual_card_unmask_request_details_.last_committed_url_origin =
       last_committed_url_origin;
   virtual_card_unmask_request_details_.card = *card_;
-  virtual_card_unmask_request_details_.reason =
-      AutofillClient::UnmaskCardReason::kAutofill;
   virtual_card_unmask_request_details_.billing_customer_number =
       payments::GetBillingCustomerId(personal_data_manager_);
 

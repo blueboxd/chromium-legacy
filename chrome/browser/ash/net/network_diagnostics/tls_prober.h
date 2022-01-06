@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/net/network_diagnostics/host_resolver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
@@ -18,7 +18,7 @@
 #include "services/network/public/mojom/tls_socket.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 namespace network_diagnostics {
 
 // Uses either a TCP or TLS socket to determine whether a socket connection to a
@@ -117,6 +117,6 @@ class TlsProber {
 };
 
 }  // namespace network_diagnostics
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_NET_NETWORK_DIAGNOSTICS_TLS_PROBER_H_

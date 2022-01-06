@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_background.h"
+#include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_contextual_menu.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
@@ -113,7 +114,7 @@
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
-#include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
+#include "chrome/browser/ui/dialogs/outdated_upgrade_bubble.h"
 #endif
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
@@ -258,7 +259,8 @@ void ToolbarView::Init() {
 
   std::unique_ptr<MediaToolbarButtonView> media_button;
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControls)) {
-    media_button = std::make_unique<MediaToolbarButtonView>(browser_view_);
+    media_button = std::make_unique<MediaToolbarButtonView>(
+        browser_view_, MediaToolbarButtonContextualMenu::Create(browser_));
   }
 
   std::unique_ptr<send_tab_to_self::SendTabToSelfToolbarIconView>
@@ -939,8 +941,8 @@ void ToolbarView::ShowCriticalNotification() {
 
 void ToolbarView::ShowOutdatedInstallNotification(bool auto_update_enabled) {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  OutdatedUpgradeBubbleView::ShowBubble(app_menu_button_, browser_,
-                                        auto_update_enabled);
+  // TODO(pbos): Can this move outside ToolbarView completely?
+  ShowOutdatedUpgradeBubble(browser_, auto_update_enabled);
 #endif
 }
 

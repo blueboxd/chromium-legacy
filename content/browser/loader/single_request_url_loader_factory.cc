@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -24,6 +24,9 @@ class SingleRequestURLLoaderFactory::HandlerState
   explicit HandlerState(RequestHandler handler)
       : handler_(std::move(handler)),
         handler_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+
+  HandlerState(const HandlerState&) = delete;
+  HandlerState& operator=(const HandlerState&) = delete;
 
   void HandleRequest(
       const network::ResourceRequest& resource_request,
@@ -57,8 +60,6 @@ class SingleRequestURLLoaderFactory::HandlerState
 
   RequestHandler handler_;
   const scoped_refptr<base::SequencedTaskRunner> handler_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(HandlerState);
 };
 
 class SingleRequestURLLoaderFactory::PendingFactory

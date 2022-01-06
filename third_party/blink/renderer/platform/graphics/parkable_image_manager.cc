@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/parkable_image_manager.h"
 
 #include "base/metrics/histogram_functions.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/renderer/platform/graphics/parkable_image.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -255,10 +255,10 @@ void ParkableImageManager::MaybeParkImages() {
   // synchronously, which calls back into the manager.
   lock_.unlock();
 
-  bool unfrozen_images = false;
+  bool should_reschedule = false;
   for (auto* image : unparked_images) {
-    if (!image->is_frozen())
-      unfrozen_images = true;
+    if (image->ShouldReschedule())
+      should_reschedule = true;
     image->MaybePark();
   }
 
@@ -266,7 +266,7 @@ void ParkableImageManager::MaybeParkImages() {
 
   has_pending_parking_task_ = false;
 
-  if (unfrozen_images)
+  if (should_reschedule)
     ScheduleDelayedParkingTaskIfNeeded();
 }
 

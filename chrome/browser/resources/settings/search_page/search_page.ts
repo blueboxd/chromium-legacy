@@ -30,7 +30,6 @@ import {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, 
 
 const SettingsSearchPageElementBase = BaseMixin(I18nMixin(PolymerElement));
 
-/** @polymer */
 export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
   static get is() {
     return 'settings-search-page';
@@ -72,6 +71,7 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
     };
   }
 
+  prefs: Object;
   searchEnginesPageTitle_: String;
   private isActiveSearchEnginesFlagEnabled_: boolean;
   private searchEngines_: Array<SearchEngine>;
@@ -80,7 +80,6 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
   private browserProxy_: SearchEnginesBrowserProxy =
       SearchEnginesBrowserProxyImpl.getInstance();
 
-  /** @override */
   ready() {
     super.ready();
 
@@ -131,6 +130,12 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
     return this.isActiveSearchEnginesFlagEnabled_ ?
         this.i18n('searchEnginesManageSiteSearch') :
         this.i18n('searchEnginesManage');
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-search-page': SettingsSearchPageElement;
   }
 }
 

@@ -10,6 +10,7 @@
 #include "ui/message_center/views/notification_input_container.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/message_center/views/notification_view_base.h"
+#include "ui/views/metadata/view_factory.h"
 
 namespace message_center {
 class Notification;
@@ -17,13 +18,14 @@ class Notification;
 
 namespace views {
 class BoxLayout;
-class ImageView;
 class LabelButton;
+class View;
 }  // namespace views
 
 namespace ash {
 
 class RoundedImageView;
+class AshNotificationExpandButton;
 
 // Customized NotificationView for notification on ChromeOS. This view is used
 // to displays all current types of notification on ChromeOS (web, basic, image,
@@ -37,12 +39,6 @@ class ASH_EXPORT AshNotificationView
   AshNotificationView(const AshNotificationView&) = delete;
   AshNotificationView& operator=(const AshNotificationView&) = delete;
   ~AshNotificationView() override;
-
-  // Create a view containing the title and message for the notification in a
-  // single line. This is used when a grouped child notification is in a
-  // collapsed parent notification.
-  std::unique_ptr<views::View> CreateCollapsedSummaryView(
-      const message_center::Notification& notification);
 
   // Update the expanded state for grouped child notification.
   void SetGroupedChildExpanded(bool expanded);
@@ -62,12 +58,17 @@ class ASH_EXPORT AshNotificationView
   void UpdateViewForExpandedState(bool expanded) override;
   void UpdateWithNotification(
       const message_center::Notification& notification) override;
+  void CreateOrUpdateHeaderView(
+      const message_center::Notification& notification) override;
   void CreateOrUpdateTitleView(
       const message_center::Notification& notification) override;
   void CreateOrUpdateSmallIconView(
       const message_center::Notification& notification) override;
+  void CreateOrUpdateInlineSettingsViews(
+      const message_center::Notification& notification) override;
   bool IsIconViewShown() const override;
   void SetExpandButtonEnabled(bool enabled) override;
+  bool IsExpandable() const override;
   void UpdateCornerRadius(int top_radius, int bottom_radius) override;
   void SetDrawBackgroundAsActive(bool active) override;
   void OnThemeChanged() override;
@@ -91,9 +92,6 @@ class ASH_EXPORT AshNotificationView
     NotificationTitleRow(const NotificationTitleRow&) = delete;
     NotificationTitleRow& operator=(const NotificationTitleRow&) = delete;
     ~NotificationTitleRow() override;
-
-    // Changed the expand state. Title view size will change based on the state.
-    void SetExpanded(bool expanded);
 
     // Update title view's text.
     void UpdateTitle(const std::u16string& title);
@@ -120,67 +118,41 @@ class ASH_EXPORT AshNotificationView
     absl::optional<base::Time> timestamp_;
   };
 
-  // Customized expand button for this notification view. Used for grouped as
-  // well as singular notifications.
-  class ExpandButton : public views::Button {
-   public:
-    METADATA_HEADER(ExpandButton);
-    explicit ExpandButton(PressedCallback callback);
-    ExpandButton(const ExpandButton&) = delete;
-    ExpandButton& operator=(const ExpandButton&) = delete;
-    ~ExpandButton() override;
-
-    // Change the expanded state. The icon will change.
-    void SetExpanded(bool expanded);
-
-    // Whether the label displaying the number of notifications in a grouped
-    // notification needs to be displayed.
-    bool ShouldShowLabel() const;
-
-    // Update the count of total grouped notifications in the parent view and
-    // update the text for the label accordingly.
-    void UpdateGroupedNotificationsCount(int count);
-
-    // Generate the icons used for chevron in the expanded and collapsed state.
-    void UpdateIcons();
-
-    // views::Button:
-    gfx::Size CalculatePreferredSize() const override;
-    void OnThemeChanged() override;
-
-    views::Label* label_for_test() { return label_; }
-
-   private:
-    // Owned by views hierarchy.
-    views::Label* label_;
-    views::ImageView* image_;
-
-    // Cached icons used to display the chevron in the button.
-    gfx::ImageSkia expanded_image_;
-    gfx::ImageSkia collapsed_image_;
-
-    // total number of grouped child notifications in this button's parent view.
-    int total_grouped_notifications_ = 0;
-
-    // The expand state of the button.
-    bool expanded_ = false;
-  };
+  // Update `message_in_expanded_view_` according to the given notification.
+  void UpdateMessageViewInExpandedState(
+      const message_center::Notification& notification);
 
   // Update the background color with rounded corner.
   void UpdateBackground(int top_radius, int bottom_radius);
 
+  // Get the available space for `message_view_in_expanded_state_` width.
+  int GetExpandedMessageViewWidth();
+
+  // Disable the notification of this view. Called after the turn of
+  // notifications button is clicked.
+  void DisableNotification();
+
+  // Update the color and icon for `app_icon_view_`.
+  void UpdateAppIconView();
+
   // Owned by views hierarchy.
   RoundedImageView* app_icon_view_ = nullptr;
-  ExpandButton* expand_button_ = nullptr;
+  AshNotificationExpandButton* expand_button_ = nullptr;
+  views::View* control_buttons_container_ = nullptr;
   views::View* left_content_ = nullptr;
+  views::Label* message_view_in_expanded_state_ = nullptr;
   views::View* grouped_notifications_container_ = nullptr;
   views::View* collapsed_summary_view_ = nullptr;
   views::View* control_buttons_view_ = nullptr;
   views::View* main_view_ = nullptr;
-  views::BoxLayout* const layout_manager_ = nullptr;
+  views::LabelButton* turn_off_notifications_button_ = nullptr;
+  views::LabelButton* inline_settings_cancel_button_ = nullptr;
 
   // These views below are dynamically created inside view hierarchy.
   NotificationTitleRow* title_row_ = nullptr;
+
+  // Layout manager for the container of header and left content.
+  views::BoxLayout* header_left_content_layout_ = nullptr;
 
   // Corner radius of the notification view.
   int top_radius_ = 0;

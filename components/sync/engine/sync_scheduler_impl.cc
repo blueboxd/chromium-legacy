@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/logging.h"
@@ -546,7 +546,7 @@ void SyncSchedulerImpl::AdjustPolling(PollAdjustType type) {
       TimeTicks new_poll_time = poll_interval + last_poll_reset_;
       poll_delay = new_poll_time - TimeTicks::Now();
 
-      if (poll_delay < base::TimeDelta()) {
+      if (poll_delay.is_negative()) {
         // The desired poll time was in the past, so trigger a poll now (the
         // timer will post the task asynchronously, so re-entrancy isn't an
         // issue).

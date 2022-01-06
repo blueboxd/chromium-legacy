@@ -32,6 +32,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_data.h"
@@ -3762,9 +3763,10 @@ TEST_F(LegacyDeviceStatusCollectorTest, GenerateAppInfo) {
   test_clock_.SetNow(start_time);
   // Env::CreateInstance must be called for test window.
   auto env = aura::Env::CreateInstance();
-  aura::Window* window = aura::test::CreateTestWindowWithId(/*id=*/0, nullptr);
+  std::unique_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(/*id=*/0, nullptr));
   auto instance = std::make_unique<apps::Instance>(
-      "id", apps::Instance::InstanceKey::ForWindowBasedApp(window));
+      "id", apps::Instance::InstanceKey::ForWindowBasedApp(window.get()));
   instance->UpdateState(apps::InstanceState::kStarted, start_time);
   std::vector<std::unique_ptr<apps::Instance>> deltas;
   deltas.push_back(std::move(instance));

@@ -498,8 +498,8 @@ bool LayoutFrameSet::UserResize(const MouseEvent& evt) {
             static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
       FloatPoint local_pos =
           AbsoluteToLocalFloatPoint(FloatPoint(evt.AbsoluteLocation()));
-      StartResizing(cols_, local_pos.X());
-      StartResizing(rows_, local_pos.Y());
+      StartResizing(cols_, local_pos.x());
+      StartResizing(rows_, local_pos.y());
       if (cols_.split_being_resized_ != kNoSplit ||
           rows_.split_being_resized_ != kNoSplit) {
         SetIsResizing(true);
@@ -513,8 +513,8 @@ bool LayoutFrameSet::UserResize(const MouseEvent& evt) {
              static_cast<int16_t>(WebPointerProperties::Button::kLeft))) {
       FloatPoint local_pos =
           AbsoluteToLocalFloatPoint(FloatPoint(evt.AbsoluteLocation()));
-      ContinueResizing(cols_, local_pos.X());
-      ContinueResizing(rows_, local_pos.Y());
+      ContinueResizing(cols_, local_pos.x());
+      ContinueResizing(rows_, local_pos.y());
       if (evt.type() == event_type_names::kMouseup &&
           evt.button() ==
               static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
@@ -536,15 +536,15 @@ void LayoutFrameSet::SetIsResizing(bool is_resizing) {
   }
 }
 
-bool LayoutFrameSet::CanResizeRow(const IntPoint& p) const {
+bool LayoutFrameSet::CanResizeRow(const gfx::Point& p) const {
   NOT_DESTROYED();
-  int r = HitTestSplit(rows_, p.Y());
+  int r = HitTestSplit(rows_, p.y());
   return r != kNoSplit && !rows_.prevent_resize_[r];
 }
 
-bool LayoutFrameSet::CanResizeColumn(const IntPoint& p) const {
+bool LayoutFrameSet::CanResizeColumn(const gfx::Point& p) const {
   NOT_DESTROYED();
-  int c = HitTestSplit(cols_, p.X());
+  int c = HitTestSplit(cols_, p.x());
   return c != kNoSplit && !cols_.prevent_resize_[c];
 }
 
@@ -597,7 +597,7 @@ bool LayoutFrameSet::IsChildAllowed(LayoutObject* child,
 CursorDirective LayoutFrameSet::GetCursor(const PhysicalOffset& point,
                                           ui::Cursor& cursor) const {
   NOT_DESTROYED();
-  IntPoint rounded_point = RoundedIntPoint(point);
+  gfx::Point rounded_point = ToRoundedPoint(point);
   if (CanResizeRow(rounded_point)) {
     cursor = RowResizeCursor();
     return kSetCursor;

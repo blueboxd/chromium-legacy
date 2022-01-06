@@ -63,7 +63,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialDescriptor {
   base::flat_set<FidoTransportProtocol> transports_;
 };
 
-COMPONENT_EXPORT(DEVICE_FIDO)
 cbor::Value AsCBOR(const PublicKeyCredentialDescriptor&);
 
 }  // namespace device

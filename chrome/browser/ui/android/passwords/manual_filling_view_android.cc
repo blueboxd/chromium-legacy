@@ -183,7 +183,7 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
         Java_ManualFillingComponentBridge_addUserInfoToAccessorySheetData(
             env, java_object_internal_, j_tab_data,
             ConvertUTF8ToJavaString(env, user_info.origin()),
-            user_info.is_psl_match().value(),
+            user_info.is_exact_match().value(),
             url::GURLAndroid::FromNativeGURL(env, user_info.icon_url()));
     for (const AccessorySheetField& field : user_info.fields()) {
       Java_ManualFillingComponentBridge_addFieldToUserInfo(
@@ -262,7 +262,7 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
 
-  url::Origin origin = url::Origin::Create(web_contents->GetLastCommittedURL());
+  url::Origin origin = web_contents->GetMainFrame()->GetLastCommittedOrigin();
   std::vector<std::string> usernames;
   std::vector<std::string> passwords;
   base::android::AppendJavaStringArrayToStringVector(env, j_usernames,

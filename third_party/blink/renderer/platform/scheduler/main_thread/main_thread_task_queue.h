@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/time_domain.h"
+#include "base/task/single_thread_task_runner.h"
 #include "net/base/request_priority.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
@@ -424,6 +424,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   void OnTaskCompleted(const base::sequence_manager::Task& task,
                        TaskQueue::TaskTiming* task_timing,
                        base::sequence_manager::LazyNow* lazy_now);
+
+  void LogTaskExecution(perfetto::EventContext& ctx,
+                        const base::sequence_manager::Task& task);
 
   void SetOnIPCTaskPosted(
       base::RepeatingCallback<void(const base::sequence_manager::Task&)>

@@ -709,13 +709,20 @@ void DragDropController::PerformDrop(
     aura::client::DragDropDelegate::DropCallback drop_cb,
     std::unique_ptr<TabDragDropDelegate> tab_drag_drop_delegate,
     base::ScopedClosureRunner drag_cancel) {
+  // Event copy constructor dooesn't copy the target. That's why we set it here.
+  // DragDropController observes the `drag_window_`, so if it's destroyed, the
+  // target will be set to nullptr.
+  ui::Event::DispatcherApi(&event).set_target(drag_window_);
+
   ui::OSExchangeData copied_data(drag_data->provider().Clone());
   if (drop_cb)
     std::move(drop_cb).Run(event, std::move(drag_data), operation_);
 
   if (operation_ == DragOperation::kNone && tab_drag_drop_delegate) {
     DCHECK(drag_image_widget_);
-    tab_drag_drop_delegate->Drop(drop_location_in_screen, copied_data);
+    // Release the ownership of object so that it can delete itself.
+    tab_drag_drop_delegate.release()->DropAndDeleteSelf(drop_location_in_screen,
+                                                        copied_data);
     // Override the drag event's drop effect as a move to inform the front-end
     // that the tab or group was moved. Otherwise, the WebUI tab strip does
     // not know that a drop resulted in a tab being moved and will temporarily

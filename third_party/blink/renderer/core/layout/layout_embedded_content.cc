@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
-#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/embedded_content_painter.h"
@@ -274,7 +273,6 @@ void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
 void LayoutEmbeddedContent::UpdateLayout() {
   NOT_DESTROYED();
   DCHECK(NeedsLayout());
-  LayoutAnalyzer::Scope analyzer(*this);
   UpdateAfterLayout();
   ClearNeedsLayout();
 }
@@ -363,8 +361,8 @@ void LayoutEmbeddedContent::UpdateGeometry(
   absolute_replaced_rect.Move(absolute_location);
   FloatRect absolute_bounding_box =
       transform_state.LastPlanarQuad().BoundingBox();
-  IntRect frame_rect(IntPoint(),
-                     PixelSnappedIntRect(absolute_replaced_rect).Size());
+  IntRect frame_rect(gfx::Point(),
+                     PixelSnappedIntRect(absolute_replaced_rect).size());
   // Normally the location of the frame rect is ignored by the painter, but
   // currently it is still used by a family of coordinate conversion function in
   // LocalFrameView. This is incorrect because coordinate conversion
@@ -374,7 +372,7 @@ void LayoutEmbeddedContent::UpdateGeometry(
   // RemoteFrameView::frameRectsChanged().
   // WebPluginContainerImpl::reportGeometry()
   // TODO(trchen): Remove this hack once we fixed all callers.
-  frame_rect.SetLocation(RoundedIntPoint(absolute_bounding_box.Location()));
+  frame_rect.set_origin(RoundedIntPoint(absolute_bounding_box.origin()));
 
   // As an optimization, we don't include the root layer's scroll offset in the
   // frame rect.  As a result, we don't need to recalculate the frame rect every
@@ -389,7 +387,7 @@ void LayoutEmbeddedContent::UpdateGeometry(
     // which is a float-type but frame_rect in a content view is an IntRect. We
     // may want to reevaluate the use of pixel snapping that since scroll
     // offsets/layout can be fractional.
-    frame_rect.MoveBy(layout_view->PixelSnappedScrolledContentOffset());
+    frame_rect.Offset(layout_view->PixelSnappedScrolledContentOffset());
   }
 
   embedded_content_view.SetFrameRect(frame_rect);

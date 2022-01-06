@@ -470,12 +470,11 @@ void HTMLPlugInElement::DefaultEventHandler(Event& event) {
     if (embedded_object->ShowsUnavailablePluginIndicator())
       return;
   }
-  WebPluginContainerImpl* plugin = OwnedPlugin();
-  if (!plugin)
-    return;
-  plugin->HandleEvent(event);
-  if (event.DefaultHandled())
-    return;
+  if (WebPluginContainerImpl* plugin = OwnedPlugin()) {
+    plugin->HandleEvent(event);
+    if (event.DefaultHandled())
+      return;
+  }
   HTMLFrameOwnerElement::DefaultEventHandler(event);
 }
 
@@ -780,8 +779,10 @@ void HTMLPlugInElement::RemovePluginFromFrameView(
 }
 
 void HTMLPlugInElement::DidAddUserAgentShadowRoot(ShadowRoot&) {
-  UserAgentShadowRoot()->AppendChild(
-      HTMLSlotElement::CreateUserAgentDefaultSlot(GetDocument()));
+  ShadowRoot* shadow_root = UserAgentShadowRoot();
+  DCHECK(shadow_root);
+  shadow_root->AppendChild(
+      MakeGarbageCollected<HTMLSlotElement>(GetDocument()));
 }
 
 bool HTMLPlugInElement::HasFallbackContent() const {

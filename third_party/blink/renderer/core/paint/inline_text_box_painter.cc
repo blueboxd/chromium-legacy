@@ -219,7 +219,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     if (DrawingRecorder::UseCachedDrawingIfPossible(context, inline_text_box_,
                                                     paint_info.phase))
       return;
-    recorder.emplace(context, inline_text_box_, paint_info.phase, visual_rect);
+    recorder.emplace(context, inline_text_box_, paint_info.phase,
+                     ToGfxRect(visual_rect));
   }
 
   unsigned length = inline_text_box_.Len();
@@ -346,7 +347,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
         IntRect selection_visual_rect = EnclosingIntRect(selection_rect);
         if (rotation)
           selection_visual_rect = rotation->MapRect(selection_visual_rect);
-        recorder->UniteVisualRect(selection_visual_rect);
+        recorder->UniteVisualRect(ToGfxRect(selection_visual_rect));
       }
     }
   }
@@ -493,7 +494,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   }
 
   if (!font.ShouldSkipDrawing())
-    PaintTimingDetector::NotifyTextPaint(visual_rect);
+    PaintTimingDetector::NotifyTextPaint(ToGfxRect(visual_rect));
 }
 
 InlineTextBoxPainter::PaintOffsets
@@ -731,8 +732,8 @@ void InlineTextBoxPainter::PaintDocumentMarker(const PaintInfo& paint_info,
     IntRect marker_rect = EnclosingIntRect(
         font.SelectionRectForText(run, FloatPoint(start_point), sel_height,
                                   marker_offsets.start, marker_offsets.end));
-    start = marker_rect.X() - start_point.left;
-    width = LayoutUnit(marker_rect.Width());
+    start = marker_rect.x() - start_point.left;
+    width = LayoutUnit(marker_rect.width());
   }
   DocumentMarkerPainter::PaintDocumentMarker(
       paint_info, box_origin, style, marker.GetType(),

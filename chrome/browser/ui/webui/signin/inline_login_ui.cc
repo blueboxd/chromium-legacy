@@ -205,8 +205,6 @@ content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
   source->AddLocalizedStrings(kLocalizedStrings);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  source->AddBoolean("isAccountManagementFlowsV2Enabled",
-                     chromeos::features::IsAccountManagementFlowsV2Enabled());
   source->AddBoolean("shouldSkipWelcomePage",
                      profile->GetPrefs()->GetBoolean(
                          chromeos::prefs::kShouldSkipInlineLoginWelcomePage));

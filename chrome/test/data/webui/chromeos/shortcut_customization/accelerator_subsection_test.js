@@ -9,9 +9,9 @@ import {fakeAcceleratorConfig, fakeLayoutInfo} from 'chrome://shortcut-customiza
 import {AcceleratorInfo, AcceleratorKeys, AcceleratorState, AcceleratorType, Modifier} from 'chrome://shortcut-customization/shortcut_types.js';
 
 import {assertEquals} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.m.js';
+import {flushTasks} from '../../test_util.js';
 
-import {CreateDefaultAccelerator} from './shortcut_customization_test_util.js';
+import {CreateUserAccelerator} from './shortcut_customization_test_util.js';
 
 export function acceleratorSubsectionTest() {
   /** @type {?AcceleratorSubsectionElement} */
@@ -40,13 +40,13 @@ export function acceleratorSubsectionTest() {
   // implemented for a subsection.
   test('LoadsBasicSection', async () => {
     /** @type {!AcceleratorInfo} */
-    const acceleratorInfo1 = CreateDefaultAccelerator(
+    const acceleratorInfo1 = CreateUserAccelerator(
         Modifier.CONTROL | Modifier.SHIFT,
         /*key=*/ 71,
         /*key_display=*/ 'g');
 
     /** @type {!AcceleratorInfo} */
-    const acceleratorInfo2 = CreateDefaultAccelerator(
+    const acceleratorInfo2 = CreateUserAccelerator(
         Modifier.CONTROL | Modifier.SHIFT,
         /*key=*/ 67,
         /*key_display=*/ 'c');

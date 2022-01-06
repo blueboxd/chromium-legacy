@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load(
     "//absl:copts/configure_copts.bzl",
     "ABSL_DEFAULT_COPTS",
@@ -510,9 +509,9 @@ cc_library(
         ":have_sse",
         "//absl/base",
         "//absl/base:core_headers",
-        "//absl/base:exponential_biased",
         "//absl/debugging:stacktrace",
         "//absl/memory",
+        "//absl/profiling:exponential_biased",
         "//absl/profiling:sample_recorder",
         "//absl/synchronization",
         "//absl/utility",

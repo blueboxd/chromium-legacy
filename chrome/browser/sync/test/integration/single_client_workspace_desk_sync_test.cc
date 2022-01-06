@@ -24,6 +24,7 @@
 namespace {
 
 using ash::DeskTemplate;
+using ash::DeskTemplateSource;
 using desks_storage::DeskModel;
 using desks_storage::DeskSyncService;
 using sync_pb::WorkspaceDeskSpecifics;
@@ -36,7 +37,7 @@ WorkspaceDeskSpecifics CreateWorkspaceDeskSpecifics(int templateIndex,
   WorkspaceDeskSpecifics specifics;
   specifics.set_uuid(base::StringPrintf(kUuidFormat, templateIndex));
   specifics.set_name(base::StringPrintf(kNameFormat, templateIndex));
-  specifics.set_created_time_usec(
+  specifics.set_created_time_windows_epoch_micros(
       created_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   return specifics;
 }
@@ -190,7 +191,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWorkspaceDeskSyncTest,
   base::RunLoop loop;
   model->AddOrUpdateEntry(
       std::make_unique<DeskTemplate>(kTestUuid1_.AsLowercaseString(),
-                                     "template 1", AdvanceAndGetTime()),
+                                     DeskTemplateSource::kUser, "template 1",
+                                     AdvanceAndGetTime()),
       base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {
         EXPECT_EQ(DeskModel::AddOrUpdateEntryStatus::kOk, status);
         loop.Quit();

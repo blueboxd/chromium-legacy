@@ -22,9 +22,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/sequence_checker.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -859,6 +859,8 @@ void WebURLLoader::PopulateURLResponse(
     response->SetLoadTiming(ToMojoLoadTiming(head.load_timing));
   }
 
+  response->SetEmittedExtraInfo(head.emitted_extra_info);
+
   response->SetAuthChallengeInfo(head.auth_challenge_info);
   response->SetRequestIncludeCredentials(head.request_include_credentials);
 
@@ -1078,6 +1080,7 @@ net::NetworkTrafficAnnotationTag WebURLLoader::Context::GetTrafficAnnotationTag(
     case network::mojom::RequestDestination::kDocument:
     case network::mojom::RequestDestination::kIframe:
     case network::mojom::RequestDestination::kFrame:
+    case network::mojom::RequestDestination::kFencedframe:
       NOTREACHED();
       FALLTHROUGH;
 

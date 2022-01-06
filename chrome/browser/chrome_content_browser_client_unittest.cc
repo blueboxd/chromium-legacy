@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include "ash/webui/camera_app_ui/url_constants.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -29,7 +30,6 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/components/camera_app_ui/url_constants.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -566,7 +566,7 @@ TEST_F(ChromeContentSettingsRedirectTest, RedirectScanningAppURL) {
 
 TEST_F(ChromeContentSettingsRedirectTest, RedirectCameraAppURL) {
   TestChromeContentBrowserClient test_content_browser_client;
-  const GURL camera_app_url(chromeos::kChromeUICameraAppMainURL);
+  const GURL camera_app_url(ash::kChromeUICameraAppMainURL);
   GURL dest_url = camera_app_url;
   test_content_browser_client.HandleWebUI(&dest_url, &profile_);
   EXPECT_EQ(camera_app_url, dest_url);
@@ -603,7 +603,7 @@ constexpr char kEmail[] = "test@test.com";
 std::unique_ptr<KeyedService> CreateTestPolicyCertService(
     content::BrowserContext* context) {
   return policy::PolicyCertService::CreateForTesting(
-      kEmail, user_manager::UserManager::Get());
+      Profile::FromBrowserContext(context));
 }
 }  // namespace
 
@@ -644,10 +644,11 @@ class ChromeContentSettingsPolicyTrustAnchor
 
 TEST_F(ChromeContentSettingsPolicyTrustAnchor, PolicyTrustAnchor) {
   ChromeContentBrowserClient client;
-  EXPECT_FALSE(
-      policy::PolicyCertServiceFactory::UsedPolicyCertificates(kEmail));
+  EXPECT_FALSE(policy::PolicyCertServiceFactory::GetForProfile(&profile_)
+                   ->UsedPolicyCertificates());
   client.OnTrustAnchorUsed(&profile_);
-  EXPECT_TRUE(policy::PolicyCertServiceFactory::UsedPolicyCertificates(kEmail));
+  EXPECT_TRUE(policy::PolicyCertServiceFactory::GetForProfile(&profile_)
+                  ->UsedPolicyCertificates());
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

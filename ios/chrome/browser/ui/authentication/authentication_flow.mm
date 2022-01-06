@@ -363,15 +363,21 @@ enum AuthenticationState {
       << "|completeSignInWithSuccess| should not be called twice.";
   if (success) {
     bool isManagedAccount = _identityToSignInHostedDomain.length > 0;
-    signin_metrics::RecordSigninAccountType(/*is_signin_and_sync=*/false,
+    signin_metrics::RecordSigninAccountType(signin::ConsentLevel::kSignin,
                                             isManagedAccount);
     if (_shouldCommitSync)
-      signin_metrics::RecordSigninAccountType(/*is_signin_and_sync=*/true,
+      signin_metrics::RecordSigninAccountType(signin::ConsentLevel::kSync,
                                               isManagedAccount);
   }
-  if (_signInCompletion)
-    _signInCompletion(success);
-  _signInCompletion = nil;
+  if (_signInCompletion) {
+    // Make sure the completion callback is always called after
+    // -[AuthenticationFlow startSignInWithCompletion:] returns.
+    CompletionCallback signInCompletion = _signInCompletion;
+    _signInCompletion = nil;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      signInCompletion(success);
+    });
+  }
   [self continueSignin];
 }
 

@@ -64,6 +64,16 @@ Polymer({
       value: loadTimeData.getBoolean('isInputEnabled'),
     },
 
+    /**
+     * Whether a user is logged in or not.
+     * Note: A guest session is considered a logged-in state.
+     * @protected {boolean}
+     */
+    isLoggedIn_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('isLoggedIn'),
+    },
+
     /** @private {string} */
     toastText_: {
       type: String,
@@ -95,7 +105,7 @@ Polymer({
       if (this.isNetworkingEnabled_) {
         pages.push(navPanel.createSelectorItem(
             loadTimeData.getString('connectivityText'), 'network-list',
-            getNavigationIcon('ethernet'), 'connectivity'))
+            getNavigationIcon('ethernet'), 'connectivity'));
       }
 
       if (this.isInputEnabled_) {

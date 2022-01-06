@@ -102,7 +102,7 @@ class TextFieldApi extends PolymerElementApi {
   }
 }
 
-class HIDDetectionScreen extends ScreenElementApi {
+class HIDDetectionScreenTester extends ScreenElementApi {
   constructor() {
     super('hid-detection');
     this.nextButton = new PolymerElementApi(this, '#hid-continue-button');
@@ -112,9 +112,29 @@ class HIDDetectionScreen extends ScreenElementApi {
   emulateDevicesConnected() {
     chrome.send('HIDDetectionScreen.emulateDevicesConnectedForTesting');
   }
+
+  touchscreenDetected() {
+    // Touchscreen entire row is only visible when touchscreen is detected.
+    let touchscreenRow = new PolymerElementApi(this, '#hid-touchscreen-entry');
+    return touchscreenRow.isVisible();
+  }
+
+  mouseDetected() {
+    let mouseTickIcon = new PolymerElementApi(this, '#mouse-tick');
+    return mouseTickIcon.isVisible();
+  }
+
+  keyboardDetected() {
+    let keyboardTickIcon = new PolymerElementApi(this, '#keyboard-tick');
+    return keyboardTickIcon.isVisible();
+  }
+
+  canClickNext() {
+    return this.nextButton.isEnabled();
+  }
 }
 
-class WelcomeScreen extends ScreenElementApi {
+class WelcomeScreenTester extends ScreenElementApi {
   constructor() {
     super('connect');
   }
@@ -131,14 +151,14 @@ class WelcomeScreen extends ScreenElementApi {
   }
 }
 
-class NetworkScreen extends ScreenElementApi {
+class NetworkScreenTester extends ScreenElementApi {
   constructor() {
     super('network-selection');
     this.nextButton = new PolymerElementApi(this, '#nextButton');
   }
 }
 
-class EulaScreen extends ScreenElementApi {
+class EulaScreenTester extends ScreenElementApi {
   constructor() {
     super('oobe-eula-md');
     this.nextButton = new PolymerElementApi(this, '#acceptButton');
@@ -151,26 +171,26 @@ class EulaScreen extends ScreenElementApi {
   }
 }
 
-class UpdateScreen extends ScreenElementApi {
+class UpdateScreenTester extends ScreenElementApi {
   constructor() {
     super('oobe-update');
   }
 }
 
-class EnrollmentScreen extends ScreenElementApi {
+class EnrollmentScreenTester extends ScreenElementApi {
   constructor() {
     super('enterprise-enrollment');
   }
 }
 
-class UserCreationScreen extends ScreenElementApi {
+class UserCreationScreenTester extends ScreenElementApi {
   constructor() {
     super('user-creation');
     this.nextButton = new PolymerElementApi(this, '#nextButton');
   }
 }
 
-class GaiaScreen extends ScreenElementApi {
+class GaiaScreenTester extends ScreenElementApi {
   constructor() {
     super('gaia-signin');
     this.signinFrame = new PolymerElementApi(this, '#signin-frame-dialog');
@@ -188,7 +208,7 @@ class GaiaScreen extends ScreenElementApi {
   }
 }
 
-class ConfirmSamlPasswordScreen extends ScreenElementApi {
+class ConfirmSamlPasswordScreenTester extends ScreenElementApi {
   constructor() {
     super('saml-confirm-password');
     this.passwordInput = new TextFieldApi(this, '#passwordInput');
@@ -211,7 +231,7 @@ class ConfirmSamlPasswordScreen extends ScreenElementApi {
   }
 }
 
-class PinSetupScreen extends ScreenElementApi {
+class PinSetupScreenTester extends ScreenElementApi {
   constructor() {
     super('pin-setup');
     this.skipButton = new PolymerElementApi(this, '#setupSkipButton');
@@ -322,7 +342,7 @@ class EnrollmentErrorStep extends PolymerElementApi {
   }
 }
 
-class EnterpriseEnrollmentScreen extends ScreenElementApi {
+class EnterpriseEnrollmentScreenTester extends ScreenElementApi {
   constructor() {
     super('enterprise-enrollment');
     this.signInStep = new EnrollmentSignInStep(this);
@@ -343,20 +363,29 @@ class EnterpriseEnrollmentScreen extends ScreenElementApi {
 class OobeApiProvider {
   constructor() {
     this.screens = {
-      HIDDetectionScreen: new HIDDetectionScreen(),
-      WelcomeScreen: new WelcomeScreen(),
-      NetworkScreen: new NetworkScreen(),
-      EulaScreen: new EulaScreen(),
-      UpdateScreen: new UpdateScreen(),
-      EnrollmentScreen: new EnrollmentScreen(),
-      UserCreationScreen: new UserCreationScreen(),
-      GaiaScreen: new GaiaScreen(),
-      ConfirmSamlPasswordScreen: new ConfirmSamlPasswordScreen(),
-      PinSetupScreen: new PinSetupScreen(),
-      EnterpriseEnrollmentScreen: new EnterpriseEnrollmentScreen(),
+      HIDDetectionScreen: new HIDDetectionScreenTester(),
+      WelcomeScreen: new WelcomeScreenTester(),
+      NetworkScreen: new NetworkScreenTester(),
+      EulaScreen: new EulaScreenTester(),
+      UpdateScreen: new UpdateScreenTester(),
+      EnrollmentScreen: new EnrollmentScreenTester(),
+      UserCreationScreen: new UserCreationScreenTester(),
+      GaiaScreen: new GaiaScreenTester(),
+      ConfirmSamlPasswordScreen: new ConfirmSamlPasswordScreenTester(),
+      PinSetupScreen: new PinSetupScreenTester(),
+      EnterpriseEnrollmentScreen: new EnterpriseEnrollmentScreenTester(),
     };
+
     this.loginWithPin = function(username, pin) {
       chrome.send('OobeTestApi.loginWithPin', [username, pin]);
+    };
+
+    this.advanceToScreen = function(screen) {
+      chrome.send('OobeTestApi.advanceToScreen', [screen]);
+    };
+
+    this.skipPostLoginScreens = function() {
+      chrome.send('OobeTestApi.skipPostLoginScreens');
     };
   }
 }

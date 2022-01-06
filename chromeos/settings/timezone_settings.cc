@@ -23,8 +23,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner.h"
 #include "chromeos/settings/timezone_settings_helper.h"
 
 namespace chromeos {
@@ -317,12 +317,13 @@ class TimezoneSettingsImpl : public TimezoneSettingsBaseImpl {
 
   static TimezoneSettingsImpl* GetInstance();
 
+  TimezoneSettingsImpl(const TimezoneSettingsImpl&) = delete;
+  TimezoneSettingsImpl& operator=(const TimezoneSettingsImpl&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<TimezoneSettingsImpl>;
 
   TimezoneSettingsImpl();
-
-  DISALLOW_COPY_AND_ASSIGN(TimezoneSettingsImpl);
 };
 
 // The stub TimezoneSettings implementation used on Linux desktop.
@@ -333,12 +334,13 @@ class TimezoneSettingsStubImpl : public TimezoneSettingsBaseImpl {
 
   static TimezoneSettingsStubImpl* GetInstance();
 
+  TimezoneSettingsStubImpl(const TimezoneSettingsStubImpl&) = delete;
+  TimezoneSettingsStubImpl& operator=(const TimezoneSettingsStubImpl&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<TimezoneSettingsStubImpl>;
 
   TimezoneSettingsStubImpl();
-
-  DISALLOW_COPY_AND_ASSIGN(TimezoneSettingsStubImpl);
 };
 
 TimezoneSettingsBaseImpl::~TimezoneSettingsBaseImpl() = default;

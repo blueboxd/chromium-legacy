@@ -83,6 +83,7 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegate.ShareOrigin;
 import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.share.qrcode.QrCodeDialog;
+import org.chromium.chrome.browser.share.scroll_capture.ScrollCaptureManager;
 import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.AutofillSessionLifetimeController;
 import org.chromium.chrome.browser.tab.Tab;
@@ -173,7 +174,7 @@ public class RootUiCoordinator
     private OverlayPanelManager.OverlayPanelManagerObserver mOverlayPanelManagerObserver;
 
     private OneshotSupplier<LayoutStateProvider> mLayoutStateProviderOneShotSupplier;
-    private LayoutStateProvider mLayoutStateProvider;
+    protected LayoutStateProvider mLayoutStateProvider;
     private LayoutStateProvider.LayoutStateObserver mLayoutStateObserver;
 
     /** A means of providing the theme color to different features. */
@@ -226,6 +227,7 @@ public class RootUiCoordinator
     @Nullable
     private VoiceRecognitionHandler.Observer mMicStateObserver;
     private MediaCaptureOverlayController mCaptureController;
+    private @Nullable ScrollCaptureManager mScrollCaptureManager;
     protected final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private final ObservableSupplier<LayoutManagerImpl> mLayoutManagerSupplier;
     protected final ObservableSupplier<ModalDialogManager> mModalDialogManagerSupplier;
@@ -529,6 +531,11 @@ public class RootUiCoordinator
             mMerchantTrustSignalsCoordinatorSupplier.set(null);
         }
 
+        if (mScrollCaptureManager != null) {
+            mScrollCaptureManager.destroy();
+            mScrollCaptureManager = null;
+        }
+
         mActivity = null;
     }
 
@@ -649,6 +656,7 @@ public class RootUiCoordinator
                 () -> mMessageDispatcher, mModalDialogManagerSupplier.get(), mActivityTabProvider);
 
         initMerchantTrustSignals();
+        initScrollCapture();
     }
 
     private void initMerchantTrustSignals() {
@@ -661,6 +669,15 @@ public class RootUiCoordinator
                             mProfileSupplier, new MerchantTrustMetrics(), mIntentRequestTracker);
             mMerchantTrustSignalsCoordinatorSupplier.set(merchantTrustSignalsCoordinator);
         }
+    }
+
+    private void initScrollCapture() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+                || !ChromeFeatureList.isEnabled(ChromeFeatureList.SCROLL_CAPTURE)) {
+            return;
+        }
+
+        mScrollCaptureManager = new ScrollCaptureManager(mActivityTabProvider);
     }
 
     /**
@@ -949,7 +966,7 @@ public class RootUiCoordinator
                         R.color.omnibox_focused_fading_background_color));
     }
 
-    private void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
+    protected void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
         assert layoutStateProvider != null;
         assert mLayoutStateProvider == null : "The LayoutStateProvider should set at most once.";
 

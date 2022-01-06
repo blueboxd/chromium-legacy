@@ -397,8 +397,8 @@ void DeferredImageDecoder::ActivateLazyDecoding() {
       metadata_decoder_->RepetitionCount() == kAnimationNone ||
       (all_data_received_ && metadata_decoder_->FrameCount() == 1u);
   const SkISize decoded_size =
-      SkISize::Make(metadata_decoder_->DecodedSize().Width(),
-                    metadata_decoder_->DecodedSize().Height());
+      SkISize::Make(metadata_decoder_->DecodedSize().width(),
+                    metadata_decoder_->DecodedSize().height());
   frame_generator_ = ImageFrameGenerator::Create(
       decoded_size, !is_single_frame, metadata_decoder_->GetColorBehavior(),
       metadata_decoder_->GetSupportedDecodeSizes());
@@ -465,7 +465,7 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
   }
 }
 
-bool DeferredImageDecoder::HotSpot(IntPoint& hot_spot) const {
+bool DeferredImageDecoder::HotSpot(gfx::Point& hot_spot) const {
   if (metadata_decoder_)
     return metadata_decoder_->HotSpot(hot_spot);
   if (has_hot_spot_)

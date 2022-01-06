@@ -7,11 +7,6 @@
     "jobs": 150,
     "metrics_project": "chromium-reclient-metrics"
   },
-  "$kitchen": {
-    "devshell": true,
-    "emulate_gce": true,
-    "git_auth": true
-  },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
     "grouping_keys": [
@@ -19,6 +14,5 @@
       "v.test_suite"
     ]
   },
-  "builder_group": "tryserver.chromium.linux",
   "recipe": "chromium_trybot"
 }

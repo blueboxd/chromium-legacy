@@ -11,6 +11,8 @@ component("views_examples_lib") {
   testonly = true
 
   sources = [
+    "animated_image_view_example.cc",
+    "animated_image_view_example.h",
     "animation_example.cc",
     "animation_example.h",
     "ax_example.cc",
@@ -45,6 +47,8 @@ component("views_examples_lib") {
     "fade_animation.h",
     "flex_layout_example.cc",
     "flex_layout_example.h",
+    "ink_drop_example.cc",
+    "ink_drop_example.h",
     "label_example.cc",
     "label_example.h",
     "layout_example_base.cc",
@@ -69,6 +73,8 @@ component("views_examples_lib") {
     "scroll_view_example.h",
     "slider_example.cc",
     "slider_example.h",
+    "square_ink_drop_example.cc",
+    "square_ink_drop_example.h",
     "tabbed_pane_example.cc",
     "tabbed_pane_example.h",
     "table_example.cc",
@@ -109,6 +115,7 @@ component("views_examples_lib") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/lottie",
     "//ui/message_center",
     "//ui/native_theme",
     "//ui/resources",

@@ -5,7 +5,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
 
 #include "base/bind.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
@@ -57,7 +57,8 @@ void WaylandBufferManagerConnector::OnGpuServiceLaunched(
   buffer_manager_gpu_remote->Initialize(
       std::move(pending_remote), buffer_formats_with_modifiers,
       supports_dma_buf, buffer_manager_host_->SupportsViewporter(),
-      buffer_manager_host_->SupportsAcquireFence());
+      buffer_manager_host_->SupportsAcquireFence(),
+      buffer_manager_host_->SupportsNonBackedSolidColorBuffers());
 }
 
 void WaylandBufferManagerConnector::OnTerminateGpuProcess(std::string message) {

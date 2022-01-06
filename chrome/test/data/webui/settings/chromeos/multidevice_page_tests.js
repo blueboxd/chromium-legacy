@@ -120,6 +120,15 @@ suite('Multidevice', function() {
   }
 
   /**
+   * @param {boolean} isPhoneHubPermissionsDialogSupported
+   */
+  function setPhoneHubPermissionsDialogSupported(enabled) {
+    setPageContentData(Object.assign(
+        {}, multidevicePage.pageContentData,
+        {isPhoneHubPermissionsDialogSupported: enabled}));
+  }
+
+  /**
    * @param {!settings.MultiDeviceFeature} feature The feature to change.
    * @param {boolean} enabled Whether to enable or disable the feature.
    * @param {boolean} authRequired Whether authentication is required for the
@@ -153,8 +162,11 @@ suite('Multidevice', function() {
 
     if (enabled &&
         feature === settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS) {
-      const accessDialog = multidevicePage.$$(
-          'settings-multidevice-notification-access-setup-dialog');
+      const accessDialog =
+          multidevicePage.pageContentData.isPhoneHubPermissionsDialogSupported ?
+          multidevicePage.$$('settings-multidevice-permissions-setup-dialog') :
+          multidevicePage.$$(
+              'settings-multidevice-notification-access-setup-dialog');
       assertEquals(
           !!accessDialog,
           multidevicePage.pageContentData.notificationAccessStatus ===
@@ -284,7 +296,7 @@ suite('Multidevice', function() {
         'settings-multidevice-notification-access-setup-dialog'));
 
     // Close the dialog.
-    multidevicePage.showNotificationAccessSetupDialog_ = false;
+    multidevicePage.showPhonePermissionSetupDialog_ = false;
     Polymer.dom.flush();
 
     // A change in pageContentData will not cause the notification access
@@ -294,6 +306,52 @@ suite('Multidevice', function() {
 
     assertFalse(!!multidevicePage.$$(
         'settings-multidevice-notification-access-setup-dialog'));
+  });
+
+  test('Open multidevice permissions setup dialog route param', async () => {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.MULTIDEVICE_FEATURES,
+        new URLSearchParams('showNotificationAccessSetupDialog=true'));
+
+    PolymerTest.clearBody();
+    browserProxy = new multidevice.TestMultideviceBrowserProxy();
+    settings.MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
+    browserProxy.data.notificationAccessStatus =
+        settings.PhoneHubNotificationAccessStatus.AVAILABLE_BUT_NOT_GRANTED;
+    browserProxy.data.isPhoneHubPermissionsDialogSupported = true;
+
+    multidevicePage = document.createElement('settings-multidevice-page');
+    assertTrue(!!multidevicePage);
+
+    multidevicePage.prefs = {
+      'nearby_sharing': {
+        'onboarding_complete': {
+          value: false,
+        },
+        'enabled': {
+          value: false,
+        },
+      },
+    };
+
+    document.body.appendChild(multidevicePage);
+    await browserProxy.whenCalled('getPageContentData');
+
+    Polymer.dom.flush();
+    assertTrue(
+        !!multidevicePage.$$('settings-multidevice-permissions-setup-dialog'));
+
+    // Close the dialog.
+    multidevicePage.showPhonePermissionSetupDialog_ = false;
+    Polymer.dom.flush();
+
+    // A change in pageContentData will not cause the multidevice permissions
+    // setup dialog to reappaear.
+    setPageContentData({});
+    Polymer.dom.flush();
+
+    assertFalse(
+        !!multidevicePage.$$('settings-multidevice-permissions-setup-dialog'));
   });
 
   test('headings render based on mode and host', function() {
@@ -355,7 +413,7 @@ suite('Multidevice', function() {
     assertFalse(!!multidevicePage.$$('#suitePolicyIndicator'));
   });
 
-  test('Phone hub notification access setup dialog', () => {
+  test('Multidevice permissions setup dialog', () => {
     setPhoneHubNotificationsState(
         settings.MultiDeviceFeatureState.DISABLED_BY_USER);
     assertFalse(!!multidevicePage.$$(
@@ -367,7 +425,38 @@ suite('Multidevice', function() {
         /*enabled=*/ true, /*authRequired=*/ false);
 
     // Close the dialog.
-    multidevicePage.showNotificationAccessSetupDialog_ = false;
+    multidevicePage.showPhonePermissionSetupDialog_ = false;
+
+    setPhoneHubNotificationAccessGranted(false);
+    simulateFeatureStateChangeRequest(
+        settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS,
+        /*enabled=*/ false, /*authRequired=*/ false);
+
+    setPhoneHubNotificationAccessGranted(true);
+    simulateFeatureStateChangeRequest(
+        settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS,
+        /*enabled=*/ true, /*authRequired=*/ false);
+
+    multidevicePage.pageContentData.isNotificationAccessGranted = true;
+    simulateFeatureStateChangeRequest(
+        settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS,
+        /*enabled=*/ false, /*authRequired=*/ false);
+  });
+
+  test('New multidevice permissions setup dialog', () => {
+    setPhoneHubPermissionsDialogSupported(true);
+    setPhoneHubNotificationsState(
+        settings.MultiDeviceFeatureState.DISABLED_BY_USER);
+    assertFalse(
+        !!multidevicePage.$$('settings-multidevice-permissions-setup-dialog'));
+
+    setPhoneHubNotificationAccessGranted(false);
+    simulateFeatureStateChangeRequest(
+        settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS,
+        /*enabled=*/ true, /*authRequired=*/ false);
+
+    // Close the dialog.
+    multidevicePage.showPhonePermissionSetupDialog_ = false;
 
     setPhoneHubNotificationAccessGranted(false);
     simulateFeatureStateChangeRequest(
@@ -636,6 +725,25 @@ suite('Multidevice', function() {
     assertFalse(router.getQueryParameters().has('onboarding'));
   });
 
+  test('Settings mojo changes propagate to settings property', async () => {
+    // Allow initial settings to be loaded.
+    await flushAsync();
+
+    const newName = 'NEW NAME';
+    assertNotEquals(newName, multidevicePage.get('settings.deviceName'));
+
+    await fakeSettings.setDeviceName(newName);
+    await flushAsync();
+    assertEquals(newName, multidevicePage.get('settings.deviceName'));
+
+    const newEnabledState = !multidevicePage.get('settings.enabled');
+    assertNotEquals(newEnabledState, multidevicePage.get('settings.enabled'));
+
+    await fakeSettings.setEnabled(newEnabledState);
+    await flushAsync();
+    assertEquals(newEnabledState, multidevicePage.get('settings.enabled'));
+  });
+
   suite('Background Scanning Enabled', function() {
     suiteSetup(function() {
       loadTimeData.overrideValues({
@@ -646,6 +754,13 @@ suite('Multidevice', function() {
     test(
         'Nearby share sub page arrow is visible before onboarding',
         async () => {
+          // Arrow only visible if background scanning feature flag is enabled
+          // and hardware offloading is supported.
+          await flushAsync();
+          setNearbyShareDisallowedByPolicy(false);
+          multidevicePage.set(
+              'settings.isFastInitiationHardwareSupported', true);
+
           setNearbyShareDisallowedByPolicy(false);
           assertTrue(test_util.isChildVisible(
               multidevicePage, '#nearbySetUp', /*checkLightDom=*/ false));
@@ -661,10 +776,33 @@ suite('Multidevice', function() {
               /*checkLightDom=*/ false));
         });
 
+    test('No Background Scanning hardware support', async () => {
+      // Ensure initial nearby settings values are set before overriding.
+      await flushAsync();
+      setNearbyShareDisallowedByPolicy(false);
+      multidevicePage.set('settings.isFastInitiationHardwareSupported', false);
+      await flushAsync();
+
+      assertTrue(test_util.isChildVisible(
+          multidevicePage, '#nearbySetUp', /*checkLightDom=*/ false));
+      assertFalse(test_util.isChildVisible(
+          multidevicePage, '#nearbyShareSubpageArrow',
+          /*checkLightDom=*/ false));
+
+      // Clicking on Nearby Subpage row should initiate onboarding.
+      const router = settings.Router.getInstance();
+      assertTrue(!!multidevicePage.$$('#nearbyLinkWrapper'));
+      multidevicePage.$$('#nearbyLinkWrapper').click();
+      await flushAsync();
+      assertEquals(settings.routes.NEARBY_SHARE, router.getCurrentRoute());
+      assertTrue(router.getQueryParameters().has('onboarding'));
+    });
+
     test(
         'Clicking nearby subpage before onboarding enters subpage',
         async () => {
           setNearbyShareDisallowedByPolicy(false);
+          await flushAsync();
 
           const router = settings.Router.getInstance();
           assertTrue(!!multidevicePage.$$('#nearbyLinkWrapper'));

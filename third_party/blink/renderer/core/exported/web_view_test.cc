@@ -546,7 +546,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   // would.
   LocalFrameView* view = web_view_helper_.LocalMainFrame()->GetFrameView();
   PaintLayer* root_layer = view->GetLayoutView()->Layer();
-  CullRect paint_rect(IntRect(0, 0, kWidth, kHeight));
+  CullRect paint_rect(gfx::Rect(0, 0, kWidth, kHeight));
   PaintLayerPaintingInfo painting_info(
       root_layer, paint_rect, kGlobalPaintNormalPhase, PhysicalOffset());
 
@@ -2453,12 +2453,12 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState) {
                     .GetDocumentLoader()
                     ->GetHistoryItem()
                     ->GetViewState()
-                    ->scroll_offset_.Width());
+                    ->scroll_offset_.width());
   EXPECT_EQ(111, main_frame_local->Loader()
                      .GetDocumentLoader()
                      ->GetHistoryItem()
                      ->GetViewState()
-                     ->scroll_offset_.Height());
+                     ->scroll_offset_.height());
 
   // Confirm that resetting the page state resets the saved scroll position.
   web_view_impl->ResetScrollAndScaleState();
@@ -2501,19 +2501,22 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       ClientRedirectPolicy::kNotClientRedirect,
       false /* has_transient_user_activation */, nullptr /* initiator_origin */,
       false /* is_synchronously_committed */,
-      mojom::blink::TriggeringEventInfo::kNotFromEvent, nullptr);
+      mojom::blink::TriggeringEventInfo::kNotFromEvent,
+      true /* is_browser_initiated */, nullptr);
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item2->Url(), WebFrameLoadType::kBackForward, item2.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
       false /* has_transient_user_activation */, nullptr /* initiator_origin */,
       false /* is_synchronously_committed */,
-      mojom::blink::TriggeringEventInfo::kNotFromEvent, nullptr);
+      mojom::blink::TriggeringEventInfo::kNotFromEvent,
+      true /* is_browser_initiated */, nullptr);
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
       false /* has_transient_user_activation */, nullptr /* initiator_origin */,
       false /* is_synchronously_committed */,
-      mojom::blink::TriggeringEventInfo::kNotFromEvent, nullptr);
+      mojom::blink::TriggeringEventInfo::kNotFromEvent,
+      true /* is_browser_initiated */, nullptr);
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 
@@ -2534,14 +2537,16 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       ClientRedirectPolicy::kNotClientRedirect,
       false /* has_transient_user_activation */, nullptr /* initiator_origin */,
       false /* is_synchronously_committed */,
-      mojom::blink::TriggeringEventInfo::kNotFromEvent, nullptr);
+      mojom::blink::TriggeringEventInfo::kNotFromEvent,
+      true /* is_browser_initiated */, nullptr);
 
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item3->Url(), WebFrameLoadType::kBackForward, item3.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
       false /* has_transient_user_activation */, nullptr /* initiator_origin */,
       false /* is_synchronously_committed */,
-      mojom::blink::TriggeringEventInfo::kNotFromEvent, nullptr);
+      mojom::blink::TriggeringEventInfo::kNotFromEvent,
+      true /* is_browser_initiated */, nullptr);
   // The scroll offset is only applied via invoking the anchor via the main
   // lifecycle, or a forced layout.
   // TODO(chrishtr): At the moment, WebLocalFrameImpl::GetScrollOffset() does
@@ -2689,17 +2694,17 @@ bool WebViewTest::TapElement(WebInputEvent::Type type, Element* element) {
   DCHECK(web_view_helper_.GetWebView());
   element->scrollIntoViewIfNeeded();
 
-  FloatPoint center(
+  gfx::Point center =
       web_view_helper_.GetWebView()
           ->MainFrameImpl()
           ->GetFrameView()
           ->FrameToScreen(element->GetLayoutObject()->AbsoluteBoundingBoxRect())
-          .Center());
+          .CenterPoint();
 
   WebGestureEvent event(type, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
-  event.SetPositionInWidget(center);
+  event.SetPositionInWidget(gfx::PointF(center));
 
   web_view_helper_.GetWebView()->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(event, ui::LatencyInfo()));
@@ -2719,9 +2724,9 @@ IntSize WebViewTest::PrintICBSizeFromPageSize(const FloatSize& page_size) {
   // The expected layout size comes from the calculation done in
   // ResizePageRectsKeepingRatio() which is used from PrintContext::begin() to
   // scale the page size.
-  const float ratio = page_size.Height() / (float)page_size.Width();
+  const float ratio = page_size.height() / (float)page_size.width();
   const int icb_width =
-      floor(page_size.Width() * PrintContext::kPrintingMinimumShrinkFactor);
+      floor(page_size.width() * PrintContext::kPrintingMinimumShrinkFactor);
   const int icb_height = floor(icb_width * ratio);
   return IntSize(icb_width, icb_height);
 }
@@ -4783,7 +4788,7 @@ class MockUnhandledTapNotifierImpl : public mojom::blink::UnhandledTapNotifier {
   int GetElementTextRunLength() const { return element_text_run_length_; }
   void Reset() {
     was_unhandled_tap_ = false;
-    tapped_position_ = IntPoint();
+    tapped_position_ = gfx::Point();
     element_text_run_length_ = 0;
     font_size_ = 0;
     receiver_.reset();
@@ -5288,13 +5293,13 @@ TEST_F(WebViewTest, ResizeForPrintingViewportUnits) {
 
   frame->PrintBegin(print_params, WebNode());
 
-  EXPECT_EQ(expected_size.Width(), vw_element->OffsetWidth());
-  EXPECT_EQ(expected_size.Height(), vw_element->OffsetHeight());
+  EXPECT_EQ(expected_size.width(), vw_element->OffsetWidth());
+  EXPECT_EQ(expected_size.height(), vw_element->OffsetHeight());
 
   web_view->MainFrameWidget()->Resize(page_size);
 
-  EXPECT_EQ(expected_size.Width(), vw_element->OffsetWidth());
-  EXPECT_EQ(expected_size.Height(), vw_element->OffsetHeight());
+  EXPECT_EQ(expected_size.width(), vw_element->OffsetWidth());
+  EXPECT_EQ(expected_size.height(), vw_element->OffsetHeight());
 
   web_view->MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   frame->PrintEnd();
@@ -5361,7 +5366,7 @@ TEST_F(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
   EXPECT_EQ(400, t2->OffsetWidth());
 
   gfx::Size page_size(600, 720);
-  int expected_width = PrintICBSizeFromPageSize(FloatSize(page_size)).Width();
+  int expected_width = PrintICBSizeFromPageSize(FloatSize(page_size)).width();
 
   WebPrintParams print_params;
   print_params.print_content_area.set_size(page_size);
@@ -6095,17 +6100,17 @@ TEST_F(WebViewTest, LongPressAndThenLongTapLinkInIframeShouldShowContextMenu) {
   Document* child_document =
       To<HTMLIFrameElement>(child_frame)->contentDocument();
   Element* anchor = child_document->getElementById("anchorTag");
-  IntPoint center =
+  gfx::Point center =
       To<WebLocalFrameImpl>(
           web_view->MainFrame()->FirstChild()->ToWebLocalFrame())
           ->GetFrameView()
           ->FrameToScreen(anchor->GetLayoutObject()->AbsoluteBoundingBoxRect())
-          .Center();
+          .CenterPoint();
   WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
-  event.SetPositionInWidget(gfx::PointF(center.X(), center.X()));
+  event.SetPositionInWidget(gfx::PointF(center.x(), center.x()));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->MainFrameWidget()->HandleInputEvent(
@@ -6115,7 +6120,7 @@ TEST_F(WebViewTest, LongPressAndThenLongTapLinkInIframeShouldShowContextMenu) {
                             WebInputEvent::kNoModifiers,
                             WebInputEvent::GetStaticTimeStampForTests(),
                             WebGestureDevice::kTouchscreen);
-  tap_event.SetPositionInWidget(gfx::PointF(center.X(), center.X()));
+  tap_event.SetPositionInWidget(gfx::PointF(center.x(), center.x()));
 
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->MainFrameWidget()->HandleInputEvent(

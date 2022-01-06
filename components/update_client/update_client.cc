@@ -222,25 +222,23 @@ void UpdateClientImpl::Stop() {
   }
 }
 
-void UpdateClientImpl::SendUninstallPing(const std::string& id,
-                                         const base::Version& version,
+void UpdateClientImpl::SendUninstallPing(const CrxComponent& crx_component,
                                          int reason,
                                          Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   RunTask(base::MakeRefCounted<TaskSendUninstallPing>(
-      update_engine_.get(), id, version, reason,
+      update_engine_.get(), crx_component, reason,
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback))));
 }
 
-void UpdateClientImpl::SendRegistrationPing(const std::string& id,
-                                            const base::Version& version,
+void UpdateClientImpl::SendRegistrationPing(const CrxComponent& crx_component,
                                             Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   RunTask(base::MakeRefCounted<TaskSendRegistrationPing>(
-      update_engine_.get(), id, version,
+      update_engine_.get(), crx_component,
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback))));
 }

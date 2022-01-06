@@ -4,9 +4,9 @@
 
 #include "chrome/browser/android/autofill_assistant/ui_controller_android.h"
 
-#include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -62,11 +62,16 @@
 #include "google_apis/google_api_keys.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-using base::android::AttachCurrentThread;
-using base::android::ConvertUTF8ToJavaString;
-using base::android::JavaParamRef;
-using base::android::JavaRef;
-using chrome::android::ScreenshotMode;
+using ::autofill_assistant::ui_controller_android_utils::
+    ConvertNativeOptionalStringToJava;
+using ::autofill_assistant::ui_controller_android_utils::CreateJavaInfoPopup;
+using ::base::android::AttachCurrentThread;
+using ::base::android::ConvertUTF8ToJavaString;
+using ::base::android::JavaParamRef;
+using ::base::android::JavaRef;
+using ::base::android::ScopedJavaLocalRef;
+using ::base::android::ToJavaArrayOfStrings;
+using ::chrome::android::ScreenshotMode;
 
 namespace autofill_assistant {
 
@@ -99,37 +104,52 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDate(
   return CreateJavaDateTime(env, date_time);
 }
 
+ScopedJavaLocalRef<jobject> CreateOptionalJavaInfoPopup(
+    JNIEnv* env,
+    const LoginChoice& login_choice,
+    const ClientSettings& client_settings) {
+  ScopedJavaLocalRef<jobject> jinfo_popup = nullptr;
+  if (login_choice.info_popup.has_value()) {
+    jinfo_popup = CreateJavaInfoPopup(
+        env, *login_choice.info_popup,
+        GetDisplayStringUTF8(ClientSettingsProto::CLOSE, client_settings));
+  }
+  return jinfo_popup;
+}
+
+ScopedJavaLocalRef<jobject> CreateJavaLoginChoice(
+    JNIEnv* env,
+    const LoginChoice& login_choice,
+    const ClientSettings& client_settings) {
+  return Java_AssistantCollectUserDataModel_createLoginChoice(
+      env, ConvertUTF8ToJavaString(env, login_choice.identifier),
+      ConvertUTF8ToJavaString(env, login_choice.label),
+      ConvertUTF8ToJavaString(env, login_choice.sublabel),
+      ConvertNativeOptionalStringToJava(
+          env, login_choice.sublabel_accessibility_hint),
+      login_choice.preselect_priority,
+      CreateOptionalJavaInfoPopup(env, login_choice, client_settings),
+      ConvertNativeOptionalStringToJava(
+          env, login_choice.edit_button_content_description));
+}
+
 // Creates the Java equivalent to |login_choices|.
-base::android::ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
+ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
     JNIEnv* env,
     const std::vector<LoginChoice>& login_choices,
     const ClientSettings& client_settings) {
   auto jlist = Java_AssistantCollectUserDataModel_createLoginChoiceList(env);
   for (const auto& login_choice : login_choices) {
-    base::android::ScopedJavaLocalRef<jobject> jinfo_popup = nullptr;
-    if (login_choice.info_popup.has_value()) {
-      jinfo_popup = ui_controller_android_utils::CreateJavaInfoPopup(
-          env, *login_choice.info_popup,
-          GetDisplayStringUTF8(ClientSettingsProto::CLOSE, client_settings));
-    }
-    base::android::ScopedJavaLocalRef<jstring> jsublabel_accessibility_hint =
-        nullptr;
-    if (login_choice.sublabel_accessibility_hint.has_value()) {
-      jsublabel_accessibility_hint = ConvertUTF8ToJavaString(
-          env, login_choice.sublabel_accessibility_hint.value());
-    }
-    base::android::ScopedJavaLocalRef<jstring>
-        jedit_button_content_description = nullptr;
-    if (login_choice.edit_button_content_description.has_value()) {
-      jedit_button_content_description = base::android::ConvertUTF8ToJavaString(
-          env, login_choice.edit_button_content_description.value());
-    }
     Java_AssistantCollectUserDataModel_addLoginChoice(
         env, jlist, ConvertUTF8ToJavaString(env, login_choice.identifier),
         ConvertUTF8ToJavaString(env, login_choice.label),
         ConvertUTF8ToJavaString(env, login_choice.sublabel),
-        jsublabel_accessibility_hint, login_choice.preselect_priority,
-        jinfo_popup, jedit_button_content_description);
+        ConvertNativeOptionalStringToJava(
+            env, login_choice.sublabel_accessibility_hint),
+        login_choice.preselect_priority,
+        CreateOptionalJavaInfoPopup(env, login_choice, client_settings),
+        ConvertNativeOptionalStringToJava(
+            env, login_choice.edit_button_content_description));
   }
   return jlist;
 }
@@ -388,14 +408,6 @@ void UiControllerAndroid::SetupForState() {
       SetSpinPoodle(true);
       return;
 
-    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
-      SetOverlayState(OverlayState::HIDDEN);
-      SetSpinPoodle(false);
-
-      if (should_prompt_action_expand_sheet && ui_delegate_->IsTabSelected())
-        ShowContentAndExpandBottomSheet();
-      return;
-
     case AutofillAssistantState::PROMPT:
       SetOverlayState(OverlayState::PARTIAL);
       SetSpinPoodle(false);
@@ -453,10 +465,6 @@ void UiControllerAndroid::OnBubbleMessageChanged(const std::string& message) {
   if (!message.empty()) {
     header_model_->SetBubbleMessage(message);
   }
-}
-
-void UiControllerAndroid::OnProgressChanged(int progress) {
-  header_model_->SetProgress(progress);
 }
 
 void UiControllerAndroid::OnProgressActiveStepChanged(int active_step) {
@@ -633,22 +641,10 @@ void UiControllerAndroid::RestoreUi() {
   OnStatusMessageChanged(ui_delegate_->GetStatusMessage());
   OnBubbleMessageChanged(ui_delegate_->GetBubbleMessage());
   OnClientSettingsDisplayStringsChanged(ui_delegate_->GetClientSettings());
-  auto step_progress_bar_configuration =
-      ui_delegate_->GetStepProgressBarConfiguration();
-  if (step_progress_bar_configuration.has_value()) {
-    OnStepProgressBarConfigurationChanged(*step_progress_bar_configuration);
-    if (step_progress_bar_configuration->use_step_progress_bar()) {
-      auto active_step = ui_delegate_->GetProgressActiveStep();
-      if (active_step.has_value()) {
-        OnProgressActiveStepChanged(*active_step);
-      }
-      OnProgressBarErrorStateChanged(ui_delegate_->GetProgressBarErrorState());
-    }
-  } else {
-    OnStepProgressBarConfigurationChanged(
-        ShowProgressBarProto::StepProgressBarConfiguration());
-    OnProgressChanged(ui_delegate_->GetProgress());
-  }
+  OnStepProgressBarConfigurationChanged(
+      ui_delegate_->GetStepProgressBarConfiguration());
+  OnProgressActiveStepChanged(ui_delegate_->GetProgressActiveStep());
+  OnProgressBarErrorStateChanged(ui_delegate_->GetProgressBarErrorState());
   OnProgressVisibilityChanged(ui_delegate_->GetProgressVisible());
   OnInfoBoxChanged(ui_delegate_->GetInfoBox());
   OnDetailsChanged(ui_delegate_->GetDetails());
@@ -1133,7 +1129,7 @@ void UiControllerAndroid::OnTermsAndConditionsChanged(
   ui_delegate_->SetTermsAndConditions(state);
 }
 
-void UiControllerAndroid::OnLoginChoiceChanged(std::string identifier) {
+void UiControllerAndroid::OnLoginChoiceChanged(const std::string& identifier) {
   ui_delegate_->SetLoginOption(identifier);
 }
 
@@ -1224,6 +1220,8 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
     return;
   }
 
+  Java_AssistantCollectUserDataModel_setShouldStoreUserDataChanges(
+      env, jmodel, collect_user_data_options->should_store_data_changes);
   Java_AssistantCollectUserDataModel_setRequestName(
       env, jmodel, collect_user_data_options->request_payer_name);
   Java_AssistantCollectUserDataModel_setRequestEmail(
@@ -1434,38 +1432,40 @@ void UiControllerAndroid::OnUserDataChanged(
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::AVAILABLE_PROFILES) {
-    // Contact profiles.
+    // Contacts.
     auto jcontactlist =
         Java_AssistantCollectUserDataModel_createAutofillContactList(env);
     auto contact_indices = user_data::SortContactsByCompleteness(
-        *collect_user_data_options, user_data.available_profiles_);
+        *collect_user_data_options, user_data.available_contacts_);
     for (int index : contact_indices) {
       auto jcontact = Java_AssistantCollectUserDataModel_createAutofillContact(
           env, jcontext,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *user_data.available_profiles_[index]),
+              env, *user_data.available_contacts_[index]),
           collect_user_data_options->request_payer_name,
           collect_user_data_options->request_payer_phone,
           collect_user_data_options->request_payer_email);
       if (jcontact) {
         const auto& errors = user_data::GetContactValidationErrors(
-            user_data.available_profiles_[index].get(),
+            user_data.available_contacts_[index].get(),
             *collect_user_data_options);
         Java_AssistantCollectUserDataModel_addAutofillContact(
             env, jcontactlist, jcontact,
-            base::android::ToJavaArrayOfStrings(env, errors));
+            base::android::ToJavaArrayOfStrings(env, errors),
+            collect_user_data_options->can_edit_contacts);
       }
     }
     Java_AssistantCollectUserDataModel_setAvailableContacts(env, jmodel,
                                                             jcontactlist);
     Java_AssistantCollectUserDataModel_setSelectedContactDetails(
         env, jmodel, jselected_contact,
-        base::android::ToJavaArrayOfStrings(env, selected_contact_errors));
+        base::android::ToJavaArrayOfStrings(env, selected_contact_errors),
+        collect_user_data_options->can_edit_contacts);
 
-    // Billing address profiles.
+    // Billing addresses.
     auto jbillinglist =
         Java_AssistantCollectUserDataModel_createBillingAddressList(env);
-    for (const auto& profile : user_data.available_profiles_) {
+    for (const auto& profile : user_data.available_addresses_) {
       auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
           env, jcontext,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
@@ -1478,19 +1478,19 @@ void UiControllerAndroid::OnUserDataChanged(
     Java_AssistantCollectUserDataModel_setAvailableBillingAddresses(
         env, jmodel, jbillinglist);
 
-    // Shipping address profiles.
+    // Shipping addresses.
     auto jshippinglist =
         Java_AssistantCollectUserDataModel_createShippingAddressList(env);
     auto address_indices = user_data::SortShippingAddressesByCompleteness(
-        *collect_user_data_options, user_data.available_profiles_);
+        *collect_user_data_options, user_data.available_addresses_);
     for (int index : address_indices) {
       auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
           env, jcontext,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *user_data.available_profiles_[index]));
+              env, *user_data.available_addresses_[index]));
       if (jaddress) {
         const auto& errors = user_data::GetShippingAddressValidationErrors(
-            user_data.available_profiles_[index].get(),
+            user_data.available_addresses_[index].get(),
             *collect_user_data_options);
         Java_AssistantCollectUserDataModel_addShippingAddress(
             env, jshippinglist, jaddress,
@@ -1509,7 +1509,8 @@ void UiControllerAndroid::OnUserDataChanged(
     // off case does not set updated contacts.
     Java_AssistantCollectUserDataModel_setSelectedContactDetails(
         env, jmodel, jselected_contact,
-        base::android::ToJavaArrayOfStrings(env, selected_contact_errors));
+        base::android::ToJavaArrayOfStrings(env, selected_contact_errors),
+        collect_user_data_options->can_edit_contacts);
   }
   if (field_change == UserData::FieldChange::SHIPPING_ADDRESS) {
     // The selection is already known in Java, but it has no errors. The PDM
@@ -1622,7 +1623,17 @@ void UiControllerAndroid::OnUserDataChanged(
     }
   }
 
-  // TODO(crbug.com/806868): Add |setSelectedLogin|.
+  if (field_change == UserData::FieldChange::ALL ||
+      field_change == UserData::FieldChange::LOGIN_CHOICE) {
+    ScopedJavaLocalRef<jobject> jselected_login_choice =
+        user_data.selected_login_choice() == nullptr
+            ? nullptr
+            : CreateJavaLoginChoice(env, *user_data.selected_login_choice(),
+                                    ui_delegate_->GetClientSettings());
+
+    Java_AssistantCollectUserDataModel_setSelectedLoginChoice(
+        env, jmodel, jselected_login_choice);
+  }
 }
 
 // FormProto related methods.

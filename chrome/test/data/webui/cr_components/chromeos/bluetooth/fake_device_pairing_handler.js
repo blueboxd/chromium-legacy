@@ -6,6 +6,7 @@
 // as non-module JS is deprecated.
 import 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-lite.js';
 import {PairingAuthType} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_types.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
 
 /**
  * @fileoverview Fake implementation of DevicePairingHandler for testing.
@@ -32,6 +33,12 @@ export class FakeDevicePairingHandler {
 
     /** @private {string} */
     this.pinOrPasskey_ = '';
+
+    /** @private {boolean} */
+    this.confirmPasskeyResult_ = false;
+
+    /** @private {?chromeos.bluetoothConfig.mojom.KeyEnteredHandlerRemote} */
+    this.lastKeyEnteredHandlerRemote_ = null;
   }
 
   /** @override */
@@ -49,8 +56,10 @@ export class FakeDevicePairingHandler {
    * after pairDevice(). Pass in a |PairingAuthType| to simulate each
    * pairing request made to |DevicePairingDelegate|.
    * @param {!PairingAuthType} authType
+   * @param {string=} opt_pairingCode used in confirm passkey and display
+   * passkey/PIN authentication.
    */
-  requireAuthentication(authType) {
+  requireAuthentication(authType, opt_pairingCode) {
     switch (authType) {
       case PairingAuthType.REQUEST_PIN_CODE:
         this.devicePairingDelegate_.requestPinCode()
@@ -65,13 +74,22 @@ export class FakeDevicePairingHandler {
             .catch(e => {});
         break;
       case PairingAuthType.DISPLAY_PIN_CODE:
-        // TODO(crbug.com/1010321): Implement this.
+        assert(opt_pairingCode);
+        this.devicePairingDelegate_.displayPinCode(
+            opt_pairingCode, this.getKeyEnteredHandlerPendingReceiver_());
         break;
       case PairingAuthType.DISPLAY_PASSKEY:
-        // TODO(crbug.com/1010321): Implement this.
+        assert(opt_pairingCode);
+        this.devicePairingDelegate_.displayPasskey(
+            opt_pairingCode, this.getKeyEnteredHandlerPendingReceiver_());
         break;
       case PairingAuthType.CONFIRM_PASSKEY:
-        // TODO(crbug.com/1010321): Implement this.
+        assert(opt_pairingCode);
+        this.devicePairingDelegate_.confirmPasskey(opt_pairingCode)
+            .then(
+                (response) =>
+                    this.finishRequestConfirmPasskey_(response.confirmed))
+            .catch(e => {});
         break;
       case PairingAuthType.AUTHORIZE_PAIRING:
         // TODO(crbug.com/1010321): Implement this.
@@ -80,11 +98,36 @@ export class FakeDevicePairingHandler {
   }
 
   /**
+   * @return {!chromeos.bluetoothConfig.mojom.KeyEnteredHandlerPendingReceiver}
+   * @private
+   */
+  getKeyEnteredHandlerPendingReceiver_() {
+    this.lastKeyEnteredHandlerRemote_ =
+        new chromeos.bluetoothConfig.mojom.KeyEnteredHandlerRemote();
+    return this.lastKeyEnteredHandlerRemote_.$.bindNewPipeAndPassReceiver();
+  }
+
+  /**s
+   * @return {?chromeos.bluetoothConfig.mojom.KeyEnteredHandlerRemote}
+   */
+  getLastKeyEnteredHandlerRemote() {
+    return this.lastKeyEnteredHandlerRemote_;
+  }
+
+  /**
    * @param {string} code
    * @private
    */
   finishRequestPinOrPasskey_(code) {
     this.pinOrPasskey_ = code;
+  }
+
+  /**
+   * @param {boolean} confirmed
+   * @private
+   */
+  finishRequestConfirmPasskey_(confirmed) {
+    this.confirmPasskeyResult_ = confirmed;
   }
 
   /**
@@ -111,5 +154,10 @@ export class FakeDevicePairingHandler {
   /** @return {string} */
   getPinOrPasskey() {
     return this.pinOrPasskey_;
+  }
+
+  /** @return {boolean} */
+  getConfirmPasskeyResult() {
+    return this.confirmPasskeyResult_;
   }
 }

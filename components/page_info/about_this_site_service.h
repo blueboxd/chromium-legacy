@@ -10,10 +10,15 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
 #include "components/optimization_guide/core/optimization_metadata.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
 namespace page_info {
+namespace proto {
+class SiteInfo;
+}
 
 // Provides "About this site" information for a web site. It includes short
 // description about the website (from external source, usually from Wikipedia),
@@ -38,7 +43,9 @@ class AboutThisSiteService : public KeyedService {
   AboutThisSiteService& operator=(const AboutThisSiteService&) = delete;
 
   // Returns "About this site" information for the website with |url|.
-  std::u16string GetAboutThisSiteDescription(const GURL& url) const;
+  absl::optional<proto::SiteInfo> GetAboutThisSiteInfo(
+      const GURL& url,
+      ukm::SourceId source_id) const;
 
  private:
   std::unique_ptr<Client> client_;

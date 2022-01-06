@@ -12,10 +12,10 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/containers/mru_cache.h"
+#include "base/containers/lru_cache.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "components/optimization_guide/core/hints_component_info.h"
@@ -157,8 +157,9 @@ class HintsManager : public OptimizationHintsComponentObserver,
   // metrics such as jank.
   void OnDeferredStartup();
 
-  // Fetch the hints for the given URLs.
-  void FetchHintsForURLs(std::vector<GURL> target_urls);
+  // Fetch the hints for the given URLs with the provided |request_context|.
+  void FetchHintsForURLs(std::vector<GURL> target_urls,
+                         proto::RequestContext request_context);
 
   // optimization_guide::PushNotificationManager::Delegate:
   void RemoveFetchedEntriesByHintKeys(
@@ -393,7 +394,7 @@ class HintsManager : public OptimizationHintsComponentObserver,
   // A cache keyed by navigation URL to the fetcher making a request for a hint
   // for that URL and/or host to the remote Optimization Guide Service that
   // keeps track of when an entry has been placed in the cache.
-  base::MRUCache<GURL, std::unique_ptr<optimization_guide::HintsFetcher>>
+  base::LRUCache<GURL, std::unique_ptr<optimization_guide::HintsFetcher>>
       page_navigation_hints_fetchers_;
 
   // The factory used to create hints fetchers. It is mostly used to create

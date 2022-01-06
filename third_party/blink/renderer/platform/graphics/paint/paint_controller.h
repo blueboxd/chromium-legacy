@@ -12,6 +12,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/memory/ptr_util.h"
 #include "cc/input/layer_selection_bound.h"
+#include "cc/paint/element_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -20,6 +21,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunker.h"
+#include "third_party/blink/renderer/platform/graphics/paint/region_capture_data.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -90,14 +92,17 @@ class PLATFORM_EXPORT PaintController {
 
    public:
     explicit CycleScope(bool record_debug_info = false)
-        : record_debug_info_(record_debug_info) {}
+        : record_debug_info_(record_debug_info) {
+      clients_to_validate_ =
+          MakeGarbageCollected<HeapVector<Member<const DisplayItemClient>>>();
+    }
     explicit CycleScope(PaintController& controller,
                         bool record_debug_info = false)
         : CycleScope(record_debug_info) {
       AddController(controller);
     }
     void AddController(PaintController& controller) {
-      controller.StartCycle(clients_to_validate_, record_debug_info_);
+      controller.StartCycle(*clients_to_validate_, record_debug_info_);
       controllers_.push_back(&controller);
     }
     ~CycleScope();
@@ -106,7 +111,7 @@ class PLATFORM_EXPORT PaintController {
     Vector<PaintController*> controllers_;
 
    private:
-    Vector<const DisplayItemClient*> clients_to_validate_;
+    HeapVector<Member<const DisplayItemClient>>* clients_to_validate_;
     bool record_debug_info_;
   };
   friend class CycleScope;
@@ -148,6 +153,10 @@ class PLATFORM_EXPORT PaintController {
                          TouchAction,
                          bool);
 
+  void RecordRegionCaptureData(const DisplayItemClient& client,
+                               const RegionCaptureCropId& crop_id,
+                               const gfx::Rect& rect);
+
   void RecordScrollHitTestData(
       const DisplayItemClient&,
       DisplayItem::Type,
@@ -156,10 +165,6 @@ class PLATFORM_EXPORT PaintController {
 
   void RecordSelection(absl::optional<PaintedSelectionBound> start,
                        absl::optional<PaintedSelectionBound> end);
-
-  void SetPossibleBackgroundColor(const DisplayItemClient&,
-                                  Color,
-                                  uint64_t area);
 
   wtf_size_t NumNewChunks() const {
     return new_paint_artifact_->PaintChunks().size();
@@ -316,8 +321,9 @@ class PLATFORM_EXPORT PaintController {
   void ReserveCapacity();
 
   // Called at the beginning of a paint cycle, as defined by CycleScope.
-  void StartCycle(Vector<const DisplayItemClient*>& clients_to_validate,
-                  bool record_debug_info);
+  void StartCycle(
+      HeapVector<Member<const DisplayItemClient>>& clients_to_validate,
+      bool record_debug_info);
 
   // Called at the end of a paint cycle, as defined by CycleScope.
   // The PaintController will cleanup data that will no longer be used for the
@@ -410,7 +416,8 @@ class PLATFORM_EXPORT PaintController {
   // CommitNewDisplayItems().
   scoped_refptr<PaintArtifact> new_paint_artifact_;
   PaintChunker paint_chunker_;
-  Vector<const DisplayItemClient*>* clients_to_validate_ = nullptr;
+  WeakPersistent<HeapVector<Member<const DisplayItemClient>>>
+      clients_to_validate_ = nullptr;
 
   bool cache_is_all_invalid_ = true;
   bool committed_ = false;

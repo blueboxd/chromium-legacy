@@ -71,7 +71,7 @@ PeerConnectionTrackerHost::GetAllHosts() {
 }
 
 PeerConnectionTrackerHost::PeerConnectionTrackerHost(RenderFrameHost* frame)
-    : RenderDocumentHostUserData<PeerConnectionTrackerHost>(frame),
+    : DocumentUserData<PeerConnectionTrackerHost>(frame),
       frame_id_(frame->GetGlobalId()),
       peer_pid_(frame->GetProcess()->GetProcess().Pid()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -187,6 +187,11 @@ void PeerConnectionTrackerHost::OnThermalStateChange(
       static_cast<blink::mojom::DeviceThermalState>(new_state));
 }
 
+void PeerConnectionTrackerHost::OnSpeedLimitChange(int new_limit) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  tracker_->OnSpeedLimitChange(new_limit);
+}
+
 void PeerConnectionTrackerHost::StartEventLog(int lid, int output_period_ms) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_->StartEventLog(lid, output_period_ms);
@@ -215,5 +220,5 @@ void PeerConnectionTrackerHost::BindReceiver(
   receiver_.Bind(std::move(pending_receiver));
 }
 
-RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(PeerConnectionTrackerHost);
+DOCUMENT_USER_DATA_KEY_IMPL(PeerConnectionTrackerHost);
 }  // namespace content

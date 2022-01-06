@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ElementObject, KeyModifiers} from 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/runtime_loaded_test_util.js';
-import {VolumeManagerCommon} from 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/volume_manager_types.js';
-
+import {ElementObject} from './element_object.js';
+import {KeyModifiers} from './key_modifiers.js';
 import {getCaller, pending, repeatUntil, sendTestMessage} from './test_util.js';
+import {VolumeManagerCommonVolumeType} from './volume_manager_common_volume_type.js';
 
 /**
  * When step by step tests are enabled, turns on automatic step() calls. Note
@@ -21,6 +21,17 @@ window.autoStep = () => {
     window.step();
   }
 };
+
+/**
+ * This error type is thrown by executeJsInPreviewTagSwa_ if the script to
+ * execute in the untrusted context produces an error.
+ */
+export class ExecuteScriptError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ExecuteScriptError';
+  }
+}
 
 /**
  * Class to manipulate the window in the remote extension.
@@ -343,7 +354,7 @@ export class RemoteCall {
   /**
    * Gets file entries just under the volume.
    *
-   * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+   * @param {VolumeManagerCommonVolumeType} volumeType Volume type.
    * @param {Array<string>} names File name list.
    * @return {Promise} Promise to be fulfilled with file entries or rejected
    *     depending on the result.
@@ -355,7 +366,7 @@ export class RemoteCall {
 
   /**
    * Waits for a single file.
-   * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+   * @param {VolumeManagerCommonVolumeType} volumeType Volume type.
    * @param {string} name File name.
    * @return {!Promise} Promise to be fulfilled when the file had found.
    */
@@ -518,6 +529,66 @@ export class RemoteCallFilesApp extends RemoteCall {
     });
 
     return appId;
+  }
+
+  /**
+   * Executes a script in the context of a <preview-tag> element contained in
+   * the window.
+   * For SWA: It's the first chrome-untrusted://file-manager <iframe>.
+   * For legacy: It's the first elements based on the `query`.
+   * Responds with its output.
+   *
+   * @param {string} appId App window Id.
+   * @param {!Array<string>} query Query to the <preview-tag> element (this is
+   *     ignored for SWA).
+   * @param {string} statement Javascript statement to be executed within the
+   *     <preview-tag>.
+   * @return {!Promise<*>} resolved with the return value of the `statement`.
+   */
+  async executeJsInPreviewTag(appId, query, statement) {
+    if (this.isSwaMode()) {
+      return this.executeJsInPreviewTagSwa_(statement);
+    }
+
+    return this.callRemoteTestUtil(
+        'deepExecuteScriptInWebView', appId, [query, statement]);
+  }
+
+  /**
+   * Inject javascript statemenent in the first chrome-untrusted://file-manager
+   * page found and respond with its output.
+   * @private
+   * @param {string} statement
+   * @return {!Promise}
+   */
+  async executeJsInPreviewTagSwa_(statement) {
+    const script = `try {
+          let result = ${statement};
+          result = result === undefined ? '@undefined@' : [result];
+          window.domAutomationController.send(JSON.stringify(result));
+        } catch (error) {
+          const errorInfo = {'@error@':  error.message, '@stack@': error.stack};
+          window.domAutomationController.send(JSON.stringify(errorInfo));
+        }`;
+
+    const command = {
+      name: 'executeScriptInChromeUntrusted',
+      data: script,
+    };
+
+    const response = await sendTestMessage(command);
+    if (response === '"@undefined@"') {
+      return undefined;
+    }
+    const output = JSON.parse(response);
+    if ('@error@' in output) {
+      console.error(output['@error@']);
+      console.error('Original StackTrace:\n' + output['@stack@']);
+      throw new ExecuteScriptError(
+          'Error executing JS in Preview: ' + output['@error@']);
+    } else {
+      return output;
+    }
   }
 
   /**

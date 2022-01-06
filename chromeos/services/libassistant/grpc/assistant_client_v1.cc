@@ -25,6 +25,7 @@
 #include "chromeos/assistant/internal/proto/shared/proto/v2/display_interface.pb.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/speaker_id_enrollment_event.pb.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/speaker_id_enrollment_interface.pb.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/libassistant/callback_utils.h"
 #include "chromeos/services/libassistant/grpc/utils/media_status_utils.h"
 #include "chromeos/services/libassistant/grpc/utils/settings_utils.h"
@@ -148,7 +149,13 @@ class AssistantClientV1::DeviceStateListener
   void OnStartFinished() override {
     ENSURE_CALLING_SEQUENCE(&DeviceStateListener::OnStartFinished);
 
-    assistant_client_->NotifyAllServicesReady();
+    // Now |AssistantManager| is fully started, add media manager listener.
+    assistant_client_->AddMediaManagerListener();
+
+    // We will be checking the heartbeat signal sent back for Libassistant for
+    // v2.
+    if (!chromeos::assistant::features::IsLibAssistantV2Enabled())
+      assistant_client_->NotifyAllServicesReady();
   }
 
  private:
@@ -197,7 +204,7 @@ class AssistantClientV1::DisplayConnectionImpl
     observer_ = observer;
   }
 
-  void OnDisplayRequest(const std::string& display_request_bytes) {
+  void SendDisplayRequest(const std::string& display_request_bytes) {
     if (!delegate_) {
       LOG(ERROR) << "Can't send DisplayRequest before delegate is set.";
       return;
@@ -266,17 +273,25 @@ AssistantClientV1::AssistantClientV1(
 }
 
 AssistantClientV1::~AssistantClientV1() {
-  // Some listeners (e.g. MediaManagerListener) require that they outlive 
+  // Some listeners (e.g. MediaManagerListener) require that they outlive
   // `assistant_manager_`. Reset `assistant_manager_` in the parent class first
   // before any listener in this class gets destructed.
   ResetAssistantManager();
 }
 
 void AssistantClientV1::StartServices(
-    base::OnceClosure services_ready_callback) {
-  services_ready_callback_ = std::move(services_ready_callback);
+    ServicesStatusObserver* services_status_observer) {
+  DCHECK(services_status_observer);
+  services_status_observer_ = services_status_observer;
 
   assistant_manager()->Start();
+
+  // Instead we will be checking the heartbeat signal sent back from Libassisant
+  // in v2.
+  if (!chromeos::assistant::features::IsLibAssistantV2Enabled()) {
+    services_status_observer_->OnServicesStatusChanged(
+        ServicesStatus::ONLINE_BOOTING_UP);
+  }
 }
 
 void AssistantClientV1::SetChromeOSApiDelegate(
@@ -293,20 +308,6 @@ bool AssistantClientV1::StartGrpcServices() {
 void AssistantClientV1::AddExperimentIds(
     const std::vector<std::string>& exp_ids) {
   assistant_manager_internal()->AddExtraExperimentIds(exp_ids);
-}
-
-void AssistantClientV1::SendVoicelessInteraction(
-    const ::assistant::api::Interaction& interaction,
-    const std::string& description,
-    const ::assistant::api::VoicelessOptions& options,
-    base::OnceCallback<void(bool)> on_done) {
-  assistant_client::VoicelessOptions voiceless_options;
-  PopulateVoicelessOptionsFromProto(options, &voiceless_options);
-  assistant_manager_internal()->SendVoicelessInteraction(
-      interaction.SerializeAsString(), description, voiceless_options,
-      [callback = std::move(on_done)](bool result) mutable {
-        std::move(callback).Run(result);
-      });
 }
 
 void AssistantClientV1::AddSpeakerIdEnrollmentEventObserver(
@@ -357,9 +358,9 @@ void AssistantClientV1::ResetAllDataAndShutdown() {
   assistant_manager()->ResetAllDataAndShutdown();
 }
 
-void AssistantClientV1::OnDisplayRequest(
+void AssistantClientV1::SendDisplayRequest(
     const OnDisplayRequestRequest& request) {
-  display_connection_->OnDisplayRequest(request.display_request_bytes());
+  display_connection_->SendDisplayRequest(request.display_request_bytes());
 }
 
 void AssistantClientV1::AddDisplayEventObserver(
@@ -389,9 +390,37 @@ void AssistantClientV1::AddDeviceStateEventObserver(
   device_state_event_observer_list_.AddObserver(observer);
 }
 
+void AssistantClientV1::SendVoicelessInteraction(
+    const ::assistant::api::Interaction& interaction,
+    const std::string& description,
+    const ::assistant::api::VoicelessOptions& options,
+    base::OnceCallback<void(bool)> on_done) {
+  assistant_client::VoicelessOptions voiceless_options;
+  PopulateVoicelessOptionsFromProto(options, &voiceless_options);
+  assistant_manager_internal()->SendVoicelessInteraction(
+      interaction.SerializeAsString(), description, voiceless_options,
+      [callback = std::move(on_done)](bool result) mutable {
+        std::move(callback).Run(result);
+      });
+}
+
 void AssistantClientV1::RegisterActionModule(
     assistant_client::ActionModule* action_module) {
   assistant_manager_internal()->RegisterActionModule(action_module);
+}
+
+void AssistantClientV1::SendScreenContextRequest(
+    const std::vector<std::string>& context_protos) {
+  assistant_manager_internal()->SendScreenContextRequest(context_protos);
+}
+
+void AssistantClientV1::StartVoiceInteraction() {
+  assistant_manager()->StartAssistantInteraction();
+}
+
+void AssistantClientV1::StopAssistantInteraction(bool cancel_conversation) {
+  assistant_manager_internal()->StopAssistantInteractionInternal(
+      cancel_conversation);
 }
 
 void AssistantClientV1::SetAuthenticationInfo(const AuthTokens& tokens) {
@@ -455,13 +484,8 @@ void AssistantClientV1::NotifyDeviceStateEvent(
 }
 
 void AssistantClientV1::NotifyAllServicesReady() {
-  DCHECK(services_ready_callback_);
-  // This callback will do nothing if V2 is enabled as in V2 we'll be relying on
-  // the heartbeat ready signal.
-  std::move(services_ready_callback_).Run();
-
-  // Now |AssistantManager| is fully started, add media manager listener.
-  AddMediaManagerListener();
+  services_status_observer_->OnServicesStatusChanged(
+      ServicesStatus::ONLINE_ALL_SERVICES_AVAILABLE);
 }
 
 void AssistantClientV1::OnSpeakerIdEnrollmentUpdate(

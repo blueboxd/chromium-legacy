@@ -8,6 +8,7 @@
 
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_host.h"
 #include "cc/test/fake_content_layer_client.h"
@@ -314,6 +315,27 @@ class DroppedFrameCounterTest : public testing::Test {
     return dropped_frame_counter_.sliding_window_max_percent_dropped();
   }
 
+  double MaxPercentDroppedFrameAfter1Sec() {
+    auto percent_dropped =
+        dropped_frame_counter_.max_percent_dropped_After_1_sec();
+    EXPECT_TRUE(percent_dropped.has_value());
+    return percent_dropped.value();
+  }
+
+  double MaxPercentDroppedFrameAfter2Sec() {
+    auto percent_dropped =
+        dropped_frame_counter_.max_percent_dropped_After_2_sec();
+    EXPECT_TRUE(percent_dropped.has_value());
+    return percent_dropped.value();
+  }
+
+  double MaxPercentDroppedFrameAfter5Sec() {
+    auto percent_dropped =
+        dropped_frame_counter_.max_percent_dropped_After_5_sec();
+    EXPECT_TRUE(percent_dropped.has_value());
+    return percent_dropped.value();
+  }
+
   double PercentDroppedFrame95Percentile() {
     return dropped_frame_counter_.SlidingWindow95PercentilePercentDropped();
   }
@@ -589,13 +611,15 @@ TEST_F(DroppedFrameCounterTest,
 
   // Advance 1s so that we will attempt to update the window when resetting the
   // pending frames. The pending dropped frame above should be calculated here,
-  // and both the max and 95th percentile should be updated.
+  // and the max percentile should be updated.
   AdvancetimeByIntervals(kFps);
   dropped_frame_counter_.ResetPendingFrames(GetNextFrameTime());
-
-  EXPECT_EQ(dropped_frame_counter_.sliding_window_max_percent_dropped(),
-            dropped_frame_counter_.SlidingWindow95PercentilePercentDropped());
   EXPECT_GT(dropped_frame_counter_.sliding_window_max_percent_dropped(), 0u);
+
+  // There should be enough sliding windows reported with 0 dropped frames that
+  // the 95th percentile stays at 0.
+  EXPECT_EQ(dropped_frame_counter_.SlidingWindow95PercentilePercentDropped(),
+            0u);
 }
 
 TEST_F(DroppedFrameCounterTest, ResetPendingFramesAccountingForPendingFrames) {
@@ -767,6 +791,75 @@ TEST_F(DroppedFrameCounterTest, ForkedCompositorFrameReporter) {
   SimulateForkedFrame(true, true);
   EXPECT_EQ(dropped_frame_counter_.total_smoothness_dropped(), 3u);
 }
+
+TEST_F(DroppedFrameCounterTest, WorstSmoothnessTiming) {
+  // Set an interval that rounds up nicely with 1 second.
+  constexpr auto kInterval = base::Milliseconds(10);
+  constexpr size_t kFps = base::Seconds(1) / kInterval;
+  static_assert(
+      kFps % 5 == 0,
+      "kFps must be a multiple of 5 because this test depends on it.");
+  SetInterval(kInterval);
+
+  // Prepare a second of pending frames, and send FCP after the last of these
+  // frames.
+  dropped_frame_counter_.Reset();
+  std::vector<viz::BeginFrameArgs> pending_frames = SimulatePendingFrame(kFps);
+  const auto& last_frame = pending_frames.back();
+  base::TimeTicks time_fcp_sent =
+      last_frame.frame_time + last_frame.interval / 2;
+  dropped_frame_counter_.OnFcpReceived();
+  dropped_frame_counter_.SetTimeFcpReceivedForTesting(time_fcp_sent);
+
+  // End each of the pending frames as dropped. These shouldn't affect any of
+  // the metrics.
+  for (const auto& frame : pending_frames) {
+    dropped_frame_counter_.OnEndFrame(frame, true);
+  }
+
+  // After FCP time, add a second each of 80% and 60%, and three seconds of 40%
+  // dropped frames. This should be five seconds total.
+  SimulateFrameSequence({false, true, true, true, true}, kFps / 5);
+  SimulateFrameSequence({false, false, true, true, true}, kFps / 5);
+  SimulateFrameSequence({false, false, false, true, true}, (kFps / 5) * 3);
+
+  // Next two seconds are 20% dropped frames.
+  SimulateFrameSequence({false, false, false, false, true}, (kFps / 5) * 2);
+
+  // The first 1, 2, and 5 seconds shouldn't be recorded in the corresponding
+  // max dropped after N seconds metrics.
+  EXPECT_FLOAT_EQ(MaxPercentDroppedFrame(), 80);
+  EXPECT_FLOAT_EQ(MaxPercentDroppedFrameAfter1Sec(), 60);
+  EXPECT_FLOAT_EQ(MaxPercentDroppedFrameAfter2Sec(), 40);
+  EXPECT_FLOAT_EQ(MaxPercentDroppedFrameAfter5Sec(), 20);
+
+  // Next second is 100% dropped frames, all metrics should include this.
+  SimulateFrameSequence({true}, kFps);
+  EXPECT_FLOAT_EQ(MaxPercentDroppedFrame(), 100);
+  EXPECT_FLOAT_EQ(MaxPercentDroppedFrameAfter1Sec(), 100);
+  EXPECT_FLOAT_EQ(MaxPercentDroppedFrameAfter2Sec(), 100);
+  EXPECT_FLOAT_EQ(MaxPercentDroppedFrameAfter5Sec(), 100);
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(DroppedFrameCounterTest, ReportForUI) {
+  constexpr auto kInterval = base::Milliseconds(10);
+  constexpr size_t kFps = base::Seconds(1) / kInterval;
+  static_assert(
+      kFps % 5 == 0,
+      "kFps must be a multiple of 5 because this test depends on it.");
+  SetInterval(kInterval);
+
+  dropped_frame_counter_.EnableReporForUI();
+  base::HistogramTester histogram_tester;
+
+  // 4 seconds with 20% dropped frames.
+  SimulateFrameSequence({false, false, false, false, true}, (kFps / 5) * 4);
+
+  histogram_tester.ExpectUniqueSample(
+      "Ash.Smoothness.MaxPercentDroppedFrames_1sWindow", 20, 1);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 }  // namespace cc

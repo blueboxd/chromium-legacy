@@ -16,10 +16,10 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -356,6 +356,9 @@ webrtc::VideoCodecType ProfileToWebRtcVideoCodecType(
   } else if (profile >= media::H264PROFILE_MIN &&
              profile <= media::H264PROFILE_MAX) {
     return webrtc::kVideoCodecH264;
+  } else if (profile >= media::AV1PROFILE_MIN &&
+             profile <= media::AV1PROFILE_MAX) {
+    return webrtc::kVideoCodecAV1;
   }
   NOTREACHED() << "Invalid profile " << GetProfileName(profile);
   return webrtc::kVideoCodecGeneric;
@@ -630,7 +633,6 @@ RTCVideoEncoder::Impl::Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
   encoder_info_.implementation_name = "ExternalEncoder";
   encoder_info_.has_trusted_rate_controller = true;
   encoder_info_.is_hardware_accelerated = true;
-  encoder_info_.has_internal_source = false;
   encoder_info_.fps_allocation[0] = {
       webrtc::VideoEncoder::EncoderInfo::kMaxFramerateFraction};
   DCHECK(encoder_info_.resolution_bitrate_limits.empty());

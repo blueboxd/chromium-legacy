@@ -7,6 +7,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/cbor/diagnostic_writer.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
@@ -244,18 +245,14 @@ class TunnelTransport : public Transport {
 
     update_callback_ = std::move(update_callback);
 
-    network_context_->CreateWebSocket(
-        target_, {device::kCableWebSocketProtocol}, net::SiteForCookies(),
-        net::IsolationInfo(), /*additional_headers=*/{},
-        network::mojom::kBrowserProcessId, url::Origin::Create(target_),
-        network::mojom::kWebSocketOptionBlockAllCookies,
-        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
-        websocket_client_->BindNewHandshakeClientPipe(),
-        /*url_loader_network_observer=*/mojo::NullRemote(),
-        /*auth_handler=*/mojo::NullRemote(),
-        /*header_client=*/mojo::NullRemote(),
-        /*throttling_profile_id=*/absl::nullopt);
-    FIDO_LOG(DEBUG) << "Creating WebSocket to " << target_.spec();
+    // Delay the WebSocket creation by 250ms. This to measure whether DNS
+    // errors are reduced in UMA stats. If so, then the network errors that we
+    // see are probably due to a start-up race.
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&TunnelTransport::StartWebSocket,
+                       weak_factory_.GetWeakPtr()),
+        base::Milliseconds(250));
   }
 
   void Write(std::vector<uint8_t> data) override {
@@ -278,6 +275,23 @@ class TunnelTransport : public Transport {
     kConnectedPaired,
     kReady,
   };
+
+  void StartWebSocket() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    network_context_->CreateWebSocket(
+        target_, {device::kCableWebSocketProtocol}, net::SiteForCookies(),
+        net::IsolationInfo(), /*additional_headers=*/{},
+        network::mojom::kBrowserProcessId, url::Origin::Create(target_),
+        network::mojom::kWebSocketOptionBlockAllCookies,
+        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
+        websocket_client_->BindNewHandshakeClientPipe(),
+        /*url_loader_network_observer=*/mojo::NullRemote(),
+        /*auth_handler=*/mojo::NullRemote(),
+        /*header_client=*/mojo::NullRemote(),
+        /*throttling_profile_id=*/absl::nullopt);
+    FIDO_LOG(DEBUG) << "Creating WebSocket to " << target_.spec();
+  }
 
   void OnTunnelReady(
       WebSocketAdapter::Result result,
@@ -433,6 +447,7 @@ class TunnelTransport : public Transport {
   bool first_message_ = true;
 
   SEQUENCE_CHECKER(sequence_checker_);
+  base::WeakPtrFactory<TunnelTransport> weak_factory_{this};
 };
 
 class CTAP2Processor : public Transaction {
@@ -456,8 +471,10 @@ class CTAP2Processor : public Transaction {
       return;
     } else if (absl::get_if<Transport::Disconnected>(&update)) {
       absl::optional<Platform::Error> maybe_error;
-      if (!transaction_done_) {
+      if (!transaction_received_) {
         maybe_error = Platform::Error::UNEXPECTED_EOF;
+      } else if (!transaction_done_) {
+        maybe_error = Platform::Error::EOF_WHILE_PROCESSING;
       }
       platform_->OnCompleted(maybe_error);
       return;
@@ -582,6 +599,7 @@ class CTAP2Processor : public Transaction {
 
         // TODO: plumb the rk flag through once GmsCore supports resident
         // keys. This will require support for optional maps in |Extract|.
+        transaction_received_ = true;
         platform_->MakeCredential(std::move(params));
         return std::vector<uint8_t>();
       }
@@ -624,6 +642,7 @@ class CTAP2Processor : public Transaction {
           return absl::nullopt;
         }
 
+        transaction_received_ = true;
         platform_->GetAssertion(std::move(params));
         return std::vector<uint8_t>();
       }
@@ -676,7 +695,10 @@ class CTAP2Processor : public Transaction {
       platform_->OnStatus(Platform::Status::CTAP_ERROR);
     }
 
-    transaction_done_ = true;
+    if (!transaction_done_) {
+      platform_->OnStatus(Platform::Status::FIRST_TRANSACTION_DONE);
+      transaction_done_ = true;
+    }
     transport_->Write(std::move(response));
   }
 
@@ -713,10 +735,14 @@ class CTAP2Processor : public Transaction {
       platform_->OnStatus(Platform::Status::CTAP_ERROR);
     }
 
-    transaction_done_ = true;
+    if (!transaction_done_) {
+      platform_->OnStatus(Platform::Status::FIRST_TRANSACTION_DONE);
+      transaction_done_ = true;
+    }
     transport_->Write(std::move(response));
   }
 
+  bool transaction_received_ = false;
   bool transaction_done_ = false;
   const std::unique_ptr<Transport> transport_;
   const std::unique_ptr<Platform> platform_;

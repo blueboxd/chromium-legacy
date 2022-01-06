@@ -81,7 +81,7 @@ class AnimationEffectStackTest : public PageTestBase {
                                      double duration = 10) {
     Timing timing;
     timing.fill_mode = Timing::FillMode::BOTH;
-    timing.iteration_duration = AnimationTimeDelta::FromSecondsD(duration);
+    timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(duration);
     return MakeGarbageCollected<KeyframeEffect>(element.Get(), effect, timing);
   }
 
@@ -98,7 +98,7 @@ class AnimationEffectStackTest : public PageTestBase {
     EXPECT_TRUE(typed_value->GetInterpolableValue().IsLength());
     const InterpolableLength& length =
         To<InterpolableLength>(typed_value->GetInterpolableValue());
-    return length.CreateCSSValue(kValueRangeAll)->GetDoubleValue();
+    return length.CreateCSSValue(Length::ValueRange::kAll)->GetDoubleValue();
   }
 
   double GetZIndexValue(const ActiveInterpolationsMap& active_interpolations) {

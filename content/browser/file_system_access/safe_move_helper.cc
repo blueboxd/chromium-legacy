@@ -4,11 +4,11 @@
 
 #include "content/browser/file_system_access/safe_move_helper.h"
 
-#include "base/bind_post_task.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
@@ -126,14 +126,14 @@ SafeMoveHelper::SafeMoveHelper(
     const FileSystemAccessManagerImpl::BindingContext& context,
     const storage::FileSystemURL& source_url,
     const storage::FileSystemURL& dest_url,
-    storage::FileSystemOperation::CopyOrMoveOption option,
+    storage::FileSystemOperation::CopyOrMoveOptionSet options,
     download::QuarantineConnectionCallback quarantine_connection_callback,
     bool has_transient_user_activation)
     : manager_(std::move(manager)),
       context_(context),
       source_url_(source_url),
       dest_url_(dest_url),
-      option_(option),
+      options_(options),
       quarantine_connection_callback_(
           std::move(quarantine_connection_callback)),
       has_transient_user_activation_(has_transient_user_activation) {}
@@ -246,8 +246,10 @@ void SafeMoveHelper::DidAfterWriteCheck(
                                      weak_factory_.GetWeakPtr());
   }
   manager_->DoFileSystemOperation(
-      FROM_HERE, &storage::FileSystemOperationRunner::MoveFileLocal,
-      std::move(result_callback), source_url(), dest_url(), option_);
+      FROM_HERE, &storage::FileSystemOperationRunner::Move,
+      std::move(result_callback), source_url(), dest_url(), options_,
+      storage::FileSystemOperationRunner::ErrorBehavior::ERROR_BEHAVIOR_ABORT,
+      storage::FileSystemOperation::CopyOrMoveProgressCallback());
 }
 
 void SafeMoveHelper::DidFileSkipQuarantine(base::File::Error result) {

@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/renderer/bindings/core/v8/local_window_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -97,7 +98,33 @@ constexpr int32_t CappedEfficacyInKBPerMs(double efficacy_in_bytes_per_us) {
   return base::saturated_cast<int32_t>(efficacy_in_bytes_per_us * 1000 / 1024);
 }
 
-void CheckCppEvents(const v8::metrics::GarbageCollectionFullCycle& event) {
+// Returns true if |event| contains valid cpp histogram values.
+bool CheckCppEvents(const v8::metrics::GarbageCollectionFullCycle& event) {
+  if (event.total_cpp.mark_wall_clock_duration_in_us == -1) {
+    // If a cpp field in |event| is uninitialized, all cpp fields should be
+    // uninitialized.
+    DCHECK_EQ(-1, event.total_cpp.mark_wall_clock_duration_in_us);
+    DCHECK_EQ(-1, event.total_cpp.weak_wall_clock_duration_in_us);
+    DCHECK_EQ(-1, event.total_cpp.compact_wall_clock_duration_in_us);
+    DCHECK_EQ(-1, event.total_cpp.sweep_wall_clock_duration_in_us);
+    DCHECK_EQ(-1, event.main_thread_cpp.mark_wall_clock_duration_in_us);
+    DCHECK_EQ(-1, event.main_thread_cpp.weak_wall_clock_duration_in_us);
+    DCHECK_EQ(-1, event.main_thread_cpp.compact_wall_clock_duration_in_us);
+    DCHECK_EQ(-1, event.main_thread_cpp.sweep_wall_clock_duration_in_us);
+    DCHECK_EQ(-1, event.main_thread_atomic_cpp.mark_wall_clock_duration_in_us);
+    DCHECK_EQ(-1, event.main_thread_atomic_cpp.weak_wall_clock_duration_in_us);
+    DCHECK_EQ(-1,
+              event.main_thread_atomic_cpp.compact_wall_clock_duration_in_us);
+    DCHECK_EQ(-1, event.main_thread_atomic_cpp.sweep_wall_clock_duration_in_us);
+    DCHECK_EQ(-1, event.objects_cpp.bytes_before);
+    DCHECK_EQ(-1, event.objects_cpp.bytes_after);
+    DCHECK_EQ(-1, event.objects_cpp.bytes_freed);
+    DCHECK_EQ(-1, event.memory_cpp.bytes_freed);
+    DCHECK_EQ(-1.0, event.efficiency_cpp_in_bytes_per_us);
+    DCHECK_EQ(-1.0, event.main_thread_efficiency_cpp_in_bytes_per_us);
+    DCHECK_EQ(-1.0, event.collection_rate_cpp_in_percent);
+    return false;
+  }
   // Check that all used values have been initialized.
   DCHECK_LE(0, event.total_cpp.mark_wall_clock_duration_in_us);
   DCHECK_LE(0, event.total_cpp.weak_wall_clock_duration_in_us);
@@ -118,6 +145,7 @@ void CheckCppEvents(const v8::metrics::GarbageCollectionFullCycle& event) {
   DCHECK_LE(0, event.efficiency_cpp_in_bytes_per_us);
   DCHECK_LE(0, event.main_thread_efficiency_cpp_in_bytes_per_us);
   DCHECK_LE(0, event.collection_rate_cpp_in_percent);
+  return true;
 }
 
 }  // namespace
@@ -125,7 +153,8 @@ void CheckCppEvents(const v8::metrics::GarbageCollectionFullCycle& event) {
 void V8MetricsRecorder::AddMainThreadEvent(
     const v8::metrics::GarbageCollectionFullCycle& event,
     ContextId context_id) {
-  CheckCppEvents(event);
+  if (!CheckCppEvents(event))
+    return;
   // Report throughput metrics:
   UMA_HISTOGRAM_TIMES(
       "V8.GC.Cycle.Full.Cpp",
@@ -198,45 +227,47 @@ void V8MetricsRecorder::AddMainThreadEvent(
   static constexpr size_t kMaxSize = 4 * 1024 * 1024;
   static constexpr size_t kNumBuckets = 50;
 
-  DEFINE_STATIC_LOCAL(
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, object_size_before_histogram,
       ("V8.GC.Cycle.Objects.Before.Full.Cpp", kMinSize, kMaxSize, kNumBuckets));
   object_size_before_histogram.Count(
       CappedSizeInKB(event.objects_cpp.bytes_before));
 
-  DEFINE_STATIC_LOCAL(
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, object_size_after_histogram,
       ("V8.GC.Cycle.Objects.After.Full.Cpp", kMinSize, kMaxSize, kNumBuckets));
   object_size_after_histogram.Count(
       CappedSizeInKB(event.objects_cpp.bytes_after));
 
-  DEFINE_STATIC_LOCAL(
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, object_size_freed_histogram,
       ("V8.GC.Cycle.Objects.Freed.Full.Cpp", kMinSize, kMaxSize, kNumBuckets));
   object_size_freed_histogram.Count(
       CappedSizeInKB(event.objects_cpp.bytes_freed));
 
-  DEFINE_STATIC_LOCAL(
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, memory_size_freed_histogram,
       ("V8.GC.Cycle.Memory.Freed.Full.Cpp", kMinSize, kMaxSize, kNumBuckets));
   memory_size_freed_histogram.Count(
       CappedSizeInKB(event.memory_cpp.bytes_freed));
 
   // Report efficacy metrics:
-  DEFINE_STATIC_LOCAL(
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, efficacy_histogram,
       ("V8.GC.Cycle.Efficiency.Full.Cpp", kMinSize, kMaxSize, kNumBuckets));
   efficacy_histogram.Count(
       CappedEfficacyInKBPerMs(event.efficiency_cpp_in_bytes_per_us));
 
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, efficacy_main_thread_cpp_histogram,
-                      ("V8.GC.Cycle.Efficiency.MainThread.Full.Cpp", kMinSize,
-                       kMaxSize, kNumBuckets));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,
+                                  efficacy_main_thread_cpp_histogram,
+                                  ("V8.GC.Cycle.Efficiency.MainThread.Full.Cpp",
+                                   kMinSize, kMaxSize, kNumBuckets));
   efficacy_main_thread_cpp_histogram.Count(CappedEfficacyInKBPerMs(
       event.main_thread_efficiency_cpp_in_bytes_per_us));
 
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,
-                      ("V8.GC.Cycle.CollectionRate.Full.Cpp", 0, 100, 20));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, collection_rate_histogram,
+      ("V8.GC.Cycle.CollectionRate.Full.Cpp", 0, 100, 20));
   collection_rate_histogram.Count(base::saturated_cast<base::Histogram::Sample>(
       100 * event.collection_rate_cpp_in_percent));
 }
@@ -297,34 +328,25 @@ void V8MetricsRecorder::NotifyIsolateDisposal() {
   isolate_ = nullptr;
 }
 
-Document* V8MetricsRecorder::GetDocument(
+absl::optional<V8MetricsRecorder::UkmRecorderAndSourceId>
+V8MetricsRecorder::GetUkmRecorderAndSourceId(
     v8::metrics::Recorder::ContextId context_id) {
   if (!isolate_)
-    return nullptr;
+    return absl::optional<UkmRecorderAndSourceId>();
   v8::HandleScope handle_scope(isolate_);
   v8::MaybeLocal<v8::Context> maybe_context =
       v8::metrics::Recorder::GetContext(isolate_, context_id);
   if (maybe_context.IsEmpty())
-    return nullptr;
-  return To<LocalDOMWindow>(
-             ExecutionContext::From(maybe_context.ToLocalChecked()))
-      ->document();
-}
-
-absl::optional<V8MetricsRecorder::UkmRecorderAndSourceId>
-V8MetricsRecorder::GetUkmRecorderAndSourceId(
-    v8::metrics::Recorder::ContextId context_id) {
-  DCHECK(IsMainThread());
-  if (!isolate_)
     return absl::optional<UkmRecorderAndSourceId>();
-  Document* document = GetDocument(context_id);
-  if (!document)
+  ExecutionContext* context =
+      ExecutionContext::From(maybe_context.ToLocalChecked());
+  if (!context)
     return absl::optional<UkmRecorderAndSourceId>();
-  ukm::UkmRecorder* ukm_recorder = document->UkmRecorder();
+  ukm::UkmRecorder* ukm_recorder = context->UkmRecorder();
   if (!ukm_recorder)
     return absl::optional<UkmRecorderAndSourceId>();
   return absl::optional<UkmRecorderAndSourceId>(absl::in_place, ukm_recorder,
-                                                document->UkmSourceID());
+                                                context->UkmSourceID());
 }
 
 }  // namespace blink

@@ -506,27 +506,6 @@ void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
     wcax->HandleHover(android_node->unique_id());
 }
 
-gfx::Rect BrowserAccessibilityManagerAndroid::GetViewBoundsInScreenCoordinates()
-    const {
-  // We have to take the device scale factor into account on Android.
-  BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
-  if (delegate) {
-    gfx::Rect bounds = delegate->AccessibilityGetViewBounds();
-
-    // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
-    // The bounds returned by the delegate are always in device-independent
-    // pixels (DIPs), meaning physical pixels divided by device scale factor
-    // (DSF). However, if UseZoomForDSF is enabled, then Blink does not apply
-    // DSF when going from physical to screen pixels. In that case, we need to
-    // multiply DSF back in to get to Blink's notion of "screen pixels."
-    if (IsUseZoomForDSFEnabled() && device_scale_factor() > 0.0 &&
-        device_scale_factor() != 1.0)
-      bounds = ScaleToEnclosingRect(bounds, device_scale_factor());
-    return bounds;
-  }
-  return gfx::Rect();
-}
-
 void BrowserAccessibilityManagerAndroid::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                              ui::AXNode* node) {
   BrowserAccessibility* wrapper = GetFromAXNode(node);
@@ -534,6 +513,15 @@ void BrowserAccessibilityManagerAndroid::OnNodeWillBeDeleted(ui::AXTree* tree,
       static_cast<BrowserAccessibilityAndroid*>(wrapper);
 
   ClearNodeInfoCacheForGivenId(android_node->unique_id());
+
+  // When a node will be deleted, clear its parent from the cache as well, or
+  // the parent could erroneously report the cleared node as a child later on.
+  BrowserAccessibilityAndroid* parent_node =
+      static_cast<BrowserAccessibilityAndroid*>(
+          android_node->PlatformGetParent());
+  if (parent_node != nullptr) {
+    ClearNodeInfoCacheForGivenId(parent_node->unique_id());
+  }
 
   BrowserAccessibilityManager::OnNodeWillBeDeleted(tree, node);
 }

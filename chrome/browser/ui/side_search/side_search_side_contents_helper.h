@@ -17,6 +17,7 @@ class WebContents;
 }  // namespace content
 
 class GURL;
+class SideSearchConfig;
 
 // Side Search helper for the WebContents hosted in the side panel.
 class SideSearchSideContentsHelper
@@ -59,7 +60,8 @@ class SideSearchSideContentsHelper
   // content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
 
   // content::WebContentsDelegate:
   bool CanDragEnter(content::WebContents* source,
@@ -90,6 +92,8 @@ class SideSearchSideContentsHelper
 
   // Emits metrics data for the previous user journey if present.
   void MaybeRecordMetricsPerJourney();
+
+  SideSearchConfig* GetConfig();
 
   // `delegate_` will outlive the SideContentsWrapper.
   Delegate* delegate_ = nullptr;

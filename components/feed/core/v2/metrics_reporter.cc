@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -150,6 +151,23 @@ base::StringPiece NetworkRequestTypeUmaName(NetworkRequestType type) {
 
 base::StringPiece HistogramReplacement(const StreamType& stream_type) {
   return stream_type.IsWebFeed() ? "Feed.WebFeed." : "Feed.";
+}
+
+std::string NoticeUmaName(const StreamType& stream_type,
+                          const std::string& key,
+                          base::StringPiece uma_base_name) {
+  std::string normalized_key = base::ToLowerASCII(key);
+  normalized_key[0] = base::ToUpperASCII(normalized_key[0]);
+  // Don't report UMA if the key is not supported.
+  if (normalized_key != "Youtube") {
+    base::UmaHistogramBoolean(
+        base::StrCat({"ContentSuggestions.", HistogramReplacement(stream_type),
+                      "InvalidNoticeKey"}),
+        true);
+    return std::string();
+  }
+  return base::StrCat({"ContentSuggestions.", HistogramReplacement(stream_type),
+                       uma_base_name, ".", normalized_key});
 }
 
 }  // namespace
@@ -675,7 +693,7 @@ void MetricsReporter::OnLoadStream(
   // from the store. A negative value means there was content loaded, but it had
   // a timestamp from the future. In either case, we'll avoid recording the
   // content age.
-  if (stored_content_age > base::TimeDelta()) {
+  if (stored_content_age.is_positive()) {
     if (loaded_new_content_from_network) {
       base::UmaHistogramCustomTimes(
           "ContentSuggestions.Feed.ContentAgeOnLoad.BlockingRefresh",
@@ -799,7 +817,7 @@ void MetricsReporter::ReportPersistentDataIfDayIsDone() {
     if (since_day_start > base::Days(1)
         // Allow up to 1 hour of negative delta, for expected clock changes.
         || since_day_start < -base::Hours(1)) {
-      if (persistent_data_.accumulated_time_spent_in_feed > base::TimeDelta()) {
+      if (persistent_data_.accumulated_time_spent_in_feed.is_positive()) {
         base::UmaHistogramLongTimes(
             "ContentSuggestions.Feed.TimeSpentInFeed",
             persistent_data_.accumulated_time_spent_in_feed);
@@ -900,6 +918,51 @@ void MetricsReporter::ReportFollowCountOnLoad(bool content_shown,
       base::StrCat({"ContentSuggestions.Feed.WebFeed.FollowCount.",
                     content_shown ? "ContentShown" : "NoContentShown"}),
       subscription_count);
+}
+
+void MetricsReporter::OnNoticeCreated(const StreamType& stream_type,
+                                      const std::string& key) {
+  std::string uma_name = NoticeUmaName(stream_type, key, "NoticeCreated");
+  if (uma_name.empty())
+    return;
+  base::UmaHistogramBoolean(uma_name, true);
+}
+
+void MetricsReporter::OnNoticeViewed(const StreamType& stream_type,
+                                     const std::string& key) {
+  std::string uma_name = NoticeUmaName(stream_type, key, "NoticeViewed");
+  if (uma_name.empty())
+    return;
+  base::UmaHistogramBoolean(uma_name, true);
+}
+
+void MetricsReporter::OnNoticeOpenAction(const StreamType& stream_type,
+                                         const std::string& key) {
+  std::string uma_name = NoticeUmaName(stream_type, key, "NoticeOpenAction");
+  if (uma_name.empty())
+    return;
+  base::UmaHistogramBoolean(uma_name, true);
+}
+
+void MetricsReporter::OnNoticeDismissed(const StreamType& stream_type,
+                                        const std::string& key) {
+  std::string uma_name = NoticeUmaName(stream_type, key, "NoticeDismissed");
+  if (uma_name.empty())
+    return;
+  base::UmaHistogramBoolean(uma_name, true);
+}
+
+void MetricsReporter::OnNoticeAcknowledged(
+    const StreamType& stream_type,
+    const std::string& key,
+    NoticeAcknowledgementPath acknowledgement_path) {
+  std::string uma_name = NoticeUmaName(stream_type, key, "NoticeAcknowledged");
+  if (uma_name.empty())
+    return;
+  base::UmaHistogramBoolean(uma_name, true);
+  base::UmaHistogramEnumeration(
+      NoticeUmaName(stream_type, key, "NoticeAcknowledgementPath"),
+      acknowledgement_path);
 }
 
 }  // namespace feed

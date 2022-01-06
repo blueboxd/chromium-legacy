@@ -17,9 +17,9 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/version.h"
 #include "chrome/browser/ash/app_mode/app_session_ash.h"
@@ -117,7 +117,8 @@ std::unique_ptr<chromeos::ExternalCache> CreateExternalCache(
   auto cache = std::make_unique<chromeos::ExternalCacheImpl>(
       GetCrxCacheDir(), shared_url_loader_factory, GetBackgroundTaskRunner(),
       delegate, true /* always_check_updates */,
-      false /* wait_for_cache_initialization */);
+      false /* wait_for_cache_initialization */,
+      true /* allow_scheduled_updates */);
   cache->set_flush_on_put(true);
   return cache;
 }

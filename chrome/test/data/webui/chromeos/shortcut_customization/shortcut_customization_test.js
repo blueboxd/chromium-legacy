@@ -12,7 +12,7 @@ import {AcceleratorInfo, Modifier, ShortcutProviderInterface} from 'chrome://sho
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks} from '../../test_util.js';
 
-import {CreateDefaultAccelerator} from './shortcut_customization_test_util.js';
+import {CreateUserAccelerator} from './shortcut_customization_test_util.js';
 
 export function shortcutCustomizationAppTest() {
   /** @type {?ShortcutCustomizationAppElement} */
@@ -152,7 +152,7 @@ export function shortcutCustomizationAppTest() {
     const nav = page.shadowRoot.querySelector('navigation-view-panel');
 
     /** @type {!AcceleratorInfo} */
-    const acceleratorInfo = CreateDefaultAccelerator(
+    const acceleratorInfo = CreateUserAccelerator(
         Modifier.SHIFT,
         /*key=*/ 67,
         /*key_display=*/ 'c');
@@ -187,15 +187,15 @@ export function shortcutCustomizationAppTest() {
     assertTrue(!!editDialog);
 
     // Grab the first accelerator from Virtual Desks subsection.
-    const editView = editDialog.shadowRoot.querySelector('cr-dialog')
-                         .querySelectorAll('accelerator-edit-view')[0];
+    let editView = editDialog.shadowRoot.querySelector('cr-dialog')
+                       .querySelectorAll('accelerator-edit-view')[0];
 
     // Click on edit button.
     editView.shadowRoot.querySelector('#editButton').click();
 
     await flushTasks();
 
-    const accelViewElement =
+    let accelViewElement =
         editView.shadowRoot.querySelector('#acceleratorItem');
 
     // Assert no error has occurred prior to pressing a shortcut.
@@ -229,6 +229,11 @@ export function shortcutCustomizationAppTest() {
     }));
 
     await flushTasks();
+
+    // Requery the view element.
+    editView = editDialog.shadowRoot.querySelector('cr-dialog')
+                   .querySelectorAll('accelerator-edit-view')[0];
+    accelViewElement = editView.shadowRoot.querySelector('#acceleratorItem');
 
     // Assert that the accelerator was updated with the new shortcut (Alt + ']')
     const actualAccelerator = accelViewElement.acceleratorInfo.accelerator;
@@ -307,6 +312,59 @@ export function shortcutCustomizationAppTest() {
     assertEquals(Modifier.ALT, actualAccelerator.modifiers);
     assertEquals(221, actualAccelerator.key);
     assertEquals(']', actualAccelerator.key_display);
+  });
+
+  test('RemoveAccelerator', async () => {
+    await flushTasks();
+
+    // Open dialog for first accelerator in View Desk subsection.
+    await openDialogForAcceleratorInSubsection_(/*View Desk*/ 1);
+    let editDialog = page.shadowRoot.querySelector('#editDialog');
+    assertTrue(!!editDialog);
+
+    // Grab the first accelerator from Virtual Desks subsection.
+    let acceleratorList = editDialog.shadowRoot.querySelector('cr-dialog')
+                              .querySelectorAll('accelerator-edit-view');
+    assertEquals(1, acceleratorList.length);
+    const editView = acceleratorList[0];
+
+    // Click on remove button.
+    editView.shadowRoot.querySelector('#deleteButton').click();
+
+    await flushTasks();
+
+    // Requery the accelerator elements.
+    acceleratorList = editDialog.shadowRoot.querySelector('cr-dialog')
+                          .querySelectorAll('accelerator-edit-view');
+
+    // Expect that the accelerator has now been removed.
+    assertEquals(0, acceleratorList.length);
+  });
+
+  test('RestoreAllButton', async () => {
+    await flushTasks();
+
+    let restoreDialog = page.shadowRoot.querySelector('#restoreDialog');
+    // Expect the dialog to not appear initially.
+    assertFalse(!!restoreDialog);
+
+    // Click on the Restore all button.
+    const restoreButton = page.shadowRoot.querySelector('#restoreAllButton');
+    restoreButton.click();
+
+    await flushTasks();
+
+    // Requery the dialog.
+    restoreDialog = page.shadowRoot.querySelector('#restoreDialog');
+    assertTrue(restoreDialog.open);
+
+    // Click on Cancel button.
+    restoreDialog.querySelector('#cancelButton').click();
+
+    await flushTasks();
+
+    restoreDialog = page.shadowRoot.querySelector('#restoreDialog');
+    assertFalse(!!restoreDialog);
   });
 
   suite('FakeMojoProviderTest', () => {

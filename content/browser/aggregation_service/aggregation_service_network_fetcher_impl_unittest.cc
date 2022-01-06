@@ -10,6 +10,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "content/browser/aggregation_service/aggregation_service_test_utils.h"
@@ -20,7 +21,6 @@
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -37,20 +37,21 @@ const char kExampleOrigin[] = "https://helper.test/";
 const char kExampleOriginKeysUrl[] =
     "https://helper.test/.well-known/aggregation-service/keys.json";
 
-const char kExampleValidJson[] = R"(
-        {
-            "version" : "",
-            "keys" : [
-                {
-                    "id" : "abcd",
-                    "key" : "ABCD1234"
-                }
-            ]
-        }
-    )";
-
-const std::vector<PublicKey> kExamplePublicKeys = {
-    PublicKey(/*id=*/"abcd", /*key=*/kABCD1234AsBytes)};
+const aggregation_service::TestHpkeKey kExampleHpkeKey =
+    aggregation_service::GenerateKey("abcd");
+const std::string kExampleValidJson = base::ReplaceStringPlaceholders(
+    R"({
+          "version": "",
+          "keys": [
+              {
+                  "id": "abcd",
+                  "key": "$1"
+              }
+          ]
+       })",
+    {kExampleHpkeKey.base64_encoded_public_key},
+    /*offsets=*/nullptr);
+const std::vector<PublicKey> kExamplePublicKeys = {kExampleHpkeKey.public_key};
 
 }  // namespace
 
@@ -58,23 +59,17 @@ class AggregationServiceNetworkFetcherTest : public testing::Test {
  public:
   AggregationServiceNetworkFetcherTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        network_fetcher_(std::make_unique<AggregationServiceNetworkFetcherImpl>(
+        network_fetcher_(AggregationServiceNetworkFetcherImpl::CreateForTesting(
             task_environment_.GetMockClock(),
-            /*storage_partition=*/nullptr)),
-        shared_url_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {
-    network_fetcher_->SetURLLoaderFactoryForTesting(shared_url_loader_factory_);
-  }
+                &test_url_loader_factory_))) {}
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-
-  std::unique_ptr<AggregationServiceNetworkFetcherImpl> network_fetcher_;
   network::TestURLLoaderFactory test_url_loader_factory_;
+  std::unique_ptr<AggregationServiceNetworkFetcherImpl> network_fetcher_;
 
  private:
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 };
 

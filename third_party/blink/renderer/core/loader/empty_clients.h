@@ -94,6 +94,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void ChromeDestroyed() override {}
   void SetWindowRect(const IntRect&, LocalFrame&) override {}
   IntRect RootWindowRect(LocalFrame&) override { return IntRect(); }
+  void DidAccessInitialMainDocument() override {}
   void FocusPage() override {}
   void DidFocusPage() override {}
   bool CanTakeFocus(mojom::blink::FocusType) override { return false; }
@@ -213,11 +214,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void SetEventListenerProperties(LocalFrame*,
                                   cc::EventListenerClass,
                                   cc::EventListenerProperties) override {}
-  cc::EventListenerProperties EventListenerProperties(
-      LocalFrame*,
-      cc::EventListenerClass event_class) const override {
-    return cc::EventListenerProperties::kNone;
-  }
   void SetHasScrollEventHandlers(LocalFrame*, bool) override {}
   void SetNeedsLowLatencyInput(LocalFrame*, bool) override {}
   void SetNeedsUnbufferedInputForDebugger(LocalFrame*, bool) override {}

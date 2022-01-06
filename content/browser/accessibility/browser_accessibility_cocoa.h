@@ -134,19 +134,12 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 // Internally-used property.
 @property(nonatomic, readonly) NSPoint origin;
 
-@property(nonatomic, readonly) NSString* accessKey;
-@property(nonatomic, readonly) NSNumber* ariaAtomic;
-@property(nonatomic, readonly) NSNumber* ariaBusy;
-@property(nonatomic, readonly) NSString* ariaLive;
 @property(nonatomic, readonly) NSNumber* ariaPosInSet;
-@property(nonatomic, readonly) NSString* ariaRelevant;
 @property(nonatomic, readonly) NSNumber* ariaSetSize;
 @property(nonatomic, readonly) NSArray* children;
 @property(nonatomic, readonly) NSArray* columns;
-@property(nonatomic, readonly) NSArray* columnHeaders;
 @property(nonatomic, readonly) NSValue* columnIndexRange;
 @property(nonatomic, readonly) NSString* descriptionForAccessibility;
-@property(nonatomic, readonly) NSArray* detailsElements;
 @property(nonatomic, readonly) NSNumber* disclosing;
 @property(nonatomic, readonly) id disclosedByRow;
 @property(nonatomic, readonly) NSNumber* disclosureLevel;

@@ -988,6 +988,23 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     alert_button.Click()
     self.assertTrue(self._driver.IsAlertOpen())
 
+  def testClickElementJustOutsidePage(self):
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3878
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    windowHeight = self._driver.ExecuteScript('return window.innerHeight;')
+    self._driver.ExecuteScript(
+        '''
+        document.body.innerHTML = "<div style='height:%dpx'></div>" +
+          "<a href='#' onclick='return false;' id='link'>Click me</a>";
+        document.body.style.cssText = "padding:0.25px";
+        ''' % (2 * windowHeight))
+
+    link = self._driver.FindElement('css selector', '#link')
+    offsetTop = link.GetProperty('offsetTop')
+    targetScrollTop = offsetTop - windowHeight + 1
+    self._driver.ExecuteScript('window.scrollTo(0, %d);' % (targetScrollTop));
+    link.Click()
+
   def testActionsMouseMove(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(

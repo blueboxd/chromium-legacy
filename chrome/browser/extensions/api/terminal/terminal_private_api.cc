@@ -22,7 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
@@ -45,6 +45,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "ui/display/types/display_constants.h"
 
 namespace terminal_private = extensions::api::terminal_private;
 namespace OnTerminalResize =
@@ -58,6 +59,7 @@ namespace CloseTerminalProcess =
 namespace SendInput = extensions::api::terminal_private::SendInput;
 namespace AckOutput = extensions::api::terminal_private::AckOutput;
 namespace SetSettings = extensions::api::terminal_private::SetSettings;
+namespace OpenWindow = extensions::api::terminal_private::OpenWindow;
 
 using crostini::mojom::InstallerState;
 
@@ -287,6 +289,7 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
       args = std::make_unique<std::vector<std::string>>();
     args->insert(args->begin(), kVmShellCommand);
     base::CommandLine params_args(*args);
+    VLOG(1) << "Original cmdline= " << params_args.GetCommandLineString();
     std::string owner_id =
         GetSwitch(params_args, &cmdline, kSwitchOwnerId, user_id_hash);
     std::string vm_name = GetSwitch(params_args, &cmdline, kSwitchVmName,
@@ -296,10 +299,13 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
                   crostini::kCrostiniDefaultContainerName);
     GetSwitch(params_args, &cmdline, kSwitchCurrentWorkingDir, "");
     std::string startup_id = params_args.GetSwitchValueASCII(kSwitchStartupId);
-    crostini::ContainerId container_id(vm_name, container_name);
+    container_id_ =
+        std::make_unique<crostini::ContainerId>(vm_name, container_name);
+    VLOG(1) << "Starting " << *container_id_
+            << ", cmdline=" << cmdline.GetCommandLineString();
 
     auto* mgr = crostini::CrostiniManager::GetForProfile(profile);
-    bool verbose = !mgr->GetContainerInfo(container_id).has_value();
+    bool verbose = !mgr->GetContainerInfo(*container_id_).has_value();
     startup_status_ = std::make_unique<CrostiniStartupStatus>(
         base::BindRepeating(&NotifyProcessOutput, browser_context(), startup_id,
                             api::terminal_private::ToString(
@@ -307,7 +313,7 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
         verbose);
     startup_status_->ShowProgressAtInterval();
     mgr->RestartCrostini(
-        container_id,
+        *container_id_,
         base::BindOnce(
             &TerminalPrivateOpenTerminalProcessFunction::OnCrostiniRestarted,
             this, user_id_hash, std::move(cmdline)),
@@ -349,6 +355,7 @@ void TerminalPrivateOpenTerminalProcessFunction::OpenVmshellProcess(
   if (!base::StartsWith(cwd, kCwdTerminalIdPrefix)) {
     return OpenProcess(user_id_hash, std::move(cmdline));
   }
+  cmdline.RemoveSwitch(kSwitchCurrentWorkingDir);
 
   // The cwd has this format `terminal_id:<terminal_id>`. We need to convert the
   // terminal id to the pid of the shell process inside the container.
@@ -359,7 +366,7 @@ void TerminalPrivateOpenTerminalProcessFunction::OpenVmshellProcess(
   crostini::CrostiniManager::GetForProfile(
       Profile::FromBrowserContext(browser_context()))
       ->GetVshSession(
-          crostini::ContainerId::GetDefault(), host_pid,
+          *container_id_, host_pid,
           base::BindOnce(
               &TerminalPrivateOpenTerminalProcessFunction::OnGetVshSession,
               this, user_id_hash, std::move(cmdline), /*terminal_id=*/cwd));
@@ -603,7 +610,17 @@ TerminalPrivateOpenWindowFunction::~TerminalPrivateOpenWindowFunction() =
     default;
 
 ExtensionFunction::ResponseAction TerminalPrivateOpenWindowFunction::Run() {
-  crostini::LaunchTerminal(Profile::FromBrowserContext(browser_context()));
+  std::unique_ptr<OpenWindow::Params> params(
+      OpenWindow::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  if (params->data && params->data->url) {
+    crostini::LaunchTerminalWithUrl(
+        Profile::FromBrowserContext(browser_context()),
+        display::kInvalidDisplayId, GURL(*params->data->url));
+  } else {
+    crostini::LaunchTerminal(Profile::FromBrowserContext(browser_context()));
+  }
   return RespondNow(NoArguments());
 }
 

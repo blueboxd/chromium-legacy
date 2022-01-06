@@ -75,12 +75,31 @@ enum class SystemAppType {
   // enables teachers to create a library of custom-tailored instructional
   // content that students can search and view at home.
   //
-  // Source: //chromeos/components/projector_app/
+  // Source: //ash/webui/projector_app/
   // Contact: cros-projector@google.com
   // Buganizer component: b/components/1080013
   // This app is only included in Chrome-branded builds. Non-official builds
   // will have a mock page.
   PROJECTOR = 20,
+
+  // OsUrlHandler is called by Lacros to show Ash internal chrome:// pages as
+  // applications to the user. Note that these pages are accessible to the user
+  // as os://<page> through search.
+  // contact: skuhne@google.com
+  OS_URL_HANDLER = 21,
+
+  // FIRMWARE UPDATE App is SWA that lets users update all their peripheral
+  // firmwares in one place.
+  // You can find information about this SWA at: http://go/fwupd-app.
+  // Source: //ash/webui/firmware_update/
+  // Contact: cros-peripherals@google.com
+  FIRMWARE_UPDATE = 22,
+
+  // OsFlags is called by Lacros to show the chrome://flags page as
+  // applications to the user. Note that this page is accessible to the user
+  // as os://flags through search.
+  // contact: skuhne@google.com
+  OS_FLAGS = 23,
 
   // When adding a new System App, remember to:
   //
@@ -116,8 +135,8 @@ enum class SystemAppType {
   // 6. Update kMaxValue.
   //
   // 7. Have one of System Web App Platform owners review the CL.
-  //    See: //chromeos/components/system_apps/PLATFORM_OWNERS
-  kMaxValue = PROJECTOR
+  //    See: //ash/webui/system_apps/PLATFORM_OWNERS
+  kMaxValue = OS_FLAGS,
 };
 
 }  // namespace web_app

@@ -49,7 +49,6 @@
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />Aktuelle Einstellungen<ph name="END_LINK" /> übermitteln und so helfen, Chrome zu verbessern</translation>
 <translation id="2151406531797534936">Starten Sie Chrome jetzt neu</translation>
 <translation id="2189289170880510015">Passen Sie einige der wichtigsten Datenschutzeinstellungen von Chrome an</translation>
-<translation id="2246246234298806438">Google Chrome kann ohne den integrierten PDF-Viewer keine Druckvorschau anzeigen.</translation>
 <translation id="2290014774651636340">Google API-Schlüssel fehlen. Einige Funktionen von Google Chrome sind deaktiviert.</translation>
 <translation id="2290095356545025170">Möchten Sie Google Chrome wirklich deinstallieren?</translation>
 <translation id="2309047409763057870">Dies ist eine Zweitinstallation, daher kann Google Chrome nicht als Standardbrowser festgelegt werden.</translation>
@@ -60,7 +59,6 @@
 <translation id="2429317896000329049">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht zur Verfügung steht.</translation>
 <translation id="2467438592969358367">Google Chrome möchte Ihre Passwörter exportieren. Wenn Sie dies zulassen möchten, geben Sie Ihr Windows-Passwort ein.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
-<translation id="2518751521812750372">Wenn Sie Chrome schließen, werden automatisch Cookies und Websitedaten der von Ihnen besuchten Seiten gelöscht</translation>
 <translation id="2534507159460261402">Google Pay (in Chrome kopiert)</translation>
 <translation id="2574930892358684005"><ph name="EXISTING_USER" /> ist bereits in diesem Chrome-Profil angemeldet. Wenn Sie Ihre Browsingaktivitäten getrennt halten möchten, kann Chrome für Sie ein eigenes Profil einrichten.</translation>
 <translation id="2580411288591421699">Die Google Chrome-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Google Chrome und versuchen Sie es erneut.</translation>
@@ -89,6 +87,7 @@
 <translation id="3037838751736561277">Google Chrome wird im Hintergrundmodus ausgeführt.</translation>
 <translation id="3059710691562604940">Safe Browsing ist deaktiviert. Es wird empfohlen, diese Funktion zu aktivieren.</translation>
 <translation id="3065168410429928842">Chrome-Tab</translation>
+<translation id="3069821012350118710">Websites, die Sie besuchen, speichern Ihre Daten, bis Sie Chrome schließen</translation>
 <translation id="3080151273017101988">Apps im Hintergrund ausführen, wenn Google Chrome geschlossen ist</translation>
 <translation id="3089968997497233615">Es gibt eine neue, sicherere Version von Google Chrome.</translation>
 <translation id="3100998948628680988">Chrome-Profil benennen</translation>
@@ -99,6 +98,7 @@
 <translation id="3379938682270551431">{0,plural, =0{Chrome wird jetzt neu gestartet}=1{Chrome wird in einer Sekunde neu gestartet}other{Chrome wird in # Sekunden neu gestartet}}</translation>
 <translation id="3395323229510056640">Hilfe für Chrome OS aufrufen</translation>
 <translation id="3396977131400919238">Während der Installation ist ein Fehler im Betriebssystem aufgetreten. Laden Sie Google Chrome erneut herunter.</translation>
+<translation id="3428747202529429621">Schützt Sie in Chrome und erhöht möglicherweise die Sicherheit in anderen Google-Apps, wenn Sie angemeldet sind</translation>
 <translation id="3434246496373299699">Chrome kann Ihre Passwörter prüfen, wenn Sie sich mit Ihrem Google-Konto anmelden</translation>
 <translation id="3451115285585441894">Wird zu Chrome hinzugefügt...</translation>
 <translation id="345171907106878721">Mich zu Chrome hinzufügen</translation>
@@ -188,6 +188,7 @@
 <translation id="5804318322022881572">Chrome konnte nicht gestartet werden. Versuchen Sie es noch einmal.</translation>
 <translation id="5867197326698922595">Google Chrome versucht, Passwörter zu bearbeiten.</translation>
 <translation id="5895138241574237353">Neu starten</translation>
+<translation id="5901850848447342934">Sie werden <ph name="BEGIN_BOLD" />auf den meisten Websites abgemeldet<ph name="END_BOLD" />, wenn Sie Chrome schließen. Wenn die Synchronisierung deaktiviert ist, werden Sie auch <ph name="BEGIN_BOLD" />bei Google-Diensten und Chrome abgemeldet<ph name="END_BOLD" />.</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Netzwerkanmeldung</translation>
 <translation id="5940385492829620908">Hier können Sie im Web surfen und Ihre Lesezeichen und andere Chrome-Inhalte speichern.</translation>
 <translation id="5941830788786076944">Google Chrome als Standardbrowser festlegen</translation>
@@ -197,11 +198,11 @@
 <translation id="6145313976051292476">PDFs in Chrome öffnen</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Beta</translation>
-<translation id="61852838583753520">&amp;Chrome OS aktualisieren</translation>
 <translation id="6235018212288296708">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome</translation>
 <translation id="6291089322031436445">Chrome Dev-Apps</translation>
 <translation id="6291549208091401781">Google Chrome ist bereits für alle Nutzer auf Ihrem Computer installiert.</translation>
 <translation id="6368958679917195344">Chrome OS wird durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> ermöglicht.</translation>
+<translation id="6412673304250309937">Prüft URLs anhand einer Liste unsicherer Websites, die in Chrome gespeichert wird. Wenn eine Website versucht, Ihr Passwort zu stehlen, oder wenn Sie eine schädliche Datei herunterladen, kann Chrome auch URLs, einschließlich Teile von Seiteninhalten, an Safe Browsing senden.</translation>
 <translation id="6418662306461808273">Zu bestehendem Chrome-Profil wechseln?</translation>
 <translation id="6506909944137591434">Chrome benötigt die Kameraberechtigung, um eine 3D-Karte Ihrer Umgebung zu erstellen</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
@@ -278,11 +279,11 @@
 <translation id="8614913330719544658">Google Chrome reagiert nicht. Jetzt neu starten?</translation>
 <translation id="861702415419836452">Chrome benötigt Zugriff auf die Kamera, um eine 3D-Karte Ihrer Umgebung zu erstellen</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome wird in einer Minute neu gestartet}other{Chrome wird in # Minuten neu gestartet}}</translation>
+<translation id="8629311577791198377">Wenn Sie alle Chrome-Fenster schließen, werden alle Cookies und Websitedaten automatisch gelöscht</translation>
 <translation id="8641606876632989680">Wenn sich mit einem Passwort anmelden, das gehackt wurde, benachrichtigt Sie Chrome entsprechend.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Die Erweiterung legt auch die Seite fest, die beim Start von Chrome angezeigt wird.</translation>
 <translation id="8686817260976772516">Mit Chrome-Profilen können Sie Ihre Chrome-Inhalte voneinander trennen. Erstellen Sie Profile für Freunde und Familie oder teilen Sie Ihre Inhalte in Arbeit und Freizeit ein.</translation>
-<translation id="870251953148363156">&amp;Google Chrome aktualisieren</translation>
 <translation id="873133009373065397">Google Chrome kann den Standardbrowser nicht bestimmen oder festlegen</translation>
 <translation id="8823341990149967727">Chrome ist veraltet.</translation>
 <translation id="8834965163890861871">Google Chrome versucht, Passwörter zu bearbeiten. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>

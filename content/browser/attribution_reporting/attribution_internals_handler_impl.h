@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_INTERNALS_HANDLER_IMPL_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_INTERNALS_HANDLER_IMPL_H_
 
-#include "content/browser/attribution_reporting/conversion_internals.mojom.h"
-#include "content/browser/attribution_reporting/conversion_manager.h"
+#include "content/browser/attribution_reporting/attribution_internals.mojom.h"
+#include "content/browser/attribution_reporting/attribution_manager.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
@@ -14,15 +14,15 @@ namespace content {
 
 class WebUI;
 
-// Implements the mojo endpoint for the Conversion WebUI which proxies calls to
-// the ConversionManager to get information about stored conversion data. Owned
-// by ConversionInternalsUI.
+// Implements the mojo endpoint for the attribution internals WebUI which
+// proxies calls to the `AttributionManager` to get information about stored
+// attribution data. Owned by `AttributionInternalsUI`.
 class AttributionInternalsHandlerImpl
-    : public mojom::ConversionInternalsHandler {
+    : public mojom::AttributionInternalsHandler {
  public:
   AttributionInternalsHandlerImpl(
       WebUI* web_ui,
-      mojo::PendingReceiver<mojom::ConversionInternalsHandler> receiver);
+      mojo::PendingReceiver<mojom::AttributionInternalsHandler> receiver);
   AttributionInternalsHandlerImpl(
       const AttributionInternalsHandlerImpl& other) = delete;
   AttributionInternalsHandlerImpl& operator=(
@@ -33,29 +33,29 @@ class AttributionInternalsHandlerImpl
       AttributionInternalsHandlerImpl&& other) = delete;
   ~AttributionInternalsHandlerImpl() override;
 
-  // mojom::ConversionInternalsHandler overrides:
-  void IsMeasurementEnabled(
-      mojom::ConversionInternalsHandler::IsMeasurementEnabledCallback callback)
-      override;
-  void GetActiveImpressions(
-      mojom::ConversionInternalsHandler::GetActiveImpressionsCallback callback)
+  // mojom::AttributionInternalsHandler:
+  void IsAttributionReportingEnabled(
+      mojom::AttributionInternalsHandler::IsAttributionReportingEnabledCallback
+          callback) override;
+  void GetActiveSources(
+      mojom::AttributionInternalsHandler::GetActiveSourcesCallback callback)
       override;
   void GetReports(
-      mojom::ConversionInternalsHandler::GetReportsCallback callback) override;
+      mojom::AttributionInternalsHandler::GetReportsCallback callback) override;
   void SendPendingReports(
-      mojom::ConversionInternalsHandler::SendPendingReportsCallback callback)
+      mojom::AttributionInternalsHandler::SendPendingReportsCallback callback)
       override;
-  void ClearStorage(mojom::ConversionInternalsHandler::ClearStorageCallback
+  void ClearStorage(mojom::AttributionInternalsHandler::ClearStorageCallback
                         callback) override;
 
-  void SetConversionManagerProviderForTesting(
-      std::unique_ptr<ConversionManager::Provider> manager_provider);
+  void SetAttributionManagerProviderForTesting(
+      std::unique_ptr<AttributionManager::Provider> manager_provider);
 
  private:
   WebUI* web_ui_;
-  std::unique_ptr<ConversionManager::Provider> manager_provider_;
+  std::unique_ptr<AttributionManager::Provider> manager_provider_;
 
-  mojo::Receiver<mojom::ConversionInternalsHandler> receiver_;
+  mojo::Receiver<mojom::AttributionInternalsHandler> receiver_;
 };
 
 }  // namespace content

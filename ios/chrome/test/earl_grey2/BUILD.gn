@@ -140,6 +140,7 @@ chrome_ios_eg2_test("ios_chrome_signin_eg2tests_module") {
     "//ios/chrome/browser/ui/authentication/signin:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signin/consistency_promo_signin:eg2_tests",
+    "//ios/chrome/browser/ui/authentication/signin/forced_signin:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signin/user_signin:eg2_tests",
   ]
   data_deps = [ ":ios_chrome_eg2tests" ]
@@ -197,7 +198,10 @@ chrome_ios_eg2_test("ios_chrome_variations_smoke_eg2tests_module") {
   _variations_seed_abs_path =
       "//ios/chrome/test/data/variations/variations_seed_ios.json"
 
-  data = [ _variations_seed_abs_path ]
+  data = [
+    "//testing/scripts/variations_seed_access_helper.py",
+    _variations_seed_abs_path,
+  ]
 
   executable_args = [
     "--variations-seed-path",
@@ -214,7 +218,6 @@ chrome_ios_eg2_test("ios_chrome_web_eg2tests_module") {
 }
 
 source_set("eg2_tests") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",

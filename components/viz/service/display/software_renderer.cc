@@ -346,6 +346,7 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
     case DrawQuad::Material::kInvalid:
     case DrawQuad::Material::kYuvVideoContent:
     case DrawQuad::Material::kStreamVideoContent:
+    case DrawQuad::Material::kSharedElement:
       DrawUnsupportedQuad(quad);
       NOTREACHED();
       break;
@@ -438,9 +439,10 @@ void SoftwareRenderer::DrawTextureQuad(const TextureDrawQuad* quad) {
     return;
   }
 
-  // TODO(skaslev): Add support for non-premultiplied alpha.
   DisplayResourceProviderSoftware::ScopedReadLockSkImage lock(
-      resource_provider(), quad->resource_id());
+      resource_provider(), quad->resource_id(),
+      quad->premultiplied_alpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
+
   if (!lock.valid())
     return;
   const SkImage* image = lock.sk_image();
@@ -485,7 +487,8 @@ void SoftwareRenderer::DrawTileQuad(const TileDrawQuad* quad) {
   DCHECK(IsSoftwareResource(quad->resource_id()));
 
   DisplayResourceProviderSoftware::ScopedReadLockSkImage lock(
-      resource_provider(), quad->resource_id());
+      resource_provider(), quad->resource_id(),
+      quad->is_premultiplied ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
   if (!lock.valid())
     return;
 
@@ -557,7 +560,7 @@ void SoftwareRenderer::DrawRenderPassQuad(
 
   if (quad->mask_resource_id()) {
     DisplayResourceProviderSoftware::ScopedReadLockSkImage mask_lock(
-        resource_provider(), quad->mask_resource_id());
+        resource_provider(), quad->mask_resource_id(), kPremul_SkAlphaType);
     if (!mask_lock.valid())
       return;
 

@@ -164,6 +164,7 @@ void SearchResultView::OnResultChanged() {
   OnMetadataChanged();
   UpdateTitleText();
   UpdateDetailsText();
+  UpdateAccessibleName();
   SchedulePaint();
 }
 
@@ -202,8 +203,6 @@ void SearchResultView::UpdateTitleText() {
     title_label_->SetText(result()->title());
     StyleTitleLabel();
   }
-
-  UpdateAccessibleName();
 }
 
 void SearchResultView::UpdateDetailsText() {
@@ -213,7 +212,6 @@ void SearchResultView::UpdateDetailsText() {
     details_label_->SetText(result()->details());
     StyleDetailsLabel();
   }
-  UpdateAccessibleName();
 }
 
 void SearchResultView::StyleTitleLabel() {
@@ -248,8 +246,7 @@ void SearchResultView::StyleTitleLabel() {
               AshColorProvider::ContentLayerType::kTextColorURL);
       title_label_->AddStyleRange(tag.range, url_text_color);
     }
-    if (tag.styles & SearchResult::Tag::MATCH &&
-        app_list_features::IsLauncherQueryHighlightingEnabled()) {
+    if (tag.styles & SearchResult::Tag::MATCH) {
       views::StyledLabel::RangeStyleInfo selected_text_bold;
       selected_text_bold.text_style = ash::AshTextStyle::STYLE_EMPHASIZED;
       title_label_->AddStyleRange(tag.range, selected_text_bold);
@@ -291,8 +288,7 @@ void SearchResultView::StyleDetailsLabel() {
               AshColorProvider::ContentLayerType::kTextColorURL);
       details_label_->AddStyleRange(tag.range, url_text_color);
     }
-    if (tag.styles & SearchResult::Tag::MATCH &&
-        app_list_features::IsLauncherQueryHighlightingEnabled()) {
+    if (tag.styles & SearchResult::Tag::MATCH) {
       views::StyledLabel::RangeStyleInfo selected_text_bold;
       selected_text_bold.text_style = ash::AshTextStyle::STYLE_EMPHASIZED;
       details_label_->AddStyleRange(tag.range, selected_text_bold);
@@ -302,8 +298,8 @@ void SearchResultView::StyleDetailsLabel() {
 
 void SearchResultView::OnQueryRemovalAccepted(bool accepted) {
   if (accepted) {
-    list_view_->SearchResultActionActivated(
-        this, OmniBoxZeroStateAction::kRemoveSuggestion);
+    list_view_->SearchResultActionActivated(this,
+                                            SearchResultActionType::kRemove);
   }
 
   if (confirm_remove_by_long_press_) {
@@ -440,7 +436,7 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
   switch (event.key_code()) {
     case ui::VKEY_RETURN:
       if (actions_view()->HasSelectedAction()) {
-        OnSearchResultActionActivated(static_cast<OmniBoxZeroStateAction>(
+        OnSearchResultActionActivated(static_cast<SearchResultActionType>(
             actions_view()->GetSelectedAction()));
       } else {
         list_view_->SearchResultActivated(this, event.flags(),
@@ -450,7 +446,7 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
     case ui::VKEY_DELETE:
     case ui::VKEY_BROWSER_BACK:
       // Allows alt+(back or delete) to trigger the 'remove result' dialog.
-      OnSearchResultActionActivated(OmniBoxZeroStateAction::kRemoveSuggestion);
+      OnSearchResultActionActivated(SearchResultActionType::kRemove);
       return true;
     default:
       return false;
@@ -518,13 +514,11 @@ void SearchResultView::OnThemeChanged() {
 void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_LONG_PRESS:
-      if (actions_view()->IsValidActionIndex(
-              OmniBoxZeroStateAction::kRemoveSuggestion)) {
+      if (actions_view()->IsValidActionIndex(SearchResultActionType::kRemove)) {
         ScrollRectToVisible(GetLocalBounds());
         SetSelected(true, absl::nullopt);
         confirm_remove_by_long_press_ = true;
-        OnSearchResultActionActivated(
-            OmniBoxZeroStateAction::kRemoveSuggestion);
+        OnSearchResultActionActivated(SearchResultActionType::kRemove);
         event->SetHandled();
       }
       break;
@@ -606,23 +600,29 @@ void SearchResultView::OnSearchResultActionActivated(size_t index) {
   DCHECK_LT(index, result()->actions().size());
 
   if (result()->is_omnibox_search()) {
-    OmniBoxZeroStateAction button_action = GetOmniBoxZeroStateAction(index);
+    SearchResultActionType button_action = GetSearchResultActionType(index);
 
-    if (button_action == OmniBoxZeroStateAction::kRemoveSuggestion) {
-      RecordZeroStateSearchResultUserActionHistogram(
-          ZeroStateSearchResultUserActionType::kRemoveResult);
-      auto dialog = std::make_unique<RemoveQueryConfirmationDialog>(
-          result()->title(),
-          base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
-                         weak_ptr_factory_.GetWeakPtr()));
-      list_view_->app_list_main_view()
-          ->contents_view()
-          ->search_result_page_view()
-          ->ShowAnchoredDialog(std::move(dialog));
-    } else if (button_action == OmniBoxZeroStateAction::kAppendSuggestion) {
-      RecordZeroStateSearchResultUserActionHistogram(
-          ZeroStateSearchResultUserActionType::kAppendResult);
-      list_view_->SearchResultActionActivated(this, index);
+    switch (button_action) {
+      case SearchResultActionType::kRemove: {
+        RecordZeroStateSearchResultUserActionHistogram(
+            ZeroStateSearchResultUserActionType::kRemoveResult);
+        auto dialog = std::make_unique<RemoveQueryConfirmationDialog>(
+            result()->title(),
+            base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
+                           weak_ptr_factory_.GetWeakPtr()));
+        list_view_->app_list_main_view()
+            ->contents_view()
+            ->search_result_page_view()
+            ->ShowAnchoredDialog(std::move(dialog));
+        break;
+      }
+      case SearchResultActionType::kAppend:
+        RecordZeroStateSearchResultUserActionHistogram(
+            ZeroStateSearchResultUserActionType::kAppendResult);
+        list_view_->SearchResultActionActivated(this, button_action);
+        break;
+      case SearchResultActionType::kSearchResultActionTypeMax:
+        NOTREACHED();
     }
   }
 }
@@ -669,7 +669,7 @@ void SearchResultView::OnGetContextMenu(
       metric_params, AppListMenuModelAdapter::SEARCH_RESULT,
       base::BindOnce(&SearchResultView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()),
-      view_delegate_->GetSearchModel()->tablet_mode());
+      view_delegate_->IsInTabletMode());
   context_menu_->Run(gfx::Rect(point, gfx::Size()),
                      views::MenuAnchorPosition::kTopLeft,
                      views::MenuRunner::HAS_MNEMONICS);

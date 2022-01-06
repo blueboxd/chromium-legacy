@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ios/chrome/browser/policy/reporting/profile_report_generator_ios.h"
+#include "components/enterprise/browser/reporting/report_type.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

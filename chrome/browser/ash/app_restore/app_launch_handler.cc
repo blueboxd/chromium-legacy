@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/apps/app_service/app_platform_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/app_restore/full_restore_read_handler.h"
 #include "components/services/app_service/public/cpp/types_util.h"
@@ -221,7 +221,7 @@ void AppLaunchHandler::LaunchSystemWebAppOrChromeApp(
         app_id,
         static_cast<apps::mojom::LaunchContainer>(it.second->container.value()),
         static_cast<WindowOpenDisposition>(it.second->disposition.value()),
-        apps::mojom::AppLaunchSource::kSourceChromeInternal,
+        apps::mojom::LaunchSource::kFromFullRestore,
         it.second->display_id.value(),
         it.second->file_paths.has_value() ? it.second->file_paths.value()
                                           : std::vector<base::FilePath>{},

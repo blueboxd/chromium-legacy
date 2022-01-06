@@ -118,6 +118,10 @@ class DisplayLockContextTest
     return web_view_helper_.LocalMainFrame();
   }
 
+  FrameSelection& Selection() {
+    return LocalMainFrame()->GetFrame()->Selection();
+  }
+
   void UpdateAllLifecyclePhasesForTest() {
     GetDocument().View()->UpdateAllLifecyclePhasesForTest();
   }
@@ -170,6 +174,11 @@ class DisplayLockContextTest
 
   bool ReattachWasBlocked(DisplayLockContext* context) {
     return context->blocked_child_recalc_change_.ReattachLayoutTree();
+  }
+
+  bool HasSelection(DisplayLockContext* context) {
+    return context->render_affecting_state_[static_cast<int>(
+        DisplayLockContext::RenderAffectingState::kSubtreeHasSelection)];
   }
 
   const int FAKE_FIND_ID = 1;
@@ -481,17 +490,17 @@ TEST_F(DisplayLockContextTest,
 
   // Sort the layout rects by y coordinate for deterministic checks below.
   std::sort(tick_rects.begin(), tick_rects.end(),
-            [](const IntRect& a, const IntRect& b) { return a.Y() < b.Y(); });
+            [](const IntRect& a, const IntRect& b) { return a.y() < b.y(); });
 
-  int y_offset = tick_rects[0].Height();
+  int y_offset = tick_rects[0].height();
 
   // The first tick rect will be based on the text itself, so we don't need to
   // check that. The next three should be the small, medium and large rects,
   // since those are the locked roots.
   EXPECT_EQ(IntRect(0, y_offset, 100, 100), tick_rects[1]);
-  y_offset += tick_rects[1].Height();
+  y_offset += tick_rects[1].height();
   EXPECT_EQ(IntRect(0, y_offset, 150, 150), tick_rects[2]);
-  y_offset += tick_rects[2].Height();
+  y_offset += tick_rects[2].height();
   EXPECT_EQ(IntRect(0, y_offset, 200, 200), tick_rects[3]);
 }
 
@@ -1607,8 +1616,6 @@ TEST_F(DisplayLockContextTest, DescendantAllowedTouchAction) {
 }
 
 TEST_F(DisplayLockContextTest, AncestorWheelEventHandler) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(::features::kWheelEventRegions);
   SetHtmlInnerHTML(R"HTML(
     <style>
     #locked {
@@ -1744,8 +1751,6 @@ TEST_F(DisplayLockContextTest, AncestorWheelEventHandler) {
 }
 
 TEST_F(DisplayLockContextTest, DescendantWheelEventHandler) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(::features::kWheelEventRegions);
   SetHtmlInnerHTML(R"HTML(
     <style>
     #locked {
@@ -3530,23 +3535,23 @@ TEST_F(DisplayLockContextTest, CullRectUpdate) {
   // Check if the result is correct if we update the contents.
   auto* container = GetDocument().getElementById("container");
   auto* target = GetDocument().getElementById("target")->GetLayoutBox();
-  EXPECT_EQ(IntRect(0, 0, 100, 100),
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
             target->FirstFragment().GetCullRect().Rect());
 
   container->classList().Add("locked");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(IntRect(0, 0, 100, 100),
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
             target->FirstFragment().GetCullRect().Rect());
 
   GetDocument().getElementById("clip")->setAttribute(html_names::kStyleAttr,
                                                      "width: 200px");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(IntRect(0, 0, 100, 100),
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
             target->FirstFragment().GetCullRect().Rect());
 
   container->classList().Remove("locked");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(IntRect(0, 0, 200, 100),
+  EXPECT_EQ(gfx::Rect(0, 0, 200, 100),
             target->FirstFragment().GetCullRect().Rect());
 }
 
@@ -3572,4 +3577,45 @@ TEST_F(DisplayLockContextTest, DisconnectedElementIsUnlocked) {
   EXPECT_FALSE(context->IsLocked());
   EXPECT_EQ(context->GetState(), EContentVisibility::kVisible);
 }
+
+TEST_F(DisplayLockContextTest, ConnectedElementDefersSubtreeChecks) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    .spacer { height: 3000px; }
+    .locked { content-visibility: auto; }
+    </style>
+    <div id="s1" class="spacer">first spacer</div>
+    <div id="s2" class="spacer">second spacer</div>
+    <div id="locked" class="locked">locked container</div>
+  )HTML");
+
+  auto* locked = GetDocument().getElementById("locked");
+  auto* context = locked->GetDisplayLockContext();
+  ASSERT_TRUE(context);
+  EXPECT_TRUE(context->IsLocked());
+
+  auto* range = GetDocument().createRange();
+  range->setStart(GetDocument().getElementById("s1")->firstChild(), 0);
+  range->setEnd(GetDocument().getElementById("s2")->firstChild(), 5);
+
+  Selection().SetSelectionAndEndTyping(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(EphemeralRange(range))
+          .Build());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(HasSelection(context));
+
+  GetDocument().body()->insertBefore(locked,
+                                     GetDocument().getElementById("s2"));
+
+  EXPECT_FALSE(HasSelection(context));
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_TRUE(HasSelection(context));
+}
+
 }  // namespace blink

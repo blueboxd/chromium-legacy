@@ -54,7 +54,10 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
-#include "chrome/browser/ash/policy/dlp/dlp_content_tab_helper.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_tab_helper.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -228,7 +231,7 @@ void ChromeAppDelegate::InitWebContents(content::WebContents* web_contents) {
 
   apps::AudioFocusWebContentsObserver::CreateForWebContents(web_contents);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   policy::DlpContentTabHelper::MaybeCreateForWebContents(web_contents);
 #endif
 

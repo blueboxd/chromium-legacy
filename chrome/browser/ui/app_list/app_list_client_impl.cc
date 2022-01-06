@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -190,13 +191,14 @@ void AppListClientImpl::OpenSearchResult(
   search_controller_->OpenResult(result, event_flags);
 }
 
-void AppListClientImpl::InvokeSearchResultAction(const std::string& result_id,
-                                                 int action_index) {
+void AppListClientImpl::InvokeSearchResultAction(
+    const std::string& result_id,
+    ash::SearchResultActionType action) {
   if (!search_controller_)
     return;
   ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
   if (result)
-    search_controller_->InvokeResultAction(result, action_index);
+    search_controller_->InvokeResultAction(result, action);
 }
 
 void AppListClientImpl::GetSearchResultContextMenuModel(
@@ -548,9 +550,13 @@ void AppListClientImpl::OpenURL(Profile* profile,
                                 const GURL& url,
                                 ui::PageTransition transition,
                                 WindowOpenDisposition disposition) {
-  NavigateParams params(profile, url, transition);
-  params.disposition = disposition;
-  Navigate(&params);
+  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
+    ash::NewWindowDelegate::GetPrimary()->OpenUrl(url, true);
+  } else {
+    NavigateParams params(profile, url, transition);
+    params.disposition = disposition;
+    Navigate(&params);
+  }
 }
 
 void AppListClientImpl::NotifySearchResultsForLogging(
@@ -584,6 +590,54 @@ void AppListClientImpl::OnAppListSortRequested(int profile_id,
     return;
   }
   requested_model_updater->OnSortRequested(order);
+}
+
+void AppListClientImpl::OnAppListSortRevertRequested(int profile_id) {
+  auto* requested_model_updater = profile_model_mappings_[profile_id];
+  if (requested_model_updater != current_model_updater_ ||
+      !requested_model_updater) {
+    return;
+  }
+  requested_model_updater->OnSortRevertRequested();
+}
+
+void AppListClientImpl::OnSetPositionRequested(
+    int profile_id,
+    std::string id,
+    const syncer::StringOrdinal& new_position,
+    ash::RequestPositionUpdateReason reason) {
+  auto* requested_model_updater = profile_model_mappings_[profile_id];
+  if (requested_model_updater != current_model_updater_ ||
+      !requested_model_updater) {
+    return;
+  }
+  requested_model_updater->HandleSetPosition(std::move(id), new_position,
+                                             reason);
+}
+
+void AppListClientImpl::OnMoveItemToFolderRequested(
+    int profile_id,
+    std::string id,
+    const std::string& folder_id) {
+  auto* requested_model_updater = profile_model_mappings_[profile_id];
+  if (requested_model_updater != current_model_updater_ ||
+      !requested_model_updater) {
+    return;
+  }
+  requested_model_updater->HandleMoveItemToFolder(std::move(id), folder_id);
+}
+
+void AppListClientImpl::OnMoveItemToRootRequested(
+    int profile_id,
+    std::string id,
+    syncer::StringOrdinal target_position) {
+  auto* requested_model_updater = profile_model_mappings_[profile_id];
+  if (requested_model_updater != current_model_updater_ ||
+      !requested_model_updater) {
+    return;
+  }
+  requested_model_updater->HandleMoveItemToRoot(std::move(id),
+                                                std::move(target_position));
 }
 
 void AppListClientImpl::MaybeRecordViewShown() {

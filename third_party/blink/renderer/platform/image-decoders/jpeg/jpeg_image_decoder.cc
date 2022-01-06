@@ -197,11 +197,11 @@ struct decoder_source_mgr {
 };
 
 enum jstate {
-  JPEG_HEADER,  // Reading JFIF headers
-  JPEG_START_DECOMPRESS,
-  JPEG_DECOMPRESS_PROGRESSIVE,  // Output progressive pixels
-  JPEG_DECOMPRESS_SEQUENTIAL,   // Output sequential pixels
-  JPEG_DONE
+  kJpegHeader,  // Reading JFIF headers
+  kJpegStartDecompress,
+  kJpegDecompressProgressive,  // Output progressive pixels
+  kJpegDecompressSequential,   // Output sequential pixels
+  kJpegDone
 };
 
 void init_source(j_decompress_ptr jd);
@@ -287,13 +287,14 @@ static IntSize ExtractDensityCorrectedSize(const DecodedImageMetaData& metadata,
   if (metadata.resolution_unit != kresolution_unitDPI || metadata.resolution.IsEmpty() || metadata.size.IsEmpty())
     return physical_size;
 
-  CHECK(metadata.resolution.Width());
-  CHECK(metadata.resolution.Height());
+  CHECK(metadata.resolution.width());
+  CHECK(metadata.resolution.height());
 
   // Division by zero is not possible since we check for empty resolution earlier.
   FloatSize size_from_resolution(
-      physical_size.Width() * kDefaultResolution / metadata.resolution.Width(),
-      physical_size.Height() * kDefaultResolution / metadata.resolution.Height());
+      physical_size.width() * kDefaultResolution / metadata.resolution.width(),
+      physical_size.height() * kDefaultResolution /
+          metadata.resolution.height());
 
   if (RoundedIntSize(size_from_resolution) == metadata.size)
     return metadata.size;
@@ -360,13 +361,17 @@ static void ReadExifDirectory(JOCTET* dir_start,
         break;
 
       case ExifTags::kResolutionXTag:
-        if (type == kUnsignedRationalType && count == 1)
-          metadata.resolution.SetWidth(ReadUnsignedRational(value_ptr, is_big_endian));
+        if (type == kUnsignedRationalType && count == 1) {
+          metadata.resolution.set_width(
+              ReadUnsignedRational(value_ptr, is_big_endian));
+        }
         break;
 
       case ExifTags::kResolutionYTag:
-        if (type == kUnsignedRationalType && count == 1)
-          metadata.resolution.SetHeight(ReadUnsignedRational(value_ptr, is_big_endian));
+        if (type == kUnsignedRationalType && count == 1) {
+          metadata.resolution.set_height(
+              ReadUnsignedRational(value_ptr, is_big_endian));
+        }
         break;
 
       case ExifTags::kPixelXDimensionTag:
@@ -374,10 +379,10 @@ static void ReadExifDirectory(JOCTET* dir_start,
           break;
         switch (type) {
           case kUnsignedShortType:
-            metadata.size.SetWidth(ReadUint16(value_ptr, is_big_endian));
+            metadata.size.set_width(ReadUint16(value_ptr, is_big_endian));
             break;
           case kUnsignedLongType:
-            metadata.size.SetWidth(ReadUint32(value_ptr, is_big_endian));
+            metadata.size.set_width(ReadUint32(value_ptr, is_big_endian));
             break;
         }
         break;
@@ -387,10 +392,10 @@ static void ReadExifDirectory(JOCTET* dir_start,
           break;
         switch (type) {
           case kUnsignedShortType:
-            metadata.size.SetHeight(ReadUint16(value_ptr, is_big_endian));
+            metadata.size.set_height(ReadUint16(value_ptr, is_big_endian));
             break;
           case kUnsignedLongType:
-            metadata.size.SetHeight(ReadUint32(value_ptr, is_big_endian));
+            metadata.size.set_height(ReadUint32(value_ptr, is_big_endian));
             break;
         }
         break;
@@ -471,7 +476,7 @@ class JPEGImageReader final {
         restart_position_(initial_offset),
         next_read_position_(initial_offset),
         last_set_byte_(nullptr),
-        state_(JPEG_HEADER),
+        state_(kJpegHeader),
         samples_(nullptr) {
     memset(&info_, 0, sizeof(jpeg_decompress_struct));
 
@@ -627,7 +632,7 @@ class JPEGImageReader final {
       return decoder_->SetFailed();
 
     switch (state_) {
-      case JPEG_HEADER: {
+      case kJpegHeader: {
         // Read file parameters with jpeg_read_header().
         if (jpeg_read_header(&info_, true) == JPEG_SUSPENDED)
           return false;  // I/O suspension.
@@ -650,7 +655,7 @@ class JPEGImageReader final {
             return decoder_->SetFailed();
         }
 
-        state_ = JPEG_START_DECOMPRESS;
+        state_ = kJpegStartDecompress;
 
         // We can fill in the size now that the header is available.
         if (!decoder_->SetSize(info_.image_width, info_.image_height))
@@ -761,7 +766,7 @@ class JPEGImageReader final {
         }
       }
       FALLTHROUGH;
-      case JPEG_START_DECOMPRESS:
+      case kJpegStartDecompress:
         if (decoding_mode == JPEGImageDecoder::DecodingMode::kDecodeToYuv) {
           DCHECK(decoder_->CanDecodeToYUV());
           DCHECK(decoder_->HasImagePlanes());
@@ -797,23 +802,23 @@ class JPEGImageReader final {
           return false;  // I/O suspension.
 
         // If this is a progressive JPEG ...
-        state_ = (info_.buffered_image) ? JPEG_DECOMPRESS_PROGRESSIVE
-                                        : JPEG_DECOMPRESS_SEQUENTIAL;
+        state_ = (info_.buffered_image) ? kJpegDecompressProgressive
+                                        : kJpegDecompressSequential;
         FALLTHROUGH;
 
-      case JPEG_DECOMPRESS_SEQUENTIAL:
-        if (state_ == JPEG_DECOMPRESS_SEQUENTIAL) {
+      case kJpegDecompressSequential:
+        if (state_ == kJpegDecompressSequential) {
           if (!decoder_->OutputScanlines())
             return false;  // I/O suspension.
 
           // If we've completed image output...
           DCHECK_EQ(info_.output_scanline, info_.output_height);
-          state_ = JPEG_DONE;
+          state_ = kJpegDone;
         }
         FALLTHROUGH;
 
-      case JPEG_DECOMPRESS_PROGRESSIVE:
-        if (state_ == JPEG_DECOMPRESS_PROGRESSIVE) {
+      case kJpegDecompressProgressive:
+        if (state_ == kJpegDecompressProgressive) {
           auto all_components_seen = [](const jpeg_decompress_struct& info) {
             if (info.coef_bits) {
               for (int c = 0; c < info.num_components; ++c) {
@@ -889,11 +894,11 @@ class JPEGImageReader final {
             }
           }
 
-          state_ = JPEG_DONE;
+          state_ = kJpegDone;
         }
         FALLTHROUGH;
 
-      case JPEG_DONE:
+      case kJpegDone:
         // Finish decompression.
         BitmapImageMetrics::CountJpegArea(decoder_->Size());
         BitmapImageMetrics::CountJpegColorSpace(
@@ -908,9 +913,7 @@ class JPEGImageReader final {
   JSAMPARRAY Samples() const { return samples_; }
   JPEGImageDecoder* Decoder() { return decoder_; }
   IntSize UvSize() const { return uv_size_; }
-  bool HasStartedDecompression() const {
-    return state_ > JPEG_START_DECOMPRESS;
-  }
+  bool HasStartedDecompression() const { return state_ > kJpegStartDecompress; }
 
  private:
 #if defined(USE_SYSTEM_LIBJPEG)
@@ -1105,7 +1108,7 @@ wtf_size_t JPEGImageDecoder::DecodedYUVWidthBytes(cc::YUVIndex index) const {
 }
 
 unsigned JPEGImageDecoder::DesiredScaleNumerator() const {
-  wtf_size_t original_bytes = Size().Width() * Size().Height() * 4;
+  wtf_size_t original_bytes = Size().width() * Size().height() * 4;
 
   return JPEGImageDecoder::DesiredScaleNumerator(
       max_decoded_bytes_, original_bytes, g_scale_denominator);
@@ -1171,8 +1174,8 @@ gfx::Size JPEGImageDecoder::GetImageCodedSize() const {
     return gfx::Size();
   }
 
-  const int coded_width = Align(Size().Width(), max_h_samp_factor * 8);
-  const int coded_height = Align(Size().Height(), max_v_samp_factor * 8);
+  const int coded_width = Align(Size().width(), max_h_samp_factor * 8);
+  const int coded_height = Align(Size().height(), max_v_samp_factor * 8);
 
   return gfx::Size(coded_width, coded_height);
 }
@@ -1271,7 +1274,7 @@ static bool OutputRawData(JPEGImageReader* reader, ImagePlanes* image_planes) {
   int y_height = info->output_height;
   int v = info->comp_info[0].v_samp_factor;
   IntSize uv_size = reader->UvSize();
-  int uv_height = uv_size.Height();
+  int uv_height = uv_size.height();
   JSAMPROW output_y =
       static_cast<JSAMPROW>(image_planes->Plane(cc::YUVIndex::kY));
   JSAMPROW output_u =
@@ -1333,9 +1336,9 @@ bool JPEGImageDecoder::OutputScanlines() {
   ImageFrame& buffer = frame_buffer_cache_[0];
   if (buffer.GetStatus() == ImageFrame::kFrameEmpty) {
     DCHECK_EQ(info->output_width,
-              static_cast<JDIMENSION>(decoded_size_.Width()));
+              static_cast<JDIMENSION>(decoded_size_.width()));
     DCHECK_EQ(info->output_height,
-              static_cast<JDIMENSION>(decoded_size_.Height()));
+              static_cast<JDIMENSION>(decoded_size_.height()));
 
     if (!buffer.AllocatePixelData(info->output_width, info->output_height,
                                   ColorSpaceForSkImages()))
@@ -1348,7 +1351,7 @@ bool JPEGImageDecoder::OutputScanlines() {
     buffer.SetHasAlpha(true);
 
     // For JPEGs, the frame always fills the entire image.
-    buffer.SetOriginalFrameRect(IntRect(IntPoint(), Size()));
+    buffer.SetOriginalFrameRect(IntRect(gfx::Point(), Size()));
   }
 
 #if defined(TURBO_JPEG_RGB_SWIZZLE)

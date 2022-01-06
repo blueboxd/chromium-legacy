@@ -15,6 +15,7 @@ namespace ash {
 
 const char16_t kAppName[] = u"Test App";
 const char kPackageName[] = "com.google.testapp";
+const int64_t kUserId = 0;
 
 namespace {
 
@@ -51,7 +52,8 @@ class RecentAppButtonsViewTest : public AshTestBase {
   void NotifyRecentAppAddedOrUpdated() {
     fake_recent_apps_interaction_handler_.NotifyRecentAppAddedOrUpdated(
         chromeos::phonehub::Notification::AppMetadata(kAppName, kPackageName,
-                                                      /*icon=*/gfx::Image()),
+                                                      /*icon=*/gfx::Image(),
+                                                      kUserId),
         base::Time::Now());
   }
 
@@ -69,7 +71,7 @@ class RecentAppButtonsViewTest : public AshTestBase {
 TEST_F(RecentAppButtonsViewTest, TaskViewVisibility) {
   // The recent app view is not visible if the NotifyRecentAppAddedOrUpdated
   // function never be called, e.g. device boot.
-  EXPECT_FALSE(recent_apps_view()->GetVisible());
+  EXPECT_FALSE(recent_apps_view()->recent_app_buttons_view_->GetVisible());
 
   NotifyRecentAppAddedOrUpdated();
   recent_apps_view()->Update();

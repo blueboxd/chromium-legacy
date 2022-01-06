@@ -10,7 +10,6 @@ import './onboarding_network_page.js';
 import './onboarding_select_components_page.js';
 import './onboarding_update_page.js';
 import './onboarding_wait_for_manual_wp_disable_page.js';
-import './onboarding_verify_rsu_page.js';
 import './onboarding_wp_disable_complete_page.js';
 import './reimaging_calibration_page.js';
 import './reimaging_calibration_run_page.js';
@@ -19,6 +18,7 @@ import './reimaging_device_information_page.js';
 import './reimaging_firmware_update_page.js';
 import './reimaging_provisioning_page.js';
 import './shimless_rma_shared_css.js';
+import './splash_screen.js';
 import './wrapup_finalize_page.js';
 import './wrapup_repair_complete_page.js';
 import './wrapup_restock_page.js';
@@ -29,7 +29,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService, rmadErrorString} from './mojo_interface_provider.js';
-import {RmadErrorCode, RmaState, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js'
+import {RmadErrorCode, RmaState, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
 
 /**
  * Enum for button states.
@@ -109,13 +109,6 @@ const StateComponentMapping = {
   [RmaState.kEnterRSUWPDisableCode]: {
     componentIs: 'onboarding-enter-rsu-wp-disable-code-page',
     requiresReloadWhenShown: true,
-    buttonNext: ButtonState.DISABLED,
-    buttonCancel: ButtonState.HIDDEN,
-    buttonBack: ButtonState.HIDDEN,
-  },
-  [RmaState.kVerifyRsu]: {
-    componentIs: 'onboarding-verify-rsu-page',
-    requiresReloadWhenShown: false,
     buttonNext: ButtonState.DISABLED,
     buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.HIDDEN,
@@ -228,7 +221,13 @@ export class ShimlessRmaElement extends PolymerElement {
       currentPage_: {
         reflectToAttribute: true,
         type: Object,
-        value: {},
+        value: {
+          componentIs: 'splash-screen',
+          requiresReloadWhenShown: false,
+          buttonNext: ButtonState.HIDDEN,
+          buttonCancel: ButtonState.HIDDEN,
+          buttonBack: ButtonState.HIDDEN,
+        },
       },
 
       /** @private {ShimlessRmaServiceInterface} */
@@ -237,19 +236,21 @@ export class ShimlessRmaElement extends PolymerElement {
         value: {},
       },
 
-      /**
-       * Initial state to cancel to
-       * @private {?RmaState}
-       */
-      initialState_: {
-        type: Object,
-        value: null,
-      },
-
       /** @protected {string} */
       errorMessage_: {
         type: String,
         value: '',
+      },
+
+      /**
+       * Used to disable all buttons while waiting for long running mojo API
+       * calls to complete.
+       * TODO(gavindodd): Handle disabling per page buttons.
+       * @protected
+       */
+      allButtonsDisabled_: {
+        type: Boolean,
+        value: true,
       }
     };
   }
@@ -259,12 +260,13 @@ export class ShimlessRmaElement extends PolymerElement {
     super();
 
     /**
-     * The loadNextState callback is used by page elements to trigger loading
-     * the next page without using the 'Next' button.
+     * transitionState_ is used by page elements to trigger state transition
+     * functions and switching to the next page without using the 'Next' button.
      * @private {?Function}
      */
-    this.loadNextStateCallback_ = (e) => {
-      this.processStateResult_(e.detail)
+    this.transitionState_ = (e) => {
+      this.allButtonsDisabled_ = true;
+      e.detail().then((stateResult) => this.processStateResult_(stateResult));
     };
 
     /**
@@ -283,8 +285,7 @@ export class ShimlessRmaElement extends PolymerElement {
   /** @override */
   connectedCallback() {
     super.connectedCallback();
-
-    window.addEventListener('load-next-state', this.loadNextStateCallback_);
+    window.addEventListener('transition-state', this.transitionState_);
     window.addEventListener(
         'disable-next-button', this.disableNextButtonCallback_);
   }
@@ -292,8 +293,7 @@ export class ShimlessRmaElement extends PolymerElement {
   /** @override */
   disconnectedCallback() {
     super.disconnectedCallback();
-
-    window.removeEventListener('load-next-state', this.loadNextStateCallback_);
+    window.removeEventListener('transition-state', this.transitionState_);
     window.removeEventListener(
         'disable-next-button', this.disableNextButtonCallback_);
   }
@@ -303,26 +303,13 @@ export class ShimlessRmaElement extends PolymerElement {
     super.ready();
     this.shimlessRmaService_ = getShimlessRmaService();
 
+    const splashComponent = this.loadComponent_(this.currentPage_.componentIs);
+    splashComponent.hidden = false;
+
     // Get the initial state.
-    this.fetchState_().then((stateResult) => {
-      this.initialState_ = stateResult.state;
+    this.shimlessRmaService_.getCurrentState().then((stateResult) => {
       this.processStateResult_(stateResult);
     });
-  }
-
-  /** @private */
-  fetchState_() {
-    return this.shimlessRmaService_.getCurrentState();
-  }
-
-  /** @private */
-  fetchNextState_() {
-    return this.shimlessRmaService_.transitionNextState();
-  }
-
-  /** @private */
-  fetchPrevState_() {
-    return this.shimlessRmaService_.transitionPreviousState();
   }
 
   /**
@@ -353,7 +340,7 @@ export class ShimlessRmaElement extends PolymerElement {
   showState_(state, canCancel, canGoBack) {
     const pageInfo = StateComponentMapping[state];
     assert(pageInfo);
-
+    this.allButtonsDisabled_ = false;
     pageInfo.buttonCancel =
         canCancel ? ButtonState.VISIBLE : ButtonState.HIDDEN;
     pageInfo.buttonBack = canGoBack ? ButtonState.VISIBLE : ButtonState.HIDDEN;
@@ -394,19 +381,17 @@ export class ShimlessRmaElement extends PolymerElement {
 
   /**
    * @param {string} componentIs
+   * @return {!Element}
    * @private
    */
   loadComponent_(componentIs) {
     const shimlessBody = this.shadowRoot.querySelector('#contentContainer');
 
-    let component = document.createElement(componentIs);
+    /** @type {!Element} */
+    const component = document.createElement(componentIs);
     component.setAttribute('id', componentIs);
     component.setAttribute('class', 'shimless-content');
     component.hidden = true;
-
-    if (!component) {
-      console.error('Failed to create ' + componentIs);
-    }
 
     shimlessBody.appendChild(component);
     return component;
@@ -417,9 +402,12 @@ export class ShimlessRmaElement extends PolymerElement {
     return button === ButtonState.HIDDEN;
   }
 
-  /** @protected */
+  /**
+   * @protected
+   * @param {ButtonState} button
+   */
   isButtonDisabled_(button) {
-    return button === ButtonState.DISABLED;
+    return (button === ButtonState.DISABLED) || this.allButtonsDisabled_;
   }
 
   /**
@@ -433,33 +421,35 @@ export class ShimlessRmaElement extends PolymerElement {
 
   /** @protected */
   onBackButtonClicked_() {
-    this.fetchPrevState_().then(
+    this.allButtonsDisabled_ = true;
+    this.shimlessRmaService_.transitionPreviousState().then(
         (stateResult) => this.processStateResult_(stateResult));
   }
 
   /** @protected */
   onNextButtonClicked_() {
     const page = this.shadowRoot.querySelector(this.currentPage_.componentIs);
-    assert(page);
-
-    // Acquire promise to check whether current page is ready for next page.
-    const prepPageAdvance =
-        page.onNextButtonClick || (() => Promise.resolve(undefined));
-    assert(typeof prepPageAdvance === 'function');
-
-    prepPageAdvance.call(page)
-        .then(
-            (stateResult) => !!stateResult ? Promise.resolve(stateResult) :
-                                             this.fetchNextState_())
+    assert(page, 'Could not find page ' + this.currentPage_.componentIs);
+    assert(
+        page.onNextButtonClick,
+        'No onNextButtonClick for ' + this.currentPage_.componentIs);
+    assert(
+        typeof page.onNextButtonClick === 'function',
+        'onNextButtonClick not a function for ' +
+            this.currentPage_.componentIs);
+    this.allButtonsDisabled_ = true;
+    page.onNextButtonClick()
         .then((stateResult) => this.processStateResult_(stateResult))
-        .catch((err) => void 0);
+        // TODO(gavindodd): Better error handling.
+        .catch((err) => this.allButtonsDisabled_ = false);
   }
 
   /** @protected */
   onCancelButtonClicked_() {
+    this.allButtonsDisabled_ = true;
     this.shimlessRmaService_.abortRma().then(
         (result) => this.handleError_(result.error));
   }
-};
+}
 
 customElements.define(ShimlessRmaElement.is, ShimlessRmaElement);

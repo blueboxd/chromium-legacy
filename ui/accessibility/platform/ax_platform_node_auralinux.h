@@ -114,11 +114,9 @@ class ImplementedAtkInterfaces {
 class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
  public:
   AXPlatformNodeAuraLinux();
-
+  ~AXPlatformNodeAuraLinux() override;
   AXPlatformNodeAuraLinux(const AXPlatformNodeAuraLinux&) = delete;
   AXPlatformNodeAuraLinux& operator=(const AXPlatformNodeAuraLinux&) = delete;
-
-  ~AXPlatformNodeAuraLinux() override;
 
   static AXPlatformNodeAuraLinux* FromAtkObject(const AtkObject*);
 
@@ -297,6 +295,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   absl::optional<std::pair<int, int>> GetEmbeddedObjectIndices();
 
   std::vector<ax::mojom::Action> GetSupportedActions() const;
+  bool HasDefaultActionVerb() const;
 
   std::string accessible_name_;
 

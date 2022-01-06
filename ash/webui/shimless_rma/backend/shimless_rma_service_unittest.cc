@@ -6,6 +6,8 @@
 
 #include <map>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -68,6 +70,7 @@ class ShimlessRmaServiceTest : public testing::Test {
     cros_network_config_test_helper_ =
         std::make_unique<network_config::CrosNetworkConfigTestHelper>(false);
     cros_network_config_test_helper().Initialize(nullptr);
+    NetworkHandler::Initialize();
 
     FakeRmadClientForTest::Initialize();
     rmad_client_ = chromeos::RmadClient::Get();
@@ -85,6 +88,7 @@ class ShimlessRmaServiceTest : public testing::Test {
     // a null ptr dereference in the service destructor.
     shimless_rma_provider_.reset();
     chromeos::RmadClient::Shutdown();
+    NetworkHandler::Shutdown();
     cros_network_config_test_helper_.reset();
     chromeos::DBusThreadManager::Shutdown();
   }
@@ -298,6 +302,9 @@ TEST_F(ShimlessRmaServiceTest, WelcomeHasNoNetworkConnection) {
       }));
   run_loop.RunUntilIdle();
 
+  // TODO(gavindodd): Create a FakeVersionUpdater so no updates available and
+  // update progress can be tested.
+
   // No network should prompt select network page
   shimless_rma_provider_->BeginFinalization(base::BindLambdaForTesting(
       [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
@@ -375,14 +382,11 @@ TEST_F(ShimlessRmaServiceTest, ChooseNetworkHasNoNetworkConnection) {
       }));
   run_loop.RunUntilIdle();
 
-  // TODO(gavindodd): Once the component validation works this should only
-  // redirect to update screen if validation fails, so that a warning
-  // that updating may fix validation issues can be displayed.
-  // With no network it should still redirect to kUpdateOs
+  // With no network it should redirect to next rmad state
   shimless_rma_provider_->NetworkSelectionComplete(base::BindLambdaForTesting(
       [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
           rmad::RmadErrorCode error) {
-        EXPECT_EQ(state, mojom::RmaState::kUpdateOs);
+        EXPECT_EQ(state, mojom::RmaState::kSelectComponents);
         EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
         run_loop.Quit();
       }));
@@ -424,71 +428,6 @@ TEST_F(ShimlessRmaServiceTest, GetCurrentStateNoRma) {
   run_loop.Run();
 }
 
-TEST_F(ShimlessRmaServiceTest, TransitionNextState) {
-  std::vector<rmad::GetStateReply> fake_states;
-  fake_states.push_back(CreateStateReply(rmad::RmadState::kDeviceDestination,
-                                         rmad::RMAD_ERROR_OK));
-  fake_states.push_back(CreateStateReply(rmad::RmadState::kComponentsRepair,
-                                         rmad::RMAD_ERROR_OK));
-  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
-  base::RunLoop run_loop;
-  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
-      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
-          rmad::RmadErrorCode error) {
-        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
-        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
-      }));
-  run_loop.RunUntilIdle();
-  shimless_rma_provider_->TransitionNextState(base::BindLambdaForTesting(
-      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
-          rmad::RmadErrorCode error) {
-        EXPECT_EQ(state, mojom::RmaState::kSelectComponents);
-        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
-}
-
-TEST_F(ShimlessRmaServiceTest, TransitionNextStateWithoutCurrentStateInvalid) {
-  std::vector<rmad::GetStateReply> fake_states;
-  fake_states.push_back(CreateStateReply(rmad::RmadState::kDeviceDestination,
-                                         rmad::RMAD_ERROR_OK));
-  fake_states.push_back(CreateStateReply(rmad::RmadState::kComponentsRepair,
-                                         rmad::RMAD_ERROR_OK));
-  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
-  base::RunLoop run_loop;
-  shimless_rma_provider_->TransitionNextState(base::BindLambdaForTesting(
-      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
-          rmad::RmadErrorCode error) {
-        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
-        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
-}
-
-TEST_F(ShimlessRmaServiceTest, TransitionNextStateWithNoNextStateFails) {
-  std::vector<rmad::GetStateReply> fake_states = {CreateStateReply(
-      rmad::RmadState::kDeviceDestination, rmad::RMAD_ERROR_OK)};
-  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
-  base::RunLoop run_loop;
-  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
-      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
-          rmad::RmadErrorCode error) {
-        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
-        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
-      }));
-  run_loop.RunUntilIdle();
-  shimless_rma_provider_->TransitionNextState(base::BindLambdaForTesting(
-      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
-          rmad::RmadErrorCode error) {
-        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
-        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_TRANSITION_FAILED);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
-}
-
 TEST_F(ShimlessRmaServiceTest, TransitionPreviousState) {
   std::vector<rmad::GetStateReply> fake_states;
   fake_states.push_back(CreateStateReply(rmad::RmadState::kDeviceDestination,
@@ -504,7 +443,7 @@ TEST_F(ShimlessRmaServiceTest, TransitionPreviousState) {
         EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
       }));
   run_loop.RunUntilIdle();
-  shimless_rma_provider_->TransitionNextState(base::BindLambdaForTesting(
+  shimless_rma_provider_->SetSameOwner(base::BindLambdaForTesting(
       [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
           rmad::RmadErrorCode error) {
         EXPECT_EQ(state, mojom::RmaState::kSelectComponents);
@@ -968,6 +907,110 @@ TEST_F(ShimlessRmaServiceTest,
 
   shimless_rma_provider_->SetRsuDisableWriteProtectCode(
       "test RSU unlock code",
+      base::BindLambdaForTesting([&](mojom::RmaState state, bool can_cancel,
+                                     bool can_go_back,
+                                     rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest, WriteProtectManuallyDisabled) {
+  std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kWpDisablePhysical,
+                       rmad::RMAD_ERROR_OK),
+      CreateStateReply(rmad::RmadState::kDeviceDestination,
+                       rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  base::RunLoop run_loop;
+  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kWaitForManualWPDisable);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->WriteProtectManuallyDisabled(
+      base::BindLambdaForTesting([&](mojom::RmaState state, bool can_cancel,
+                                     bool can_go_back,
+                                     rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest,
+       WriteProtectManuallyDisabledFromWrongStateFails) {
+  std::vector<rmad::GetStateReply> fake_states = {CreateStateReply(
+      rmad::RmadState::kDeviceDestination, rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  base::RunLoop run_loop;
+  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->WriteProtectManuallyDisabled(
+      base::BindLambdaForTesting([&](mojom::RmaState state, bool can_cancel,
+                                     bool can_go_back,
+                                     rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest, ConfirmManualWpDisableComplete) {
+  std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kWpDisableComplete,
+                       rmad::RMAD_ERROR_OK),
+      CreateStateReply(rmad::RmadState::kDeviceDestination,
+                       rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  base::RunLoop run_loop;
+  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kWPDisableComplete);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->ConfirmManualWpDisableComplete(
+      base::BindLambdaForTesting([&](mojom::RmaState state, bool can_cancel,
+                                     bool can_go_back,
+                                     rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest,
+       ConfirmManualWpDisableCompleteFromWrongStateFails) {
+  std::vector<rmad::GetStateReply> fake_states = {CreateStateReply(
+      rmad::RmadState::kDeviceDestination, rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  base::RunLoop run_loop;
+  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->ConfirmManualWpDisableComplete(
       base::BindLambdaForTesting([&](mojom::RmaState state, bool can_cancel,
                                      bool can_go_back,
                                      rmad::RmadErrorCode error) {
@@ -2175,6 +2218,152 @@ TEST_F(ShimlessRmaServiceTest, CalibrationCompleteFromWrongStateFails) {
   run_loop.Run();
 }
 
+TEST_F(ShimlessRmaServiceTest, ProvisioningComplete) {
+  std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kProvisionDevice, rmad::RMAD_ERROR_OK),
+      CreateStateReply(rmad::RmadState::kDeviceDestination,
+                       rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  base::RunLoop run_loop;
+  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kProvisionDevice);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->ProvisioningComplete(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest, ProvisioningCompleteFromWrongStateFails) {
+  std::vector<rmad::GetStateReply> fake_states = {CreateStateReply(
+      rmad::RmadState::kDeviceDestination, rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  base::RunLoop run_loop;
+  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->ProvisioningComplete(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest, kFinalize) {
+  std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kFinalize, rmad::RMAD_ERROR_OK),
+      CreateStateReply(rmad::RmadState::kDeviceDestination,
+                       rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  base::RunLoop run_loop;
+  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kFinalize);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->FinalizationComplete(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest, FinalizationCompleteFromWrongStateFails) {
+  std::vector<rmad::GetStateReply> fake_states = {CreateStateReply(
+      rmad::RmadState::kDeviceDestination, rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  base::RunLoop run_loop;
+  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->FinalizationComplete(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest, WriteProtectManuallyEnabled) {
+  std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kWpEnablePhysical, rmad::RMAD_ERROR_OK),
+      CreateStateReply(rmad::RmadState::kDeviceDestination,
+                       rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  base::RunLoop run_loop;
+  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kWaitForManualWPEnable);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->WriteProtectManuallyEnabled(
+      base::BindLambdaForTesting([&](mojom::RmaState state, bool can_cancel,
+                                     bool can_go_back,
+                                     rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest, WriteProtectManuallyEnabledFromWrongStateFails) {
+  std::vector<rmad::GetStateReply> fake_states = {CreateStateReply(
+      rmad::RmadState::kDeviceDestination, rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  base::RunLoop run_loop;
+  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
+      [&](mojom::RmaState state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->WriteProtectManuallyEnabled(
+      base::BindLambdaForTesting([&](mojom::RmaState state, bool can_cancel,
+                                     bool can_go_back,
+                                     rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::RmaState::kChooseDestination);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
 TEST_F(ShimlessRmaServiceTest, EndRmaAndReboot) {
   std::vector<rmad::GetStateReply> fake_states = {
       CreateStateReply(rmad::RmadState::kRepairComplete, rmad::RMAD_ERROR_OK),
@@ -2400,6 +2589,23 @@ TEST_F(ShimlessRmaServiceTest, ObserveCalibration) {
   EXPECT_EQ(fake_observer.component_observations[0].progress(), 0.25);
 }
 
+TEST_F(ShimlessRmaServiceTest, ObserveCalibrationAfterSignal) {
+  fake_rmad_client_()->TriggerCalibrationProgressObservation(
+      rmad::RmadComponent::RMAD_COMPONENT_BASE_ACCELEROMETER,
+      rmad::CalibrationComponentStatus::RMAD_CALIBRATION_IN_PROGRESS, 0.25);
+  FakeCalibrationObserver fake_observer;
+  shimless_rma_provider_->ObserveCalibrationProgress(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(fake_observer.component_observations.size(), 1UL);
+  EXPECT_EQ(fake_observer.component_observations[0].component(),
+            rmad::RmadComponent::RMAD_COMPONENT_BASE_ACCELEROMETER);
+  EXPECT_EQ(fake_observer.component_observations[0].status(),
+            rmad::CalibrationComponentStatus::RMAD_CALIBRATION_IN_PROGRESS);
+  EXPECT_EQ(fake_observer.component_observations[0].progress(), 0.25);
+}
+
 TEST_F(ShimlessRmaServiceTest, ObserveOverallCalibration) {
   FakeCalibrationObserver fake_observer;
   shimless_rma_provider_->ObserveCalibrationProgress(
@@ -2415,17 +2621,30 @@ TEST_F(ShimlessRmaServiceTest, ObserveOverallCalibration) {
                 RMAD_CALIBRATION_OVERALL_CURRENT_ROUND_COMPLETE);
 }
 
+TEST_F(ShimlessRmaServiceTest, ObserveOverallCalibrationAfterSignal) {
+  fake_rmad_client_()->TriggerCalibrationOverallProgressObservation(
+      rmad::CalibrationOverallStatus::
+          RMAD_CALIBRATION_OVERALL_CURRENT_ROUND_COMPLETE);
+  FakeCalibrationObserver fake_observer;
+  shimless_rma_provider_->ObserveCalibrationProgress(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(fake_observer.overall_observations.size(), 1UL);
+  EXPECT_EQ(fake_observer.overall_observations[0],
+            rmad::CalibrationOverallStatus::
+                RMAD_CALIBRATION_OVERALL_CURRENT_ROUND_COMPLETE);
+}
+
 class FakeProvisioningObserver : public mojom::ProvisioningObserver {
  public:
-  void OnProvisioningUpdated(rmad::ProvisionDeviceState_ProvisioningStep step,
+  void OnProvisioningUpdated(rmad::ProvisionStatus::Status step,
                              float progress) override {
     observations.push_back(
-        std::pair<rmad::ProvisionDeviceState_ProvisioningStep, float>(
-            step, progress));
+        std::pair<rmad::ProvisionStatus_Status, float>(step, progress));
   }
 
-  std::vector<std::pair<rmad::ProvisionDeviceState_ProvisioningStep, float>>
-      observations;
+  std::vector<std::pair<rmad::ProvisionStatus_Status, float>> observations;
   mojo::Receiver<mojom::ProvisioningObserver> receiver{this};
 };
 
@@ -2435,7 +2654,18 @@ TEST_F(ShimlessRmaServiceTest, ObserveProvisioning) {
       fake_observer.receiver.BindNewPipeAndPassRemote());
   base::RunLoop run_loop;
   fake_rmad_client_()->TriggerProvisioningProgressObservation(
-      rmad::ProvisionDeviceState::RMAD_PROVISIONING_STEP_IN_PROGRESS, 0.75);
+      rmad::ProvisionStatus::RMAD_PROVISION_STATUS_IN_PROGRESS, 0.75);
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(fake_observer.observations.size(), 1UL);
+}
+
+TEST_F(ShimlessRmaServiceTest, ObserveProvisioningAfterSignal) {
+  fake_rmad_client_()->TriggerProvisioningProgressObservation(
+      rmad::ProvisionStatus::RMAD_PROVISION_STATUS_IN_PROGRESS, 0.75);
+  FakeProvisioningObserver fake_observer;
+  shimless_rma_provider_->ObserveProvisioningProgress(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop run_loop;
   run_loop.RunUntilIdle();
   EXPECT_EQ(fake_observer.observations.size(), 1UL);
 }
@@ -2461,6 +2691,16 @@ TEST_F(ShimlessRmaServiceTest, ObserveHardwareWriteProtectionState) {
   EXPECT_EQ(fake_observer.observations.size(), 1UL);
 }
 
+TEST_F(ShimlessRmaServiceTest, ObserveHardwareWriteProtectionStateAfterSignal) {
+  fake_rmad_client_()->TriggerHardwareWriteProtectionStateObservation(false);
+  FakeHardwareWriteProtectionStateObserver fake_observer;
+  shimless_rma_provider_->ObserveHardwareWriteProtectionState(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(fake_observer.observations.size(), 1UL);
+}
+
 class FakePowerCableStateObserver : public mojom::PowerCableStateObserver {
  public:
   void OnPowerCableStateChanged(bool enabled) override {
@@ -2481,7 +2721,18 @@ TEST_F(ShimlessRmaServiceTest, ObservePowerCableState) {
   EXPECT_EQ(fake_observer.observations.size(), 1UL);
 }
 
-class FakeFinalizationObserver : public mojom::FinalizationObserver {
+TEST_F(ShimlessRmaServiceTest, ObservePowerCableStateAfterSignal) {
+  FakePowerCableStateObserver fake_observer;
+  fake_rmad_client_()->TriggerPowerCableStateObservation(false);
+  shimless_rma_provider_->ObservePowerCableState(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(fake_observer.observations.size(), 1UL);
+}
+
+class FakeHardwareVerificationStatusObserver
+    : public mojom::HardwareVerificationStatusObserver {
  public:
   struct Observation {
     bool is_compliant;
@@ -2497,6 +2748,50 @@ class FakeFinalizationObserver : public mojom::FinalizationObserver {
   }
 
   std::vector<Observation> observations;
+  mojo::Receiver<mojom::HardwareVerificationStatusObserver> receiver{this};
+};
+
+TEST_F(ShimlessRmaServiceTest, ObserveHardwareVerification) {
+  FakeHardwareVerificationStatusObserver fake_observer;
+  shimless_rma_provider_->ObserveHardwareVerificationStatus(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop run_loop;
+  fake_rmad_client_()->TriggerHardwareVerificationResultObservation(true, "ok");
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(fake_observer.observations.size(), 1UL);
+  EXPECT_EQ(fake_observer.observations[0].is_compliant, true);
+  EXPECT_EQ(fake_observer.observations[0].error_message, "ok");
+}
+
+TEST_F(ShimlessRmaServiceTest, ObserveHardwareVerificationAfterSignal) {
+  fake_rmad_client_()->TriggerHardwareVerificationResultObservation(true,
+                                                                    "also ok");
+  FakeHardwareVerificationStatusObserver fake_observer;
+  shimless_rma_provider_->ObserveHardwareVerificationStatus(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(fake_observer.observations.size(), 1UL);
+  EXPECT_EQ(fake_observer.observations[0].is_compliant, true);
+  EXPECT_EQ(fake_observer.observations[0].error_message, "also ok");
+}
+
+class FakeFinalizationObserver : public mojom::FinalizationObserver {
+ public:
+  struct Observation {
+    rmad::FinalizeStatus::Status status;
+    float progress;
+  };
+
+  void OnFinalizationUpdated(rmad::FinalizeStatus::Status status,
+                             float progress) override {
+    Observation observation;
+    observation.status = status;
+    observation.progress = progress;
+    observations.push_back(observation);
+  }
+
+  std::vector<Observation> observations;
   mojo::Receiver<mojom::FinalizationObserver> receiver{this};
 };
 
@@ -2505,11 +2800,27 @@ TEST_F(ShimlessRmaServiceTest, ObserveFinalization) {
   shimless_rma_provider_->ObserveFinalizationStatus(
       fake_observer.receiver.BindNewPipeAndPassRemote());
   base::RunLoop run_loop;
-  fake_rmad_client_()->TriggerHardwareVerificationResultObservation(true, "ok");
+  fake_rmad_client_()->TriggerFinalizationProgressObservation(
+      rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_IN_PROGRESS, 0.5);
   run_loop.RunUntilIdle();
   EXPECT_EQ(fake_observer.observations.size(), 1UL);
-  EXPECT_EQ(fake_observer.observations[0].is_compliant, true);
-  EXPECT_EQ(fake_observer.observations[0].error_message, "ok");
+  EXPECT_EQ(fake_observer.observations[0].status,
+            rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_IN_PROGRESS);
+  EXPECT_EQ(fake_observer.observations[0].progress, 0.5f);
+}
+
+TEST_F(ShimlessRmaServiceTest, ObserveFinalizationAfterSignal) {
+  fake_rmad_client_()->TriggerFinalizationProgressObservation(
+      rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_BLOCKING, 0.75);
+  FakeFinalizationObserver fake_observer;
+  shimless_rma_provider_->ObserveFinalizationStatus(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(fake_observer.observations.size(), 1UL);
+  EXPECT_EQ(fake_observer.observations[0].status,
+            rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_BLOCKING);
+  EXPECT_EQ(fake_observer.observations[0].progress, 0.75f);
 }
 
 }  // namespace shimless_rma

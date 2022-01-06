@@ -9,6 +9,7 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
@@ -25,10 +26,12 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthManager;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthSettingUtils;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -118,9 +121,13 @@ public class PrivacySettingsFragmentTest {
     @Test
     @LargeTest
     @Feature({"RenderTest"})
-    public void testRenderIncognitoLockView_DeviceScreenLockDisabled() throws IOException {
-        IncognitoReauthManager.setShouldShowSettingForTesting(true);
-        IncognitoReauthManager.setIsDeviceScreenLockEnabledForTesting(false);
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
+            message = "Invokes IncognitoReauthSettingUtils#isDeviceScreenLockEnabled internally"
+                    + "which is available only from M.")
+    public void
+    testRenderIncognitoLockView_DeviceScreenLockDisabled() throws IOException {
+        IncognitoReauthManager.setIsIncognitoReauthFeatureAvailableForTesting(true);
+        IncognitoReauthSettingUtils.setIsDeviceScreenLockEnabledForTesting(false);
 
         mSettingsActivityTestRule.startSettingsActivity();
         waitForOptionsMenu();
@@ -133,9 +140,13 @@ public class PrivacySettingsFragmentTest {
     @Test
     @LargeTest
     @Feature({"RenderTest"})
-    public void testRenderIncognitoLockView_DeviceScreenLockEnabled() throws IOException {
-        IncognitoReauthManager.setShouldShowSettingForTesting(true);
-        IncognitoReauthManager.setIsDeviceScreenLockEnabledForTesting(true);
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
+            message = "Invokes IncognitoReauthSettingUtils#isDeviceScreenLockEnabled internally"
+                    + "which is available only from M.")
+    public void
+    testRenderIncognitoLockView_DeviceScreenLockEnabled() throws IOException {
+        IncognitoReauthManager.setIsIncognitoReauthFeatureAvailableForTesting(true);
+        IncognitoReauthSettingUtils.setIsDeviceScreenLockEnabledForTesting(true);
 
         mSettingsActivityTestRule.startSettingsActivity();
         waitForOptionsMenu();

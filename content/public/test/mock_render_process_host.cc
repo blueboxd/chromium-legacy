@@ -13,7 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/process/process_handle.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -405,13 +405,18 @@ size_t MockRenderProcessHost::GetShutdownDelayRefCount() const {
   return 0;
 }
 
-void MockRenderProcessHost::IncrementRfhCount() {}
-
-void MockRenderProcessHost::DecrementRfhCount() {}
-
-int MockRenderProcessHost::GetRfhCount() const {
+int MockRenderProcessHost::GetRenderFrameHostCount() const {
   return 0;
 }
+
+void MockRenderProcessHost::RegisterRenderFrameHost(
+    const GlobalRenderFrameHostId& render_frame_host_id) {}
+
+void MockRenderProcessHost::UnregisterRenderFrameHost(
+    const GlobalRenderFrameHostId& render_frame_host_id) {}
+
+void MockRenderProcessHost::ForEachRenderFrameHost(
+    base::RepeatingCallback<void(RenderFrameHost*)> on_render_frame_host) {}
 
 void MockRenderProcessHost::IncrementWorkerRefCount() {
   ++worker_ref_count_;

@@ -56,6 +56,11 @@
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
 
+// This should be after all other #includes.
+#if defined(_WINDOWS_)  // Detect whether windows.h was included.
+#include "base/win/windows_h_disallowed.h"
+#endif  // defined(_WINDOWS_)
+
 namespace {
 
 // Delay in milliseconds of when the dragging UI should be shown for touch drag.
@@ -509,7 +514,6 @@ tab_strip::mojom::TabPtr TabStripPageHandler::GetTabData(
        chrome::GetTabAlertStatesForContents(contents)) {
     tab_data->alert_states.push_back(alert_state);
   }
-
   return tab_data;
 }
 

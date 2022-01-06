@@ -37,8 +37,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/passphrase_enums.h"
@@ -219,8 +219,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
         SyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), base::BindRepeating(&BuildMockSyncService)));
 
-    ON_CALL(*mock_sync_service_, IsAuthenticatedAccountPrimary())
-        .WillByDefault(Return(true));
+    ON_CALL(*mock_sync_service_, HasSyncConsent()).WillByDefault(Return(true));
 
     ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetPassphraseType())
         .WillByDefault(Return(syncer::PassphraseType::kImplicitPassphrase));

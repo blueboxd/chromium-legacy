@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -23,6 +24,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/policy_constants.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -107,10 +109,22 @@ class BrowserUtilTest : public testing::Test {
   ScopedTestingLocalState local_state_;
 };
 
-TEST_F(BrowserUtilTest, LacrosEnabledByFlag) {
+class LacrosSupportBrowserUtilTest : public BrowserUtilTest {
+ public:
+  LacrosSupportBrowserUtilTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        chromeos::features::kLacrosSupport);
+  }
+  ~LacrosSupportBrowserUtilTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(LacrosSupportBrowserUtilTest, LacrosEnabledByFlag) {
   AddRegularUser("user@test.com");
 
-  // Lacros is disabled because the feature isn't enabled by default.
+  // Lacros is initially disabled.
   EXPECT_FALSE(browser_util::IsLacrosEnabled());
 
   // Enabling the flag enables Lacros.
@@ -202,7 +216,7 @@ TEST_F(BrowserUtilTest, BlockedForChildUser) {
   EXPECT_FALSE(browser_util::IsLacrosEnabled(Channel::UNKNOWN));
 }
 
-TEST_F(BrowserUtilTest, AshWebBrowserEnabled) {
+TEST_F(LacrosSupportBrowserUtilTest, AshWebBrowserEnabled) {
   base::test::ScopedFeatureList feature_list;
   AddRegularUser("user@managedchrome.com");
   testing_profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(
@@ -278,7 +292,7 @@ TEST_F(BrowserUtilTest, IsAshWebBrowserDisabled) {
   EXPECT_FALSE(browser_util::IsAshWebBrowserEnabled(Channel::STABLE));
 }
 
-TEST_F(BrowserUtilTest, LacrosPrimaryBrowserByFlags) {
+TEST_F(LacrosSupportBrowserUtilTest, LacrosPrimaryBrowserByFlags) {
   AddRegularUser("user@test.com");
   { EXPECT_FALSE(browser_util::IsLacrosPrimaryBrowser()); }
 
@@ -686,6 +700,52 @@ TEST_F(BrowserUtilTest, StatefulLacrosSelectionUpdateChannel) {
   ASSERT_EQ(Channel::BETA, browser_util::GetLacrosSelectionUpdateChannel(
                                LacrosSelection::kStateful));
   cmdline->RemoveSwitch(browser_util::kLacrosStabilitySwitch);
+}
+
+TEST_F(BrowserUtilTest, EmptyDeviceSettings) {
+  auto settings = browser_util::GetDeviceSettings();
+  EXPECT_EQ(settings->attestation_for_content_protection_enabled,
+            crosapi::mojom::DeviceSettings::OptionalBool::kUnset);
+  EXPECT_EQ(settings->device_system_wide_tracing_enabled,
+            crosapi::mojom::DeviceSettings::OptionalBool::kUnset);
+}
+
+TEST_F(BrowserUtilTest, DeviceSettingsWithData) {
+  testing_profile_.ScopedCrosSettingsTestHelper()
+      ->ReplaceDeviceSettingsProviderWithStub();
+  testing_profile_.ScopedCrosSettingsTestHelper()->SetTrustedStatus(
+      ash::CrosSettingsProvider::TRUSTED);
+  base::RunLoop().RunUntilIdle();
+  testing_profile_.ScopedCrosSettingsTestHelper()
+      ->GetStubbedProvider()
+      ->SetBoolean(chromeos::kAttestationForContentProtectionEnabled, true);
+
+  base::Value allowlist(base::Value::Type::LIST);
+  base::Value ids(base::Value::Type::DICTIONARY);
+  ids.SetIntKey(ash::kUsbDetachableAllowlistKeyVid, 2);
+  ids.SetIntKey(ash::kUsbDetachableAllowlistKeyPid, 3);
+  allowlist.Append(std::move(ids));
+
+  testing_profile_.ScopedCrosSettingsTestHelper()->GetStubbedProvider()->Set(
+      chromeos::kUsbDetachableAllowlist, std::move(allowlist));
+
+  auto settings = browser_util::GetDeviceSettings();
+  testing_profile_.ScopedCrosSettingsTestHelper()
+      ->RestoreRealDeviceSettingsProvider();
+
+  EXPECT_EQ(settings->attestation_for_content_protection_enabled,
+            crosapi::mojom::DeviceSettings::OptionalBool::kTrue);
+  EXPECT_EQ(settings->usb_detachable_allow_list->usb_device_ids.size(), 1);
+  EXPECT_EQ(
+      settings->usb_detachable_allow_list->usb_device_ids[0]->has_vendor_id,
+      true);
+  EXPECT_EQ(settings->usb_detachable_allow_list->usb_device_ids[0]->vendor_id,
+            2);
+  EXPECT_EQ(
+      settings->usb_detachable_allow_list->usb_device_ids[0]->has_product_id,
+      true);
+  EXPECT_EQ(settings->usb_detachable_allow_list->usb_device_ids[0]->product_id,
+            3);
 }
 
 }  // namespace crosapi

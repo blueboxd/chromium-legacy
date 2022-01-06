@@ -5,7 +5,7 @@
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
-import {LockType, Network, NetworkState, NetworkType, RoutineProperties, RoutineResult, RoutineType, StandardRoutineResult} from './diagnostics_types.js';
+import {LockType, NavigationView, Network, NetworkState, NetworkType, RoutineProperties, RoutineResult, RoutineType, StandardRoutineResult} from './diagnostics_types.js';
 import {RoutineGroup} from './routine_group.js';
 
 /**
@@ -45,6 +45,25 @@ export function getDiagnosticsIcon(id) {
  */
 export function getNavigationIcon(id) {
   return `navigation-selector:${id}`;
+}
+
+/**
+ * Converts ID into matching navigation view. ID matches the 'id' field provided
+ * to the navigation-view-panel {SelectorItem} array.
+ * @param {string} id
+ * @return {!NavigationView}
+ */
+export function getNavigationViewForPageId(id) {
+  switch (id) {
+    case 'system':
+      return NavigationView.kSystem;
+    case 'connectivity':
+      return NavigationView.kConnectivity;
+    // TODO(ashleydp):  Add input when ready to launch.
+    default:
+      assertNotReached();
+      return NavigationView.kSystem;
+  }
 }
 
 /**
@@ -123,14 +142,14 @@ export function createRoutine(routine, blocking) {
  * @return {!Array<!RoutineGroup>}
  */
 export function getRoutineGroups(type, isArcEnabled) {
-  let localNetworkGroup = new RoutineGroup(
+  const localNetworkGroup = new RoutineGroup(
       [
-        createRoutine(RoutineType.kGatewayCanBePinged, true),
+        createRoutine(RoutineType.kGatewayCanBePinged, false),
         createRoutine(RoutineType.kLanConnectivity, true),
       ],
       'localNetworkGroupLabel');
 
-  let nameResolutionGroup = new RoutineGroup(
+  const nameResolutionGroup = new RoutineGroup(
       [
         createRoutine(RoutineType.kDnsResolverPresent, true),
         createRoutine(RoutineType.kDnsResolution, true),
@@ -138,14 +157,14 @@ export function getRoutineGroups(type, isArcEnabled) {
       ],
       'nameResolutionGroupLabel');
 
-  let wifiGroup = new RoutineGroup(
+  const wifiGroup = new RoutineGroup(
       [
         createRoutine(RoutineType.kSignalStrength, false),
         createRoutine(RoutineType.kCaptivePortal, false),
         createRoutine(RoutineType.kHasSecureWiFiConnection, false),
       ],
       'wifiGroupLabel');
-  let internetConnectivityGroup = new RoutineGroup(
+  const internetConnectivityGroup = new RoutineGroup(
       [
         createRoutine(RoutineType.kHttpsFirewall, true),
         createRoutine(RoutineType.kHttpFirewall, true),
@@ -157,17 +176,16 @@ export function getRoutineGroups(type, isArcEnabled) {
     // Add ARC routines to their corresponding groups.
     nameResolutionGroup.addRoutine(
         (createRoutine(RoutineType.kArcDnsResolution, false)));
-    internetConnectivityGroup.addRoutine(
-        (createRoutine(RoutineType.kArcPing, false)));
+    localNetworkGroup.addRoutine((createRoutine(RoutineType.kArcPing, false)));
     internetConnectivityGroup.addRoutine(
         (createRoutine(RoutineType.kArcHttp, false)));
   }
 
-  let groupsToAdd = type === NetworkType.kWiFi ?
+  const groupsToAdd = type === NetworkType.kWiFi ?
       [wifiGroup, internetConnectivityGroup] :
       [internetConnectivityGroup];
 
-  let networkRoutineGroups = [
+  const networkRoutineGroups = [
     localNetworkGroup,
     nameResolutionGroup,
   ];
@@ -187,7 +205,7 @@ export function getSubnetMaskFromRoutingPrefix(prefix) {
     return '';
   }
 
-  let zeroes = 32 - prefix;
+  const zeroes = 32 - prefix;
   // Note: 0xffffffff is 32 bits, all set to 1.
   // Use << to knock off |zeroes| number of bits and then use that same number
   // to replace those bits with zeroes.
@@ -195,7 +213,7 @@ export function getSubnetMaskFromRoutingPrefix(prefix) {
   // 11111111 11111111 11111111 00000000.
   let mask = (0xffffffff >> zeroes) << zeroes;
 
-  let pieces = new Array(4);
+  const pieces = new Array(4);
   for (let i = 0; i < 4; i++) {
     // Note: & is binary and. 0xff is 8 ones "11111111".
     // Use & with the mask to select the bits from the other number.
@@ -339,4 +357,31 @@ export function getNetworkCardTitle(networkType, networkState) {
   }
 
   return `${titleForCard}`;
+}
+
+/**
+ * @param {number} value
+ * @return {string}
+ */
+export function getSignalStrength(value) {
+  assert(typeof value === 'number');
+  assert(value >= 0 && value <= 100);
+
+  if (value <= 1) {
+    return '';
+  }
+
+  if (value <= 25) {
+    return loadTimeData.getStringF('signalStrength_Weak', value);
+  }
+
+  if (value <= 50) {
+    return loadTimeData.getStringF('signalStrength_Average', value);
+  }
+
+  if (value <= 75) {
+    return loadTimeData.getStringF('signalStrength_Good', value);
+  }
+
+  return loadTimeData.getStringF('signalStrength_Excellent', value);
 }

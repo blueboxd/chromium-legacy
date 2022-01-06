@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_split.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "chromecast/base/metrics/cast_histograms.h"
 #include "chromecast/base/metrics/grouped_histogram.h"
@@ -191,7 +191,7 @@ void CastMetricsHelper::LogTimeToFirstAudio() {
 void CastMetricsHelper::LogTimeToBufferAv(BufferingType buffering_type,
                                           base::TimeDelta time) {
   MAKE_SURE_SEQUENCE(LogTimeToBufferAv, buffering_type, time);
-  if (time < base::TimeDelta()) {
+  if (time.is_negative()) {
     LOG(WARNING) << "Negative time";
     return;
   }

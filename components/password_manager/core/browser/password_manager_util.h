@@ -164,6 +164,18 @@ bool CanUseBiometricAuth(device_reauth::BiometricAuthenticator* authenticator);
 // Strips any authentication data, as well as query and ref portions of URL.
 GURL StripAuthAndParams(const GURL& gurl);
 
+// Helper which checks for scheme in the |url|. If not present, adds "https://"
+// by default. For ip-addresses, scheme "http://" is used.
+GURL ConstructGURLWithScheme(const std::string& url);
+
+// Returns whether |url| has valid format and either an HTTP or HTTPS scheme.
+bool IsValidPasswordURL(const GURL& url);
+
+// TODO(crbug.com/1261752): Deduplicate GetSignonRealm implementations.
+// Returns the value of PasswordForm::signon_realm for an HTML form with the
+// origin |url|.
+std::string GetSignonRealm(const GURL& url);
+
 }  // namespace password_manager_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_

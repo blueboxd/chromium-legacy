@@ -5,9 +5,16 @@
 #ifndef EXTENSIONS_BROWSER_CONTENT_VERIFIER_TEST_UTILS_H_
 #define EXTENSIONS_BROWSER_CONTENT_VERIFIER_TEST_UTILS_H_
 
+#include <list>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"

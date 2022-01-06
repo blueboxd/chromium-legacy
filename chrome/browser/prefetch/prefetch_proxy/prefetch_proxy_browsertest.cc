@@ -145,18 +145,15 @@ class TestCustomProxyConfigClient
  public:
   explicit TestCustomProxyConfigClient(
       mojo::PendingReceiver<network::mojom::CustomProxyConfigClient>
-          pending_receiver,
-      base::OnceClosure update_closure)
-      : receiver_(this, std::move(pending_receiver)),
-        update_closure_(std::move(update_closure)) {}
+          pending_receiver)
+      : receiver_(this, std::move(pending_receiver)) {}
 
   // network::mojom::CustomProxyConfigClient:
   void OnCustomProxyConfigUpdated(
-      network::mojom::CustomProxyConfigPtr proxy_config) override {
+      network::mojom::CustomProxyConfigPtr proxy_config,
+      OnCustomProxyConfigUpdatedCallback callback) override {
     config_ = std::move(proxy_config);
-    if (update_closure_) {
-      std::move(update_closure_).Run();
-    }
+    std::move(callback).Run();
   }
   void MarkProxiesAsBad(base::TimeDelta bypass_duration,
                         const net::ProxyList& bad_proxies,
@@ -167,7 +164,6 @@ class TestCustomProxyConfigClient
 
  private:
   mojo::Receiver<network::mojom::CustomProxyConfigClient> receiver_;
-  base::OnceClosure update_closure_;
 };
 
 class AuthChallengeObserver : public content::NotificationObserver {
@@ -555,7 +551,6 @@ class PrefetchProxyBrowserTest
 
   void InsertSpeculation(bool subresources,
                          const std::vector<GURL>& prefetch_urls) {
-
     std::string speculation_script = R"(
       var script = document.createElement('script');
       script.type = 'speculationrules';
@@ -602,10 +597,9 @@ class PrefetchProxyBrowserTest
     base::RunLoop run_loop;
     mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;
     TestCustomProxyConfigClient config_client(
-        client_remote.BindNewPipeAndPassReceiver(), run_loop.QuitClosure());
+        client_remote.BindNewPipeAndPassReceiver());
     prefetch_proxy_service->proxy_configurator()->AddCustomProxyConfigClient(
-        std::move(client_remote));
-
+        std::move(client_remote), run_loop.QuitClosure());
     run_loop.Run();
 
     return std::move(config_client.config_);
@@ -1011,10 +1005,13 @@ IN_PROC_BROWSER_TEST_F(
           ->profile()
           ->GetDefaultStoragePartition()
           ->GetServiceWorkerContext();
-  EXPECT_EQ(true, service_worker_context_->MaybeHasRegistrationForOrigin(
-                      url::Origin::Create(GetOriginServerURL("/"))));
-  EXPECT_EQ(false, service_worker_context_->MaybeHasRegistrationForOrigin(
-                       url::Origin::Create(GURL("https://unregistered.com"))));
+  EXPECT_EQ(
+      true,
+      service_worker_context_->MaybeHasRegistrationForStorageKey(
+          blink::StorageKey(url::Origin::Create(GetOriginServerURL("/")))));
+  EXPECT_EQ(false, service_worker_context_->MaybeHasRegistrationForStorageKey(
+                       blink::StorageKey(url::Origin::Create(
+                           GURL("https://unregistered.com")))));
 
   GURL prefetch_url = GetOriginServerURL("/title2.html");
 
@@ -1249,6 +1246,45 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(
       absl::make_optional(PrefetchProxyPrefetchStatus::kPrefetchUsedNoProbe),
       tab_helper->after_srp_metrics()->prefetch_status_);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PrefetchProxyBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(CookiesChangedAfterInitialCheck)) {
+  SetDataSaverEnabled(true);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
+  WaitForUpdatedCustomProxyConfig();
+
+  PrefetchProxyTabHelper* tab_helper =
+      PrefetchProxyTabHelper::FromWebContents(GetWebContents());
+
+  GURL prefetch_url = GetOriginServerURL("/simple.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedSuccessfulURLs({prefetch_url});
+
+  base::RunLoop run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {prefetch_url});
+
+  run_loop.Run();
+
+  EXPECT_EQ(1U, tab_helper->srp_metrics().predicted_urls_count_);
+  EXPECT_EQ(1U, tab_helper->srp_metrics().prefetch_eligible_count_);
+  EXPECT_EQ(1U, tab_helper->srp_metrics().prefetch_successful_count_);
+
+  ASSERT_TRUE(content::SetCookie(browser()->profile(), GetOriginServerURL("/"),
+                                 "cookietype=Oatmeal"));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), prefetch_url));
+
+  ASSERT_TRUE(tab_helper->after_srp_metrics());
+  EXPECT_EQ(absl::make_optional(
+                PrefetchProxyPrefetchStatus::kPrefetchNotUsedCookiesChanged),
+            tab_helper->after_srp_metrics()->prefetch_status_);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -2127,8 +2163,8 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithDecoyRequestsBrowserTest,
           ->profile()
           ->GetDefaultStoragePartition()
           ->GetServiceWorkerContext();
-  ASSERT_TRUE(service_worker_context_->MaybeHasRegistrationForOrigin(
-      url::Origin::Create(starting_page)));
+  ASSERT_TRUE(service_worker_context_->MaybeHasRegistrationForStorageKey(
+      blink::StorageKey(url::Origin::Create(starting_page))));
 
   ukm::SourceId srp_source_id =
       GetWebContents()->GetMainFrame()->GetPageUkmSourceId();
@@ -2480,7 +2516,7 @@ IN_PROC_BROWSER_TEST_F(
   {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
     GetNormalNetworkContext()->AddDomainReliabilityContextForTesting(
-        https_report_server.GetURL("a.test", "/").GetOrigin(),
+        https_report_server.GetURL("a.test", "/").DeprecatedGetOriginAsURL(),
         https_report_server.GetURL("a.test", "/domainreliabilty-upload"));
   }
 

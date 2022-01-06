@@ -37,8 +37,8 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -66,7 +66,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
-#include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/ash/multi_user/multi_profile_support.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
@@ -79,6 +78,7 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_test_util.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_item_factory.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_item_controller.h"
@@ -1296,7 +1296,11 @@ class V2App {
 class MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest
     : public ChromeShelfControllerTestBase {
  protected:
-  MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest() = default;
+  MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest() {
+    // Lacros does not support the ChromeOS Legacy multi profile feature.
+    scoped_feature_list_.InitAndDisableFeature(
+        chromeos::features::kLacrosSupport);
+  }
   MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest(
       const MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest&) =
       delete;
@@ -1413,6 +1417,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
   ProfileToNameMap created_profiles_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class ChromeShelfControllerMultiProfileWithArcTest
@@ -4790,7 +4795,7 @@ TEST_F(ChromeShelfControllerDemoModeTest, PinnedAppsOffline) {
   // If the device is offline, extension2 and onlineonly, and TestPWA should be
   // unpinned.
   ash::DemoSession::Get()->OverrideIgnorePinPolicyAppsForTesting(
-      {extension2_->id(), online_only_appinfo.package_name});
+      {extension2_->id(), online_only_appinfo.package_name, kWebAppUrl});
 
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps,

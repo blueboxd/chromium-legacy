@@ -16,8 +16,8 @@
 #include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -966,8 +966,7 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
   EXPECT_FALSE(HasPendingEvents());
 }
 
-// TODO(https://crbug.com/866946): Test is flaky, especially on Mac & Fuchsia.
-TEST_F(InputRouterImplTest, DISABLED_GestureTypesIgnoringAck) {
+TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
   // We test every gesture type, ensuring that the stream of gestures is valid.
 
 #if defined(OS_WIN)
@@ -2226,6 +2225,10 @@ class InputRouterImplScaleEventTest : public InputRouterImplTestBase {
  public:
   InputRouterImplScaleEventTest() {}
 
+  InputRouterImplScaleEventTest(const InputRouterImplScaleEventTest&) = delete;
+  InputRouterImplScaleEventTest& operator=(
+      const InputRouterImplScaleEventTest&) = delete;
+
   void SetUp() override {
     InputRouterImplTestBase::SetUp();
     input_router_->SetDeviceScaleFactor(2.f);
@@ -2250,15 +2253,17 @@ class InputRouterImplScaleEventTest : public InputRouterImplTestBase {
 
  protected:
   DispatchedMessages dispatched_messages_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputRouterImplScaleEventTest);
 };
 
 class InputRouterImplScaleMouseEventTest
     : public InputRouterImplScaleEventTest {
  public:
   InputRouterImplScaleMouseEventTest() {}
+
+  InputRouterImplScaleMouseEventTest(
+      const InputRouterImplScaleMouseEventTest&) = delete;
+  InputRouterImplScaleMouseEventTest& operator=(
+      const InputRouterImplScaleMouseEventTest&) = delete;
 
   void RunMouseEventTest(const std::string& name, WebInputEvent::Type type) {
     SCOPED_TRACE(name);
@@ -2272,9 +2277,6 @@ class InputRouterImplScaleMouseEventTest
     EXPECT_EQ(10, filter_event->PositionInWidget().x());
     EXPECT_EQ(10, filter_event->PositionInWidget().y());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputRouterImplScaleMouseEventTest);
 };
 
 }  // namespace
@@ -2320,6 +2322,11 @@ class InputRouterImplScaleTouchEventTest
     : public InputRouterImplScaleEventTest {
  public:
   InputRouterImplScaleTouchEventTest() {}
+
+  InputRouterImplScaleTouchEventTest(
+      const InputRouterImplScaleTouchEventTest&) = delete;
+  InputRouterImplScaleTouchEventTest& operator=(
+      const InputRouterImplScaleTouchEventTest&) = delete;
 
   // Test tests if two finger touch event at (10, 20) and (100, 200) are
   // properly scaled. The touch event must be generated ans flushed into
@@ -2379,9 +2386,6 @@ class InputRouterImplScaleTouchEventTest
     dispatched_messages_[0]->ToEvent()->CallCallback(
         blink::mojom::InputEventResultState::kConsumed);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputRouterImplScaleTouchEventTest);
 };
 
 }  // namespace
@@ -2436,6 +2440,11 @@ class InputRouterImplScaleGestureEventTest
     : public InputRouterImplScaleEventTest {
  public:
   InputRouterImplScaleGestureEventTest() {}
+
+  InputRouterImplScaleGestureEventTest(
+      const InputRouterImplScaleGestureEventTest&) = delete;
+  InputRouterImplScaleGestureEventTest& operator=(
+      const InputRouterImplScaleGestureEventTest&) = delete;
 
   absl::optional<gfx::SizeF> GetContactSize(const WebGestureEvent& event) {
     switch (event.GetType()) {
@@ -2572,9 +2581,6 @@ class InputRouterImplScaleGestureEventTest
       EXPECT_FLOAT_EQ(contact_size->height(), event_contact_size->height());
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputRouterImplScaleGestureEventTest);
 };
 
 }  // namespace

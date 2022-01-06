@@ -457,7 +457,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
       const mojom::blink::ViewportIntersectionState& intersection_state);
 
   IntSize GetMainFrameViewportSize() const override;
-  IntPoint GetMainFrameScrollOffset() const override;
+  gfx::Point GetMainFrameScrollOffset() const override;
 
   void SetOpener(Frame* opener) override;
 
@@ -615,9 +615,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetPrescientNetworkingForTesting(
       std::unique_ptr<WebPrescientNetworking> prescient_networking);
 
-  void CopyImageAtViewportPoint(const IntPoint& viewport_point);
+  void CopyImageAtViewportPoint(const gfx::Point& viewport_point);
   void MediaPlayerActionAtViewportPoint(
-      const IntPoint& viewport_position,
+      const gfx::Point& viewport_position,
       const blink::mojom::blink::MediaPlayerActionType type,
       bool enable);
 
@@ -679,8 +679,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   LocalFrameToken GetLocalFrameToken() const;
 
   TextFragmentHandler* GetTextFragmentHandler() const {
-    // |text_fragment_handler_| is always set on the main frame, and null
-    // otherwise.
+    // |text_fragment_handler_| is always set on the main frame and created
+    // lazily for child frames.
     return text_fragment_handler_;
   }
 
@@ -761,7 +761,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   void UpdateTaskTime(base::TimeDelta time) override;
-  void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
+  void UpdateBackForwardCacheDisablingFeatures(uint64_t features_mask) override;
   const base::UnguessableToken& GetAgentClusterId() const override;
 
   // Activates the user activation states of this frame and all its ancestors.
@@ -782,7 +782,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetContextPaused(bool);
 
   HitTestResult HitTestResultForVisualViewportPos(
-      const IntPoint& pos_in_viewport);
+      const gfx::Point& pos_in_viewport);
 
   bool ShouldThrottleDownload();
 
@@ -888,7 +888,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   IsCapturingMediaCallback is_capturing_media_callback_;
 
-  std::unique_ptr<FrameOverlay> frame_color_overlay_;
+  Member<FrameOverlay> frame_color_overlay_;
 
   absl::optional<base::UnguessableToken> embedding_token_;
 
@@ -917,7 +917,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   using SavedScrollOffsets = HeapHashMap<Member<Node>, ScrollOffset>;
   Member<SavedScrollOffsets> saved_scroll_offsets_;
 
-  // Always non-null for the main frame; null otherwise.
+  // Always non-null for the main frame and created lazily for child frames;
+  // null otherwise.
   Member<TextFragmentHandler> text_fragment_handler_;
 
   // Manages a transient affordance for this frame to enter fullscreen.

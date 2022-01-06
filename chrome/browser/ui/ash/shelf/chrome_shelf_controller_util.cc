@@ -108,7 +108,8 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
       GetPolicyValueFromAppId(app_id, profile);
 
   if (ash::DemoSession::Get() &&
-      ash::DemoSession::Get()->ShouldIgnorePinPolicy(policy_value_for_id)) {
+      !ash::DemoSession::Get()->ShouldShowAndroidOrChromeAppInShelf(
+          policy_value_for_id)) {
     return AppListControllerDelegate::PIN_EDITABLE;
   }
 
@@ -177,6 +178,8 @@ apps::mojom::LaunchSource ShelfLaunchSourceToAppsLaunchSource(
   switch (source) {
     case ash::LAUNCH_FROM_UNKNOWN:
       return apps::mojom::LaunchSource::kUnknown;
+    case ash::LAUNCH_FROM_INTERNAL:
+      return apps::mojom::LaunchSource::kFromChromeInternal;
     case ash::LAUNCH_FROM_APP_LIST:
       return apps::mojom::LaunchSource::kFromAppListGrid;
     case ash::LAUNCH_FROM_APP_LIST_SEARCH:

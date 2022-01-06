@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_GLOBAL_SCOPE_H_
 
 #include <bitset>
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
@@ -164,7 +164,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // services workers use them. Dedicated / Shared workers don't use the cached
   // code since we don't create a CachedMetadataHandler. We need to fix this by
   // creating a cached metadta handler for all workers.
-  virtual blink::mojom::CodeCacheHost* GetCodeCacheHost() { return nullptr; }
+  virtual CodeCacheHost* GetCodeCacheHost() { return nullptr; }
 
   Deprecation& GetDeprecation() { return deprecation_; }
 

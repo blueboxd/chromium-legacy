@@ -29,7 +29,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/consent_level.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 
@@ -45,7 +45,7 @@ namespace ash {
 namespace {
 constexpr const char kBackDemoButtonClicked[] = "back";
 
-std::string GetEulaOnlineUrl() {
+std::string GetGoogleEulaOnlineUrl() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kOobeEulaUrlForTests)) {
     return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -56,7 +56,7 @@ std::string GetEulaOnlineUrl() {
                             g_browser_process->GetApplicationLocale().c_str());
 }
 
-std::string GetAdditionalToSUrl() {
+std::string GetCrosEulaOnlineUrl() {
   return base::StringPrintf(chrome::kCrosEulaOnlineURLPath,
                             g_browser_process->GetApplicationLocale().c_str());
 }
@@ -151,8 +151,8 @@ void ConsolidatedConsentScreen::ShowImpl() {
   config.is_arc_managed = arc_managed_;
   config.is_child_account = is_child_account_;
   config.country_code = base::CountryCodeForCurrentTimezone();
-  config.eula_url = GetEulaOnlineUrl();
-  config.additional_tos_url = GetAdditionalToSUrl();
+  config.google_eula_url = GetGoogleEulaOnlineUrl();
+  config.cros_eula_url = GetCrosEulaOnlineUrl();
   view_->Show(config);
 }
 

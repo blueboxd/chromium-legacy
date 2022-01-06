@@ -4,9 +4,9 @@
 
 #include "components/autofill_assistant/browser/script_executor.h"
 
-#include <map>
 #include <utility>
 
+#include "base/containers/flat_map.h"
 #include "base/strings/strcat.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
@@ -37,9 +37,7 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Not;
-using ::testing::Pair;
 using ::testing::Property;
-using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::SizeIs;
 using ::testing::StrEq;
@@ -63,7 +61,7 @@ class ScriptExecutorTest : public testing::Test,
         kScriptPath,
         std::make_unique<TriggerContext>(
             std::make_unique<ScriptParameters>(
-                std::map<std::string, std::string>{
+                base::flat_map<std::string, std::string>{
                     {"additional_param", "additional_param_value"}}),
             options),
         /* global_payload= */ "initial global payload",
@@ -188,7 +186,7 @@ TEST_F(ScriptExecutorTest, ForwardParameters) {
   options.experiment_ids = "exp";
   delegate_.SetTriggerContext(std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(
-          std::map<std::string, std::string>{{"param", "value"}}),
+          base::flat_map<std::string, std::string>{{"param", "value"}}),
       options));
   EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
       .WillOnce(Invoke([](const std::string& script_path, const GURL& url,
@@ -204,7 +202,7 @@ TEST_F(ScriptExecutorTest, ForwardParameters) {
 
         EXPECT_THAT(
             trigger_context.GetScriptParameters().ToProto(),
-            UnorderedElementsAreArray(std::map<std::string, std::string>(
+            UnorderedElementsAreArray(base::flat_map<std::string, std::string>(
                 {{"additional_param", "additional_param_value"},
                  {"param", "value"}})));
 
@@ -1368,7 +1366,6 @@ TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
       next_actions_response.mutable_update_script_list()->add_scripts();
   script->set_path("path");
   auto* presentation = script->mutable_presentation();
-  presentation->mutable_chip()->set_text("name");
   presentation->mutable_precondition();
 
   EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
@@ -1384,7 +1381,6 @@ TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
   EXPECT_THAT(scripts_update_, SizeIs(1));
   EXPECT_THAT(scripts_update_count_, Eq(1));
   EXPECT_THAT("path", scripts_update_[0]->handle.path);
-  EXPECT_THAT("name", scripts_update_[0]->handle.chip.text);
 }
 
 TEST_F(ScriptExecutorTest, UpdateScriptListShouldNotifyMultipleTimes) {
@@ -1397,7 +1393,6 @@ TEST_F(ScriptExecutorTest, UpdateScriptListShouldNotifyMultipleTimes) {
   auto* script = actions_response.mutable_update_script_list()->add_scripts();
   script->set_path("path");
   auto* presentation = script->mutable_presentation();
-  presentation->mutable_chip()->set_text("name");
   presentation->mutable_precondition();
 
   EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
@@ -1435,7 +1430,6 @@ TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
   auto* script = interrupt_actions.mutable_update_script_list()->add_scripts();
   script->set_path("path");
   auto* presentation = script->mutable_presentation();
-  presentation->mutable_chip()->set_text("update_from_interrupt");
   presentation->mutable_precondition();
 
   // We expect a call from the interrupt which will update the script list and a
@@ -1454,7 +1448,6 @@ TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
   EXPECT_THAT(scripts_update_, SizeIs(1));
   EXPECT_THAT(scripts_update_count_, Eq(1));
   EXPECT_THAT("path", scripts_update_[0]->handle.path);
-  EXPECT_THAT("update_from_interrupt", scripts_update_[0]->handle.chip.text);
 }
 
 TEST_F(ScriptExecutorTest, RestorePreInterruptStatusMessage) {
@@ -1900,34 +1893,6 @@ TEST_F(ScriptExecutorTest, InterceptUserActions) {
 
   (*delegate_.GetUserActions())[0].Call(std::make_unique<TriggerContext>());
   EXPECT_EQ(AutofillAssistantState::RUNNING, delegate_.GetState());
-}
-
-TEST_F(ScriptExecutorTest, ReportDirectActionsChoices) {
-  ActionsResponseProto actions_response;
-  actions_response.add_actions()
-      ->mutable_prompt()
-      ->add_choices()
-      ->mutable_direct_action()
-      ->add_names("done");
-
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-
-  std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(SaveArg<3>(&processed_actions_capture));
-
-  executor_->Run(&user_data_, executor_callback_.Get());
-
-  ASSERT_NE(nullptr, delegate_.GetUserActions());
-  ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));
-  TriggerContext::Options options;
-  options.is_direct_action = true;
-  (*delegate_.GetUserActions())[0].Call(std::make_unique<TriggerContext>(
-      std::make_unique<ScriptParameters>(), options));
-
-  ASSERT_THAT(processed_actions_capture, SizeIs(1));
-  EXPECT_TRUE(processed_actions_capture[0].direct_action());
 }
 
 TEST_F(ScriptExecutorTest, PauseAndResume) {

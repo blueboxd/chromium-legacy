@@ -3,7 +3,7 @@
 <translationbundle lang="sw">
 <translation id="1096883626080133124">Fanya mengi zaidi kwa kutumia Google Chrome ambayo ni rahisi, salama na yenye kasi zaidi</translation>
 <translation id="1282031177488366470">Tusaidie Tuboreshe Utendaji na Vipengele vya Chrome</translation>
-<translation id="1354592789402432496">Msimamizi wako anahitaji uingie kwa kutumia akaunti ya shirika. Akaunti zilizozuiwa na msimamizi wako zimefichwa.</translation>
+<translation id="1314663809820920746">Bado unaweza kuona alamisho, historia, manenosiri na mipangilio yako mingine yote kwenye kifaa hiki. Ukifanya mabadiliko, hayatasawazishwa kwenye Akaunti yako ya Google.</translation>
 <translation id="1479202195792305274">Chrome inaweza kukagua manenosiri yako unapoingia ukitumia Akaunti yako ya Google.</translation>
 <translation id="1493827051843127077">Weka Chrome iwe kivinjari chaguomsingi cha kusawazisha vichupo, manenosiri na maelezo yako ya malipo kwenye vifaa vyako vyote</translation>
 <translation id="1504372625950710826">Chrome imeshindwa kukagua kama kuna masasisho. Jaribu kuangalia muunganisho wako wa Intaneti.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Nje ya mtandao, Chrome imeshindwa kukagua kama kuna masasisho</translation>
 <translation id="5716154293141027663">Tumia Chrome kufungua viungo vyovyote unavyogusa katika programu zingine</translation>
-<translation id="572883588166315317">Shirika lako linahitaji uingie katika akaunti ili uweze kutumia Chrome. <ph name="BEGIN_LINK" />Pata Maelezo Zaidi<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Kidokezo cha Chrome. Sasa vitufe vinapatikana katika sehemu ya chini ya skrini yako, kama vile kitufe cha Nyuma, Mbele na Tafuta.</translation>
-<translation id="5876773482963502140">Ukiruhusu Chrome ibaini mahali ulipo, itatuma maelezo hayo kwenye tovuti zozote ulizoziruhusu. Tovuti zinaweza kuomba maelezo ya mahali ulipo zinapotaka kukuonyesha taarifa kuhusu eneo lako, kama vile habari au maduka yaliyo karibu nawe.</translation>
 <translation id="5998675059699164418">Shirika lako linahitaji uingie katika akaunti ili uweze kutumia Chrome.</translation>
 <translation id="6054613632208573261">Tumia Chrome kwa Chaguomsingi</translation>
 <translation id="6063091872902370735">Ruhusu vidokezo vya kuingia katika akaunti kwenye Chrome</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Chagua iwapo ungependa kufuta data yako ya Chrome kwenye kifaa hiki au kuihifadhi</translation>
 <translation id="8370517070665726704">Hakimiliki <ph name="YEAR" /> Google LLC. Haki zote zimehifadhiwa.</translation>
 <translation id="840168496893712993">Baadhi ya programu jalizi husababisha Chrome iache kufanya kazi. Tafadhali jaribu kuzisanidua.</translation>
+<translation id="8414886616817913619">Shirika lako linahitaji uingie katika akaunti ili uweze kutumia Chrome. <ph name="BEGIN_LINK" />Pata Maelezo Zaidi<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Data uliyochagua imeondolewa kwenye Chrome na kwenye vifaa vilivyosawazishwa. Huenda Akaunti yako ya Google ina aina nyingine za historia ya mambo uliyovinjari kama vile mambo uliyotafuta na shughuli kutoka huduma nyingine za Google katika history.google.com.</translation>
 <translation id="850555388806794946">Ili ufanye Chrome iwe kivinjari chako chaguomsingi:
   1. Fungua Mipangilio

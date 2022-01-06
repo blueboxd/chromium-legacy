@@ -431,6 +431,11 @@ const char kCanCellularSetupNotificationBeShown[] =
 const char kManagedGuestSessionPrivacyWarningsEnabled[] =
     "managed_session.privacy_warning_enabled";
 
+// Boolean pref indicating whether the user has enabled detection of snooping
+// over their shoulder.
+const char kSnoopingProtectionEnabled[] =
+    "ash.privacy.snooping_protection_enabled";
+
 // A string pref storing the type of lock screen notification mode.
 // "show" -> show notifications on the lock screen
 // "hide" -> hide notifications at all on the lock screen (default)
@@ -832,6 +837,10 @@ const char kLastUsedImeShortcutReminderDismissed[] =
 const char kNextImeShortcutReminderDismissed[] =
     "ash.shortcut_reminders.next_ime_dismissed";
 
+// Boolean pref to indicate whether to use i18n shortcut mapping and deprecate
+// legacy shortcuts.
+const char kDeviceI18nShortcutsEnabled[] = "ash.device_i18n_shortcuts_enabled";
+
 // An integet pref that tracks how many times the user has been shown the
 // notification about shortcuts changing.
 const char kImprovedShortcutsNotificationShownCount[] =
@@ -856,6 +865,11 @@ const char kDeskTemplatesEnabled[] = "ash.desk_templates_enabled";
 // A string pref which contains download URLs and hashes for files containing
 // predefined Desks templates configured by policy administrators.
 const char kPreconfiguredDeskTemplates[] = "ash.preconfigured_desk_templates";
+
+// A boolean pref that tracks whether the user has enabled Projector creation
+// flow during onboarding.
+const char kProjectorCreationFlowEnabled[] =
+    "ash.projector.creationFlowEnabled";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

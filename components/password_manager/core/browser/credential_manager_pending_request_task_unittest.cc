@@ -73,10 +73,12 @@ class CredentialManagerPendingRequestTaskTest : public ::testing::Test {
  public:
   CredentialManagerPendingRequestTaskTest() {
     profile_store_ = new TestPasswordStore(IsAccountStore(false));
-    profile_store_->Init(/*prefs=*/nullptr);
+    profile_store_->Init(/*prefs=*/nullptr,
+                         /*affiliated_match_helper=*/nullptr);
 
     account_store_ = new TestPasswordStore(IsAccountStore(true));
-    account_store_->Init(/*prefs=*/nullptr);
+    account_store_->Init(/*prefs=*/nullptr,
+                         /*affiliated_match_helper=*/nullptr);
 
     client_ = std::make_unique<TestPasswordManagerClient>(profile_store_.get(),
                                                           account_store_.get());
@@ -90,7 +92,7 @@ class CredentialManagerPendingRequestTaskTest : public ::testing::Test {
     form_.username_value = u"Username";
     form_.password_value = u"Password";
     form_.url = url;
-    form_.signon_realm = form_.url.GetOrigin().spec();
+    form_.signon_realm = form_.url.DeprecatedGetOriginAsURL().spec();
     form_.scheme = PasswordForm::Scheme::kHtml;
     form_.skip_zero_click = false;
   }

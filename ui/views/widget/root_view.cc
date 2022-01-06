@@ -77,9 +77,14 @@ class AnnounceTextView : public View {
 
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+#if defined(OS_CHROMEOS)
+    // On ChromeOS, kAlert role can invoke an unnecessary event on reparenting.
+    node_data->role = ax::mojom::Role::kStaticText;
+#else
     // TODO(crbug.com/1024898): Use live regions (do not use alerts).
     // May require setting kLiveStatus, kContainerLiveStatus to "polite".
     node_data->role = ax::mojom::Role::kAlert;
+#endif
     node_data->SetName(announce_text_);
     node_data->AddState(ax::mojom::State::kInvisible);
   }
@@ -107,14 +112,14 @@ class PreEventDispatchHandler : public ui::EventHandler {
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
+// macOS doesn't have keyboard-triggered context menus.
+#if !defined(OS_MAC)
     if (event->handled())
       return;
 
     View* v = nullptr;
     if (owner_->GetFocusManager())  // Can be NULL in unittests.
       v = owner_->GetFocusManager()->GetFocusedView();
-// macOS doesn't have keyboard-triggered context menus.
-#if !defined(OS_MAC)
     // Special case to handle keyboard-triggered context menus.
     if (v && v->GetEnabled() &&
         ((event->key_code() == ui::VKEY_APPS) ||

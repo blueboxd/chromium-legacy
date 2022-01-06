@@ -6,7 +6,7 @@
 #define COMPONENTS_EXO_WAYLAND_CLIENTS_TEST_WAYLAND_CLIENT_TEST_HELPER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 
 namespace ash {
 class AshTestHelper;
@@ -44,8 +44,6 @@ class WaylandClientTestHelper {
   virtual void SetUpOnUIThread(base::WaitableEvent* event);
 
  private:
-  class WaylandWatcher;
-
   void TearDownOnUIThread(base::WaitableEvent* event);
 
   // Below objects can only be accessed from UI thread.
@@ -54,7 +52,6 @@ class WaylandClientTestHelper {
   std::unique_ptr<WMHelper> wm_helper_;
   std::unique_ptr<Display> display_;
   std::unique_ptr<wayland::Server> wayland_server_;
-  std::unique_ptr<WaylandWatcher> wayland_watcher_;
 };
 
 }  // namespace exo

@@ -46,6 +46,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -69,6 +70,7 @@
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/frame/event_page_show_persisted.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
@@ -1179,15 +1181,16 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       !request->IsForMhtmlSubframe()) {
     SCOPED_CRASH_KEY_STRING256("GetFrameHostForNav", "lock_url",
                                process_lock.ToString());
-    SCOPED_CRASH_KEY_STRING64("GetFrameHostForNav", "commit_origin",
-                              request->common_params().url.GetOrigin().spec());
+    SCOPED_CRASH_KEY_STRING64(
+        "GetFrameHostForNav", "commit_origin",
+        request->common_params().url.DeprecatedGetOriginAsURL().spec());
     SCOPED_CRASH_KEY_BOOL("GetFrameHostForNav", "is_main_frame",
                           frame_tree_node_->IsMainFrame());
     SCOPED_CRASH_KEY_BOOL("GetFrameHostForNav", "use_current_rfh",
                           use_current_rfh);
     NOTREACHED() << "Picked an incompatible process for URL: "
                  << process_lock.ToString() << " lock vs "
-                 << request->common_params().url.GetOrigin();
+                 << request->common_params().url.DeprecatedGetOriginAsURL();
     base::debug::DumpWithoutCrashing();
   }
 
@@ -1490,12 +1493,13 @@ void RenderFrameHostManager::ActiveFrameCountIsZero(
 RenderFrameProxyHost* RenderFrameHostManager::CreateRenderFrameProxyHost(
     SiteInstance* site_instance,
     scoped_refptr<RenderViewHostImpl> rvh) {
-  auto site_instance_id = site_instance->GetId();
-  CHECK(proxy_hosts_.find(site_instance_id) == proxy_hosts_.end())
-      << "A proxy already existed for this SiteInstance.";
+  auto site_instance_group_id =
+      static_cast<SiteInstanceImpl*>(site_instance)->group()->GetId();
+  CHECK(proxy_hosts_.find(site_instance_group_id) == proxy_hosts_.end())
+      << "A proxy already existed for this SiteInstanceGroup.";
   RenderFrameProxyHost* proxy_host =
       new RenderFrameProxyHost(site_instance, std::move(rvh), frame_tree_node_);
-  proxy_hosts_[site_instance_id] = base::WrapUnique(proxy_host);
+  proxy_hosts_[site_instance_group_id] = base::WrapUnique(proxy_host);
   static_cast<SiteInstanceImpl*>(site_instance)->AddObserver(this);
 
   TRACE_EVENT_INSTANT("navigation",
@@ -1507,7 +1511,8 @@ RenderFrameProxyHost* RenderFrameHostManager::CreateRenderFrameProxyHost(
 void RenderFrameHostManager::DeleteRenderFrameProxyHost(
     SiteInstance* site_instance) {
   static_cast<SiteInstanceImpl*>(site_instance)->RemoveObserver(this);
-  proxy_hosts_.erase(site_instance->GetId());
+  proxy_hosts_.erase(
+      static_cast<SiteInstanceImpl*>(site_instance)->group()->GetId());
 }
 
 ShouldSwapBrowsingInstance
@@ -2958,7 +2963,8 @@ void RenderFrameHostManager::SwapOuterDelegateFrame(
   // false to |is_loading| below.
   // TODO(lazyboy): This |is_loading| behavior might not be what we want,
   // investigate and fix.
-  DCHECK_EQ(render_frame_host->GetSiteInstance(), proxy->GetSiteInstance());
+  DCHECK_EQ(render_frame_host->GetSiteInstance()->group(),
+            proxy->site_instance_group());
   render_frame_host->SwapOuterDelegateFrame(proxy);
   proxy->SetRenderFrameProxyCreated(true);
 }
@@ -3107,7 +3113,8 @@ bool RenderFrameHostManager::InitRenderFrame(
   // previous sibling frame so that this frame is correctly inserted into the
   // frame tree on the renderer side.
   int previous_sibling_routing_id = MSG_ROUTING_NONE;
-  FrameTreeNode* previous_sibling = frame_tree_node_->PreviousSibling();
+  FrameTreeNode* previous_sibling =
+      frame_tree_node_->current_frame_host()->PreviousSibling();
   if (previous_sibling) {
     previous_sibling_routing_id =
         previous_sibling->render_manager()->GetRoutingIdForSiteInstance(
@@ -3317,9 +3324,9 @@ void RenderFrameHostManager::CommitPending(
         std::move(pending_stored_page->proxy_hosts);
     for (auto& proxy : proxy_hosts_to_restore) {
       // We only cache pages when swapping BrowsingInstance, so we should never
-      // be reusing SiteInstances.
+      // be reusing SiteInstanceGroups.
       CHECK(!base::Contains(proxy_hosts_,
-                            proxy.second->GetSiteInstance()->GetId()));
+                            proxy.second->site_instance_group()->GetId()));
       static_cast<SiteInstanceImpl*>(proxy.second->GetSiteInstance())
           ->AddObserver(this);
       TRACE_EVENT_INSTANT(
@@ -3332,9 +3339,15 @@ void RenderFrameHostManager::CommitPending(
         std::move(pending_stored_page->render_view_hosts);
     if (prev_state ==
         RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache) {
+      blink::RecordUMAEventPageShowPersisted(
+          blink::EventPageShowPersisted::
+              kYesInBrowser_RenderFrameHostManager_CommitPending);
       for (RenderViewHostImpl* rvh : render_view_hosts_to_restore) {
+        bool restoring_main_frame_from_back_forward_cache =
+            render_frame_host_->render_view_host() == rvh;
         rvh->LeaveBackForwardCache(
-            pending_stored_page->page_restore_params.Clone());
+            pending_stored_page->page_restore_params.Clone(),
+            restoring_main_frame_from_back_forward_cache);
       }
     } else {
       DCHECK_EQ(prev_state,
@@ -3595,7 +3608,8 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
 
 RenderFrameProxyHost* RenderFrameHostManager::GetRenderFrameProxyHost(
     SiteInstance* instance) const {
-  auto it = proxy_hosts_.find(instance->GetId());
+  auto it = proxy_hosts_.find(
+      static_cast<SiteInstanceImpl*>(instance)->group()->GetId());
   if (it != proxy_hosts_.end())
     return it->second.get();
   return nullptr;

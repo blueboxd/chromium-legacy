@@ -183,12 +183,6 @@ std::ostream& operator<<(std::ostream& out, const TestCase& test_case) {
   return out << test_case.options;
 }
 
-// TODO(crbug.com/1240426) Remove this function.
-TestCase ZipCase(const char* const name) {
-  TestCase test_case(name);
-  return test_case;
-}
-
 // FilesApp browser test.
 class FilesAppBrowserTest : public FileManagerBrowserTestBase,
                             public ::testing::WithParamInterface<TestCase> {
@@ -335,21 +329,19 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenAudioFiles, /* open_audio_files.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("audioOpenCloseDrive"),
+    ::testing::Values(TestCase("audioOpenCloseDownloads"),
+                      TestCase("audioOpenCloseDownloads").InGuestMode(),
+                      TestCase("audioOpenCloseDrive"),
                       TestCase("audioOpenDownloads").InGuestMode(),
                       TestCase("audioOpenDownloads"),
                       TestCase("audioOpenDrive"),
+                      TestCase("audioAutoAdvanceDrive"),
+                      TestCase("audioRepeatAllModeMultipleFileDrive"),
                       TestCase("audioNoRepeatModeSingleFileDrive"),
                       TestCase("audioRepeatOneModeSingleFileDrive"),
-                      TestCase("audioNoRepeatModeMultipleFileDrive")
-                      // Disable flaky test, crbug.com/1254831
-                      // TestCase("audioOpenCloseDownloads"),
-                      // TestCase("audioOpenCloseDownloads").InGuestMode(),
-                      // TestCase("audioRepeatOneModeMultipleFileDrive"),
-                      // TestCase("audioAutoAdvanceDrive"),
-                      // TestCase("audioRepeatAllModeMultipleFileDrive"),
-                      // TestCase("audioRepeatAllModeSingleFileDrive"),
-                      ));
+                      TestCase("audioRepeatAllModeSingleFileDrive"),
+                      TestCase("audioNoRepeatModeMultipleFileDrive"),
+                      TestCase("audioRepeatOneModeMultipleFileDrive")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenImageMediaApp, /* open_image_media_app.js */
@@ -371,23 +363,23 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("textOpenDrive"),
                       TestCase("textOpenDrive").FilesSwa()));
 
-// TODO(crbug.com/1240426) Make these tests work with the new ZIP systems.
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    DISABLED_ZipFiles, /* zip_files.js */
+    ZipFiles, /* zip_files.js */
     FilesAppBrowserTest,
-    ::testing::Values(ZipCase("zipFileOpenDownloads").InGuestMode(),
-                      ZipCase("zipFileOpenDownloads"),
-                      ZipCase("zipNotifyFileTasks"),
-                      ZipCase("zipFileOpenDownloadsShiftJIS"),
-                      ZipCase("zipFileOpenDownloadsMacOs"),
-                      ZipCase("zipFileOpenDownloadsWithAbsolutePaths"),
-                      ZipCase("zipFileOpenDownloadsEncryptedCancelPassphrase"),
-                      ZipCase("zipFileOpenDrive"),
-                      ZipCase("zipFileOpenUsb"),
-                      ZipCase("zipCreateFileDownloads").InGuestMode(),
-                      ZipCase("zipCreateFileDownloads"),
-                      ZipCase("zipCreateFileDrive"),
-                      ZipCase("zipCreateFileUsb")));
+    ::testing::Values(
+        TestCase("zipFileOpenDownloads").InGuestMode(),
+        TestCase("zipFileOpenDownloads"),
+        TestCase("zipFileOpenDrive"),
+        TestCase("zipFileOpenUsb"),
+        TestCase("zipNotifyFileTasks"),
+        TestCase("zipCreateFileDownloads").InGuestMode(),
+        TestCase("zipCreateFileDownloads"),
+        TestCase("zipCreateFileDownloads").InGuestMode().FilesSwa(),
+        TestCase("zipCreateFileDownloads").FilesSwa(),
+        TestCase("zipCreateFileDrive"),
+        TestCase("zipCreateFileDrive").FilesSwa(),
+        TestCase("zipCreateFileUsb"),
+        TestCase("zipCreateFileUsb").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CreateNewFolder, /* create_new_folder.js */
@@ -404,18 +396,31 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("keyboardDeleteDownloads").InGuestMode(),
+        TestCase("keyboardDeleteDownloads").InGuestMode().FilesSwa(),
         TestCase("keyboardDeleteDownloads"),
+        TestCase("keyboardDeleteDownloads").FilesSwa(),
         TestCase("keyboardDeleteDownloads").EnableTrash(),
+        TestCase("keyboardDeleteDownloads").EnableTrash().FilesSwa(),
         TestCase("keyboardDeleteDrive"),
+        TestCase("keyboardDeleteDrive").FilesSwa(),
         TestCase("keyboardDeleteDrive").EnableTrash(),
+        TestCase("keyboardDeleteDrive").EnableTrash().FilesSwa(),
         TestCase("keyboardDeleteFolderDownloads").InGuestMode(),
+        TestCase("keyboardDeleteFolderDownloads").InGuestMode().FilesSwa(),
         TestCase("keyboardDeleteFolderDownloads"),
+        TestCase("keyboardDeleteFolderDownloads").FilesSwa(),
         TestCase("keyboardDeleteFolderDownloads").EnableTrash(),
+        TestCase("keyboardDeleteFolderDownloads").EnableTrash().FilesSwa(),
         TestCase("keyboardDeleteFolderDrive"),
+        TestCase("keyboardDeleteFolderDrive").FilesSwa(),
         TestCase("keyboardCopyDownloads").InGuestMode(),
+        TestCase("keyboardCopyDownloads").InGuestMode().FilesSwa(),
         TestCase("keyboardCopyDownloads"),
+        TestCase("keyboardCopyDownloads").FilesSwa(),
         TestCase("keyboardCopyDownloads").EnableTrash(),
+        TestCase("keyboardCopyDownloads").EnableTrash().FilesSwa(),
         TestCase("keyboardCopyDrive"),
+        TestCase("keyboardCopyDrive").FilesSwa(),
 // TODO(crbug.com/1236842): Remove flakiness and enable this test.
 #if !defined(ADDRESS_SANITIZER) && defined(NDEBUG)
         TestCase("keyboardFocusOutlineVisible"),
@@ -508,8 +513,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("toolbarDeleteButtonOpensDeleteConfirmDialog"),
                       TestCase("toolbarDeleteButtonKeepFocus"),
                       TestCase("toolbarDeleteEntry").InGuestMode(),
+                      TestCase("toolbarDeleteEntry").InGuestMode().FilesSwa(),
                       TestCase("toolbarDeleteEntry"),
+                      TestCase("toolbarDeleteEntry").FilesSwa(),
                       TestCase("toolbarDeleteEntry").EnableTrash(),
+                      TestCase("toolbarDeleteEntry").EnableTrash().FilesSwa(),
                       TestCase("toolbarRefreshButtonWithSelection")
                           .EnableGenericDocumentsProvider(),
                       TestCase("toolbarAltACommand"),
@@ -524,75 +532,152 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("openQuickView"),
+        TestCase("openQuickView").FilesSwa(),
         TestCase("openQuickViewDialog"),
+        TestCase("openQuickViewDialog").FilesSwa(),
         TestCase("openQuickViewAndEscape"),
+        TestCase("openQuickViewAndEscape").FilesSwa(),
         TestCase("openQuickView").InGuestMode(),
+        TestCase("openQuickView").InGuestMode().FilesSwa(),
         TestCase("openQuickView").TabletMode(),
+        TestCase("openQuickView").TabletMode().FilesSwa(),
         TestCase("openQuickViewViaContextMenuSingleSelection"),
+        TestCase("openQuickViewViaContextMenuSingleSelection").FilesSwa(),
         TestCase("openQuickViewViaContextMenuCheckSelections"),
+        TestCase("openQuickViewViaContextMenuCheckSelections").FilesSwa(),
         TestCase("openQuickViewAudio"),
+        TestCase("openQuickViewAudio").FilesSwa(),
         TestCase("openQuickViewAudioOnDrive"),
+        TestCase("openQuickViewAudioOnDrive").FilesSwa(),
         TestCase("openQuickViewAudioWithImageMetadata"),
+        TestCase("openQuickViewAudioWithImageMetadata").FilesSwa(),
         TestCase("openQuickViewImageJpg"),
+        TestCase("openQuickViewImageJpg").FilesSwa(),
         TestCase("openQuickViewImageJpeg"),
+        TestCase("openQuickViewImageJpeg").FilesSwa(),
         TestCase("openQuickViewImageJpeg").InGuestMode(),
+        TestCase("openQuickViewImageJpeg").InGuestMode().FilesSwa(),
         TestCase("openQuickViewImageExif"),
+        TestCase("openQuickViewImageExif").FilesSwa(),
         TestCase("openQuickViewImageRaw"),
+        TestCase("openQuickViewImageRaw").FilesSwa(),
         TestCase("openQuickViewImageRawWithOrientation"),
+        TestCase("openQuickViewImageRawWithOrientation").FilesSwa(),
         TestCase("openQuickViewBrokenImage"),
+        TestCase("openQuickViewBrokenImage").FilesSwa(),
         TestCase("openQuickViewImageClick"),
+        TestCase("openQuickViewImageClick").FilesSwa(),
         TestCase("openQuickViewVideo"),
+        TestCase("openQuickViewVideo").FilesSwa(),
         TestCase("openQuickViewVideoOnDrive"),
+        TestCase("openQuickViewVideoOnDrive").FilesSwa(),
         TestCase("openQuickViewPdf"),
+        TestCase("openQuickViewPdf").FilesSwa(),
         TestCase("openQuickViewPdfPopup"),
+        TestCase("openQuickViewPdfPopup").FilesSwa(),
         TestCase("openQuickViewPdfPreviewsDisabled"),
+        TestCase("openQuickViewPdfPreviewsDisabled").FilesSwa(),
         TestCase("openQuickViewKeyboardUpDownChangesView"),
+        TestCase("openQuickViewKeyboardUpDownChangesView").FilesSwa(),
         TestCase("openQuickViewKeyboardLeftRightChangesView"),
+        TestCase("openQuickViewKeyboardLeftRightChangesView").FilesSwa(),
         TestCase("openQuickViewSniffedText"),
+        TestCase("openQuickViewSniffedText").FilesSwa(),
         TestCase("openQuickViewTextFileWithUnknownMimeType"),
+        TestCase("openQuickViewTextFileWithUnknownMimeType").FilesSwa(),
         TestCase("openQuickViewUtf8Text"),
+        TestCase("openQuickViewUtf8Text").FilesSwa(),
         TestCase("openQuickViewScrollText"),
+        TestCase("openQuickViewScrollText").FilesSwa(),
         TestCase("openQuickViewScrollHtml"),
+        TestCase("openQuickViewScrollHtml").FilesSwa(),
         TestCase("openQuickViewMhtml"),
+        TestCase("openQuickViewMhtml").FilesSwa(),
         TestCase("openQuickViewBackgroundColorHtml"),
+        TestCase("openQuickViewBackgroundColorHtml").FilesSwa(),
         TestCase("openQuickViewDrive"),
+        TestCase("openQuickViewDrive").FilesSwa(),
         TestCase("openQuickViewSmbfs"),
+        TestCase("openQuickViewSmbfs").FilesSwa(),
         TestCase("openQuickViewAndroid"),
+        TestCase("openQuickViewAndroid").FilesSwa(),
         TestCase("openQuickViewDocumentsProvider")
             .EnableGenericDocumentsProvider(),
+        TestCase("openQuickViewDocumentsProvider")
+            .EnableGenericDocumentsProvider()
+            .FilesSwa(),
         TestCase("openQuickViewCrostini"),
+        TestCase("openQuickViewCrostini").FilesSwa(),
         TestCase("openQuickViewUsb"),
+        TestCase("openQuickViewUsb").FilesSwa(),
         TestCase("openQuickViewRemovablePartitions"),
+        TestCase("openQuickViewRemovablePartitions").FilesSwa(),
         TestCase("openQuickViewMtp"),
+        TestCase("openQuickViewMtp").FilesSwa(),
         TestCase("openQuickViewTabIndexImage").MediaSwa(),
+        TestCase("openQuickViewTabIndexImage").MediaSwa().FilesSwa(),
         TestCase("openQuickViewTabIndexText"),
+        TestCase("openQuickViewTabIndexText").FilesSwa(),
         TestCase("openQuickViewTabIndexHtml"),
+        TestCase("openQuickViewTabIndexHtml").FilesSwa(),
         TestCase("openQuickViewTabIndexAudio"),
+        TestCase("openQuickViewTabIndexAudio").FilesSwa(),
         TestCase("openQuickViewTabIndexVideo").MediaSwa(),
+        TestCase("openQuickViewTabIndexVideo").MediaSwa().FilesSwa(),
         TestCase("openQuickViewTabIndexDeleteDialog"),
+        TestCase("openQuickViewTabIndexDeleteDialog").FilesSwa(),
         TestCase("openQuickViewTabIndexDeleteDialog").EnableTrash(),
+        TestCase("openQuickViewTabIndexDeleteDialog").EnableTrash().FilesSwa(),
         TestCase("openQuickViewToggleInfoButtonKeyboard"),
+        TestCase("openQuickViewToggleInfoButtonKeyboard").FilesSwa(),
         TestCase("openQuickViewToggleInfoButtonClick"),
+        TestCase("openQuickViewToggleInfoButtonClick").FilesSwa(),
         TestCase("openQuickViewWithMultipleFiles"),
+        TestCase("openQuickViewWithMultipleFiles").FilesSwa(),
         TestCase("openQuickViewWithMultipleFilesText"),
+        TestCase("openQuickViewWithMultipleFilesText").FilesSwa(),
         TestCase("openQuickViewWithMultipleFilesPdf"),
+        TestCase("openQuickViewWithMultipleFilesPdf").FilesSwa(),
         TestCase("openQuickViewWithMultipleFilesKeyboardUpDown"),
+        TestCase("openQuickViewWithMultipleFilesKeyboardUpDown").FilesSwa(),
         TestCase("openQuickViewWithMultipleFilesKeyboardLeftRight"),
+        TestCase("openQuickViewWithMultipleFilesKeyboardLeftRight").FilesSwa(),
         TestCase("openQuickViewFromDirectoryTree"),
+        TestCase("openQuickViewFromDirectoryTree").FilesSwa(),
         TestCase("openQuickViewAndDeleteSingleSelection"),
+        TestCase("openQuickViewAndDeleteSingleSelection").FilesSwa(),
         TestCase("openQuickViewAndDeleteSingleSelection").EnableTrash(),
+        TestCase("openQuickViewAndDeleteSingleSelection")
+            .EnableTrash()
+            .FilesSwa(),
         TestCase("openQuickViewAndDeleteCheckSelection"),
+        TestCase("openQuickViewAndDeleteCheckSelection").FilesSwa(),
         TestCase("openQuickViewAndDeleteCheckSelection").EnableTrash(),
+        TestCase("openQuickViewAndDeleteCheckSelection")
+            .EnableTrash()
+            .FilesSwa(),
         TestCase("openQuickViewDeleteEntireCheckSelection"),
+        TestCase("openQuickViewDeleteEntireCheckSelection").FilesSwa(),
         TestCase("openQuickViewDeleteEntireCheckSelection").EnableTrash(),
+        TestCase("openQuickViewDeleteEntireCheckSelection")
+            .EnableTrash()
+            .FilesSwa(),
         TestCase("openQuickViewClickDeleteButton"),
+        TestCase("openQuickViewClickDeleteButton").FilesSwa(),
         TestCase("openQuickViewClickDeleteButton").EnableTrash(),
+        TestCase("openQuickViewClickDeleteButton").EnableTrash().FilesSwa(),
         TestCase("openQuickViewDeleteButtonNotShown"),
+        TestCase("openQuickViewDeleteButtonNotShown").FilesSwa(),
         TestCase("openQuickViewUmaViaContextMenu"),
+        TestCase("openQuickViewUmaViaContextMenu").FilesSwa(),
         TestCase("openQuickViewUmaForCheckSelectViaContextMenu"),
+        TestCase("openQuickViewUmaForCheckSelectViaContextMenu").FilesSwa(),
         TestCase("openQuickViewUmaViaSelectionMenu"),
+        TestCase("openQuickViewUmaViaSelectionMenu").FilesSwa(),
         TestCase("openQuickViewUmaViaSelectionMenuKeyboard"),
-        TestCase("closeQuickView")));
+        TestCase("openQuickViewUmaViaSelectionMenuKeyboard").FilesSwa(),
+        TestCase("closeQuickView"),
+        TestCase("closeQuickView").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTree, /* directory_tree.js */
@@ -649,12 +734,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirCreateWithKeyboard"),
         TestCase("dirCreateWithoutChangingCurrent"),
         TestCase("dirCreateMultipleFolders"),
-
-        // TODO(crbug.com/1240426) Make these tests work with the new ZIP
-        // systems.
-        ZipCase("DISABLED_dirContextMenuZip"),
-        ZipCase("DISABLED_dirEjectContextMenuZip"),
-
+        TestCase("dirContextMenuZip"),
+        TestCase("dirContextMenuZipEject"),
         TestCase("dirContextMenuRecent"),
         TestCase("dirContextMenuMyFiles"),
         TestCase("dirContextMenuMyFiles").EnableTrash(),
@@ -842,9 +923,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferInfoIsRemembered"),
         // TestCase("transferInfoIsRemembered").FilesSwa(),
         TestCase("transferToUsbHasDestinationText"),
-        TestCase("transferToUsbHasDestinationText").FilesSwa(),
+        // TODO(lucmult): Re-enable this once SWA uses the feedback panel.
+        // TestCase("transferToUsbHasDestinationText").FilesSwa(),
         TestCase("transferDismissedErrorIsRemembered"),
-        TestCase("transferDismissedErrorIsRemembered").FilesSwa(),
+        // TODO(lucmult): Re-enable this once SWA uses the feedback panel.
+        // TestCase("transferDismissedErrorIsRemembered").FilesSwa(),
         TestCase("transferNotSupportedOperationHasNoRemainingTimeText"),
         TestCase("transferNotSupportedOperationHasNoRemainingTimeText")
             .FilesSwa(),
@@ -1278,7 +1361,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("breadcrumbsEliderMenuClickOutside"),
                       TestCase("breadcrumbsEliderMenuItemClick"),
                       TestCase("breadcrumbsEliderMenuItemTabLeft"),
-                      TestCase("breadcrumbsEliderMenuItemTabRight")));
+                      TestCase("breadcrumbsEliderMenuItemTabRight"),
+                      TestCase("breadcrumbsDontExceedAvailableViewport")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FormatDialog, /* format_dialog.js */

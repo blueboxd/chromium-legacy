@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/no_destructor.h"
 #include "ui/gfx/geometry/insets.h"
@@ -22,6 +23,14 @@ constexpr float kMinimumTileHeightAfterConfigScale = 48.;
 // size.
 ash::AppListConfigType GetConfigTypeForDisplaySize(
     const gfx::Size& display_size) {
+  if (features::IsProductivityLauncherEnabled()) {
+    // Values from go/cros-launcher-spec
+    if (display_size.height() <= 675 || display_size.width() <= 675)
+      return AppListConfigType::kDense;
+
+    return AppListConfigType::kRegular;
+  }
+
   // Landscape:
   if (display_size.width() > display_size.height()) {
     if (display_size.width() >= 1200)
@@ -98,7 +107,10 @@ AppListConfigProvider::CreateForFullscreenAppList(
   const int min_grid_height = grid_rows * base_config.grid_tile_height();
   const int min_grid_width = grid_columns * base_config.grid_tile_width();
 
-  if (available_size.height() < min_grid_height) {
+  // `scale_y` does not change when productivity launcher is enabled. Instead,
+  // the number of rows will be reduced to fit the grid vertically.
+  if (available_size.height() < min_grid_height &&
+      !features::IsProductivityLauncherEnabled()) {
     scale_y =
         std::max(min_config_scale,
                  static_cast<float>(available_size.height()) / min_grid_height);

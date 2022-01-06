@@ -20,6 +20,7 @@ import static org.chromium.base.test.util.CriteriaHelper.pollUiThread;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
 import android.view.View;
@@ -46,6 +47,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.ui.android.webid.data.Account;
 import org.chromium.chrome.browser.ui.android.webid.data.ClientIdMetadata;
+import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderMetadata;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabCreator;
@@ -82,9 +84,8 @@ public class AccountSelectionIntegrationTest {
 
     private static final FakeTabCreator sTabCreator = new FakeTabCreator();
 
-    private static final String EXAMPLE_URL = JUnitTestGURLs.EXAMPLE_URL;
+    private static final GURL EXAMPLE_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
     private static final GURL TEST_URL_1 = JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1);
-    private static final GURL TEST_URL_2 = JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_2);
     private static final GURL TEST_PROFILE_PIC =
             JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1_WITH_PATH);
     private static final GURL TEST_URL_TERMS_OF_SERVICE =
@@ -92,11 +93,12 @@ public class AccountSelectionIntegrationTest {
     private static final GURL TEST_URL_PRIVACY_POLICY =
             JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_2);
 
-    private static final Account ANA = new Account(
-            "Ana", "ana@one.test", "Ana Doe", "Ana", TEST_PROFILE_PIC, TEST_URL_1, true);
-    private static final Account BOB =
-            new Account("Bob", "", "Bob", "", TEST_PROFILE_PIC, TEST_URL_2, false);
+    private static final Account ANA =
+            new Account("Ana", "ana@one.test", "Ana Doe", "Ana", TEST_PROFILE_PIC, true);
+    private static final Account BOB = new Account("Bob", "", "Bob", "", TEST_PROFILE_PIC, false);
 
+    private static final IdentityProviderMetadata IDP_METADATA =
+            new IdentityProviderMetadata(Color.BLACK, Color.BLACK);
     private static final ClientIdMetadata CLIENT_ID_METADATA =
             new ClientIdMetadata(TEST_URL_TERMS_OF_SERVICE, TEST_URL_PRIVACY_POLICY);
 
@@ -121,15 +123,15 @@ public class AccountSelectionIntegrationTest {
             mAccountSelection.initialize(
                     mActivityTestRule.getActivity(), mBottomSheetController, mMockBridge);
         });
-        AccountSelectionViewBinder.setTabCreator(sTabCreator);
+        AccountSelectionViewBinder.setTabCreatorForTesting(sTabCreator);
     }
 
     @Test
     @MediumTest
     public void testBackDismissesAndCallsCallback() {
         runOnUiThreadBlocking(() -> {
-            mAccountSelection.showAccounts(
-                    EXAMPLE_URL, Arrays.asList(ANA, BOB), CLIENT_ID_METADATA, false);
+            mAccountSelection.showAccounts(EXAMPLE_URL, TEST_URL_1, Arrays.asList(ANA, BOB),
+                    IDP_METADATA, CLIENT_ID_METADATA, false);
         });
         pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.FULL);
 
@@ -143,8 +145,8 @@ public class AccountSelectionIntegrationTest {
     @MediumTest
     public void testClickConsentLinks() {
         runOnUiThreadBlocking(() -> {
-            mAccountSelection.showAccounts(
-                    EXAMPLE_URL, Arrays.asList(BOB), CLIENT_ID_METADATA, false);
+            mAccountSelection.showAccounts(EXAMPLE_URL, TEST_URL_1, Arrays.asList(BOB),
+                    IDP_METADATA, CLIENT_ID_METADATA, false);
         });
         pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.FULL);
 
@@ -187,8 +189,8 @@ public class AccountSelectionIntegrationTest {
         Espresso.onView(withText("Another bottom sheet content")).check(matches(isDisplayed()));
 
         runOnUiThreadBlocking(() -> {
-            mAccountSelection.showAccounts(
-                    EXAMPLE_URL, Arrays.asList(ANA, BOB), CLIENT_ID_METADATA, false);
+            mAccountSelection.showAccounts(EXAMPLE_URL, TEST_URL_1, Arrays.asList(ANA, BOB),
+                    IDP_METADATA, CLIENT_ID_METADATA, false);
         });
         waitForEvent(mMockBridge).onDismissed();
         verify(mMockBridge, never()).onAccountSelected(any());

@@ -21,8 +21,8 @@
 #include "components/reporting/compression/compression_module.h"
 #include "components/reporting/compression/test_compression_module.h"
 #include "components/reporting/encryption/test_encryption_module.h"
-#include "components/reporting/proto/record.pb.h"
-#include "components/reporting/storage/resources/resource_interface.h"
+#include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/resources/resource_interface.h"
 #include "components/reporting/storage/storage_configuration.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/statusor.h"
@@ -68,13 +68,12 @@ class TestUploadClient : public UploaderInterface {
     ASSERT_TRUE(wrapped_record.ParseFromString(
         encrypted_record.encrypted_wrapped_record()));
     // Verify generation match.
-    const auto& sequencing_information =
-        encrypted_record.sequencing_information();
+    const auto& sequence_information = encrypted_record.sequence_information();
     if (!generation_id_.has_value()) {
-      generation_id_ = sequencing_information.generation_id();
+      generation_id_ = sequence_information.generation_id();
     } else {
       ASSERT_THAT(generation_id_.value(),
-                  Eq(sequencing_information.generation_id()));
+                  Eq(sequence_information.generation_id()));
     }
 
     // Verify digest and its match.
@@ -88,18 +87,18 @@ class TestUploadClient : public UploaderInterface {
       ASSERT_THAT(record_digest, Eq(wrapped_record.record_digest()));
       // Store record digest for the next record in sequence to verify.
       last_record_digest_map_->emplace(
-          std::make_pair(sequencing_information.sequencing_id(),
-                         sequencing_information.generation_id()),
+          std::make_pair(sequence_information.sequencing_id(),
+                         sequence_information.generation_id()),
           record_digest);
       // If last record digest is present, match it and validate.
       if (wrapped_record.has_last_record_digest()) {
         auto it = last_record_digest_map_->find(
-            std::make_pair(sequencing_information.sequencing_id() - 1,
-                           sequencing_information.generation_id()));
+            std::make_pair(sequence_information.sequencing_id() - 1,
+                           sequence_information.generation_id()));
         if (it != last_record_digest_map_->end() && it->second.has_value()) {
           ASSERT_THAT(it->second.value(),
                       Eq(wrapped_record.last_record_digest()))
-              << "seq_id=" << sequencing_information.sequencing_id();
+              << "seq_id=" << sequence_information.sequencing_id();
         }
       }
     }
@@ -107,7 +106,7 @@ class TestUploadClient : public UploaderInterface {
     std::move(processed_cb).Run(true);
   }
 
-  void ProcessGap(SequencingInformation sequencing_information,
+  void ProcessGap(SequenceInformation sequence_information,
                   uint64_t count,
                   base::OnceCallback<void(bool)> processed_cb) override {
     ASSERT_TRUE(false) << "There should be no gaps";
@@ -130,8 +129,7 @@ class StorageQueueStressTest : public ::testing::TestWithParam<size_t> {
         {CompressionModule::kCompressReportingFeature}, {});
 
     ASSERT_TRUE(location_.CreateUniqueTempDir());
-    options_.set_directory(base::FilePath(location_.GetPath()))
-        .set_single_file_size(GetParam());
+    options_.set_directory(base::FilePath(location_.GetPath()));
   }
 
   void TearDown() override {
@@ -180,7 +178,8 @@ class StorageQueueStressTest : public ::testing::TestWithParam<size_t> {
   QueueOptions BuildStorageQueueOptionsImmediate() const {
     return QueueOptions(options_)
         .set_subdirectory(FILE_PATH_LITERAL("D1"))
-        .set_file_prefix(FILE_PATH_LITERAL("F0001"));
+        .set_file_prefix(FILE_PATH_LITERAL("F0001"))
+        .set_max_single_file_size(GetParam());
   }
 
   QueueOptions BuildStorageQueueOptionsPeriodic(

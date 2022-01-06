@@ -6,9 +6,9 @@
 
 #include "base/containers/contains.h"
 #include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/full_restore_info.h"
 #include "components/app_restore/full_restore_save_handler.h"
-#include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/window.h"
@@ -140,15 +140,11 @@ void ArcSaveHandler::OnWindowDestroyed(aura::Window* window) {
 
   auto task_it = task_id_to_app_id_.find(task_id);
   if (task_it != task_id_to_app_id_.end()) {
-    // During the system shutdown phase, the ARC instance connection is lost,
-    // and the ARC windows are destroyed, but the ARC tasks are not destroyed
-    // yet. This might cause window bounds lost, and ghost window can't be
-    // created after reboot due to no window bounds. So if the ARC instance
-    // connection is lost, don't remove the window info, but wait for the task
-    // destroyed to keep the window bounds info. Remove the window info only
-    // when the ARC instance is connected.
+    // Wait for the task to be destroyed to remove the full restore data for
+    // the task. Don't remove the window info, because it might affect the ghost
+    // window creating due to no window bounds. Send the window to background.
     if (is_connection_ready_) {
-      FullRestoreSaveHandler::GetInstance()->RemoveWindowInfo(
+      FullRestoreSaveHandler::GetInstance()->SendWindowToBackground(
           profile_path_, task_it->second, task_id);
     }
     return;
@@ -219,6 +215,11 @@ void ArcSaveHandler::OnTaskDestroyed(int32_t task_id) {
       profile_path_, it->second, task_id);
 
   task_id_to_app_id_.erase(task_id);
+}
+
+void ArcSaveHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
+  if (!enabled)
+    task_id_to_app_id_.clear();
 }
 
 void ArcSaveHandler::OnTaskThemeColorUpdated(int32_t task_id,

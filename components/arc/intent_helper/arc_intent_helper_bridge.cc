@@ -17,12 +17,12 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/audio/arc_audio_bridge.h"
 #include "components/arc/intent_helper/control_camera_app_delegate.h"
 #include "components/arc/intent_helper/intent_constants.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/url_formatter/url_fixer.h"
 #include "net/base/url_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -317,13 +317,20 @@ void ArcIntentHelperBridge::IsChromeAppEnabled(
   std::move(callback).Run(false);
 }
 
-void ArcIntentHelperBridge::OnPreferredAppsChanged(
+void ArcIntentHelperBridge::OnPreferredAppsChangedDeprecated(
     std::vector<IntentFilter> added,
     std::vector<IntentFilter> deleted) {
   added_preferred_apps_ = std::move(added);
   deleted_preferred_apps_ = std::move(deleted);
   for (auto& observer : observer_list_)
     observer.OnPreferredAppsChanged();
+}
+
+void ArcIntentHelperBridge::OnSupportedLinksChanged(
+    std::vector<arc::mojom::SupportedLinksPtr> added_packages,
+    std::vector<arc::mojom::SupportedLinksPtr> removed_packages) {
+  for (auto& observer : observer_list_)
+    observer.OnArcSupportedLinksChanged(added_packages, removed_packages);
 }
 
 void ArcIntentHelperBridge::OnDownloadAdded(

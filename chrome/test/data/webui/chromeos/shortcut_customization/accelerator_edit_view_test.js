@@ -9,9 +9,9 @@ import {fakeAcceleratorConfig, fakeLayoutInfo} from 'chrome://shortcut-customiza
 import {AcceleratorInfo, AcceleratorKeys, AcceleratorSource, AcceleratorState, AcceleratorType, Modifier} from 'chrome://shortcut-customization/shortcut_types.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.m.js';
+import {flushTasks} from '../../test_util.js';
 
-import {CreateDefaultAccelerator} from './shortcut_customization_test_util.js';
+import {CreateDefaultAccelerator, CreateUserAccelerator} from './shortcut_customization_test_util.js';
 
 export function acceleratorEditViewTest() {
   /** @type {?AcceleratorEditViewElement} */
@@ -38,7 +38,7 @@ export function acceleratorEditViewTest() {
 
   test('LoadsBasicEditView', async () => {
     /** @type {!AcceleratorInfo} */
-    const acceleratorInfo = CreateDefaultAccelerator(
+    const acceleratorInfo = CreateUserAccelerator(
         Modifier.CONTROL | Modifier.SHIFT,
         /*key=*/ 71,
         /*key_display=*/ 'g');
@@ -76,7 +76,7 @@ export function acceleratorEditViewTest() {
 
   test('LockedAccelerator', async () => {
     /** @type {!AcceleratorInfo} */
-    const acceleratorInfo = CreateDefaultAccelerator(
+    const acceleratorInfo = CreateUserAccelerator(
         Modifier.CONTROL | Modifier.SHIFT,
         /*key=*/ 71,
         /*key_display=*/ 'g',

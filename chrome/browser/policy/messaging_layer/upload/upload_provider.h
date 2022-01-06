@@ -10,12 +10,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
 #include "chrome/browser/policy/messaging_layer/util/get_cloud_policy_client.h"
-#include "components/reporting/proto/record.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/storage/storage_module_interface.h"
 
 namespace reporting {
@@ -30,14 +30,10 @@ class EncryptedReportingUploadProvider {
   // it, and if we fail we repost with a backoff. Until an UploadClient is
   // built, all requests to `RequestUploadEncryptedRecords` will fail.
   using UploadClientBuilderCb =
-      base::RepeatingCallback<void(policy::CloudPolicyClient*,
-                                   UploadClient::ReportSuccessfulUploadCallback,
-                                   UploadClient::EncryptionKeyAttachedCallback,
-                                   UploadClient::CreatedCallback)>;
+      base::OnceCallback<void(policy::CloudPolicyClient*,
+                              UploadClient::CreatedCallback)>;
 
   explicit EncryptedReportingUploadProvider(
-      UploadClient::ReportSuccessfulUploadCallback report_successful_upload_cb,
-      UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb,
       GetCloudPolicyClientCallback build_cloud_policy_client_cb =
           GetCloudPolicyClientCb(),
       UploadClientBuilderCb upload_client_builder_cb =
@@ -52,6 +48,8 @@ class EncryptedReportingUploadProvider {
   void RequestUploadEncryptedRecords(
       bool need_encryption_key,
       std::unique_ptr<std::vector<EncryptedRecord>> records,
+      UploadClient::ReportSuccessfulUploadCallback report_successful_upload_cb,
+      UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb,
       base::OnceCallback<void(Status)> result_cb);
 
  private:

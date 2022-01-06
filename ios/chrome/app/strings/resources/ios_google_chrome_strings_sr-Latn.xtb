@@ -3,7 +3,7 @@
 <translationbundle lang="sr-Latn">
 <translation id="1096883626080133124">Uradite više pomoću još jednostavnijeg, bezbednijeg i bržeg Google Chrome-a</translation>
 <translation id="1282031177488366470">Pomozite nam da poboljšamo Chrome-ove funkcije i učinak</translation>
-<translation id="1354592789402432496">Administrator zahteva da se prijavite pomoću naloga organizacije. Nalozi koje je organizator ograničio su skriveni.</translation>
+<translation id="1314663809820920746">I dalje možete da vidite sve obeleživače, istoriju, lozinke i druga podešavanja na ovom uređaju. Ako unesete promene, one se neće sinhronizovati sa Google nalogom.</translation>
 <translation id="1479202195792305274">Chrome može da vam proverava lozinke kada se prijavite pomoću Google naloga.</translation>
 <translation id="1493827051843127077">Podesite Chrome kao podrazumevanu aplikaciju za sinhronizovanje kartica, lozinki i informacija o plaćanju na svim uređajima</translation>
 <translation id="1504372625950710826">Chrome ne može da traži ažuriranja. Proverite internet vezu.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Oflajn ste. Chrome ne može da traži ažuriranja.</translation>
 <translation id="5716154293141027663">Otvara Chrome svaki put kada dodirnete linkove u drugim aplikacijama</translation>
-<translation id="572883588166315317">Organizacija zahteva da se prijavite da biste koristili Chrome. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Savet za Chrome. Neka dugmad se sada nalaze u dnu ekrana, poput dugmadi Nazad, Napred i Pretraži.</translation>
-<translation id="5876773482963502140">Ako dozvolite da Chrome sazna lokaciju, Chrome je šalje svim sajtovima za koje dozvolite. Sajtovi mogu da zatraže lokaciju kada imaju da vam prikažu lokalne informacije, poput radnji ili vesti u blizini.</translation>
 <translation id="5998675059699164418">Organizacija zahteva da se prijavite da biste koristili Chrome.</translation>
 <translation id="6054613632208573261">Podrazumevano koristite Chrome</translation>
 <translation id="6063091872902370735">Dozvolite prijavljivanje u Chrome</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Odaberite da li ćete obrisati Chrome podatke sa ovog uređaja ili ih zadržati</translation>
 <translation id="8370517070665726704">Autorska prava <ph name="YEAR" />. Google LLC. Sva prava zadržana.</translation>
 <translation id="840168496893712993">Neki programski dodaci izazivaju otkazivanje Chrome-a. Pokušajte da ih deinstalirate.</translation>
+<translation id="8414886616817913619">Organizacija zahteva da se prijavite da biste koristili Chrome. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Izabrani podaci su uklonjeni iz Chrome-a i sa sinhronizovanih uređaja. Google nalog možda ima druge oblike istorije pregledanja, poput pretraga i aktivnosti u drugim Google uslugama na history.google.com.</translation>
 <translation id="850555388806794946">Da biste postavili Chrome za podrazumevani pregledač:
   1. Otvorite podešavanja

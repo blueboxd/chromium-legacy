@@ -100,7 +100,7 @@ public class AssistantContactDetailsSection extends AssistantCollectUserDataSect
 
     @Override
     protected boolean canEditOption(ContactModel model) {
-        return true;
+        return model.canEdit();
     }
 
     @Override
@@ -130,11 +130,6 @@ public class AssistantContactDetailsSection extends AssistantCollectUserDataSect
             return true;
         }
         return optionA.isEqualOrSupersetOf(optionB) && optionB.isEqualOrSupersetOf(optionA);
-    }
-
-    @Override
-    protected boolean shouldNotifySelectionWhenSettingItems() {
-        return false;
     }
 
     /**

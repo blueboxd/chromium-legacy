@@ -474,16 +474,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-// Disabled due to test failure. http://crbug.com/1249355
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_OnlineSetupFlowSuccessWithCountryCustomization \
-  DISABLED_OnlineSetupFlowSuccessWithCountryCustomization
-#else
-#define MAYBE_OnlineSetupFlowSuccessWithCountryCustomization \
-  OnlineSetupFlowSuccessWithCountryCustomization
-#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       MAYBE_OnlineSetupFlowSuccessWithCountryCustomization) {
+                       OnlineSetupFlowSuccessWithCountryCustomization) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -516,7 +508,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
     ASSERT_NE(kCountryCodeToNameMap.end(), it);
     const std::string query =
         base::StrCat({test::GetOobeElementPath(kDemoPreferencesCountry),
-                      ".$$('option[value=\"", country_code, "\"]').innerHTML"});
+                      ".shadowRoot.querySelector('option[value=\"", country_code,
+                      "\"]').innerHTML"});
     EXPECT_EQ(it->second, test::OobeJS().GetString(query));
   }
 
@@ -538,14 +531,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-// Disabled due to test failure. http://crbug.com/1249355
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_OnlineSetupFlowErrorDefault DISABLED_OnlineSetupFlowErrorDefault
-#else
-#define MAYBE_OnlineSetupFlowErrorDefault OnlineSetupFlowErrorDefault
-#endif
-IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       MAYBE_OnlineSetupFlowErrorDefault) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, OnlineSetupFlowErrorDefault) {
   // Simulate online setup failure.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -753,16 +739,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
-// Disabled due to test failure. http://crbug.com/1249355
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_OfflineSetupFlowErrorPowerwashRequired \
-  DISABLED_OfflineSetupFlowErrorPowerwashRequired
-#else
-#define MAYBE_OfflineSetupFlowErrorPowerwashRequired \
-  OfflineSetupFlowErrorPowerwashRequired
-#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       MAYBE_OfflineSetupFlowErrorPowerwashRequired) {
+                       OfflineSetupFlowErrorPowerwashRequired) {
   // Simulate offline setup failure.
   enrollment_helper_.ExpectOfflineEnrollmentError(
       policy::EnrollmentStatus::ForLockError(
@@ -860,13 +838,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   test::WaitForEulaScreen();
 }
 
-// Disabled due to test failure. http://crbug.com/1249355
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_BackOnNetworkScreen DISABLED_BackOnNetworkScreen
-#else
-#define MAYBE_BackOnNetworkScreen BackOnNetworkScreen
-#endif
-IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, MAYBE_BackOnNetworkScreen) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, BackOnNetworkScreen) {
   SimulateNetworkConnected();
   TriggerDemoModeOnWelcomeScreen();
   test::OobeJS().ClickOnPath(kDemoPreferencesNext);
@@ -967,16 +939,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, MAYBE_RetryOnErrorScreen) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-// Disabled due to test failure. http://crbug.com/1249355
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ShowOfflineSetupOptionOnNetworkList \
-  DISABLED_ShowOfflineSetupOptionOnNetworkList
-#else
-#define MAYBE_ShowOfflineSetupOptionOnNetworkList \
-  ShowOfflineSetupOptionOnNetworkList
-#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       MAYBE_ShowOfflineSetupOptionOnNetworkList) {
+                       ShowOfflineSetupOptionOnNetworkList) {
   TriggerDemoModeOnWelcomeScreen();
 
   SimulateOfflineEnvironment();
@@ -1147,13 +1111,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceFromFactory) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-// Disabled due to test failure. http://crbug.com/1249355
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_NonEnterpriseDevice DISABLED_NonEnterpriseDevice
-#else
-#define MAYBE_NonEnterpriseDevice NonEnterpriseDevice
-#endif
-IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, MAYBE_NonEnterpriseDevice) {
+IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, NonEnterpriseDevice) {
   // Simulating device that was never set for enterprise:
   // * "active_date" is set
   // * "check_enrollment" and "block_devmode" flags are set to false.
@@ -1216,13 +1174,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, MAYBE_LegacyDemoModeDevice) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-// Disabled due to test failure. http://crbug.com/1249355
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DeviceWithFRE DISABLED_DeviceWithFRE
-#else
-#define MAYBE_DeviceWithFRE DeviceWithFRE
-#endif
-IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, MAYBE_DeviceWithFRE) {
+IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceWithFRE) {
   // Simulating device that requires FRE. "check_enrollment", "block_devmode"
   // and "ActivateDate" flags are set.
   statistics_provider_.SetMachineStatistic(system::kActivateDateKey, "2018-01");

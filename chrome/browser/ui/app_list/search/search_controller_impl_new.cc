@@ -13,7 +13,6 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/sequence_token.h"
 #include "base/strings/strcat.h"
@@ -30,8 +29,10 @@
 #include "chrome/browser/ui/app_list/search/ranking/category_usage_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/filtering_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
+#include "chrome/browser/ui/app_list/search/ranking/removed_results_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/score_normalizing_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/top_match_ranker.h"
+#include "chrome/browser/ui/app_list/search/ranking/util.h"
 #include "chrome/browser/ui/app_list/search/search_metrics_observer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/chip_ranker.h"
@@ -44,13 +45,6 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace app_list {
-
-namespace {
-
-constexpr char kLauncherSearchQueryLengthJumped[] =
-    "Apps.LauncherSearchQueryLengthJumped";
-
-}  // namespace
 
 SearchControllerImplNew::SearchControllerImplNew(
     AppListModelUpdater* model_updater,
@@ -74,6 +68,7 @@ void SearchControllerImplNew::InitializeRankers() {
   ranker_->AddRanker(std::make_unique<CategoryUsageRanker>(profile_));
   ranker_->AddRanker(std::make_unique<TopMatchRanker>());
   ranker_->AddRanker(std::make_unique<FilteringRanker>());
+  ranker_->AddRanker(std::make_unique<RemovedResultsRanker>());
 }
 
 void SearchControllerImplNew::Start(const std::u16string& query) {
@@ -82,20 +77,14 @@ void SearchControllerImplNew::Start(const std::u16string& query) {
   // TODO(crbug.com/1199206): We should move this histogram logic somewhere
   // else.
   ash::RecordLauncherIssuedSearchQueryLength(query.length());
-  if (query.length() > 0) {
-    const int length_diff = query.length() >= last_query_.length()
-                                ? query.length() - last_query_.length()
-                                : last_query_.length() - query.length();
-
-    UMA_HISTOGRAM_BOOLEAN(kLauncherSearchQueryLengthJumped, length_diff > 1);
-  }
 
   last_query_ = query;
   results_.clear();
+  categories_.clear();
   for (Observer& observer : observer_list_)
     observer.OnResultsCleared();
 
-  ranker_->Start(query);
+  ranker_->Start(query, results_, categories_);
   for (const auto& provider : providers_)
     provider->Start(query);
 }
@@ -125,11 +114,22 @@ void SearchControllerImplNew::OpenResult(ChromeSearchResult* result,
   }
 }
 
-void SearchControllerImplNew::InvokeResultAction(ChromeSearchResult* result,
-                                                 int action_index) {
+void SearchControllerImplNew::InvokeResultAction(
+    ChromeSearchResult* result,
+    ash::SearchResultActionType action) {
   if (!result)
     return;
-  result->InvokeAction(action_index);
+
+  if (result->result_type() == ash::AppListSearchResultType::kOmnibox) {
+    // Special case: Omnibox results.
+    // These are handled by the Omnibox autocomplete controller. The Omnibox is
+    // unique amongst our search providers in that it has a backend which
+    // supports result removal.
+    result->InvokeAction(action);
+  } else if (action == ash::SearchResultActionType::kRemove) {
+    // All other result removals are handled by the ranking system.
+    ranker_->Remove(result);
+  }
 }
 
 size_t SearchControllerImplNew::AddGroup(size_t max_results) {
@@ -161,8 +161,8 @@ void SearchControllerImplNew::SetResults(
 
   results_[provider_type] = std::move(results);
 
-  // Update ranking of all results.
-  ranker_->Rank(results_, provider_type);
+  // Update ranking of all results and categories.
+  ranker_->Rank(results_, categories_, provider_type);
 
   // Compile a single list of results and sort by their relevance.
   std::vector<ChromeSearchResult*> all_results;
@@ -194,6 +194,15 @@ void SearchControllerImplNew::SetResults(
               return a->display_score() > b->display_score();
             });
 
+  // Create a vector of categories in display order.
+  std::vector<std::pair<Category, double>> sorted_category_pairs(
+      categories_.begin(), categories_.end());
+  std::sort(sorted_category_pairs.begin(), sorted_category_pairs.end(),
+            [](const auto& a, const auto& b) { return a.second > b.second; });
+  std::vector<Category> sorted_categories;
+  for (const auto& pair : sorted_category_pairs)
+    sorted_categories.push_back(pair.first);
+
   if (!observer_list_.empty()) {
     std::vector<const ChromeSearchResult*> observer_results;
     for (auto* result : all_results)
@@ -202,7 +211,7 @@ void SearchControllerImplNew::SetResults(
       observer.OnResultsAdded(last_query_, observer_results);
   }
 
-  model_updater_->PublishSearchResults(all_results);
+  model_updater_->PublishSearchResults(all_results, sorted_categories);
 }
 
 ChromeSearchResult* SearchControllerImplNew::FindSearchResult(

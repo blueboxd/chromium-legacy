@@ -30,14 +30,16 @@
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/sequence_bound.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
@@ -95,6 +97,7 @@
 #include "content/renderer/variations_render_thread_observer.h"
 #include "content/renderer/worker/embedded_shared_worker_stub.h"
 #include "content/renderer/worker/worker_thread_registry.h"
+#include "content/services/shared_storage_worklet/shared_storage_worklet_service_impl.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "gin/public/debug.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -370,6 +373,50 @@ static bool IsSingleProcess() {
 // background thread.
 const base::Feature kFontManagerEarlyInit{"FontManagerEarlyInit",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// A thread for running shared storage worklet operations. It hosts a worklet
+// environment belonging to one Document. The object owns itself, cleaning up
+// when the worklet has shut down.
+class SelfOwnedSharedStorageWorkletThread {
+ public:
+  SelfOwnedSharedStorageWorkletThread(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+      mojo::PendingReceiver<
+          shared_storage_worklet::mojom::SharedStorageWorkletService> receiver)
+      : main_thread_runner_(std::move(main_thread_runner)) {
+    DCHECK(main_thread_runner_->BelongsToCurrentThread());
+
+    auto disconnect_handler = base::BindPostTask(
+        main_thread_runner_,
+        base::BindOnce(&SelfOwnedSharedStorageWorkletThread::
+                           OnSharedStorageWorkletServiceDestroyed,
+                       weak_factory_.GetWeakPtr()));
+
+    auto task_runner = base::ThreadPool::CreateSingleThreadTaskRunner(
+        {base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+
+    // Initialize the worklet service in a new thread.
+    worklet_thread_ = base::SequenceBound<
+        shared_storage_worklet::SharedStorageWorkletServiceImpl>(
+        task_runner, std::move(receiver), std::move(disconnect_handler));
+  }
+
+ private:
+  void OnSharedStorageWorkletServiceDestroyed() {
+    DCHECK(main_thread_runner_->BelongsToCurrentThread());
+    worklet_thread_.Reset();
+    delete this;
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
+
+  base::SequenceBound<shared_storage_worklet::SharedStorageWorkletServiceImpl>
+      worklet_thread_;
+
+  base::WeakPtrFactory<SelfOwnedSharedStorageWorkletThread> weak_factory_{this};
+};
 
 }  // namespace
 
@@ -771,13 +818,7 @@ void RenderThreadImpl::Shutdown() {
   // crashes caused by shutdown ordering. Immediate exit eliminates
   // those problems.
 
-  // Give the V8 isolate a chance to dump internal stats useful for performance
-  // evaluation and debugging.
-  blink::MainThreadIsolate()->DumpAndResetStats();
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDumpBlinkRuntimeCallStats))
-    blink::LogRuntimeCallStats();
+  blink::LogStatsDuringShutdown();
 
   // In a single-process mode, we cannot call _exit(0) in Shutdown() because
   // it will exit the process before the browser side is ready to exit.
@@ -901,6 +942,13 @@ RenderThreadImpl::CreateVideoFrameCompositorTaskRunner() {
   }
 
   return video_frame_compositor_task_runner_;
+}
+
+void RenderThreadImpl::CreateSharedStorageWorkletService(
+    mojo::PendingReceiver<
+        shared_storage_worklet::mojom::SharedStorageWorkletService> receiver) {
+  new SelfOwnedSharedStorageWorkletThread(
+      GetWebMainThreadScheduler()->DefaultTaskRunner(), std::move(receiver));
 }
 
 void RenderThreadImpl::InitializeWebKit(mojo::BinderMap* binders) {
@@ -1056,7 +1104,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
           viz::command_buffer_metrics::ContextType::MEDIA, kGpuStreamIdMedia,
           kGpuStreamPriorityMedia);
 
-  const bool enable_video_accelerator =
+  const bool enable_video_decode_accelerator =
 
 #if defined(OS_LINUX)
       base::FeatureList::IsEnabled(media::kVaapiVideoDecodeLinux) &&
@@ -1066,6 +1114,20 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       (gpu_channel_host->gpu_feature_info()
            .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] ==
        gpu::kGpuFeatureStatusEnabled);
+
+  const bool enable_video_encode_accelerator =
+
+#if defined(OS_LINUX)
+      base::FeatureList::IsEnabled(media::kVaapiVideoEncodeLinux) &&
+#else
+      !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoEncode) &&
+#endif  // defined(OS_LINUX)
+      (gpu_channel_host->gpu_feature_info()
+           .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE] ==
+       gpu::kGpuFeatureStatusEnabled);
+
+  const bool enable_video_accelerator =
+      enable_video_decode_accelerator || enable_video_encode_accelerator;
   const bool enable_gpu_memory_buffers =
       !is_gpu_compositing_disabled_ &&
 #if !defined(OS_ANDROID)

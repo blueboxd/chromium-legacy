@@ -25,8 +25,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_split.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool/initialization_util.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -51,6 +50,11 @@
 #if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
 #include "v8/include/v8-wasm-trap-handler-posix.h"
 #endif
+
+#if defined(OS_ANDROID)
+#include "content/common/android/cpu_affinity_setter.h"
+#endif
+
 namespace {
 
 void SetV8FlagIfFeature(const base::Feature& feature, const char* v8_flag) {
@@ -171,7 +175,13 @@ RenderProcessImpl::RenderProcessImpl()
   bool enable_shared_array_buffer_unconditionally =
       base::FeatureList::IsEnabled(features::kSharedArrayBuffer);
 
-#if (!defined(OS_ANDROID))
+#if defined(OS_ANDROID)
+  if (base::GetFieldTrialParamByFeatureAsBool(
+          features::kBigLittleScheduling,
+          features::kBigLittleSchedulingRenderMainBigParam, false)) {
+    SetCpuAffinityForCurrentThread(base::CpuAffinityMode::kBigCoresOnly);
+  }
+#else
   // Bypass the SAB restriction for the Finch "kill switch".
   enable_shared_array_buffer_unconditionally =
       enable_shared_array_buffer_unconditionally ||
@@ -271,16 +281,6 @@ RenderProcessImpl::RenderProcessImpl()
     v8::V8::EnableWebAssemblyTrapHandler(use_v8_signal_handler);
   }
 #endif  // defined(OS_MAC) && defined(ARCH_CPU_X86_64)
-
-  if (command_line->HasSwitch(switches::kJavaScriptFlags)) {
-    std::string js_flags =
-        command_line->GetSwitchValueASCII(switches::kJavaScriptFlags);
-    std::vector<base::StringPiece> flag_list = base::SplitStringPiece(
-        js_flags, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    for (const auto& flag : flag_list) {
-      v8::V8::SetFlagsFromString(std::string(flag).c_str(), flag.size());
-    }
-  }
 }
 
 RenderProcessImpl::~RenderProcessImpl() {

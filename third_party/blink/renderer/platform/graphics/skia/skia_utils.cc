@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
 #include "third_party/skia/include/third_party/skcms/skcms.h"
@@ -259,11 +260,11 @@ bool NearlyIntegral(float value) {
 bool IsValidImageSize(const IntSize& size) {
   if (size.IsEmpty())
     return false;
-  base::CheckedNumeric<int> area = size.Width();
-  area *= size.Height();
+  base::CheckedNumeric<int> area = size.width();
+  area *= size.height();
   if (!area.IsValid() || area.ValueOrDie() > kMaxCanvasArea)
     return false;
-  if (size.Width() > kMaxSkiaDim || size.Height() > kMaxSkiaDim)
+  if (size.width() > kMaxSkiaDim || size.height() > kMaxSkiaDim)
     return false;
   return true;
 }

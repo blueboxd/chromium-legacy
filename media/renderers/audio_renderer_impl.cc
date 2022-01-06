@@ -17,7 +17,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -333,10 +333,6 @@ void AudioRendererImpl::ResetDecoderDone() {
       buffer_converter_->Reset();
     algorithm_->FlushBuffers();
   }
-
-  // Changes in buffering state are always posted. Flush callback must only be
-  // run after buffering state has been set back to nothing.
-  flush_cb_ = BindToCurrentLoop(std::move(flush_cb_));
   FinishFlush();
 }
 
@@ -690,7 +686,11 @@ void AudioRendererImpl::FinishFlush() {
   DCHECK(flush_cb_);
   TRACE_EVENT_NESTABLE_ASYNC_END0("media", "AudioRendererImpl::Flush",
                                   TRACE_ID_LOCAL(this));
-  std::move(flush_cb_).Run();
+  // The |flush_cb_| must always post in order to avoid deadlocking, as some of
+  // the functions which may be bound here are re-entrant into lock-acquiring
+  // methods of AudioRendererImpl, and FinishFlush may be called while holding
+  // the lock. See crbug.com/c/1163459 for a detailed explanation of this.
+  task_runner_->PostTask(FROM_HERE, std::move(flush_cb_));
 }
 
 void AudioRendererImpl::OnPlaybackError(PipelineStatus error) {
@@ -954,7 +954,7 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
 
       // Trim off any additional time before the start timestamp.
       const base::TimeDelta trim_time = start_timestamp_ - buffer->timestamp();
-      if (trim_time > base::TimeDelta()) {
+      if (trim_time.is_positive()) {
         const int frames_to_trim = AudioTimestampHelper::TimeToFrames(
             trim_time, buffer->sample_rate());
         DVLOG(1) << __func__ << ": Trimming first audio buffer by "
@@ -1116,7 +1116,7 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
 
   // Since this information is coming from the OS or potentially a fake stream,
   // it may end up with spurious values.
-  if (delay < base::TimeDelta())
+  if (delay.is_negative())
     delay = base::TimeDelta();
 
   int frames_written = 0;
@@ -1159,7 +1159,7 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
       // way to generate audio delay.
       const base::TimeDelta play_delay =
           first_packet_timestamp_ - audio_clock_->back_timestamp();
-      if (play_delay > base::TimeDelta()) {
+      if (play_delay.is_positive()) {
         MEDIA_LOG(ERROR, media_log_)
             << "Cannot add delay for compressed audio bitstream foramt."
             << " Requested delay: " << play_delay;
@@ -1179,7 +1179,7 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
       CHECK_GE(first_packet_timestamp_, base::TimeDelta());
       const base::TimeDelta play_delay =
           first_packet_timestamp_ - audio_clock_->back_timestamp();
-      if (play_delay > base::TimeDelta()) {
+      if (play_delay.is_positive()) {
         DCHECK_EQ(frames_written, 0);
 
         if (!play_delay_cb_for_testing_.is_null())

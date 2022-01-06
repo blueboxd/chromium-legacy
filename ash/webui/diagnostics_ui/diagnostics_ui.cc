@@ -18,11 +18,18 @@
 #include "ash/webui/diagnostics_ui/backend/session_log_handler.h"
 #include "ash/webui/diagnostics_ui/backend/system_data_provider.h"
 #include "ash/webui/diagnostics_ui/backend/system_routine_controller.h"
+#include "ash/webui/diagnostics_ui/diagnostics_metrics.h"
+#include "ash/webui/diagnostics_ui/diagnostics_metrics_message_handler.h"
 #include "ash/webui/diagnostics_ui/mojom/network_health_provider.mojom.h"
 #include "ash/webui/diagnostics_ui/mojom/system_data_provider.mojom.h"
 #include "ash/webui/diagnostics_ui/url_constants.h"
 #include "base/containers/span.h"
+#include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -40,6 +47,41 @@
 namespace ash {
 
 namespace {
+
+void EmitInitialScreen(diagnostics::metrics::NavigationView initial_view) {
+  base::UmaHistogramEnumeration("ChromeOS.DiagnosticsUi.InitialScreen",
+                                initial_view);
+}
+
+diagnostics::metrics::NavigationView GetInitialView(const GURL url) {
+  if (!url.has_query()) {
+    return diagnostics::metrics::NavigationView::kSystem;
+  }
+
+  // Note: Valid query strings map to strings in the GetUrlForPage located in
+  // chrome/browser/ui/webui/chromeos/diagnostics_dialog.cc.
+  const base::StringPiece query =
+      base::TrimString(url.query(), " \t", base::TRIM_ALL);
+
+  if (base::EqualsCaseInsensitiveASCII(query, "system")) {
+    return diagnostics::metrics::NavigationView::kSystem;
+  }
+
+  if (base::EqualsCaseInsensitiveASCII(query, "connectivity")) {
+    return diagnostics::metrics::NavigationView::kConnectivity;
+  }
+
+  if (base::EqualsCaseInsensitiveASCII(query, "input")) {
+    return diagnostics::metrics::NavigationView::kInput;
+  }
+
+  // In production builds this is not expected to occur however it was observed
+  // when running unit tests.
+  LOG(WARNING) << "Unexpected screen requested with query: '" << query
+               << "'. Defaulting value to system." << std::endl;
+
+  return diagnostics::metrics::NavigationView::kSystem;
+}
 
 std::u16string GetSettingsLinkLabel() {
   int string_id = IDS_DIAGNOSTICS_SETTINGS_LINK_TEXT;
@@ -82,7 +124,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"boardAndVersionInfo", IDS_DIAGNOSTICS_DEVICE_INFO_TEXT},
       {"captivePortalFailedText", IDS_DIAGNOSTICS_CAPTIVE_PORTAL_FAILED_TEXT},
       {"captivePortalRoutineText", IDS_NETWORK_DIAGNOSTICS_CAPTIVE_PORTAL},
-      {"cellularLabel", IDS_NETWORK_TYPE_CELLULAR},
+      {"cellularLabel", IDS_DIAGNOSTICS_NETWORK_TYPE_CELLULAR},
       {"chargeTestResultText", IDS_CHARGE_TEST_RESULT},
       {"connectivityText", IDS_DIAGNOSTICS_CONNECTIVITY},
       {"cpuBannerMessage", IDS_DIAGNOSTICS_CPU_BANNER_MESSAGE},
@@ -165,6 +207,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
        IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_SUBNET_MASK},
       {"ipConfigInfoDrawerTitle",
        IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_TITLE},
+      {"joinNetworkLinkText", IDS_DIAGNOSTICS_JOIN_NETWORK_LINK_TEXT},
       {"lanConnectivityFailedText",
        IDS_DIAGNOSTICS_LAN_CONNECTIVITY_FAILED_TEXT},
       {"lanConnectivityGroupText", IDS_NETWORK_DIAGNOSTICS_CONNECTION_GROUP},
@@ -253,6 +296,12 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
        IDS_DIAGNOSTICS_SESSION_LOG_TOAST_TEXT_SUCCESS},
       {"signalStrengthFailedText", IDS_DIAGNOSTICS_SIGNAL_STRENGTH_FAILED_TEXT},
       {"signalStrengthRoutineText", IDS_NETWORK_DIAGNOSTICS_SIGNAL_STRENGTH},
+      {"signalStrength_Average",
+       IDS_DIAGNOSTICS_NETWORK_SIGNAL_STRENGTH_AVERAGE},
+      {"signalStrength_Excellent",
+       IDS_DIAGNOSTICS_NETWORK_SIGNAL_STRENGTH_EXCELLENT},
+      {"signalStrength_Good", IDS_DIAGNOSTICS_NETWORK_SIGNAL_STRENGTH_GOOD},
+      {"signalStrength_Weak", IDS_DIAGNOSTICS_NETWORK_SIGNAL_STRENGTH_WEAK},
       {"stopTestButtonText", IDS_DIAGNOSTICS_STOP_TEST_BUTTON_TEXT},
       {"systemText", IDS_DIAGNOSTICS_SYSTEM},
       {"testCancelledText", IDS_DIAGNOSTICS_CANCELLED_TEST_TEXT},
@@ -321,14 +370,9 @@ DiagnosticsDialogUI::DiagnosticsDialogUI(
     content::WebUI* web_ui,
     const diagnostics::SessionLogHandler::SelectFilePolicyCreator&
         select_file_policy_creator,
-    HoldingSpaceClient* holding_space_client)
-    : ui::MojoWebDialogUI(web_ui),
-      session_log_handler_(std::make_unique<diagnostics::SessionLogHandler>(
-          select_file_policy_creator,
-          holding_space_client)) {
-  diagnostics_manager_ = std::make_unique<diagnostics::DiagnosticsManager>(
-      session_log_handler_.get());
-
+    HoldingSpaceClient* holding_space_client,
+    const base::FilePath& log_directory_path)
+    : ui::MojoWebDialogUI(web_ui) {
   auto html_source = base::WrapUnique(
       content::WebUIDataSource::Create(kChromeUIDiagnosticsAppHost));
   html_source->OverrideContentSecurityPolicy(
@@ -344,7 +388,7 @@ DiagnosticsDialogUI::DiagnosticsDialogUI(
   SetUpPluralStringHandler(web_ui);
 
   auto session_log_handler = std::make_unique<diagnostics::SessionLogHandler>(
-      select_file_policy_creator, holding_space_client);
+      select_file_policy_creator, holding_space_client, log_directory_path);
   diagnostics_manager_ = std::make_unique<diagnostics::DiagnosticsManager>(
       session_log_handler.get());
   web_ui->AddMessageHandler(std::move(session_log_handler));
@@ -356,11 +400,26 @@ DiagnosticsDialogUI::DiagnosticsDialogUI(
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source.release());
 
+  // Configure SFUL metrics.
+  diagnostics_metrics_ =
+      std::make_unique<diagnostics::metrics::DiagnosticsMetrics>();
+  diagnostics_metrics_->RecordUsage(true);
+
+  // Setup application navigation metrics.
+  diagnostics::metrics::NavigationView initial_view =
+      GetInitialView(web_ui->GetWebContents()->GetURL());
+  EmitInitialScreen(initial_view);
+  web_ui->AddMessageHandler(
+      std::make_unique<diagnostics::metrics::DiagnosticsMetricsMessageHandler>(
+          initial_view));
+  // TODO(ashleydp): Clean up timestamp when EmitAppOpenDuration is deprecated
   open_timestamp_ = base::Time::Now();
 }
 
 DiagnosticsDialogUI::~DiagnosticsDialogUI() {
   const base::TimeDelta time_open = base::Time::Now() - open_timestamp_;
+  diagnostics_metrics_->StopSuccessfulUsage();
+  // TODO(ashleydp): Clean up when EmitAppOpenDuration is deprecated.
   diagnostics::metrics::EmitAppOpenDuration(time_open);
 }
 

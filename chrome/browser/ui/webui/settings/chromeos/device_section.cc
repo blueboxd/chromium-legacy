@@ -196,6 +196,30 @@ GetTouchpadScrollAccelerationSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetTouchpadHapticFeedback() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_TOUCHPAD_HAPTIC_FEEDBACK,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTouchpadHapticFeedback}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetTouchpadHapticClickSensitivity() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_TOUCHPAD_HAPTIC_CLICK_SENSITIVITY,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTouchpadHapticClickSensitivity}},
+  });
+  return *tags;
+}
+
 const std::vector<SearchConcept>& GetMouseScrollAccelerationSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_MOUSE_SCROLL_ACCELERATION,
@@ -915,6 +939,8 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Setting::kTouchpadAcceleration,
       mojom::Setting::kTouchpadScrollAcceleration,
       mojom::Setting::kTouchpadSpeed,
+      mojom::Setting::kTouchpadHapticFeedback,
+      mojom::Setting::kTouchpadHapticClickSensitivity,
       mojom::Setting::kPointingStickSwapPrimaryButtons,
       mojom::Setting::kPointingStickSpeed,
       mojom::Setting::kPointingStickAcceleration,
@@ -1005,11 +1031,23 @@ void DeviceSection::TouchpadExists(bool exists) {
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   updater.RemoveSearchTags(GetTouchpadSearchConcepts());
   updater.RemoveSearchTags(GetTouchpadScrollAccelerationSearchConcepts());
+  updater.RemoveSearchTags(GetTouchpadHapticFeedback());
+  updater.RemoveSearchTags(GetTouchpadHapticClickSensitivity());
 
   if (exists) {
     updater.AddSearchTags(GetTouchpadSearchConcepts());
     if (base::FeatureList::IsEnabled(chromeos::features::kAllowScrollSettings))
       updater.AddSearchTags(GetTouchpadScrollAccelerationSearchConcepts());
+    // TODO (gavinwill): Move the haptic touchpad search concepts into
+    // HapticTouchpadExists() once available.
+    if (base::FeatureList::IsEnabled(
+            ::features::kAllowDisableTouchpadHapticFeedback)) {
+      updater.AddSearchTags(GetTouchpadHapticFeedback());
+    }
+    if (base::FeatureList::IsEnabled(
+            ::features::kAllowTouchpadHapticClickSettings)) {
+      updater.AddSearchTags(GetTouchpadHapticClickSensitivity());
+    }
   }
 }
 
@@ -1199,6 +1237,14 @@ void DeviceSection::AddDevicePointersStrings(
       {"pointingStickAccelerationLabel",
        IDS_SETTINGS_POINTING_STICK_ACCELERATION_LABEL},
       {"touchpadAccelerationLabel", IDS_SETTINGS_TOUCHPAD_ACCELERATION_LABEL},
+      {"touchpadHapticClickSensitivityLabel",
+       IDS_SETTINGS_TOUCHPAD_HAPTIC_CLICK_SENSITIVITY_LABEL},
+      {"touchpadHapticFeedbackLabel",
+       IDS_SETTINGS_TOUCHPAD_HAPTIC_FEEDBACK_LABEL},
+      {"touchpadHapticFirmClickLabel",
+       IDS_SETTINGS_TOUCHPAD_HAPTIC_FIRM_CLICK_LABEL},
+      {"touchpadHapticLightClickLabel",
+       IDS_SETTINGS_TOUCHPAD_HAPTIC_LIGHT_CLICK_LABEL},
       {"touchpadScrollAccelerationLabel",
        IDS_SETTINGS_TOUCHPAD_SCROLL_ACCELERATION_LABEL},
       {"touchpadScrollSpeed", IDS_SETTINGS_TOUCHPAD_SCROLL_SPEED_LABEL},
@@ -1212,6 +1258,12 @@ void DeviceSection::AddDevicePointersStrings(
       "allowDisableMouseAcceleration",
       base::FeatureList::IsEnabled(::features::kAllowDisableMouseAcceleration));
   html_source->AddBoolean("allowScrollSettings", AreScrollSettingsAllowed());
+  html_source->AddBoolean("allowTouchpadHapticFeedback",
+                          base::FeatureList::IsEnabled(
+                              ::features::kAllowDisableTouchpadHapticFeedback));
+  html_source->AddBoolean("allowTouchpadHapticClickSettings",
+                          base::FeatureList::IsEnabled(
+                              ::features::kAllowTouchpadHapticClickSettings));
 }
 
 }  // namespace settings

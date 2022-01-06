@@ -55,6 +55,8 @@ const char kIsAndroidSmsPairingComplete[] = "isAndroidSmsPairingComplete";
 const char kIsNearbyShareDisallowedByPolicy[] =
     "isNearbyShareDisallowedByPolicy";
 const char kIsPhoneHubAppsAccessGranted[] = "isPhoneHubAppsAccessGranted";
+const char kIsPhoneHubPermissionsDialogSupported[] =
+    "isPhoneHubPermissionsDialogSupported";
 
 constexpr char kAndroidSmsInfoOriginKey[] = "origin";
 constexpr char kAndroidSmsInfoEnabledKey[] = "enabled";
@@ -65,19 +67,6 @@ void OnRetrySetHostNowResult(bool success) {
 
   PA_LOG(WARNING) << "OnRetrySetHostNowResult(): Attempt to retry setting the "
                   << "host device failed.";
-}
-
-void RecordDoesMultideviceSetupClientExist(
-    PrefService* prefs,
-    multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client) {
-  // Only log if MultiDeviceFeatures are allowed because if the MultiDevice
-  // suite is prohibited, we expect the client to be null. We expect this metric
-  // to always emit true.
-  if (multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(prefs)) {
-    base::UmaHistogramBoolean(
-        "MultiDevice.BetterTogetherSuite.DoesMultiDeviceSetupClientExist",
-        multidevice_setup_client != nullptr);
-  }
 }
 
 }  // namespace
@@ -94,8 +83,9 @@ MultideviceHandler::MultideviceHandler(
       notification_access_manager_(notification_access_manager),
       android_sms_pairing_state_tracker_(android_sms_pairing_state_tracker),
       android_sms_app_manager_(android_sms_app_manager) {
+  CHECK((multidevice_setup_client_ != nullptr) ==
+        multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(prefs_));
   pref_change_registrar_.Init(prefs_);
-  RecordDoesMultideviceSetupClientExist(prefs_, multidevice_setup_client_);
 }
 
 MultideviceHandler::~MultideviceHandler() {}
@@ -279,9 +269,8 @@ void MultideviceHandler::HandleGetPageContent(const base::ListValue* args) {
   // loaded, so it should be the one to allow JS calls.
   AllowJavascript();
 
-  std::string callback_id;
-  bool result = args->GetString(0, &callback_id);
-  DCHECK(result);
+  const base::Value& callback_id = args->GetList()[0];
+  DCHECK(callback_id.is_string());
 
   std::unique_ptr<base::DictionaryValue> page_content_dictionary =
       GeneratePageContentDataDictionary();
@@ -289,7 +278,7 @@ void MultideviceHandler::HandleGetPageContent(const base::ListValue* args) {
   PA_LOG(INFO) << "Responding to getPageContentData() request with: "
                << *page_content_dictionary << ".";
 
-  ResolveJavascriptCallback(base::Value(callback_id), *page_content_dictionary);
+  ResolveJavascriptCallback(callback_id, *page_content_dictionary);
 }
 
 void MultideviceHandler::HandleSetFeatureEnabledState(
@@ -339,22 +328,24 @@ void MultideviceHandler::HandleSetUpAndroidSms(const base::ListValue* args) {
 
 void MultideviceHandler::HandleGetSmartLockSignInEnabled(
     const base::ListValue* args) {
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
+  CHECK(callback_id.is_string());
 
   bool signInEnabled = prefs_->GetBoolean(
       proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled);
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(signInEnabled));
+  ResolveJavascriptCallback(callback_id, base::Value(signInEnabled));
 }
 
 void MultideviceHandler::HandleSetSmartLockSignInEnabled(
     const base::ListValue* args) {
   bool enabled = false;
-  CHECK(args->GetBoolean(0, &enabled));
+  if (args->GetList()[0].is_bool())
+    enabled = args->GetList()[0].GetBool();
 
-  std::string auth_token;
-  bool auth_token_present = args->GetString(1, &auth_token);
+  const bool auth_token_present =
+      args->GetList().size() >= 2 && args->GetList()[1].is_string();
+  const std::string& auth_token =
+      auth_token_present ? args->GetList()[1].GetString() : "";
 
   // Either the user is disabling sign-in, or they are enabling it and the auth
   // token must be present.
@@ -370,13 +361,12 @@ void MultideviceHandler::HandleSetSmartLockSignInEnabled(
 
 void MultideviceHandler::HandleGetSmartLockSignInAllowed(
     const base::ListValue* args) {
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
+  CHECK(callback_id.is_string());
 
   bool sign_in_allowed =
       prefs_->GetBoolean(multidevice_setup::kSmartLockSigninAllowedPrefName);
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(sign_in_allowed));
+  ResolveJavascriptCallback(callback_id, base::Value(sign_in_allowed));
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -406,11 +396,9 @@ MultideviceHandler::GenerateAndroidSmsInfo() {
 }
 
 void MultideviceHandler::HandleGetAndroidSmsInfo(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
 
-  ResolveJavascriptCallback(*callback_id, *GenerateAndroidSmsInfo());
+  ResolveJavascriptCallback(callback_id, *GenerateAndroidSmsInfo());
 }
 
 void MultideviceHandler::HandleAttemptNotificationSetup(
@@ -543,6 +531,11 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
   page_content_dictionary->SetBoolean(kIsNearbyShareDisallowedByPolicy,
                                       is_nearby_share_disallowed_by_policy);
 
+  page_content_dictionary->SetBoolean(
+      kIsPhoneHubPermissionsDialogSupported,
+      base::FeatureList::IsEnabled(
+          chromeos::features::kEchePhoneHubPermissionsOnboarding));
+
   return page_content_dictionary;
 }
 
@@ -586,7 +579,8 @@ MultideviceHandler::GetFeatureStatesMap() {
       << "MultiDevice setup client missing. Responding to "
          "GetFeatureStatesMap() request by generating default feature map.";
   return multidevice_setup::MultiDeviceSetupClient::
-      GenerateDefaultFeatureStatesMap();
+      GenerateDefaultFeatureStatesMap(
+          multidevice_setup::mojom::FeatureState::kProhibitedByPolicy);
 }
 
 }  // namespace settings

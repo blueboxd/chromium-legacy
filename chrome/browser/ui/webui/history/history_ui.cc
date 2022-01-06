@@ -38,6 +38,7 @@
 #include "components/history_clusters/core/history_clusters_prefs.h"
 #include "components/history_clusters/core/memories_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
@@ -49,6 +50,8 @@
 namespace {
 
 constexpr char kIsHistoryClustersVisibleKey[] = "isHistoryClustersVisible";
+constexpr char kIsHistoryClustersVisibleManagedByPolicyKey[] =
+    "isHistoryClustersVisibleManagedByPolicy";
 
 constexpr char kIsUserSignedInKey[] = "isUserSignedIn";
 
@@ -118,6 +121,8 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);
 
   source->AddBoolean("isGuestSession", profile->IsGuestSession());
+  source->AddBoolean("isSignInAllowed",
+                     prefs->GetBoolean(prefs::kSigninAllowed));
 
   source->AddBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
 
@@ -132,6 +137,9 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddBoolean(
       kIsHistoryClustersVisibleKey,
       profile->GetPrefs()->GetBoolean(history_clusters::prefs::kVisible));
+  source->AddBoolean(kIsHistoryClustersVisibleManagedByPolicyKey,
+                     profile->GetPrefs()->IsManagedPreference(
+                         history_clusters::prefs::kVisible));
   source->AddBoolean(
       "isHistoryClustersDebug",
       base::FeatureList::IsEnabled(history_clusters::kUserVisibleDebug));
@@ -148,6 +156,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       {"savedInTabGroup", IDS_HISTORY_CLUSTERS_SAVED_IN_TABGROUP_LABEL},
       {"toggleButtonLabelLess", IDS_HISTORY_CLUSTERS_SHOW_LESS_BUTTON_LABEL},
       {"toggleButtonLabelMore", IDS_HISTORY_CLUSTERS_SHOW_MORE_BUTTON_LABEL},
+      {"loadMoreButtonLabel", IDS_HISTORY_CLUSTERS_LOAD_MORE_BUTTON_LABEL},
   };
   source->AddLocalizedStrings(kHistoryClustersStrings);
 
@@ -227,6 +236,9 @@ void HistoryUI::UpdateDataSource() {
   update->SetBoolean(
       kIsHistoryClustersVisibleKey,
       profile->GetPrefs()->GetBoolean(history_clusters::prefs::kVisible));
+  update->SetBoolean(kIsHistoryClustersVisibleManagedByPolicyKey,
+                     profile->GetPrefs()->IsManagedPreference(
+                         history_clusters::prefs::kVisible));
 
   content::WebUIDataSource::Update(profile, chrome::kChromeUIHistoryHost,
                                    std::move(update));

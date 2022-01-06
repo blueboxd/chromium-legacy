@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
-#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
@@ -456,7 +455,6 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
   if (!relayout_children && SimplifiedLayout())
     return;
 
-  LayoutAnalyzer::BlockScope analyzer(*this);
   SubtreeLayoutScope layout_scope(*this);
 
   LayoutUnit previous_height = LogicalHeight();
@@ -1610,40 +1608,29 @@ void LayoutBlockFlow::LayoutBlockChildren(bool relayout_children,
   // It doesn't get included in the normal layout process but is instead skipped
   LayoutObject* child_to_exclude =
       LayoutSpecialExcludedChild(relayout_children, layout_scope);
-
-  // TODO(foolip): Speculative CHECKs to crash if any non-LayoutBox
-  // children ever appear, the childrenInline() check at the call site
-  // should make this impossible. crbug.com/632848
-  LayoutObject* first_child = FirstChild();
-  CHECK(!first_child || first_child->IsBox());
-  auto* next = To<LayoutBox>(first_child);
   LayoutBox* last_normal_flow_child = nullptr;
 
-  while (next) {
-    LayoutBox* child = next;
-    LayoutObject* next_sibling = child->NextSibling();
-    CHECK(!next_sibling || next_sibling->IsBox());
-    next = To<LayoutBox>(next_sibling);
-
+  for (auto* child = FirstChild(); child; child = child->NextSibling()) {
     child->SetShouldCheckForPaintInvalidation();
 
     if (child_to_exclude == child)
       continue;  // Skip this child, since it will be positioned by the
                  // specialized subclass (fieldsets and ruby runs).
 
-    UpdateBlockChildDirtyBitsBeforeLayout(relayout_children, *child);
+    LayoutBox* box = To<LayoutBox>(child);
+    UpdateBlockChildDirtyBitsBeforeLayout(relayout_children, *box);
 
-    if (child->IsOutOfFlowPositioned()) {
-      child->ContainingBlock()->InsertPositionedObject(child);
-      AdjustPositionedBlock(*child, layout_info);
+    if (box->IsOutOfFlowPositioned()) {
+      box->ContainingBlock()->InsertPositionedObject(box);
+      AdjustPositionedBlock(*box, layout_info);
       continue;
     }
-    if (child->IsFloating()) {
-      InsertFloatingObject(*child);
+    if (box->IsFloating()) {
+      InsertFloatingObject(*box);
       AdjustFloatingBlock(margin_info);
       continue;
     }
-    if (child->IsColumnSpanAll()) {
+    if (box->IsColumnSpanAll()) {
       // This is not the containing block of the spanner. The spanner's
       // placeholder will lay it out in due course. For now we just need to
       // consult our flow thread, so that the columns (if any) preceding and
@@ -1653,15 +1640,15 @@ void LayoutBlockFlow::LayoutBlockChildren(bool relayout_children,
       SetLogicalHeight(LogicalHeight() + margin_info.Margin());
       margin_info.ClearMargin();
 
-      child->SpannerPlaceholder()->FlowThread()->SkipColumnSpanner(
-          child, OffsetFromLogicalTopOfFirstPage() + LogicalHeight());
+      box->SpannerPlaceholder()->FlowThread()->SkipColumnSpanner(
+          box, OffsetFromLogicalTopOfFirstPage() + LogicalHeight());
       continue;
     }
 
     // Lay out the child.
-    LayoutBlockChild(*child, layout_info);
+    LayoutBlockChild(*box, layout_info);
     layout_info.ClearIsAtFirstInFlowChild();
-    last_normal_flow_child = child;
+    last_normal_flow_child = box;
   }
 
   // Now do the handling of the bottom of the block, adding in our bottom

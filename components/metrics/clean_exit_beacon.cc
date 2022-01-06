@@ -8,10 +8,13 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,6 +26,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/service/variations_safe_mode_constants.h"
+#include "components/variations/variations_switches.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -34,10 +38,10 @@
 namespace metrics {
 namespace {
 
+using ::variations::kControlGroup;
+using ::variations::kDefaultGroup;
 using ::variations::kExtendedSafeModeTrial;
-using ::variations::kSignalAndWriteSynchronouslyViaPrefServiceGroup;
 using ::variations::kSignalAndWriteViaFileUtilGroup;
-using ::variations::kWriteSynchronouslyViaPrefServiceGroup;
 using ::variations::prefs::kVariationsCrashStreak;
 
 // Denotes whether Chrome should perform clean shutdown steps: signaling that
@@ -114,9 +118,11 @@ bool DidPreviousSessionExitCleanly(base::Value* beacon_file_contents,
 // the file in the first session after updating. It is also possible for a user
 // to delete the file or to reset their variations state with
 // kResetVariationState.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
 std::unique_ptr<base::Value> MaybeGetFileContents(
     const base::FilePath& beacon_file_path) {
+  if (beacon_file_path.empty())
+    return nullptr;
+
   JSONFileValueDeserializer deserializer(beacon_file_path);
   std::unique_ptr<base::Value> beacon_file_contents = deserializer.Deserialize(
       /*error_code=*/nullptr, /*error_message=*/nullptr);
@@ -135,37 +141,101 @@ std::unique_ptr<base::Value> MaybeGetFileContents(
     return beacon_file_contents;
   return nullptr;
 }
+
+// Returns the channel to use for setting up the Extended Variations Safe Mode
+// experiment.
+//
+// This is needed for tests in which there is a mismatch between (a) the channel
+// on which the bot is running (and thus the channel plumbed through to the
+// CleanExitBeacon's ctor) and (b) the channel that we wish to use for running a
+// particular test. This mismatch can cause failures (crbug/1259550) when (a)
+// the channel on which the bot is running is a channel to which the Extended
+// Variations Safe Mode experiment does not apply and (b) a test uses a channel
+// on which the experiment does apply.
+//
+// TODO(crbug/1241702): Clean up this function once the experiment is over.
+version_info::Channel GetChannel(version_info::Channel channel) {
+  const std::string forced_channel =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          variations::switches::kFakeVariationsChannel);
+
+  if (!forced_channel.empty()) {
+    if (forced_channel == "stable")
+      return version_info::Channel::STABLE;
+    if (forced_channel == "beta")
+      return version_info::Channel::BETA;
+    if (forced_channel == "dev")
+      return version_info::Channel::DEV;
+    if (forced_channel == "canary")
+      return version_info::Channel::CANARY;
+    DVLOG(1) << "Invalid channel provided: " << forced_channel;
+  }
+  return channel;
+}
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+// Sets up the Extended Variations Safe Mode experiment, which is enabled on
+// only some channels. If assigned to an experiment group, returns the name of
+// the group name, e.g. "Control"; otherwise, returns the empty string.
+std::string SetUpExtendedSafeModeTrial(version_info::Channel channel) {
+  if (channel != version_info::Channel::UNKNOWN &&
+      channel != version_info::Channel::CANARY &&
+      channel != version_info::Channel::DEV) {
+    return std::string();
+  }
+
+  int default_group;
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          kExtendedSafeModeTrial, 100, kDefaultGroup,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, &default_group));
+
+  trial->AppendGroup(kControlGroup, 50);
+  trial->AppendGroup(kSignalAndWriteViaFileUtilGroup, 50);
+  return trial->group_name();
+}
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 }  // namespace
 
 CleanExitBeacon::CleanExitBeacon(const std::wstring& backup_registry_key,
                                  const base::FilePath& user_data_dir,
-                                 PrefService* local_state)
+                                 PrefService* local_state,
+                                 version_info::Channel channel)
     : backup_registry_key_(backup_registry_key),
       user_data_dir_(user_data_dir),
       local_state_(local_state),
       initial_browser_last_live_timestamp_(
-          local_state->GetTime(prefs::kStabilityBrowserLastLiveTimeStamp)) {
+          local_state->GetTime(prefs::kStabilityBrowserLastLiveTimeStamp)),
+      channel_(GetChannel(channel)) {
   DCHECK_NE(PrefService::INITIALIZATION_STATUS_WAITING,
             local_state_->GetInitializationStatus());
+  // TODO(crbug/1248239, crbug/1255305): Remove the below line once the Extended
+  // Variations Safe Mode experiment is enabled on Clank and re-enabled on iOS.
+  ANALYZER_ALLOW_UNUSED(channel_);
 }
 
 void CleanExitBeacon::Initialize() {
   DCHECK(!initialized_);
-  if (!user_data_dir_.empty())
-    beacon_file_path_ = user_data_dir_.Append(variations::kVariationsFilename);
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+  std::string group;
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // TODO(crbug/1248239): Allow the file to be used once the Extended Variations
   // Safe Mode experiment is enabled on Clank.
-  //
-  // TODO(crbug/1244334): Enable this on iOS once the fix lands.
-  std::unique_ptr<base::Value> beacon_file_contents = nullptr;
-#else
+  // TODO(crbug/1255305): Re-enable this on iOS once a couple EG tests are
+  // updated.
+  if (!user_data_dir_.empty()) {
+    // Platforms that pass an empty path do so deliberately. They should not
+    // participate in this experiment.
+    group = SetUpExtendedSafeModeTrial(channel_);
+  }
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
+  if (group == kSignalAndWriteViaFileUtilGroup)
+    beacon_file_path_ = user_data_dir_.Append(variations::kVariationsFilename);
+
   std::unique_ptr<base::Value> beacon_file_contents =
       MaybeGetFileContents(beacon_file_path_);
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
   did_previous_session_exit_cleanly_ =
       DidPreviousSessionExitCleanly(beacon_file_contents.get(), local_state_);
@@ -254,37 +324,29 @@ void CleanExitBeacon::Initialize() {
 }
 
 void CleanExitBeacon::WriteBeaconValue(bool exited_cleanly,
-                                       bool write_synchronously,
-                                       bool update_beacon) {
+                                       bool write_synchronously) {
   DCHECK(initialized_);
   if (g_skip_clean_shutdown_steps)
     return;
 
   UpdateLastLiveTimestamp();
-  if (update_beacon)
-    local_state_->SetBoolean(prefs::kStabilityExitedCleanly, exited_cleanly);
 
   const std::string group_name =
       base::FieldTrialList::FindFullName(kExtendedSafeModeTrial);
 
   if (write_synchronously) {
-    if (group_name == kWriteSynchronouslyViaPrefServiceGroup ||
-        group_name == kSignalAndWriteSynchronouslyViaPrefServiceGroup) {
-      SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
-          "Variations.ExtendedSafeMode.WritePrefsTime");
-      local_state_->CommitPendingWriteSynchronously();
-    } else if (group_name == kSignalAndWriteViaFileUtilGroup) {
-      SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
-          "Variations.ExtendedSafeMode.WritePrefsTime");
-      WriteVariationsSafeModeFile(exited_cleanly);
-    }
+    DCHECK_EQ(group_name, kSignalAndWriteViaFileUtilGroup);
+    SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
+        "Variations.ExtendedSafeMode.WritePrefsTime");
+    WriteBeaconFile(exited_cleanly);
   } else {
-    local_state_->CommitPendingWrite();
+    local_state_->SetBoolean(prefs::kStabilityExitedCleanly, exited_cleanly);
+    local_state_->CommitPendingWrite();  // Schedule a write.
     if (group_name == kSignalAndWriteViaFileUtilGroup) {
-      // Clients in this group also write to the Variations Safe Mode file. This
-      // is because the file will be used in the next session, and thus, should
-      // be updated whenever kStabilityExitedCleanly is.
-      WriteVariationsSafeModeFile(exited_cleanly);
+      // Clients in this group write to the Variations Safe Mode file whenever
+      // |kStabilityExitedCleanly| is updated. The file is kept in sync with the
+      // pref because the file is used in the next session.
+      WriteBeaconFile(exited_cleanly);
     }
   }
 
@@ -349,7 +411,7 @@ void CleanExitBeacon::SkipCleanShutdownStepsForTesting() {
   g_skip_clean_shutdown_steps = true;
 }
 
-void CleanExitBeacon::WriteVariationsSafeModeFile(bool exited_cleanly) const {
+void CleanExitBeacon::WriteBeaconFile(bool exited_cleanly) const {
   DCHECK_EQ(base::FieldTrialList::FindFullName(kExtendedSafeModeTrial),
             kSignalAndWriteViaFileUtilGroup);
   base::Value dict(base::Value::Type::DICTIONARY);

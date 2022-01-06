@@ -45,54 +45,6 @@ const char* kUnsupportedDisplay =
     "Element has unsupported display type (display: contents).";
 }  // namespace rejection_names
 
-void RecordActivationReason(Document* document,
-                            DisplayLockActivationReason reason) {
-  int ordered_reason = -1;
-
-  // IMPORTANT: This number needs to be bumped up when adding
-  // new reasons.
-  static const int number_of_reasons = 9;
-
-  switch (reason) {
-    case DisplayLockActivationReason::kAccessibility:
-      ordered_reason = 0;
-      break;
-    case DisplayLockActivationReason::kFindInPage:
-      ordered_reason = 1;
-      break;
-    case DisplayLockActivationReason::kFragmentNavigation:
-      ordered_reason = 2;
-      break;
-    case DisplayLockActivationReason::kScriptFocus:
-      ordered_reason = 3;
-      break;
-    case DisplayLockActivationReason::kScrollIntoView:
-      ordered_reason = 4;
-      break;
-    case DisplayLockActivationReason::kSelection:
-      ordered_reason = 5;
-      break;
-    case DisplayLockActivationReason::kSimulatedClick:
-      ordered_reason = 6;
-      break;
-    case DisplayLockActivationReason::kUserFocus:
-      ordered_reason = 7;
-      break;
-    case DisplayLockActivationReason::kViewportIntersection:
-      ordered_reason = 8;
-      break;
-    case DisplayLockActivationReason::kViewport:
-    case DisplayLockActivationReason::kAny:
-      NOTREACHED();
-      break;
-  }
-  UMA_HISTOGRAM_ENUMERATION("Blink.Render.DisplayLockActivationReason",
-                            ordered_reason, number_of_reasons);
-
-  if (document && reason == DisplayLockActivationReason::kFindInPage)
-    document->MarkHasFindInPageContentVisibilityActiveMatch();
-}
-
 ScrollableArea* GetScrollableArea(Node* node) {
   if (!node)
     return nullptr;
@@ -132,7 +84,7 @@ void DisplayLockContext::SetRequestedState(EContentVisibility state) {
     case EContentVisibility::kHidden:
       UseCounter::Count(document_, WebFeature::kContentVisibilityHidden);
       RequestLock(
-          activate_for_find_in_page_
+          is_hidden_until_found_ || is_details_slot_
               ? static_cast<uint16_t>(DisplayLockActivationReason::kFindInPage)
               : 0u);
       break;
@@ -263,7 +215,7 @@ bool DisplayLockContext::NeedsLifecycleNotifications() const {
   return needs_deferred_not_intersecting_signal_ ||
          render_affecting_state_[static_cast<int>(
              RenderAffectingState::kAutoStateUnlockedUntilLifecycle)] ||
-         has_pending_clear_has_top_layer_;
+         has_pending_subtree_checks_ || has_pending_clear_has_top_layer_;
 }
 
 void DisplayLockContext::UpdateLifecycleNotificationRegistration() {
@@ -383,8 +335,6 @@ void DisplayLockContext::DidStyleChildren() {
   // TODO(vmpstr): Is this needed here?
   if (element_->ChildNeedsReattachLayoutTree())
     element_->MarkAncestorsWithChildNeedsReattachLayoutTree();
-
-  blocked_child_recalc_change_ = StyleRecalcChange();
 }
 
 bool DisplayLockContext::ShouldLayoutChildren() const {
@@ -446,7 +396,8 @@ void DisplayLockContext::CommitForActivationWithSignal(
     SetKeepUnlockedUntilLifecycleCount(2);
   }
 
-  RecordActivationReason(document_, reason);
+  if (reason == DisplayLockActivationReason::kFindInPage)
+    document_->MarkHasFindInPageContentVisibilityActiveMatch();
 }
 
 void DisplayLockContext::SetKeepUnlockedUntilLifecycleCount(int count) {
@@ -526,8 +477,8 @@ void DisplayLockContext::NotifyForcedUpdateScopeStarted(ForcedPhase phase) {
     // of this, since |forced_info_| doesn't force paint to happen. See
     // ShouldPaint(). Also, we could have forced a lock from SetRequestedState
     // during a style update. If that's the case, don't mark style as dirty
-    // from within style recalc. We rely on `AdjustStyleRecalcChangeForChildren`
-    // instead.
+    // from within style recalc. We rely on `TakeBlockedStyleRecalcChange`
+    // to be called from self style recalc.
     if (CanDirtyStyle() &&
         forced_info_.is_forced(ForcedPhase::kStyleAndLayoutTree)) {
       MarkForStyleRecalcIfNeeded();
@@ -569,7 +520,7 @@ void DisplayLockContext::Unlock() {
 
     // Also propagate any dirty bits that we have previously blocked.
     // If we're in style recalc, this will be handled by
-    // `AdjustStyleRecalcChangeForChildren()`.
+    // `TakeBlockedStyleRecalcChange()` call from self style recalc.
     MarkForStyleRecalcIfNeeded();
   } else if (SubtreeHasTopLayerElement()) {
     // TODO(vmpstr): This seems like a big hammer, but it's unclear to me how we
@@ -596,11 +547,6 @@ void DisplayLockContext::Unlock() {
   MarkAncestorsForPrePaintIfNeeded();
   MarkNeedsRepaintAndPaintArtifactCompositorUpdate();
   MarkNeedsCullRectUpdate();
-}
-
-StyleRecalcChange DisplayLockContext::AdjustStyleRecalcChangeForChildren(
-    StyleRecalcChange change) {
-  return change.Combine(blocked_child_recalc_change_);
 }
 
 bool DisplayLockContext::CanDirtyStyle() const {
@@ -909,6 +855,15 @@ void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
         RenderAffectingState::kAutoStateUnlockedUntilLifecycle)]);
   }
 
+  if (has_pending_subtree_checks_) {
+    DetermineIfSubtreeHasFocus();
+    DetermineIfSubtreeHasSelection();
+    DetermineIfSubtreeHasTopLayerElement();
+
+    has_pending_subtree_checks_ = false;
+    update_registration = true;
+  }
+
   if (has_pending_clear_has_top_layer_) {
     SetRenderAffectingState(RenderAffectingState::kSubtreeHasTopLayerElement,
                             false);
@@ -937,14 +892,23 @@ void DisplayLockContext::ElementDisconnected() {
   // the context.
   DCHECK(!element_->GetComputedStyle());
   SetRequestedState(EContentVisibility::kVisible);
+
+  // blocked_child_recalc_change_ must be cleared because things can be in an
+  // inconsistent state when we add the element back (e.g. crbug.com/1262742).
+  blocked_child_recalc_change_ = StyleRecalcChange();
 }
 
 void DisplayLockContext::ElementConnected() {
   // When connecting the element, we should not have a style.
   DCHECK(!element_->GetComputedStyle());
-  DetermineIfSubtreeHasFocus();
-  DetermineIfSubtreeHasSelection();
-  DetermineIfSubtreeHasTopLayerElement();
+
+  // We can't check for subtree selection / focus here, since we are likely in
+  // slot reassignment forbidden scope. However, walking the subtree may need
+  // this reassignment. This is fine, since the state check can be deferred
+  // until the beginning of the next frame.
+  has_pending_subtree_checks_ = true;
+  UpdateLifecycleNotificationRegistration();
+  ScheduleAnimation();
 }
 
 void DisplayLockContext::ScheduleAnimation() {

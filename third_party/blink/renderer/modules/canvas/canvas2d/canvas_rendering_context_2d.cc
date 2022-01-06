@@ -348,7 +348,7 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   // Apply transformation and get the bounding rect
   Path transformed_path = path;
   transformed_path.Transform(GetState().GetAffineTransform());
-  FloatRect bounding_rect = transformed_path.BoundingRect();
+  gfx::RectF bounding_rect = transformed_path.BoundingRect();
 
   // We first map canvas coordinates to layout coordinates.
   PhysicalRect path_rect = PhysicalRect::EnclosingRect(bounding_rect);
@@ -622,11 +622,11 @@ void CanvasRenderingContext2D::SetOriginTainted() {
 }
 
 int CanvasRenderingContext2D::Width() const {
-  return Host()->Size().Width();
+  return Host()->Size().width();
 }
 
 int CanvasRenderingContext2D::Height() const {
-  return Host()->Size().Height();
+  return Host()->Size().height();
 }
 
 bool CanvasRenderingContext2D::CanCreateCanvas2dResourceProvider() const {
@@ -1013,18 +1013,18 @@ void CanvasRenderingContext2D::DrawTextInternal(
 
   switch (align) {
     case kCenterTextAlign:
-      location.SetX(location.X() - width / 2);
+      location.set_x(location.x() - width / 2);
       break;
     case kRightTextAlign:
-      location.SetX(location.X() - width);
+      location.set_x(location.x() - width);
       break;
     default:
       break;
   }
 
   FloatRect bounds(
-      location.X() - font_metrics.Height() / 2,
-      location.Y() - font_metrics.Ascent() - font_metrics.LineGap(),
+      location.x() - font_metrics.Height() / 2,
+      location.y() - font_metrics.Ascent() - font_metrics.LineGap(),
       ClampTo<float>(width + font_metrics.Height()),
       font_metrics.LineSpacing());
   if (paint_type == CanvasRenderingContext2DState::kStrokePaintType)
@@ -1038,7 +1038,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
     // match the given maxwidth, update text location so it appears on desired
     // place.
     c->scale(ClampTo<float>(width / font_width), 1);
-    location.SetX(location.X() / ClampTo<float>(width / font_width));
+    location.set_x(location.x() / ClampTo<float>(width / font_width));
   }
 
   Draw<OverdrawOp::kNone>(
@@ -1165,7 +1165,8 @@ void CanvasRenderingContext2D::DrawFocusRing(const Path& path,
   stroke_data.SetThickness(kFocusRingWidth);
 
   SkIRect dirty_rect;
-  if (!ComputeDirtyRect(path.StrokeBoundingRect(stroke_data), &dirty_rect))
+  if (!ComputeDirtyRect(FloatRect(path.StrokeBoundingRect(stroke_data)),
+                        &dirty_rect))
     return;
 
   DidDraw(dirty_rect, CanvasPerformanceMonitor::DrawType::kPath);

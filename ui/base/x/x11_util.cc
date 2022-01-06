@@ -25,10 +25,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
 #include "base/notreached.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -670,17 +670,6 @@ bool IsWmTiling(WindowManagerName window_manager) {
 
 bool GetWindowDesktop(x11::Window window, int32_t* desktop) {
   return GetProperty(window, x11::GetAtom("_NET_WM_DESKTOP"), desktop);
-}
-
-bool GetXWindowStack(x11::Window window, std::vector<x11::Window>* windows) {
-  if (!GetArrayProperty(window, x11::GetAtom("_NET_CLIENT_LIST_STACKING"),
-                        windows)) {
-    return false;
-  }
-  // It's more common to iterate from lowest window to highest,
-  // so reverse the vector.
-  std::reverse(windows->begin(), windows->end());
-  return true;
 }
 
 WindowManagerName GuessWindowManager() {

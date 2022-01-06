@@ -6,6 +6,7 @@
 # See: https://docs.google.com/document/d/1QCM912Dr6u38DqyQqd7pxQxDy8FFOoWMMDq7uAXqKdA/view
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/media-capabilities/encodingInfo.any.worker.html [ Crash ]
 crbug.com/626703 external/wpt/css/css-fonts/palette-values-rule-add.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/palette-values-rule-add-2.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/palette-values-rule-delete-2.html [ Timeout ]
@@ -36,6 +37,7 @@ crbug.com/148499 external/wpt/svg/extensibility/foreignObject/will-change-in-for
 crbug.com/1183814 external/wpt/svg/extensibility/foreignObject/scroll-transform-nested-stacked-children.html [ Pass ]
 crbug.com/1167352 external/wpt/css/css-will-change/will-change-transform-add-content.html [ Pass ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-out-of-bounds-translate.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-075.html [ Pass ]
 
 # Outline paints incorrectly with columns. Needs LayoutNGBlockFragmentation.
 crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]

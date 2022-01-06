@@ -56,11 +56,13 @@ class DeviceTrustNavigationThrottle : public content::NavigationThrottle {
   const char* GetNameForLogging() override;
 
  private:
-  ThrottleCheckResult GetUrlThrottleResult(const GURL& url);
-
   void OnTrustedUrlPatternsChanged(const base::ListValue& origins);
 
   content::NavigationThrottle::ThrottleCheckResult AddHeadersIfNeeded();
+
+  // Whether this throttle is deferring the navigation. Only set to true in
+  // AddHeadersIfNeeded if there is a handshake ongoing.
+  bool deferring_ = false;
 
   // Not owned.
   DeviceTrustService* const device_trust_service_;

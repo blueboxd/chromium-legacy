@@ -3,7 +3,7 @@
 <translationbundle lang="no">
 <translation id="1096883626080133124">Få mer gjort med Google Chrome-nettleseren, som er enkel, sikker og raskere enn noensinne</translation>
 <translation id="1282031177488366470">Bidra til å gjøre Chrome bedre og raskere</translation>
-<translation id="1354592789402432496">Administratoren din krever at du logger på med en organisasjonskonto. Kontoer som er tilgangsbegrenset av administratoren din, er skjult.</translation>
+<translation id="1314663809820920746">Du kan fremdeles se bokmerkene dine, loggen din, passordene dine og andre innstillinger på denne enheten. Hvis du gjør endringer, blir de ikke synkronisert med Google-kontoen din.</translation>
 <translation id="1479202195792305274">Chrome kan sjekke passordene dine når du logger på med Google-kontoen din.</translation>
 <translation id="1493827051843127077">Angi Chrome som standard for å synkronisere fanene, passordene og betalingsopplysningene dine på alle enhetene dine</translation>
 <translation id="1504372625950710826">Chrome kunne ikke se etter oppdateringer. Se om du er koblet til internett.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Uten nett – Chrome kan ikke se etter oppdateringer</translation>
 <translation id="5716154293141027663">Åpne alltid Chrome når du trykker på linker i andre apper</translation>
-<translation id="572883588166315317">Organisasjonen din krever at du logger på for å bruke Chrome. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Chrome-tips. Noen knapper, slik som Tilbake, Frem og Søk, er nå nederst på skjermen.</translation>
-<translation id="5876773482963502140">Hvis du lar Chrome få vite posisjonen din, sender Chrome den til eventuelle nettsteder hvor du gir tillatelse til dette. Nettsteder kan be om posisjonen din når de har lokal informasjon å vise deg, for eksempel butikker i nærheten eller lokalnyheter.</translation>
 <translation id="5998675059699164418">Organisasjonen din krever at du logger på for å bruke Chrome.</translation>
 <translation id="6054613632208573261">Bruk Chrome som standard</translation>
 <translation id="6063091872902370735">Tillat Chrome-pålogging</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Velg om du vil slette Chrome-dataene dine fra denne enheten eller beholde dem</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Med enerett.</translation>
 <translation id="840168496893712993">Noen tillegg fører til at Chrome krasjer. Prøv å avinstallere dem.</translation>
+<translation id="8414886616817913619">Organisasjonen din krever at du logger på for å bruke Chrome. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">De valgte dataene er fjernet fra Chrome og alle synkroniserte enheter. Det kan hende Google-kontoen din har andre typer nettleserlogger, for eksempel for søk og aktivitet fra andre Google-tjenester, på history.google.com.</translation>
 <translation id="850555388806794946">Slik velger du Chrome som standard:
   1. Åpne Innstillinger.

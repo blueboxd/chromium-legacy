@@ -251,7 +251,7 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
   for (CartDB::KeyAndValue& key_and_value : proto_pairs) {
     cart_db::ChromeCartContentProto cart_proto = key_and_value.second;
     std::string cart_url_str = cart_proto.merchant_cart_url();
-    GURL cart_url_origin = GURL(cart_url_str).GetOrigin();
+    GURL cart_url_origin = GURL(cart_url_str).DeprecatedGetOriginAsURL();
 
     cart_db::ChromeCartDiscountProto* cart_discount_proto =
         cart_proto.mutable_discount_info();

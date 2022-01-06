@@ -12,7 +12,7 @@
 namespace views {
 class Checkbox;
 class Combobox;
-class GridLayout;
+class View;
 
 namespace examples {
 
@@ -32,12 +32,12 @@ class VIEWS_EXAMPLES_EXPORT TextExample : public ExampleBase {
   class TextExampleView;
 
   // Creates and adds a check box to the layout.
-  Checkbox* AddCheckbox(GridLayout* layout, const char* name);
+  Checkbox* AddCheckbox(View* parent, const char* name);
 
   // Creates and adds a combobox to the layout. Sets |this|' instance of
   // |combobox_callback| as the callback for the created combobox.
-  Combobox* AddCombobox(GridLayout* layout,
-                        const char* name,
+  Combobox* AddCombobox(View* parent,
+                        std::u16string name,
                         const char* const* strings,
                         int count,
                         void (TextExample::*combobox_callback)());

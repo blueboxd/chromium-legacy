@@ -54,6 +54,7 @@
 #include "components/exo/wayland/serial_tracker.h"
 #include "components/exo/wayland/surface_augmenter.h"
 #include "components/exo/wayland/wayland_display_output.h"
+#include "components/exo/wayland/wayland_watcher.h"
 #include "components/exo/wayland/wl_compositor.h"
 #include "components/exo/wayland/wl_data_device_manager.h"
 #include "components/exo/wayland/wl_output.h"
@@ -72,6 +73,8 @@
 #include "ui/display/screen.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include <idle-inhibit-unstable-v1-server-protocol.h>
+#include "ash/constants/ash_features.h"
 #include "base/system/sys_info.h"
 #include "components/exo/wayland/wl_shell.h"
 #include "components/exo/wayland/xdg_shell.h"
@@ -85,6 +88,7 @@
 #include "components/exo/wayland/zcr_remote_shell.h"
 #include "components/exo/wayland/zcr_remote_shell_v2.h"
 #include "components/exo/wayland/zcr_stylus_tools.h"
+#include "components/exo/wayland/zwp_idle_inhibit_manager.h"
 #include "components/exo/wayland/zwp_input_timestamps_manager.h"
 #include "components/exo/wayland/zwp_pointer_constraints.h"
 #include "components/exo/wayland/zwp_pointer_gestures.h"
@@ -103,6 +107,7 @@
 #include <color-management-unstable-v1-server-protocol.h>
 #include "components/exo/wayland/zwp_color_manager.h"
 #endif
+
 #endif
 
 #if defined(USE_OZONE)
@@ -124,7 +129,8 @@ namespace switches {
 // useful when another wayland server is already running and using the
 // default name.
 constexpr char kWaylandServerSocket[] = "wayland-server-socket";
-}
+
+}  // namespace switches
 
 namespace {
 
@@ -261,6 +267,10 @@ void Server::Initialize() {
                    display_, bind_extended_drag);
   wl_global_create(wl_display_.get(), &zxdg_output_manager_v1_interface, 3,
                    display_, bind_zxdg_output_manager);
+  if (ash::features::IsIdleInhibitEnabled()) {
+    wl_global_create(wl_display_.get(), &zwp_idle_inhibit_manager_v1_interface,
+                     1, display_, bind_zwp_idle_inhibit_manager);
+  }
 
 #if BUILDFLAG(ENABLE_WESTON_TEST)
   weston_test_data_ = std::make_unique<WestonTestState>();
@@ -310,25 +320,11 @@ Server::~Server() {
 
 // static
 std::unique_ptr<Server> Server::Create(Display* display) {
-  std::unique_ptr<Server> server(new Server(display));
-  server->Initialize();
-
   char* runtime_dir_str = getenv("XDG_RUNTIME_DIR");
   if (!runtime_dir_str) {
     LOG(ERROR) << "XDG_RUNTIME_DIR not set in the environment";
     return nullptr;
   }
-
-  const base::FilePath runtime_dir(runtime_dir_str);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // On debugging chromeos-chrome on linux platform,
-  // try to ensure the directory if missing.
-  if (!base::SysInfo::IsRunningOnChromeOS()) {
-    CHECK(base::DirectoryExists(runtime_dir) ||
-          base::CreateDirectory(runtime_dir))
-        << "Failed to create XDG_RUNTIME_DIR";
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   std::string socket_name(kSocketName);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -336,13 +332,36 @@ std::unique_ptr<Server> Server::Create(Display* display) {
     socket_name =
         command_line->GetSwitchValueASCII(switches::kWaylandServerSocket);
   }
+  return Create(display, base::FilePath(runtime_dir_str).Append(socket_name));
+}
 
-  if (!server->AddSocket(socket_name.c_str())) {
-    LOG(ERROR) << "Failed to add socket: " << socket_name;
+// static
+std::unique_ptr<Server> Server::Create(Display* display,
+                                       const base::FilePath& socket_path) {
+  if (!socket_path.IsAbsolute()) {
+    LOG(ERROR) << "Unable to create a wayland server. The provided path must "
+                  "be absolute, got: "
+               << socket_path;
     return nullptr;
   }
 
-  base::FilePath socket_path = base::FilePath(runtime_dir).Append(socket_name);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // On debugging chromeos-chrome on linux platform,
+  // try to ensure the directory if missing.
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
+    base::FilePath runtime_dir = socket_path.DirName();
+    CHECK(base::DirectoryExists(runtime_dir) ||
+          base::CreateDirectory(runtime_dir))
+        << "Failed to create XDG_RUNTIME_DIR";
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  std::unique_ptr<Server> server(new Server(display));
+  server->Initialize();
+  if (!server->AddSocket(socket_path.MaybeAsASCII().c_str())) {
+    LOG(ERROR) << "Failed to add socket: " << socket_path;
+    return nullptr;
+  }
 
   // Change permissions on the socket.
   struct group wayland_group;
@@ -367,6 +386,11 @@ std::unique_ptr<Server> Server::Create(Display* display) {
     PLOG(ERROR) << "Could not set permissions: " << socket_path.value();
     return nullptr;
   }
+
+  // At this point, server creation was successful, so we should instantiate the
+  // watcher.
+  server->wayland_watcher_ =
+      std::make_unique<wayland::WaylandWatcher>(server.get());
 
   return server;
 }

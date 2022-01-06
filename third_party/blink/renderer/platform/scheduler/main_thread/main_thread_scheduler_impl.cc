@@ -1521,12 +1521,12 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   // which case we choose the other.
   base::TimeDelta new_policy_duration = expected_use_case_duration;
   if (new_policy_duration.is_zero() ||
-      (gesture_expected_flag_valid_for_duration > base::TimeDelta() &&
+      (gesture_expected_flag_valid_for_duration.is_positive() &&
        new_policy_duration > gesture_expected_flag_valid_for_duration)) {
     new_policy_duration = gesture_expected_flag_valid_for_duration;
   }
 
-  if (new_policy_duration > base::TimeDelta()) {
+  if (new_policy_duration.is_positive()) {
     main_thread_only().current_policy_expiration_time =
         now + new_policy_duration;
     delayed_update_policy_runner_.SetDeadline(FROM_HERE, new_policy_duration,
@@ -1721,7 +1721,7 @@ UseCase MainThreadSchedulerImpl::ComputeCurrentUseCase(
   // Above all else we want to be responsive to user input.
   *expected_use_case_duration =
       any_thread().user_model.TimeLeftInUserGesture(now);
-  if (*expected_use_case_duration > base::TimeDelta()) {
+  if (expected_use_case_duration->is_positive()) {
     // Has a gesture been fully established?
     if (any_thread().awaiting_touch_start_response) {
       // No, so arrange for compositor tasks to be run at the highest priority.
@@ -1836,8 +1836,10 @@ base::TimeTicks MainThreadSchedulerImpl::EnableVirtualTime() {
   virtual_time_control_task_queue_->GetTaskQueue()->SetTimeDomain(
       virtual_time_domain_.get());
 
-  main_thread_only().use_virtual_time = true;
   ForceUpdatePolicy();
+  for (auto* page_scheduler : main_thread_only().page_schedulers) {
+    page_scheduler->OnVirtualTimeEnabled();
+  }
 
   virtual_time_domain_->SetCanAdvanceVirtualTime(
       !main_thread_only().virtual_time_stopped);
@@ -1863,6 +1865,8 @@ void MainThreadSchedulerImpl::DisableVirtualTimeForTesting() {
   }
 
   ForceUpdatePolicy();
+  // This can only happen during test tear down, in which case there is no need
+  // to notify the pages that virtual time was disabled.
 
   virtual_time_control_task_queue_->ShutdownTaskQueue();
   virtual_time_control_task_queue_ = nullptr;
@@ -1925,7 +1929,7 @@ base::TimeTicks MainThreadSchedulerImpl::IncrementVirtualTimePauseCount() {
   ApplyVirtualTimePolicy();
 
   if (virtual_time_domain_)
-    return virtual_time_domain_->Now();
+    return virtual_time_domain_->NowTicks();
   return tick_clock()->NowTicks();
 }
 
@@ -1965,7 +1969,8 @@ void MainThreadSchedulerImpl::ApplyVirtualTimePolicy() {
     case VirtualTimePolicy::kPause:
       if (virtual_time_domain_) {
         virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(0);
-        virtual_time_domain_->SetVirtualTimeFence(virtual_time_domain_->Now());
+        virtual_time_domain_->SetVirtualTimeFence(
+            virtual_time_domain_->NowTicks());
       }
       SetVirtualTimeStopped(true);
       break;
@@ -2448,7 +2453,7 @@ MainThreadSchedulerImpl::PauseScheduler() {
 }
 
 base::TimeTicks MainThreadSchedulerImpl::MonotonicallyIncreasingVirtualTime() {
-  return GetActiveTimeDomain()->Now();
+  return GetActiveTimeDomain()->NowTicks();
 }
 
 WebThreadScheduler* MainThreadSchedulerImpl::GetWebMainThreadScheduler() {
@@ -2917,19 +2922,6 @@ MainThreadSchedulerImpl::ComputeCompositorPriorityFromUseCase() const {
   }
 }
 
-void MainThreadSchedulerImpl::ExecuteAfterCurrentTask(
-    base::OnceClosure on_completion_task) {
-  main_thread_only().on_task_completion_callbacks.push_back(
-      std::move(on_completion_task));
-}
-
-void MainThreadSchedulerImpl::DispatchOnTaskCompletionCallbacks() {
-  for (auto& closure : main_thread_only().on_task_completion_callbacks) {
-    std::move(closure).Run();
-  }
-  main_thread_only().on_task_completion_callbacks.clear();
-}
-
 bool MainThreadSchedulerImpl::AllPagesFrozen() const {
   if (main_thread_only().page_schedulers.IsEmpty())
     return false;
@@ -3010,6 +3002,11 @@ const char* MainThreadSchedulerImpl::VirtualTimePolicyToString(
       NOTREACHED();
       return nullptr;
   }
+}
+
+WTF::Vector<base::OnceClosure>&
+MainThreadSchedulerImpl::GetOnTaskCompletionCallbacks() {
+  return main_thread_only().on_task_completion_callbacks;
 }
 
 }  // namespace scheduler

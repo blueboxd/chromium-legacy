@@ -57,13 +57,11 @@ void ExtensionRegistrar::AddExtension(
     scoped_refptr<const Extension> extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  bool is_extension_upgrade = false;
   bool is_extension_loaded = false;
   const Extension* old = registry_->GetInstalledExtension(extension->id());
   if (old) {
     is_extension_loaded = true;
     int version_compare_result = extension->version().CompareTo(old->version());
-    is_extension_upgrade = version_compare_result > 0;
     // Other than for unpacked extensions, we should not be downgrading.
     if (!Manifest::IsUnpackedLocation(extension->location()) &&
         version_compare_result < 0) {
@@ -185,11 +183,6 @@ void ExtensionRegistrar::RemoveExtension(const ExtensionId& extension_id,
     registry_->RemoveEnabled(extension_id);
     DeactivateExtension(extension.get(), reason);
   }
-
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_REMOVED,
-      content::Source<content::BrowserContext>(browser_context_),
-      content::Details<const Extension>(extension.get()));
 }
 
 void ExtensionRegistrar::EnableExtension(const ExtensionId& extension_id) {
@@ -423,14 +416,6 @@ void ExtensionRegistrar::UntrackTerminatedExtension(
     return;
 
   registry_->RemoveTerminated(extension_id);
-
-  // TODO(michaelpg): This notification was already sent when the extension was
-  // unloaded as part of being terminated. But we send it again as observers
-  // may be tracking the terminated extension. See crbug.com/708230.
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_REMOVED,
-      content::Source<content::BrowserContext>(browser_context_),
-      content::Details<const Extension>(extension.get()));
 }
 
 bool ExtensionRegistrar::IsExtensionEnabled(

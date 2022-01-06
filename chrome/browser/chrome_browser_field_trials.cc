@@ -38,7 +38,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/sync/split_settings_sync_field_trial.h"
+#include "chrome/browser/ash/sync/sync_consent_optional_field_trial.h"
 #include "chromeos/services/multidevice_setup/public/cpp/first_run_field_trial.h"
 #endif
 
@@ -70,7 +70,7 @@ ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(PrefService* local_state)
 ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 }
 
-void ChromeBrowserFieldTrials::SetupFieldTrials() {
+void ChromeBrowserFieldTrials::SetUpFieldTrials() {
   // Field trials that are shared by all platforms.
   InstantiateDynamicTrials();
 
@@ -79,7 +79,7 @@ void ChromeBrowserFieldTrials::SetupFieldTrials() {
 #endif
 }
 
-void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
+void ChromeBrowserFieldTrials::SetUpFeatureControllingFieldTrials(
     bool has_seed,
     const base::FieldTrial::EntropyProvider* low_entropy_provider,
     base::FeatureList* feature_list) {
@@ -98,7 +98,7 @@ void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // This trial is fully client controlled and must be configured whether or
   // not a seed is available.
-  split_settings_sync_field_trial::Create(feature_list, local_state_);
+  sync_consent_optional_field_trial::Create(feature_list, local_state_);
 #endif
 }
 
@@ -180,12 +180,12 @@ void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
 
   {
     // MobileIdentityConsistencyFRESynthetic field trial.
-    static constexpr char kMobileIdentityConsistencyFRETrial[] =
-        "MobileIdentityConsistencyFRESynthetic";
+    static constexpr char kFREMobileIdentityConsistencyTrial[] =
+        "FREMobileIdentityConsistencySynthetic";
     const std::string group =
         fre_mobile_identity_consistency_field_trial::GetFREFieldTrialGroup();
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-        kMobileIdentityConsistencyFRETrial, group);
+        kFREMobileIdentityConsistencyTrial, group);
   }
 #endif  // defined(OS_ANDROID)
 }

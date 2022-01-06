@@ -11,7 +11,7 @@
 #include <memory>
 #include <string>
 
-#include "base/containers/mru_cache.h"
+#include "base/containers/lru_cache.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
 #include "base/metrics/field_trial_params.h"
@@ -196,7 +196,7 @@ TabHoverCardBubbleView::FilenameElider::FindImageDimensions(
   // Find the start of the extension.
   const auto paren_pos = text.find_last_of(u'(');
   if (paren_pos == 0 || paren_pos == std::u16string::npos ||
-      !std::isspace(text[paren_pos - 1])) {
+      text[paren_pos - 1] != u' ') {
     return std::u16string::npos;
   }
 

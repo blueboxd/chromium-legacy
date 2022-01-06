@@ -23,7 +23,9 @@ namespace lens {
 class LensSidePanelController : public content::WebContentsObserver,
                                 public content::WebContentsDelegate {
  public:
-  LensSidePanelController(SidePanel* side_panel, BrowserView* browser_view);
+  LensSidePanelController(base::OnceClosure close_callback,
+                          SidePanel* side_panel,
+                          BrowserView* browser_view);
   LensSidePanelController(const LensSidePanelController&) = delete;
   LensSidePanelController& operator=(const LensSidePanelController&) = delete;
   ~LensSidePanelController() override;
@@ -38,7 +40,7 @@ class LensSidePanelController : public content::WebContentsObserver,
   void LoadResultsInNewTab();
 
   // content::WebContentsDelegate:
-  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+  bool HandleContextMenu(content::RenderFrameHost& render_frame_host,
                          const content::ContextMenuParams& params) override;
 
  private:
@@ -55,6 +57,7 @@ class LensSidePanelController : public content::WebContentsObserver,
   // Handles the close button being clicked.
   void CloseButtonClicked();
 
+  base::OnceClosure close_callback_;
   SidePanel* side_panel_;
   BrowserView* browser_view_;
   lens::LensSidePanelView* side_panel_view_;

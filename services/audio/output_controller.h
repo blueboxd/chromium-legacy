@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -23,7 +22,6 @@
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/audio_source_diverter.h"
 #include "media/base/audio_power_monitor.h"
 #include "services/audio/loopback_group_member.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -61,8 +59,7 @@ namespace audio {
 class OutputStreamActivityMonitor;
 
 class OutputController : public media::AudioOutputStream::AudioSourceCallback,
-                         public LoopbackGroupMember,
-                         public media::AudioManager::AudioDeviceListener {
+                         public LoopbackGroupMember {
  public:
   // An event handler that receives events from the OutputController. The
   // following methods are called on the audio manager thread.
@@ -175,11 +172,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   void StartMuting() override;
   void StopMuting() override;
 
-  // AudioDeviceListener implementation.  When called OutputController will
-  // shutdown the existing |stream_|, create a new stream, and then transition
-  // back to an equivalent state prior to being called.
-  void OnDeviceChange() override;
-
   // Accessor for AudioPowerMonitor::ReadCurrentPowerAndClip().  See comments in
   // audio_power_monitor.h for usage.  This may be called on any thread.
   std::pair<float, bool> ReadCurrentPowerAndClip();
@@ -279,6 +271,11 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // change.
   void ToggleLocalOutput();
 
+  // When called, OutputController will shutdown the existing |stream_|, create
+  // a new stream, and then transition back to an equivalent state prior to
+  // being called.
+  void ProcessDeviceChange();
+
   media::AudioManager* const audio_manager_;
   const media::AudioParameters params_;
 
@@ -332,11 +329,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // and destroyed when a stream stops. Also reset every time there is a stream
   // being created due to device changes.
   absl::optional<ErrorStatisticsTracker> stats_tracker_;
-
-  // WeakPtrFactory+WeakPtr that is used to post tasks that are canceled when a
-  // stream is closed.
-  base::WeakPtr<OutputController> weak_this_for_stream_;
-  base::WeakPtrFactory<OutputController> weak_factory_for_stream_{this};
 };
 
 }  // namespace audio

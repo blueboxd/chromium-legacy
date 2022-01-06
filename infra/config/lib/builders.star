@@ -25,10 +25,10 @@ for use with the corresponding arguments to `builder`. Can also be accessed
 through `builders.cpu`, `builders.os` and `builders.goma` respectively.
 """
 
+load("@stdlib//internal/graph.star", "graph")
 load("//project.star", "settings")
 load("./args.star", "args")
 load("./branches.star", "branches")
-load("./bootstrap.star", "register_bootstrap")
 load("./builder_config.star", "builder_config", "register_builder_config")
 load("./listify.star", "listify")
 
@@ -184,17 +184,27 @@ xcode = struct(
     x12d4e = xcode_enum("12d4e"),
     # Xcode 12.5. Requires Mac11+ OS.
     x12e262 = xcode_enum("12e262"),
-    # in use by ios-webkit-tot
-    x12e262wk = xcode_enum("12e262wk"),
     # Default Xcode 13 for chromium iOS (release candidate).
     x13main = xcode_enum("13a233"),
     # Xcode 13.0 latest beta (release candidate).
     x13latestbeta = xcode_enum("13a233"),
+    # in use by ios-webkit-tot
+    x13wk = xcode_enum("13a1030dwk"),
 )
 
 # Git revision of the compilator_watcher luciexe sub_build binary for chromium
 # orchestrators to use
 compilator_watcher_git_revision = "d5bee0e7798a40c3c6261c3dbc14becf1fbb693f"
+
+def builder_url(bucket, builder, project = None):
+    """A simple utility for constructing the milo URL for a builder."""
+    project = project or settings.project
+    url = "https://ci.chromium.org/p/%s/builders/%s/%s" % (
+        project,
+        bucket,
+        builder,
+    )
+    return url
 
 ################################################################################
 # Implementation details                                                       #
@@ -330,8 +340,6 @@ defaults = args.defaults(
     auto_builder_dimension = args.COMPUTE,
     builder_group = None,
     builderless = args.COMPUTE,
-    configure_kitchen = False,
-    kitchen_emulate_gce = False,
     cores = None,
     cpu = None,
     fully_qualified_builder_dimension = False,
@@ -394,8 +402,6 @@ def builder(
         console_view_entry = None,
         list_view = args.DEFAULT,
         project_trigger_overrides = args.DEFAULT,
-        configure_kitchen = args.DEFAULT,
-        kitchen_emulate_gce = args.DEFAULT,
         goma_backend = args.DEFAULT,
         goma_debug = args.DEFAULT,
         goma_enable_ats = args.DEFAULT,
@@ -509,12 +515,6 @@ def builder(
             When this builder triggers another builder, if the BotSpec for that
             builder has a LUCI project that is a key in this mapping, the
             corresponding value will be used instead.
-        configure_kitchen: a boolean indicating whether to configure kitchen. If
-            True, emits a property to set the 'git_auth' and 'devshell' fields
-            of the '$kitchen' property. By default, considered False.
-        kitchen_emulate_gce: a boolean indicating whether to set 'emulate_gce'
-            of the '$kitchen' property. This is effective only when
-            configure_kitchen is True. By default, considered False.
         goma_backend: a member of the `goma.backend` enum indicating the goma
             backend the builder should use. Will be incorporated into the
             '$build/goma' property. By default, considered None.
@@ -599,9 +599,6 @@ def builder(
     if "sheriff_rotations" in properties:
         fail('Setting "sheriff_rotations" property is not supported: ' +
              "use sheriff_rotations instead")
-    if "$kitchen" in properties:
-        fail('Setting "$kitchen" property is not supported: ' +
-             "use configure_kitchen instead")
     if "$build/goma" in properties:
         fail('Setting "$build/goma" property is not supported: ' +
              "use goma_backend, goma_dbug, goma_enable_ats and goma_jobs instead")
@@ -672,15 +669,6 @@ def builder(
             ssd = False
     if ssd != None:
         dimensions["ssd"] = str(int(ssd))
-
-    configure_kitchen = defaults.get_value("configure_kitchen", configure_kitchen)
-    if configure_kitchen:
-        properties["$kitchen"] = {
-            "devshell": True,
-            "git_auth": True,
-        }
-        if defaults.get_value("kitchen_emulate_gce", kitchen_emulate_gce):
-            properties["$kitchen"]["emulate_gce"] = True
 
     chromium_tests = _chromium_tests_property(
         project_trigger_overrides = project_trigger_overrides,
@@ -785,7 +773,10 @@ def builder(
 
     register_builder_config(bucket, name, builder_group, builder_spec, mirrors)
 
-    register_bootstrap(bucket, name, bootstrap, executable)
+    # Add a bootstrap node for the builder so the _bootstrap_properties
+    # generator can determine which builders are being bootstrapped
+    if executable in _BOOTSTRAPPABLE_RECIPES:
+        graph.add_node(_bootstrap_key(bucket, name), props = {"bootstrap": bootstrap})
 
     builder_name = "{}/{}".format(bucket, name)
 
@@ -837,6 +828,111 @@ def builder(
             )
 
     return builder
+
+# A recipe can (but doesn't have to) be marked as bootstrappable if the
+# following conditions are true:
+# * chromium_bootstrap.update_gclient_config is called to update the gclient
+#   config that is used for bot_update.
+# * If the recipe does analysis to reduce compilation/testing, it skips analysis
+#   and performs a full build if chromium_bootstrap.skip_analysis_reasons is
+#   non-empty.
+_BOOTSTRAPPABLE_RECIPES = [
+    "recipe:chromium",
+    "recipe:chromium/orchestrator",
+    "recipe:chromium_trybot",
+]
+
+_NON_BOOTSTRAPPED_PROPERTIES = [
+    # Sheriff-o-Matic queries for builder_group in the input properties to find
+    # builds for the main sheriff rotation. Bootstrapped properties don't appear
+    # in the build's input properties, so don't bootstrap this property.
+    # TODO(gbeaty) When finalized input properties are exported to BQ, remove
+    # this.
+    "builder_group",
+    "sheriff_rotations",
+]
+
+def _bootstrap_key(bucket_name, builder_name):
+    return graph.key("@chromium", "", "bootstrap", "{}/{}".format(bucket_name, builder_name))
+
+def _bootstrap_properties(ctx):
+    """Update builder properties for bootstrapping.
+
+    For builders whose recipe supports bootstrapping, their properties will be
+    written out to a separate file. This is done even if the builder is not
+    being bootstrapped so that the properties file will exist already when it is
+    flipped to being bootstrapped.
+
+    For builders that have opted in to bootstrapping, this file will be read at
+    build-time and update the build's properties with the contents of the file.
+    The builder's properties within the buildbucket configuration will be
+    modified with the properties that control the bootstrapper itself.
+
+    The builders that have opted in to bootstrapping is determined by examining
+    the lucicfg graph to find a bootstrap node for a given builder. These nodes
+    will be added by the builder function. This is done rather than writing out
+    the properties file in the builder function so that the bootstrapped
+    properties have any final modifications that luci.builder would perform
+    (merging module-level defaults, setting global defaults, etc.).
+    """
+    cfg = None
+    for f in ctx.output:
+        if f.startswith("luci/cr-buildbucket"):
+            cfg = ctx.output[f]
+            break
+    if cfg == None:
+        fail("There is no buildbucket configuration file to reformat properties")
+
+    for bucket in cfg.buckets:
+        bucket_name = bucket.name
+        for builder in bucket.swarming.builders:
+            builder_name = builder.name
+            bootstrap_node = graph.node(_bootstrap_key(bucket_name, builder_name))
+            if not bootstrap_node:
+                continue
+
+            bootstrap = bootstrap_node.props.bootstrap
+
+            properties_file = "builders/{}/{}/properties.textpb".format(bucket_name, builder_name)
+            properties_property = {
+                "top_level_project": {
+                    "repo": {
+                        "host": "chromium.googlesource.com",
+                        "project": "chromium/src",
+                    },
+                    "ref": settings.ref,
+                },
+                "properties_file": "infra/config/generated/{}".format(properties_file),
+            }
+            exe_property = {
+                "exe": builder.exe,
+            }
+
+            # TODO(crbug.com/1261886) Once bootstrapper is changed to use
+            # $bootstrap/properties and $bootstrap/exe, we can remove code for
+            # setting $bootstrap
+            bootstrap_property = dict(properties_property)
+            bootstrap_property.update(exe_property)
+            non_bootstrapped_properties = {
+                "$bootstrap/properties": properties_property,
+                "$bootstrap/exe": exe_property,
+                "$bootstrap": bootstrap_property,
+                "led_builder_is_bootstrapped": True,
+            }
+            builder_properties = json.decode(builder.properties)
+            for p in _NON_BOOTSTRAPPED_PROPERTIES:
+                if p in builder_properties:
+                    non_bootstrapped_properties[p] = builder_properties.pop(p)
+            ctx.output[properties_file] = json.indent(json.encode(builder_properties), indent = "  ")
+
+            if bootstrap:
+                builder.properties = json.encode(non_bootstrapped_properties)
+
+                builder.exe.cipd_package = "infra/chromium/bootstrapper/${platform}"
+                builder.exe.cipd_version = "latest"
+                builder.exe.cmd = ["bootstrapper"]
+
+lucicfg.generator(_bootstrap_properties)
 
 builders = struct(
     builder = builder,

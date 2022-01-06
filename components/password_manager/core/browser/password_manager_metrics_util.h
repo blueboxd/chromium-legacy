@@ -522,17 +522,24 @@ void LogGeneralUIDismissalReason(UIDismissalReason reason);
 
 // Log the |reason| a user dismissed the save password bubble. If
 // |user_state| is set, the |reason| is also logged to a separate
-// user-state-specific histogram.
+// user-state-specific histogram. If the submission is detected on a cleared
+// change password form, dismissal reason is also recorded in a histogram
+// specific for this type of submission.
 void LogSaveUIDismissalReason(
     UIDismissalReason reason,
+    autofill::mojom::SubmissionIndicatorEvent submission_event,
     absl::optional<PasswordAccountStorageUserState> user_state);
 
 // Log the |reason| a user dismissed the save password prompt after previously
 // having unblocklisted the origin while on the page.
 void LogSaveUIDismissalReasonAfterUnblocklisting(UIDismissalReason reason);
 
-// Log the |reason| a user dismissed the update password bubble.
-void LogUpdateUIDismissalReason(UIDismissalReason reason);
+// Log the |reason| a user dismissed the update password bubble. If the
+// submission is detected on a cleared change password form, dismissal reason is
+// also recorded in a histogram specific for this type of submission.
+void LogUpdateUIDismissalReason(
+    UIDismissalReason reason,
+    autofill::mojom::SubmissionIndicatorEvent submission_event);
 
 // Log the |reason| a user dismissed the move password bubble.
 void LogMoveUIDismissalReason(UIDismissalReason reason,
@@ -577,8 +584,7 @@ void LogCredentialManagerGetResult(CredentialManagerGetResult result,
                                    CredentialMediationRequirement mediation);
 
 // Log the password reuse.
-void LogPasswordReuse(int password_length,
-                      int saved_passwords,
+void LogPasswordReuse(int saved_passwords,
                       int number_matches,
                       bool password_field_detected,
                       PasswordType reused_password_type);
@@ -648,7 +654,6 @@ void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
 // Log the number of Gaia password hashes saved, and the number of enterprise
 // password hashes saved. Currently only called on profile start up.
 void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
-                                    size_t enterprise_hash_count,
                                     bool does_primary_account_exists,
                                     bool is_signed_in);
 

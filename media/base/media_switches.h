@@ -149,10 +149,7 @@ MEDIA_EXPORT extern const base::Feature kGlobalMediaControlsModernUI;
 MEDIA_EXPORT extern const base::Feature kHardwareMediaKeyHandling;
 MEDIA_EXPORT extern const base::Feature kHardwareSecureDecryption;
 MEDIA_EXPORT extern const base::Feature kInternalMediaSession;
-MEDIA_EXPORT extern const base::Feature kKaleidoscope;
-MEDIA_EXPORT extern const base::Feature kKaleidoscopeInMenu;
-MEDIA_EXPORT extern const base::Feature
-    kKaleidoscopeForceShowFirstRunExperience;
+MEDIA_EXPORT extern const base::Feature kKeepRvfcFrameAlive;
 MEDIA_EXPORT extern const base::Feature kKeyPressMonitoring;
 MEDIA_EXPORT extern const base::Feature kLiveCaption;
 MEDIA_EXPORT extern const base::Feature kLiveCaptionMultiLanguage;
@@ -205,10 +202,10 @@ MEDIA_EXPORT extern const base::Feature kVaapiVP8Encoder;
 MEDIA_EXPORT extern const base::Feature kVaapiVP9Encoder;
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
 MEDIA_EXPORT extern const base::Feature kVaapiH264TemporalLayerHWEncoding;
-MEDIA_EXPORT extern const base::Feature kVaapiVp9kSVCHWDecoding;
 MEDIA_EXPORT extern const base::Feature kVaapiVp9kSVCHWEncoding;
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
 MEDIA_EXPORT extern const base::Feature kVideoBlitColorAccuracy;
+MEDIA_EXPORT extern const base::Feature kVp9kSVCHWDecoding;
 MEDIA_EXPORT extern const base::Feature kWakeLockOptimisationHiddenMuted;
 MEDIA_EXPORT extern const base::Feature kResolutionBasedDecoderPriority;
 MEDIA_EXPORT extern const base::Feature kForceHardwareVideoDecoders;
@@ -227,6 +224,7 @@ MEDIA_EXPORT extern const base::Feature kHlsPlayer;
 MEDIA_EXPORT extern const base::Feature kRequestSystemAudioFocus;
 MEDIA_EXPORT extern const base::Feature kUseAudioLatencyFromHAL;
 MEDIA_EXPORT extern const base::Feature kUsePooledSharedImageVideoProvider;
+MEDIA_EXPORT extern const base::Feature kUseRealColorSpaceForAndroidVideo;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -243,8 +241,8 @@ MEDIA_EXPORT extern const base::Feature kMultiPlaneVideoToolboxSharedImages;
 MEDIA_EXPORT extern const base::Feature kDelayCopyNV12Textures;
 MEDIA_EXPORT extern const base::Feature kDirectShowGetPhotoState;
 MEDIA_EXPORT extern const base::Feature kIncludeIRCamerasInDeviceEnumeration;
-MEDIA_EXPORT extern const base::Feature kMediaFoundationAsyncH264Encoding;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationAV1Decoding;
+MEDIA_EXPORT extern const base::Feature kMediaFoundationAV1Encoding;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationVideoCapture;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationVP8Decoding;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationD3D11VideoCapture;

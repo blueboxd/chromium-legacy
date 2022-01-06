@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load(
     "//absl:copts/configure_copts.bzl",
     "ABSL_DEFAULT_COPTS",
@@ -183,6 +182,7 @@ cc_library(
     ],
     copts = ABSL_DEFAULT_COPTS,
     linkopts = ABSL_DEFAULT_LINKOPTS,
+    visibility = ["//visibility:private"],
     deps = [
         "//absl/base:config",
         "//absl/base:core_headers",
@@ -197,6 +197,7 @@ cc_library(
     srcs = ["internal/demangle.cc"],
     hdrs = ["internal/demangle.h"],
     copts = ABSL_DEFAULT_COPTS,
+    visibility = ["//visibility:private"],
     deps = [
         "//absl/base",
         "//absl/base:config",

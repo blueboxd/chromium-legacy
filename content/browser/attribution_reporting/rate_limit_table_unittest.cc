@@ -12,7 +12,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/conversion_test_utils.h"
+#include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "sql/database.h"
 #include "sql/statement.h"
@@ -45,13 +45,13 @@ class RateLimitTableTest : public testing::Test {
       StorableSource::SourceType source_type =
           StorableSource::SourceType::kNavigation) {
     return AttributionReport(
-        ImpressionBuilder(clock()->Now())
+        SourceBuilder(clock()->Now())
             .SetImpressionOrigin(std::move(impression_origin))
             .SetConversionOrigin(std::move(conversion_origin))
             .SetImpressionId(impression_id)
             .SetSourceType(source_type)
             .Build(),
-        /*conversion_data=*/0,
+        /*trigger_data=*/0,
         /*conversion_time=*/clock()->Now(),
         /*report_time=*/clock()->Now(),
         /*priority=*/0,
@@ -470,7 +470,7 @@ TEST_F(RateLimitTableTest, ClearDataForOriginsInRange) {
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
             table()->AddAggregateHistogramContributionsForTesting(
                 &db,
-                ImpressionBuilder(clock()->Now())
+                SourceBuilder(clock()->Now())
                     .SetImpressionOrigin(example_a)
                     .SetConversionOrigin(example_b)
                     .SetImpressionId(StorableSource::Id(1))
@@ -535,7 +535,7 @@ TEST_F(RateLimitTableTest, AddRateLimit_DeletesExpiredRateLimits) {
               ElementsAre("https://g.example", "https://i.example"));
 }
 
-TEST_F(RateLimitTableTest, ClearDataForImpressionIds) {
+TEST_F(RateLimitTableTest, ClearDataForSourceIds) {
   sql::Database db;
   EXPECT_TRUE(db.Open(db_path()));
   EXPECT_TRUE(table()->CreateTable(&db));
@@ -568,7 +568,7 @@ TEST_F(RateLimitTableTest, ClearDataForImpressionIds) {
             table()->AttributionAllowed(
                 &db, NewConversionReport(example_c, example_d), now));
 
-  EXPECT_TRUE(table()->ClearDataForImpressionIds(
+  EXPECT_TRUE(table()->ClearDataForSourceIds(
       &db, {StorableSource::Id(1), StorableSource::Id(4)}));
   EXPECT_EQ(2u, GetRateLimitRows(&db));
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
@@ -590,7 +590,7 @@ TEST_F(RateLimitTableTest, Aggregate) {
   });
 
   const auto impression =
-      ImpressionBuilder(clock()->Now())
+      SourceBuilder(clock()->Now())
           .SetImpressionOrigin(url::Origin::Create(GURL("https://a.example/")))
           .SetConversionOrigin(url::Origin::Create(GURL("https://b.example/")))
           .SetImpressionId(StorableSource::Id(1))

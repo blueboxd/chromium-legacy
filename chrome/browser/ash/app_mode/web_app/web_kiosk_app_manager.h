@@ -15,6 +15,7 @@
 
 class Browser;
 class PrefRegistrySimple;
+class Profile;
 struct WebApplicationInfo;
 
 namespace ash {
@@ -60,7 +61,7 @@ class WebKioskAppManager : public KioskAppManagerBase {
   void AddAppForTesting(const AccountId& account_id, const GURL& install_url);
 
   // Initialize current app session with the browser that is running the app.
-  void InitSession(Browser* browser);
+  void InitSession(Browser* browser, Profile* profile);
 
  private:
   // KioskAppManagerBase:
@@ -72,11 +73,5 @@ class WebKioskAppManager : public KioskAppManagerBase {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-using ::ash::WebKioskAppManager;
-}
 
 #endif  // CHROME_BROWSER_ASH_APP_MODE_WEB_APP_WEB_KIOSK_APP_MANAGER_H_

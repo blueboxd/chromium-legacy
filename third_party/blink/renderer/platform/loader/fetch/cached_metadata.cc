@@ -62,8 +62,7 @@ CachedMetadata::CachedMetadata(uint32_t data_type_id,
   DCHECK(data_type_id);
   DCHECK(data);
 
-  vector_ = CachedMetadata::GetSerializedDataHeader(data_type_id, size);
-  vector_.Append(data, size);
+  vector_ = CachedMetadata::GetSerializedData(data_type_id, data, size);
 }
 
 CachedMetadata::CachedMetadata(mojo_base::BigBuffer data) {

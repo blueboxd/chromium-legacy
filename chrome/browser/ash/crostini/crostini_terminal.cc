@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/crostini/crostini_terminal.h"
 
-#include "base/bind.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
@@ -15,9 +14,7 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -27,8 +24,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "ui/base/base_window.h"
 #include "ui/base/window_open_disposition.h"
@@ -83,29 +78,6 @@ GURL GenerateVshInCroshUrl(Profile* profile,
   return GURL(base::JoinString(pieces, "&args[]="));
 }
 
-void LaunchTerminalImpl(Profile* profile,
-                        const GURL& url,
-                        const apps::AppLaunchParams& params) {
-  // This function is called asynchronously, so we need to check whether
-  // `profile` is still valid first.
-  if (g_browser_process) {
-    auto* profile_manager = g_browser_process->profile_manager();
-    if (profile_manager && profile_manager->IsValidProfile(profile)) {
-      // This LaunchSystemWebAppImpl call is necessary. Terminal App uses its
-      // own CrostiniApps publisher for launching. Calling
-      // LaunchSystemWebAppAsync would ask AppService to launch the App, which
-      // routes the launch request to this function, resulting in a loop.
-      //
-      // System Web Apps managed by Web App publisher should call
-      // LaunchSystemWebAppAsync.
-      web_app::LaunchSystemWebAppImpl(profile, web_app::SystemAppType::TERMINAL,
-                                      url, params);
-      return;
-    }
-  }
-  LOG(WARNING) << "Profile becomes invalid. Abort launching terminal.";
-}
-
 }  // namespace
 
 void LaunchTerminal(Profile* profile,
@@ -113,10 +85,21 @@ void LaunchTerminal(Profile* profile,
                     const ContainerId& container_id,
                     const std::string& cwd,
                     const std::vector<std::string>& terminal_args) {
-  crostini::RecordAppLaunchHistogram(
-      crostini::CrostiniAppLaunchAppType::kTerminal);
   GURL vsh_in_crosh_url =
       GenerateVshInCroshUrl(profile, container_id, cwd, terminal_args);
+  LaunchTerminalWithUrl(profile, display_id, vsh_in_crosh_url);
+}
+
+void LaunchTerminalWithUrl(Profile* profile,
+                           int64_t display_id,
+                           const GURL& url) {
+  if (url.DeprecatedGetOriginAsURL() != chrome::kChromeUIUntrustedTerminalURL) {
+    LOG(ERROR) << "Trying to launch terminal with an invalid url: " << url;
+    return;
+  }
+
+  crostini::RecordAppLaunchHistogram(
+      crostini::CrostiniAppLaunchAppType::kTerminal);
   auto params = web_app::CreateSystemWebAppLaunchParams(
       profile, web_app::SystemAppType::TERMINAL, display_id);
   if (!params.has_value()) {
@@ -129,11 +112,15 @@ void LaunchTerminal(Profile* profile,
   // force the VM to start.
   params->omit_from_session_restore = true;
 
-  // Always launch asynchronously to avoid disturbing the caller. See
-  // https://crbug.com/1262890#c12 for more details.
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(LaunchTerminalImpl, profile, vsh_in_crosh_url,
-                                std::move(*params)));
+  // This LaunchSystemWebAppImpl call is necessary. Terminal App uses its own
+  // CrostiniApps publisher for launching. Calling LaunchSystemWebAppAsync
+  // would ask AppService to launch the App, which routes the launch request to
+  // this function, resulting in a loop.
+  //
+  // System Web Apps managed by Web App publisher should call
+  // LaunchSystemWebAppAsync.
+  web_app::LaunchSystemWebAppImpl(profile, web_app::SystemAppType::TERMINAL,
+                                  url, *params);
 }
 
 void LaunchTerminalSettings(Profile* profile, int64_t display_id) {
@@ -147,14 +134,17 @@ void LaunchTerminalSettings(Profile* profile, int64_t display_id) {
   // Use an app pop window to host the settings page.
   params->disposition = WindowOpenDisposition::NEW_POPUP;
 
-  // Always launch asynchronously to avoid disturbing the caller. See
-  // https://crbug.com/1262890#c12 for more details.
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          LaunchTerminalImpl, profile,
-          GURL(base::StrCat({chrome::kChromeUIUntrustedTerminalURL, path})),
-          std::move(*params)));
+  // This LaunchSystemWebAppImpl call is necessary. Terminal App uses its own
+  // CrostiniApps publisher for launching. Calling LaunchSystemWebAppAsync
+  // would ask AppService to launch the App, which routes the launch request to
+  // this function, resulting in a loop.
+  //
+  // System Web Apps managed by Web App publisher should call
+  // LaunchSystemWebAppAsync.
+  web_app::LaunchSystemWebAppImpl(
+      profile, web_app::SystemAppType::TERMINAL,
+      GURL(base::StrCat({chrome::kChromeUIUntrustedTerminalURL, path})),
+      *params);
 }
 
 void RecordTerminalSettingsChangesUMAs(Profile* profile) {

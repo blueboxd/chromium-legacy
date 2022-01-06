@@ -354,6 +354,10 @@ std::string GetPromptDispositionString(
       return "LocationBarLeftChip";
     case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP:
       return "LocationBarLeftQuietChip";
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP:
+      return "LocationBarLeftQuietAbusiveChip";
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP_AUTO_BUBBLE:
+      return "LocationBarLeftChipAutoBubble";
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_ANIMATED_ICON:
       return "LocationBarRightAnimatedIcon";
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON:
@@ -744,7 +748,7 @@ PermissionUmaUtil::ScopedRevocationReporter::~ScopedRevocationReporter() {
       primary_url_, secondary_url_, content_type_);
   if (final_content_setting != CONTENT_SETTING_ALLOW) {
     // PermissionUmaUtil takes origins, even though they're typed as GURL.
-    GURL requesting_origin = primary_url_.GetOrigin();
+    GURL requesting_origin = primary_url_.DeprecatedGetOriginAsURL();
     PermissionRevoked(content_type_, source_ui_, requesting_origin,
                       browser_context_);
     if ((content_type_ == ContentSettingsType::GEOLOCATION ||
@@ -1044,12 +1048,14 @@ bool PermissionUmaUtil::IsPromptDispositionQuiet(
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON:
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_ANIMATED_ICON:
     case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP:
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP:
     case PermissionPromptDisposition::MINI_INFOBAR:
     case PermissionPromptDisposition::MESSAGE_UI:
       return true;
     case PermissionPromptDisposition::ANCHORED_BUBBLE:
     case PermissionPromptDisposition::MODAL_DIALOG:
     case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP:
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP_AUTO_BUBBLE:
     case PermissionPromptDisposition::NONE_VISIBLE:
     case PermissionPromptDisposition::CUSTOM_MODAL_DIALOG:
     case PermissionPromptDisposition::NOT_APPLICABLE:
@@ -1064,10 +1070,12 @@ bool PermissionUmaUtil::IsPromptDispositionLoud(
     case PermissionPromptDisposition::ANCHORED_BUBBLE:
     case PermissionPromptDisposition::MODAL_DIALOG:
     case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP:
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP_AUTO_BUBBLE:
       return true;
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON:
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_ANIMATED_ICON:
     case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP:
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP:
     case PermissionPromptDisposition::MINI_INFOBAR:
     case PermissionPromptDisposition::MESSAGE_UI:
     case PermissionPromptDisposition::NONE_VISIBLE:

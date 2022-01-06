@@ -11,6 +11,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "extensions/common/constants.h"
 #include "ui/base/window_open_disposition.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -47,23 +48,21 @@ Browser* CreateBrowserWithNewTabPage(Profile* profile);
 AppLaunchParams CreateAppIdLaunchParamsWithEventFlags(
     const std::string& app_id,
     int event_flags,
-    apps::mojom::AppLaunchSource source,
+    apps::mojom::LaunchSource source,
     int64_t display_id,
     apps::mojom::LaunchContainer fallback_container);
 
 apps::AppLaunchParams CreateAppLaunchParamsForIntent(
     const std::string& app_id,
     int32_t event_flags,
-    apps::mojom::AppLaunchSource source,
+    apps::mojom::LaunchSource source,
     int64_t display_id,
     apps::mojom::LaunchContainer fallback_container,
-    apps::mojom::IntentPtr&& intent);
+    apps::mojom::IntentPtr&& intent,
+    Profile* profile);
 
-apps::mojom::AppLaunchSource GetAppLaunchSource(
+extensions::AppLaunchSource GetAppLaunchSource(
     apps::mojom::LaunchSource launch_source);
-
-apps::mojom::LaunchSource GetLaunchSource(
-    apps::mojom::AppLaunchSource app_launch_source);
 
 // Returns event flag for |container| and |disposition|. If |prefer_container|
 // is true, |disposition| will be ignored. Otherwise, |container| is ignored and

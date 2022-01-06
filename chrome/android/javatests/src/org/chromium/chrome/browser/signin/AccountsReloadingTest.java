@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.os.Build;
+
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -17,7 +19,7 @@ import org.mockito.junit.MockitoRule;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
@@ -171,14 +173,15 @@ public class AccountsReloadingTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "http://crbug.com/1254405")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "crbug/1254405")
     public void testRefreshTokenUpdateWhenSignedInUserAddsNewAccount() {
         final CoreAccountInfo account1 = mAccountManagerTestRule.addTestAccountThenSignin();
         CriteriaHelper.pollUiThread(() -> mObserver.mCallCount == 1);
         Assert.assertEquals(new HashSet<>(Arrays.asList(account1)), mObserver.mAccountsUpdated);
         mObserver.mAccountsUpdated.clear();
 
-        final CoreAccountInfo account2 = mAccountManagerTestRule.addAccount(TEST_EMAIL2);
+        final CoreAccountInfo account2 =
+                mAccountManagerTestRule.addAccountAndWaitForSeeding(TEST_EMAIL2);
 
         CriteriaHelper.pollUiThread(()
                                             -> mObserver.mCallCount == 3,
@@ -191,7 +194,7 @@ public class AccountsReloadingTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "http://crbug.com/1254427")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "crbug/1254427")
     public void testRefreshTokenUpdateWhenSignedInAndSyncUserAddsNewAccount() {
         final CoreAccountInfo account1 =
                 mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
@@ -199,7 +202,8 @@ public class AccountsReloadingTest {
         Assert.assertEquals(new HashSet<>(Arrays.asList(account1)), mObserver.mAccountsUpdated);
         mObserver.mAccountsUpdated.clear();
 
-        final CoreAccountInfo account2 = mAccountManagerTestRule.addAccount(TEST_EMAIL2);
+        final CoreAccountInfo account2 =
+                mAccountManagerTestRule.addAccountAndWaitForSeeding(TEST_EMAIL2);
 
         CriteriaHelper.pollUiThread(()
                                             -> mObserver.mCallCount == 3,

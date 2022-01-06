@@ -6,10 +6,17 @@
 #define ASH_SYSTEM_PHONEHUB_CAMERA_ROLL_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/system/phonehub/camera_roll_opt_in_view.h"
 #include "base/gtest_prod_util.h"
 #include "chromeos/components/phonehub/camera_roll_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
+
+namespace chromeos {
+namespace phonehub {
+class UserActionRecorder;
+}  // namespace phonehub
+}  // namespace chromeos
 
 namespace ash {
 
@@ -21,21 +28,21 @@ class ASH_EXPORT CameraRollView
     : public views::View,
       public chromeos::phonehub::CameraRollManager::Observer {
  public:
-  CameraRollView(chromeos::phonehub::CameraRollManager* camera_roll_manager);
+  CameraRollView(chromeos::phonehub::CameraRollManager* camera_roll_manager,
+                 chromeos::phonehub::UserActionRecorder* user_action_recorder);
   ~CameraRollView() override;
   CameraRollView(CameraRollView&) = delete;
   CameraRollView operator=(CameraRollView&) = delete;
 
   // chromeos::phonehub::CameraRollManager::Observer:
-  void OnCameraRollItemsChanged() override;
+  void OnCameraRollViewUiStateUpdated() override;
 
   // views::View:
   const char* GetClassName() const override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, ViewVisibility);
-  FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, SingleItem);
-  FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, MultipleItems);
+  FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, DisplayOptInView);
+  FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, OptInAlready);
   FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, ViewLayout);
 
   class CameraRollItemsView : public views::View {
@@ -66,6 +73,8 @@ class ASH_EXPORT CameraRollView
   void Update();
 
   chromeos::phonehub::CameraRollManager* camera_roll_manager_ = nullptr;
+  chromeos::phonehub::UserActionRecorder* user_action_recorder_ = nullptr;
+  CameraRollOptInView* opt_in_view_ = nullptr;
   CameraRollItemsView* items_view_ = nullptr;
 };
 

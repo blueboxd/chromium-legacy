@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -96,13 +97,17 @@ class CollectUserDataAction : public Action,
   bool CreateOptionsFromProto();
 
   bool CheckInitialAutofillDataComplete(
-      const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles,
+      const std::vector<std::unique_ptr<autofill::AutofillProfile>>& contacts,
+      const std::vector<std::unique_ptr<autofill::AutofillProfile>>& addresses,
       const std::vector<std::unique_ptr<PaymentInstrument>>&
           payment_instruments);
 
   void WriteProcessedAction(UserData* user_data, const UserModel* user_model);
   void UpdateProfileAndCardUse(UserData* user_data);
 
+  void UpdateUserDataFromProto(
+      const CollectUserDataProto::UserDataProto& proto_data,
+      UserData* user_data);
   // Update user data with the new state from personal data manager.
   void UpdatePersonalDataManagerProfiles(
       UserData* user_data,
@@ -110,6 +115,9 @@ class CollectUserDataAction : public Action,
   void UpdatePersonalDataManagerCards(
       UserData* user_data,
       UserData::FieldChange* field_change = nullptr);
+  void UpdateSelectedContact(UserData* user_data);
+  void UpdateSelectedShippingAddress(UserData* user_data);
+  void UpdateSelectedCreditCard(UserData* user_data);
   void UpdateDateTimeRangeStart(UserData* user_data,
                                 UserData::FieldChange* field_change = nullptr);
   void UpdateDateTimeRangeEnd(UserData* user_data,
@@ -123,7 +131,7 @@ class CollectUserDataAction : public Action,
   ProcessActionCallback callback_;
 
   // Maps login choice identifiers to the corresponding login details.
-  std::map<std::string, std::unique_ptr<LoginDetails>> login_details_map_;
+  base::flat_map<std::string, std::unique_ptr<LoginDetails>> login_details_map_;
 
   base::WeakPtrFactory<CollectUserDataAction> weak_ptr_factory_{this};
 };

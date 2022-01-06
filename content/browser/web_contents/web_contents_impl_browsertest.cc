@@ -68,6 +68,8 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/fenced_frame_test_util.h"
+#include "content/public/test/mock_web_contents_observer.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -97,7 +99,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-#include "base/allocator/partition_allocator/partition_alloc_features.h"
+#include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 #endif
 
@@ -373,7 +375,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // At this point, C has finished loading and B is stalled.  Add a slow D frame
   // within C.
   GURL url_d = embedded_test_server()->GetURL("d.com", "/title1.html");
-  FrameTreeNode* subframe_c = web_contents->GetFrameTree()->root()->child_at(1);
+  FrameTreeNode* subframe_c =
+      web_contents->GetPrimaryFrameTree().root()->child_at(1);
   EXPECT_EQ(url_c, subframe_c->current_url());
   TestNavigationManager delayer_d(web_contents, url_d);
   const std::string add_d_script = base::StringPrintf(
@@ -544,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("/frame_tree/top.html")));
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = wc->GetFrameTree()->root();
+  FrameTreeNode* root = wc->GetPrimaryFrameTree().root();
   ASSERT_EQ(3UL, root->child_count());
   int frame_tree_node_id = root->child_at(0)->frame_tree_node_id();
   EXPECT_NE(-1, frame_tree_node_id);
@@ -807,9 +810,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_EQ(image_original_url, image_load_info->original_url);
 }
 
-// Flaky on all platforms, http://crbug.com/1256643.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       DISABLED_ResourceLoadCompleteNetError) {
+                       ResourceLoadCompleteNetError) {
   ResourceLoadObserver observer(shell());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -824,22 +826,31 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   observer.Reset();
 
   // Load the page and simulate a network error.
-  content::URLLoaderInterceptor url_interceptor(base::BindRepeating(
-      [](const GURL& url,
-         content::URLLoaderInterceptor::RequestParams* params) {
-        if (params->url_request.url != url)
+  content::URLLoaderInterceptor url_interceptor(base::BindLambdaForTesting(
+      [image_url](content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url != image_url)
           return false;
         network::URLLoaderCompletionStatus status;
         status.error_code = net::ERR_ADDRESS_UNREACHABLE;
         params->client->OnComplete(status);
         return true;
-      },
-      image_url));
+      }));
   EXPECT_TRUE(NavigateToURL(shell(), page_url));
   ASSERT_EQ(2U, observer.resource_load_infos().size());
-  EXPECT_EQ(net::OK, observer.resource_load_infos()[0]->net_error);
-  EXPECT_EQ(net::ERR_ADDRESS_UNREACHABLE,
-            observer.resource_load_infos()[1]->net_error);
+  // A ResourceLoadInfo is added when the load for the resource is complete,
+  // and hence the order is undeterministic.
+  if (observer.resource_load_infos()[0]->final_url == page_url) {
+    EXPECT_EQ(net::OK, observer.resource_load_infos()[0]->net_error);
+    EXPECT_EQ(image_url, observer.resource_load_infos()[1]->final_url);
+    EXPECT_EQ(net::ERR_ADDRESS_UNREACHABLE,
+              observer.resource_load_infos()[1]->net_error);
+  } else {
+    EXPECT_EQ(image_url, observer.resource_load_infos()[0]->final_url);
+    EXPECT_EQ(net::ERR_ADDRESS_UNREACHABLE,
+              observer.resource_load_infos()[0]->net_error);
+    EXPECT_EQ(page_url, observer.resource_load_infos()[1]->final_url);
+    EXPECT_EQ(net::OK, observer.resource_load_infos()[1]->net_error);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -905,8 +916,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                    ->network_info->always_access_network);
 }
 
+// Flaky on all platforms: https://crbug.com/1259766
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       ResourceLoadCompleteIsMainFrame) {
+                       DISABLED_ResourceLoadCompleteIsMainFrame) {
   ResourceLoadObserver observer(shell());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1290,8 +1302,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
 
     EXPECT_EQ("new_window",
               static_cast<WebContentsImpl*>(new_shell->web_contents())
-                  ->GetFrameTree()
-                  ->root()
+                  ->GetPrimaryFrameTree()
+                  .root()
                   ->frame_name());
 
     EXPECT_EQ(true, EvalJs(new_shell, "window.name == 'new_window';"));
@@ -1307,8 +1319,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
     EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
     EXPECT_EQ("foo", static_cast<WebContentsImpl*>(new_shell->web_contents())
-                         ->GetFrameTree()
-                         ->root()
+                         ->GetPrimaryFrameTree()
+                         .root()
                          ->frame_name());
   }
 }
@@ -1787,7 +1799,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
   EXPECT_TRUE(WaitForLoadStop(wc));
 
-  FrameTreeNode* root = wc->GetFrameTree()->root();
+  FrameTreeNode* root = wc->GetPrimaryFrameTree().root();
   ASSERT_EQ(0U, root->child_count());
 
   std::string script =
@@ -1927,7 +1939,7 @@ IN_PROC_BROWSER_TEST_F(
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
   EXPECT_TRUE(WaitForLoadStop(wc));
 
-  FrameTreeNode* root = wc->GetFrameTree()->root();
+  FrameTreeNode* root = wc->GetPrimaryFrameTree().root();
   ASSERT_EQ(0U, root->child_count());
 
   std::string script =
@@ -2656,7 +2668,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   GURL url("about:blank");
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
-  FrameTreeNode* root = top_contents->GetFrameTree()->root();
+  FrameTreeNode* root = top_contents->GetPrimaryFrameTree().root();
   ASSERT_EQ(0U, root->child_count());
 
   std::string script =
@@ -2822,9 +2834,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // Focus the child frame before sending it a copy command: the child frame
   // will detach itself upon getting a 'copy' event.
   ASSERT_TRUE(ExecJs(web_contents, "window[0].focus();"));
-  FrameTree* frame_tree = web_contents->GetFrameTree();
-  FrameTreeNode* root = frame_tree->root();
-  ASSERT_EQ(root->child_at(0), frame_tree->GetFocusedFrame());
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
+  ASSERT_EQ(root->child_at(0),
+            web_contents->GetPrimaryFrameTree().GetFocusedFrame());
   shell()->web_contents()->Copy();
 
   TitleWatcher title_watcher(web_contents, u"done");
@@ -2872,7 +2884,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateTargetURL) {
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  FrameTreeNode* subframe = web_contents->GetFrameTree()->root()->child_at(0);
+  FrameTreeNode* subframe =
+      web_contents->GetPrimaryFrameTree().root()->child_at(0);
   GURL subframe_url =
       embedded_test_server()->GetURL("b.com", "/simple_links.html");
   EXPECT_TRUE(NavigateToURLFromRenderer(subframe, subframe_url));
@@ -2959,7 +2972,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DISABLED_UpdateLoadState) {
                    "a.com", "/cross_site_iframe_factory.html?a(b)")));
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* a_frame = web_contents->GetFrameTree()->root();
+  FrameTreeNode* a_frame = web_contents->GetPrimaryFrameTree().root();
   FrameTreeNode* b_frame = a_frame->child_at(0);
 
   // Start loading the respective resources in each frame.
@@ -3078,7 +3091,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SyncRendererPrefs) {
 
   // Retrieve all unique render view hosts.
   std::vector<RenderViewHostImpl*> render_view_hosts;
-  for (FrameTreeNode* frame_tree_node : web_contents->GetFrameTree()->Nodes()) {
+  for (FrameTreeNode* frame_tree_node :
+       web_contents->GetPrimaryFrameTree().Nodes()) {
     RenderViewHostImpl* render_view_host = static_cast<RenderViewHostImpl*>(
         frame_tree_node->current_frame_host()->GetRenderViewHost());
     ASSERT_NE(nullptr, render_view_host);
@@ -3190,8 +3204,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC) {
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   RenderFrameHostImpl* rfh_a =
       static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetFrameTree()
-          ->root()
+          ->GetPrimaryFrameTree()
+          .root()
           ->current_frame_host();
 
   RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
@@ -3757,7 +3771,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       WebContents::Create(create_params);
   auto* web_contents = static_cast<WebContentsImpl*>(public_web_contents.get());
 
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
 
   // Complete a navigation.
   GURL url1 = embedded_test_server()->GetURL("a.com", "/title1.html");
@@ -4086,6 +4100,27 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_THAT(CollectAllRenderFrameHosts(inner_contents),
               testing::ContainerEq(
                   CollectAllRenderFrameHosts(inner_contents->GetMainFrame())));
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       ForEachFrameTreeInnerContents) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(
+      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  auto* inner_contents =
+      static_cast<WebContentsImpl*>(CreateAndAttachInnerContents(
+          web_contents->GetMainFrame()->child_at(0)->current_frame_host()));
+  ASSERT_TRUE(NavigateToURLFromRenderer(inner_contents, url_b));
+
+  // Intentionally exclude inner frame trees based on multi-WebContents.
+  web_contents->ForEachFrameTree(
+      base::BindLambdaForTesting([&](FrameTree* frame_tree) {
+        EXPECT_NE(frame_tree, inner_contents->GetFrameTree());
+      }));
 }
 
 namespace {
@@ -4446,7 +4481,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // Set up the iframe.
   auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* iframe = web_contents->GetFrameTree()->root()->child_at(0);
+  FrameTreeNode* iframe =
+      web_contents->GetPrimaryFrameTree().root()->child_at(0);
   GURL iframe_url(server->GetURL("b.co", "/scrollable_page_with_content.html"));
   EXPECT_TRUE(NavigateToURLFromRenderer(iframe, iframe_url));
 
@@ -4908,8 +4944,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   RenderFrameCreatedObserver frame_created_obs(shell()->web_contents());
   static_cast<WebContentsImpl*>(shell()->web_contents())
-      ->GetFrameTree()
-      ->root()
+      ->GetPrimaryFrameTree()
+      .root()
       ->render_manager()
       ->InitializeMainRenderFrameForImmediateUse();
   frame_created_obs.WaitForRenderFrameCreated();
@@ -4966,6 +5002,76 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplAllowInsecureLocalhostBrowserTest,
 
   ASSERT_TRUE(NavigateToURL(shell(), url));
   observer.Wait();
+}
+
+class WebContentsFencedFrameBrowserTest : public WebContentsImplBrowserTest {
+ public:
+  WebContentsFencedFrameBrowserTest() = default;
+  ~WebContentsFencedFrameBrowserTest() override = default;
+
+  WebContentsImpl* web_contents() {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
+  test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return fenced_frame_test_helper_;
+  }
+
+ private:
+  content::test::FencedFrameTestHelper fenced_frame_test_helper_;
+};
+
+// Tests that DidUpdateFaviconURL() works only with the primary page by checking
+// if it's not called on the fenced frame loading.
+IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest, UpdateFavicon) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  testing::NiceMock<MockWebContentsObserver> observer(web_contents());
+  const GURL main_url =
+      embedded_test_server()->GetURL("fencedframe.test", "/title1.html");
+
+  RenderFrameHost* primary_rfh = web_contents()->GetMainFrame();
+  EXPECT_CALL(observer, DidUpdateFaviconURL(primary_rfh, testing::_));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+
+  // Create fenced frame.
+  RenderFrameHost* inner_fenced_frame_rfh =
+      fenced_frame_test_helper().CreateFencedFrame(primary_rfh, main_url);
+  const GURL fenced_frame_url =
+      embedded_test_server()->GetURL("fencedframe.test", "/title2.html");
+  EXPECT_CALL(observer, DidUpdateFaviconURL(inner_fenced_frame_rfh, testing::_))
+      .Times(0);
+  inner_fenced_frame_rfh =
+      fenced_frame_test_helper().NavigateFrameInFencedFrameTree(
+          inner_fenced_frame_rfh, fenced_frame_url);
+}
+
+// Tests that pages are still visible after a page is navigated away
+// from a page that contained a fenced frame. (crbug.com/1265615)
+IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest, RemainsVisible) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL main_url =
+      embedded_test_server()->GetURL("fencedframe.test", "/title1.html");
+
+  RenderFrameHost* primary_rfh = web_contents()->GetMainFrame();
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
+
+  // Create fenced frame.
+  const GURL fenced_frame_url =
+      embedded_test_server()->GetURL("fencedframe.test", "/title2.html");
+  content::RenderFrameHost* fenced_frame_host =
+      fenced_frame_test_helper().CreateFencedFrame(primary_rfh,
+                                                   fenced_frame_url);
+  EXPECT_NE(nullptr, fenced_frame_host);
+
+  const GURL same_origin_url =
+      embedded_test_server()->GetURL("fencedframe.test", "/title3.html");
+
+  ASSERT_TRUE(NavigateToURL(shell(), same_origin_url));
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
 }
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)

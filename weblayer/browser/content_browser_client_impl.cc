@@ -329,16 +329,6 @@ std::string ContentBrowserClientImpl::GetAcceptLangs(
   return i18n::GetAcceptLangs();
 }
 
-bool ContentBrowserClientImpl::AllowAppCache(
-    const GURL& manifest_url,
-    const net::SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    content::BrowserContext* context) {
-  return embedder_support::AllowAppCache(
-      manifest_url, site_for_cookies, top_frame_origin,
-      CookieSettingsFactory::GetForBrowserContext(context).get());
-}
-
 content::AllowServiceWorkerResult ContentBrowserClientImpl::AllowServiceWorker(
     const GURL& scope,
     const net::SiteForCookies& site_for_cookies,
@@ -783,15 +773,16 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
     navigation_controller =
         static_cast<NavigationControllerImpl*>(tab->GetNavigationController());
   }
+
+  NavigationImpl* navigation_impl = nullptr;
+  if (navigation_controller) {
+    navigation_impl =
+        navigation_controller->GetNavigationImplFromHandle(handle);
+  }
+
   if (handle->IsInMainFrame()) {
     NavigationUIDataImpl* navigation_ui_data =
         static_cast<NavigationUIDataImpl*>(handle->GetNavigationUIData());
-
-    NavigationImpl* navigation_impl = nullptr;
-    if (navigation_controller) {
-      navigation_impl =
-          navigation_controller->GetNavigationImplFromHandle(handle);
-    }
 
     if ((!navigation_ui_data ||
          !navigation_ui_data->disable_network_error_auto_reload()) &&
@@ -852,14 +843,15 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
   }
 
 #if defined(OS_ANDROID)
-  if (handle->IsInMainFrame()) {
-    if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
-        IsSafebrowsingSupported()) {
-      throttles.push_back(
-          GetSafeBrowsingService()->CreateSafeBrowsingNavigationThrottle(
-              handle));
-    }
+  if (IsSafebrowsingSupported()) {
+    std::unique_ptr<content::NavigationThrottle> safe_browsing_throttle =
+        GetSafeBrowsingService()->MaybeCreateSafeBrowsingNavigationThrottleFor(
+            handle);
+    if (safe_browsing_throttle)
+      throttles.push_back(std::move(safe_browsing_throttle));
+  }
 
+  if (!navigation_impl || !navigation_impl->disable_intent_processing()) {
     std::unique_ptr<content::NavigationThrottle> intercept_navigation_throttle =
         navigation_interception::InterceptNavigationDelegate::
             MaybeCreateThrottleFor(
@@ -1153,7 +1145,7 @@ ContentBrowserClientImpl::CreateLoginDelegate(
     const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
-    bool is_main_frame,
+    bool is_request_for_primary_main_frame,
     const GURL& url,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     bool first_auth_attempt,
@@ -1223,8 +1215,7 @@ bool ContentBrowserClientImpl::IsClipboardPasteAllowed(
 
   const GURL& url = render_frame_host->GetLastCommittedOrigin().GetURL();
   content::BrowserContext* browser_context =
-      content::WebContents::FromRenderFrameHost(render_frame_host)
-          ->GetBrowserContext();
+      render_frame_host->GetBrowserContext();
   DCHECK(browser_context);
 
   content::PermissionController* permission_controller =

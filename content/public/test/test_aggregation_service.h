@@ -7,8 +7,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
+#include "base/values.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -17,16 +20,11 @@ class scoped_refptr;
 
 namespace base {
 class Clock;
-class Value;
 }  // namespace base
 
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
-
-namespace url {
-class Origin;
-}  // namespace url
 
 namespace content {
 
@@ -34,11 +32,62 @@ namespace content {
 // dependencies. Supports configuring public keys at runtime.
 class TestAggregationService {
  public:
+  // TODO(crbug.com/1260388): Consider exposing AggregatableReportRequest in
+  // content/public to avoid this translation.
+
+  // This is 1-1 mapping of AggregationServicePayloadContents::Operation.
+  enum class Operation {
+    kHierarchicalHistogram = 0,
+    kMaxValue = kHierarchicalHistogram,
+  };
+
+  // This is 1-1 mapping of AggregationServicePayloadContent::ProcessingType.
+  enum class ProcessingType {
+    kTwoParty = 0,
+    kSingleServer = 1,
+    kMaxValue = kSingleServer,
+  };
+
+  // Represents a request to assemble an aggregatable report.
+  struct AssembleRequest {
+    AssembleRequest(Operation operation,
+                    int bucket,
+                    int value,
+                    ProcessingType processing_type,
+                    url::Origin reporting_origin,
+                    std::string privacy_budget_key,
+                    std::vector<url::Origin> processing_origins);
+    AssembleRequest(AssembleRequest&& other);
+    AssembleRequest& operator=(AssembleRequest&& other);
+    ~AssembleRequest();
+
+    // Specifies the operation for the aggregation.
+    Operation operation;
+    // Specifies the bucket key of the histogram contribution.
+    int bucket;
+    // Specifies the bucket value of the histogram contribution.
+    int value;
+    // Indicates whether the aggregation servers run an MPC protocol or not.
+    ProcessingType processing_type;
+    // Specifies the endpoint reporting origin.
+    url::Origin reporting_origin;
+    // Specifies the key for the aggregation servers to do privacy budgeting.
+    std::string privacy_budget_key;
+    // Specifies the aggregation server origins.
+    std::vector<url::Origin> processing_origins;
+  };
+
   virtual ~TestAggregationService() = default;
 
-  // Creates an instance of the service.
+  // Creates an instance of the service. Aggregatable reports will be sent
+  // using the provided `url_loader_factory`.
   static std::unique_ptr<TestAggregationService> Create(
-      const base::Clock* clock);
+      const base::Clock* clock,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
+  // Sets whether to disable the AggregatableReport's payload(s) being encrypted
+  // after serialization.
+  virtual void SetDisablePayloadEncryption(bool should_disable) = 0;
 
   // Parses the keys for `origin` from `json_string`, and saves the set of keys
   // to storage. `callback` will be run once completed which takes a boolean
@@ -47,11 +96,13 @@ class TestAggregationService {
                              const std::string& json_string,
                              base::OnceCallback<void(bool)> callback) = 0;
 
-  // Sets the provided URL loader factory. This will be called by the
-  // aggregation service tool to inject a network::mojom::URLLoaderFactory to
-  // send an aggregatable report over network.
-  virtual void SetURLLoaderFactory(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) = 0;
+  // Construct an aggregatable report from the information in `request`.
+  // `callback` will be run once completed which takes a
+  // base::Value::DictStorage for the JSON representation of the aggregatable
+  // report. Empty base::Value::DictStorage will be returned in case of error.
+  virtual void AssembleReport(
+      AssembleRequest request,
+      base::OnceCallback<void(base::Value::DictStorage)> callback) = 0;
 
   // Sends the aggregatable report to the specified reporting endpoint `url`.
   // `callback` will be run once completed which returns whether the report was

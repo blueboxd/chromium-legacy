@@ -41,7 +41,9 @@ using StrictMockSavedPasswordsPresenterObserver =
 
 class SavedPasswordsPresenterTest : public ::testing::Test {
  protected:
-  SavedPasswordsPresenterTest() { store_->Init(/*prefs=*/nullptr); }
+  SavedPasswordsPresenterTest() {
+    store_->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
+  }
 
   ~SavedPasswordsPresenterTest() override {
     store_->ShutdownOnUIThread();
@@ -70,11 +72,6 @@ password_manager::PasswordForm CreateTestPasswordForm(
   form.username_value = u"username" + base::NumberToString16(index);
   form.password_value = u"password" + base::NumberToString16(index);
   form.in_store = store;
-  // TODO(crbug.com/1223022): Once all places that operate changes on forms
-  // via UpdateLogin properly set |password_issues|, setting them to an empty
-  // map should be part of the default constructor.
-  form.password_issues = base::flat_map<password_manager::InsecureType,
-                                        password_manager::InsecurityMetadata>();
   return form;
 }
 
@@ -139,7 +136,7 @@ TEST_F(SavedPasswordsPresenterTest, AddPasswordFailWhenInvalidUrl) {
 
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
-  form.url = GURL("invalid");
+  form.url = GURL("https://;/invalid");
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
   EXPECT_FALSE(presenter().AddPassword(form));
   RunUntilIdle();
@@ -167,6 +164,30 @@ TEST_F(SavedPasswordsPresenterTest, AddPasswordFailWhenEmptyPassword) {
   EXPECT_TRUE(store().IsEmpty());
 
   presenter().RemoveObserver(&observer);
+}
+
+TEST_F(SavedPasswordsPresenterTest, AddPasswordUnblocklistsOrigin) {
+  PasswordForm form_to_add =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  PasswordForm blocked_form;
+  blocked_form.blocked_by_user = true;
+  blocked_form.signon_realm = form_to_add.signon_realm;
+  blocked_form.in_store = PasswordForm::Store::kProfileStore;
+  // Blocklist some origin.
+  store().AddLogin(blocked_form);
+  RunUntilIdle();
+  ASSERT_THAT(presenter().GetUniquePasswordForms(), ElementsAre(blocked_form));
+
+  // Add a new entry with the same origin.
+  EXPECT_TRUE(presenter().AddPassword(form_to_add));
+  RunUntilIdle();
+
+  // The entry should be added despite the origin was blocklisted.
+  EXPECT_THAT(
+      store().stored_passwords(),
+      ElementsAre(Pair(form_to_add.signon_realm, ElementsAre(form_to_add))));
+  // The origin should be no longer blocklisted.
+  EXPECT_THAT(presenter().GetUniquePasswordForms(), ElementsAre(form_to_add));
 }
 
 // Tests whether editing a password works and results in the right
@@ -511,8 +532,10 @@ namespace {
 class SavedPasswordsPresenterWithTwoStoresTest : public ::testing::Test {
  protected:
   SavedPasswordsPresenterWithTwoStoresTest() {
-    profile_store_->Init(/*prefs=*/nullptr);
-    account_store_->Init(/*prefs=*/nullptr);
+    profile_store_->Init(/*prefs=*/nullptr,
+                         /*affiliated_match_helper=*/nullptr);
+    account_store_->Init(/*prefs=*/nullptr,
+                         /*affiliated_match_helper=*/nullptr);
   }
 
   ~SavedPasswordsPresenterWithTwoStoresTest() override {
@@ -656,6 +679,32 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
   EXPECT_TRUE(account_store().IsEmpty());
 
   presenter().RemoveObserver(&observer);
+}
+
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
+       AddPasswordUnblocklistsOriginInDifferentStore) {
+  PasswordForm form_to_add =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  PasswordForm blocked_form;
+  blocked_form.blocked_by_user = true;
+  blocked_form.signon_realm = form_to_add.signon_realm;
+  blocked_form.in_store = PasswordForm::Store::kAccountStore;
+  // Blocklist some origin in the account store.
+  account_store().AddLogin(blocked_form);
+  RunUntilIdle();
+  ASSERT_THAT(presenter().GetUniquePasswordForms(), ElementsAre(blocked_form));
+
+  // Add a new entry with the same origin to the profile store.
+  EXPECT_TRUE(presenter().AddPassword(form_to_add));
+  RunUntilIdle();
+
+  // The entry should be added despite the origin was blocklisted.
+  EXPECT_THAT(
+      profile_store().stored_passwords(),
+      ElementsAre(Pair(form_to_add.signon_realm, ElementsAre(form_to_add))));
+  // The origin should be no longer blocklisted irrespective of which store the
+  // form was added to.
+  EXPECT_THAT(presenter().GetUniquePasswordForms(), ElementsAre(form_to_add));
 }
 
 // This tests changing the username of a credentials stored in the profile store

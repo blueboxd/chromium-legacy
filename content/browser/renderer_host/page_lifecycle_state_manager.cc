@@ -50,8 +50,9 @@ void PageLifecycleStateManager::SetIsFrozen(bool frozen) {
     return;
   is_set_frozen_called_ = frozen;
 
-  SendUpdatesToRendererIfNeeded(/*page_restore_params=*/nullptr,
-                                base::NullCallback());
+  SendUpdatesToRendererIfNeeded(
+      /*page_restore_params=*/nullptr, base::NullCallback(),
+      /*restoring_main_frame_from_back_forward_cache=*/false);
 }
 
 void PageLifecycleStateManager::SetFrameTreeVisibility(
@@ -60,15 +61,17 @@ void PageLifecycleStateManager::SetFrameTreeVisibility(
     return;
 
   frame_tree_visibility_ = visibility;
-  SendUpdatesToRendererIfNeeded(/*page_restore_params=*/nullptr,
-                                base::NullCallback());
+  SendUpdatesToRendererIfNeeded(
+      /*page_restore_params=*/nullptr, base::NullCallback(),
+      /*restoring_main_frame_from_back_forward_cache=*/false);
   // TODO(yuzus): When a page is frozen and made visible, the page should
   // automatically resume.
 }
 
 void PageLifecycleStateManager::SetIsInBackForwardCache(
     bool is_in_back_forward_cache,
-    blink::mojom::PageRestoreParamsPtr page_restore_params) {
+    blink::mojom::PageRestoreParamsPtr page_restore_params,
+    bool restoring_main_frame_from_back_forward_cache) {
   if (is_in_back_forward_cache_ == is_in_back_forward_cache)
     return;
   // Prevent races by waiting for confirmation that the renderer will no longer
@@ -95,7 +98,8 @@ void PageLifecycleStateManager::SetIsInBackForwardCache(
   }
 
   SendUpdatesToRendererIfNeeded(std::move(page_restore_params),
-                                base::NullCallback());
+                                base::NullCallback(),
+                                restoring_main_frame_from_back_forward_cache);
 }
 
 blink::mojom::PageLifecycleStatePtr
@@ -131,7 +135,9 @@ void PageLifecycleStateManager::SetIsLeavingBackForwardCache(
     base::OnceClosure done_cb) {
   DCHECK(is_in_back_forward_cache_);
   eviction_enabled_ = false;
-  SendUpdatesToRendererIfNeeded(nullptr, std::move(done_cb));
+  SendUpdatesToRendererIfNeeded(
+      nullptr, std::move(done_cb),
+      /*restoring_main_frame_from_back_forward_cache=*/false);
 }
 
 bool PageLifecycleStateManager::RendererExpectedToSendChannelAssociatedIpcs()
@@ -143,7 +149,8 @@ bool PageLifecycleStateManager::RendererExpectedToSendChannelAssociatedIpcs()
 
 void PageLifecycleStateManager::SendUpdatesToRendererIfNeeded(
     blink::mojom::PageRestoreParamsPtr page_restore_params,
-    base::OnceClosure done_cb) {
+    base::OnceClosure done_cb,
+    bool restoring_main_frame_from_back_forward_cache) {
   if (!render_view_host_impl_->GetAssociatedPageBroadcast()) {
     // TODO(https://crbug.com/1153155): For some tests, |render_view_host_impl_|
     // does not have the associated page.
@@ -163,19 +170,25 @@ void PageLifecycleStateManager::SendUpdatesToRendererIfNeeded(
     // has not.
   }
 
-  if (last_state_sent_to_renderer_) {
-    // This logic detects whether the page is being restored from back-forward
-    // cache or not, and is the same as
-    //   * WebViewImpl::SetPageLifecycleStateInternal and
-    //   * Page::DispatchedPagehidePersistedAndStillHidden
-    // in Blink.
-    bool old_state_shown = last_state_sent_to_renderer_->pagehide_dispatch ==
-                           blink::mojom::PagehideDispatch::kNotDispatched;
-    bool new_state_shown = new_state->pagehide_dispatch ==
-                           blink::mojom::PagehideDispatch::kNotDispatched;
-    if (!old_state_shown && new_state_shown) {
-      blink::RecordUMAEventPageShowPersisted(
-          blink::EventPageShowPersisted::kYesInBrowser);
+  // TODO(https://crbug.com/1234634): Remove this |if|.
+  if (restoring_main_frame_from_back_forward_cache) {
+    DCHECK(last_state_sent_to_renderer_);
+    if (last_state_sent_to_renderer_) {
+      // This logic detects whether the page is being restored from back-forward
+      // cache or not, and is the same as
+      //   * WebViewImpl::SetPageLifecycleStateInternal and
+      //   * Page::DispatchedPagehidePersistedAndStillHidden
+      // in Blink.
+      bool new_state_shown = new_state->pagehide_dispatch ==
+                             blink::mojom::PagehideDispatch::kNotDispatched;
+      bool old_state_hidden = last_state_sent_to_renderer_->pagehide_dispatch !=
+                              blink::mojom::PagehideDispatch::kNotDispatched;
+      if (new_state_shown && old_state_hidden) {
+        blink::RecordUMAEventPageShowPersisted(
+            blink::EventPageShowPersisted::kYesInBrowser);
+      } else {
+        NOTREACHED();
+      }
     }
   }
 

@@ -12,11 +12,9 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/tick_clock.h"
-#include "build/build_config.h"
 
 namespace base {
 namespace internal {
@@ -29,25 +27,6 @@ namespace {
 // the task queue.
 constexpr Feature kAlwaysAbandonScheduledTask{"AlwaysAbandonScheduledTask",
                                               FEATURE_DISABLED_BY_DEFAULT};
-
-// The reason for which the timer's scheduled task was invoked.
-enum ScheduledTaskInvokedReason {
-  kStopped,      // The timer fired for a stopped timer so nothing was done.
-  kRescheduled,  // The timer fired before the desired run time so the user task
-                 // was rescheduled for later. This can happens when the timer
-                 // is restarted while it is already running.
-  kReady,        // The timer fired at the desired run time so the task is ready
-                 // to be invoked.
-  kMaxValue
-};
-
-void RecordScheduledTaskInvokedReason(ScheduledTaskInvokedReason reason) {
-  // Recording this histogram breaks a fuchsia test.
-#if !defined(OS_FUCHSIA)
-  UMA_HISTOGRAM_ENUMERATION("Scheduler.TimerBase.ScheduledTaskInvokedReason",
-                            reason);
-#endif
-}
 
 }  // namespace
 
@@ -65,7 +44,7 @@ class TaskDestructionDetector {
     // If this instance is getting destroyed before it was disabled, notify the
     // timer.
     if (timer_)
-      timer_->AbandonAndStop();
+      timer_->OnTaskDestroyed();
   }
 
   // Disables this instance so that the timer is no longer notified in the
@@ -135,6 +114,23 @@ void TimerBase::StartInternal(const Location& posted_from, TimeDelta delay) {
   Reset();
 }
 
+void TimerBase::OnTaskDestroyed() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DCHECK(task_destruction_detector_);
+  task_destruction_detector_ = nullptr;
+
+  delayed_task_handle_.CancelTask();
+  is_running_ = false;
+
+  // It's safe to destroy or restart Timer on another sequence after it has been
+  // stopped.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+
+  OnStop();
+  // No more member accesses here: |this| could be deleted after OnStop() call.
+}
+
 void TimerBase::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -186,21 +182,18 @@ void TimerBase::ScheduleNewTask(TimeDelta delay) {
   auto task_destruction_detector =
       std::make_unique<TaskDestructionDetector>(this);
   task_destruction_detector_ = task_destruction_detector.get();
-  if (delay > Microseconds(0)) {
-    GetTaskRunner()->PostDelayedTask(
-        posted_from_,
-        BindOnce(&TimerBase::OnScheduledTaskInvoked,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 std::move(task_destruction_detector)),
-        delay);
-    scheduled_run_time_ = desired_run_time_ = Now() + delay;
-  } else {
-    GetTaskRunner()->PostTask(posted_from_,
-                              BindOnce(&TimerBase::OnScheduledTaskInvoked,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       std::move(task_destruction_detector)));
-    scheduled_run_time_ = desired_run_time_ = TimeTicks();
-  }
+
+  // Ignore negative deltas.
+  // TODO(pmonette): Fix callers providing negative deltas and ban passing them.
+  if (delay < TimeDelta())
+    delay = TimeDelta();
+
+  delayed_task_handle_ = GetTaskRunner()->PostCancelableDelayedTask(
+      posted_from_,
+      BindOnce(&TimerBase::OnScheduledTaskInvoked, Unretained(this),
+               std::move(task_destruction_detector)),
+      delay);
+  scheduled_run_time_ = desired_run_time_ = Now() + delay;
 }
 
 scoped_refptr<SequencedTaskRunner> TimerBase::GetTaskRunner() {
@@ -214,16 +207,20 @@ TimeTicks TimerBase::Now() const {
 
 void TimerBase::AbandonScheduledTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (task_destruction_detector_) {
     task_destruction_detector_->Disable();
     task_destruction_detector_ = nullptr;
-    weak_ptr_factory_.InvalidateWeakPtrs();
+
+    DCHECK(delayed_task_handle_.IsValid());
+    delayed_task_handle_.CancelTask();
   }
 }
 
 void TimerBase::OnScheduledTaskInvoked(
     std::unique_ptr<TaskDestructionDetector> task_destruction_detector) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!delayed_task_handle_.IsValid());
 
   // The scheduled task is currently running so its destruction detector is no
   // longer needed.
@@ -234,7 +231,6 @@ void TimerBase::OnScheduledTaskInvoked(
   // The timer may have been stopped.
   if (!is_running_) {
     DCHECK(!FeatureList::IsEnabled(kAlwaysAbandonScheduledTask));
-    RecordScheduledTaskInvokedReason(ScheduledTaskInvokedReason::kStopped);
     return;
   }
 
@@ -247,15 +243,12 @@ void TimerBase::OnScheduledTaskInvoked(
     // task if the |desired_run_time_| is in the future.
     if (desired_run_time_ > now) {
       DCHECK(!FeatureList::IsEnabled(kAlwaysAbandonScheduledTask));
-      RecordScheduledTaskInvokedReason(
-          ScheduledTaskInvokedReason::kRescheduled);
       // Post a new task to span the remaining time.
       ScheduleNewTask(desired_run_time_ - now);
       return;
     }
   }
 
-  RecordScheduledTaskInvokedReason(ScheduledTaskInvokedReason::kReady);
   RunUserTask();
   // No more member accesses here: |this| could be deleted at this point.
 }

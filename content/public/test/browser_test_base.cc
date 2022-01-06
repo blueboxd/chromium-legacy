@@ -25,12 +25,12 @@
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/current_thread.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_run_loop_timeout.h"
@@ -130,6 +130,10 @@
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+#include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
+#endif  // defined(OS_FUCHSIA)
+
 namespace content {
 namespace {
 
@@ -220,6 +224,11 @@ class InitialNavigationObserver : public WebContentsObserver {
   InitialNavigationObserver(WebContents* web_contents,
                             base::OnceClosure callback)
       : WebContentsObserver(web_contents), callback_(std::move(callback)) {}
+
+  InitialNavigationObserver(const InitialNavigationObserver&) = delete;
+  InitialNavigationObserver& operator=(const InitialNavigationObserver&) =
+      delete;
+
   // WebContentsObserver implementation:
   void DidStartNavigation(NavigationHandle* navigation_handle) override {
     if (callback_)
@@ -228,25 +237,11 @@ class InitialNavigationObserver : public WebContentsObserver {
 
  private:
   base::OnceClosure callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(InitialNavigationObserver);
 };
 
 }  // namespace
 
 BrowserTestBase::BrowserTestBase() {
-#if defined(USE_OZONE) && defined(USE_X11)
-  // In case of the USE_OZONE + USE_X11 build, the OzonePlatform can either be
-  // enabled or disabled. However, tests may override the FeatureList that will
-  // result in unknown state for the UseOzonePlatform feature. Thus, the
-  // features::IsUsingOzonePlatform has static const initializer that won't be
-  // changed despite FeatureList being overridden. However, it requires to call
-  // this method at least once so that the value is set correctly. This place
-  // looks the most appropriate as tests haven't started to add own FeatureList
-  // yet and we still have the original value set by base::TestSuite.
-  ignore_result(features::IsUsingOzonePlatform());
-#endif
-
   CHECK(!g_instance_already_created)
       << "Each browser test should be run in a new process. If you are adding "
          "a new browser test suite that runs on Android, please add it to "
@@ -396,6 +391,14 @@ void BrowserTestBase::SetUp() {
     use_software_gl = false;
 #endif
 
+#if defined(OS_FUCHSIA)
+  // GPU support is not available to tests.
+  // TODO(crbug.com/1259462): Enable GPU support.
+  command_line->AppendSwitch(switches::kDisableGpu);
+
+  ui::fuchsia::IgnorePresentCallsForTest();
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // If the test is running on the lacros environment, a file descriptor needs
   // to be obtained and used to launch lacros-chrome so that a mojo connection
@@ -497,19 +500,6 @@ void BrowserTestBase::SetUp() {
     base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
                                                           &disabled_features);
   }
-
-#if defined(USE_X11) && defined(USE_OZONE)
-  // Append OzonePlatform to the enabled features so that the CommandLine
-  // instance has correct values, and other processes if any (GPU, for example),
-  // also use correct path.  features::IsUsingOzonePlatform() has static const
-  // initializer, which means the value of the features::IsUsingOzonePlatform()
-  // doesn't change even if tests override the FeatureList. Thus, it's correct
-  // to call it now as it is set way earlier than tests override the features.
-  //
-  // TODO(https://crbug.com/1096425): remove this as soon as use_x11 goes away.
-  if (features::IsUsingOzonePlatform())
-    enabled_features += ",UseOzonePlatform";
-#endif
 
   if (!enabled_features.empty()) {
     command_line->AppendSwitchASCII(switches::kEnableFeatures,

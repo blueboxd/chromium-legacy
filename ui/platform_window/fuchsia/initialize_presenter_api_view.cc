@@ -18,12 +18,9 @@
 namespace ui {
 namespace fuchsia {
 namespace {
-base::RepeatingCallback<void(::fuchsia::ui::views::ViewHolderToken,
-                             ::fuchsia::ui::views::ViewRef)>&
-GetScenicViewPresenterInternal() {
-  static base::NoDestructor<base::RepeatingCallback<void(
-      ::fuchsia::ui::views::ViewHolderToken, ::fuchsia::ui::views::ViewRef)>>
-      view_presenter;
+
+PresentViewCallback& GetScenicViewPresenterInternal() {
+  static base::NoDestructor<PresentViewCallback> view_presenter;
   return *view_presenter;
 }
 
@@ -35,8 +32,7 @@ void InitializeViewTokenAndPresentView(
 
   // Generate ViewToken and ViewHolderToken for the new view.
   auto view_tokens = scenic::ViewTokenPair::New();
-  window_properties_out->view_token =
-      zx::handle(std::move(view_tokens.view_token.value));
+  window_properties_out->view_token = std::move(view_tokens.view_token);
 
   // Create a ViewRefPair so the view can be registered to the SemanticsManager.
   window_properties_out->view_ref_pair = scenic::ViewRefPair::New();
@@ -50,17 +46,22 @@ void InitializeViewTokenAndPresentView(
                                   nullptr);
 }
 
-void SetScenicViewPresenter(
-    base::RepeatingCallback<void(::fuchsia::ui::views::ViewHolderToken,
-                                 ::fuchsia::ui::views::ViewRef)>
-        view_presenter) {
+void SetScenicViewPresenter(PresentViewCallback view_presenter) {
   GetScenicViewPresenterInternal() = std::move(view_presenter);
 }
 
-const base::RepeatingCallback<void(::fuchsia::ui::views::ViewHolderToken,
-                                   ::fuchsia::ui::views::ViewRef)>&
-GetScenicViewPresenter() {
+const PresentViewCallback& GetScenicViewPresenter() {
   return GetScenicViewPresenterInternal();
+}
+
+void IgnorePresentCallsForTest() {
+  SetScenicViewPresenter(
+      base::BindRepeating([](::fuchsia::ui::views::ViewHolderToken view_holder,
+                             ::fuchsia::ui::views::ViewRef view_ref) {
+        DCHECK(view_holder.value);
+        DCHECK(view_ref.reference);
+        DVLOG(1) << "Present call ignored for test.";
+      }));
 }
 
 }  // namespace fuchsia

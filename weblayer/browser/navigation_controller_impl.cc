@@ -405,6 +405,7 @@ void NavigationControllerImpl::DidStartNavigation(
                                               navigation);
   navigation->set_safe_to_set_request_headers(true);
   navigation->set_safe_to_disable_network_error_auto_reload(true);
+  navigation->set_safe_to_disable_intent_processing(true);
 
 #if defined(OS_ANDROID)
   // Desktop mode and per-navigation UA use the same mechanism and so don't
@@ -447,6 +448,7 @@ void NavigationControllerImpl::DidStartNavigation(
   navigation->set_safe_to_set_user_agent(false);
   navigation->set_safe_to_set_request_headers(false);
   navigation->set_safe_to_disable_network_error_auto_reload(false);
+  navigation->set_safe_to_disable_intent_processing(false);
 }
 
 void NavigationControllerImpl::DidRedirectNavigation(
@@ -506,6 +508,18 @@ void NavigationControllerImpl::DidFinishNavigation(
     auto* rfh = navigation_handle->GetRenderFrameHost();
     PageImpl::GetOrCreateForPage(rfh->GetPage());
     navigation->set_safe_to_get_page();
+
+#if defined(OS_ANDROID)
+    // Ensure that the Java-side Page object for this navigation is
+    // populated from and linked to the native Page object. Without this
+    // call, the Java-side navigation object won't be created and linked to
+    // the native object until/unless the client calls Navigation#getPage(),
+    // which is problematic when implementation-side callers need to bridge
+    // the C++ Page object into Java (e.g., to fire
+    // NavigationCallback#onPageLanguageDetermined()).
+    Java_NavigationControllerImpl_getOrCreatePageForNavigation(
+        AttachCurrentThread(), java_controller_, navigation->java_navigation());
+#endif
   }
 
   // In some corner cases (e.g., a tab closing with an ongoing navigation)

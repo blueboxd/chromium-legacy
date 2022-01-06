@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -62,6 +62,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
           base::checked_cast<uint32_t>(widget_host->GetProcess()->GetID()),
           base::checked_cast<uint32_t>(widget_host->GetRoutingID())),
       frame_connector_(nullptr) {
+  // TODO(enne): this appears to have a null current() in some tests.
   screen_infos_ = parent_screen_infos;
   GetHostFrameSinkManager()->RegisterFrameSinkId(
       frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
@@ -822,11 +823,9 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
   if (src_subrect.IsEmpty()) {
     request->set_area(gfx::Rect(GetCompositorViewportPixelSize()));
   } else {
-    display::ScreenInfo screen_info;
-    GetScreenInfo(&screen_info);
     // |src_subrect| is in DIP coordinates; convert to Surface coordinates.
     request->set_area(
-        gfx::ScaleToRoundedRect(src_subrect, screen_info.device_scale_factor));
+        gfx::ScaleToRoundedRect(src_subrect, GetDeviceScaleFactor()));
   }
 
   if (!output_size.IsEmpty()) {
@@ -874,7 +873,7 @@ void RenderWidgetHostViewChildFrame::
     const cc::RenderFrameMetadata& metadata =
         host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
     selection_controller_client_->UpdateSelectionBoundsIfNeeded(
-        metadata.selection, GetCurrentDeviceScaleFactor());
+        metadata.selection, GetDeviceScaleFactor());
   }
 }
 
@@ -938,23 +937,6 @@ RenderWidgetHostViewChildFrame::FilterInputEvent(
   }
 
   return blink::mojom::InputEventResultState::kNotConsumed;
-}
-
-void RenderWidgetHostViewChildFrame::GetScreenInfo(
-    display::ScreenInfo* screen_info) {
-  // TODO(crbug.com/1182855): Propagate screen infos from the parent on changes
-  // and on connection init; avoid lazily updating the local cache like this.
-  if (frame_connector_)
-    UpdateScreenInfo();
-  *screen_info = screen_infos_.current();
-}
-
-display::ScreenInfos RenderWidgetHostViewChildFrame::GetScreenInfos() {
-  // TODO(crbug.com/1182855): Propagate screen infos from the parent on changes
-  // and on connection init; avoid lazily updating the local cache like this.
-  if (frame_connector_)
-    UpdateScreenInfo();
-  return screen_infos_;
 }
 
 void RenderWidgetHostViewChildFrame::EnableAutoResize(

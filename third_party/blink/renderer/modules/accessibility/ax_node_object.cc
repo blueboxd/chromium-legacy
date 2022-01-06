@@ -52,12 +52,15 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/markers/highlight_marker.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/events/event_util.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/highlight/highlight.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
@@ -109,8 +112,10 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/svg/svg_desc_element.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_symbol_element.h"
+#include "third_party/blink/renderer/core/svg/svg_text_element.h"
 #include "third_party/blink/renderer/core/svg/svg_title_element.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_image_map_link.h"
@@ -124,6 +129,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_relation_cache.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -555,6 +561,31 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
           ax::mojom::blink::Role::kMain,
           ax::mojom::blink::Role::kMark,
           ax::mojom::blink::Role::kMath,
+          ax::mojom::blink::Role::kMathMLMath,
+          // Don't ignore MathML nodes by default, since MathML relies on child
+          // positions to determine semantics (e.g. numerator is the first
+          // child of a fraction).
+          ax::mojom::blink::Role::kMathMLFraction,
+          ax::mojom::blink::Role::kMathMLIdentifier,
+          ax::mojom::blink::Role::kMathMLMultiscripts,
+          ax::mojom::blink::Role::kMathMLNoneScript,
+          ax::mojom::blink::Role::kMathMLNumber,
+          ax::mojom::blink::Role::kMathMLOperator,
+          ax::mojom::blink::Role::kMathMLOver,
+          ax::mojom::blink::Role::kMathMLPrescriptDelimiter,
+          ax::mojom::blink::Role::kMathMLRoot,
+          ax::mojom::blink::Role::kMathMLRow,
+          ax::mojom::blink::Role::kMathMLSquareRoot,
+          ax::mojom::blink::Role::kMathMLStringLiteral,
+          ax::mojom::blink::Role::kMathMLSub,
+          ax::mojom::blink::Role::kMathMLSubSup,
+          ax::mojom::blink::Role::kMathMLSup,
+          ax::mojom::blink::Role::kMathMLTable,
+          ax::mojom::blink::Role::kMathMLTableCell,
+          ax::mojom::blink::Role::kMathMLTableRow,
+          ax::mojom::blink::Role::kMathMLText,
+          ax::mojom::blink::Role::kMathMLUnder,
+          ax::mojom::blink::Role::kMathMLUnderOver,
           ax::mojom::blink::Role::kMeter,
           ax::mojom::blink::Role::kNavigation,
           ax::mojom::blink::Role::kPluginObject,
@@ -680,7 +711,7 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
   // Use AXLayoutObject::ComputeAccessibilityIsIgnored().
   DCHECK(!GetLayoutObject());
 
-  if (DisplayLockUtilities::LockedAncestorPreventingPaint(*GetNode())) {
+  if (DisplayLockUtilities::IsDisplayLockedPreventingPaint(GetNode())) {
     if (IsAriaHidden() ||
         DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
             *GetNode(), DisplayLockActivationReason::kAccessibility)) {
@@ -908,6 +939,17 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
     // click event listener.
     if (GetNode()->IsLink() || IsClickable())
       return ax::mojom::blink::Role::kLink;
+
+    // According to the SVG-AAM, a non-link 'a' element should be exposed like
+    // a 'g' if it does not descend from a 'text' element and like a 'tspan'
+    // if it does. This is consistent with the SVG spec which states that an
+    // 'a' within 'text' acts as an inline element, whereas it otherwise acts
+    // as a container element.
+    if (IsA<SVGAElement>(GetNode()) &&
+        !Traversal<SVGTextElement>::FirstAncestor(*GetNode())) {
+      return ax::mojom::blink::Role::kGroup;
+    }
+
     return ax::mojom::blink::Role::kGenericContainer;
   }
 
@@ -1051,13 +1093,64 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(html_names::kDtTag))
     return ax::mojom::blink::Role::kDescriptionListTerm;
 
-  // MathMLElement instances are not created when MathMLCore is disabled, so one
-  // cannot rely on Node::HasTagName(const MathMLQualifiedName&) to test the
-  // <math> tag. See crbug.com/1272556.
-  if (auto* element = DynamicTo<Element>(GetNode())) {
-    if (element->namespaceURI() == mathml_names::kNamespaceURI &&
-        element->nodeName() == mathml_names::kMathTag.LocalName()) {
-      return ax::mojom::blink::Role::kMath;
+  // Mapping of MathML elements. See https://w3c.github.io/mathml-aam/
+  if (auto* element = DynamicTo<MathMLElement>(GetNode())) {
+    if (element->HasTagName(mathml_names::kMathTag)) {
+      return RuntimeEnabledFeatures::MathMLCoreEnabled()
+                 ? ax::mojom::blink::Role::kMathMLMath
+                 : ax::mojom::blink::Role::kMath;
+    }
+    if (element->HasTagName(mathml_names::kMfracTag))
+      return ax::mojom::blink::Role::kMathMLFraction;
+    if (element->HasTagName(mathml_names::kMiTag))
+      return ax::mojom::blink::Role::kMathMLIdentifier;
+    if (element->HasTagName(mathml_names::kMmultiscriptsTag))
+      return ax::mojom::blink::Role::kMathMLMultiscripts;
+    if (element->HasTagName(mathml_names::kMnTag))
+      return ax::mojom::blink::Role::kMathMLNumber;
+    if (element->HasTagName(mathml_names::kMoTag))
+      return ax::mojom::blink::Role::kMathMLOperator;
+    if (element->HasTagName(mathml_names::kMoverTag))
+      return ax::mojom::blink::Role::kMathMLOver;
+    if (element->HasTagName(mathml_names::kMunderTag))
+      return ax::mojom::blink::Role::kMathMLUnder;
+    if (element->HasTagName(mathml_names::kMunderoverTag))
+      return ax::mojom::blink::Role::kMathMLUnderOver;
+    if (element->HasTagName(mathml_names::kMrootTag))
+      return ax::mojom::blink::Role::kMathMLRoot;
+    if (element->HasTagName(mathml_names::kMrowTag) ||
+        element->HasTagName(mathml_names::kAnnotationXmlTag) ||
+        element->HasTagName(mathml_names::kMactionTag) ||
+        element->HasTagName(mathml_names::kMerrorTag) ||
+        element->HasTagName(mathml_names::kMpaddedTag) ||
+        element->HasTagName(mathml_names::kMphantomTag) ||
+        element->HasTagName(mathml_names::kMstyleTag) ||
+        element->HasTagName(mathml_names::kSemanticsTag)) {
+      return ax::mojom::blink::Role::kMathMLRow;
+    }
+    if (element->HasTagName(mathml_names::kMprescriptsTag))
+      return ax::mojom::blink::Role::kMathMLPrescriptDelimiter;
+    if (element->HasTagName(mathml_names::kNoneTag))
+      return ax::mojom::blink::Role::kMathMLNoneScript;
+    if (element->HasTagName(mathml_names::kMsqrtTag))
+      return ax::mojom::blink::Role::kMathMLSquareRoot;
+    if (element->HasTagName(mathml_names::kMsTag))
+      return ax::mojom::blink::Role::kMathMLStringLiteral;
+    if (element->HasTagName(mathml_names::kMsubTag))
+      return ax::mojom::blink::Role::kMathMLSub;
+    if (element->HasTagName(mathml_names::kMsubsupTag))
+      return ax::mojom::blink::Role::kMathMLSubSup;
+    if (element->HasTagName(mathml_names::kMsupTag))
+      return ax::mojom::blink::Role::kMathMLSup;
+    if (element->HasTagName(mathml_names::kMtableTag))
+      return ax::mojom::blink::Role::kMathMLTable;
+    if (element->HasTagName(mathml_names::kMtdTag))
+      return ax::mojom::blink::Role::kMathMLTableCell;
+    if (element->HasTagName(mathml_names::kMtrTag))
+      return ax::mojom::blink::Role::kMathMLTableRow;
+    if (element->HasTagName(mathml_names::kMtextTag) ||
+        element->HasTagName(mathml_names::kAnnotationTag)) {
+      return ax::mojom::blink::Role::kMathMLText;
     }
   }
 
@@ -1246,27 +1339,6 @@ Element* AXNodeObject::MenuItemElementForMenu() const {
   return SiblingWithAriaRole("menuitem", GetNode());
 }
 
-Element* AXNodeObject::MouseButtonListener() const {
-  Node* node = GetNode();
-  if (!node)
-    return nullptr;
-
-  auto* element = DynamicTo<Element>(node);
-  if (!element)
-    node = node->parentElement();
-
-  if (!node)
-    return nullptr;
-
-  for (element = To<Element>(node); element;
-       element = element->parentElement()) {
-    if (element->HasAnyEventListeners(event_util::MouseButtonEventTypes()))
-      return element;
-  }
-
-  return nullptr;
-}
-
 void AXNodeObject::Init(AXObject* parent) {
 #if DCHECK_IS_ON()
   DCHECK(!initialized_);
@@ -1451,7 +1523,10 @@ bool AXNodeObject::IsOffScreen() const {
   if (IsDetached())
     return false;
   DCHECK(GetNode());
-  return DisplayLockUtilities::LockedAncestorPreventingPaint(*GetNode());
+  // Differs fromAXLayoutObject::IsOffScreen() in that there is no bounding box.
+  // However, we know that if it is display-locked that is an indicator that it
+  // is currently offscreen, and will likely be onscreen once scrolled to.
+  return DisplayLockUtilities::IsDisplayLockedPreventingPaint(GetNode());
 }
 
 bool AXNodeObject::IsProgressIndicator() const {
@@ -1479,20 +1554,39 @@ bool AXNodeObject::IsNativeSpinButton() const {
 }
 
 bool AXNodeObject::IsClickable() const {
-  Node* node = GetNode();
-  if (!node)
-    return false;
-  const Element* element = GetElement();
-  if (element && element->IsDisabledFormControl()) {
-    return false;
-  }
-
+  // Determine whether the element is clickable either because there is a
+  // mouse button handler or because it has a native element where click
+  // performs an action. Disabled nodes are never considered clickable.
   // Note: we can't call |node->WillRespondToMouseClickEvents()| because that
   // triggers a style recalc and can delete this.
-  if (node->HasAnyEventListeners(event_util::MouseButtonEventTypes()))
+
+  // Treat mouse button listeners on the |window|, |document| as if they're on
+  // the |documentElement|.
+  if (GetNode() == GetDocument()->documentElement()) {
+    return GetNode()->HasAnyEventListeners(
+               event_util::MouseButtonEventTypes()) ||
+           GetDocument()->HasAnyEventListeners(
+               event_util::MouseButtonEventTypes()) ||
+           GetDocument()->domWindow()->HasAnyEventListeners(
+               event_util::MouseButtonEventTypes());
+  }
+
+  // Look for mouse listeners only on element nodes, e.g. skip text nodes.
+  const Element* element = GetElement();
+  if (!element)
+    return false;
+
+  if (IsDisabled())
+    return false;
+
+  if (element->HasAnyEventListeners(event_util::MouseButtonEventTypes()))
     return true;
 
-  return IsTextField() || AXObject::IsClickable();
+  if (HasContentEditableAttributeSet())
+    return true;
+
+  // Only use native roles. For ARIA elements, require a click listener.
+  return ui::IsClickable(native_role_);
 }
 
 bool AXNodeObject::IsFocused() const {
@@ -1643,17 +1737,8 @@ AXRestriction AXNodeObject::Restriction() const {
   // According to ARIA, all elements of the base markup can be disabled.
   // According to CORE-AAM, any focusable descendant of aria-disabled
   // ancestor is also disabled.
-  bool is_disabled;
-  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kDisabled,
-                                    is_disabled)) {
-    // Has aria-disabled, overrides native markup determining disabled.
-    if (is_disabled)
-      return kRestrictionDisabled;
-  } else if (elem->IsDisabledFormControl() ||
-             (CanSetFocusAttribute() && IsDescendantOfDisabledNode())) {
-    // No aria-disabled, but other markup says it's disabled.
+  if (IsDisabled())
     return kRestrictionDisabled;
-  }
 
   // Check aria-readonly if supported by current role.
   bool is_read_only;
@@ -1884,6 +1969,7 @@ void AXNodeObject::SerializeMarkerAttributes(ui::AXNodeData* node_data) const {
     return;
 
   std::vector<int32_t> marker_types;
+  std::vector<int32_t> highlight_types;
   std::vector<int32_t> marker_starts;
   std::vector<int32_t> marker_ends;
 
@@ -1916,7 +2002,16 @@ void AXNodeObject::SerializeMarkerAttributes(ui::AXNodeData* node_data) const {
       continue;
     }
 
+    int32_t highlight_type =
+        static_cast<int32_t>(ax::mojom::blink::HighlightType::kNone);
+    if (marker->GetType() == DocumentMarker::kHighlight) {
+      const auto& highlight_marker = To<HighlightMarker>(*marker);
+      highlight_type =
+          ToAXHighlightType(highlight_marker.GetHighlight()->type());
+    }
+
     marker_types.push_back(ToAXMarkerType(marker->GetType()));
+    highlight_types.push_back(static_cast<int32_t>(highlight_type));
     auto start_pos =
         AXPosition::FromPosition(start_position, TextAffinity::kDownstream,
                                  AXPositionAdjustmentBehavior::kMoveLeft);
@@ -1932,6 +2027,8 @@ void AXNodeObject::SerializeMarkerAttributes(ui::AXNodeData* node_data) const {
 
   node_data->AddIntListAttribute(
       ax::mojom::blink::IntListAttribute::kMarkerTypes, marker_types);
+  node_data->AddIntListAttribute(
+      ax::mojom::blink::IntListAttribute::kHighlightTypes, highlight_types);
   node_data->AddIntListAttribute(
       ax::mojom::blink::IntListAttribute::kMarkerStarts, marker_starts);
   node_data->AddIntListAttribute(
@@ -2280,9 +2377,9 @@ String AXNodeObject::ImageDataUrl(const IntSize& max_size) const {
   // empty. It only resizes the image to be smaller (if necessary), not
   // larger.
   float x_scale =
-      max_size.Width() ? max_size.Width() * 1.0 / image->width() : 1.0;
+      max_size.width() ? max_size.width() * 1.0 / image->width() : 1.0;
   float y_scale =
-      max_size.Height() ? max_size.Height() * 1.0 / image->height() : 1.0;
+      max_size.height() ? max_size.height() * 1.0 / image->height() : 1.0;
   float scale = std::min(x_scale, y_scale);
   if (scale >= 1.0)
     scale = 1.0;
@@ -2462,15 +2559,10 @@ ax::mojom::blink::InvalidState AXNodeObject::GetInvalidState() const {
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kInvalid);
   if (EqualIgnoringASCIICase(attribute_value, "false"))
     return ax::mojom::blink::InvalidState::kFalse;
-  if (EqualIgnoringASCIICase(attribute_value, "true"))
-    return ax::mojom::blink::InvalidState::kTrue;
-  // "spelling" and "grammar" are also invalid values: they are exposed via
-  // Markers() as if they are native errors, but also use the invalid entry
-  // state on the node itself, therefore they are treated like "true".
-  // in terms of the node's invalid state
-  // A yet unknown value.
+  // "spelling" and "grammar" are exposed via Markers() as if they are native
+  // errors. Any non-empty, and non-false value is considered True.
   if (!attribute_value.IsEmpty())
-    return ax::mojom::blink::InvalidState::kOther;
+    return ax::mojom::blink::InvalidState::kTrue;
 
   if (GetElement()) {
     ListedElement* form_control = ListedElement::From(*GetElement());
@@ -2512,13 +2604,6 @@ int AXNodeObject::SetSize() const {
       return set_size;
   }
   return 0;
-}
-
-String AXNodeObject::AriaInvalidValue() const {
-  if (GetInvalidState() == ax::mojom::blink::InvalidState::kOther)
-    return GetAOMPropertyOrARIAAttribute(AOMStringProperty::kInvalid);
-
-  return String();
 }
 
 bool AXNodeObject::ValueForRange(float* out_value) const {
@@ -3082,7 +3167,8 @@ String AXNodeObject::TextAlternative(
     LayoutRect bounds = GetBoundsInFrameCoordinates();
     IntSize document_size =
         GetNode()->GetDocument().GetLayoutView()->GetLayoutSize();
-    bool is_visible = bounds.Intersects(LayoutRect(IntPoint(), document_size));
+    bool is_visible =
+        bounds.Intersects(LayoutRect(gfx::Point(), document_size));
     if (!is_visible)
       return String();
   }
@@ -3491,7 +3577,7 @@ void AXNodeObject::GetRelativeBounds(AXObject** out_container,
     }
 
     if (*out_container) {
-      out_bounds_in_container = UnionRect(rects);
+      out_bounds_in_container = UnionRects(rects);
       return;
     }
   }
@@ -3506,10 +3592,11 @@ void AXNodeObject::GetRelativeBounds(AXObject** out_container,
       position_provider->GetRelativeBounds(
           out_container, out_bounds_in_container, out_container_transform,
           clips_children);
-      if (*out_container)
-        out_bounds_in_container.SetSize(
-            FloatSize(out_bounds_in_container.Width(),
-                      std::min(10.0f, out_bounds_in_container.Height())));
+      if (*out_container) {
+        out_bounds_in_container.set_size(
+            FloatSize(out_bounds_in_container.width(),
+                      std::min(10.0f, out_bounds_in_container.height())));
+      }
       break;
     }
   }
@@ -4247,21 +4334,23 @@ double AXNodeObject::EstimatedLoadingProgress() const {
 //
 
 Element* AXNodeObject::ActionElement() const {
-  Node* node = GetNode();
-  if (!node)
-    return nullptr;
+  const AXObject* current = this;
 
-  auto* element = DynamicTo<Element>(node);
-  if (element && IsClickable())
-    return element;
+  while (current) {
+    // Handles clicks or is a textfield and is not a disabled form control.
+    if (current->IsClickable()) {
+      Element* click_element = current->GetElement();
+      DCHECK(click_element) << "Only elements are clickable";
+      // Only return if the click element is a DOM ancestor as well, because
+      // the click handler won't propagate down via aria-owns.
+      if (!GetNode() || click_element->contains(GetNode()))
+        return click_element;
+      return nullptr;
+    }
+    current = current->ParentObject();
+  }
 
-  Element* anchor = AnchorElement();
-  if (anchor && !anchor->IsLiveLink())
-    anchor = nullptr;  // Non-interactive link target like <a name>.
-  Element* click_element = MouseButtonListener();
-  if (!anchor || (click_element && click_element->IsDescendantOf(anchor)))
-    return click_element;
-  return anchor;
+  return nullptr;
 }
 
 Element* AXNodeObject::AnchorElement() const {
@@ -5053,38 +5142,32 @@ String AXNodeObject::NativeTextAlternative(
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative));
       name_sources->back().type = name_from;
-      name_sources->back().native_source = kAXTextFromNativeHTMLTitleElement;
+      name_sources->back().native_source = kAXTextFromNativeTitleElement;
     }
     auto* container_node = To<ContainerNode>(GetNode());
     Element* title = ElementTraversal::FirstChild(
         *container_node, HasTagName(svg_names::kTitleTag));
 
     if (title) {
-      // TODO(accessibility): In the case of a use element, creation will fail
-      // because |AXObject::ComputeNonARIAParent| returns null because the use
-      // element's subtree isn't visited by LayoutTreeBuilderTraversal. We can
-      // solve this by including the parent when calling |GetOrCreate|. But we
-      // need to be sure that |ClearChildren| will clear title_ax_object if the
-      // use element is removed.
-      AXObject* title_ax_object = AXObjectCache().GetOrCreate(title);
-      if (title_ax_object && !visited.Contains(title_ax_object)) {
-        text_alternative =
-            RecursiveTextAlternative(*title_ax_object, nullptr, visited);
-        if (related_objects) {
-          local_related_objects.push_back(
-              MakeGarbageCollected<NameSourceRelatedObject>(title_ax_object,
-                                                            text_alternative));
-          *related_objects = local_related_objects;
-          local_related_objects.clear();
+      // TODO(accessibility): In most cases <desc> and <title> can participate
+      // in the recursive text alternative calculation. However when the <desc>
+      // or <title> is the child of a <use>, |AXObjectCache::GetOrCreate| will
+      // fail when |AXObject::ComputeNonARIAParent| returns null because the
+      // <use> element's subtree isn't visited by LayoutTreeBuilderTraversal. In
+      // addition, while aria-label and other text alternative sources are are
+      // technically valid on SVG <desc> and <title>, it is not clear if user
+      // agents must expose their values. Therefore until we hear otherwise,
+      // just use the inner text. See https://github.com/w3c/svgwg/issues/867
+      text_alternative = title->GetInnerTextWithoutUpdate();
+      if (!text_alternative.IsEmpty()) {
+        if (name_sources) {
+          NameSource& source = name_sources->back();
+          source.text = text_alternative;
+          source.related_objects = *related_objects;
+          *found_text_alternative = true;
+        } else {
+          return text_alternative;
         }
-      }
-      if (name_sources) {
-        NameSource& source = name_sources->back();
-        source.text = text_alternative;
-        source.related_objects = *related_objects;
-        *found_text_alternative = true;
-      } else {
-        return text_alternative;
       }
     }
     // The SVG-AAM says that the xlink:title participates as a name source
@@ -5191,7 +5274,7 @@ String AXNodeObject::NativeTextAlternative(
         name_sources->push_back(NameSource(*found_text_alternative));
         NameSource& source = name_sources->back();
         source.type = name_from;
-        source.native_source = kAXTextFromNativeHTMLTitleElement;
+        source.native_source = kAXTextFromNativeTitleElement;
         source.text = text_alternative;
         *found_text_alternative = true;
       } else {
@@ -5328,6 +5411,13 @@ String AXNodeObject::Description(
     } else {
       return description;
     }
+  }
+
+  // SVG-AAM specifies additional description sources when ARIA sources have not
+  // been found. https://w3c.github.io/svg-aam/#mapping_additional_nd
+  if (IsA<SVGElement>(GetNode())) {
+    return SVGDescription(name_from, description_from, description_sources,
+                          related_objects);
   }
 
   const auto* input_element = DynamicTo<HTMLInputElement>(GetNode());
@@ -5486,6 +5576,102 @@ String AXNodeObject::Description(
     }
   }
 
+  return String();
+}
+
+String AXNodeObject::SVGDescription(
+    ax::mojom::blink::NameFrom name_from,
+    ax::mojom::blink::DescriptionFrom& description_from,
+    DescriptionSources* description_sources,
+    AXRelatedObjectVector* related_objects) const {
+  DCHECK(IsA<SVGElement>(GetNode()));
+  String description;
+  bool found_description = false;
+  Element* element = GetElement();
+
+  description_from = ax::mojom::blink::DescriptionFrom::kSvgDescElement;
+  if (description_sources) {
+    description_sources->push_back(DescriptionSource(found_description));
+    description_sources->back().type = description_from;
+    description_sources->back().native_source = kAXTextFromNativeSVGDescElement;
+  }
+  if (Element* desc = ElementTraversal::FirstChild(
+          *element, HasTagName(svg_names::kDescTag))) {
+    // TODO(accessibility): In most cases <desc> and <title> can participate in
+    // the recursive text alternative calculation. However when the <desc> or
+    // <title> is the child of a <use>, |AXObjectCache::GetOrCreate| will fail
+    // when |AXObject::ComputeNonARIAParent| returns null because the <use>
+    // element's subtree isn't visited by LayoutTreeBuilderTraversal. In
+    // addition, while aria-label and other text alternative sources are are
+    // technically valid on SVG <desc> and <title>, it is not clear if user
+    // agents must expose their values. Therefore until we hear otherwise, just
+    // use the inner text. See https://github.com/w3c/svgwg/issues/867
+    description = desc->GetInnerTextWithoutUpdate();
+    if (!description.IsEmpty()) {
+      if (description_sources) {
+        DescriptionSource& source = description_sources->back();
+        source.related_objects = *related_objects;
+        source.text = description;
+        found_description = true;
+      } else {
+        return description;
+      }
+    }
+  }
+
+  // If we haven't found a description source yet and the title is present,
+  // SVG-AAM states to use the <title> if ARIA label attributes are used to
+  // provide the accessible name.
+  if (IsNameFromAriaAttribute(element)) {
+    description_from = ax::mojom::blink::DescriptionFrom::kTitle;
+    if (description_sources) {
+      description_sources->push_back(DescriptionSource(found_description));
+      description_sources->back().type = description_from;
+      description_sources->back().native_source = kAXTextFromNativeTitleElement;
+    }
+    if (Element* title = ElementTraversal::FirstChild(
+            *element, HasTagName(svg_names::kTitleTag))) {
+      // TODO(accessibility): In most cases <desc> and <title> can participate
+      // in the recursive text alternative calculation. However when the <desc>
+      // or <title> is the child of a <use>, |AXObjectCache::GetOrCreate| will
+      // fail when |AXObject::ComputeNonARIAParent| returns null because the
+      // <use> element's subtree isn't visited by LayoutTreeBuilderTraversal. In
+      // addition, while aria-label and other text alternative sources are are
+      // technically valid on SVG <desc> and <title>, it is not clear if user
+      // agents must expose their values. Therefore until we hear otherwise,
+      // just use the inner text. See https://github.com/w3c/svgwg/issues/867
+      description = title->GetInnerTextWithoutUpdate();
+      if (!description.IsEmpty()) {
+        if (description_sources) {
+          DescriptionSource& source = description_sources->back();
+          source.related_objects = *related_objects;
+          source.text = description;
+          found_description = true;
+        } else {
+          return description;
+        }
+      }
+    }
+  }
+
+  // In the case of an SVG <a>, the last description source is the xlink:title
+  // attribute, if it didn't serve as the name source.
+  if (IsA<SVGAElement>(GetNode()) &&
+      name_from != ax::mojom::blink::NameFrom::kAttribute) {
+    description_from = ax::mojom::blink::DescriptionFrom::kTitle;
+    const AtomicString& title_attr =
+        DynamicTo<Element>(GetNode())->FastGetAttribute(
+            xlink_names::kTitleAttr);
+    if (!title_attr.IsEmpty()) {
+      description = title_attr;
+      if (description_sources) {
+        found_description = true;
+        description_sources->back().text = description;
+      } else {
+        return description;
+      }
+    }
+  }
   return String();
 }
 

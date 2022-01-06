@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time_override.h"
 #include "base/trace_event/category_registry.h"
@@ -362,6 +362,11 @@ class BASE_EXPORT TraceLog :
   std::string process_name() const {
     AutoLock lock(lock_);
     return process_name_;
+  }
+
+  std::unordered_map<int, std::string> process_labels() const {
+    AutoLock lock(lock_);
+    return process_labels_;
   }
 
   uint64_t MangleEventId(uint64_t id);

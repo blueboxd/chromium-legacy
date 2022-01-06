@@ -22,6 +22,7 @@
 
 namespace base {
 class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace chromecast {
@@ -31,7 +32,7 @@ class ExternalConnector;
 }  // namespace external_service_support
 
 namespace media {
-class MediaPipelineBackendManager;
+class CmaBackendFactory;
 
 namespace audio_output_service {
 
@@ -51,8 +52,11 @@ class CmaBackendShim : public CmaBackend::AudioDecoder::Delegate {
     virtual void OnBufferPushed() = 0;
 
     // Called when the audio pts changed.
-    virtual void UpdateMediaTime(int64_t media_timestamp_microseconds,
-                                 int64_t reference_timestamp_microseconds) = 0;
+    virtual void UpdateMediaTimeAndRenderingDelay(
+        int64_t media_timestamp_microseconds,
+        int64_t reference_timestamp_microseconds,
+        int64_t delay_microseconds,
+        int64_t delay_timestamp_microseconds) = 0;
 
     // Called if an error occurs in audio playback. No more delegate calls will
     // be made.
@@ -69,8 +73,9 @@ class CmaBackendShim : public CmaBackend::AudioDecoder::Delegate {
 
   CmaBackendShim(base::WeakPtr<Delegate> delegate,
                  scoped_refptr<base::SequencedTaskRunner> delegate_task_runner,
+                 scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
                  const CmaBackendParams& params,
-                 MediaPipelineBackendManager* backend_manager,
+                 CmaBackendFactory* cma_backend_factory,
                  external_service_support::ExternalConnector* connector);
 
   // Removes this audio output. Public methods must not be called after Remove()
@@ -129,11 +134,12 @@ class CmaBackendShim : public CmaBackend::AudioDecoder::Delegate {
   void StopOnMediaThread();
   void UpdateAudioConfigOnMediaThread(const CmaBackendParams& params);
   bool SetAudioConfig();
+  void UpdateMediaTimeAndRenderingDelay();
 
   const base::WeakPtr<Delegate> delegate_;
   const scoped_refptr<base::SequencedTaskRunner> delegate_task_runner_;
-  MediaPipelineBackendManager* const backend_manager_;
-  const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
+  CmaBackendFactory* const cma_backend_factory_;
+  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   TaskRunnerImpl backend_task_runner_;
   CmaBackendParams backend_params_;
   scoped_refptr<DecoderBufferBase> pushed_buffer_;

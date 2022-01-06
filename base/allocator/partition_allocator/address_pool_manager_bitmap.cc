@@ -22,8 +22,8 @@ PartitionLock& AddressPoolManagerBitmap::GetLock() {
   return g_lock;
 }
 
-std::bitset<AddressPoolManagerBitmap::kNonBRPPoolBits>
-    AddressPoolManagerBitmap::non_brp_pool_bits_;  // GUARDED_BY(GetLock())
+std::bitset<AddressPoolManagerBitmap::kRegularPoolBits>
+    AddressPoolManagerBitmap::regular_pool_bits_;  // GUARDED_BY(GetLock())
 std::bitset<AddressPoolManagerBitmap::kBRPPoolBits>
     AddressPoolManagerBitmap::brp_pool_bits_;  // GUARDED_BY(GetLock())
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
@@ -31,10 +31,11 @@ std::bitset<AddressPoolManagerBitmap::kBRPPoolBits>
 std::array<std::atomic_bool,
            AddressPoolManagerBitmap::kAddressSpaceSize / kSuperPageSize>
     AddressPoolManagerBitmap::brp_forbidden_super_page_map_;
-#endif
+#else
 std::array<std::atomic_uint32_t,
            AddressPoolManagerBitmap::kAddressSpaceSize / kSuperPageSize>
     AddressPoolManagerBitmap::super_page_refcount_map_;
+#endif
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 }  // namespace internal
 }  // namespace base

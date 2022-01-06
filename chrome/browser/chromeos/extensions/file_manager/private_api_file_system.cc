@@ -20,16 +20,19 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/file_manager/copy_or_move_io_task.h"
+#include "chrome/browser/ash/file_manager/delete_io_task.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "chrome/browser/ash/file_manager/zip_io_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
@@ -238,7 +241,9 @@ storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
       new storage::FileSystemOperationRunner::OperationID;
   *operation_id = file_system_context->operation_runner()->Copy(
       source_url, destination_url,
-      storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
+      storage::FileSystemOperation::CopyOrMoveOptionSet(
+          storage::FileSystemOperation::CopyOrMoveOption::
+              kPreserveLastModified),
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
       base::BindRepeating(&OnCopyProgress, profile_id,
                           base::Unretained(operation_id)),
@@ -978,6 +983,11 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace(
     int64_t space_needed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  if (!render_frame_host()) {  // crbug.com/1261282
+    Respond(NoArguments());
+    return;
+  }
+
   if (!available) {
     Respond(Error("QuotaExceededError"));
     return;
@@ -1049,8 +1059,12 @@ FileManagerPrivateInternalResolveIsolatedEntriesFunction::Run() {
         file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
             profile, source_url(), file_system_url.path(),
             &file_definition.virtual_path);
-    if (!result)
+    if (!result) {
+      LOG(WARNING) << "Failed to convert file_system_url to relative file "
+                      "system path, type: "
+                   << file_system_url.type();
       continue;
+    }
     // The API only supports isolated files. It still works for directories,
     // as the value is ignored for existing entries.
     file_definition.is_directory = false;
@@ -1077,8 +1091,10 @@ void FileManagerPrivateInternalResolveIsolatedEntriesFunction::
   std::vector<EntryDescription> entries;
 
   for (const auto& definition : *entry_definition_list) {
-    if (definition.error != base::File::FILE_OK)
+    if (definition.error != base::File::FILE_OK) {
+      LOG(WARNING) << "Error resolving file system URL: " << definition.error;
       continue;
+    }
     EntryDescription entry;
     entry.file_system_name = definition.file_system_name;
     entry.file_system_root = definition.file_system_root_url;
@@ -1093,7 +1109,7 @@ void FileManagerPrivateInternalResolveIsolatedEntriesFunction::
 
 FileManagerPrivateInternalComputeChecksumFunction::
     FileManagerPrivateInternalComputeChecksumFunction()
-    : digester_(new drive::util::FileStreamMd5Digester()) {}
+    : digester_(base::MakeRefCounted<drive::util::FileStreamMd5Digester>()) {}
 
 FileManagerPrivateInternalComputeChecksumFunction::
     ~FileManagerPrivateInternalComputeChecksumFunction() = default;
@@ -1129,8 +1145,7 @@ FileManagerPrivateInternalComputeChecksumFunction::Run() {
           &FileManagerPrivateInternalComputeChecksumFunction::RespondWith,
           this));
   content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&FileStreamMd5Digester::GetMd5Digest,
-                                base::Unretained(digester_.get()),
+      FROM_HERE, base::BindOnce(&FileStreamMd5Digester::GetMd5Digest, digester_,
                                 std::move(reader), std::move(result_callback)));
 
   return RespondLater();
@@ -1404,10 +1419,52 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
     }
   }
 
-  // TODO(b/199804935): Replace with {Copy/Move/etc}IOTask when implemented.
-  volume_manager->io_task_controller()->Add(
-      std::make_unique<file_manager::io_task::DummyIOTask>(
-          std::move(source_urls), std::move(destination_folder_url), *type));
+  std::unique_ptr<file_manager::io_task::IOTask> task;
+  switch (type.value()) {
+    case file_manager::io_task::OperationType::kCopy:
+    case file_manager::io_task::OperationType::kMove:
+      task = std::make_unique<file_manager::io_task::CopyOrMoveIOTask>(
+          type.value(), std::move(source_urls),
+          std::move(destination_folder_url), profile, file_system_context);
+      break;
+    case file_manager::io_task::OperationType::kZip:
+      task = std::make_unique<file_manager::io_task::ZipIOTask>(
+          std::move(source_urls), std::move(destination_folder_url),
+          file_system_context);
+      break;
+    case file_manager::io_task::OperationType::kDelete:
+      task = std::make_unique<file_manager::io_task::DeleteIOTask>(
+          std::move(source_urls), file_system_context);
+      break;
+    default:
+      // TODO(b/199804935): Replace with MoveIOTask when implemented.
+      task = std::make_unique<file_manager::io_task::DummyIOTask>(
+          std::move(source_urls), std::move(destination_folder_url), *type);
+      break;
+  }
+  volume_manager->io_task_controller()->Add(std::move(task));
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateCancelIOTaskFunction::Run() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  using extensions::api::file_manager_private::CancelIOTask::Params;
+  const std::unique_ptr<Params> params(Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  auto* const volume_manager = file_manager::VolumeManager::Get(
+      Profile::FromBrowserContext(browser_context()));
+  if (!volume_manager || !volume_manager->io_task_controller()) {
+    return RespondNow(Error("Invalid state"));
+  }
+
+  if (params->task_id <= 0) {
+    return RespondNow(Error("Invalid task id"));
+  }
+
+  volume_manager->io_task_controller()->Cancel(params->task_id);
   return RespondNow(NoArguments());
 }
 

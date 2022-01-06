@@ -64,13 +64,13 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
   else
     LogKeyboardLockMethodCalled(KeyboardLockMethods::kRequestSomeKeys);
 
-  if (!render_frame_host_->IsActive()) {
-    std::move(callback).Run(KeyboardLockRequestResult::kFrameDetachedError);
+  if (render_frame_host_->GetParentOrOuterDocument()) {
+    std::move(callback).Run(KeyboardLockRequestResult::kChildFrameError);
     return;
   }
 
-  if (render_frame_host_->GetParent()) {
-    std::move(callback).Run(KeyboardLockRequestResult::kChildFrameError);
+  if (!render_frame_host_->IsActive()) {
+    std::move(callback).Run(KeyboardLockRequestResult::kFrameDetachedError);
     return;
   }
 
@@ -106,9 +106,10 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
   if (render_frame_host_->GetRenderWidgetHost()->RequestKeyboardLock(
           std::move(dom_code_set))) {
     std::move(callback).Run(KeyboardLockRequestResult::kSuccess);
-    static_cast<RenderFrameHostImpl*>(render_frame_host_)
-        ->OnSchedulerTrackedFeatureUsed(
-            blink::scheduler::WebSchedulerTrackedFeature::kKeyboardLock);
+    feature_handle_ =
+        static_cast<RenderFrameHostImpl*>(render_frame_host_)
+            ->RegisterBackForwardCacheDisablingNonStickyFeature(
+                blink::scheduler::WebSchedulerTrackedFeature::kKeyboardLock);
   } else {
     std::move(callback).Run(KeyboardLockRequestResult::kRequestFailedError);
   }
@@ -117,14 +118,14 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
 void KeyboardLockServiceImpl::CancelKeyboardLock() {
   LogKeyboardLockMethodCalled(KeyboardLockMethods::kCancelLock);
   render_frame_host_->GetRenderWidgetHost()->CancelKeyboardLock();
+  feature_handle_.reset();
 }
 
 void KeyboardLockServiceImpl::GetKeyboardLayoutMap(
     GetKeyboardLayoutMapCallback callback) {
   auto response = GetKeyboardLayoutMapResult::New();
   response->status = blink::mojom::GetKeyboardLayoutMapStatus::kSuccess;
-  response->layout_map =
-      render_frame_host_->GetRenderWidgetHost()->GetKeyboardLayoutMap();
+  response->layout_map = render_frame_host_->GetKeyboardLayoutMap();
 
   std::move(callback).Run(std::move(response));
 }

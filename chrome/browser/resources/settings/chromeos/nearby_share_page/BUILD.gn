@@ -14,11 +14,7 @@ js_type_check("closure_compile_module") {
   # TODO(crbug.com/1121865): browser_resolver_prefix_replacements allows path
   # from ../../shared/* to resolve to ../../../nearby_share/shared/* for closure
   # purposes.
-  closure_flags = os_settings_closure_flags + [
-                    "js_module_root=../../chrome/browser/resources/nearby_share",
-                    "js_module_root=./gen/chrome/browser/resources/nearby_share",
-                    "browser_resolver_prefix_replacements=\"../../shared/=../../../nearby_share/shared/\"",
-                  ]
+  closure_flags = os_settings_closure_flags
   deps = [
     ":nearby_share_confirm_page.m",
     ":nearby_share_contact_visibility_dialog.m",
@@ -138,6 +134,7 @@ js_library("nearby_share_subpage.m") {
     "..:deep_linking_behavior.m",
     "..:os_route.m",
     "..:prefs_behavior",
+    "..:route_observer_behavior",
     "../..:router",
     "//chrome/browser/resources/nearby_share/shared:nearby_onboarding_page.m",
     "//chrome/browser/resources/nearby_share/shared:nearby_share_settings_behavior.m",

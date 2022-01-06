@@ -11,20 +11,15 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/lazy_instance.h"
-#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
-#include "chrome/common/chrome_content_client.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "printing/buildflags/buildflags.h"
@@ -32,6 +27,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/dlp/dlp_content_manager.h"
 #include "chrome/browser/ash/policy/dlp/dlp_notification_helper.h"
+#include "chrome/browser/ash/policy/dlp/dlp_warn_dialog.h"
 #endif
 
 using content::BrowserThread;
@@ -47,21 +43,6 @@ PrintManager* g_receiver_for_testing = nullptr;
 base::LazyInstance<std::map<content::RenderProcessHost*, base::OnceClosure>>::
     Leaky g_scripted_print_preview_closure_map = LAZY_INSTANCE_INITIALIZER;
 
-void EnableInternalPDFPluginForContents(int render_process_id,
-                                        int render_frame_id) {
-  // Always enable the internal PDF plugin for the print preview page.
-  static const base::NoDestructor<base::FilePath> pdf_plugin_path(
-      ChromeContentClient::kPDFPluginPath);
-  auto* plugin_service = content::PluginService::GetInstance();
-  const content::PepperPluginInfo* info =
-      plugin_service->GetRegisteredPpapiPluginInfo(*pdf_plugin_path);
-  if (!info)
-    return;
-
-  ChromePluginServiceFilter::GetInstance()->OverridePluginForFrame(
-      render_process_id, render_frame_id, info->ToWebPluginInfo());
-}
-
 content::WebContents* GetPrintPreviewDialog(
     content::WebContents* web_contents) {
   PrintPreviewDialogController* dialog_controller =
@@ -74,13 +55,7 @@ content::WebContents* GetPrintPreviewDialog(
 }  // namespace
 
 PrintViewManager::PrintViewManager(content::WebContents* web_contents)
-    : PrintViewManagerBase(web_contents) {
-  if (PrintPreviewDialogController::IsPrintPreviewURL(web_contents->GetURL())) {
-    EnableInternalPDFPluginForContents(
-        web_contents->GetMainFrame()->GetProcess()->GetID(),
-        web_contents->GetMainFrame()->GetRoutingID());
-  }
-}
+    : PrintViewManagerBase(web_contents) {}
 
 PrintViewManager::~PrintViewManager() {
   DCHECK_EQ(NOT_PREVIEWING, print_preview_state_);
@@ -158,9 +133,13 @@ void PrintViewManager::PrintPreviewForWebNode(content::RenderFrameHost* rfh) {
     return;
 
   DCHECK(rfh);
+  DCHECK(IsPrintRenderFrameConnected(rfh));
   DCHECK(!print_preview_rfh_);
   print_preview_rfh_ = rfh;
   print_preview_state_ = USER_INITIATED_PREVIEW;
+
+  for (auto& observer : GetObservers())
+    observer.OnPrintPreview(print_preview_rfh_);
 }
 
 void PrintViewManager::PrintPreviewAlmostDone() {
@@ -212,16 +191,14 @@ void PrintViewManager::PrintPreviewDone() {
 }
 
 void PrintViewManager::RejectPrintPreviewRequestIfRestricted(
-    base::OnceClosure on_print_preview_allowed_cb,
-    base::OnceClosure on_print_preview_rejected_cb) {
+    base::OnceCallback<void(bool should_proceed)> callback) {
   if (IsPrintingRestricted()) {
     ShowBlockedNotification();
-    std::move(on_print_preview_rejected_cb).Run();
+    std::move(callback).Run(false);
   } else if (ShouldWarnBeforePrinting()) {
-    ShowWarning(std::move(on_print_preview_allowed_cb),
-                std::move(on_print_preview_rejected_cb));
+    ShowWarning(std::move(callback));
   } else {
-    std::move(on_print_preview_allowed_cb).Run();
+    std::move(callback).Run(true);
   }
 }
 
@@ -234,15 +211,6 @@ void PrintViewManager::OnPrintPreviewRequestRejected(int render_process_id,
   }
   PrintPreviewDone();
   PrintPreviewRejectedForTesting();
-}
-
-void PrintViewManager::RenderFrameCreated(
-    content::RenderFrameHost* render_frame_host) {
-  if (PrintPreviewDialogController::IsPrintPreviewURL(
-          web_contents()->GetURL())) {
-    EnableInternalPDFPluginForContents(render_frame_host->GetProcess()->GetID(),
-                                       render_frame_host->GetRoutingID());
-  }
 }
 
 void PrintViewManager::RenderFrameDeleted(
@@ -346,17 +314,20 @@ void PrintViewManager::ShowScriptedPrintPreview(bool source_is_modifiable) {
   int render_frame_id = print_preview_rfh_->GetRoutingID();
 
   RejectPrintPreviewRequestIfRestricted(
-      base::BindOnce(&PrintViewManager::OnScriptedPrintPreviewAllowed,
+      base::BindOnce(&PrintViewManager::OnScriptedPrintPreviewCallback,
                      weak_factory_.GetWeakPtr(), source_is_modifiable,
-                     render_process_id, render_frame_id),
-      base::BindOnce(&PrintViewManager::OnPrintPreviewRequestRejected,
-                     weak_factory_.GetWeakPtr(), render_process_id,
-                     render_frame_id));
+                     render_process_id, render_frame_id));
 }
 
-void PrintViewManager::OnScriptedPrintPreviewAllowed(bool source_is_modifiable,
-                                                     int render_process_id,
-                                                     int render_frame_id) {
+void PrintViewManager::OnScriptedPrintPreviewCallback(bool source_is_modifiable,
+                                                      int render_process_id,
+                                                      int render_frame_id,
+                                                      bool should_proceed) {
+  if (!should_proceed) {
+    OnPrintPreviewRequestRejected(render_process_id, render_frame_id);
+    return;
+  }
+
   if (print_preview_state_ != SCRIPTED_PREVIEW)
     return;
 
@@ -394,20 +365,21 @@ void PrintViewManager::RequestPrintPreview(
   content::RenderProcessHost* render_process_host =
       render_frame_host->GetProcess();
 
-  RejectPrintPreviewRequestIfRestricted(
-      base::BindOnce(&PrintViewManager::OnRequestPrintPreviewAllowed,
-                     weak_factory_.GetWeakPtr(), std::move(params),
-                     render_process_host->GetID(),
-                     render_frame_host->GetRoutingID()),
-      base::BindOnce(&PrintViewManager::OnPrintPreviewRequestRejected,
-                     weak_factory_.GetWeakPtr(), render_process_host->GetID(),
-                     render_frame_host->GetRoutingID()));
+  RejectPrintPreviewRequestIfRestricted(base::BindOnce(
+      &PrintViewManager::OnRequestPrintPreviewCallback,
+      weak_factory_.GetWeakPtr(), std::move(params),
+      render_process_host->GetID(), render_frame_host->GetRoutingID()));
 }
 
-void PrintViewManager::OnRequestPrintPreviewAllowed(
+void PrintViewManager::OnRequestPrintPreviewCallback(
     mojom::RequestPrintPreviewParamsPtr params,
     int render_process_id,
-    int render_frame_id) {
+    int render_frame_id,
+    bool should_proceed) {
+  if (!should_proceed) {
+    OnPrintPreviewRequestRejected(render_process_id, render_frame_id);
+    return;
+  }
   auto* render_frame_host =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
   if (!render_frame_host) {
@@ -461,11 +433,9 @@ bool PrintViewManager::ShouldWarnBeforePrinting() const {
 }
 
 void PrintViewManager::ShowWarning(
-    base::OnceClosure on_print_preview_allowed_cb,
-    base::OnceClosure on_print_preview_rejected_cb) const {
+    base::OnceCallback<void(bool should_proceed)> callback) const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::ShowDlpPrintWarningDialog(std::move(on_print_preview_allowed_cb),
-                                    std::move(on_print_preview_rejected_cb));
+  policy::DlpWarnDialog::ShowDlpPrintWarningDialog(std::move(callback));
 #else
   NOTREACHED();
 #endif

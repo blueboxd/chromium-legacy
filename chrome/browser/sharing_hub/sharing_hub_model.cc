@@ -153,7 +153,7 @@ void SharingHubModel::PopulateFirstPartyActions() {
        &kCopyIcon, true, gfx::ImageSkia(),
        "SharingHubDesktop.CopyURLSelected"});
 
-  if (DesktopScreenshotsFeatureEnabled()) {
+  if (DesktopScreenshotsFeatureEnabled(context_)) {
     first_party_action_list_.push_back(
         {IDC_SHARING_HUB_SCREENSHOT,
          l10n_util::GetStringUTF16(IDS_SHARING_HUB_SCREENSHOT_LABEL),
@@ -189,6 +189,10 @@ void SharingHubModel::PopulateFirstPartyActions() {
 }
 
 void SharingHubModel::PopulateThirdPartyActions() {
+  // Clear the action list in the case where the action list is repopulated.
+  if (third_party_action_list_.size()) {
+    third_party_action_list_.clear();
+  }
   // Note: The third party action id must be greater than 0, otherwise the
   // action will be disabled in the app menu.
   int id = 1;

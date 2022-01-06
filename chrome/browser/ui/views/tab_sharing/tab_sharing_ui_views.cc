@@ -113,12 +113,10 @@ void SetContentsBorderVisible(WebContents* contents, bool visible) {
 }
 
 std::u16string GetTabName(WebContents* tab) {
-  const GURL& url = tab->GetLastCommittedURL();
-  const std::u16string tab_name =
-      network::IsUrlPotentiallyTrustworthy(url)
-          ? base::UTF8ToUTF16(net::GetHostAndOptionalPort(url))
-          : url_formatter::FormatUrlForSecurityDisplay(url.GetOrigin());
-  return tab_name.empty() ? tab->GetTitle() : tab_name;
+  const std::u16string formatted_origin =
+      url_formatter::FormatOriginForSecurityDisplay(
+          tab->GetMainFrame()->GetLastCommittedOrigin());
+  return formatted_origin.empty() ? tab->GetTitle() : formatted_origin;
 }
 
 GlobalRenderFrameHostId GetGlobalId(WebContents* web_contents) {
@@ -152,7 +150,7 @@ GURL GetOriginFromId(GlobalRenderFrameHostId rfh_id) {
   if (!capturer)
     return {};
 
-  return capturer->GetLastCommittedURL().GetOrigin();
+  return capturer->GetLastCommittedURL().DeprecatedGetOriginAsURL();
 }
 
 bool CanFocusCapturer(GlobalRenderFrameHostId capturer_id) {
@@ -170,8 +168,8 @@ bool CapturerRestrictedToSameOrigin(GlobalRenderFrameHostId capturer_id) {
   if (!capturer)
     return false;
   return capture_policy::GetAllowedCaptureLevel(
-             capturer->GetLastCommittedURL().GetOrigin(), capturer) ==
-         AllowedScreenCaptureLevel::kSameOrigin;
+             capturer->GetLastCommittedURL().DeprecatedGetOriginAsURL(),
+             capturer) == AllowedScreenCaptureLevel::kSameOrigin;
 }
 
 }  // namespace
@@ -426,8 +424,9 @@ void TabSharingUIViews::CreateInfobarForWebContents(WebContents* contents) {
   // Determine if we are currently allowed to share this tab by policy.
   const bool is_sharing_allowed_by_policy =
       !capturer_restricted_to_same_origin_ ||
-      url::IsSameOriginWith(capturer_origin_,
-                            contents->GetLastCommittedURL().GetOrigin());
+      url::IsSameOriginWith(
+          capturer_origin_,
+          contents->GetLastCommittedURL().DeprecatedGetOriginAsURL());
 
   // Never show the [share this tab instead] if sharing is not possible or is
   // blocked by policy.

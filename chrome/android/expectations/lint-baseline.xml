@@ -2,14 +2,6 @@
 <issues format="5" by="lint 7.0.0" client="cli" variant="all" version="4.1.0">
 
     <issue
-        id="ResourceType"
-        message="Expected a color resource id (`R.color.`) but received an RGB integer">
-        <location
-            file="../../components/page_info/android/java/src/org/chromium/components/page_info/PageInfoPermissionsController.java"
-            line="68"/>
-    </issue>
-
-    <issue
         id="DiscouragedPrivateApi"
         message="Reflective access to sPackageManager, which is not part of the public SDK and therefore likely to change in future Android releases">
         <location
@@ -461,7 +453,7 @@
         id="UseSwitchCompatOrMaterialCode"
         message="Use `SwitchCompat` from AppCompat or `SwitchMaterial` from Material library">
         <location
-            file="../../chrome/browser/signin/ui/android/java/src/org/chromium/chrome/browser/signin/ui/fre/FreUMADialogCoordinator.java"
+            file="../../chrome/browser/ui/android/signin/java/src/org/chromium/chrome/browser/ui/signin/fre/FreUMADialogCoordinator.java"
             line="71"/>
     </issue>
 
@@ -469,7 +461,7 @@
         id="UseSwitchCompatOrMaterialXml"
         message="Use `SwitchCompat` from AppCompat or `SwitchMaterial` from Material library">
         <location
-            file="../../chrome/browser/signin/ui/android/java/res/layout/fre_uma_dialog.xml"
+            file="../../chrome/browser/ui/android/signin/java/res/layout/fre_uma_dialog.xml"
             line="25"/>
     </issue>
 
@@ -1821,7 +1813,7 @@
         id="VectorRaster"
         message="">
         <location
-            file="../../chrome/browser/signin/ui/android/java/res/drawable/ic_expand_more_in_circle_24dp.xml"
+            file="../../chrome/browser/ui/android/signin/java/res/drawable/ic_expand_more_in_circle_24dp.xml"
             line="14"/>
     </issue>
 
@@ -1829,7 +1821,7 @@
         id="VectorRaster"
         message="">
         <location
-            file="../../chrome/browser/signin/ui/android/java/res/drawable/ic_expand_more_in_circle_24dp.xml"
+            file="../../chrome/browser/ui/android/signin/java/res/drawable/ic_expand_more_in_circle_24dp.xml"
             line="17"/>
     </issue>
 
@@ -3421,22 +3413,6 @@
         id="VectorRaster"
         message="">
         <location
-            file="../../chrome/android/java/res/drawable/sharing_print.xml"
-            line="13"/>
-    </issue>
-
-    <issue
-        id="VectorRaster"
-        message="">
-        <location
-            file="../../chrome/android/java/res/drawable/sharing_print.xml"
-            line="15"/>
-    </issue>
-
-    <issue
-        id="VectorRaster"
-        message="">
-        <location
             file="../../components/browser_ui/styles/android/java/res/drawable/smartphone_black_24dp.xml"
             line="17"/>
     </issue>
@@ -3605,7 +3581,7 @@
         id="UnsafeOptInUsageError"
         message="This declaration is opt-in and its usage should be marked with `@com.google.android.material.badge.ExperimentalBadgeUtils` or `@OptIn(markerClass = com.google.android.material.badge.ExperimentalBadgeUtils.class)`">
         <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/ntp/snippets/SectionHeaderView.java"
+            file="../../chrome/browser/feed/android/java/src/org/chromium/chrome/browser/feed/sections/SectionHeaderView.java"
             line="96"/>
     </issue>
 
@@ -3613,7 +3589,7 @@
         id="UnsafeOptInUsageError"
         message="This declaration is opt-in and its usage should be marked with `@com.google.android.material.badge.ExperimentalBadgeUtils` or `@OptIn(markerClass = com.google.android.material.badge.ExperimentalBadgeUtils.class)`">
         <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/ntp/snippets/SectionHeaderView.java"
+            file="../../chrome/browser/feed/android/java/src/org/chromium/chrome/browser/feed/sections/SectionHeaderView.java"
             line="104"/>
     </issue>
 

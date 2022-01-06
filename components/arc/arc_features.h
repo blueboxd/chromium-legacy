@@ -12,7 +12,6 @@
 namespace arc {
 
 // Please keep alphabetized.
-extern const base::Feature kArcAllowDataRetention;
 extern const base::Feature kBootCompletedBroadcastFeature;
 extern const base::Feature kCustomTabsExperimentFeature;
 extern const base::Feature kDocumentsProviderUnknownSizeFeature;
@@ -33,9 +32,10 @@ extern const base::Feature kPictureInPictureFeature;
 extern const base::Feature kRtVcpuDualCore;
 extern const base::Feature kRtVcpuQuadCore;
 extern const base::Feature kSaveRawFilesOnTracing;
+extern const base::Feature kTouchModeMouse;
 extern const base::Feature kUsbDeviceDefaultAttachToArcVm;
-extern const base::Feature kUseHighMemoryDalvikProfile;
 extern const base::Feature kUsbStorageUIFeature;
+extern const base::Feature kUseDalvikMemoryProfile;
 extern const base::Feature kVideoDecoder;
 extern const base::Feature kVmMemorySize;
 extern const base::FeatureParam<int> kVmMemorySizeShiftMiB;

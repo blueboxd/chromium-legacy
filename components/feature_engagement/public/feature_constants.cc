@@ -6,20 +6,25 @@
 
 namespace feature_engagement {
 
+// Features used by the In-Product Help system.
 const base::Feature kIPHDemoMode{"IPH_DemoMode",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHSnooze{"IPH_Snooze", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUseClientConfigIPH{"UseClientConfigIPH",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Features used by various clients to show their In-Product Help messages.
 const base::Feature kIPHDummyFeature{"IPH_Dummy",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+const base::Feature kIPHDesktopSharedHighlightingFeature{
+    "IPH_DesktopSharedHighlighting", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDesktopTabGroupsNewGroupFeature{
     "IPH_DesktopTabGroupsNewGroup", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHFocusModeFeature{"IPH_FocusMode",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHGlobalMediaControlsFeature{
-    "IPH_GlobalMediaControls", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHFocusHelpBubbleScreenReaderPromoFeature{
+    "IPH_FocusHelpBubbleScreenReaderPromo", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHGMCCastStartStopFeature{
     "IPH_GMCCastStartStop", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHLiveCaptionFeature{"IPH_LiveCaption",

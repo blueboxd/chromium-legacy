@@ -20,7 +20,7 @@
 #include "base/guid.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -50,7 +50,7 @@
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
 #include "sandbox/policy/features.h"
-#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
@@ -360,14 +360,6 @@ gfx::ImageSkia ContentBrowserClient::GetDefaultFavicon() {
 base::FilePath ContentBrowserClient::GetLoggingFileName(
     const base::CommandLine& command_line) {
   return base::FilePath();
-}
-
-bool ContentBrowserClient::AllowAppCache(
-    const GURL& manifest_url,
-    const net::SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    BrowserContext* context) {
-  return true;
 }
 
 AllowServiceWorkerResult ContentBrowserClient::AllowServiceWorker(
@@ -727,10 +719,9 @@ std::unique_ptr<NavigationUIData> ContentBrowserClient::GetNavigationUIData(
 }
 
 #if defined(OS_WIN)
-bool ContentBrowserClient::PreSpawnChild(
-    sandbox::TargetPolicy* policy,
-    sandbox::policy::SandboxType sandbox_type,
-    ChildSpawnFlags flags) {
+bool ContentBrowserClient::PreSpawnChild(sandbox::TargetPolicy* policy,
+                                         sandbox::mojom::Sandbox sandbox_type,
+                                         ChildSpawnFlags flags) {
   return true;
 }
 
@@ -740,7 +731,7 @@ bool ContentBrowserClient::IsUtilityCetCompatible(
 }
 
 std::wstring ContentBrowserClient::GetAppContainerSidForSandboxType(
-    sandbox::policy::SandboxType sandbox_type) {
+    sandbox::mojom::Sandbox sandbox_type) {
   // Embedders should override this method and return different SIDs for each
   // sandbox type. Note: All content level tests will run child processes in the
   // same AppContainer.
@@ -835,8 +826,10 @@ void ContentBrowserClient::CreateWebSocket(
 }
 
 void ContentBrowserClient::WillCreateWebTransport(
-    RenderFrameHost* frame,
+    int process_id,
+    int frame_routing_id,
     const GURL& url,
+    const url::Origin& initiator_origin,
     mojo::PendingRemote<network::mojom::WebTransportHandshakeClient>
         handshake_client,
     WillCreateWebTransportCallback callback) {
@@ -987,7 +980,7 @@ std::unique_ptr<LoginDelegate> ContentBrowserClient::CreateLoginDelegate(
     const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     const GlobalRequestID& request_id,
-    bool is_request_for_main_frame,
+    bool is_request_for_primary_main_frame,
     const GURL& url,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     bool first_auth_attempt,
@@ -1202,15 +1195,6 @@ XrIntegrationClient* ContentBrowserClient::GetXrIntegrationClient() {
 }
 #endif
 
-bool ContentBrowserClient::IsOriginTrialRequiredForAppCache(
-    content::BrowserContext* browser_context) {
-  // In Chrome proper, this also considers Profile preferences.
-  // As a default, only consider the base::Feature.
-  // Compare this with the ChromeContentBrowserClient implementation.
-  return base::FeatureList::IsEnabled(
-      blink::features::kAppCacheRequireOriginTrial);
-}
-
 void ContentBrowserClient::BindBrowserControlInterface(
     mojo::ScopedMessagePipeHandle pipe) {}
 
@@ -1240,7 +1224,7 @@ void ContentBrowserClient::OnKeepaliveRequestFinished() {}
 
 #if defined(OS_MAC)
 bool ContentBrowserClient::SetupEmbedderSandboxParameters(
-    sandbox::policy::SandboxType sandbox_type,
+    sandbox::mojom::Sandbox sandbox_type,
     sandbox::SeatbeltExecClient* client) {
   return false;
 }
@@ -1276,6 +1260,11 @@ void ContentBrowserClient::ShowDirectSocketsConnectionDialog(
     base::OnceCallback<void(bool, const std::string&, const std::string&)>
         callback) {
   std::move(callback).Run(false, std::string(), std::string());
+}
+
+bool ContentBrowserClient::IsFindInPageDisabledForOrigin(
+    const url::Origin& origin) {
+  return false;
 }
 
 }  // namespace content

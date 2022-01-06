@@ -76,6 +76,7 @@ group("absl_component_deps") {
     "//third_party/abseil-cpp/absl/status",
     "//third_party/abseil-cpp/absl/status:statusor",
     "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/strings:cord",
     "//third_party/abseil-cpp/absl/strings:str_format",
     "//third_party/abseil-cpp/absl/synchronization",
     "//third_party/abseil-cpp/absl/time",
@@ -145,14 +146,6 @@ config("absl_default_cflags_cc") {
       cflags_cc += [ "-Wbitfield-enum-conversion" ]
     }
   }
-  if (is_win) {
-    cflags_cc += [
-      "/wd4005",  # macro-redefinition
-      "/wd4018",  # sign-compare
-      "/wd4068",  # unknown pragma
-      "/wd4702",  # unreachable code
-    ]
-  }
 }
 
 config("absl_test_cflags_cc") {
@@ -190,17 +183,19 @@ if (build_with_chromium) {
         "absl/hash:low_level_hash_test",
         "absl/memory:memory_test",
         "absl/meta:type_traits_test",
+        "absl/profiling:exponential_biased_test",
+        "absl/profiling:periodic_sampler_test",
         "absl/status:statusor_test",
         "absl/strings:ascii_test",
-        "absl/strings:cord_rep_btree_test",
+        "absl/strings:cord_rep_btree_navigator_test",
         "absl/strings:cord_rep_btree_reader_test",
+        "absl/strings:cord_rep_btree_test",
         "absl/strings:cord_rep_consume_test",
         "absl/strings:cordz_functions_test",
         "absl/strings:cordz_info_statistics_test",
         "absl/strings:cordz_info_test",
         "absl/strings:cordz_test",
         "absl/strings:cordz_update_scope_test",
-        "absl/strings:cord_rep_btree_navigator_test",
         "absl/strings:cordz_update_tracker_test",
         "absl/strings:match_test",
         "absl/strings:str_replace_test",

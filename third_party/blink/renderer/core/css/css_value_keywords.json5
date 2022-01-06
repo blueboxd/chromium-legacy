@@ -1195,6 +1195,7 @@
     // initial
     // inherit
     "revert",
+    "revert-layer",
     "unset",
 
     // background-image, etc.
@@ -1389,6 +1390,11 @@
     // (forced-colors:) media feature
     // none
     "active",
+
+    // forced-color-adjust
+    // auto
+    // none
+    "preserve-parent-color",
 
     // (navigation-controls) media feature
     // none

@@ -123,7 +123,7 @@ void LayoutSVGResourceClipper::RemoveAllClientsFromCache() {
   clip_content_path_validity_ = kClipContentPathUnknown;
   clip_content_path_.Clear();
   cached_paint_record_.reset();
-  local_clip_bounds_ = FloatRect();
+  local_clip_bounds_ = gfx::RectF();
   MarkAllClientsForInvalidation(kClipCacheInvalidation | kPaintInvalidation);
 }
 
@@ -219,7 +219,7 @@ void LayoutSVGResourceClipper::CalculateLocalClipBounds() {
     if (!ContributesToClip(child_element))
       continue;
     const LayoutObject* layout_object = child_element.GetLayoutObject();
-    local_clip_bounds_.Unite(layout_object->LocalToSVGParentTransform().MapRect(
+    local_clip_bounds_.Union(layout_object->LocalToSVGParentTransform().MapRect(
         layout_object->VisualRectInLocalSVGCoordinates()));
   }
 }
@@ -232,20 +232,20 @@ SVGUnitTypes::SVGUnitType LayoutSVGResourceClipper::ClipPathUnits() const {
 }
 
 AffineTransform LayoutSVGResourceClipper::CalculateClipTransform(
-    const FloatRect& reference_box) const {
+    const gfx::RectF& reference_box) const {
   NOT_DESTROYED();
   AffineTransform transform =
       To<SVGClipPathElement>(GetElement())
           ->CalculateTransform(SVGElement::kIncludeMotionTransform);
   if (ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
-    transform.Translate(reference_box.X(), reference_box.Y());
-    transform.ScaleNonUniform(reference_box.Width(), reference_box.Height());
+    transform.Translate(reference_box.x(), reference_box.y());
+    transform.ScaleNonUniform(reference_box.width(), reference_box.height());
   }
   return transform;
 }
 
 bool LayoutSVGResourceClipper::HitTestClipContent(
-    const FloatRect& object_bounding_box,
+    const gfx::RectF& object_bounding_box,
     const HitTestLocation& location) const {
   NOT_DESTROYED();
   if (!SVGLayoutSupport::IntersectsClipPath(*this, object_bounding_box,
@@ -274,8 +274,8 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
   return false;
 }
 
-FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
-    const FloatRect& reference_box) {
+gfx::RectF LayoutSVGResourceClipper::ResourceBoundingBox(
+    const gfx::RectF& reference_box) {
   NOT_DESTROYED();
   DCHECK(!SelfNeedsLayout());
 

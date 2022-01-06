@@ -11,6 +11,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/views/app_list_bubble_view.h"
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/home_button.h"
@@ -143,7 +144,7 @@ AppListBubblePresenter::AppListBubblePresenter(
 AppListBubblePresenter::~AppListBubblePresenter() {
   if (bubble_widget_)
     bubble_widget_->CloseNow();
-  CHECK(!IsInObserverList());
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void AppListBubblePresenter::Show(int64_t display_id) {
@@ -162,7 +163,6 @@ void AppListBubblePresenter::Show(int64_t display_id) {
       std::make_unique<AppListBubbleView>(controller_, drag_and_drop_host));
   // The widget bounds sometimes depend on the height of the apps grid, so set
   // the bounds after creating and setting the contents.
-  // TODO(jamescook): Update bounds on display configuration change.
   bubble_widget_->SetBounds(ComputeBubbleBounds(root_window, bubble_view_));
 
   // Arrow left/right and up/down triggers the same focus movement as
@@ -172,6 +172,9 @@ void AppListBubblePresenter::Show(int64_t display_id) {
   bubble_widget_->AddObserver(this);
   controller_->OnVisibilityWillChange(/*visible=*/true, display_id);
   bubble_widget_->Show();
+  if (features::IsProductivityLauncherAnimationEnabled()) {
+    bubble_view_->StartShowAnimation();
+  }
   controller_->OnVisibilityChanged(/*visible=*/true, display_id);
   bubble_view_->FocusSearchBox();  // Must happen after widget creation.
 
@@ -243,6 +246,19 @@ void AppListBubblePresenter::OnWidgetDestroying(views::Widget* widget) {
   bubble_widget_->RemoveObserver(this);
   bubble_widget_ = nullptr;
   bubble_view_ = nullptr;
+}
+
+void AppListBubblePresenter::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if (!IsShowing())
+    return;
+  // Ignore changes to displays that aren't showing the launcher.
+  if (display.id() != GetDisplayId())
+    return;
+  aura::Window* root_window =
+      bubble_widget_->GetNativeWindow()->GetRootWindow();
+  bubble_widget_->SetBounds(ComputeBubbleBounds(root_window, bubble_view_));
 }
 
 void AppListBubblePresenter::OnPressOutsideBubble() {

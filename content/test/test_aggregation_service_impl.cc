@@ -18,6 +18,8 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "content/browser/aggregation_service/aggregatable_report.h"
+#include "content/browser/aggregation_service/aggregatable_report_assembler.h"
 #include "content/browser/aggregation_service/aggregatable_report_sender.h"
 #include "content/browser/aggregation_service/aggregation_service_storage_sql.h"
 #include "content/browser/aggregation_service/public_key.h"
@@ -28,13 +30,56 @@
 
 namespace content {
 
-TestAggregationServiceImpl::TestAggregationServiceImpl(const base::Clock* clock)
+namespace {
+
+AggregationServicePayloadContents::Operation ConvertToOperation(
+    TestAggregationService::Operation operation) {
+  switch (operation) {
+    case TestAggregationService::Operation::kHierarchicalHistogram:
+      return AggregationServicePayloadContents::Operation::
+          kHierarchicalHistogram;
+  }
+}
+
+AggregationServicePayloadContents::ProcessingType ConvertToProcessingType(
+    TestAggregationService::ProcessingType processing_type) {
+  switch (processing_type) {
+    case TestAggregationService::ProcessingType::kTwoParty:
+      return AggregationServicePayloadContents::ProcessingType::kTwoParty;
+    case TestAggregationService::ProcessingType::kSingleServer:
+      return AggregationServicePayloadContents::ProcessingType::kSingleServer;
+  }
+}
+
+void HandleAggregatableReportCallback(
+    base::OnceCallback<void(base::Value::DictStorage)> callback,
+    absl::optional<AggregatableReport> report,
+    AggregatableReportAssembler::AssemblyStatus status) {
+  if (!report.has_value()) {
+    LOG(ERROR) << "Failed to assemble the report, status: "
+               << static_cast<int>(status);
+    std::move(callback).Run(base::Value::DictStorage());
+    return;
+  }
+
+  std::move(callback).Run(std::move(report.value()).GetAsJson());
+}
+
+}  // namespace
+
+TestAggregationServiceImpl::TestAggregationServiceImpl(
+    const base::Clock* clock,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : clock_(*clock),
       storage_(base::SequenceBound<AggregationServiceStorageSql>(
           base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}),
           /*run_in_memory=*/true,
           /*path_to_database=*/base::FilePath(),
-          clock)) {
+          clock)),
+      sender_(AggregatableReportSender::CreateForTesting(url_loader_factory)),
+      assembler_(
+          AggregatableReportAssembler::CreateForTesting(/*manager=*/this,
+                                                        url_loader_factory)) {
   DCHECK(clock);
 }
 
@@ -43,6 +88,12 @@ TestAggregationServiceImpl::~TestAggregationServiceImpl() = default;
 const base::SequenceBound<AggregationServiceKeyStorage>&
 TestAggregationServiceImpl::GetKeyStorage() {
   return storage_;
+}
+
+void TestAggregationServiceImpl::SetDisablePayloadEncryption(
+    bool should_disable) {
+  content::AggregatableReport::Provider::SetDisableEncryptionForTestingTool(
+      should_disable);
 }
 
 void TestAggregationServiceImpl::SetPublicKeys(
@@ -60,7 +111,13 @@ void TestAggregationServiceImpl::SetPublicKeys(
     return;
   }
 
-  PublicKeyset keyset(aggregation_service::GetPublicKeys(*value_ptr),
+  std::vector<PublicKey> keys = aggregation_service::GetPublicKeys(*value_ptr);
+  if (keys.empty()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  PublicKeyset keyset(std::move(keys),
                       /*fetch_time=*/clock_.Now(),
                       /*expiry_time=*/base::Time::Max());
   storage_.AsyncCall(&AggregationServiceKeyStorage::SetPublicKeys)
@@ -68,9 +125,30 @@ void TestAggregationServiceImpl::SetPublicKeys(
       .Then(base::BindOnce(std::move(callback), true));
 }
 
-void TestAggregationServiceImpl::SetURLLoaderFactory(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  sender_->SetURLLoaderFactoryForTesting(url_loader_factory);
+void TestAggregationServiceImpl::AssembleReport(
+    AssembleRequest request,
+    base::OnceCallback<void(base::Value::DictStorage)> callback) {
+  AggregationServicePayloadContents payload_contents(
+      ConvertToOperation(request.operation), request.bucket, request.value,
+      ConvertToProcessingType(request.processing_type),
+      std::move(request.reporting_origin));
+
+  AggregatableReportSharedInfo shared_info(
+      /*scheduled_report_time=*/base::Time::Now() + base::Seconds(30),
+      std::move(request.privacy_budget_key));
+
+  absl::optional<AggregatableReportRequest> report_request =
+      AggregatableReportRequest::Create(std::move(request.processing_origins),
+                                        std::move(payload_contents),
+                                        std::move(shared_info));
+  if (!report_request.has_value()) {
+    std::move(callback).Run(base::Value::DictStorage());
+    return;
+  }
+
+  assembler_->AssembleReport(
+      std::move(report_request.value()),
+      base::BindOnce(HandleAggregatableReportCallback, std::move(callback)));
 }
 
 void TestAggregationServiceImpl::SendReport(

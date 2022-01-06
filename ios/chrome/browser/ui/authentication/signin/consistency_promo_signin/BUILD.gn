@@ -44,7 +44,6 @@ source_set("layout") {
 }
 
 source_set("eg2_tests") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
@@ -53,8 +52,9 @@ source_set("eg2_tests") {
   sources = [ "consistency_promo_signin_coordinator_egtest.mm" ]
   deps = [
     "//base",
+    "//base/test:test_support",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser:pref_names",
-    "//ios/chrome/browser/metrics:eg_test_support+eg2",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/authentication/signin:constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",

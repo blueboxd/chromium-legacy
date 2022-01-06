@@ -10,7 +10,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/system/phonehub/interstitial_view_button.h"
+#include "ash/style/button_style.h"
 #include "ash/system/phonehub/phone_hub_interstitial_view.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
 #include "ash/system/phonehub/phone_hub_tray.h"
@@ -37,7 +37,6 @@ BluetoothDisabledView::BluetoothDisabledView() {
   auto* content_view = AddChildView(
       std::make_unique<PhoneHubInterstitialView>(/*show_progress=*/false));
 
-  // TODO(crbug.com/1127996): Replace PNG file with vector icon.
   gfx::ImageSkia* image =
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_PHONE_HUB_ERROR_STATE_IMAGE);
@@ -49,15 +48,12 @@ BluetoothDisabledView::BluetoothDisabledView() {
       ui::GetChromeOSDeviceName()));
 
   // Add "Learn more" button.
-  auto learn_more = std::make_unique<InterstitialViewButton>(
+  auto learn_more = std::make_unique<PillButton>(
       base::BindRepeating(&BluetoothDisabledView::LearnMoreButtonPressed,
                           base::Unretained(this)),
       l10n_util::GetStringUTF16(
           IDS_ASH_PHONE_HUB_BLUETOOTH_DISABLED_DIALOG_LEARN_MORE_BUTTON),
-      /*paint_background=*/false);
-  learn_more->SetEnabledTextColors(
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kTextColorPrimary));
+      PillButton::Type::kIconlessFloating, /*icon=*/nullptr);
   learn_more->SetID(PhoneHubViewID::kBluetoothDisabledLearnMoreButton);
   content_view->AddButton(std::move(learn_more));
 

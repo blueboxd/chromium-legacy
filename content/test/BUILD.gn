@@ -46,8 +46,8 @@ static_library("test_support") {
     "../browser/accessibility/test_browser_accessibility_delegate.h",
     "../browser/aggregation_service/aggregation_service_test_utils.cc",
     "../browser/aggregation_service/aggregation_service_test_utils.h",
-    "../browser/attribution_reporting/conversion_test_utils.cc",
-    "../browser/attribution_reporting/conversion_test_utils.h",
+    "../browser/attribution_reporting/attribution_test_utils.cc",
+    "../browser/attribution_reporting/attribution_test_utils.h",
     "../browser/background_fetch/background_fetch_test_base.cc",
     "../browser/background_fetch/background_fetch_test_base.h",
     "../browser/background_fetch/background_fetch_test_browser_context.cc",
@@ -418,6 +418,7 @@ static_library("test_support") {
     "//content/public/browser",
     "//content/public/common",
     "//content/public/utility",
+    "//content/services/shared_storage_worklet/public/mojom:mojom",
     "//ipc",
     "//media/mojo/clients",
     "//media/mojo/mojom",
@@ -562,7 +563,6 @@ static_library("test_support") {
       "//ppapi/host",
       "//ppapi/proxy",
       "//ppapi/proxy:test_support",
-      "//ppapi/shared_impl",
       "//ppapi/shared_impl:test_support",
     ]
   }
@@ -694,29 +694,29 @@ static_library("test_support") {
 if (is_fuchsia) {
   group("fuchsia_telemetry_gpu_integration_test") {
     testonly = true
-    data = [
-      "//content/test/gpu/fuchsia_util.py",
-      "//content/test/gpu/run_gpu_integration_test_fuchsia.py",
-    ]
+    data = [ "//content/test/gpu/run_gpu_integration_test_fuchsia.py" ]
     data_deps = [
+      ":fuchsia_telemetry_test_data",
       ":telemetry_gpu_integration_test_scripts_only",
       ":telemetry_gpu_integration_test_support",
-      "//fuchsia/engine:web_engine_shell",
-      "//fuchsia/engine:web_engine_with_webui",
     ]
   }
   group("performance_web_engine_test_suite") {
     testonly = true
-    data = [
-      "//content/test/gpu/fuchsia_util.py",
-      "//content/test/gpu/run_telemetry_benchmark_fuchsia.py",
-    ]
+    data = [ "//content/test/gpu/run_telemetry_benchmark_fuchsia.py" ]
     data_deps = [
+      ":fuchsia_telemetry_test_data",
       ":telemetry_gpu_integration_test_data",
-      "//fuchsia/engine:web_engine_shell",
-      "//fuchsia/engine:web_engine_with_webui",
       "//testing:run_perf_test",
       "//tools/perf/:perf",
+    ]
+  }
+  group("fuchsia_telemetry_test_data") {
+    testonly = true
+    data = [ "//content/test/gpu/fuchsia_util.py" ]
+    data_deps = [
+      "//fuchsia/engine:web_engine_shell",
+      "//fuchsia/engine:web_engine_with_webui_installer",
     ]
   }
 }
@@ -1212,6 +1212,7 @@ test("content_browsertests") {
     "../browser/renderer_host/close_listener_host_browsertest.cc",
     "../browser/renderer_host/cookie_browsertest.cc",
     "../browser/renderer_host/document_service_browsertest.cc",
+    "../browser/renderer_host/document_user_data_browsertest.cc",
     "../browser/renderer_host/embedding_token_browsertest.cc",
     "../browser/renderer_host/frame_tree_browsertest.cc",
     "../browser/renderer_host/input/autoscroll_browsertest.cc",
@@ -1245,7 +1246,6 @@ test("content_browsertests") {
     "../browser/renderer_host/policy_container_navigation_bundle_browsertest.cc",
     "../browser/renderer_host/private_network_access_browsertest.cc",
     "../browser/renderer_host/render_document_host_browsertest.cc",
-    "../browser/renderer_host/render_document_host_user_data_browsertest.cc",
     "../browser/renderer_host/render_frame_host_impl_browsertest.cc",
     "../browser/renderer_host/render_frame_host_manager_browsertest.cc",
     "../browser/renderer_host/render_process_host_browsertest.cc",
@@ -1273,6 +1273,7 @@ test("content_browsertests") {
     "../browser/service_worker/service_worker_version_browsertest.cc",
     "../browser/session_history_browsertest.cc",
     "../browser/shape_detection/shape_detection_browsertest.cc",
+    "../browser/shared_storage/shared_storage_browsertest.cc",
     "../browser/site_per_process_browsertest.cc",
     "../browser/site_per_process_browsertest.h",
     "../browser/site_per_process_hit_test_browsertest.cc",
@@ -1297,6 +1298,7 @@ test("content_browsertests") {
     "../browser/web_contents/web_contents_view_aura_browsertest.cc",
     "../browser/web_package/link_web_bundle_browsertest.cc",
     "../browser/web_package/save_page_as_web_bundle_browsertest.cc",
+    "../browser/web_package/script_web_bundle_browsertest.cc",
     "../browser/web_package/signed_exchange_request_handler_browsertest.cc",
     "../browser/web_package/signed_exchange_subresource_prefetch_browsertest.cc",
     "../browser/web_package/web_bundle_browsertest_base.cc",
@@ -1401,7 +1403,6 @@ test("content_browsertests") {
     "//components/viz/host",
     "//components/viz/test:test_support",
     "//components/web_package",
-    "//components/web_package:test_support",
     "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/background_sync:background_sync_proto",
@@ -1894,6 +1895,7 @@ test("content_unittests") {
     "../browser/aggregation_service/public_key_parsing_utils_unittest.cc",
     "../browser/attribution_reporting/attribution_host_unittest.cc",
     "../browser/attribution_reporting/attribution_host_utils_unittest.cc",
+    "../browser/attribution_reporting/attribution_manager_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_network_sender_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_policy_unittest.cc",
     "../browser/attribution_reporting/attribution_reporter_impl_unittest.cc",
@@ -1901,7 +1903,6 @@ test("content_unittests") {
     "../browser/attribution_reporting/attribution_storage_sql_migrations_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_sql_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_unittest.cc",
-    "../browser/attribution_reporting/conversion_manager_impl_unittest.cc",
     "../browser/attribution_reporting/rate_limit_table_unittest.cc",
     "../browser/background_fetch/background_fetch_cross_origin_filter_unittest.cc",
     "../browser/background_fetch/background_fetch_data_manager_unittest.cc",
@@ -1960,9 +1961,9 @@ test("content_unittests") {
     "../browser/content_index/content_index_database_unittest.cc",
     "../browser/content_index/content_index_service_impl_unittest.cc",
     "../browser/cookie_store/cookie_store_manager_unittest.cc",
+    "../browser/devtools/devtools_agent_host_impl_unittest.cc",
     "../browser/devtools/devtools_background_services_context_impl_unittest.cc",
     "../browser/devtools/devtools_http_handler_unittest.cc",
-    "../browser/devtools/devtools_manager_unittest.cc",
     "../browser/devtools/devtools_video_consumer_unittest.cc",
     "../browser/devtools/protocol/tracing_handler_unittest.cc",
     "../browser/devtools/protocol_unittest.cc",
@@ -2020,11 +2021,11 @@ test("content_unittests") {
     "../browser/indexed_db/mock_mojo_indexed_db_callbacks.h",
     "../browser/indexed_db/mock_mojo_indexed_db_database_callbacks.cc",
     "../browser/indexed_db/mock_mojo_indexed_db_database_callbacks.h",
+    "../browser/interest_group/ad_auction_service_impl_unittest.cc",
     "../browser/interest_group/auction_process_manager_unittest.cc",
     "../browser/interest_group/auction_runner_unittest.cc",
     "../browser/interest_group/auction_url_loader_factory_proxy_unittest.cc",
     "../browser/interest_group/interest_group_storage_unittest.cc",
-    "../browser/interest_group/restricted_interest_group_store_impl_unittest.cc",
     "../browser/loader/cors_origin_pattern_setter_unittest.cc",
     "../browser/loader/file_url_loader_factory_unittest.cc",
     "../browser/loader/merkle_integrity_source_stream_unittest.cc",
@@ -2336,6 +2337,8 @@ test("content_unittests") {
   }
 
   if (is_fuchsia) {
+    sources +=
+        [ "../browser/accessibility/browser_accessibility_fuchsia_unittest.cc" ]
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/font_capabilities.test-cmx",
 
@@ -2492,6 +2495,7 @@ test("content_unittests") {
     "//third_party/blink/public/common:font_enumeration_table_proto",
     "//third_party/blink/public/common:headers",
     "//third_party/icu",
+    "//third_party/inspector_protocol:crdtp",
     "//third_party/inspector_protocol:crdtp_test",
     "//third_party/leveldatabase",
     "//third_party/libyuv",
@@ -2538,6 +2542,11 @@ test("content_unittests") {
 
   if (is_linux || is_chromeos) {
     deps += [ "//components/crash/content/browser/error_reporting" ]
+  }
+
+  if (is_fuchsia) {
+    deps +=
+        [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics" ]
   }
 
   if (enable_basic_printing) {
@@ -2591,13 +2600,6 @@ test("content_unittests") {
       ]
       sources +=
           [ "../browser/media/capture/desktop_capture_device_unittest.cc" ]
-    }
-
-    # TODO(crbug.com/1210549): Slow capturer should be removed once new path is stable.
-    if (is_chromeos_ash) {
-      sources += [
-        "../browser/media/capture/slow_capture_overlay_chromeos_unittest.cc",
-      ]
     }
   }
 
@@ -2692,7 +2694,8 @@ test("content_unittests") {
 
     if (use_v8_context_snapshot) {
       deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-    } else {
+    }
+    if (!use_v8_context_snapshot || include_both_v8_snapshots) {
       deps += [ "//v8:v8_external_startup_data_assets" ]
     }
 
@@ -2769,10 +2772,6 @@ test("content_unittests") {
 
   if (is_mac) {
     deps += [ "//third_party/boringssl" ]
-  }
-
-  if (use_x11) {
-    deps += [ "//ui/gfx/x" ]
   }
 
   if (is_linux || is_chromeos) {

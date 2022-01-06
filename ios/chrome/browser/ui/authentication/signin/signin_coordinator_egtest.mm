@@ -6,8 +6,6 @@
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "components/signin/ios/browser/features.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
@@ -15,7 +13,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
-#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
 #import "ios/chrome/browser/ui/authentication/views/views_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -980,7 +978,6 @@ void ExpectSyncConsentHistogram(
                                           fakeIdentity2.userEmail)]
       performAction:grey_tap()];
   [SigninEarlGreyUI tapSigninConfirmationDialog];
-  CloseImportDataDialog(SettingsImportDataKeepSeparateButton());
 
   // Check fakeIdentity2 is signed in.
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity2];

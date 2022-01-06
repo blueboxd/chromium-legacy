@@ -40,6 +40,10 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
  public:
   ScreenOrientationBrowserTest() = default;
 
+  ScreenOrientationBrowserTest(const ScreenOrientationBrowserTest&) = delete;
+  ScreenOrientationBrowserTest& operator=(const ScreenOrientationBrowserTest&) =
+      delete;
+
   // ContentBrowserTest:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -66,18 +70,6 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
       type = display::mojom::ScreenOrientation::kLandscapeSecondary;
     }
     ASSERT_NE(display::mojom::ScreenOrientation::kUndefined, type);
-
-    std::set<RenderWidgetHost*> rwhs;
-    for (RenderFrameHost* rfh : web_contents()->GetAllFrames()) {
-      if (rfh == web_contents()->GetMainFrame())
-        continue;
-
-      rwhs.insert(static_cast<RenderFrameHostImpl*>(rfh)
-                      ->frame_tree_node()
-                      ->render_manager()
-                      ->GetRenderWidgetHostView()
-                      ->GetRenderWidgetHost());
-    }
 
     // This simulates what the browser process does when the screen orientation
     // is changed.
@@ -123,14 +115,16 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
             .GetInt();
     return angle;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScreenOrientationBrowserTest);
 };
 
 class ScreenOrientationOOPIFBrowserTest : public ScreenOrientationBrowserTest {
  public:
   ScreenOrientationOOPIFBrowserTest() {}
+
+  ScreenOrientationOOPIFBrowserTest(const ScreenOrientationOOPIFBrowserTest&) =
+      delete;
+  ScreenOrientationOOPIFBrowserTest& operator=(
+      const ScreenOrientationOOPIFBrowserTest&) = delete;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolateAllSitesForTesting(command_line);
@@ -141,9 +135,6 @@ class ScreenOrientationOOPIFBrowserTest : public ScreenOrientationBrowserTest {
     SetupCrossSiteRedirector(embedded_test_server());
     ScreenOrientationBrowserTest::SetUpOnMainThread();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScreenOrientationOOPIFBrowserTest);
 };
 
 // This test doesn't work on MacOS X but the reason is mostly because it is not
@@ -309,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest, ScreenOrientation) {
 
   int angle = GetOrientationAngle();
 
-  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
   FrameTreeNode* child = root->child_at(0);
   MainThreadFrameObserver root_observer(
       root->current_frame_host()->GetRenderWidgetHost());
@@ -358,8 +349,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest,
   // Set up a fake Resize message with a screen orientation change.
   RenderWidgetHost* main_frame_rwh =
       web_contents()->GetMainFrame()->GetRenderWidgetHost();
-  display::ScreenInfo screen_info;
-  main_frame_rwh->GetScreenInfo(&screen_info);
+  display::ScreenInfo screen_info = main_frame_rwh->GetScreenInfo();
   int expected_angle = (screen_info.orientation_angle + 90) % 360;
 
   // Start a cross-site navigation, but don't commit yet.
@@ -368,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest,
   shell()->LoadURL(second_url);
   EXPECT_TRUE(delayer.WaitForRequestStart());
 
-  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
   RenderFrameHostImpl* pending_rfh =
       root->render_manager()->speculative_frame_host();
 
@@ -402,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest,
   const char* types[] = {"portrait-primary", "portrait-secondary",
                          "landscape-primary", "landscape-secondary"};
 
-  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
   FrameTreeNode* child = root->child_at(0);
   RenderFrameHostImpl* frames[] = {root->current_frame_host(),
                                    child->current_frame_host()};
@@ -462,7 +452,9 @@ class FakeScreenOrientationDelegate : public ScreenOrientationDelegate {
   bool FullScreenRequired(WebContents* web_contents) override {
     return full_screen_required_;
   }
-  bool ScreenOrientationProviderSupported() override { return true; }
+  bool ScreenOrientationProviderSupported(WebContents* web_contents) override {
+    return true;
+  }
   void Lock(
       WebContents* web_contents,
       device::mojom::ScreenOrientationLockType lock_orientation) override {

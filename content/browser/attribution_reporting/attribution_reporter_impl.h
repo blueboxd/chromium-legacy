@@ -11,10 +11,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_set.h"
 #include "base/timer/timer.h"
+#include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/conversion_manager_impl.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -33,9 +32,9 @@ struct SentReportInfo;
 // an AttributionReporterImpl::NetworkSender. It maintains a queue of reports
 // and a timer to ensure all reports are sent at the correct time, since the
 // time in which a conversion report is sent is potentially sensitive
-// information. Created and owned by ConversionManager.
+// information. Created and owned by AttributionManager.
 class CONTENT_EXPORT AttributionReporterImpl
-    : public ConversionManagerImpl::AttributionReporter,
+    : public AttributionManagerImpl::AttributionReporter,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // This class is responsible for sending conversion reports to their
@@ -63,7 +62,7 @@ class CONTENT_EXPORT AttributionReporterImpl
   AttributionReporterImpl& operator=(AttributionReporterImpl&&) = delete;
   ~AttributionReporterImpl() override;
 
-  // ConversionManagerImpl::AttributionReporter:
+  // AttributionManagerImpl::AttributionReporter:
   void AddReportsToQueue(std::vector<AttributionReport> reports) override;
   void RemoveAllReportsFromQueue() override;
 
@@ -83,10 +82,6 @@ class CONTENT_EXPORT AttributionReporterImpl
   void MaybeScheduleNextReport();
   void SendNextReport();
 
-  // Called when a conversion report sent via NetworkSender::SendReport() has
-  // completed loading.
-  void OnReportSent(SentReportInfo info);
-
   // Comparator used to order ConversionReports by their report time, with the
   // smallest time at the top of |report_queue_|.
   struct ReportComparator {
@@ -101,23 +96,11 @@ class CONTENT_EXPORT AttributionReporterImpl
                       ReportComparator>
       report_queue_;
 
-  // Set of all conversion IDs that are currently in |report_queue_| but not yet
-  // being sent by |network_sender_|. The number of concurrent conversion
-  // reports being sent at any time is expected to be small, so a `flat_set` is
-  // used.
-  base::flat_set<AttributionReport::Id> queued_reports_;
-
-  // Set of all conversion IDs that are currently being sent by
-  // |network_sender_|. The number of concurrent conversion
-  // reports being sent at any time is expected to be small, so a `flat_set` is
-  // used.
-  base::flat_set<AttributionReport::Id> reports_being_sent_;
-
   const base::Clock* clock_;
 
   base::RepeatingCallback<void(SentReportInfo)> callback_;
 
-  // Should never be nullptr, since StoragePartition owns the ConversionManager
+  // Should never be nullptr, since StoragePartition owns the AttributionManager
   // which owns |this|.
   StoragePartitionImpl* partition_;
 
@@ -125,7 +108,7 @@ class CONTENT_EXPORT AttributionReporterImpl
   base::OneShotTimer send_report_timer_;
 
   // Responsible for issuing requests to network for report that need to be
-  // sent. Calls OnReportSent() when a report has finished sending.
+  // sent. Calls `callback_` when a report has finished sending.
   //
   // Should never be nullptr.
   std::unique_ptr<NetworkSender> network_sender_;

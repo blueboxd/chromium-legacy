@@ -28,7 +28,8 @@ class ChromeCaptureModeDelegate : public ash::CaptureModeDelegate {
 
   // Interrupts an on going video recording if any, due to some restricted
   // content showing up on the screen, or if screen capture becomes locked.
-  void InterruptVideoRecordingIfAny();
+  // Returns true if a video recording was interrupted, and false otherwise.
+  bool InterruptVideoRecordingIfAny();
 
   // ash::CaptureModeDelegate:
   base::FilePath GetUserDefaultDownloadsFolder() const override;
@@ -44,7 +45,8 @@ class ChromeCaptureModeDelegate : public ash::CaptureModeDelegate {
       const aura::Window* window,
       const gfx::Rect& bounds,
       base::OnceClosure stop_callback) override;
-  void StopObservingRestrictedContent() override;
+  void StopObservingRestrictedContent(
+      ash::OnCaptureModeDlpRestrictionChecked callback) override;
   mojo::Remote<recording::mojom::RecordingService> LaunchRecordingService()
       override;
   void BindAudioStreamFactory(
@@ -52,6 +54,7 @@ class ChromeCaptureModeDelegate : public ash::CaptureModeDelegate {
       override;
   void OnSessionStateChanged(bool started) override;
   void OnServiceRemoteReset() override;
+  bool GetDriveFsMountPointPath(base::FilePath* path) const override;
   std::unique_ptr<ash::RecordingOverlayView> CreateRecordingOverlayView()
       const override;
 

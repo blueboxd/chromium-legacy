@@ -31,6 +31,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -319,6 +320,15 @@ void SurfaceTreeHost::UpdateHostWindowBounds() {
   gfx::Rect bounds = root_surface_->surface_hierarchy_content_bounds();
   host_window_->SetBounds(
       gfx::Rect(host_window_->bounds().origin(), bounds.size()));
+  // TODO(yjliu): a) consolidate with ClientControlledShellSurface. b) use the
+  // scale factor the buffer is created for to set the transform for
+  // synchronization.
+  if (client_submits_surfaces_in_pixel_coordinates_) {
+    gfx::Transform tr;
+    float scale = host_window_->layer()->device_scale_factor();
+    tr.Scale(1.0f / scale, 1.0f / scale);
+    host_window_->SetTransform(tr);
+  }
   const bool fills_bounds_opaquely =
       bounds.size() == root_surface_->content_size() &&
       root_surface_->FillsBoundsOpaquely();

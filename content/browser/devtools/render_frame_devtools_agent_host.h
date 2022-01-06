@@ -64,12 +64,16 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // whether DevToolsAgentHost has actually been created.
   static bool ShouldCreateDevToolsForHost(RenderFrameHostImpl* rfh);
 
-  // This method is called when new frame is created for a portal or local root
-  // navigation.
-  static scoped_refptr<DevToolsAgentHost> CreateForLocalRootOrPortalNavigation(
-      NavigationRequest* request);
+  // This method is called when new frame is created for an emebedded page
+  // (portal or fenced frame) or local root navigation.
+  static scoped_refptr<DevToolsAgentHost>
+  CreateForLocalRootOrEmbeddedPageNavigation(NavigationRequest* request);
   static scoped_refptr<DevToolsAgentHost> FindForDangling(
       FrameTreeNode* frame_tree_node);
+
+  RenderFrameDevToolsAgentHost(const RenderFrameDevToolsAgentHost&) = delete;
+  RenderFrameDevToolsAgentHost& operator=(const RenderFrameDevToolsAgentHost&) =
+      delete;
 
   static void AttachToWebContents(WebContents* web_contents);
 
@@ -176,8 +180,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   FrameTreeNode* frame_tree_node_;
 
   double page_scale_factor_ = 1;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameDevToolsAgentHost);
 };
 
 // Returns the ancestor FrameTreeNode* for which a RenderFrameDevToolsAgentHost

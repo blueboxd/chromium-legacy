@@ -27,8 +27,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -158,7 +158,6 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
       const MockSafeBrowsingDatabaseManager&) = delete;
 
   MOCK_METHOD1(MatchDownloadAllowlistUrl, bool(const GURL&));
-  MOCK_METHOD1(MatchDownloadAllowlistString, bool(const std::string&));
   MOCK_METHOD2(CheckDownloadUrl,
                bool(const std::vector<GURL>& url_chain,
                     SafeBrowsingDatabaseManager::Client* client));
@@ -174,10 +173,7 @@ std::unique_ptr<KeyedService> CreateTestBinaryUploadService(
 
 class FakeSafeBrowsingService : public TestSafeBrowsingService {
  public:
-  explicit FakeSafeBrowsingService(Profile* profile)
-      : test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {
+  explicit FakeSafeBrowsingService(Profile* profile) {
     services_delegate_ = ServicesDelegate::CreateForTest(this, this);
     BinaryUploadServiceFactory::GetInstance()->SetTestingFactory(
         profile, base::BindRepeating(&CreateTestBinaryUploadService));
@@ -192,15 +188,8 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
     return mock_database_manager_.get();
   }
 
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
-      override {
-    return test_shared_loader_factory_;
-  }
-
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
       content::BrowserContext* browser_context) override {
-    if (!base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts))
-      return GetURLLoaderFactory();
     auto* profile = Profile::FromBrowserContext(browser_context);
     auto it = test_shared_loader_factory_map_.find(profile);
     if (it == test_shared_loader_factory_map_.end())
@@ -213,13 +202,7 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
     download_report_count_++;
   }
 
-  network::TestURLLoaderFactory* test_url_loader_factory() {
-    return &test_url_loader_factory_;
-  }
-
   network::TestURLLoaderFactory* GetTestURLLoaderFactory(Profile* profile) {
-    if (!base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts))
-      return test_url_loader_factory();
     auto it = test_url_loader_factory_map_.find(profile);
     if (it == test_url_loader_factory_map_.end())
       return nullptr;
@@ -251,10 +234,6 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
   IncidentReportingService* CreateIncidentReportingService() override {
     return new IncidentReportingService(nullptr);
   }
-
-  // TODO(crbug/1049833): Remove these as we rollout separate network contexts.
-  network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 
   base::flat_map<Profile*, std::unique_ptr<network::TestURLLoaderFactory>>
       test_url_loader_factory_map_;
@@ -370,8 +349,6 @@ class DownloadProtectionServiceTestBase
                          .AppendASCII("safe_browsing")
                          .AppendASCII("download_protection");
 
-    ASSERT_TRUE(profile()->CreateHistoryService());
-
     // Setup a directory to place test files in.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -421,8 +398,12 @@ class DownloadProtectionServiceTestBase
   }
 
   TestingProfile::TestingFactories GetTestingFactories() const override {
-    return IdentityTestEnvironmentProfileAdaptor::
-        GetIdentityTestEnvironmentFactories();
+    TestingProfile::TestingFactories factories =
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactories();
+    factories.emplace_back(HistoryServiceFactory::GetInstance(),
+                           HistoryServiceFactory::GetDefaultFactory());
+    return factories;
   }
 
   void EnableFeatures(const std::vector<base::Feature>& features) {
@@ -995,7 +976,7 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(3);
+      .Times(1);
   // Assume http://www.allowlist.com/a.exe is on the allowlist.
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadAllowlistUrl(_))
@@ -1071,63 +1052,6 @@ TEST_F(DownloadProtectionServiceTest,
     EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
     ClearClientDownloadRequest();
   }
-
-  // Setup trusted and allowlisted certificates for test cases (5) and (6).
-  scoped_refptr<net::X509Certificate> test_cert(
-      ReadTestCertificate(testdata_path_, "test_cn.pem"));
-  ASSERT_TRUE(test_cert.get());
-  std::string test_cert_der(
-      net::x509_util::CryptoBufferAsStringPiece(test_cert->cert_buffer()));
-  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .WillRepeatedly(TrustSignature(test_cert_der));
-  EXPECT_CALL(*sb_service_->mock_database_manager(),
-              MatchDownloadAllowlistString(_))
-      .WillRepeatedly(Return(true));
-
-  {
-    // Case (6): is_extended_reporting && !is_incognito &&
-    //           Download matches certificate allowlist.
-    //           ClientDownloadRequest should be sent.
-    content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
-    EXPECT_CALL(
-        *sb_service_->mock_database_manager(),
-        MatchDownloadAllowlistUrl(GURL("http://www.allowlist.com/a.exe")))
-        .WillRepeatedly(Return(false));
-    RunLoop run_loop;
-    download_service_->CheckClientDownload(
-        &item,
-        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
-    ASSERT_TRUE(HasClientDownloadRequest());
-    EXPECT_FALSE(GetClientDownloadRequest()->skipped_url_whitelist());
-    EXPECT_TRUE(GetClientDownloadRequest()->skipped_certificate_whitelist());
-    ClearClientDownloadRequest();
-  }
-  {
-    // Case (7): is_extended_reporting && !is_incognito &&
-    //           Download matches both URL and certificate allowlists.
-    //           ClientDownloadRequest should be sent.
-    content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
-    EXPECT_CALL(
-        *sb_service_->mock_database_manager(),
-        MatchDownloadAllowlistUrl(GURL("http://www.allowlist.com/a.exe")))
-        .WillRepeatedly(Return(true));
-    RunLoop run_loop;
-    download_service_->CheckClientDownload(
-        &item,
-        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
-    ASSERT_TRUE(HasClientDownloadRequest());
-    EXPECT_TRUE(GetClientDownloadRequest()->skipped_url_whitelist());
-    // Since download matches URL allowlist and gets sampled, no need to
-    // do certificate allowlist checking and sampling.
-    EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
-    ClearClientDownloadRequest();
-  }
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
@@ -1187,10 +1111,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
     auto* req = GetClientDownloadRequest();
     EXPECT_EQ(ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE,
               req->download_type());
-    EXPECT_EQ(GURL(req->url()).GetOrigin().spec(), req->url());
+    EXPECT_EQ(GURL(req->url()).DeprecatedGetOriginAsURL().spec(), req->url());
     for (auto resource : req->resources()) {
-      EXPECT_EQ(GURL(resource.url()).GetOrigin().spec(), resource.url());
-      EXPECT_EQ(GURL(resource.referrer()).GetOrigin().spec(),
+      EXPECT_EQ(GURL(resource.url()).DeprecatedGetOriginAsURL().spec(),
+                resource.url());
+      EXPECT_EQ(GURL(resource.referrer()).DeprecatedGetOriginAsURL().spec(),
                 resource.referrer());
     }
     ClearClientDownloadRequest();
@@ -3696,10 +3621,11 @@ TEST_F(DownloadProtectionServiceTest,
     auto* req = GetClientDownloadRequest();
     EXPECT_EQ(ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE,
               req->download_type());
-    EXPECT_EQ(GURL(req->url()).GetOrigin().spec(), req->url());
+    EXPECT_EQ(GURL(req->url()).DeprecatedGetOriginAsURL().spec(), req->url());
     for (auto resource : req->resources()) {
-      EXPECT_EQ(GURL(resource.url()).GetOrigin().spec(), resource.url());
-      EXPECT_EQ(GURL(resource.referrer()).GetOrigin().spec(),
+      EXPECT_EQ(GURL(resource.url()).DeprecatedGetOriginAsURL().spec(),
+                resource.url());
+      EXPECT_EQ(GURL(resource.referrer()).DeprecatedGetOriginAsURL().spec(),
                 resource.referrer());
     }
     ClearClientDownloadRequest();
@@ -4259,16 +4185,7 @@ TEST_F(EnhancedProtectionDownloadTest, NoAccessTokenWhileIncognito) {
   WebUIInfoSingleton::GetInstance()->ClearListenerForTesting();
 }
 
-class DownloadSeparateNetworkContextsTest
-    : public DownloadProtectionServiceTestBase,
-      public testing::WithParamInterface<bool> {
- public:
-  DownloadSeparateNetworkContextsTest() {
-    EnableFeatures({kSafeBrowsingSeparateNetworkContexts});
-  }
-};
-
-TEST_F(DownloadSeparateNetworkContextsTest,
+TEST_F(DownloadProtectionServiceTest,
        DifferentProfilesUseDifferentNetworkContexts) {
   Profile* profile1 =
       testing_profile_manager_.CreateTestingProfile("profile 1");
@@ -4499,7 +4416,14 @@ TEST_P(DeepScanningDownloadTest, SafeVerdictPrecedence) {
 
     EXPECT_TRUE(IsResult(response.second));
     EXPECT_TRUE(HasClientDownloadRequest());
-    EXPECT_EQ(test_upload_service->was_called(), flag_enabled());
+
+    bool dangerous_response =
+        response.first == ClientDownloadResponse::DANGEROUS ||
+        response.first == ClientDownloadResponse::DANGEROUS_HOST ||
+        response.first == ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE;
+    EXPECT_EQ(test_upload_service->was_called(),
+              flag_enabled() && !dangerous_response);
+    test_upload_service->ClearWasCalled();
   }
 }
 
@@ -4618,6 +4542,41 @@ TEST_F(DownloadProtectionServiceTest, ESBRequestScanFalse) {
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
 
   // Testing Scenario with request_deep_scan response is false and
+  // user is enrolled in the Enhanced Protection Program.
+  safe_browsing::SetEnhancedProtectionPrefForTests(profile()->GetPrefs(),
+                                                   /*value*/ true);
+
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item,
+      base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_TRUE(IsResult(DownloadCheckResult::UNCOMMON));
+}
+
+TEST_F(DownloadProtectionServiceTest, ESBRequestScanFalseWhenTooLarge) {
+  PrepareResponse(ClientDownloadResponse::UNCOMMON, net::HTTP_OK, net::OK,
+                  /*upload_requested=*/true, /*request_deep_scan=*/true);
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
+                           "http://www.google.com/",              // referrer
+                           FILE_PATH_LITERAL("a.tmp"),            // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));           // final_path
+
+  EXPECT_CALL(item, GetTotalBytes()).WillRepeatedly(Return(51 * 1024 * 1024));
+
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+      .Times(1);
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadAllowlistUrl(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageFeatures(
+                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
+
+  // Testing Scenario with request_deep_scan response is true and
   // user is enrolled in the Enhanced Protection Program.
   safe_browsing::SetEnhancedProtectionPrefForTests(profile()->GetPrefs(),
                                                    /*value*/ true);

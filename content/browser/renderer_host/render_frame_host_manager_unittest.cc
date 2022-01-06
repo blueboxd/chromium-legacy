@@ -32,6 +32,7 @@
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
+#include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/content_navigation_policy.h"
@@ -176,6 +177,10 @@ class RenderViewHostDeletedObserver : public WebContentsObserver {
         routing_id_(rvh->GetRoutingID()),
         deleted_(false) {}
 
+  RenderViewHostDeletedObserver(const RenderViewHostDeletedObserver&) = delete;
+  RenderViewHostDeletedObserver& operator=(
+      const RenderViewHostDeletedObserver&) = delete;
+
   void RenderViewDeleted(RenderViewHost* render_view_host) override {
     if (render_view_host->GetProcess()->GetID() == process_id_ &&
         render_view_host->GetRoutingID() == routing_id_) {
@@ -189,8 +194,6 @@ class RenderViewHostDeletedObserver : public WebContentsObserver {
   int process_id_;
   int routing_id_;
   bool deleted_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostDeletedObserver);
 };
 
 // This observer keeps track of the last created RenderFrameHost to allow tests
@@ -200,6 +203,11 @@ class RenderFrameHostCreatedObserver : public WebContentsObserver {
   explicit RenderFrameHostCreatedObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents), created_(false) {}
 
+  RenderFrameHostCreatedObserver(const RenderFrameHostCreatedObserver&) =
+      delete;
+  RenderFrameHostCreatedObserver& operator=(
+      const RenderFrameHostCreatedObserver&) = delete;
+
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
     created_ = true;
   }
@@ -208,8 +216,6 @@ class RenderFrameHostCreatedObserver : public WebContentsObserver {
 
  private:
   bool created_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostCreatedObserver);
 };
 
 // This WebContents observer keep track of its RVH change.
@@ -217,6 +223,10 @@ class RenderViewHostChangedObserver : public WebContentsObserver {
  public:
   explicit RenderViewHostChangedObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents), host_changed_(false) {}
+
+  RenderViewHostChangedObserver(const RenderViewHostChangedObserver&) = delete;
+  RenderViewHostChangedObserver& operator=(
+      const RenderViewHostChangedObserver&) = delete;
 
   // WebContentsObserver.
   void RenderViewHostChanged(RenderViewHost* old_host,
@@ -234,7 +244,6 @@ class RenderViewHostChangedObserver : public WebContentsObserver {
 
  private:
   bool host_changed_;
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostChangedObserver);
 };
 
 // This observer is used to check whether IPC messages are being filtered for
@@ -248,6 +257,10 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
       : WebContentsObserver(web_contents),
         plugin_crashed_(false),
         favicon_received_(false) {}
+
+  PluginFaviconMessageObserver(const PluginFaviconMessageObserver&) = delete;
+  PluginFaviconMessageObserver& operator=(const PluginFaviconMessageObserver&) =
+      delete;
 
   void PluginCrashed(const base::FilePath& plugin_path,
                      base::ProcessId plugin_pid) override {
@@ -266,8 +279,6 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
  private:
   bool plugin_crashed_;
   bool favicon_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginFaviconMessageObserver);
 };
 
 // A shorter version for RenderFrameHostManager::DidNavigateFrame(rfh, ...).
@@ -720,6 +731,9 @@ class RenderViewHostDestroyer : public WebContentsObserver {
         render_view_host_(render_view_host),
         web_contents_(std::move(web_contents)) {}
 
+  RenderViewHostDestroyer(const RenderViewHostDestroyer&) = delete;
+  RenderViewHostDestroyer& operator=(const RenderViewHostDestroyer&) = delete;
+
   void RenderViewDeleted(RenderViewHost* render_view_host) override {
     if (render_view_host == render_view_host_)
       web_contents_.reset();
@@ -728,8 +742,6 @@ class RenderViewHostDestroyer : public WebContentsObserver {
  private:
   RenderViewHost* render_view_host_;
   std::unique_ptr<WebContents> web_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostDestroyer);
 };
 
 // Test if ShutdownRenderViewHostsInSiteInstance() does not touch any
@@ -1491,14 +1503,16 @@ class WidgetDestructionObserver : public RenderWidgetHostObserver {
   explicit WidgetDestructionObserver(base::OnceClosure closure)
       : closure_(std::move(closure)) {}
 
+  WidgetDestructionObserver(const WidgetDestructionObserver&) = delete;
+  WidgetDestructionObserver& operator=(const WidgetDestructionObserver&) =
+      delete;
+
   void RenderWidgetHostDestroyed(RenderWidgetHost* widget_host) override {
     std::move(closure_).Run();
   }
 
  private:
   base::OnceClosure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetDestructionObserver);
 };
 
 }  // namespace
@@ -1741,8 +1755,8 @@ TEST_P(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
   // rfh1 should be deleted.
   EXPECT_TRUE(rfh_deleted_observer.deleted());
   EXPECT_TRUE(contents()
-                  ->GetFrameTree()
-                  ->root()
+                  ->GetPrimaryFrameTree()
+                  .root()
                   ->render_manager()
                   ->GetRenderFrameProxyHost(site_instance.get()));
 }
@@ -1794,8 +1808,8 @@ TEST_P(RenderFrameHostManagerTest, CancelPendingProperlyDeletesOrSwaps) {
 
     EXPECT_TRUE(rfh_deleted_observer.deleted());
     EXPECT_TRUE(contents()
-                    ->GetFrameTree()
-                    ->root()
+                    ->GetPrimaryFrameTree()
+                    .root()
                     ->render_manager()
                     ->GetRenderFrameProxyHost(site_instance.get()));
   }
@@ -1836,11 +1850,11 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
   RenderFrameHostManager* root_manager =
-      contents()->GetFrameTree()->root()->render_manager();
+      contents()->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostManager* iframe1 =
-      contents()->GetFrameTree()->root()->child_at(0)->render_manager();
+      contents()->GetPrimaryFrameTree().root()->child_at(0)->render_manager();
   RenderFrameHostManager* iframe2 =
-      contents()->GetFrameTree()->root()->child_at(1)->render_manager();
+      contents()->GetPrimaryFrameTree().root()->child_at(1)->render_manager();
 
   // 1) The first navigation.
   NavigationEntryImpl entryA(
@@ -1995,7 +2009,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
       blink::FrameOwnerElementType::kIframe);
   RenderFrameHostManager* iframe =
-      contents()->GetFrameTree()->root()->child_at(0)->render_manager();
+      contents()->GetPrimaryFrameTree().root()->child_at(0)->render_manager();
   NavigationEntryImpl entry(
       nullptr /* instance */, kUrl2,
       Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault), absl::nullopt,
@@ -2047,7 +2061,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
       blink::FrameOwnerElementType::kIframe);
   RenderFrameHostManager* subframe_rfhm =
-      contents()->GetFrameTree()->root()->child_at(0)->render_manager();
+      contents()->GetPrimaryFrameTree().root()->child_at(0)->render_manager();
 
   // Start a pending WebUI navigation in the main frame and verify that the
   // pending RVH has bindings.
@@ -2240,7 +2254,7 @@ TEST_P(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
 // available during the first pass of CreateOpenerProxies.
 TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
   contents()->NavigateAndCommit(GURL("http://tab1.com"));
-  FrameTree* tree1 = contents()->GetFrameTree();
+  FrameTree* tree1 = &contents()->GetPrimaryFrameTree();
   FrameTreeNode* root1 = tree1->root();
   int process_id = root1->current_frame_host()->GetProcess()->GetID();
   constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
@@ -2420,7 +2434,7 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
 
-  FrameTreeNode* root = contents()->GetFrameTree()->root();
+  FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
   RenderFrameHostManager* child1 = root->child_at(0)->render_manager();
   RenderFrameHostManager* child2 = root->child_at(1)->render_manager();
   RenderFrameHostManager* child3 = root->child_at(2)->render_manager();
@@ -2525,7 +2539,7 @@ TEST_P(RenderFrameHostManagerTest,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
 
-  FrameTreeNode* root = contents()->GetFrameTree()->root();
+  FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
   RenderFrameHostManager* child = root->child_at(0)->render_manager();
 
   // Navigate subframe to B.
@@ -3090,7 +3104,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
       blink::FrameOwnerElementType::kIframe);
 
-  FrameTreeNode* root = contents()->GetFrameTree()->root();
+  FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
   RenderFrameHostManager* child = root->child_at(0)->render_manager();
 
   // Navigate subframe to kUrl2.
@@ -3205,7 +3219,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       NavigationSimulatorImpl::CreateBrowserInitiated(kUrl1, contents());
   navigation->SetKeepLoading(true);
   navigation->Commit();
-  FrameTreeNode* root = contents()->GetFrameTree()->root();
+  FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
   EXPECT_TRUE(root->IsLoading());
 
   // Create a child frame.
@@ -3520,7 +3534,7 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
   AppendChildToFrame("name", kUrlB, web_contents()->GetMainFrame());
 
   FrameTreeNode* subframe_node =
-      contents()->GetFrameTree()->root()->child_at(0);
+      contents()->GetPrimaryFrameTree().root()->child_at(0);
 
   ExpectAdStatusOnFrameProxyCreated(
       subframe_node->render_manager()->GetProxyToParent());
@@ -3543,15 +3557,15 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
 
   contents()->NavigateAndCommit(kUrlA);
   EXPECT_FALSE(contents()
-                   ->GetFrameTree()
-                   ->root()
+                   ->GetPrimaryFrameTree()
+                   .root()
                    ->current_replication_state()
                    .is_ad_subframe);
 
   AppendChildToFrame("subframe_b", kUrlB, web_contents()->GetMainFrame());
   AppendChildToFrame("subframe_a1", GURL(), web_contents()->GetMainFrame());
 
-  FrameTreeNode* top_frame_node_a = contents()->GetFrameTree()->root();
+  FrameTreeNode* top_frame_node_a = contents()->GetPrimaryFrameTree().root();
   FrameTreeNode* subframe_node_b = top_frame_node_a->child_at(0);
   FrameTreeNode* subframe_node_a1 = top_frame_node_a->child_at(1);
 
@@ -3584,15 +3598,15 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
 
   contents()->NavigateAndCommit(kUrlA);
   EXPECT_FALSE(contents()
-                   ->GetFrameTree()
-                   ->root()
+                   ->GetPrimaryFrameTree()
+                   .root()
                    ->current_replication_state()
                    .is_ad_subframe);
 
   AppendChildToFrame("subframe_b", kUrlB, web_contents()->GetMainFrame());
   AppendChildToFrame("subframe_c", kUrlC, web_contents()->GetMainFrame());
 
-  FrameTreeNode* top_frame_node_a = contents()->GetFrameTree()->root();
+  FrameTreeNode* top_frame_node_a = contents()->GetPrimaryFrameTree().root();
   FrameTreeNode* subframe_node_b = top_frame_node_a->child_at(0);
   FrameTreeNode* subframe_node_c = top_frame_node_a->child_at(1);
 
@@ -3648,9 +3662,9 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
   AppendChildToFrame("subframe_c", kUrlC, web_contents()->GetMainFrame());
 
   FrameTreeNode* subframe_node_b =
-      contents()->GetFrameTree()->root()->child_at(0);
+      contents()->GetPrimaryFrameTree().root()->child_at(0);
   FrameTreeNode* subframe_node_c =
-      contents()->GetFrameTree()->root()->child_at(1);
+      contents()->GetPrimaryFrameTree().root()->child_at(1);
   RenderFrameProxyHost* proxy_b_to_c =
       GetProxyHost(subframe_node_b, subframe_node_c);
   ExpectAdStatusOnFrameProxyCreated(proxy_b_to_c);
@@ -3686,7 +3700,7 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest, RemoteGrandchildAdTagSignal) {
           navigation_simulator->GetFinalRenderFrameHost())
           ->AppendChild("subframe_name");
 
-  FrameTreeNode* top_frame_node = contents()->GetFrameTree()->root();
+  FrameTreeNode* top_frame_node = contents()->GetPrimaryFrameTree().root();
   FrameTreeNode* subframe_node = top_frame_node->child_at(0);
   FrameTreeNode* grandchild_node = subframe_node->child_at(0);
   RenderFrameProxyHost* proxy_to_main_frame =

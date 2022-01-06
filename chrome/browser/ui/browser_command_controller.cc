@@ -135,6 +135,20 @@ void AppInfoDialogClosedCallback(content::WebContents* web_contents,
     active_contents->Focus();
 }
 
+bool CanOpenFile(Browser* browser) {
+  if (browser->is_type_devtools() || browser->is_type_app() ||
+      browser->is_type_app_popup()) {
+    return false;
+  }
+
+  PrefService* local_state = g_browser_process->local_state();
+  // May be null in unit tests.
+  if (local_state)
+    return local_state->GetBoolean(prefs::kAllowFileSelectionDialogs);
+
+  return true;
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -176,6 +190,10 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
   profile_pref_registrar_.Add(
       prefs::kPrintingEnabled,
       base::BindRepeating(&BrowserCommandController::UpdatePrintingState,
+                          base::Unretained(this)));
+  profile_pref_registrar_.Add(
+      prefs::kDownloadRestrictions,
+      base::BindRepeating(&BrowserCommandController::UpdateSaveAsState,
                           base::Unretained(this)));
 #if !defined(OS_MAC)
   profile_pref_registrar_.Add(
@@ -642,9 +660,6 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY:
       FocusInactivePopupForAccessibility(browser_);
       break;
-    case IDC_FOCUS_HELP_BUBBLE:
-      FocusHelpBubble(browser_);
-      break;
     case IDC_FOCUS_NEXT_PANE:
       FocusNextPane(browser_);
       break;
@@ -1040,7 +1055,7 @@ void BrowserCommandController::InitCommandState() {
   DCHECK(!profile()->IsSystemProfile())
       << "Ought to never have browser for the system profile.";
   const bool normal_window = browser_->is_type_normal();
-  UpdateOpenFileState(&command_updater_);
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, CanOpenFile(browser_));
   UpdateCommandsForDevTools();
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, CanOpenTaskManager());
   command_updater_.UpdateCommandEnabled(
@@ -1101,8 +1116,8 @@ void BrowserCommandController::InitCommandState() {
   // Hosted app browser commands.
   const bool enable_copy_url =
       is_web_app_or_custom_tab ||
-      base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopOmnibox) ||
-      base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu);
+      sharing_hub::SharingHubOmniboxEnabled(browser_->profile()) ||
+      sharing_hub::SharingHubAppMenuEnabled(browser_->profile());
   command_updater_.UpdateCommandEnabled(IDC_COPY_URL, enable_copy_url);
   command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_CHROME,
                                         is_web_app_or_custom_tab);
@@ -1258,8 +1273,8 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   window()->ZoomChangedForActiveTab(false);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
                                         CanViewSource(browser_));
-  if (browser_->is_type_devtools())
-    command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, false);
+
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, CanOpenFile(browser_));
 
   bool can_create_web_app = web_app::CanCreateWebApp(browser_);
   command_updater_.UpdateCommandEnabled(IDC_INSTALL_PWA, can_create_web_app);
@@ -1358,7 +1373,7 @@ void BrowserCommandController::UpdateCommandsForFileSelectionDialogs() {
     return;
 
   UpdateSaveAsState();
-  UpdateOpenFileState(&command_updater_);
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, CanOpenFile(browser_));
 }
 
 void BrowserCommandController::UpdateCommandsForFullscreenMode() {
@@ -1376,8 +1391,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(
-      IDC_SHOW_AS_TAB, !browser_->is_type_normal() && !is_fullscreen &&
-                           !browser_->is_type_devtools());
+      IDC_SHOW_AS_TAB, !browser_->is_type_normal() && !is_fullscreen);
 
   // Focus various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);
@@ -1412,6 +1426,8 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   command_updater_.UpdateCommandEnabled(IDC_CHROME_WHATS_NEW, show_main_ui);
 #endif
   command_updater_.UpdateCommandEnabled(IDC_QRCODE_GENERATOR, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_CONTENT_CONTEXT_SHARING_SUBMENU,
+                                        show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHARING_HUB, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHARING_HUB_SCREENSHOT,
                                         show_main_ui);
@@ -1527,17 +1543,6 @@ void BrowserCommandController::UpdateShowSyncState(bool show_main_ui) {
 
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_SIGNIN, show_main_ui && pref_signin_allowed_.GetValue());
-}
-
-// static
-void BrowserCommandController::UpdateOpenFileState(
-    CommandUpdater* command_updater) {
-  bool enabled = true;
-  PrefService* local_state = g_browser_process->local_state();
-  if (local_state)
-    enabled = local_state->GetBoolean(prefs::kAllowFileSelectionDialogs);
-
-  command_updater->UpdateCommandEnabled(IDC_OPEN_FILE, enabled);
 }
 
 void BrowserCommandController::UpdateReloadStopState(bool is_loading,

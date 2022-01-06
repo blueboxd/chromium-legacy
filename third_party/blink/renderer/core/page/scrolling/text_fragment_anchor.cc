@@ -17,12 +17,14 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/text_directive.h"
 #include "third_party/blink/renderer/core/html/html_details_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_handler.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -31,41 +33,6 @@
 namespace blink {
 
 namespace {
-
-bool ParseTextDirective(const String& fragment_directive,
-                        Vector<TextFragmentSelector>* out_selectors) {
-  DCHECK(out_selectors);
-
-  wtf_size_t start_pos = 0;
-  wtf_size_t end_pos = 0;
-  while (end_pos != kNotFound) {
-    if (fragment_directive.Find(kTextFragmentIdentifierPrefix, start_pos) !=
-        start_pos) {
-      // If this is not a text directive, continue to the next directive
-      end_pos = fragment_directive.find('&', start_pos + 1);
-      start_pos = end_pos + 1;
-      continue;
-    }
-
-    start_pos += kTextFragmentIdentifierPrefixStringLength;
-    end_pos = fragment_directive.find('&', start_pos);
-
-    String target_text;
-    if (end_pos == kNotFound) {
-      target_text = fragment_directive.Substring(start_pos);
-    } else {
-      target_text =
-          fragment_directive.Substring(start_pos, end_pos - start_pos);
-      start_pos = end_pos + 1;
-    }
-
-    TextFragmentSelector selector = TextFragmentSelector::Create(target_text);
-    if (selector.Type() != TextFragmentSelector::kInvalid)
-      out_selectors->push_back(selector);
-  }
-
-  return out_selectors->size() > 0;
-}
 
 bool CheckSecurityRestrictions(LocalFrame& frame) {
   // This algorithm checks the security restrictions detailed in
@@ -136,37 +103,32 @@ bool TextFragmentAnchor::GenerateNewTokenForSameDocument(
 
   // Only generate a token if it's going to be consumed (i.e. the new fragment
   // has a text fragment in it).
-  {
-    String fragment = loader.Url().FragmentIdentifier();
-    wtf_size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
-    if (start_pos == kNotFound)
-      return false;
-
-    String fragment_directive =
-        fragment.Substring(start_pos + kFragmentDirectivePrefixStringLength);
-    Vector<TextFragmentSelector> selectors;
-    if (!ParseTextDirective(fragment_directive, &selectors))
-      return false;
+  FragmentDirective& fragment_directive =
+      loader.GetFrame()->GetDocument()->fragmentDirective();
+  if (!fragment_directive.LastNavigationHadFragmentDirective() ||
+      fragment_directive.GetDirectives<TextDirective>().IsEmpty()) {
+    return false;
   }
 
   return true;
 }
 
-TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
-    const KURL& url,
-    LocalFrame& frame,
-    bool should_scroll) {
+// static
+TextFragmentAnchor* TextFragmentAnchor::TryCreate(const KURL& url,
+                                                  LocalFrame& frame,
+                                                  bool should_scroll) {
   DCHECK(RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
       frame.DomWindow()));
 
-  if (!frame.GetDocument()->GetFragmentDirective())
-    return nullptr;
-
-  Vector<TextFragmentSelector> selectors;
-  if (!ParseTextDirective(frame.GetDocument()->GetFragmentDirective(),
-                          &selectors)) {
-    UseCounter::Count(frame.GetDocument(),
-                      WebFeature::kInvalidFragmentDirective);
+  HeapVector<Member<TextDirective>> text_directives =
+      frame.GetDocument()->fragmentDirective().GetDirectives<TextDirective>();
+  if (text_directives.IsEmpty()) {
+    if (frame.GetDocument()
+            ->fragmentDirective()
+            .LastNavigationHadFragmentDirective()) {
+      UseCounter::Count(frame.GetDocument(),
+                        WebFeature::kInvalidFragmentDirective);
+    }
     return nullptr;
   }
 
@@ -188,30 +150,32 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
     }
   }
 
-  return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame,
+  return MakeGarbageCollected<TextFragmentAnchor>(text_directives, frame,
                                                   should_scroll);
 }
 
 TextFragmentAnchor::TextFragmentAnchor(
-    const Vector<TextFragmentSelector>& text_fragment_selectors,
+    HeapVector<Member<TextDirective>>& text_directives,
     LocalFrame& frame,
     bool should_scroll)
     : frame_(&frame),
       should_scroll_(should_scroll),
       metrics_(MakeGarbageCollected<TextFragmentAnchorMetrics>(
           frame_->GetDocument())) {
-  DCHECK(!text_fragment_selectors.IsEmpty());
+  DCHECK(!text_directives.IsEmpty());
   DCHECK(frame_->View());
 
   metrics_->DidCreateAnchor(
-      text_fragment_selectors.size(),
-      frame.GetDocument()->GetFragmentDirective().length());
+      text_directives.size(),
+      frame.GetDocument()->fragmentDirective().LengthForMetrics());
 
-  text_fragment_finders_.ReserveCapacity(text_fragment_selectors.size());
-  for (TextFragmentSelector selector : text_fragment_selectors) {
-    text_fragment_finders_.push_back(MakeGarbageCollected<TextFragmentFinder>(
-        *this, selector, frame_->GetDocument(),
-        TextFragmentFinder::FindBufferRunnerType::kSynchronous));
+  directive_finder_pairs_.ReserveCapacity(text_directives.size());
+  for (Member<TextDirective>& directive : text_directives) {
+    directive_finder_pairs_.push_back(std::make_pair(
+        directive,
+        MakeGarbageCollected<TextFragmentFinder>(
+            *this, directive->GetSelector(), frame_->GetDocument(),
+            TextFragmentFinder::FindBufferRunnerType::kSynchronous)));
   }
 }
 
@@ -253,7 +217,7 @@ bool TextFragmentAnchor::Invoke() {
   // If we're done searching, return true if this hasn't been dismissed yet so
   // that this is kept alive.
   if (search_finished_)
-    return !dismissed_;
+    return !dismissed_ || needs_perform_pre_raf_actions_;
 
   frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
       DocumentMarker::MarkerTypes::TextFragment());
@@ -273,8 +237,8 @@ bool TextFragmentAnchor::Invoke() {
     base::AutoReset<bool> reset_user_scrolled(&user_scrolled_, user_scrolled_);
 
     metrics_->ResetMatchCount();
-    for (auto& finder : text_fragment_finders_)
-      finder->FindMatch();
+    for (auto& directive_finder_pair : directive_finder_pairs_)
+      directive_finder_pair.second->FindMatch();
   }
 
   if (beforematch_state_ != kEventQueued)
@@ -289,7 +253,9 @@ bool TextFragmentAnchor::Invoke() {
 
   // We return true to keep this anchor alive as long as we need another invoke,
   // are waiting to be dismissed, or are proxying an element fragment anchor.
-  return !search_finished_ || !dismissed_ || element_fragment_anchor_ ||
+  // TODO(bokan): There's a lot of implicit state here, lets clean this up into
+  // a more explicit state machine.
+  return !search_finished_ || !dismissed_ || needs_perform_pre_raf_actions_ ||
          beforematch_state_ == kEventQueued;
 }
 
@@ -301,8 +267,9 @@ void TextFragmentAnchor::DidScroll(mojom::blink::ScrollType type) {
     return;
   }
 
-  if (ShouldDismissOnScrollOrClick())
-    Dismiss();
+  if (ShouldDismissOnScrollOrClick() && Dismiss())
+    TextFragmentHandler::RemoveSelectorsFromUrl(frame_);
+
   user_scrolled_ = true;
 
   if (did_non_zero_scroll_ &&
@@ -312,11 +279,24 @@ void TextFragmentAnchor::DidScroll(mojom::blink::ScrollType type) {
 }
 
 void TextFragmentAnchor::PerformPreRafActions() {
+  if (!needs_perform_pre_raf_actions_)
+    return;
+
+  needs_perform_pre_raf_actions_ = false;
+
   if (element_fragment_anchor_) {
     element_fragment_anchor_->Installed();
     element_fragment_anchor_->Invoke();
     element_fragment_anchor_->PerformPreRafActions();
     element_fragment_anchor_ = nullptr;
+  }
+
+  // Notify the DOM object exposed to JavaScript that we've completed the
+  // search and pass it the range we found.
+  for (DirectiveFinderPair& directive_finder_pair : directive_finder_pairs_) {
+    TextDirective* text_directive = directive_finder_pair.first.Get();
+    TextFragmentFinder* finder = directive_finder_pair.second.Get();
+    text_directive->DidFinishMatching(finder->FirstMatch());
   }
 }
 
@@ -324,7 +304,7 @@ void TextFragmentAnchor::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(element_fragment_anchor_);
   visitor->Trace(metrics_);
-  visitor->Trace(text_fragment_finders_);
+  visitor->Trace(directive_finder_pairs_);
   FragmentAnchor::Trace(visitor);
 }
 
@@ -332,6 +312,7 @@ void TextFragmentAnchor::DidFindMatch(
     const RangeInFlatTree& range,
     const TextFragmentAnchorMetrics::Match match_metrics,
     bool is_unique) {
+  // TODO(bokan): Can this happen or should this be a DCHECK?
   if (search_finished_)
     return;
 
@@ -395,9 +376,12 @@ void TextFragmentAnchor::DidFindMatch(
 
   // If the active match is hidden inside a <details> element, then we should
   // expand it so we can scroll to it.
-  needs_style_and_layout |=
-      RuntimeEnabledFeatures::AutoExpandDetailsElementEnabled() &&
-      HTMLDetailsElement::ExpandDetailsAncestors(first_node);
+  if (RuntimeEnabledFeatures::AutoExpandDetailsElementEnabled() &&
+      HTMLDetailsElement::ExpandDetailsAncestors(first_node)) {
+    needs_style_and_layout = true;
+    UseCounter::Count(first_node.GetDocument(),
+                      WebFeature::kAutoExpandedDetailsForScrollToTextFragment);
+  }
 
   // If the active match is hidden inside a hidden=until-found element, then we
   // should reveal it so we can scroll to it.
@@ -469,6 +453,7 @@ void TextFragmentAnchor::DidFindMatch(
 void TextFragmentAnchor::DidFinishSearch() {
   DCHECK(!search_finished_);
   search_finished_ = true;
+  needs_perform_pre_raf_actions_ = true;
 
   metrics_->SetSearchEngineSource(HasSearchEngineSource());
   metrics_->ReportMetrics();
@@ -477,14 +462,14 @@ void TextFragmentAnchor::DidFinishSearch() {
     dismissed_ = true;
 
     DCHECK(!element_fragment_anchor_);
+    // ElementFragmentAnchor needs to be invoked from PerformPreRafActions
+    // since it can cause script to run and we may be in a ScriptForbiddenScope
+    // here.
     element_fragment_anchor_ = ElementFragmentAnchor::TryCreate(
         frame_->GetDocument()->Url(), *frame_, should_scroll_);
-    if (element_fragment_anchor_) {
-      // Schedule a frame so we can invoke the element anchor in
-      // PerformPreRafActions.
-      frame_->GetPage()->GetChromeClient().ScheduleAnimation(frame_->View());
-    }
   }
+
+  frame_->GetPage()->GetChromeClient().ScheduleAnimation(frame_->View());
 }
 
 bool TextFragmentAnchor::Dismiss() {
@@ -504,17 +489,6 @@ bool TextFragmentAnchor::Dismiss() {
       DocumentMarker::MarkerTypes::TextFragment());
   dismissed_ = true;
   metrics_->Dismissed();
-
-  KURL url(
-      shared_highlighting::RemoveTextFragments(frame_->GetDocument()->Url()));
-
-  // Replace the current history entry with the new url, so that the text
-  // fragment shown in the URL matches the state of the highlight on the page.
-  // This is equivalent to history.replaceState in javascript.
-  frame_->DomWindow()->document()->Loader()->RunURLAndHistoryUpdateSteps(
-      url, mojom::blink::SameDocumentNavigationType::kFragment,
-      /*data=*/nullptr, WebFrameLoadType::kReplaceCurrentItem,
-      mojom::blink::ScrollRestorationType::kAuto);
 
   return dismissed_;
 }
@@ -548,12 +522,21 @@ void TextFragmentAnchor::SetTickClockForTesting(
 }
 
 bool TextFragmentAnchor::HasSearchEngineSource() {
-  AtomicString referrer = frame_->GetDocument()->referrer();
-  // TODO(crbug.com/1133823): Add test case for valid referrer.
-  if (!referrer)
+  if (!frame_->GetDocument() || !frame_->GetDocument()->Loader())
     return false;
 
-  return IsKnownSearchEngine(referrer);
+  // Client side redirects should not happen for links opened from search
+  // engines. If a redirect occurred, we can't rely on the requestorOrigin as
+  // it won't point to the original requestor anymore.
+  if (frame_->GetDocument()->Loader()->IsClientRedirect())
+    return false;
+
+  // TODO(crbug.com/1133823): Add test case for valid referrer.
+  if (!frame_->GetDocument()->Loader()->GetRequestorOrigin())
+    return false;
+
+  return IsKnownSearchEngine(
+      frame_->GetDocument()->Loader()->GetRequestorOrigin()->ToString());
 }
 
 bool TextFragmentAnchor::ShouldDismissOnScrollOrClick() {

@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -159,8 +160,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="FileBrowser.FolderShortcut.Add" units="units"
-    expires_after="M98">
+<histogram name="FileBrowser.FolderShortcut.Add" units="Shortcuts"
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -169,7 +170,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="FileBrowser.FolderShortcut.Count" units="units"
+<histogram name="FileBrowser.FolderShortcut.Count" units="Shortcuts"
     expires_after="2022-05-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
@@ -179,8 +180,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="FileBrowser.FolderShortcut.Navigate" units="units"
-    expires_after="M98">
+<histogram name="FileBrowser.FolderShortcut.Navigate" units="Navigations"
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -189,8 +190,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="FileBrowser.FolderShortcut.Remove" units="units"
-    expires_after="M98">
+<histogram name="FileBrowser.FolderShortcut.Remove" units="Shortcuts"
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -206,6 +207,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Chrome OS File Browser: this records the filesystem selected when formatting
     an external drive.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.Glitch" enum="FileManagerGlitch"
+    expires_after="M108">
+  <owner>majewski@chromium.org</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: this records errors and rejected promises that
+    occurred during regular use of File Manager. The purpose of this metric is
+    to report unexpected errors caught by the global window.onerror handler or
+    global unhandledrejection listener. In normal conditions this should never
+    happen. However, if it occurs, it is a sign of significant and unexpected
+    errors which must not go undetected.
   </summary>
 </histogram>
 
@@ -262,7 +277,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.Load{FileBrowserLoad}" units="ms"
-    expires_after="M98">
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -329,7 +344,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.Location.OnEntryExpandedOrCollapsed.NonTopLevel"
-    enum="FileManagerRootType" expires_after="M98">
+    enum="FileManagerRootType" expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -351,7 +366,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.Location.OnEntrySelected.NonTopLevel"
-    enum="FileManagerRootType" expires_after="M98">
+    enum="FileManagerRootType" expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -383,7 +398,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.MediaImport.Duplicates" units="count"
-    expires_after="M98">
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -450,11 +465,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.Notification.UserAction"
-    enum="FileManagerNotificationUserAction" expires_after="M98">
+    enum="FileManagerNotificationUserAction" expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
-    Chrome OS File Browser: User actions responding to a notification.
+    Chrome OS File Browser: The action a user takes when shown a notification.
   </summary>
 </histogram>
 
@@ -470,6 +485,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.PhotoEditor.DisplayTime" units="ms"
     expires_after="M98">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -481,6 +499,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.PhotoEditor.FileType" enum="PhotoEditorFileType"
     expires_after="M98">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Chrome OS Photo Editor: the type of the file opened.</summary>
@@ -488,6 +509,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.PhotoEditor.LoadMode" enum="PhotoEditorLoadMode"
     expires_after="M98">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Chrome OS Photo Editor: the way the image has been loaded.</summary>
@@ -495,6 +519,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.PhotoEditor.LoadTime" units="ms"
     expires_after="M98">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Chrome OS Photo Editor: time to load an image from a file.</summary>
@@ -502,6 +529,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.PhotoEditor.SaveResult"
     enum="PhotoEditorSaveResult" expires_after="M98">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -511,6 +541,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.PhotoEditor.SaveTime" units="ms"
     expires_after="M98">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Chrome OS Photo Editor: time to save an image to a file.</summary>
@@ -518,6 +551,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.PhotoEditor.Size.MB" units="MBytes"
     expires_after="M98">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -528,6 +564,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.PhotoEditor.Size.MPix" units="MPixels"
     expires_after="M98">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -538,6 +577,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.PhotoEditor.Tool" enum="PhotoEditorToolType"
     expires_after="M98">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Chrome OS Photo Editor: the button which the user clicked.</summary>
@@ -574,7 +616,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.QuickView.WayToOpen"
-    enum="FileManagerQuickViewWayToOpen" expires_after="M98">
+    enum="FileManagerQuickViewWayToOpen" expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>How quick view was opened.</summary>
@@ -601,7 +643,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadDownloads" units="ms"
-    expires_after="M98">
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -632,6 +674,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.Share.ActionSource" enum="SharingActionSource"
     expires_after="2022-04-24">
+  <obsolete>
+    Removed in M97. File sharing is now done by Sharesheet, not Files.app.
+    Replaced with ChromeOS.Sharesheet.LaunchSource.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Chrome OS File Browser: the source of file sharing action.</summary>
@@ -639,6 +685,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.Share.FileCount" units="files"
     expires_after="2022-04-17">
+  <obsolete>
+    Removed in M97. File sharing is now done by Sharesheet, not Files.app.
+    Replaced with ChromeOS.Sharesheet.FileCount.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -849,6 +899,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.ZipFileTask" enum="FileManagerZipHandlerType"
     expires_after="M98">
+  <obsolete>
+    Related to NaCl-based ZipArchiver extension, removed in M96
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>

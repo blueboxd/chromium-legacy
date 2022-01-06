@@ -121,18 +121,8 @@ const CGFloat kOffsetToPinOmnibox = 100;
   AddSameConstraints(discoverFeedView, self.view);
 
   UIViewController* parentViewController =
-      [self.ntpContentDelegate isFeedVisible]
-          ? self.discoverFeedWrapperViewController.discoverFeed
-          : self.discoverFeedWrapperViewController;
-
-  if (self.contentSuggestionsViewController.parentViewController) {
-    [self.contentSuggestionsViewController willMoveToParentViewController:nil];
-    [self.contentSuggestionsViewController.view removeFromSuperview];
-    [self.contentSuggestionsViewController removeFromParentViewController];
-    [self.discoverFeedMetricsRecorder
-        recordBrokenNTPHierarchy:BrokenNTPHierarchyRelationship::
-                                     kContentSuggestionsReset];
-  }
+      self.isFeedVisible ? self.discoverFeedWrapperViewController.discoverFeed
+                         : self.discoverFeedWrapperViewController;
 
   [self.contentSuggestionsViewController
       willMoveToParentViewController:parentViewController];
@@ -173,7 +163,7 @@ const CGFloat kOffsetToPinOmnibox = 100;
 
   // If the feed is not visible, we control the delegate ourself (since it is
   // otherwise controlled by the DiscoverProvider).
-  if (![self.ntpContentDelegate isFeedVisible]) {
+  if (!self.isFeedVisible) {
     self.discoverFeedWrapperViewController.contentCollectionView.delegate =
         self;
   }
@@ -218,7 +208,7 @@ const CGFloat kOffsetToPinOmnibox = 100;
     self.shouldFocusFakebox = NO;
   }
 
-  if (![self.ntpContentDelegate isFeedVisible]) {
+  if (!self.isFeedVisible) {
     [self setMinimumHeight];
   }
 
@@ -289,7 +279,7 @@ const CGFloat kOffsetToPinOmnibox = 100;
         weakSelf.collectionView.contentOffset.y < pinnedOffsetY) {
       weakSelf.collectionView.contentOffset = CGPointMake(0, pinnedOffsetY);
     }
-    if (![self.ntpContentDelegate isFeedVisible]) {
+    if (!self.isFeedVisible) {
       [self setMinimumHeight];
     }
   };
@@ -675,7 +665,7 @@ const CGFloat kOffsetToPinOmnibox = 100;
 // for the content suggestions within it.
 - (void)applyCollectionViewConstraints {
   UIView* containerView;
-  if ([self.ntpContentDelegate isFeedVisible]) {
+  if (self.isFeedVisible) {
     // TODO(crbug.com/1262536): Remove this when the bug is fixed.
     if (IsNTPViewHierarchyRepairEnabled()) {
       [self verifyNTPViewHierarchy];
@@ -737,54 +727,24 @@ const CGFloat kOffsetToPinOmnibox = 100;
   // self.discoverFeedWrapperViewController.view ->
   // self.discoverFeedWrapperViewController.discoverFeed.view ->
   // self.collectionView -> self.contentSuggestionsViewController.view.
-  if (![self.collectionView.subviews
-          containsObject:self.contentSuggestionsViewController.view]) {
-    // Remove child VC from old parent.
-    [self.contentSuggestionsViewController willMoveToParentViewController:nil];
-    [self.contentSuggestionsViewController removeFromParentViewController];
-    [self.contentSuggestionsViewController.view removeFromSuperview];
-    [self.contentSuggestionsViewController didMoveToParentViewController:nil];
-
-    // Add child VC to new parent.
-    [self.contentSuggestionsViewController
-        willMoveToParentViewController:self.discoverFeedWrapperViewController
-                                           .discoverFeed];
-    [self.discoverFeedWrapperViewController.discoverFeed
-        addChildViewController:self.contentSuggestionsViewController];
-    [self.collectionView addSubview:self.contentSuggestionsViewController.view];
-    [self.contentSuggestionsViewController
-        didMoveToParentViewController:self.discoverFeedWrapperViewController
-                                          .discoverFeed];
-
-    [self.discoverFeedMetricsRecorder
-        recordBrokenNTPHierarchy:BrokenNTPHierarchyRelationship::
-                                     kContentSuggestionsParent];
-  }
+  [self ensureView:self.contentSuggestionsViewController.view
+       isSubviewOf:self.collectionView];
   [self ensureView:self.collectionView
-             isSubviewOf:self.discoverFeedWrapperViewController.discoverFeed
-                             .view
-      withRelationshipID:BrokenNTPHierarchyRelationship::kELMCollectionParent];
+       isSubviewOf:self.discoverFeedWrapperViewController.discoverFeed.view];
   [self ensureView:self.discoverFeedWrapperViewController.discoverFeed.view
-             isSubviewOf:self.discoverFeedWrapperViewController.view
-      withRelationshipID:BrokenNTPHierarchyRelationship::kDiscoverFeedParent];
+       isSubviewOf:self.discoverFeedWrapperViewController.view];
   [self ensureView:self.discoverFeedWrapperViewController.view
-             isSubviewOf:self.view
-      withRelationshipID:BrokenNTPHierarchyRelationship::
-                             kDiscoverFeedWrapperParent];
+       isSubviewOf:self.view];
 }
 
 // Ensures that |subView| is a descendent of |parentView|. If not, logs a DCHECK
-// and adds the subview. Includes |relationshipID| for metrics recorder to log
-// which part of the view hierarchy was broken.
+// and adds the subview.
 // TODO(crbug.com/1262536): Remove this once bug is fixed.
-- (void)ensureView:(UIView*)subView
-           isSubviewOf:(UIView*)parentView
-    withRelationshipID:(BrokenNTPHierarchyRelationship)relationship {
+- (void)ensureView:(UIView*)subView isSubviewOf:(UIView*)parentView {
   if (![parentView.subviews containsObject:subView]) {
     DCHECK([parentView.subviews containsObject:subView]);
     [subView removeFromSuperview];
     [parentView addSubview:subView];
-    [self.discoverFeedMetricsRecorder recordBrokenNTPHierarchy:relationship];
   }
 }
 

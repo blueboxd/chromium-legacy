@@ -41,6 +41,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/net_buildflags.h"
 #include "net/socket/connection_attempts.h"
@@ -290,6 +291,16 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   }
   void set_force_ignore_top_frame_party_for_cookies(bool force) {
     force_ignore_top_frame_party_for_cookies_ = force;
+  }
+
+  // Indicates if the request should be treated as a main frame navigation for
+  // SameSite cookie computations.  This flag overrides the IsolationInfo
+  // request type associated with fetches from a service worker context.
+  bool force_main_frame_for_same_site_cookies() const {
+    return force_main_frame_for_same_site_cookies_;
+  }
+  void set_force_main_frame_for_same_site_cookies(bool value) {
+    force_main_frame_for_same_site_cookies_ = value;
   }
 
   // The first-party URL policy to apply when updating the first party URL
@@ -824,7 +835,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
              const URLRequestContext* context,
              NetworkTrafficAnnotationTag traffic_annotation,
              bool is_for_websockets,
-             absl::optional<uint32_t> net_log_source_id);
+             absl::optional<net::NetLogSource> net_log_source);
 
   // Resumes or blocks a request paused by the NetworkDelegate::OnBeforeRequest
   // handler. If |blocked| is true, the request is blocked and an error page is
@@ -912,6 +923,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   bool force_ignore_site_for_cookies_;
   bool force_ignore_top_frame_party_for_cookies_;
+  bool force_main_frame_for_same_site_cookies_;
   absl::optional<url::Origin> initiator_;
   GURL delegate_redirect_url_;
   std::string method_;  // "GET", "POST", etc. Should be all uppercase.

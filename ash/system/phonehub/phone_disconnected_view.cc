@@ -10,7 +10,7 @@
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/system/phonehub/interstitial_view_button.h"
+#include "ash/style/button_style.h"
 #include "ash/system/phonehub/phone_hub_interstitial_view.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
 #include "ash/system/phonehub/phone_hub_view_ids.h"
@@ -36,7 +36,6 @@ PhoneDisconnectedView::PhoneDisconnectedView(
   content_view_ = AddChildView(std::make_unique<PhoneHubInterstitialView>(
       /*show_progress=*/false));
 
-  // TODO(crbug.com/1127996): Replace PNG file with vector icon.
   gfx::ImageSkia* image =
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_PHONE_HUB_ERROR_STATE_IMAGE);
@@ -48,7 +47,7 @@ PhoneDisconnectedView::PhoneDisconnectedView(
       IDS_ASH_PHONE_HUB_PHONE_DISCONNECTED_DIALOG_DESCRIPTION));
 
   // Add "Learn more" and "Refresh" buttons.
-  auto learn_more = std::make_unique<InterstitialViewButton>(
+  auto learn_more = std::make_unique<PillButton>(
       base::BindRepeating(
           &PhoneDisconnectedView::ButtonPressed, base::Unretained(this),
           InterstitialScreenEvent::kLearnMore,
@@ -59,14 +58,11 @@ PhoneDisconnectedView::PhoneDisconnectedView(
               /*from_user_interaction=*/true)),
       l10n_util::GetStringUTF16(
           IDS_ASH_PHONE_HUB_PHONE_DISCONNECTED_DIALOG_LEARN_MORE_BUTTON),
-      /*paint_background=*/false);
-  learn_more->SetEnabledTextColors(
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kTextColorPrimary));
+      PillButton::Type::kIconlessFloating, /*icon=*/nullptr);
   learn_more->SetID(PhoneHubViewID::kDisconnectedLearnMoreButton);
   content_view_->AddButton(std::move(learn_more));
 
-  auto refresh = std::make_unique<InterstitialViewButton>(
+  auto refresh = std::make_unique<PillButton>(
       base::BindRepeating(
           &PhoneDisconnectedView::ButtonPressed, base::Unretained(this),
           InterstitialScreenEvent::kConfirm,
@@ -75,7 +71,7 @@ PhoneDisconnectedView::PhoneDisconnectedView(
               base::Unretained(connection_scheduler_))),
       l10n_util::GetStringUTF16(
           IDS_ASH_PHONE_HUB_PHONE_DISCONNECTED_DIALOG_REFRESH_BUTTON),
-      /*paint_background=*/true);
+      PillButton::Type::kIconless, /*icon=*/nullptr);
   refresh->SetID(PhoneHubViewID::kDisconnectedRefreshButton);
   content_view_->AddButton(std::move(refresh));
 

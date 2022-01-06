@@ -18,8 +18,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -32,7 +32,6 @@
 #include "net/base/isolation_info.h"
 #include "net/base/schemeful_site.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/log/test_net_log.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
@@ -63,7 +62,7 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
                 &TestThroughputAnalyzer::OnNewThroughputObservationAvailable,
                 base::Unretained(this)),
             tick_clock,
-            std::make_unique<RecordingBoundTestNetLog>()->bound()),
+            NetLogWithSource::Make(NetLogSourceType::NONE)),
         throughput_observations_received_(0),
         bits_received_(0) {}
 
@@ -89,13 +88,11 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
   // Uses a mock resolver to force example.com to resolve to a public IP
   // address.
   void AddIPAddressResolution(TestURLRequestContext* context) {
-    scoped_refptr<net::RuleBasedHostResolverProc> rules =
-        base::MakeRefCounted<RuleBasedHostResolverProc>(nullptr);
+    mock_host_resolver_.rules()->ClearRules();
     // example.com resolves to a public IP address.
-    rules->AddRule("example.com", "27.0.0.3");
+    mock_host_resolver_.rules()->AddRule("example.com", "27.0.0.3");
     // local.com resolves to a private IP address.
-    rules->AddRule("local.com", "127.0.0.1");
-    mock_host_resolver_.set_rules(rules.get());
+    mock_host_resolver_.rules()->AddRule("local.com", "127.0.0.1");
     mock_host_resolver_.LoadIntoCache(HostPortPair("example.com", 80),
                                       NetworkIsolationKey(), absl::nullopt);
     mock_host_resolver_.LoadIntoCache(HostPortPair("local.com", 80),
@@ -206,18 +203,14 @@ TEST_F(ThroughputAnalyzerTest, MAYBE_MaximumRequestsWithNetworkIsolationKey) {
 
     // Add an entry to the host cache mapping kUrl to non-local IP when using an
     // empty NetworkIsolationKey.
-    scoped_refptr<net::RuleBasedHostResolverProc> rules =
-        base::MakeRefCounted<RuleBasedHostResolverProc>(nullptr);
-    rules->AddRule(kUrl.host(), "1.2.3.4");
-    mock_host_resolver.set_rules(rules.get());
+    mock_host_resolver.rules()->AddRule(kUrl.host(), "1.2.3.4");
     mock_host_resolver.LoadIntoCache(HostPortPair::FromURL(kUrl),
                                      NetworkIsolationKey(), absl::nullopt);
 
     // Add an entry to the host cache mapping kUrl to local IP when using
     // kNetworkIsolationKey.
-    rules = base::MakeRefCounted<RuleBasedHostResolverProc>(nullptr);
-    rules->AddRule(kUrl.host(), "127.0.0.1");
-    mock_host_resolver.set_rules(rules.get());
+    mock_host_resolver.rules()->ClearRules();
+    mock_host_resolver.rules()->AddRule(kUrl.host(), "127.0.0.1");
     mock_host_resolver.LoadIntoCache(HostPortPair::FromURL(kUrl),
                                      kNetworkIsolationKey, absl::nullopt);
 

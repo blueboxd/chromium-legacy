@@ -5,13 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_OBSERVABLE_ARRAY_EXOTIC_OBJECT_HANDLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_OBSERVABLE_ARRAY_EXOTIC_OBJECT_HANDLER_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_set_return_value.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8-container.h"
 #include "v8/include/v8-function-callback.h"
 #include "v8/include/v8-object.h"
@@ -30,7 +33,7 @@ namespace bindings {
 //   handler = v8::Object that has a set of trap functions implemented in
 //       ObservableArrayExoticObjectHandler.
 //
-// https://heycam.github.io/webidl/#creating-an-observable-array-exotic-object
+// https://webidl.spec.whatwg.org/#creating-an-observable-array-exotic-object
 //
 // Implementation notes:
 // - v8::Value::ToArrayIndex returns an empty handle if the conversion fails
@@ -44,197 +47,286 @@ class ObservableArrayExoticObjectHandler {
   STATIC_ONLY(ObservableArrayExoticObjectHandler);
 
  public:
-  // https://heycam.github.io/webidl/#es-observable-array-defineProperty
+  // https://webidl.spec.whatwg.org/#es-observable-array-defineProperty
   static void TrapDefineProperty(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
-    const auto& v8_target = info[0];
-    const auto& v8_property = info[1];
-    auto& backing_list = ToWrappableUnsafe(v8_target);
+    v8::Local<v8::Object> v8_target = info[0].As<v8::Object>();
+    v8::Local<v8::Value> v8_property = info[1];
+    v8::Local<v8::Value> v8_desc_obj = info[2];
+    BackingListWrappable& backing_list = ToWrappableUnsafe(v8_target);
+    ExceptionState exception_state(
+        isolate, ExceptionContext::Context::kNamedPropertyDefine,
+        backing_list.ObservableArrayNameInIDL());
 
-    v8::Local<v8::Uint32> v8_index;
-    if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
-      // TODO(yukishiino): Implement this case appropriately.
-      (void)backing_list;
-      V8SetReturnValue(info, false);
+    V8PropertyDescriptorBag desc_bag;
+    V8ObjectToPropertyDescriptor(isolate, v8_desc_obj, desc_bag,
+                                 exception_state);
+    if (exception_state.HadException())
       return;
+
+    if (v8_property->IsString()) {
+      v8::Local<v8::Uint32> v8_index;
+      if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
+        if ((desc_bag.has_get || desc_bag.has_set) ||
+            (desc_bag.has_configurable && !desc_bag.configurable) ||
+            (desc_bag.has_enumerable && !desc_bag.enumerable) ||
+            (desc_bag.has_writable && !desc_bag.writable)) {
+          V8SetReturnValue(info, false);
+          return;
+        }
+        uint32_t index = v8_index->Value();
+        DoSetTheIndexedValue(isolate, current_context, backing_list, index,
+                             desc_bag.value, exception_state);
+        if (exception_state.HadException())
+          return;
+        V8SetReturnValue(info, true);
+        return;
+      }
+
+      if (v8_property.As<v8::String>()->StringEquals(
+              V8AtomicString(isolate, "length"))) {
+        if ((desc_bag.has_get || desc_bag.has_set) ||
+            (desc_bag.has_configurable && desc_bag.configurable) ||
+            (desc_bag.has_enumerable && desc_bag.enumerable) ||
+            (desc_bag.has_writable && !desc_bag.writable)) {
+          V8SetReturnValue(info, false);
+          return;
+        }
+        DoSetTheLength(isolate, current_context, backing_list, desc_bag.value,
+                       exception_state);
+        if (exception_state.HadException())
+          return;
+        V8SetReturnValue(info, true);
+        return;
+      }
     }
 
-    DCHECK(v8_property->IsString());
-    if (v8_property.As<v8::String>()->StringEquals(
-            V8AtomicString(isolate, "length"))) {
-      // TODO(yukishiino): Implement this case appropriately.
-      V8SetReturnValue(info, false);
-      return;
+    bool is_defined = false;
+    if (desc_bag.has_get || desc_bag.has_set) {
+      v8::PropertyDescriptor desc(desc_bag.get, desc_bag.set);
+      if (desc_bag.has_configurable)
+        desc.set_configurable(desc_bag.configurable);
+      if (desc_bag.has_enumerable)
+        desc.set_enumerable(desc_bag.enumerable);
+      if (!v8_target
+               ->DefineProperty(current_context, v8_property.As<v8::Name>(),
+                                desc)
+               .To(&is_defined)) {
+        return;
+      }
+    } else {
+      v8::PropertyDescriptor desc(desc_bag.value, desc_bag.writable);
+      if (desc_bag.has_configurable)
+        desc.set_configurable(desc_bag.configurable);
+      if (desc_bag.has_enumerable)
+        desc.set_enumerable(desc_bag.enumerable);
+      if (!v8_target
+               ->DefineProperty(current_context, v8_property.As<v8::Name>(),
+                                desc)
+               .To(&is_defined)) {
+        return;
+      }
     }
+    V8SetReturnValue(info, is_defined);
   }
 
-  // https://heycam.github.io/webidl/#es-observable-array-deleteProperty
+  // https://webidl.spec.whatwg.org/#es-observable-array-deleteProperty
   static void TrapDeleteProperty(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
-    const auto& v8_target = info[0];
-    const auto& v8_property = info[1];
-    auto& backing_list = ToWrappableUnsafe(v8_target);
+    v8::Local<v8::Object> v8_target = info[0].As<v8::Object>();
+    v8::Local<v8::Value> v8_property = info[1];
+    BackingListWrappable& backing_list = ToWrappableUnsafe(v8_target);
 
-    v8::Local<v8::Uint32> v8_index;
-    if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
-      uint32_t index = v8_index->Value();
-      if (!(backing_list.size() != 0 && index == backing_list.size() - 1)) {
+    if (v8_property->IsString()) {
+      v8::Local<v8::Uint32> v8_index;
+      if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
+        uint32_t index = v8_index->Value();
+        if (!(backing_list.size() != 0 && index == backing_list.size() - 1)) {
+          V8SetReturnValue(info, false);
+          return;
+        }
+        ScriptState* script_state = ScriptState::From(current_context);
+        ExceptionState exception_state(
+            isolate, ExceptionContext::Context::kIndexedPropertyDelete,
+            backing_list.ObservableArrayNameInIDL());
+        if (!RunDeleteAlgorithm(script_state, backing_list, index,
+                                exception_state)) {
+          return;
+        }
+        backing_list.pop_back();
+        V8SetReturnValue(info, true);
+        return;
+      }
+
+      if (v8_property.As<v8::String>()->StringEquals(
+              V8AtomicString(isolate, "length"))) {
         V8SetReturnValue(info, false);
         return;
       }
-      ScriptState* script_state = ScriptState::From(current_context);
-      ExceptionState exception_state(
-          isolate, ExceptionContext::Context::kIndexedPropertyDelete,
-          backing_list.ObservableArrayNameInIDL());
-      if (!RunDeleteAlgorithm(script_state, backing_list, index,
-                              exception_state)) {
-        return;
-      }
-      backing_list.pop_back();
-      V8SetReturnValue(info, true);
-      return;
     }
 
-    DCHECK(v8_property->IsString());
-    if (v8_property.As<v8::String>()->StringEquals(
-            V8AtomicString(isolate, "length"))) {
-      V8SetReturnValue(info, false);
+    bool is_deleted = false;
+    if (!v8_target->Delete(current_context, v8_property).To(&is_deleted))
       return;
-    }
+    V8SetReturnValue(info, is_deleted);
   }
 
-  // https://heycam.github.io/webidl/#es-observable-array-get
+  // https://webidl.spec.whatwg.org/#es-observable-array-get
   static void TrapGet(const v8::FunctionCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
-    const auto& v8_target = info[0];
-    const auto& v8_property = info[1];
-    auto& backing_list = ToWrappableUnsafe(v8_target);
+    v8::Local<v8::Object> v8_target = info[0].As<v8::Object>();
+    v8::Local<v8::Value> v8_property = info[1];
+    BackingListWrappable& backing_list = ToWrappableUnsafe(v8_target);
 
-    v8::Local<v8::Uint32> v8_index;
-    if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
-      uint32_t index = v8_index->Value();
-      if (backing_list.size() <= index) {
-        V8SetReturnValue(info, v8::Undefined(isolate));
+    if (v8_property->IsString()) {
+      v8::Local<v8::Uint32> v8_index;
+      if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
+        uint32_t index = v8_index->Value();
+        if (backing_list.size() <= index) {
+          V8SetReturnValue(info, v8::Undefined(isolate));
+          return;
+        }
+        v8::Local<v8::Value> v8_element;
+        ScriptState* script_state = ScriptState::From(current_context);
+        if (!ToV8Traits<ElementIdlType>::ToV8(script_state, backing_list[index])
+                 .ToLocal(&v8_element)) {
+          return;
+        }
+        V8SetReturnValue(info, v8_element);
         return;
       }
-      v8::Local<v8::Value> v8_element;
-      ScriptState* script_state = ScriptState::From(current_context);
-      if (!ToV8Traits<ElementIdlType>::ToV8(script_state, backing_list[index])
-               .ToLocal(&v8_element)) {
+
+      if (v8_property.As<v8::String>()->StringEquals(
+              V8AtomicString(isolate, "length"))) {
+        V8SetReturnValue(info, backing_list.size());
         return;
       }
-      V8SetReturnValue(info, v8_element);
-      return;
     }
 
-    DCHECK(v8_property->IsString());
-    if (v8_property.As<v8::String>()->StringEquals(
-            V8AtomicString(isolate, "length"))) {
-      V8SetReturnValue(info, backing_list.size());
+    v8::Local<v8::Value> v8_value;
+    if (!v8_target->Get(current_context, v8_property).ToLocal(&v8_value))
       return;
-    }
+    V8SetReturnValue(info, v8_value);
   }
 
-  // https://heycam.github.io/webidl/#es-observable-array-getOwnPropertyDescriptor
+  // https://webidl.spec.whatwg.org/#es-observable-array-getOwnPropertyDescriptor
   static void TrapGetOwnPropertyDescriptor(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
-    const auto& v8_target = info[0];
-    const auto& v8_property = info[1];
-    auto& backing_list = ToWrappableUnsafe(v8_target);
+    v8::Local<v8::Object> v8_target = info[0].As<v8::Object>();
+    v8::Local<v8::Value> v8_property = info[1];
+    BackingListWrappable& backing_list = ToWrappableUnsafe(v8_target);
 
-    v8::Local<v8::Uint32> v8_index;
-    if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
-      uint32_t index = v8_index->Value();
-      if (backing_list.size() <= index) {
-        V8SetReturnValue(info, v8::Undefined(isolate));
+    if (v8_property->IsString()) {
+      v8::Local<v8::Uint32> v8_index;
+      if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
+        uint32_t index = v8_index->Value();
+        if (backing_list.size() <= index) {
+          V8SetReturnValue(info, v8::Undefined(isolate));
+          return;
+        }
+        v8::Local<v8::Value> v8_element;
+        ScriptState* script_state = ScriptState::From(current_context);
+        if (!ToV8Traits<ElementIdlType>::ToV8(script_state, backing_list[index])
+                 .ToLocal(&v8_element)) {
+          return;
+        }
+        v8::PropertyDescriptor prop_desc(v8_element, true);
+        prop_desc.set_configurable(true);
+        prop_desc.set_enumerable(true);
+        V8SetReturnValue(info, prop_desc);
         return;
       }
-      v8::Local<v8::Value> v8_element;
-      ScriptState* script_state = ScriptState::From(current_context);
-      if (!ToV8Traits<ElementIdlType>::ToV8(script_state, backing_list[index])
-               .ToLocal(&v8_element)) {
+
+      if (v8_property.As<v8::String>()->StringEquals(
+              V8AtomicString(isolate, "length"))) {
+        v8::PropertyDescriptor prop_desc(
+            v8::Integer::NewFromUnsigned(isolate, backing_list.size()), true);
+        prop_desc.set_configurable(false);
+        prop_desc.set_enumerable(false);
+        V8SetReturnValue(info, prop_desc);
         return;
       }
-      v8::PropertyDescriptor prop_desc(v8_element, true);
-      prop_desc.set_configurable(true);
-      prop_desc.set_enumerable(true);
-      V8SetReturnValue(info, prop_desc);
-      return;
     }
 
-    DCHECK(v8_property->IsString());
-    if (v8_property.As<v8::String>()->StringEquals(
-            V8AtomicString(isolate, "length"))) {
-      v8::PropertyDescriptor prop_desc(
-          v8::Integer::NewFromUnsigned(isolate, backing_list.size()), true);
-      prop_desc.set_configurable(true);
-      prop_desc.set_enumerable(true);
-      V8SetReturnValue(info, prop_desc);
+    v8::Local<v8::Value> v8_value;
+    if (!v8_target
+             ->GetOwnPropertyDescriptor(current_context,
+                                        v8_property.As<v8::Name>())
+             .ToLocal(&v8_value)) {
       return;
     }
+    V8SetReturnValue(info, v8_value);
   }
 
-  // https://heycam.github.io/webidl/#es-observable-array-has
+  // https://webidl.spec.whatwg.org/#es-observable-array-has
   static void TrapHas(const v8::FunctionCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
-    const auto& v8_target = info[0];
-    const auto& v8_property = info[1];
-    auto& backing_list = ToWrappableUnsafe(v8_target);
+    v8::Local<v8::Object> v8_target = info[0].As<v8::Object>();
+    v8::Local<v8::Value> v8_property = info[1];
+    BackingListWrappable& backing_list = ToWrappableUnsafe(v8_target);
 
-    v8::Local<v8::Uint32> v8_index;
-    if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
-      uint32_t index = v8_index->Value();
-      V8SetReturnValue(info, index < backing_list.size());
-      return;
+    if (v8_property->IsString()) {
+      v8::Local<v8::Uint32> v8_index;
+      if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
+        uint32_t index = v8_index->Value();
+        V8SetReturnValue(info, index < backing_list.size());
+        return;
+      }
+
+      if (v8_property.As<v8::String>()->StringEquals(
+              V8AtomicString(isolate, "length"))) {
+        V8SetReturnValue(info, true);
+        return;
+      }
     }
 
-    DCHECK(v8_property->IsString());
-    if (v8_property.As<v8::String>()->StringEquals(
-            V8AtomicString(isolate, "length"))) {
-      V8SetReturnValue(info, true);
+    bool is_has = false;
+    if (!v8_target->Has(current_context, v8_property).To(&is_has))
       return;
-    }
+    V8SetReturnValue(info, is_has);
   }
 
-  // https://heycam.github.io/webidl/#es-observable-array-ownKeys
+  // https://webidl.spec.whatwg.org/#es-observable-array-ownKeys
   static void TrapOwnKeys(const v8::FunctionCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
-    const auto& v8_target = info[0];
-    auto& backing_list = ToWrappableUnsafe(v8_target);
+    v8::Local<v8::Object> v8_target = info[0].As<v8::Object>();
+    BackingListWrappable& backing_list = ToWrappableUnsafe(v8_target);
 
-    v8::Local<v8::Array> own_keys = v8::Array::New(isolate);
-    for (uint32_t index = 0; index < backing_list.size(); ++index) {
-      v8::Local<v8::String> key;
-      if (!v8::Integer::NewFromUnsigned(isolate, index)
-               ->ToString(current_context)
-               .ToLocal(&key)) {
-        return;
-      }
-      bool is_created = false;
-      if (!own_keys->CreateDataProperty(current_context, index, key)
-               .To(&is_created)) {
-        return;
-      }
-      DCHECK(is_created);
+    // 2. Let length be handler.[[BackingList]]'s size.
+    // 3. Let keys be an empty list.
+    // 4. Let i be 0.
+    // 5. While i < length :
+    // 5.1. Append !ToString(i) to keys.
+    // 5.2. Set i to i + 1.
+    Vector<String> keys_vector(backing_list.size());
+    for (uint32_t index = 0; index < backing_list.size(); ++index)
+      keys_vector.push_back(String::Number(index));
+    v8::Local<v8::Value> own_keys_as_value;
+    if (!ToV8Traits<IDLSequence<IDLString>>::ToV8(
+             ScriptState::From(current_context), keys_vector)
+             .ToLocal(&own_keys_as_value)) {
+      return;
     }
-    uint32_t own_keys_index = backing_list.size();
+    v8::Local<v8::Array> own_keys = own_keys_as_value.As<v8::Array>();
 
+    // 6. Extend keys with ! O.[[OwnPropertyKeys]]().
+    uint32_t own_keys_index = backing_list.size();
     v8::Local<v8::Array> own_props;
     if (!v8_target.As<v8::Object>()
              ->GetOwnPropertyNames(current_context)
              .ToLocal(&own_props)) {
       return;
     }
-    uint32_t own_props_length = own_props->Length();
+    const uint32_t own_props_length = own_props->Length();
     for (uint32_t index = 0; index < own_props_length; ++index) {
       v8::Local<v8::Value> prop_name;
       if (!own_props->Get(current_context, index).ToLocal(&prop_name))
@@ -249,64 +341,128 @@ class ObservableArrayExoticObjectHandler {
       DCHECK(is_created);
     }
 
+    // 7. Return !CreateArrayFromList(keys).
     V8SetReturnValue(info, own_keys);
   }
 
-  // https://heycam.github.io/webidl/#es-observable-array-preventExtensions
+  // https://webidl.spec.whatwg.org/#es-observable-array-preventExtensions
   static void TrapPreventExtensions(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     V8SetReturnValue(info, false);
   }
 
-  // https://heycam.github.io/webidl/#es-observable-array-set
+  // https://webidl.spec.whatwg.org/#es-observable-array-set
   static void TrapSet(const v8::FunctionCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
-    ScriptState* script_state = ScriptState::From(current_context);
-    const auto& v8_target = info[0];
-    const auto& v8_property = info[1];
-    const auto& v8_value = info[2];
-    auto& backing_list = ToWrappableUnsafe(v8_target);
+    v8::Local<v8::Object> v8_target = info[0].As<v8::Object>();
+    v8::Local<v8::Value> v8_property = info[1];
+    v8::Local<v8::Value> v8_value = info[2];
+    BackingListWrappable& backing_list = ToWrappableUnsafe(v8_target);
 
-    v8::Local<v8::Uint32> v8_index;
-    if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
-      ExceptionState exception_state(
-          isolate, ExceptionContext::Context::kIndexedPropertySet,
-          backing_list.ObservableArrayNameInIDL());
-      uint32_t index = v8_index->Value();
-      bool result = DoSetTheIndexedValue(script_state, backing_list, index,
-                                         v8_value, exception_state);
-      V8SetReturnValue(info, result);
-      return;
-    }
-
-    DCHECK(v8_property->IsString());
-    v8::Local<v8::Uint32> v8_length;
-    if (v8_property.As<v8::String>()->StringEquals(
-            V8AtomicString(isolate, "length"))) {
-      ExceptionState exception_state(
-          isolate, ExceptionContext::Context::kAttributeSet,
-          backing_list.ObservableArrayNameInIDL(), "length");
-      if (!v8_value->ToArrayIndex(current_context).ToLocal(&v8_length)) {
-        exception_state.ThrowRangeError("The provided value is invalid.");
+    if (v8_property->IsString()) {
+      v8::Local<v8::Uint32> v8_index;
+      if (v8_property->ToArrayIndex(current_context).ToLocal(&v8_index)) {
+        ExceptionState exception_state(
+            isolate, ExceptionContext::Context::kIndexedPropertySet,
+            backing_list.ObservableArrayNameInIDL());
+        uint32_t index = v8_index->Value();
+        bool result =
+            DoSetTheIndexedValue(isolate, current_context, backing_list, index,
+                                 v8_value, exception_state);
+        V8SetReturnValue(info, result);
         return;
       }
-      uint32_t length = v8_length->Value();
-      bool result =
-          DoSetTheLength(script_state, backing_list, length, exception_state);
-      V8SetReturnValue(info, result);
+
+      if (v8_property.As<v8::String>()->StringEquals(
+              V8AtomicString(isolate, "length"))) {
+        ExceptionState exception_state(
+            isolate, ExceptionContext::Context::kAttributeSet,
+            backing_list.ObservableArrayNameInIDL(), "length");
+        bool result = DoSetTheLength(isolate, current_context, backing_list,
+                                     v8_value, exception_state);
+        V8SetReturnValue(info, result);
+        return;
+      }
+    }
+
+    bool is_set = false;
+    if (!v8_target->Set(current_context, v8_property, v8_value).To(&is_set))
       return;
+    V8SetReturnValue(info, is_set);
+  }
+
+  // https://webidl.spec.whatwg.org/#dfn-attribute-setter
+  // step 4.5.10. If attribute’s type is an observable array type with type
+  //   argument T:
+  static void PerformAttributeSet(ScriptState* script_state,
+                                  BackingListWrappable& backing_list,
+                                  v8::Local<v8::Value> v8_value,
+                                  ExceptionState& exception_state) {
+    v8::Isolate* isolate = script_state->GetIsolate();
+    // step 4.5.10.1. Let newValues be the result of converting V to an IDL
+    //   value of type sequence<T>.
+    auto&& blink_value =
+        NativeValueTraits<IDLSequence<ElementIdlType>>::NativeValue(
+            isolate, v8_value, exception_state);
+    if (exception_state.HadException())
+      return;
+    // step 4.5.10.3. Set the length of oa.[[ProxyHandler]] to 0.
+    if (!DoSetTheLength(isolate, script_state->GetContext(), backing_list, 0,
+                        exception_state)) {
+      return;
+    }
+    // step 4.5.10.4. Let i be 0.
+    // step 4.5.10.5. While i < newValues’s size:
+    for (typename BackingListWrappable::size_type i = 0; i < blink_value.size();
+         ++i) {
+      // step 4.5.10.5.1. Perform the algorithm steps given by
+      //   oa.[[ProxyHandler]].[[SetAlgorithm]], given newValues[i] and i.
+      if (!RunSetAlgorithm(script_state, backing_list, i, blink_value[i],
+                           exception_state)) {
+        return;
+      }
+      // step 4.5.10.5.2. Append newValues[i] to
+      //   oa.[[ProxyHandler]].[[BackingList]].
+      backing_list.push_back(std::move(blink_value[i]));
     }
   }
 
  private:
-  static BackingListWrappable& ToWrappableUnsafe(v8::Local<v8::Value> target) {
-    return *ToScriptWrappable(target.As<v8::Object>())
-                ->ToImpl<BackingListWrappable>();
+  static BackingListWrappable& ToWrappableUnsafe(v8::Local<v8::Object> target) {
+    return *ToScriptWrappable(target)->ToImpl<BackingListWrappable>();
   }
 
-  // https://heycam.github.io/webidl/#observable-array-exotic-object-set-the-length
-  static bool DoSetTheLength(ScriptState* script_state,
+  // https://webidl.spec.whatwg.org/#observable-array-exotic-object-set-the-length
+  static bool DoSetTheLength(v8::Isolate* isolate,
+                             v8::Local<v8::Context> current_context,
+                             BackingListWrappable& backing_list,
+                             v8::Local<v8::Value> v8_length,
+                             ExceptionState& exception_state) {
+    v8::TryCatch try_catch(isolate);
+    v8::Local<v8::Uint32> v8_length_uint32;
+    if (!v8_length->ToUint32(current_context).ToLocal(&v8_length_uint32)) {
+      exception_state.RethrowV8Exception(try_catch.Exception());
+      return false;
+    }
+    v8::Local<v8::Number> v8_length_number;
+    if (!v8_length->ToNumber(current_context).ToLocal(&v8_length_number)) {
+      exception_state.RethrowV8Exception(try_catch.Exception());
+      return false;
+    }
+    if (v8_length_uint32->Value() != v8_length_number->Value()) {
+      exception_state.ThrowRangeError("The provided length is invalid.");
+      return false;
+    }
+    uint32_t length = v8_length_uint32->Value();
+
+    return DoSetTheLength(isolate, current_context, backing_list, length,
+                          exception_state);
+  }
+
+  // https://webidl.spec.whatwg.org/#observable-array-exotic-object-set-the-length
+  static bool DoSetTheLength(v8::Isolate* isolate,
+                             v8::Local<v8::Context> current_context,
                              BackingListWrappable& backing_list,
                              uint32_t length,
                              ExceptionState& exception_state) {
@@ -316,6 +472,7 @@ class ObservableArrayExoticObjectHandler {
     if (backing_list.size() == 0)
       return true;
 
+    ScriptState* script_state = ScriptState::From(current_context);
     uint32_t index_to_delete = backing_list.size() - 1;
     while (length <= index_to_delete) {
       if (!RunDeleteAlgorithm(script_state, backing_list, index_to_delete,
@@ -331,8 +488,9 @@ class ObservableArrayExoticObjectHandler {
     return true;
   }
 
-  // https://heycam.github.io/webidl/#observable-array-exotic-object-set-the-indexed-value
-  static bool DoSetTheIndexedValue(ScriptState* script_state,
+  // https://webidl.spec.whatwg.org/#observable-array-exotic-object-set-the-indexed-value
+  static bool DoSetTheIndexedValue(v8::Isolate* isolate,
+                                   v8::Local<v8::Context> current_context,
                                    BackingListWrappable& backing_list,
                                    uint32_t index,
                                    v8::Local<v8::Value> v8_value,
@@ -340,12 +498,17 @@ class ObservableArrayExoticObjectHandler {
     if (backing_list.size() < index)
       return false;
 
+    // The return type of NativeValueTraits<T>::NativeValue may be different
+    // from BackingListWrappable::value_type.  Convert the type here only once,
+    // and use the same value when running RunSetAlgorithm and when storing the
+    // value into the backing list.
     typename BackingListWrappable::value_type blink_value =
-        NativeValueTraits<ElementIdlType>::NativeValue(
-            script_state->GetIsolate(), v8_value, exception_state);
+        NativeValueTraits<ElementIdlType>::NativeValue(isolate, v8_value,
+                                                       exception_state);
     if (exception_state.HadException())
       return false;
 
+    ScriptState* script_state = ScriptState::From(current_context);
     if (index < backing_list.size()) {
       if (!RunDeleteAlgorithm(script_state, backing_list, index,
                               exception_state)) {
@@ -364,7 +527,7 @@ class ObservableArrayExoticObjectHandler {
     return true;
   }
 
-  // https://heycam.github.io/webidl/#observable-array-attribute-set-an-indexed-value
+  // https://webidl.spec.whatwg.org/#observable-array-attribute-set-an-indexed-value
   static bool RunSetAlgorithm(ScriptState* script_state,
                               BackingListWrappable& backing_list,
                               typename BackingListWrappable::size_type index,
@@ -378,7 +541,7 @@ class ObservableArrayExoticObjectHandler {
     return !exception_state.HadException();
   }
 
-  // https://heycam.github.io/webidl/#observable-array-attribute-delete-an-indexed-value
+  // https://webidl.spec.whatwg.org/#observable-array-attribute-delete-an-indexed-value
   static bool RunDeleteAlgorithm(ScriptState* script_state,
                                  BackingListWrappable& backing_list,
                                  typename BackingListWrappable::size_type index,

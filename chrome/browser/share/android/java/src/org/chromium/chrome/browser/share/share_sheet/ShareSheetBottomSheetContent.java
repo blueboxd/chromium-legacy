@@ -19,13 +19,13 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,6 +33,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ChromeShareExtras.DetailedContentType;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinator.LinkGeneration;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleCoordinator.LinkToggleState;
@@ -148,6 +149,33 @@ class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemClickLis
                 /*firstParty=*/false);
         thirdParty.addOnScrollListener(
                 new ScrollEventReporter("SharingHubAndroid.ThirdPartyAppsScrolled"));
+
+        if (shouldSwapFirstAndThirdPartyRows()) {
+            swapFirstAndThirdPartyRows();
+        }
+    }
+
+    boolean shouldSwapFirstAndThirdPartyRows() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.SWAP_ANDROID_SHARE_HUB_ROWS)
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.UPCOMING_SHARING_FEATURES);
+    }
+
+    void swapFirstAndThirdPartyRows() {
+        View firstPartyRow = getContentView().findViewById(R.id.share_sheet_chrome_apps);
+        View thirdPartyRow = getContentView().findViewById(R.id.share_sheet_other_apps);
+
+        LinearLayout layout = getContentView().findViewById(R.id.share_sheet_layout);
+        assert firstPartyRow.getParent() == layout;
+        assert thirdPartyRow.getParent() == layout;
+
+        int firstPartyIndex = layout.indexOfChild(firstPartyRow);
+        int thirdPartyIndex = layout.indexOfChild(thirdPartyRow);
+
+        assert thirdPartyIndex < firstPartyIndex;
+        layout.removeViewAt(firstPartyIndex);
+        layout.removeViewAt(thirdPartyIndex);
+        layout.addView(firstPartyRow, thirdPartyIndex);
+        layout.addView(thirdPartyRow, firstPartyIndex);
     }
 
     void createFirstPartyRecyclerViews(List<PropertyModel> firstPartyModels) {
@@ -404,7 +432,7 @@ class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemClickLis
 
         if (mLinkToggleState == LinkToggleState.LINK) {
             drawable = R.drawable.link;
-            skillColor = R.color.default_icon_color_blue;
+            skillColor = R.color.default_icon_color_accent1_tint_list;
             contentDescription = R.string.link_toggle_include_link;
         } else {
             drawable = R.drawable.link_off;
@@ -423,7 +451,8 @@ class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemClickLis
         }
 
         ImageView linkToggleView = getContentView().findViewById(R.id.link_toggle_view);
-        linkToggleView.setColorFilter(ContextCompat.getColor(mActivity, skillColor));
+        linkToggleView.setColorFilter(
+                AppCompatResources.getColorStateList(mActivity, skillColor).getDefaultColor());
         linkToggleView.setVisibility(View.VISIBLE);
         linkToggleView.setImageDrawable(AppCompatResources.getDrawable(mActivity, drawable));
         // This is necessary in order to prevent voice over announcing the content description

@@ -6,6 +6,7 @@
 
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 
+#include "base/debug/stack_trace.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
@@ -14,15 +15,22 @@
 namespace content {
 
 // Static.
-BrowserAccessibility* BrowserAccessibility::Create() {
-  return new BrowserAccessibilityMac();
+std::unique_ptr<BrowserAccessibility> BrowserAccessibility::Create(
+    BrowserAccessibilityManager* manager,
+    ui::AXNode* node) {
+  return std::unique_ptr<BrowserAccessibilityMac>(
+      new BrowserAccessibilityMac(manager, node));
 }
 
-BrowserAccessibilityMac::BrowserAccessibilityMac() : platform_node_(nullptr) {}
+BrowserAccessibilityMac::BrowserAccessibilityMac(
+    BrowserAccessibilityManager* manager,
+    ui::AXNode* node)
+    : BrowserAccessibility(manager, node) {}
 
 BrowserAccessibilityMac::~BrowserAccessibilityMac() {
   if (platform_node_) {
-    platform_node_->Destroy();
+    platform_node_->Destroy();  // `Destroy()` also deletes the object.
+    platform_node_ = nullptr;
   }
 }
 
@@ -183,12 +191,18 @@ BrowserAccessibility* BrowserAccessibilityMac::PlatformGetPreviousSibling()
   return BrowserAccessibility::PlatformGetPreviousSibling();
 }
 
+gfx::NativeViewAccessible BrowserAccessibilityMac::GetNativeViewAccessible() {
+  return GetNativeWrapper();
+}
+
+ui::AXPlatformNode* BrowserAccessibilityMac::GetAXPlatformNode() const {
+  return platform_node_;
+}
+
 void BrowserAccessibilityMac::CreatePlatformNodes() {
   DCHECK(!platform_node_);
-
   platform_node_ =
       static_cast<ui::AXPlatformNodeMac*>(ui::AXPlatformNode::Create(this));
-
   CreateNativeWrapper();
 }
 

@@ -19,6 +19,8 @@ namespace features {
 
 extern const base::Feature kClosedTabCache;
 
+extern const base::Feature kColorProviderRedirectionForThemeProvider;
+
 extern const base::Feature kDestroyProfileOnBrowserClose;
 
 extern const base::Feature kPromoBrowserCommands;
@@ -50,6 +52,10 @@ extern const base::Feature kTriggerNetworkDataMigration;
 bool ShouldTriggerNetworkDataMigration();
 
 extern const base::Feature kWebUsbDeviceDetection;
+
+#if defined(OS_ANDROID)
+extern const base::Feature kCertificateTransparencyAndroid;
+#endif
 
 }  // namespace features
 

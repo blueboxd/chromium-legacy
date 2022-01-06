@@ -38,7 +38,7 @@ void GradientGeneratedImage::Draw(cc::PaintCanvas* canvas,
                                   const ImageDrawOptions& draw_options) {
   SkRect visible_src_rect = src_rect;
   if (!visible_src_rect.intersect(
-          SkRect::MakeWH(size_.Width(), size_.Height())))
+          SkRect::MakeWH(size_.width(), size_.height())))
     return;
 
   const SkMatrix transform = SkMatrix::RectToRect(src_rect, dest_rect);
@@ -63,6 +63,8 @@ void GradientGeneratedImage::DrawTile(GraphicsContext& context,
 
 bool GradientGeneratedImage::ApplyShader(PaintFlags& flags,
                                          const SkMatrix& local_matrix,
+                                         const FloatRect& dst_rect,
+                                         const FloatRect& src_rect,
                                          const ImageDrawOptions& draw_options) {
   DCHECK(gradient_);
   gradient_->ApplyToFlags(flags, local_matrix, draw_options);

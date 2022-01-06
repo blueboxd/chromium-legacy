@@ -39,9 +39,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
 #include "base/time/tick_clock.h"
@@ -448,6 +448,9 @@ class TransportClient : public CastTransport::Client {
   explicit TransportClient(RunOneBenchmark* run_one_benchmark)
       : run_one_benchmark_(run_one_benchmark) {}
 
+  TransportClient(const TransportClient&) = delete;
+  TransportClient& operator=(const TransportClient&) = delete;
+
   void OnStatusChanged(CastTransportStatus status) final {
     EXPECT_EQ(TRANSPORT_STREAM_INITIALIZED, status);
   }
@@ -461,8 +464,6 @@ class TransportClient : public CastTransport::Client {
 
  private:
   RunOneBenchmark* const run_one_benchmark_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransportClient);
 };
 
 }  // namepspace

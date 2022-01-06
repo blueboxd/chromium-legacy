@@ -48,6 +48,7 @@ class ProjectorClientImpl : public ash::ProjectorClient,
   bool GetDriveFsMountPointPath(base::FilePath* result) const override;
   bool IsDriveFsMounted() const override;
   void OpenProjectorApp() const override;
+  void OnNewScreencastPreconditionChanged(bool can_start) const override;
 
   // SpeechRecognizerDelegate:
   void OnSpeechResult(
@@ -62,14 +63,8 @@ class ProjectorClientImpl : public ash::ProjectorClient,
   // speech::SodaInstaller::Observer:
   void OnSodaInstalled() override;
   // We are not utilizing the following methods. Mark them as empty overrides.
-  void OnSodaLanguagePackInstalled(
-      speech::LanguageCode language_code) override {}
   void OnSodaError() override {}
-  void OnSodaLanguagePackError(speech::LanguageCode language_code) override {}
   void OnSodaProgress(int combined_progress) override {}
-  void OnSodaLanguagePackProgress(int language_progress,
-                                  speech::LanguageCode language_code) override {
-  }
 
  private:
   ash::ProjectorController* const controller_;

@@ -57,6 +57,7 @@ using TestEvent2 = builders::Memory_Experimental;
 const char* kTestEvent2Metric1 = TestEvent2::kArrayBufferName;
 const char* kTestEvent2Metric2 = TestEvent2::kBlinkGCName;
 using TestEvent3 = builders::Previews;
+using TestProviderEvent = builders::ScreenBrightness;
 
 std::string Entry1And2Whitelist() {
   return std::string(TestEvent1::kEntryName) + ',' + TestEvent2::kEntryName;
@@ -123,6 +124,24 @@ class MockDemographicMetricsProvider
   // DemographicMetricsProvider:
   MOCK_METHOD1(ProvideSyncedUserNoisedBirthYearAndGenderToReport,
                void(Report* report));
+};
+
+// A simple Provider that emits a 'TestProviderEvent' on session close (i.e. a
+// Report being emitted).
+class UkmTestMetricsProvider : public metrics::TestMetricsProvider {
+ public:
+  explicit UkmTestMetricsProvider(UkmRecorder* test_recording_helper)
+      : test_recording_helper_(test_recording_helper) {}
+
+  void ProvideCurrentSessionUKMData() override {
+    // An Event emitted during a Provider will frequently not not associated
+    // with a URL.
+    SourceId id = ukm::NoURLSourceId();
+    TestProviderEvent(id).Record(test_recording_helper_);
+  }
+
+ private:
+  UkmRecorder* test_recording_helper_;
 };
 
 class UkmServiceTest : public testing::Test {
@@ -473,13 +492,14 @@ TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
 }
 
 TEST_F(UkmServiceTest, MetricsProviderTest) {
-  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
+  ScopedUkmFeatureParams params(
+      {{"WhitelistEntries", std::string(TestProviderEvent::kEntryName)}});
 
   UkmService service(&prefs_, &client_,
                      std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
 
-  metrics::TestMetricsProvider* provider = new metrics::TestMetricsProvider();
+  auto* provider = new UkmTestMetricsProvider(&service);
   service.RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(provider));
 
@@ -492,18 +512,20 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  SourceId id = GetWhitelistedSourceId(0);
-  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
-  TestEvent1(id).Record(&service);
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 1);
 
   Report proto_report = GetPersistedReport();
-  EXPECT_EQ(1, proto_report.sources_size());
-  EXPECT_EQ(1, proto_report.entries_size());
+  // We should have an Event from a Provider provided metric, however, it is not
+  // attached to a Source (which should be typical for a Provider metric).
+  EXPECT_EQ(proto_report.sources_size(), 0);
 
-  // Providers have now supplied system profile information.
+  // Providers have now supplied system profile.
   EXPECT_TRUE(provider->provide_system_profile_metrics_called());
+  // Providers has also supplied a UKM Event.
+  const Entry& entry = proto_report.entries(0);
+  EXPECT_EQ(base::HashMetricName(TestProviderEvent::kEntryName),
+            entry.event_hash());
 }
 
 // Currently just testing brand is set, would be good to test other core
@@ -842,9 +864,6 @@ TEST_F(UkmServiceTest, RecordSessionId) {
 }
 
 TEST_F(UkmServiceTest, SourceSize) {
-  // Set a threshold of number of Sources via Feature Params.
-  ScopedUkmFeatureParams params({{"MaxSources", "2"}});
-
   ClearPrefs();
   UkmService service(&prefs_, &client_,
                      std::make_unique<MockDemographicMetricsProvider>());
@@ -855,20 +874,18 @@ TEST_F(UkmServiceTest, SourceSize) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  auto id = GetWhitelistedSourceId(0);
-  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
-  id = GetWhitelistedSourceId(1);
-  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar2"));
-  id = GetWhitelistedSourceId(2);
-  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar3"));
+  // Add a large number of sources, more than the hardcoded max.
+  for (int i = 0; i < 1000; ++i) {
+    auto id = GetWhitelistedSourceId(i);
+    recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  }
 
   service.Flush();
   EXPECT_EQ(1, GetPersistedLogCount());
 
   auto proto_report = GetPersistedReport();
-  // Note, 2 instead of 3 sources, since we overrode the max number of sources
-  // via Feature params.
-  EXPECT_EQ(2, proto_report.sources_size());
+  // Note, 500 instead of 1000 sources, since 500 is the maximum.
+  EXPECT_EQ(500, proto_report.sources_size());
 }
 
 TEST_F(UkmServiceTest, PurgeMidUpload) {
@@ -961,13 +978,15 @@ TEST_F(UkmServiceTest, SourceURLLength) {
   EXPECT_EQ("URLTooLong", proto_source.urls(0).url());
 }
 
+// TODO(rkaplow): Revamp these tests once whitelisted entries are removed.
+// Currently this test is overly complicated, but can be simplified when the
+// restrict_to_whitelisted_source_ids is removed.
 TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
   const GURL kURL("https://google.com/foobar");
   for (bool restrict_to_whitelisted_source_ids : {true, false}) {
     // Set a threshold of number of Sources via Feature Params.
     ScopedUkmFeatureParams params(
-        {{"MaxKeptSources", "3"},
-         {"WhitelistEntries", Entry1And2Whitelist()},
+        {{"WhitelistEntries", Entry1And2Whitelist()},
          {"RestrictToWhitelistedSourceIds",
           restrict_to_whitelisted_source_ids ? "true" : "false"}});
 
@@ -1031,10 +1050,8 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
       // The one whitelisted source is of navigation type.
       EXPECT_EQ(1, proto_report.source_counts().navigation_sources());
       EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
-      // Source 0 of navigation type, and entryless sources 1, 3, 4, 5 of
-      // non-whitelisted type are eligible to be deferred, but MaxKeptSources
-      // restricts deferral to the 3 latest created ones.
-      EXPECT_EQ(3, proto_report.source_counts().deferred_sources());
+
+      EXPECT_EQ(6, proto_report.source_counts().deferred_sources());
       EXPECT_EQ(0, proto_report.source_counts().carryover_sources());
 
       ASSERT_EQ(3, proto_report.sources_size());
@@ -1075,17 +1092,11 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
       EXPECT_EQ(0, proto_report.source_counts().observed());
       EXPECT_EQ(0, proto_report.source_counts().navigation_sources());
       EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
-      // Only the navigation type source is deferred.
-      EXPECT_EQ(1, proto_report.source_counts().deferred_sources());
-      // Number of sources carried over from the previous report to this report.
-      EXPECT_EQ(3, proto_report.source_counts().carryover_sources());
-      // Out of sources 3, 4, 5 that were retained from the previous cycle,
-      // sources 3 and 4 got new entries are thus included in this report.
-      ASSERT_EQ(2, proto_report.sources_size());
-      EXPECT_EQ(ids[3], proto_report.sources(0).id());
-      EXPECT_EQ(kURL.spec(), proto_report.sources(0).urls(0).url());
-      EXPECT_EQ(ids[4], proto_report.sources(1).id());
-      EXPECT_EQ(kURL.spec(), proto_report.sources(1).urls(0).url());
+
+      EXPECT_EQ(3, proto_report.source_counts().deferred_sources());
+
+      EXPECT_EQ(6, proto_report.source_counts().carryover_sources());
+      ASSERT_EQ(5, proto_report.sources_size());
     }
   }
 }

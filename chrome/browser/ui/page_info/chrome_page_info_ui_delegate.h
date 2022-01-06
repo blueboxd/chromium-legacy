@@ -9,12 +9,17 @@
 
 #include "build/build_config.h"
 #include "components/page_info/page_info_ui_delegate.h"
+#include "components/page_info/proto/about_this_site_metadata.pb.h"
 #include "url/gurl.h"
 
 class Profile;
 
 namespace content {
 class WebContents;
+}
+
+namespace ui {
+class Event;
 }
 
 class ChromePageInfoUiDelegate : public PageInfoUiDelegate {
@@ -33,8 +38,10 @@ class ChromePageInfoUiDelegate : public PageInfoUiDelegate {
   // If "allow" option is not available, return the reason why.
   std::u16string GetAutomaticallyBlockedReason(ContentSettingsType type);
 
-  // Returns "About this site" description for the active page.
-  std::u16string GetAboutThisSiteDescription();
+  // Returns "About this site" info for the active page.
+  absl::optional<page_info::proto::SiteInfo> GetAboutThisSiteInfo();
+
+  void AboutThisSiteSourceClicked(GURL url, const ui::Event& event);
 
 #if !defined(OS_ANDROID)
   // If PageInfo should show a link to the site or app's settings page, this

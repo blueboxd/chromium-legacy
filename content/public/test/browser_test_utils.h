@@ -52,6 +52,7 @@
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/display/display_switches.h"
@@ -67,22 +68,23 @@
 
 namespace gfx {
 class Point;
-}
+}  // namespace gfx
 
 namespace net {
 class CanonicalCookie;
 namespace test_server {
 class EmbeddedTestServer;
-}
+}  // namespace test_server
+
 // TODO(svaldez): Remove typedef once EmbeddedTestServer has been migrated
 // out of net::test_server.
 using test_server::EmbeddedTestServer;
-}
+}  // namespace net
 
 namespace ui {
 class AXPlatformNodeDelegate;
 class AXTreeID;
-}
+}  // namespace ui
 
 #if defined(OS_WIN)
 namespace Microsoft {
@@ -103,8 +105,9 @@ typedef int PROPERTYID;
 // content\test\content_browser_test_utils.h.
 
 namespace blink {
+class StorageKey;
 struct FrameVisualProperties;
-}
+}  // namespace blink
 
 namespace content {
 
@@ -892,12 +895,11 @@ std::vector<RenderFrameHost*> CollectAllRenderFrameHosts(Page& page);
 std::vector<RenderFrameHost*> CollectAllRenderFrameHosts(
     WebContents* web_contents);
 
-// Executes the WebUI resource test runner injecting each resource ID in
-// |js_resource_ids| prior to executing the tests.
+// Executes the WebUI resource tests. Injects the test runner script prior to
+// executing the tests.
 //
 // Returns true if tests ran successfully, false otherwise.
-bool ExecuteWebUIResourceTest(WebContents* web_contents,
-                              const std::vector<int>& js_resource_ids);
+bool ExecuteWebUIResourceTest(WebContents* web_contents);
 
 // Returns the serialized cookie string for the given url. Uses an inclusive
 // SameSiteCookieContext by default, which gets cookies regardless of their
@@ -1245,7 +1247,8 @@ class DOMMessageQueue : public NotificationObserver,
                const NotificationDetails& details) override;
 
   // Overridden WebContentsObserver methods.
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
  private:
@@ -1627,6 +1630,9 @@ class TestNavigationManager : public WebContentsObserver {
   // This is useful for utilizing this class from within another message loop.
   void AllowNestableTasks();
 
+  // Write a representation of this class into trace.
+  void WriteIntoTrace(perfetto::TracedValue ctx) const;
+
  protected:
   // Derived classes can override if they want to filter out navigations. This
   // is called from DidStartNavigation.
@@ -1765,28 +1771,31 @@ class WebContentsConsoleObserver : public WebContentsObserver {
 // renderer. Used to simulate a compromised renderer.
 class PwnMessageHelper {
  public:
+  PwnMessageHelper(const PwnMessageHelper&) = delete;
+  PwnMessageHelper& operator=(const PwnMessageHelper&) = delete;
+
   // Calls Create method in FileSystemHost Mojo interface.
   static void FileSystemCreate(RenderProcessHost* process,
                                int request_id,
                                GURL path,
                                bool exclusive,
                                bool is_directory,
-                               bool recursive);
+                               bool recursive,
+                               const blink::StorageKey& storage_key);
 
   // Calls Write method in FileSystemHost Mojo interface.
   static void FileSystemWrite(RenderProcessHost* process,
                               int request_id,
                               GURL file_path,
                               std::string blob_uuid,
-                              int64_t position);
+                              int64_t position,
+                              const blink::StorageKey& storage_key);
 
   // Calls OpenURL method in FrameHost Mojo interface.
   static void OpenURL(RenderFrameHost* render_frame_host, const GURL& url);
 
  private:
   PwnMessageHelper();  // Not instantiable.
-
-  DISALLOW_COPY_AND_ASSIGN(PwnMessageHelper);
 };
 
 #if defined(USE_AURA)

@@ -932,13 +932,9 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(4u, after_count - before_count);
 
-  before_count = after_count;
   EXPECT_EQ(ScheduleInvalidationsForRules(shadow_root,
                                           "::slotted(*) { background: green}"),
-            kRuleSetInvalidationsScheduled);
-  UpdateAllLifecyclePhases();
-  after_count = GetStyleEngine().StyleForElementCount();
-  EXPECT_EQ(4u, after_count - before_count);
+            kRuleSetInvalidationFullRecalc);
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
@@ -4071,24 +4067,25 @@ TEST_F(StyleEngineTest, CascadeLayersInOriginsAndTreeScopes) {
 
   UpdateAllLifecyclePhases();
 
-  // User layer order: (implicit outer layer), foo, bar
+  // User layer order: foo, bar, (implicit outer layer)
   auto* user_layer_map = GetStyleEngine().GetUserCascadeLayerMap();
   ASSERT_TRUE(user_layer_map);
 
   const CascadeLayer& user_outer_layer =
       user_sheet->GetRuleSet().CascadeLayers();
   EXPECT_EQ("", user_outer_layer.GetName());
-  EXPECT_EQ(0u, user_layer_map->GetLayerOrder(user_outer_layer));
+  EXPECT_EQ(CascadeLayerMap::kImplicitOuterLayerOrder,
+            user_layer_map->GetLayerOrder(user_outer_layer));
 
   const CascadeLayer& user_foo = *user_outer_layer.GetDirectSubLayers()[0];
   EXPECT_EQ("foo", user_foo.GetName());
-  EXPECT_EQ(1u, user_layer_map->GetLayerOrder(user_foo));
+  EXPECT_EQ(0u, user_layer_map->GetLayerOrder(user_foo));
 
   const CascadeLayer& user_bar = *user_outer_layer.GetDirectSubLayers()[1];
   EXPECT_EQ("bar", user_bar.GetName());
-  EXPECT_EQ(2u, user_layer_map->GetLayerOrder(user_bar));
+  EXPECT_EQ(1u, user_layer_map->GetLayerOrder(user_bar));
 
-  // Document scope author layer order: (implicit outer layer), bar, foo
+  // Document scope author layer order: bar, foo, (implicit outer layer)
   auto* document_layer_map =
       GetDocument().GetScopedStyleResolver()->GetCascadeLayerMap();
   ASSERT_TRUE(document_layer_map);
@@ -4100,19 +4097,20 @@ TEST_F(StyleEngineTest, CascadeLayersInOriginsAndTreeScopes) {
           ->GetRuleSet()
           .CascadeLayers();
   EXPECT_EQ("", document_outer_layer.GetName());
-  EXPECT_EQ(0u, document_layer_map->GetLayerOrder(document_outer_layer));
+  EXPECT_EQ(CascadeLayerMap::kImplicitOuterLayerOrder,
+            document_layer_map->GetLayerOrder(document_outer_layer));
 
   const CascadeLayer& document_bar =
       *document_outer_layer.GetDirectSubLayers()[0];
   EXPECT_EQ("bar", document_bar.GetName());
-  EXPECT_EQ(1u, document_layer_map->GetLayerOrder(document_bar));
+  EXPECT_EQ(0u, document_layer_map->GetLayerOrder(document_bar));
 
   const CascadeLayer& document_foo =
       *document_outer_layer.GetDirectSubLayers()[1];
   EXPECT_EQ("foo", document_foo.GetName());
-  EXPECT_EQ(2u, document_layer_map->GetLayerOrder(document_foo));
+  EXPECT_EQ(1u, document_layer_map->GetLayerOrder(document_foo));
 
-  // Shadow scope author layer order: (implicit outer layer), foo, foo.baz, bar
+  // Shadow scope author layer order: foo.baz, foo, bar, (implicit outer layer)
   ShadowRoot* shadow = GetDocument().getElementById("host")->GetShadowRoot();
   auto* shadow_layer_map =
       shadow->GetScopedStyleResolver()->GetCascadeLayerMap();
@@ -4125,7 +4123,8 @@ TEST_F(StyleEngineTest, CascadeLayersInOriginsAndTreeScopes) {
           ->GetRuleSet()
           .CascadeLayers();
   EXPECT_EQ("", shadow_outer_layer.GetName());
-  EXPECT_EQ(0u, shadow_layer_map->GetLayerOrder(shadow_outer_layer));
+  EXPECT_EQ(CascadeLayerMap::kImplicitOuterLayerOrder,
+            shadow_layer_map->GetLayerOrder(shadow_outer_layer));
 
   const CascadeLayer& shadow_foo = *shadow_outer_layer.GetDirectSubLayers()[0];
   EXPECT_EQ("foo", shadow_foo.GetName());
@@ -4133,11 +4132,11 @@ TEST_F(StyleEngineTest, CascadeLayersInOriginsAndTreeScopes) {
 
   const CascadeLayer& shadow_foo_baz = *shadow_foo.GetDirectSubLayers()[0];
   EXPECT_EQ("baz", shadow_foo_baz.GetName());
-  EXPECT_EQ(2u, shadow_layer_map->GetLayerOrder(shadow_foo_baz));
+  EXPECT_EQ(0u, shadow_layer_map->GetLayerOrder(shadow_foo_baz));
 
   const CascadeLayer& shadow_bar = *shadow_outer_layer.GetDirectSubLayers()[1];
   EXPECT_EQ("bar", shadow_bar.GetName());
-  EXPECT_EQ(3u, shadow_layer_map->GetLayerOrder(shadow_bar));
+  EXPECT_EQ(2u, shadow_layer_map->GetLayerOrder(shadow_bar));
 }
 
 TEST_F(StyleEngineTest, CascadeLayersFromMultipleSheets) {
@@ -4156,7 +4155,7 @@ TEST_F(StyleEngineTest, CascadeLayersFromMultipleSheets) {
   UpdateAllLifecyclePhases();
 
   // Final layer ordering:
-  // (implicit outer layer), foo, foo.quux, bar, bar.qux, baz
+  // foo.quux, foo, bar.qux, bar, baz, (implicit outer layer)
   auto* layer_map =
       GetDocument().GetScopedStyleResolver()->GetCascadeLayerMap();
   ASSERT_TRUE(layer_map);
@@ -4168,7 +4167,8 @@ TEST_F(StyleEngineTest, CascadeLayersFromMultipleSheets) {
           ->GetRuleSet()
           .CascadeLayers();
   EXPECT_EQ("", sheet1_outer_layer.GetName());
-  EXPECT_EQ(0u, layer_map->GetLayerOrder(sheet1_outer_layer));
+  EXPECT_EQ(CascadeLayerMap::kImplicitOuterLayerOrder,
+            layer_map->GetLayerOrder(sheet1_outer_layer));
 
   const CascadeLayer& sheet1_foo = *sheet1_outer_layer.GetDirectSubLayers()[0];
   EXPECT_EQ("foo", sheet1_foo.GetName());
@@ -4185,11 +4185,12 @@ TEST_F(StyleEngineTest, CascadeLayersFromMultipleSheets) {
           ->GetRuleSet()
           .CascadeLayers();
   EXPECT_EQ("", sheet2_outer_layer.GetName());
-  EXPECT_EQ(0u, layer_map->GetLayerOrder(sheet2_outer_layer));
+  EXPECT_EQ(CascadeLayerMap::kImplicitOuterLayerOrder,
+            layer_map->GetLayerOrder(sheet2_outer_layer));
 
   const CascadeLayer& sheet2_baz = *sheet2_outer_layer.GetDirectSubLayers()[0];
   EXPECT_EQ("baz", sheet2_baz.GetName());
-  EXPECT_EQ(5u, layer_map->GetLayerOrder(sheet2_baz));
+  EXPECT_EQ(4u, layer_map->GetLayerOrder(sheet2_baz));
 
   const CascadeLayer& sheet2_bar = *sheet2_outer_layer.GetDirectSubLayers()[1];
   EXPECT_EQ("bar", sheet2_bar.GetName());
@@ -4197,7 +4198,7 @@ TEST_F(StyleEngineTest, CascadeLayersFromMultipleSheets) {
 
   const CascadeLayer& sheet2_bar_qux = *sheet2_bar.GetDirectSubLayers()[0];
   EXPECT_EQ("qux", sheet2_bar_qux.GetName());
-  EXPECT_EQ(4u, layer_map->GetLayerOrder(sheet2_bar_qux));
+  EXPECT_EQ(2u, layer_map->GetLayerOrder(sheet2_bar_qux));
 
   const CascadeLayer& sheet2_foo = *sheet2_outer_layer.GetDirectSubLayers()[2];
   EXPECT_EQ("foo", sheet2_foo.GetName());
@@ -4205,7 +4206,7 @@ TEST_F(StyleEngineTest, CascadeLayersFromMultipleSheets) {
 
   const CascadeLayer& sheet2_foo_quux = *sheet2_foo.GetDirectSubLayers()[0];
   EXPECT_EQ("quux", sheet2_foo_quux.GetName());
-  EXPECT_EQ(2u, layer_map->GetLayerOrder(sheet2_foo_quux));
+  EXPECT_EQ(0u, layer_map->GetLayerOrder(sheet2_foo_quux));
 }
 
 TEST_F(StyleEngineTest, CascadeLayersNotExplicitlyDeclared) {
@@ -4772,6 +4773,21 @@ TEST_F(StyleEngineTest, EmptyDetachParent) {
   ASSERT_TRUE(parent->GetLayoutObject());
   EXPECT_FALSE(parent->GetLayoutObject()->WhitespaceChildrenMayChange());
   EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
+}
+
+TEST_F(StyleEngineTest, LegacyListItemRebuildRootCrash) {
+  UpdateAllLifecyclePhases();
+
+  auto* doc_elm = GetDocument().documentElement();
+  ASSERT_TRUE(doc_elm);
+
+  doc_elm->SetInlineStyleProperty(CSSPropertyID::kDisplay, "list-item");
+  doc_elm->SetInlineStyleProperty(CSSPropertyID::kColumnCount, "1");
+  UpdateAllLifecyclePhases();
+
+  doc_elm->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor, "green");
+  // Should not crash
+  UpdateAllLifecyclePhases();
 }
 
 }  // namespace blink

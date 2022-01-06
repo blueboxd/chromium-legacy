@@ -6,9 +6,11 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/guid.h"
@@ -22,6 +24,7 @@
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/protocol_parser.h"
 #include "components/update_client/update_checker.h"
+#include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -319,20 +322,22 @@ void UpdateEngine::HandleComponentComplete(
   const auto& component = update_context->components.at(id);
   DCHECK(component);
 
+  base::OnceClosure callback =
+      base::BindOnce(&UpdateEngine::HandleComponent, this, update_context);
   if (component->IsHandled()) {
     update_context->next_update_delay = component->GetUpdateDuration();
-
-    if (!component->events().empty()) {
-      ping_manager_->SendPing(*component,
-                              base::BindOnce([](int, const std::string&) {}));
-    }
-
     queue.pop();
+    if (!component->events().empty()) {
+      ping_manager_->SendPing(
+          *component,
+          base::BindOnce([](base::OnceClosure callback, int,
+                            const std::string&) { std::move(callback).Run(); },
+                         std::move(callback)));
+      return;
+    }
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&UpdateEngine::HandleComponent, this, update_context));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void UpdateEngine::UpdateComplete(scoped_refptr<UpdateContext> update_context,
@@ -375,11 +380,12 @@ bool UpdateEngine::IsThrottled(bool is_foreground) const {
          now < throttle_updates_until_;
 }
 
-void UpdateEngine::SendUninstallPing(const std::string& id,
-                                     const base::Version& version,
+void UpdateEngine::SendUninstallPing(const CrxComponent& crx_component,
                                      int reason,
                                      Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  const std::string& id = crx_component.app_id;
 
   const auto update_context = base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>{id},
@@ -397,7 +403,7 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
   DCHECK_EQ(1u, update_context->components.count(id));
   const auto& component = update_context->components.at(id);
 
-  component->Uninstall(version, reason);
+  component->Uninstall(crx_component, reason);
 
   update_context->component_queue.push(id);
 
@@ -406,10 +412,11 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
       base::BindOnce(&UpdateEngine::HandleComponent, this, update_context));
 }
 
-void UpdateEngine::SendRegistrationPing(const std::string& id,
-                                        const base::Version& version,
+void UpdateEngine::SendRegistrationPing(const CrxComponent& crx_component,
                                         Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  const std::string& id = crx_component.app_id;
 
   const auto update_context = base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>{id},
@@ -427,7 +434,7 @@ void UpdateEngine::SendRegistrationPing(const std::string& id,
   DCHECK_EQ(1u, update_context->components.count(id));
   const auto& component = update_context->components.at(id);
 
-  component->Registration(version);
+  component->Registration(crx_component);
 
   update_context->component_queue.push(id);
 

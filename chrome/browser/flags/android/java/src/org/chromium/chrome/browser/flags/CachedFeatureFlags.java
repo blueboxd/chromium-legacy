@@ -100,6 +100,7 @@ public class CachedFeatureFlags {
                     .put(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES, false)
                     .put(ChromeFeatureList.INSTANCE_SWITCHER, true)
                     .put(ChromeFeatureList.WEB_APK_TRAMPOLINE_ON_INITIAL_INTENT, true)
+                    .put(ChromeFeatureList.FEED_LOADING_PLACEHOLDER, false)
                     .build();
 
     /**
@@ -455,6 +456,18 @@ public class CachedFeatureFlags {
         sValuesReturned = new ValuesReturned();
         sValuesOverridden.clear();
         sSafeMode.clearMemoryForTesting();
+    }
+
+    @VisibleForTesting
+    public static void resetDiskForTesting() {
+        for (Map.Entry<String, Boolean> e : sDefaults.entrySet()) {
+            String prefKey = ChromePreferenceKeys.FLAGS_CACHED.createKey(e.getKey());
+            SharedPreferencesManager.getInstance().removeKey(prefKey);
+        }
+        for (Map.Entry<String, String> e : sNonDynamicPrefKeys.entrySet()) {
+            String prefKey = e.getValue();
+            SharedPreferencesManager.getInstance().removeKey(prefKey);
+        }
     }
 
     @VisibleForTesting

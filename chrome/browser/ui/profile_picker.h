@@ -84,6 +84,11 @@ class ProfilePicker {
       base::OnceCallback<void(bool)> switch_finished_callback);
 #endif
 
+  // Starts the flow to set-up a signed-in profile. `signed_in_profile` must
+  // have an unconsented primary account.
+  static void SwitchToSignedInFlow(absl::optional<SkColor> profile_color,
+                                   Profile* signed_in_profile);
+
   // Cancel the signed-in flow and returns back to the main picker screen (if
   // the original EntryPoint was to open the picker). Must only be called from
   // within the signed-in flow. This will delete the profile previously created
@@ -126,9 +131,6 @@ class ProfilePicker {
 
   // Returns the web view (embedded in the picker) for testing.
   static views::WebView* GetWebViewForTesting();
-
-  // Returns the simple toolbar (embedded in the picker) for testing.
-  static views::View* GetToolbarForTesting();
 
   // Add a callback that will be called the next time the picker is opened.
   static void AddOnProfilePickerOpenedCallbackForTesting(

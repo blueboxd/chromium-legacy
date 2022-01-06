@@ -545,6 +545,7 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
       style.Display() == EDisplay::kTableRow ||
       style.Display() == EDisplay::kTableRowGroup) {
     style.SetWritingMode(layout_parent_style.GetWritingMode());
+    style.SetTextOrientation(layout_parent_style.GetTextOrientation());
     style.UpdateFontOrientation();
   }
 
@@ -678,7 +679,7 @@ static void AdjustStateForContentVisibility(ComputedStyle& style,
 
 void StyleAdjuster::AdjustForForcedColorsMode(ComputedStyle& style) {
   if (!style.InForcedColorsMode() ||
-      style.ForcedColorAdjust() == EForcedColorAdjust::kNone)
+      style.ForcedColorAdjust() != EForcedColorAdjust::kAuto)
     return;
 
   style.SetTextShadow(ComputedStyleInitialValues::InitialTextShadow());
@@ -772,8 +773,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForFirstLetter(style);
   }
 
-  if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
-    AdjustStateForContentVisibility(style, element);
+  AdjustStateForContentVisibility(style, element);
 
   // Make sure our z-index value is only applied if the object is positioned.
   if (style.GetPosition() == EPosition::kStatic &&

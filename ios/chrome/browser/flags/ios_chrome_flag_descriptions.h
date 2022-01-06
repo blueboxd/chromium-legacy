@@ -163,14 +163,14 @@ extern const char kEnableDiscoverFeedDiscoFeedEndpointDescription[];
 extern const char kEnableDiscoverFeedPreviewName[];
 extern const char kEnableDiscoverFeedPreviewDescription[];
 
+// Title and description for the flag to shorten the cache.
+extern const char kEnableDiscoverFeedShorterCacheName[];
+extern const char kEnableDiscoverFeedShorterCacheDescription[];
+
 // Title and description for the flag to enable the discover feed static
 // resource serving.
 extern const char kEnableDiscoverFeedStaticResourceServingName[];
 extern const char kEnableDiscoverFeedStaticResourceServingDescription[];
-
-// Title and description for the flag to enable FRE default browser screen.
-extern const char kEnableFREDefaultBrowserScreenName[];
-extern const char kEnableFREDefaultBrowserScreenDescription[];
 
 // Title and description for the flag to test the FRE default browser promo
 // experiment.
@@ -217,6 +217,11 @@ extern const char kExpandedTabStripDescription[];
 // websites.
 extern const char kFillingAcrossAffiliatedWebsitesName[];
 extern const char kFillingAcrossAffiliatedWebsitesDescription[];
+
+// Title and description for the flag to introduce a Following feed in the
+// Chrome iOS NTP.
+extern const char kFollowingFeedInNtpName[];
+extern const char kFollowingFeedInNtpDescription[];
 
 // Title and description for the flag to disable all extended sync promos.
 extern const char kForceDisableExtendedSyncPromosName[];
@@ -286,10 +291,15 @@ extern const char kIOSPersistCrashRestoreDescription[];
 extern const char kIOSSharedHighlightingColorChangeName[];
 extern const char kIOSSharedHighlightingColorChangeDescription[];
 
-// Title and description for the flag to experiment with different location
-// permission user experiences.
-extern const char kLocationPermissionsPromptName[];
-extern const char kLocationPermissionsPromptDescription[];
+// Title and description for the flag to enable Shared Highlighting on AMP pages
+// in iOS.
+extern const char kIOSSharedHighlightingAmpName[];
+extern const char kIOSSharedHighlightingAmpDescription[];
+
+// Title and description for the flag to enable browser-layer improvements to
+// the text fragments UI.
+extern const char kIOSSharedHighlightingV2Name[];
+extern const char kIOSSharedHighlightingV2Description[];
 
 // Title and description for the flag to lock the bottom toolbar into place.
 extern const char kLockBottomToolbarName[];
@@ -299,10 +309,6 @@ extern const char kLockBottomToolbarDescription[];
 // reports.
 extern const char kMetrickitCrashReportName[];
 extern const char kMetrickitCrashReportDescription[];
-
-// Title and description for the flag to enable MICE web sign-in.
-extern const char kMICEWebSignInName[];
-extern const char kMICEWebSignInDescription[];
 
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished.
@@ -409,6 +415,10 @@ extern const char kSharedHighlightingUseBlocklistIOSDescription[];
 extern const char kShowAutofillTypePredictionsName[];
 extern const char kShowAutofillTypePredictionsDescription[];
 
+// Title and description for the flag to use one NTP for all tabs in a Browser.
+extern const char kSingleNtpName[];
+extern const char kSingleNtpDescription[];
+
 // Title and description for the flag to enable the Start Surface.
 extern const char kStartSurfaceName[];
 extern const char kStartSurfaceDescription[];
@@ -436,6 +446,10 @@ extern const char kSyncTrustedVaultPassphraseRecoveryDescription[];
 // Title and description for the flag to enable tabs bulk actions feature.
 extern const char kTabsBulkActionsName[];
 extern const char kTabsBulkActionsDescription[];
+
+// Title and description for the flag to enable tabs search feature.
+extern const char kTabsSearchName[];
+extern const char kTabsSearchDescription[];
 
 // Title and description for the flag to enable the toolbar container
 // implementation.
@@ -476,10 +490,6 @@ extern const char kEnableNewDownloadAPIDescription[];
 extern const char kWebPageDefaultZoomFromDynamicTypeName[];
 extern const char kWebPageDefaultZoomFromDynamicTypeDescription[];
 
-// Title and description for the flag to enable text accessibility in webpages.
-extern const char kWebPageTextAccessibilityName[];
-extern const char kWebPageTextAccessibilityDescription[];
-
 // Title and description for the flag to enable a different method of zooming
 // web pages.
 extern const char kWebPageAlternativeTextZoomName[];
@@ -494,11 +504,6 @@ extern const char kWebViewNativeContextMenuDescription[];
 // the WebView.
 extern const char kWebViewNativeContextMenuPhase2Name[];
 extern const char kWebViewNativeContextMenuPhase2Description[];
-
-// Title and description for the flag to restore Gaia cookies when the user
-// explicitly requests to be signed in to a Google service.
-extern const char kRestoreGaiaCookiesOnUserActionName[];
-extern const char kRestoreGaiaCookiesOnUserActionDescription[];
 
 extern const char kRecordSnapshotSizeName[];
 extern const char kRecordSnapshotSizeDescription[];

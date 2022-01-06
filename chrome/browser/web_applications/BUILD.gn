@@ -93,15 +93,6 @@ source_set("web_applications") {
     "web_app_file_handler_registration.h",
     "web_app_helpers.cc",
     "web_app_helpers.h",
-
-    # TODO(nigeltao): move these two files from
-    # //chrome/browser/web_applications to a stand-alone
-    # //components/web_app_icon_downloader?
-    #
-    # There's //components/image_fetcher as well as code split between
-    # //content/public/browser/manifest_icon_downloader.h and
-    # //content/browser/manfest/manifest_icon_downloader.cc. Some or all of
-    # those might be similar enough to merge.
     "web_app_icon_downloader.cc",
     "web_app_icon_downloader.h",
     "web_app_icon_generator.cc",
@@ -161,8 +152,8 @@ source_set("web_applications") {
     "web_app_tab_helper.cc",
     "web_app_tab_helper.h",
     "web_app_ui_manager.h",
-    "web_app_uninstall_commit_task.cc",
-    "web_app_uninstall_commit_task.h",
+    "web_app_uninstall_job.cc",
+    "web_app_uninstall_job.h",
     "web_app_uninstallation_via_os_settings_registration.cc",
     "web_app_uninstallation_via_os_settings_registration.h",
     "web_app_url_loader.cc",
@@ -319,16 +310,17 @@ source_set("web_applications") {
     deps += [
       "//ash/constants",
       "//ash/public/cpp",
+      "//ash/webui/camera_app_ui",
+      "//ash/webui/connectivity_diagnostics",
+      "//ash/webui/eche_app_ui",
       "//ash/webui/file_manager:file_manager_ui",
+      "//ash/webui/firmware_update_ui",
       "//ash/webui/help_app_ui",
       "//ash/webui/media_app_ui",
       "//ash/webui/os_feedback_ui",
+      "//ash/webui/personalization_app",
       "//ash/webui/shimless_rma",
       "//ash/webui/shortcut_customization_ui",
-      "//chromeos/components/camera_app_ui",
-      "//chromeos/components/connectivity_diagnostics",
-      "//chromeos/components/eche_app_ui",
-      "//chromeos/components/personalization_app",
       "//chromeos/strings",
       "//components/arc:arc_base",
       "//components/arc/mojom",
@@ -422,6 +414,10 @@ source_set("web_applications_test_support") {
     "test/fake_web_app_registry_controller.h",
     "test/fake_web_app_ui_manager.cc",
     "test/fake_web_app_ui_manager.h",
+    "test/mock_file_utils_wrapper.cc",
+    "test/mock_file_utils_wrapper.h",
+    "test/mock_os_integration_manager.cc",
+    "test/mock_os_integration_manager.h",
     "test/test_file_utils.cc",
     "test/test_file_utils.h",
     "test/test_web_app_url_loader.cc",
@@ -498,6 +494,7 @@ source_set("web_applications_unit_tests") {
     "web_app_registrar_unittest.cc",
     "web_app_shortcut_unittest.cc",
     "web_app_sync_bridge_unittest.cc",
+    "web_app_uninstall_job_unittest.cc",
     "web_app_unittest.cc",
     "web_app_url_loader_unittest.cc",
     "web_app_utils_unittest.cc",

@@ -23,6 +23,7 @@
 #include "components/autofill_assistant/browser/viewport_mode.h"
 #include "components/autofill_assistant/browser/wait_for_dom_observer.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
 
 class GURL;
@@ -286,6 +287,9 @@ class ActionDelegate {
   // string.
   virtual std::string GetEmailAddressForAccessTokenAccount() const = 0;
 
+  // Returns the UkmRecorder.
+  virtual ukm::UkmRecorder* GetUkmRecorder() const = 0;
+
   // Sets or updates contextual information.
   // Passing nullptr clears the contextual information.
   virtual void SetDetails(std::unique_ptr<Details> details,
@@ -301,9 +305,6 @@ class ActionDelegate {
 
   // Sets or updates info box.
   virtual void SetInfoBox(const InfoBox& infoBox) = 0;
-
-  // Set the progress bar at |progress|%.
-  virtual void SetProgress(int progress) = 0;
 
   // Set the progress bar at the |active_step| linked to the given
   // |active_step_identifier|.
@@ -416,6 +417,10 @@ class ActionDelegate {
   // Maybe shows a warning letting the user know that a slow connection was
   // detected, depending on the current settings.
   virtual void MaybeShowSlowConnectionWarning() = 0;
+
+  // Get modifiable log information gathered while executing the action. This
+  // gets attached to the action's response if non empty.
+  virtual ProcessedActionStatusDetailsProto& GetLogInfo() = 0;
 
   virtual base::WeakPtr<ActionDelegate> GetWeakPtr() const = 0;
 

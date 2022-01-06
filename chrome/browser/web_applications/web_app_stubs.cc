@@ -10,7 +10,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/task_runner.h"
+#include "base/task/task_runner.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_file_handler_registration.h"
 #include "chrome/browser/web_applications/web_app_shortcut.h"
 
@@ -35,9 +36,9 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
 
 void UnregisterFileHandlersWithOs(const AppId& app_id,
                                   Profile* profile,
-                                  base::OnceCallback<void(bool)> callback) {
+                                  ResultCallback callback) {
   NOTIMPLEMENTED();
-  std::move(callback).Run(false);
+  std::move(callback).Run(Result::kError);
 }
 
 namespace internals {

@@ -98,6 +98,7 @@ source_set("capture_device_specific") {
     "//media",
     "//media/capture/mojom:image_capture",
     "//media/capture/mojom:image_capture_types",
+    "//media/capture/mojom:video_capture",
     "//media/mojo/mojom",
     "//media/parsers",
     "//skia",
@@ -135,8 +136,6 @@ component("capture_lib") {
     "video/video_frame_receiver.h",
     "video/video_frame_receiver_on_task_runner.cc",
     "video/video_frame_receiver_on_task_runner.h",
-    "video_capturer_source.cc",
-    "video_capturer_source.h",
   ]
 
   public_deps = [
@@ -325,8 +324,8 @@ component("capture_lib") {
     public_deps += [ "//media/capture/video/chromeos/public" ]
     deps += [
       "//ash/constants",
+      "//ash/webui/camera_app_ui:document_scanning",
       "//build/config/linux/libdrm",
-      "//chromeos/components/camera_app_ui:document_scanning",
       "//chromeos/components/sensors:sensors",
       "//chromeos/dbus/power",
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",

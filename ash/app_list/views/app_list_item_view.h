@@ -55,6 +55,15 @@ class ASH_EXPORT AppListItemView : public views::Button,
  public:
   METADATA_HEADER(AppListItemView);
 
+  // The types of context where the app list item view is shown.
+  enum class Context {
+    // The item is shown in an AppsGridView.
+    kAppsGridView,
+
+    // The item is shown in the RecentAppsView.
+    kRecentAppsView
+  };
+
   // The parent apps grid (AppsGridView) or a stub. Not named "Delegate" to
   // differentiate it from AppListViewDelegate.
   class GridDelegate {
@@ -103,7 +112,8 @@ class ASH_EXPORT AppListItemView : public views::Button,
   AppListItemView(const AppListConfig* app_list_config,
                   GridDelegate* grid_delegate,
                   AppListItem* item,
-                  AppListViewDelegate* view_delegate);
+                  AppListViewDelegate* view_delegate,
+                  Context context);
   AppListItemView(const AppListItemView&) = delete;
   AppListItemView& operator=(const AppListItemView&) = delete;
   ~AppListItemView() override;
@@ -130,6 +140,9 @@ class ASH_EXPORT AppListItemView : public views::Button,
 
   // Sets focus without a11y announcements or focus ring.
   void SilentlyRequestFocus();
+
+  // Ensures that the item view is selected by `grid_delegate_`.
+  void EnsureSelected();
 
   AppListItem* item() const { return item_weak_; }
 
@@ -351,8 +364,8 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // AppListControllerImpl by another name.
   AppListViewDelegate* const view_delegate_;
 
-  IconImageView* icon_ = nullptr;               // Strongly typed child view.
-  views::Label* title_ = nullptr;               // Strongly typed child view.
+  IconImageView* icon_ = nullptr;  // Strongly typed child view.
+  views::Label* title_ = nullptr;  // Strongly typed child view.
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
@@ -391,9 +404,6 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // A timer to defer showing drag UI when the app item is touch pressed.
   base::OneShotTimer touch_drag_timer_;
 
-  // The shadow margins added to the app list item title.
-  gfx::Insets title_shadow_margins_;
-
   // The bitmap image for this app list item.
   gfx::ImageSkia icon_image_;
 
@@ -406,6 +416,9 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // Draws an indicator in the top right corner of the image to represent an
   // active notification.
   AppNotificationIndicatorView* notification_indicator_ = nullptr;
+
+  // Indicates the context in which this view is shown.
+  const Context context_;
 
   // Helper to trigger icon load.
   absl::optional<AppIconLoadHelper> icon_load_helper_;

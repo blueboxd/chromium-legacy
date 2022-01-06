@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
-#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
@@ -424,8 +423,6 @@ void LayoutBlock::UpdateLayout() {
   NOT_DESTROYED();
   DCHECK(!GetScrollableArea() || GetScrollableArea()->GetScrollAnchor());
 
-  LayoutAnalyzer::Scope analyzer(*this);
-
   bool needs_scroll_anchoring =
       IsScrollContainer() &&
       GetScrollableArea()->ShouldPerformScrollAnchoring();
@@ -780,11 +777,7 @@ bool LayoutBlock::SimplifiedLayout() {
   }
 
   UpdateAfterLayout();
-
   ClearNeedsLayout();
-
-  if (LayoutAnalyzer* analyzer = GetFrameView()->GetLayoutAnalyzer())
-    analyzer->Increment(LayoutAnalyzer::kLayoutObjectsThatNeedSimplifiedLayout);
 
   return true;
 }
@@ -1113,6 +1106,33 @@ void LayoutBlock::ImageChanged(WrappedImagePtr image,
   }
 }
 
+static void ProcessPositionedObjectRemoval(
+    ContainingBlockState containing_block_state,
+    LayoutObject* positioned_object) {
+  if (containing_block_state == kNewContainingBlock) {
+    positioned_object->SetChildNeedsLayout(kMarkOnlyThis);
+
+    // The positioned object changing containing block may change paint
+    // invalidation container.
+    // Invalidate it (including non-compositing descendants) on its original
+    // paint invalidation container.
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      // This valid because we need to invalidate based on the current
+      // status.
+      DisableCompositingQueryAsserts compositing_disabler;
+      if (!positioned_object->IsPaintInvalidationContainer()) {
+        ObjectPaintInvalidator(*positioned_object)
+            .InvalidatePaintIncludingNonCompositingDescendants();
+      }
+    }
+  }
+
+  // It is parent blocks job to add positioned child to positioned objects
+  // list of its containing block.
+  // Parent layout needs to be invalidated to ensure this happens.
+  positioned_object->MarkParentForOutOfFlowPositionedChange();
+}
+
 void LayoutBlock::RemovePositionedObjects(
     LayoutObject* o,
     ContainingBlockState containing_block_state) {
@@ -1125,28 +1145,7 @@ void LayoutBlock::RemovePositionedObjects(
   for (LayoutBox* positioned_object : *positioned_descendants) {
     if (!o ||
         (positioned_object->IsDescendantOf(o) && o != positioned_object)) {
-      if (containing_block_state == kNewContainingBlock) {
-        positioned_object->SetChildNeedsLayout(kMarkOnlyThis);
-
-        // The positioned object changing containing block may change paint
-        // invalidation container.
-        // Invalidate it (including non-compositing descendants) on its original
-        // paint invalidation container.
-        if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-          // This valid because we need to invalidate based on the current
-          // status.
-          DisableCompositingQueryAsserts compositing_disabler;
-          if (!positioned_object->IsPaintInvalidationContainer())
-            ObjectPaintInvalidator(*positioned_object)
-                .InvalidatePaintIncludingNonCompositingDescendants();
-        }
-      }
-
-      // It is parent blocks job to add positioned child to positioned objects
-      // list of its containing block.
-      // Parent layout needs to be invalidated to ensure this happens.
-      positioned_object->MarkParentForOutOfFlowPositionedChange();
-
+      ProcessPositionedObjectRemoval(containing_block_state, positioned_object);
       dead_objects.push_back(positioned_object);
     }
   }
@@ -1269,7 +1268,7 @@ bool LayoutBlock::IsPointInOverflowControl(
     return false;
 
   return Layer()->GetScrollableArea()->HitTestOverflowControls(
-      result, RoundedIntPoint(hit_test_location - accumulated_offset));
+      result, ToRoundedPoint(hit_test_location - accumulated_offset));
 }
 
 bool LayoutBlock::HitTestOverflowControl(

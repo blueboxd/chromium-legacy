@@ -140,7 +140,7 @@ class TouchActionTest : public testing::Test {
   void RunTouchActionTest(String file);
   void RunShadowDOMTest(String file);
   void RunIFrameTest(String file);
-  void SendTouchEvent(WebView*, WebInputEvent::Type, IntPoint client_point);
+  void SendTouchEvent(WebView*, WebInputEvent::Type, gfx::Point client_point);
   WebViewImpl* SetupTest(String file);
   void RunTestOnTree(ContainerNode* root, WebView*);
 
@@ -288,31 +288,31 @@ void TouchActionTest::RunTestOnTree(ContainerNode* root, WebView* web_view) {
         FloatRect(r->left(), r->top(), r->width(), r->height());
     IntRect client_rect = EnclosedIntRect(client_float_rect);
     for (int loc_idx = 0; loc_idx < 3; loc_idx++) {
-      IntPoint frame_point;
+      gfx::Point frame_point;
       std::stringstream context_stream;
       context_stream << failure_context.ToString() << " (";
       switch (loc_idx) {
         case 0:
-          frame_point = client_rect.Center();
+          frame_point = client_rect.CenterPoint();
           context_stream << "center";
           break;
         case 1:
-          frame_point = client_rect.Location();
+          frame_point = client_rect.origin();
           context_stream << "top-left";
           break;
         case 2:
-          frame_point = client_rect.MaxXMaxYCorner();
-          frame_point.Move(-1, -1);
+          frame_point = client_rect.bottom_right();
+          frame_point.Offset(-1, -1);
           context_stream << "bottom-right";
           break;
         default:
           FAIL() << "Invalid location index.";
       }
 
-      IntPoint window_point =
+      gfx::Point window_point =
           root->GetDocument().GetFrame()->View()->ConvertToRootFrame(
               frame_point);
-      context_stream << "=" << window_point.X() << "," << window_point.Y()
+      context_stream << "=" << window_point.x() << "," << window_point.y()
                      << ").";
       String failure_context_pos = String::FromUTF8(context_stream.str());
 
@@ -322,9 +322,9 @@ void TouchActionTest::RunTestOnTree(ContainerNode* root, WebView* web_view) {
       IntRect visible_rect = WindowClipRect(*main_frame_view);
       ASSERT_TRUE(visible_rect.Contains(window_point))
           << failure_context_pos
-          << " Test point not contained in visible area: " << visible_rect.X()
-          << "," << visible_rect.Y() << "-" << visible_rect.MaxX() << ","
-          << visible_rect.MaxY();
+          << " Test point not contained in visible area: " << visible_rect.x()
+          << "," << visible_rect.y() << "-" << visible_rect.right() << ","
+          << visible_rect.bottom();
 
       // First validate that a hit test at this point will really hit the
       // element we intended. This is the easiest way for a test to be broken,
@@ -397,7 +397,7 @@ void TouchActionTest::RunTestOnTree(ContainerNode* root, WebView* web_view) {
 }
 void TouchActionTest::SendTouchEvent(WebView* web_view,
                                      WebInputEvent::Type type,
-                                     IntPoint client_point) {
+                                     gfx::Point client_point) {
   ASSERT_TRUE(type == WebInputEvent::Type::kPointerDown ||
               type == WebInputEvent::Type::kPointerCancel);
 
@@ -405,8 +405,8 @@ void TouchActionTest::SendTouchEvent(WebView* web_view,
       type,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                            WebPointerProperties::Button::kLeft,
-                           gfx::PointF(client_point.X(), client_point.Y()),
-                           gfx::PointF(client_point.X(), client_point.Y())),
+                           gfx::PointF(client_point.x(), client_point.y()),
+                           gfx::PointF(client_point.x(), client_point.y())),
       10.0f, 10.0f);
   if (type == WebInputEvent::Type::kPointerCancel)
     event.dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;

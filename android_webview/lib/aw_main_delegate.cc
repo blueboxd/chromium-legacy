@@ -134,11 +134,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // metadata and controls.
   cl->AppendSwitch(switches::kDisableMediaSessionAPI);
 
-  // WebView does not support origin trials and so needs to force appcache
-  // to be enabled during the removal origin trial, until it is finally
-  // removed entirely.  See: http://crbug.com/582750
-  cl->AppendSwitch(switches::kAppCacheForceEnabled);
-
   // We have crash dumps to diagnose regressions in remote font analysis or cc
   // serialization errors but most of their utility is in identifying URLs where
   // the regression occurs. This info is not available for webview so there
@@ -166,19 +161,16 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     if (AwDrawFnImpl::IsUsingVulkan())
       cl->AppendSwitch(switches::kWebViewDrawFunctorUsesVulkan);
 
-#if defined(USE_V8_CONTEXT_SNAPSHOT)
-    gin::V8Initializer::V8SnapshotFileType file_type =
-        gin::V8Initializer::V8SnapshotFileType::kWithAdditionalContext;
-#else
-    gin::V8Initializer::V8SnapshotFileType file_type =
-        gin::V8Initializer::V8SnapshotFileType::kDefault;
-#endif
+#if !defined(USE_V8_CONTEXT_SNAPSHOT) || defined(INCLUDE_BOTH_V8_SNAPSHOTS)
+    // The snapshot for USE_V8_CONTEXT_SNAPSHOT is handled in the renderer.
+    const gin::V8SnapshotFileType file_type = gin::V8SnapshotFileType::kDefault;
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8Snapshot32DataDescriptor,
         gin::V8Initializer::GetSnapshotFilePath(true, file_type));
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8Snapshot64DataDescriptor,
         gin::V8Initializer::GetSnapshotFilePath(false, file_type));
+#endif
   }
 
   if (cl->HasSwitch(switches::kWebViewSandboxedRenderer)) {

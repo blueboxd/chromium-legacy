@@ -20,7 +20,8 @@ ImportLockDialogViewBrowserTest.*
 NewTabPageTest.*
 OneTimePermissionPromptBubbleViewBrowserTest.*
 OutdatedUpgradeBubbleTest.*
-All/PageInfoBubbleViewDialogBrowserTest.*
+PageInfoBubbleViewAboutThisSiteDialogBrowserTest.*
+PageInfoBubbleViewDialogBrowserTest.*
 PasswordReuseModalWarningTest.*
 PermissionRequestChipBrowserTest.*
 All/PermissionPromptBubbleViewBrowserTest.*

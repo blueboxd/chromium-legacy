@@ -71,6 +71,9 @@ constexpr int kTraySeparatorWidth = 0;
 // The size of the icons appearing in the material design system tray.
 constexpr int kTrayIconSize = 16;
 
+// The padding on top of the time tray icon when vertically aligned.
+constexpr int kTrayTimeIconTopPadding = 2;
+
 // The padding around network tray icon in dip.
 constexpr int kTrayNetworkIconPadding = 2;
 constexpr int kUnifiedTrayNetworkIconPadding = 4;
@@ -141,7 +144,6 @@ constexpr gfx::Insets kUnifiedTopShortcutPadding(0, 16);
 constexpr gfx::Insets kUnifiedNotificationHiddenPadding(6, 16);
 constexpr gfx::Insets kUnifiedCircularButtonFocusPadding(4);
 constexpr gfx::Insets kTrayBackgroundFocusPadding(1);
-constexpr gfx::Insets kStackingNotificationClearAllButtonPadding(8, 16);
 
 // Size of an icon drawn inside top shortcut buttons.
 // A dark disc with |kTrayItemSize| diameter is drawn in the background.

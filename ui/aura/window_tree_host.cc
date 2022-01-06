@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -28,6 +29,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/view_prop.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -97,20 +99,15 @@ class ScopedLocalSurfaceIdValidator {
 };
 #endif
 
-bool ShouldOcclusionStateBeConsideredVisible(Window::OcclusionState state) {
-  switch (state) {
-    case Window::OcclusionState::UNKNOWN:
-      return true;
-    case Window::OcclusionState::VISIBLE:
-      return true;
-    case Window::OcclusionState::OCCLUDED:
-      return false;
-    case Window::OcclusionState::HIDDEN:
-      return false;
-  }
+}  // namespace
+
+WindowTreeHost::VideoCaptureLock::~VideoCaptureLock() {
+  if (host_)
+    host_->DecrementVideoCaptureCount();
 }
 
-}  // namespace
+WindowTreeHost::VideoCaptureLock::VideoCaptureLock(WindowTreeHost* host)
+    : host_(host->GetWeakPtr()) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, public:
@@ -344,6 +341,10 @@ void WindowTreeHost::Hide() {
   OnAcceleratedWidgetMadeVisible(false);
 }
 
+gfx::Rect WindowTreeHost::GetBoundsInAcceleratedWidgetPixelCoordinates() {
+  return gfx::Rect(GetBoundsInPixels().size());
+}
+
 std::unique_ptr<ScopedKeyboardHook> WindowTreeHost::CaptureSystemKeyEvents(
     absl::optional<base::flat_set<ui::DomCode>> dom_codes) {
   // TODO(joedow): Remove the simple hook class/logic once this flag is removed.
@@ -364,8 +365,9 @@ bool WindowTreeHost::IsNativeWindowOcclusionEnabled() {
 }
 
 void WindowTreeHost::SetNativeWindowOcclusionState(
-    Window::OcclusionState state) {
-  if (occlusion_state_ == state)
+    Window::OcclusionState state,
+    const SkRegion& occluded_region) {
+  if (occlusion_state_ == state && occluded_region_ == occluded_region)
     return;
 
   occlusion_state_ = state;
@@ -373,14 +375,13 @@ void WindowTreeHost::SetNativeWindowOcclusionState(
   if (compositor() && accelerated_widget_made_visible_ &&
       NativeWindowOcclusionTracker::
           IsNativeWindowOcclusionTrackingAlwaysEnabled(this)) {
-    const bool visible =
-        ShouldOcclusionStateBeConsideredVisible(occlusion_state_);
+    const bool visible = CalculateCompositorVisibilityFromOcclusionState();
     if (visible != compositor()->IsVisible())
       UpdateCompositorVisibility(visible);
   }
 
   for (WindowTreeHostObserver& observer : observers_)
-    observer.OnOcclusionStateChanged(this, state);
+    observer.OnOcclusionStateChanged(this, state, occluded_region);
 }
 
 std::unique_ptr<ScopedEnableUnadjustedMouseEvents>
@@ -418,15 +419,23 @@ void WindowTreeHost::UnlockMouse(Window* window) {
   }
 }
 
+std::unique_ptr<WindowTreeHost::VideoCaptureLock>
+WindowTreeHost::CreateVideoCaptureLock() {
+  if (!NativeWindowOcclusionTracker::
+          IsNativeWindowOcclusionTrackingAlwaysEnabled(this)) {
+    return nullptr;
+  }
+  ++video_capture_count_;
+  MaybeUpdateComposibleVisibilityForVideoLockCountChange();
+  // WrapUnique() is used as constructor is private.
+  return base::WrapUnique(new VideoCaptureLock(this));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, protected:
 
 WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
-    : window_(window.release()),  // See header for details on ownership.
-      occlusion_state_(Window::OcclusionState::UNKNOWN),
-      last_cursor_(ui::mojom::CursorType::kNull),
-      input_method_(nullptr),
-      owned_input_method_(false) {
+    : window_(window.release()) {  // See header for details on ownership.
   if (!window_)
     window_ = new Window(nullptr);
   auto display = display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
@@ -635,6 +644,41 @@ void WindowTreeHost::SetNativeWindowOcclusionEnabled(bool enable) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, private:
+
+void WindowTreeHost::DecrementVideoCaptureCount() {
+  DCHECK_GT(video_capture_count_, 0);
+  --video_capture_count_;
+  MaybeUpdateComposibleVisibilityForVideoLockCountChange();
+}
+
+void WindowTreeHost::MaybeUpdateComposibleVisibilityForVideoLockCountChange() {
+  // Only need to check for changes when transitioning between lock and no lock.
+  if (video_capture_count_ > 1 || !compositor() ||
+      !accelerated_widget_made_visible_) {
+    return;
+  }
+  const bool visible = CalculateCompositorVisibilityFromOcclusionState();
+  if (visible != compositor()->IsVisible())
+    UpdateCompositorVisibility(visible);
+}
+
+bool WindowTreeHost::CalculateCompositorVisibilityFromOcclusionState() const {
+  switch (occlusion_state_) {
+    case Window::OcclusionState::UNKNOWN:
+      return true;
+    case Window::OcclusionState::VISIBLE:
+      return true;
+    case Window::OcclusionState::OCCLUDED: {
+      // The compositor needs to be visible when capturing video.
+      return video_capture_count_ != 0;
+    }
+    case Window::OcclusionState::HIDDEN:
+      // TODO: this should really return true if `video_capture_count_` is
+      // not zero, but this likely needs other changes to really work (such
+      // as on windows when an HWND is iconified it is sized to 0x0).
+      return false;
+  }
+}
 
 void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
                                           const gfx::Point& host_location) {

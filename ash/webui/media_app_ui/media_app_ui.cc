@@ -18,10 +18,18 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/webui/webui_allowlist.h"
 
 namespace ash {
 namespace {
+
+constexpr webui::LocalizedString kLocalizedStrings[] = {
+    {"appTitle", IDS_MEDIA_APP_APP_NAME},
+    {"fileFilterAudio", IDS_MEDIA_APP_FILE_FILTER_AUDIO},
+    {"fileFilterImage", IDS_MEDIA_APP_FILE_FILTER_IMAGE},
+    {"fileFilterVideo", IDS_MEDIA_APP_FILE_FILTER_VIDEO},
+};
 
 content::WebUIDataSource* CreateHostDataSource() {
   content::WebUIDataSource* source =
@@ -30,10 +38,12 @@ content::WebUIDataSource* CreateHostDataSource() {
   // Add resources from ash_media_app_resources.pak.
   source->SetDefaultResource(IDR_MEDIA_APP_INDEX_HTML);
   source->AddResourcePath("launch.js", IDR_MEDIA_APP_LAUNCH_JS);
-  source->AddLocalizedString("appTitle", IDS_MEDIA_APP_APP_NAME);
 
-  // Redirects "system_assets/app_icon_*.png" (from manifest.json) to the icons
-  // for the gallery app.
+  source->AddLocalizedStrings(kLocalizedStrings);
+  source->UseStringsJs();
+
+  // Redirects "system_assets/*" (from manifest.json) to the icons for the
+  // gallery app.
   // TODO(b/141588875): Switch these to IDR_MEDIA_APP_APP_ICON_*_PNG in the
   // internal media_app_bundle_resources.grd file (and add more icon
   // resolutions) when the final icon is ready.
@@ -53,6 +63,17 @@ content::WebUIDataSource* CreateHostDataSource() {
                           IDR_MEDIA_APP_GALLERY_ICON_192_PNG);
   source->AddResourcePath("system_assets/app_icon_256.png",
                           IDR_MEDIA_APP_GALLERY_ICON_256_PNG);
+  // Favicons.
+  source->AddResourcePath("system_assets/video_icon.svg",
+                          IDR_MEDIA_APP_VIDEO_ICON_SVG);
+  source->AddResourcePath("system_assets/image_icon.svg",
+                          IDR_MEDIA_APP_IMAGE_ICON_SVG);
+  source->AddResourcePath("system_assets/audio_icon.svg",
+                          IDR_MEDIA_APP_AUDIO_ICON_SVG);
+  source->AddResourcePath("system_assets/file_icon.svg",
+                          IDR_MEDIA_APP_FILE_ICON_SVG);
+  source->AddResourcePath("system_assets/app_icon.svg",
+                          IDR_MEDIA_APP_APP_ICON_SVG);
   return source;
 }
 

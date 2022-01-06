@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
+#include "build/chromeos_buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/font_list.h"
@@ -32,6 +33,11 @@ namespace base {
 class File;
 class Lock;
 class RefCountedMemory;
+class RefCountedString;
+}  // namespace base
+
+namespace gfx {
+class ImageSkiaRep;
 }
 
 namespace ui {
@@ -150,6 +156,10 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
     virtual ~Delegate() = default;
   };
 
+  using LottieImageParseFunction =
+      gfx::ImageSkiaRep (*)(const base::RefCountedString& bytes_string,
+                            float scale);
+
   // Initialize the ResourceBundle for this process. Does not take ownership of
   // the |delegate| value. Returns the language selected or an empty string if
   // no candidate bundle file could be determined, or crashes the process if a
@@ -190,6 +200,11 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   // Initialize the ResourceBundle using data pack from given buffer.
   // Return the global resource loader instance.
   static ResourceBundle& GetSharedInstance();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  static void SetParseLottieAsStillImage(
+      LottieImageParseFunction parse_lottie_as_still_image);
+#endif
 
   ResourceBundle(const ResourceBundle&) = delete;
   ResourceBundle& operator=(const ResourceBundle&) = delete;
@@ -465,6 +480,21 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
                         size_t size,
                         SkBitmap* bitmap,
                         bool* fell_back_to_1x);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Creates the |rep| from the Lottie asset with the given |resource_id|,
+  // rasterizing at the given |scale|. The |scale_factor| is used to select
+  // among multiple versions specially designed for different scales. For
+  // example, a picture of a flower could have a large-scale version with dew
+  // drops to add visual interest, and a small-scale version with no dew drops
+  // because such fine details cannot look good at that scale. There can only be
+  // a few such versions, but each of them is vector graphics to be rasterized
+  // at a more precise |scale|. Returns false if the resource does not exist.
+  bool LoadLottie(int resource_id,
+                  float scale,
+                  ResourceScaleFactor scale_factor,
+                  gfx::ImageSkiaRep* rep) const;
+#endif
 
   // Returns an empty image for when a resource cannot be loaded. This is a
   // bright red bitmap.

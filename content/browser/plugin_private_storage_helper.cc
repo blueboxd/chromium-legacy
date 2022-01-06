@@ -21,9 +21,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "ppapi/shared_impl/ppapi_constants.h"
 #include "storage/browser/file_system/async_file_util.h"
 #include "storage/browser/file_system/async_file_util_adapter.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -89,7 +89,7 @@ class PluginPrivateDataByOriginChecker {
     fsid_ = storage::IsolatedContext::GetInstance()
                 ->RegisterFileSystemForVirtualPath(
                     storage::kFileSystemTypePluginPrivate,
-                    ppapi::kPluginPrivateRootName, base::FilePath());
+                    storage::kPluginPrivateRootName, base::FilePath());
   }
   ~PluginPrivateDataByOriginChecker() {}
 
@@ -162,7 +162,7 @@ void PluginPrivateDataByOriginChecker::OnFileSystemOpened(
   storage::AsyncFileUtil* file_util = filesystem_context_->GetAsyncFileUtil(
       storage::kFileSystemTypePluginPrivate);
   std::string root = storage::GetIsolatedFileSystemRootURIString(
-      origin_, fsid_, ppapi::kPluginPrivateRootName);
+      origin_, fsid_, storage::kPluginPrivateRootName);
   std::unique_ptr<storage::FileSystemOperationContext> operation_context =
       std::make_unique<storage::FileSystemOperationContext>(
           filesystem_context_);
@@ -349,7 +349,8 @@ void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
       IncrementTaskCount();
       PluginPrivateDataByOriginChecker* helper =
           new PluginPrivateDataByOriginChecker(
-              filesystem_context_.get(), origin.GetURL().GetOrigin(),
+              filesystem_context_.get(),
+              origin.GetURL().DeprecatedGetOriginAsURL(),
               plugin_path.BaseName().MaybeAsASCII(), begin_, end_,
               decrement_callback);
       GetIOThreadTaskRunner({})->PostTask(

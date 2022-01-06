@@ -254,6 +254,14 @@ const char kHeartbeatFrequency[] = "cros.device_status.heartbeat_frequency";
 const char kSystemLogUploadEnabled[] =
     "cros.device_status.system_log_upload_enabled";
 
+// How frequently the networks health telemetry are collected.
+const char kReportDeviceNetworkTelemetryCollectionRateMs[] =
+    "cros.telemetry_reporting.report_network_telemetry_collection_rate_ms";
+
+// How frequently the networks data are checked for events.
+const char kReportDeviceNetworkTelemetryEventCheckingRateMs[] =
+    "cros.telemetry_reporting.report_network_telemetry_event_checking_rate_ms";
+
 // This policy should not appear in the protobuf ever but is used internally to
 // signal that we are running in a "safe-mode" for policy recovery.
 const char kPolicyMissingMitigationMode[] =
@@ -332,6 +340,16 @@ const char kDeviceDisplayResolutionKeyRecommended[] = "recommended";
 // 2 = 180 degrees rotation
 // 3 = 270 degrees clockwise rotation
 const char kDisplayRotationDefault[] = "cros.display_rotation_default";
+
+// A boolean pref that controls Chrome App Kiosk update behavior:
+// false = legacy, CRX files are updated in the cache on startup using update
+// URL from the policy, and from time to time during kiosk session the extension
+// is updated using update URL from the extension manifest without populating
+// the cache,
+// true = CRX files are updated in the cache from time to time using update URL
+// from the policy, no additional updates are made.
+const char kKioskCRXManifestUpdateURLIgnored[] =
+    "cros.kiosk_crx_manifest_update_url_ignored";
 
 // An integer pref that sets the behavior of the login authentication flow.
 // 0 = authentication using the default GAIA flow.

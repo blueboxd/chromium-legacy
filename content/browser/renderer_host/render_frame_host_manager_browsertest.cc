@@ -18,11 +18,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/thread_annotations.h"
@@ -38,6 +38,7 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -202,6 +203,11 @@ class RequestBlockingNavigationThrottle : public NavigationThrottle {
   explicit RequestBlockingNavigationThrottle(NavigationHandle* handle)
       : NavigationThrottle(handle) {}
 
+  RequestBlockingNavigationThrottle(const RequestBlockingNavigationThrottle&) =
+      delete;
+  RequestBlockingNavigationThrottle& operator=(
+      const RequestBlockingNavigationThrottle&) = delete;
+
   static std::unique_ptr<NavigationThrottle> Create(NavigationHandle* handle) {
     return std::make_unique<RequestBlockingNavigationThrottle>(handle);
   }
@@ -214,8 +220,6 @@ class RequestBlockingNavigationThrottle : public NavigationThrottle {
   const char* GetNameForLogging() override {
     return "RequestBlockingNavigationThrottle";
   }
-
-  DISALLOW_COPY_AND_ASSIGN(RequestBlockingNavigationThrottle);
 };
 
 // Helper function for error page navigations that makes sure that the last
@@ -232,7 +236,7 @@ bool IsOriginOpaqueAndCompatibleWithURL(FrameTreeNode* node, const GURL& url) {
     return false;
   }
 
-  const GURL url_origin = url.GetOrigin();
+  const GURL url_origin = url.DeprecatedGetOriginAsURL();
   const GURL precursor_origin =
       frame_origin.GetTupleOrPrecursorTupleIfOpaque().GetURL();
   if (url_origin != precursor_origin) {
@@ -247,8 +251,8 @@ bool IsMainFrameOriginOpaqueAndCompatibleWithURL(Shell* shell,
                                                  const GURL& url) {
   return IsOriginOpaqueAndCompatibleWithURL(
       static_cast<WebContentsImpl*>(shell->web_contents())
-          ->GetFrameTree()
-          ->root(),
+          ->GetPrimaryFrameTree()
+          .root(),
       url);
 }
 
@@ -498,7 +502,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Check that the referrer is set correctly.
   std::string expected_referrer =
-      embedded_test_server()->GetURL("/").GetOrigin().spec();
+      embedded_test_server()->GetURL("/").DeprecatedGetOriginAsURL().spec();
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       new_shell,
@@ -941,8 +945,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, DisownSubframeOpener) {
 
   // Check that the browser process updates the subframe's opener.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   EXPECT_EQ(root, root->child_at(0)->opener());
   EXPECT_EQ(nullptr, root->child_at(0)->original_opener());
 
@@ -1334,8 +1338,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   ASSERT_EQ(1U, root->child_count());
   EXPECT_EQ(frame_url, root->child_at(0)->current_url());
 
@@ -1803,8 +1807,8 @@ IN_PROC_BROWSER_TEST_P(
   // RenderFrameHost for commit.
   RenderFrameHostImpl* speculative_rfh =
       static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetFrameTree()
-          ->root()
+          ->GetPrimaryFrameTree()
+          .root()
           ->render_manager()
           ->speculative_frame_host();
   CHECK(speculative_rfh);
@@ -1825,8 +1829,8 @@ IN_PROC_BROWSER_TEST_P(
   // This deletes the speculative RenderFrameHost that was supposed to commit
   // the browser-initiated navigation.
   speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
-                        ->GetFrameTree()
-                        ->root()
+                        ->GetPrimaryFrameTree()
+                        .root()
                         ->render_manager()
                         ->speculative_frame_host();
   EXPECT_FALSE(speculative_rfh);
@@ -1848,8 +1852,8 @@ IN_PROC_BROWSER_TEST_P(
       "\r\n");
   attack_navigation.WaitForNavigationFinished();
   speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
-                        ->GetFrameTree()
-                        ->root()
+                        ->GetPrimaryFrameTree()
+                        .root()
                         ->render_manager()
                         ->speculative_frame_host();
   EXPECT_FALSE(speculative_rfh);
@@ -1939,8 +1943,8 @@ IN_PROC_BROWSER_TEST_P(
   // commits in the same RenderFrameHost.
   RenderFrameHostImpl* speculative_rfh =
       static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetFrameTree()
-          ->root()
+          ->GetPrimaryFrameTree()
+          .root()
           ->render_manager()
           ->speculative_frame_host();
   if (AreAllSitesIsolatedForTesting()) {
@@ -1958,8 +1962,8 @@ IN_PROC_BROWSER_TEST_P(
       ReloadType::ORIGINAL_REQUEST_URL, false);
   EXPECT_TRUE(second_reload.WaitForRequestStart());
   speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
-                        ->GetFrameTree()
-                        ->root()
+                        ->GetPrimaryFrameTree()
+                        .root()
                         ->render_manager()
                         ->speculative_frame_host();
   if (AreAllSitesIsolatedForTesting()) {
@@ -1977,8 +1981,8 @@ IN_PROC_BROWSER_TEST_P(
       "\r\n");
   second_reload.WaitForNavigationFinished();
   speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
-                        ->GetFrameTree()
-                        ->root()
+                        ->GetPrimaryFrameTree()
+                        .root()
                         ->render_manager()
                         ->speculative_frame_host();
   EXPECT_FALSE(speculative_rfh);
@@ -2071,8 +2075,8 @@ IN_PROC_BROWSER_TEST_P(
   // RenderFrameHost for commit.
   RenderFrameHostImpl* speculative_rfh =
       static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetFrameTree()
-          ->root()
+          ->GetPrimaryFrameTree()
+          .root()
           ->render_manager()
           ->speculative_frame_host();
   CHECK(speculative_rfh);
@@ -2096,8 +2100,8 @@ IN_PROC_BROWSER_TEST_P(
   shell()->LoadURL(kRedirectURL);
   EXPECT_TRUE(navigation_to_redirect.WaitForRequestStart());
   speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
-                        ->GetFrameTree()
-                        ->root()
+                        ->GetPrimaryFrameTree()
+                        .root()
                         ->render_manager()
                         ->speculative_frame_host();
   CHECK(speculative_rfh);
@@ -2118,8 +2122,8 @@ IN_PROC_BROWSER_TEST_P(
   shell()->GoBackOrForward(-1);
   EXPECT_TRUE(second_back.WaitForRequestStart());
   speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
-                        ->GetFrameTree()
-                        ->root()
+                        ->GetPrimaryFrameTree()
+                        .root()
                         ->render_manager()
                         ->speculative_frame_host();
   CHECK(speculative_rfh);
@@ -2661,8 +2665,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // Navigate, but wait for commit, not the actual load to finish.
   SiteInstanceImpl* web_ui_site_instance = rfh->GetSiteInstance();
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   TestFrameNavigationObserver commit_observer(root);
   shell()->LoadURL(GURL(url::kAboutBlankURL));
   commit_observer.WaitForCommit();
@@ -2921,7 +2925,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   GURL url1(embedded_test_server()->GetURL("/file_input_subframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url1));
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = wc->GetFrameTree()->root();
+  FrameTreeNode* root = wc->GetPrimaryFrameTree().root();
   int process_id =
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
   std::unique_ptr<FileChooserDelegate> delegate(
@@ -3024,8 +3028,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
                              GURL::EmptyGURL(), nullptr, gfx::Size());
   FrameTreeNode* new_root =
       static_cast<WebContentsImpl*>(new_shell->web_contents())
-          ->GetFrameTree()
-          ->root();
+          ->GetPrimaryFrameTree()
+          .root();
   NavigationControllerImpl& new_controller =
       static_cast<NavigationControllerImpl&>(
           new_shell->web_contents()->GetController());
@@ -3071,8 +3075,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   auto orig_site_instance_id =
       root->current_frame_host()->GetSiteInstance()->GetId();
   int initial_process_id =
@@ -3116,8 +3120,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
 
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
@@ -3128,8 +3132,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_TRUE(new_shell);
   FrameTreeNode* popup_root =
       static_cast<WebContentsImpl*>(new_shell->web_contents())
-          ->GetFrameTree()
-          ->root();
+          ->GetPrimaryFrameTree()
+          .root();
 
   GURL cross_site_url =
       embedded_test_server()->GetURL("foo.com", "/title2.html");
@@ -3186,8 +3190,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, UpdateOpener) {
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
 
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
@@ -3212,12 +3216,12 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, UpdateOpener) {
   // Initially, both popups' openers should point to main window.
   FrameTreeNode* foo_root =
       static_cast<WebContentsImpl*>(foo_shell->web_contents())
-          ->GetFrameTree()
-          ->root();
+          ->GetPrimaryFrameTree()
+          .root();
   FrameTreeNode* bar_root =
       static_cast<WebContentsImpl*>(bar_shell->web_contents())
-          ->GetFrameTree()
-          ->root();
+          ->GetPrimaryFrameTree()
+          .root();
   EXPECT_EQ(root, foo_root->opener());
   EXPECT_EQ(root, foo_root->original_opener());
   EXPECT_EQ(root, bar_root->opener());
@@ -3357,8 +3361,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       shell(), embedded_test_server()->GetURL("a.com", "/title2.html"), "foo");
   FrameTreeNode* popup_root =
       static_cast<WebContentsImpl*>(new_shell->web_contents())
-          ->GetFrameTree()
-          ->root();
+          ->GetPrimaryFrameTree()
+          .root();
   EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
             new_shell->web_contents()->GetSiteInstance());
 
@@ -3391,8 +3395,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
                        CreateRenderViewAfterProcessKillAndClosedProxy) {
   StartEmbeddedServer();
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
 
   // Give an initial page an unload handler that never completes.
   EXPECT_TRUE(NavigateToURL(
@@ -3404,8 +3408,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
   FrameTreeNode* popup_root =
       static_cast<WebContentsImpl*>(new_shell->web_contents())
-          ->GetFrameTree()
-          ->root();
+          ->GetPrimaryFrameTree()
+          .root();
   EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
             new_shell->web_contents()->GetSiteInstance());
 
@@ -3472,8 +3476,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
                        RenderViewInitAfterNewProxyAndProcessKill) {
   StartEmbeddedServer();
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
 
   // Give an initial page an unload handler that never completes.
   EXPECT_TRUE(NavigateToURL(
@@ -3590,8 +3594,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
                        CrossProcessPopupInheritsSandboxFlagsWithNoOpener) {
   StartEmbeddedServer();
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
 
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3732,7 +3736,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   StartEmbeddedServer();
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
 
   // Give an initial page an unload handler that does a pushState, which will be
   // ignored by the browser process.  It then does a title update which is
@@ -3777,7 +3781,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   StartEmbeddedServer();
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
 
   auto prefs = web_contents->GetOrCreateWebPreferences();
   prefs.allow_universal_access_from_file_urls = true;
@@ -3865,7 +3869,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, LastCommittedOrigin) {
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   RenderFrameHostImpl* rfh_a = root->current_frame_host();
   rfh_a->DisableUnloadTimerForTesting();
 
@@ -3957,7 +3961,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, CoReferencingFrames) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
 
   // The FrameTree contains two successful instances of each site plus an
   // unsuccessfully-navigated third instance of B with a blank URL.  When not in
@@ -3989,7 +3993,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, CoReferencingFrames) {
   FrameTreeNode* bottom_child =
       root->child_at(0)->child_at(0)->child_at(0)->child_at(0);
   EXPECT_TRUE(bottom_child->current_url().is_empty());
-  EXPECT_FALSE(bottom_child->has_committed_real_load());
+  EXPECT_TRUE(bottom_child->is_on_initial_empty_document());
 }
 
 // Ensures that nested subframes with the same URL but different fragments can
@@ -4004,7 +4008,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   FrameTreeNode* child = root->child_at(0);
 
   // ExecuteScript is used here and once more below because it is important to
@@ -4062,13 +4066,14 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
 
   // The third navigation should fail and be cancelled, leaving a FrameTree with
   // a height of 2.
   const GURL kExpectedSiteURL = AreDefaultSiteInstancesEnabled()
                                     ? SiteInstanceImpl::GetDefaultSiteURL()
                                     : GURL("http://a.com/");
+  // The FrameTreeVisualizer test ensure that the childmost frame is not loaded.
   EXPECT_EQ(std::string(" Site A\n"
                         "   +--Site A\n"
                         "        +--Site A\n"
@@ -4079,14 +4084,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_EQ(GURL(url::kAboutBlankURL),
             root->child_at(0)->child_at(0)->current_url());
 
-  // The frame is no longer on the initial empty document, but we don't consider
-  // it as having committed a real load.  The FrameTreeVisualizer test should be
-  // enough to ensure that the childmost frame is not loaded.
-  EXPECT_FALSE(root->child_at(0)->child_at(0)->has_committed_real_load());
-  EXPECT_FALSE(
-      root->child_at(0)
-          ->child_at(0)
-          ->is_on_initial_empty_document_or_subsequent_empty_documents());
+  // The frame is no longer on the initial empty document.
+  EXPECT_FALSE(root->child_at(0)->child_at(0)->is_on_initial_empty_document());
 }
 
 // Ensure that navigating a subframe to the same URL as its parent twice in a
@@ -4103,7 +4102,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   FrameTreeNode* child = root->child_at(0);
 
   TestFrameNavigationObserver observer1(child);
@@ -4135,7 +4134,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   FrameTreeNode* child = root->child_at(0);
 
   GURL child_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -4191,8 +4190,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   RenderFrameHostImpl* speculative_rfh =
       static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetFrameTree()
-          ->root()
+          ->GetPrimaryFrameTree()
+          .root()
           ->render_manager()
           ->speculative_frame_host();
   CHECK(speculative_rfh);
@@ -4638,7 +4637,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   FrameTreeNode* child = root->child_at(0);
 
   scoped_refptr<SiteInstance> success_site_instance =
@@ -4679,8 +4678,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   scoped_refptr<SiteInstance> main_site_instance =
       root->current_frame_host()->GetSiteInstance();
 
@@ -4923,8 +4922,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Grab child's site URL.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   FrameTreeNode* child = root->child_at(0);
   GURL child_site_url =
       child->current_frame_host()->GetSiteInstance()->GetSiteURL();
@@ -5011,8 +5010,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Grab child's site URL.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   FrameTreeNode* child1 = root->child_at(0);
   FrameTreeNode* child2 = root->child_at(1);
   GURL a_site_url = root->current_frame_host()->GetSiteInstance()->GetSiteURL();
@@ -5584,6 +5583,11 @@ class BrowsingInstanceSwapContentBrowserClient
  public:
   BrowsingInstanceSwapContentBrowserClient() = default;
 
+  BrowsingInstanceSwapContentBrowserClient(
+      const BrowsingInstanceSwapContentBrowserClient&) = delete;
+  BrowsingInstanceSwapContentBrowserClient& operator=(
+      const BrowsingInstanceSwapContentBrowserClient&) = delete;
+
   bool ShouldIsolateErrorPage(bool in_main_frame) override {
     return in_main_frame;
   }
@@ -5594,9 +5598,6 @@ class BrowsingInstanceSwapContentBrowserClient
       const GURL& destination_effective_url) override {
     return true;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowsingInstanceSwapContentBrowserClient);
 };
 
 // Test to verify that reloading of an error page which resulted from a
@@ -5912,6 +5913,11 @@ class ProcessPerSiteContentBrowserClient : public TestContentBrowserClient {
  public:
   ProcessPerSiteContentBrowserClient() = default;
 
+  ProcessPerSiteContentBrowserClient(
+      const ProcessPerSiteContentBrowserClient&) = delete;
+  ProcessPerSiteContentBrowserClient& operator=(
+      const ProcessPerSiteContentBrowserClient&) = delete;
+
   void SetShouldUseProcessPerSite(bool should_use_process_per_site) {
     should_use_process_per_site_ = should_use_process_per_site;
   }
@@ -5923,7 +5929,6 @@ class ProcessPerSiteContentBrowserClient : public TestContentBrowserClient {
 
  private:
   bool should_use_process_per_site_ = false;
-  DISALLOW_COPY_AND_ASSIGN(ProcessPerSiteContentBrowserClient);
 };
 
 // We should not reuse the current process on renderer-initiated navigations to
@@ -6883,7 +6888,7 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
 
   // 1) Navigate to title1.html.
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -7358,7 +7363,7 @@ IN_PROC_BROWSER_TEST_P(
   // 1) Navigate to |main_url|.
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   RenderFrameHostImpl* main_frame_1 = web_contents->GetMainFrame();
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   ASSERT_EQ(1U, root->child_count());
   // Check if the subframe is navigated to the correct URL.
   FrameTreeNode* child = root->child_at(0);
@@ -7632,7 +7637,7 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
   }
 
   {
-    FrameTreeNode* root = web_contents->GetFrameTree()->root();
+    FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
     RenderFrameHostImpl* child_rfh = root->child_at(0)->current_frame_host();
     bool subframe_was_in_same_site_instance =
         root->current_frame_host()->GetSiteInstance() ==
@@ -7777,6 +7782,11 @@ class RenderFrameHostManagerUnloadBrowserTest
  public:
   RenderFrameHostManagerUnloadBrowserTest() = default;
 
+  RenderFrameHostManagerUnloadBrowserTest(
+      const RenderFrameHostManagerUnloadBrowserTest&) = delete;
+  RenderFrameHostManagerUnloadBrowserTest& operator=(
+      const RenderFrameHostManagerUnloadBrowserTest&) = delete;
+
   // Starts monitoring requests made to the embedded_test_server() looking for
   // one made to |url|.  To be used together with WaitForMonitoredRequest().
   void StartMonitoringRequestsFor(const GURL& url) {
@@ -7887,8 +7897,6 @@ class RenderFrameHostManagerUnloadBrowserTest
   std::string request_content_ GUARDED_BY(lock_);
   bool saw_request_url_ GUARDED_BY(lock_) = false;
   std::unique_ptr<base::RunLoop> run_loop_ GUARDED_BY(lock_);
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManagerUnloadBrowserTest);
 };
 
 // Ensure that after a main frame with a cross-site iframe is itself navigated
@@ -7910,8 +7918,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
   for (const std::string& unload_event_name : unload_event_names) {
     EXPECT_TRUE(NavigateToURL(shell(), main_url));
     FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                              ->GetFrameTree()
-                              ->root();
+                              ->GetPrimaryFrameTree()
+                              .root();
     RenderFrameHostImpl* child_rfh = root->child_at(0)->current_frame_host();
 
     // Add a subframe unload handler to do a termination ping via sendBeacon.
@@ -7943,8 +7951,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   RenderFrameHostImpl* child_rfh = root->child_at(0)->current_frame_host();
 
   // Add a subframe unload handler to do a termination ping by loading an
@@ -7974,8 +7982,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
 
   // Open a popup window with a page containing a cross-site iframe.
   GURL popup_url(embedded_test_server()->GetURL(
@@ -7986,7 +7994,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(popup_contents));
   EXPECT_EQ(popup_url, popup_contents->GetLastCommittedURL());
 
-  FrameTreeNode* popup_root = popup_contents->GetFrameTree()->root();
+  FrameTreeNode* popup_root = popup_contents->GetPrimaryFrameTree().root();
   RenderFrameHostImpl* child_rfh =
       popup_root->child_at(0)->current_frame_host();
 
@@ -8019,8 +8027,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   RenderFrameHostImpl* child_rfh = root->child_at(0)->current_frame_host();
 
   // Add an unload handler which never finishes to b.com subframe.
@@ -8042,7 +8050,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
 // Verify that when an OOPIF with an unload handler navigates cross-process,
 // its unload handler is able to send a postMessage to the parent frame.
 // See https://crbug.com/857274.
-#if defined(OS_MAC) || (defined(OS_WIN) && defined(ADDRESS_SANITIZER))
+// TODO(https://crbug.com/989704): Fix flake on Linux TSAN and ASAN.
+#if defined(OS_MAC) || (defined(OS_WIN) && defined(ADDRESS_SANITIZER)) || \
+    (defined(OS_LINUX) &&                                                 \
+     (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)))
 #define MAYBE_PostMessageToParentWhenSubframeNavigates \
   DISABLED_PostMessageToParentWhenSubframeNavigates
 #else
@@ -8055,8 +8066,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   FrameTreeNode* child = root->child_at(0);
 
   // Add an onmessage listener in the main frame.
@@ -8101,8 +8112,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
   GURL first_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), first_url));
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   RenderFrameHostImpl* rfh = root->current_frame_host();
 
   // Set up an unload handler which never finishes to force |rfh| to stay
@@ -8159,6 +8170,9 @@ class AssertForegroundHelper {
  public:
   AssertForegroundHelper() = default;
 
+  AssertForegroundHelper(const AssertForegroundHelper&) = delete;
+  AssertForegroundHelper& operator=(const AssertForegroundHelper&) = delete;
+
 #if defined(OS_MAC)
   // Asserts that |renderer_process| isn't backgrounded and reposts self to
   // check again shortly. |renderer_process| must outlive this
@@ -8188,8 +8202,6 @@ class AssertForegroundHelper {
 
  private:
   base::WeakPtrFactory<AssertForegroundHelper> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AssertForegroundHelper);
 };
 
 }  // namespace
@@ -8236,8 +8248,8 @@ IN_PROC_BROWSER_TEST_P(
   content::TestNavigationManager navigation_manager(web_contents, url);
 
   shell()->LoadURL(url);
-  RenderProcessHost* speculative_rph = web_contents->GetFrameTree()
-                                           ->root()
+  RenderProcessHost* speculative_rph = web_contents->GetPrimaryFrameTree()
+                                           .root()
                                            ->render_manager()
                                            ->speculative_frame_host()
                                            ->GetProcess();
@@ -8314,8 +8326,8 @@ IN_PROC_BROWSER_TEST_P(
   content::TestNavigationManager navigation_manager(web_contents, url);
 
   shell()->LoadURL(url);
-  RenderProcessHost* speculative_rph = web_contents->GetFrameTree()
-                                           ->root()
+  RenderProcessHost* speculative_rph = web_contents->GetPrimaryFrameTree()
+                                           .root()
                                            ->render_manager()
                                            ->speculative_frame_host()
                                            ->GetProcess();
@@ -8373,6 +8385,11 @@ class DontAssignSiteContentBrowserClient : public TestContentBrowserClient {
   explicit DontAssignSiteContentBrowserClient(const GURL& url_to_skip)
       : url_to_skip_(url_to_skip) {}
 
+  DontAssignSiteContentBrowserClient(
+      const DontAssignSiteContentBrowserClient&) = delete;
+  DontAssignSiteContentBrowserClient& operator=(
+      const DontAssignSiteContentBrowserClient&) = delete;
+
   bool ShouldAssignSiteForURL(const GURL& url) override {
     return url.host() != url_to_skip_.host() ||
            url.scheme() != url_to_skip_.scheme();
@@ -8380,8 +8397,6 @@ class DontAssignSiteContentBrowserClient : public TestContentBrowserClient {
 
  private:
   GURL url_to_skip_;
-
-  DISALLOW_COPY_AND_ASSIGN(DontAssignSiteContentBrowserClient);
 };
 
 }  // namespace
@@ -8531,7 +8546,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   Shell* shell = CreateBrowser();
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   RenderProcessHost* foo_process = nullptr;
   TestNavigationManager foo_manager(web_contents, foo_url);
   auto& current_isolation_context =
@@ -8951,7 +8966,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   ASSERT_EQ("hello", EvalJs(shell(), "document.body.innerText"));
 
   // Crash the renderer.
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   RenderFrameHostImpl* rfh = root->current_frame_host();
   RenderProcessHost* process = rfh->GetProcess();
   RenderProcessHostWatcher crash_observer(
@@ -9098,7 +9113,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, NestedUnload) {
       "Where A = http://a.com/\n"
       "      B = http://b.com/",
       FrameTreeVisualizer().DepictFrameTree(
-          web_contents->GetFrameTree()->root()));
+          web_contents->GetPrimaryFrameTree().root()));
 
   // Navigate the subframe, triggering unload.
   FrameTreeNode* subframe = web_contents->GetMainFrame()->child_at(0);

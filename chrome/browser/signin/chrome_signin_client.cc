@@ -249,9 +249,8 @@ void ChromeSigninClient::DelayNetworkCall(base::OnceClosure callback) {
     std::move(callback).Run();
     return;
   }
-  chromeos::DelayNetworkCall(
-      base::Milliseconds(chromeos::kDefaultNetworkRetryDelayMS),
-      std::move(callback));
+  ash::DelayNetworkCall(base::Milliseconds(ash::kDefaultNetworkRetryDelayMS),
+                        std::move(callback));
   return;
 #else
   // Don't bother if we don't have any kind of network connection.
@@ -304,11 +303,8 @@ bool ChromeSigninClient::IsNonEnterpriseUser(const std::string& username) {
 // signed-in by default.
 absl::optional<account_manager::Account>
 ChromeSigninClient::GetInitialPrimaryAccount() {
-  if (!IsAccountManagerAvailable(profile_)) {
-    // Secondary Profiles in Lacros do not start with the Device Account signed
-    // in.
+  if (!profile_->IsMainProfile())
     return absl::nullopt;
-  }
 
   const crosapi::mojom::AccountPtr& device_account =
       chromeos::LacrosService::Get()->init_params()->device_account;

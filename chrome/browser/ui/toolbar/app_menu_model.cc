@@ -96,10 +96,12 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/ui/base/tablet_state.h"
 #endif
 
 #if defined(OS_WIN)
@@ -124,10 +126,7 @@ std::u16string GetUpgradeDialogMenuItemName() {
       UpgradeDetector::GetInstance()->is_outdated_install_no_au()) {
     return l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_MENU_ITEM);
   } else {
-    return l10n_util::GetStringUTF16(
-        base::FeatureList::IsEnabled(features::kUseRelaunchToUpdateString)
-            ? IDS_RELAUNCH_TO_UPDATE
-            : IDS_UPDATE_NOW);
+    return l10n_util::GetStringUTF16(IDS_RELAUNCH_TO_UPDATE);
   }
 }
 
@@ -713,12 +712,6 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.AppInfo", delta);
       LogMenuAction(MENU_ACTION_APP_INFO);
       break;
-    case IDC_SHOW_KALEIDOSCOPE:
-      if (!uma_action_recorded_)
-        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowKaleidoscope",
-                                   delta);
-      LogMenuAction(MENU_ACTION_SHOW_KALEIDOSCOPE);
-      break;
   }
 
   if (!uma_action_recorded_) {
@@ -821,11 +814,6 @@ void AppMenuModel::Build() {
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
   AddSeparator(ui::NORMAL_SEPARATOR);
 
-  if (!browser_->profile()->IsOffTheRecord() &&
-      base::FeatureList::IsEnabled(media::kKaleidoscopeInMenu)) {
-    AddItemWithStringId(IDC_SHOW_KALEIDOSCOPE, IDS_SHOW_KALEIDOSCOPE);
-  }
-
   if (!browser_->profile()->IsOffTheRecord()) {
     sub_menus_.push_back(
         std::make_unique<RecentTabsSubMenuModel>(provider_, browser_));
@@ -857,7 +845,7 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
 
-  if (!base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu) ||
+  if (!sharing_hub::SharingHubAppMenuEnabled(browser()->profile()) ||
       browser_->profile()->IsIncognitoProfile() ||
       browser_->profile()->IsGuestSession()) {
     if (media_router::MediaRouterEnabled(browser()->profile()))
@@ -907,11 +895,10 @@ void AppMenuModel::Build() {
     }
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   // Always show this option if we're in tablet mode on Chrome OS.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableRequestTabletSite) ||
-      (ash::TabletMode::IsInTabletMode())) {
+  if (chromeos::TabletState::Get() &&
+      chromeos::TabletState::Get()->InTabletMode()) {
     AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
                              IDS_TOGGLE_REQUEST_TABLET_SITE);
   }

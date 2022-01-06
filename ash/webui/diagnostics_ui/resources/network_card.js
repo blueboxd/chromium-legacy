@@ -24,7 +24,7 @@ const SETTINGS_URL = 'chrome://os-settings/';
  * Represents the state of the network troubleshooting banner.
  * @enum {number}
  */
-export let TroubleshootingState = {
+export const TroubleshootingState = {
   kDisabled: 0,
   kNotConnected: 1,
   kMissingIpAddress: 2,
@@ -115,6 +115,12 @@ Polymer({
       value: -1,
     },
 
+    /** @private */
+    timeoutInMs_: {
+      type: Number,
+      value: 30000,
+    },
+
     /** @protected {boolean} */
     isMissingNameServers_: {
       type: Boolean,
@@ -136,7 +142,7 @@ Polymer({
 
   /** @private */
   observeNetwork_() {
-    // If necessary, clear setInterval and reset the timerId.
+    // If necessary, clear setTimeout and reset the timerId.
     this.resetTimer_();
 
     // Reset this flag in case we were unable to obtain an IP Address for the
@@ -175,24 +181,22 @@ Polymer({
     // Remove '0.0.0.0' (if present) from list of name servers.
     filterNameServers(network);
     this.set('network', network);
-    let isIpAddressMissing = !network.ipConfig || !network.ipConfig.ipAddress;
-    let isTimerInProgress = this.timerId_ !== -1;
+    const isIpAddressMissing = !network.ipConfig || !network.ipConfig.ipAddress;
+    const isTimerInProgress = this.timerId_ !== -1;
+    const isConnecting = network.state === NetworkState.kConnecting;
 
     if (!isIpAddressMissing) {
       this.isMissingNameServers_ = isNetworkMissingNameServers(network);
+      // Reset this flag if the current network now has a valid IP Address.
+      this.unableToObtainIpAddress_ = false;
     }
 
-    if (isIpAddressMissing && !isTimerInProgress) {
-      // Seconds to wait before displaying the troubleshooting banner.
-      let maxTicks = 30;
-      let tickCount = 0;
-      this.timerId_ = setInterval(() => {
-        if (tickCount >= maxTicks) {
-          this.resetTimer_();
-          this.unableToObtainIpAddress_ = true;
-        }
-        tickCount++;
-      }, 1000);
+    if ((isIpAddressMissing && isConnecting) && !isTimerInProgress) {
+      // Wait 30 seconds before displaying the troubleshooting banner.
+      this.timerId_ = setTimeout(() => {
+        this.resetTimer_();
+        this.unableToObtainIpAddress_ = true;
+      }, this.timeoutInMs_);
     }
   },
 
@@ -236,24 +240,6 @@ Polymer({
     }
   },
 
-  /** @protected */
-  computeShouldShowTroubleConnecting_() {
-    // Wait until the network is present before deciding.
-    if (!this.network) {
-      return false;
-    }
-
-    // Show the troubleshooting state when not connected or connecting.
-    switch (this.network.state) {
-      case NetworkState.kOnline:
-      case NetworkState.kConnected:
-      case NetworkState.kConnecting:
-        return false;
-      default:
-        return true;
-    }
-  },
-
   /**
    * @protected
    * @return {boolean}
@@ -278,11 +264,15 @@ Polymer({
    * @return {!TroubleshootingInfo}
    */
   getDisabledTroubleshootingInfo_() {
+    const linkText =
+        this.network && this.network.type === NetworkType.kCellular ?
+        this.i18n('reconnectLinkText') :
+        this.i18n('joinNetworkLinkText', this.networkType_);
     return {
       header: this.i18n('disabledText', this.networkType_),
-      linkText: this.i18n('reconnectLinkText'),
+      linkText,
       url: SETTINGS_URL,
-    }
+    };
   },
 
   /**
@@ -294,7 +284,7 @@ Polymer({
       header: this.i18n('troubleshootingText', this.networkType_),
       linkText: this.i18n('troubleConnecting'),
       url: BASE_SUPPORT_URL,
-    }
+    };
   },
 
   /**
@@ -326,8 +316,11 @@ Polymer({
       }
     }
 
-    let isDisabled = this.network.state === NetworkState.kDisabled;
-    let isNotConnected = this.network.state === NetworkState.kNotConnected;
+    const isDisabled = this.network.state === NetworkState.kDisabled;
+    // Show the not connected state for the Not Connected/Portal states.
+    const isNotConnected = [
+      NetworkState.kNotConnected, NetworkState.kPortal
+    ].includes(this.network.state);
     // Override the |troubleshootingState| value if necessary since the
     // disabled and not connected states take precedence.
     if (isNotConnected) {
@@ -354,7 +347,7 @@ Polymer({
       header: this.i18n('noIpAddressText'),
       linkText: this.i18n('visitSettingsToConfigureLinkText'),
       url: SETTINGS_URL,
-    }
+    };
   },
 
   /**
@@ -366,7 +359,7 @@ Polymer({
       header: this.i18n('missingNameServersText'),
       linkText: this.i18n('visitSettingsToConfigureLinkText'),
       url: SETTINGS_URL,
-    }
+    };
   },
 
   /**
@@ -386,15 +379,17 @@ Polymer({
         return this.getMissingNameServersInfo_();
       default:
         return {
-          header: '', linkText: '', url: '',
-        }
+          header: '',
+          linkText: '',
+          url: '',
+        };
     }
   },
 
   /** @private */
   resetTimer_() {
     if (this.timerId_ !== -1) {
-      clearInterval(this.timerId_);
+      clearTimeout(this.timerId_);
       this.timerId_ = -1;
     }
   },

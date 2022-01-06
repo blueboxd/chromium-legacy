@@ -11,8 +11,8 @@
 #include "base/callback_helpers.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/location.h"
-#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/features.h"
 #include "cc/base/simple_enclosed_region.h"
@@ -191,8 +191,9 @@ bool TextureLayer::IsSnappedToPixelGridInTarget() {
   return true;
 }
 
-void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
-  Layer::PushPropertiesTo(layer);
+void TextureLayer::PushPropertiesTo(LayerImpl* layer,
+                                    const CommitState& commit_state) {
+  Layer::PushPropertiesTo(layer, commit_state);
   TRACE_EVENT0("cc", "TextureLayer::PushPropertiesTo");
 
   TextureLayerImpl* texture_layer = static_cast<TextureLayerImpl*>(layer);

@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/code_cache_host.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
@@ -207,8 +208,8 @@ V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
 template <typename UnboundScript>
 static void ProduceCacheInternal(
     v8::Isolate* isolate,
-    blink::mojom::CodeCacheHost* code_cache_host,
-    UnboundScript unbound_script,
+    CodeCacheHost* code_cache_host,
+    v8::Local<UnboundScript> unbound_script,
     SingleCachedMetadataHandler* cache_handler,
     size_t source_text_length,
     const KURL& source_url,
@@ -268,18 +269,21 @@ static void ProduceCacheInternal(
 }
 
 void V8CodeCache::ProduceCache(v8::Isolate* isolate,
-                               blink::mojom::CodeCacheHost* code_cache_host,
+                               CodeCacheHost* code_cache_host,
                                v8::Local<v8::Script> script,
-                               const ScriptSourceCode& source,
+                               SingleCachedMetadataHandler* cache_handler,
+                               size_t source_text_length,
+                               const KURL& source_url,
+                               const TextPosition& source_start_position,
                                ProduceCacheOptions produce_cache_options) {
   ProduceCacheInternal(isolate, code_cache_host, script->GetUnboundScript(),
-                       source.CacheHandler(), source.Source().length(),
-                       source.Url(), source.StartPosition(), "v8.produceCache",
+                       cache_handler, source_text_length, source_url,
+                       source_start_position, "v8.produceCache",
                        produce_cache_options);
 }
 
 void V8CodeCache::ProduceCache(v8::Isolate* isolate,
-                               blink::mojom::CodeCacheHost* code_cache_host,
+                               CodeCacheHost* code_cache_host,
                                ModuleRecordProduceCacheData* produce_cache_data,
                                size_t source_text_length,
                                const KURL& source_url,
@@ -303,7 +307,7 @@ uint32_t V8CodeCache::TagForTimeStamp(
 
 // Store a timestamp to the cache as hint.
 void V8CodeCache::SetCacheTimeStamp(
-    blink::mojom::CodeCacheHost* code_cache_host,
+    CodeCacheHost* code_cache_host,
     SingleCachedMetadataHandler* cache_handler) {
   uint64_t now_ms = base::TimeTicks::Now().since_origin().InMilliseconds();
   cache_handler->ClearCachedMetadata(code_cache_host,

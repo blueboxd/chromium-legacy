@@ -17,7 +17,7 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import '../controls/extension_controlled_indicator.js';
-// <if expr="chromeos">
+// <if expr="chromeos or lacros">
 import '../controls/password_prompt_dialog.js';
 // </if>
 import '../controls/settings_toggle_button.js';
@@ -33,11 +33,11 @@ import './avatar_icon.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
+import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {GlobalScrollTargetMixin} from '../global_scroll_target_mixin.js';
 import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_proxy.js';
@@ -48,14 +48,14 @@ import {PrefsMixin} from '../prefs/prefs_mixin.js';
 import {routes} from '../route.js';
 import {Route, Router} from '../router.js';
 
-// <if expr="chromeos">
+// <if expr="chromeos or lacros">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
-import {MergeExceptionsStoreCopiesMixin, MergeExceptionsStoreCopiesMixinInterface} from './merge_exceptions_store_copies_mixin.js';
-import {MergePasswordsStoreCopiesBehavior, MergePasswordsStoreCopiesBehaviorInterface} from './merge_passwords_store_copies_behavior.js';
+import {MergeExceptionsStoreCopiesMixin} from './merge_exceptions_store_copies_mixin.js';
+import {MergePasswordsStoreCopiesMixin} from './merge_passwords_store_copies_mixin.js';
 import {MultiStoreExceptionEntry} from './multi_store_exception_entry.js';
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
-import {PasswordCheckMixin, PasswordCheckMixinInterface} from './password_check_mixin.js';
+import {PasswordCheckMixin} from './password_check_mixin.js';
 import {PasswordCheckReferrer, PasswordExceptionListChangedListener, PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 import {PasswordsListHandlerElement} from './passwords_list_handler.js';
 
@@ -87,18 +87,9 @@ interface PasswordsSectionElement {
   };
 }
 
-const PasswordsSectionElementBase =
-    mixinBehaviors(
-        [
-          MergePasswordsStoreCopiesBehavior,
-        ],
-        PrefsMixin(GlobalScrollTargetMixin(
-            MergeExceptionsStoreCopiesMixin(WebUIListenerMixin(
-                I18nMixin(PasswordCheckMixin(PolymerElement))))))) as {
-      new (): PolymerElement & I18nMixinInterface &
-      WebUIListenerMixinInterface & MergeExceptionsStoreCopiesMixinInterface &
-      MergePasswordsStoreCopiesBehaviorInterface & PasswordCheckMixinInterface
-    };
+const PasswordsSectionElementBase = MergePasswordsStoreCopiesMixin(
+    PrefsMixin(GlobalScrollTargetMixin(MergeExceptionsStoreCopiesMixin(
+        WebUIListenerMixin(I18nMixin(PasswordCheckMixin(PolymerElement)))))));
 
 class PasswordsSectionElement extends PasswordsSectionElementBase {
   static get is() {
@@ -257,7 +248,7 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
       syncPrefs_: Object,
       syncStatus_: Object,
 
-      // <if expr="chromeos">
+      // <if expr="chromeos or lacros">
       showPasswordPromptDialog_: Boolean,
       tokenRequestManager_: Object,
       // </if>
@@ -302,7 +293,7 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
   private syncPrefs_: SyncPrefs;
   private syncStatus_: SyncStatus;
 
-  // <if expr="chromeos">
+  // <if expr="chromeos or lacros">
   private showPasswordPromptDialog_: boolean;
   private tokenRequestManager_: BlockingRequestManager;
   // </if>
@@ -360,7 +351,7 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
     this.setIsOptedInForAccountStorageListener_ =
         setIsOptedInForAccountStorageListener;
 
-    // <if expr="chromeos">
+    // <if expr="chromeos or lacros">
     // If the user's account supports the password check, an auth token will be
     // required in order for them to view or export passwords. Otherwise there
     // is no additional security so |tokenRequestManager_| will immediately
@@ -393,8 +384,8 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
     this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
     syncBrowserProxy.sendSyncPrefsChanged();
 
-    // For non-ChromeOS, also check whether accounts are available.
-    // <if expr="not chromeos">
+    // For non-ChromeOS, non-Lacros, also check whether accounts are available.
+    // <if expr="not (chromeos or lacros)">
     const storedAccountsChanged = (accounts: Array<StoredAccount>) =>
         this.storedAccounts_ = accounts;
     syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
@@ -508,7 +499,7 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
     Router.getInstance().navigateTo(routes.DEVICE_PASSWORDS);
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos or lacros">
   /**
    * When this event fired, it means that the password-prompt-dialog succeeded
    * in creating a fresh token in the quickUnlockPrivate API. Because new tokens

@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "remoting/base/capabilities.h"
@@ -74,8 +74,9 @@ ClientSession::ClientSession(
       mouse_clamping_filter_(&remote_input_filter_),
       desktop_and_cursor_composer_notifier_(&mouse_clamping_filter_, this),
       disable_input_filter_(&desktop_and_cursor_composer_notifier_),
-      disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
-      client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
+      host_clipboard_filter_(clipboard_echo_filter_.host_filter()),
+      client_clipboard_filter_(clipboard_echo_filter_.client_filter()),
+      client_clipboard_factory_(&client_clipboard_filter_),
       max_duration_(max_duration),
       pairing_registry_(pairing_registry),
       connection_(std::move(connection)),
@@ -371,7 +372,7 @@ void ClientSession::OnConnectionAuthenticated() {
 
   desktop_display_info_.Reset();
 
-  if (max_duration_ > base::TimeDelta()) {
+  if (max_duration_.is_positive()) {
     max_duration_timer_.Start(
         FROM_HERE, max_duration_,
         base::BindOnce(&ClientSession::DisconnectSession,
@@ -411,11 +412,6 @@ void ClientSession::OnConnectionAuthenticated() {
   host_capabilities_.append(" ");
   host_capabilities_.append(protocol::kWebrtcIceSdpRestartAction);
 
-#if !defined(NDEBUG)
-  host_capabilities_.append(" ");
-  host_capabilities_.append(protocol::kRemoteWebAuthnCapability);
-#endif
-
   // Create the object that controls the screen resolution.
   screen_controls_ = desktop_environment_->CreateScreenControls();
 
@@ -426,8 +422,15 @@ void ClientSession::OnConnectionAuthenticated() {
   connection_->set_input_stub(&disable_input_filter_);
   host_input_filter_.set_input_stub(input_injector_.get());
 
+  if (desktop_environment_options_.clipboard_size().has_value()) {
+    int max_size = desktop_environment_options_.clipboard_size().value();
+
+    client_clipboard_filter_.set_max_size(max_size);
+    host_clipboard_filter_.set_max_size(max_size);
+  }
+
   // Connect the clipboard stubs.
-  connection_->set_clipboard_stub(&disable_clipboard_filter_);
+  connection_->set_clipboard_stub(&host_clipboard_filter_);
   clipboard_echo_filter_.set_host_stub(input_injector_.get());
   clipboard_echo_filter_.set_client_stub(connection_->client_stub());
 }
@@ -597,7 +600,7 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
     input_tracker_.ReleaseAll();
 
   disable_input_filter_.set_enabled(!disable_inputs);
-  disable_clipboard_filter_.set_enabled(!disable_inputs);
+  host_clipboard_filter_.set_enabled(!disable_inputs);
 }
 
 uint32_t ClientSession::desktop_session_id() const {
@@ -628,6 +631,18 @@ void ClientSession::OnMouseCursorPosition(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (desktop_and_cursor_composer_)
     desktop_and_cursor_composer_->SetMouseCursorPosition(position);
+}
+
+void ClientSession::BindWebAuthnProxy(
+    mojo::PendingReceiver<mojom::WebAuthnProxy> receiver) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!remote_webauthn_message_handler_) {
+    LOG(WARNING)
+        << "No WebAuthn message handler is found. Binding request rejected.";
+    return;
+  }
+  remote_webauthn_message_handler_->AddReceiver(std::move(receiver));
 }
 
 void ClientSession::RegisterCreateHandlerCallbackForTesting(
@@ -934,7 +949,9 @@ void ClientSession::CreateRemoteWebAuthnMessageHandler(
   // RemoteWebAuthnMessageHandler manages its own lifetime and is tied to the
   // lifetime of |pipe|. Once |pipe| is closed, this instance will be cleaned
   // up.
-  new RemoteWebAuthnMessageHandler(channel_name, std::move(pipe));
+  auto* unowned_handler =
+      new RemoteWebAuthnMessageHandler(channel_name, std::move(pipe));
+  remote_webauthn_message_handler_ = unowned_handler->GetWeakPtr();
 }
 
 }  // namespace remoting

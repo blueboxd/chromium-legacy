@@ -24,9 +24,11 @@
 #include "ash/style/default_colors.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_types.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_divider.h"
@@ -96,15 +98,6 @@ constexpr float kTwoThirdPositionRatio = 0.67f;
 // details.
 constexpr float kBlackScrimFadeInRatio = 0.1f;
 constexpr float kBlackScrimOpacity = 0.4f;
-
-// In portrait mode split view, if the caret in the bottom window is less than
-// `kMinCaretKeyboardDist` dip above the upper bounds of the virtual keyboard,
-// then we push up the bottom window above the virtual keyboard to avoid the
-// input field being occluded by the virtual keyboard. The upper bounds of the
-// bottom window after being pushed up cannot exceeds 1 -
-// `kMinDividerPositionRatio` of screen height.
-constexpr int kMinCaretKeyboardDist = 16;
-constexpr float kMinDividerPositionRatio = 0.15f;
 
 // If performant split view resizing is enabled, the speed at which the divider
 // is moved controls whether windows are scaled or translated. If the divider is
@@ -352,7 +345,7 @@ class SplitViewController::DividerSnapAnimation
 
     gfx::AnimationContainer* container = new gfx::AnimationContainer();
     container->SetAnimationRunner(
-        std::make_unique<views::CompositorAnimationRunner>(widget));
+        std::make_unique<views::CompositorAnimationRunner>(widget, FROM_HERE));
     SetContainer(container);
 
     tracker_.emplace(widget->GetCompositor()->RequestNewThroughputTracker());
@@ -887,7 +880,6 @@ void SplitViewController::AttachSnappingWindow(aura::Window* window,
   OverviewSession* overview_session = GetOverviewSession();
   RemoveSnappingWindowFromOverviewIfApplicable(overview_session, window);
 
-  bool do_divider_spawn_animation = false;
   if (state_ == State::kNoSnap) {
     // Add observers when the split view mode starts.
     Shell::Get()->AddShellObserver(this);
@@ -908,20 +900,6 @@ void SplitViewController::AttachSnappingWindow(aura::Window* window,
     // There is no divider bar in clamshell splitview mode.
     if (split_view_type_ == SplitViewType::kTabletType) {
       split_view_divider_ = std::make_unique<SplitViewDivider>(this);
-      // The divider spawn animation adds a finishing touch to the |window|
-      // animation that generally accommodates snapping by dragging, but if
-      // |window| is currently minimized then it will undergo the unminimizing
-      // animation instead. Therefore skip the divider spawn animation if
-      // |window| is minimized.
-      if (!WindowState::Get(window)->IsMinimized() &&
-          !window->transform().IsIdentity()) {
-        // For the divider spawn animation, at the end of the delay, the divider
-        // shall be visually aligned with an edge of |window|. This effect will
-        // be more easily achieved after |window| has been snapped and the
-        // corresponding transform animation has begun. So for now, just set a
-        // flag to indicate that the divider spawn animation should be done.
-        do_divider_spawn_animation = true;
-      }
     }
 
     splitview_start_time_ = base::Time::Now();
@@ -2510,12 +2488,33 @@ void SplitViewController::SetTransformWithAnimation(
     if (new_start_transform != window_iter->layer()->GetTargetTransform())
       window_iter->SetTransform(new_start_transform);
 
-    DoSplitviewTransformAnimation(
-        window_iter->layer(), SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM,
-        new_target_transform,
-        window_iter == window
-            ? std::make_unique<WindowTransformAnimationObserver>(window)
-            : nullptr);
+    std::vector<ui::ImplicitAnimationObserver*> animation_observers;
+    if (window_iter == window) {
+      animation_observers.push_back(
+          new WindowTransformAnimationObserver(window));
+
+      // If the overview exit animation is in progress or is about to start, add
+      // the |window| snap animation as one of the animations to be completed
+      // before |OverviewController::OnEndingAnimationComplete| should be called
+      // to unpause occlusion tracking, unblur the wallpaper, etc.
+      OverviewController* overview_controller =
+          Shell::Get()->overview_controller();
+      if (overview_controller->IsCompletingShutdownAnimations() ||
+          (overview_controller->overview_session() &&
+           overview_controller->overview_session()->is_shutting_down() &&
+           overview_controller->overview_session()
+                   ->enter_exit_overview_type() !=
+               OverviewEnterExitType::kImmediateExit)) {
+        auto overview_exit_animation_observer =
+            std::make_unique<ExitAnimationObserver>();
+        animation_observers.push_back(overview_exit_animation_observer.get());
+        overview_controller->AddExitAnimationObserver(
+            std::move(overview_exit_animation_observer));
+      }
+    }
+    DoSplitviewTransformAnimation(window_iter->layer(),
+                                  SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM,
+                                  new_target_transform, animation_observers);
   }
 }
 

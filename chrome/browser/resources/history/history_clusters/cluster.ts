@@ -14,7 +14,7 @@ import {Cluster, PageCallbackRouter, URLVisit} from './history_clusters.mojom-we
 import {ClusterAction, MetricsProxyImpl} from './metrics_proxy.js';
 
 /**
- * @fileoverview This file provides a custom element displaying a Cluster.
+ * @fileoverview This file provides a custom element displaying a cluster.
  */
 
 declare global {
@@ -43,7 +43,7 @@ class HistoryClusterElement extends PolymerElement {
       },
 
       /**
-       * The Cluster displayed by this element.
+       * The cluster displayed by this element.
        */
       cluster: Object,
     };
@@ -65,6 +65,11 @@ class HistoryClusterElement extends PolymerElement {
   constructor() {
     super();
     this.callbackRouter_ = BrowserProxyImpl.getInstance().callbackRouter;
+
+    // This element receives a tabindex, because it's an iron-list item.
+    // However, what we really want to do is to pass that focus onto an
+    // eligible child, so we set `delegatesFocus` to true.
+    this.attachShadow({mode: 'open', delegatesFocus: true});
   }
 
   connectedCallback() {
@@ -120,46 +125,34 @@ class HistoryClusterElement extends PolymerElement {
             removedVisit.firstVisitTime.internalValue;
       }) !== -1;
     };
-    this.cluster.visits.forEach((topVisit: URLVisit, visitIndex: number) => {
-      // Reconstitute each cluster by flattening the list of visits and related
-      // visits, and removing the gone ones. Early exit if nothing removed.
-      const allVisits = [topVisit, ...topVisit.relatedVisits];
-      const remainingVisits = allVisits.filter(v => !visitHasBeenRemoved(v));
-      if (allVisits.length === remainingVisits.length) {
-        return;
-      }
 
-      if (!remainingVisits.length) {
-        // If all visits are gone, remove this top visit entirely.
-        this.splice('cluster.visits', visitIndex, 1);
-      } else {
-        // Splice in the re-constituted top visit.
-        const newTopVisit = remainingVisits.shift()!;
-        this.splice('cluster.visits', visitIndex, 1, newTopVisit);
+    // Flatten the cluster's constitutent visits and filter out the removed
+    // ones, if any.
+    const allVisits = [this.cluster.visit, ...this.cluster.visit.relatedVisits];
+    const remainingVisits = allVisits.filter(v => !visitHasBeenRemoved(v));
+    if (allVisits.length === remainingVisits.length) {
+      return;
+    }
 
-        // This looks weird, but it just replaces all the existing
-        // `newTopVisit.relatedVisits` with the `remainingVisits` using
-        // Polymer's special array mutation methods, so the DOM gets updated.
-        this.splice(
-            `cluster.visits.${visitIndex}.relatedVisits`, 0,
-            newTopVisit.relatedVisits.length, ...remainingVisits);
-      }
-    });
-
-    this.dispatchEvent(new CustomEvent('iron-resize', {
-      bubbles: true,
-      composed: true,
-    }));
-
-    // Now if all top visits for this cluster have been removed, send an event
-    // with the cluster index to also remove this cluster from the list.
-    if (!this.cluster.visits.length) {
+    if (!remainingVisits.length) {
+      // If all the visits are removed, fire an event to also remove this
+      // cluster from the list of clusters.
       this.dispatchEvent(new CustomEvent('remove-cluster', {
         bubbles: true,
         composed: true,
         detail: this.index,
       }));
+    } else {
+      // Reconstitute the cluster by setting the top visit with the
+      // `remainingVisits` as its related visits.
+      this.set('cluster.visit', remainingVisits.shift()!);
+      this.set('cluster.visit.relatedVisits', remainingVisits);
     }
+
+    this.dispatchEvent(new CustomEvent('iron-resize', {
+      bubbles: true,
+      composed: true,
+    }));
   }
 }
 

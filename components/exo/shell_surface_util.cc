@@ -26,6 +26,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/window_properties.h"
+#include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_util.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/exo/client_controlled_shell_surface.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -153,10 +155,14 @@ ClientControlledShellSurface* GetShellClientControlledShellSurface(
 
 int GetWindowDeskStateChanged(const aura::Window* window) {
   constexpr int kToggleVisibleOnAllWorkspacesValue = -1;
-  return window->GetProperty(aura::client::kWindowWorkspaceKey) ==
-                 aura::client::kWindowWorkspaceVisibleOnAllWorkspaces
-             ? kToggleVisibleOnAllWorkspacesValue
-             : window->GetProperty(aura::client::kWindowWorkspaceKey);
+  if (ash::desks_util::IsWindowVisibleOnAllWorkspaces(window))
+    return kToggleVisibleOnAllWorkspacesValue;
+
+  int workspace = window->GetProperty(aura::client::kWindowWorkspaceKey);
+  // If workspace is unassigned, returns the active desk index.
+  if (workspace == aura::client::kWindowWorkspaceUnassignedWorkspace)
+    workspace = ash::DesksController::Get()->GetActiveDeskIndex();
+  return workspace;
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -308,10 +314,6 @@ bool HasPermissionToActivate(aura::Window* window) {
 }
 
 bool ConsumedByIme(aura::Window* window, const ui::KeyEvent& event) {
-  // When IME is blocked, Exo can handle any key events.
-  if (WMHelper::GetInstance()->IsImeBlocked(window))
-    return false;
-
   // Check if IME consumed the event, to avoid it to be doubly processed.
   // First let us see whether IME is active and is in text input mode.
   views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(window);

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.ui.android.webid;
 
+import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -23,6 +25,8 @@ import android.widget.TextView;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
+import com.google.android.material.color.MaterialColors;
+
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -32,6 +36,7 @@ import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.C
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.DataSharingConsentProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties;
 import org.chromium.chrome.browser.ui.android.webid.data.Account;
+import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderMetadata;
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.components.browser_ui.util.AvatarGenerator;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
@@ -39,25 +44,21 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.util.ColorUtils;
+import org.chromium.ui.widget.ButtonCompat;
 
 /**
  * Provides functions that map {@link AccountSelectionProperties} changes in a {@link PropertyModel}
  * to the suitable method in {@link AccountSelectionView}.
  */
 class AccountSelectionViewBinder {
-    private static RoundedIconGenerator sRoundedIconGenerator;
-    private static TabCreator sTabCreator = new TabDelegate(/* incognito */ false);
+    private static final String TAG = "AccountSelectionView";
 
-    static RoundedIconGenerator getRoundedIconGenerator(Resources resources) {
-        if (sRoundedIconGenerator == null) {
-            sRoundedIconGenerator = FaviconUtils.createCircularIconGenerator(resources);
-        }
-        return sRoundedIconGenerator;
-    }
+    private static TabCreator sTabCreatorForTesting;
 
     @VisibleForTesting
-    static void setTabCreator(TabCreator creator) {
-        sTabCreator = creator;
+    static void setTabCreatorForTesting(TabCreator creator) {
+        sTabCreatorForTesting = creator;
     }
 
     /**
@@ -121,7 +122,8 @@ class AccountSelectionViewBinder {
         int badgeX = frameSize - badgeSize;
         int badgeY = frameSize - badgeSize;
 
-        RoundedIconGenerator roundedIconGenerator = getRoundedIconGenerator(view.getResources());
+        RoundedIconGenerator roundedIconGenerator =
+                FaviconUtils.createCircularIconGenerator(view.getResources());
 
         // Prepare avatar or its fallback monogram.
         Bitmap avatar = avatarData.mAvatar;
@@ -164,7 +166,10 @@ class AccountSelectionViewBinder {
     }
 
     static void openTab(String url) {
-        sTabCreator.launchUrl(url, TabLaunchType.FROM_CHROME_UI);
+        TabCreator tabCreator = (sTabCreatorForTesting == null)
+                ? new TabDelegate(/* incognito */ false)
+                : sTabCreatorForTesting;
+        tabCreator.launchUrl(url, TabLaunchType.FROM_CHROME_UI);
     }
 
     static NoUnderlineClickableSpan createLink(Resources r, String url) {
@@ -178,17 +183,20 @@ class AccountSelectionViewBinder {
      * @param key The key of the property to be bound.
      */
     static void bindDataSharingConsentView(PropertyModel model, View view, PropertyKey key) {
-        if (key == DataSharingConsentProperties.PROVIDER_URL
-                || key == DataSharingConsentProperties.TERMS_OF_SERVICE_URL
-                || key == DataSharingConsentProperties.PRIVACY_POLICY_URL) {
-            NoUnderlineClickableSpan termsOfServiceLink = createLink(view.getResources(),
-                    model.get(DataSharingConsentProperties.TERMS_OF_SERVICE_URL));
-            NoUnderlineClickableSpan privacyPolicyLink = createLink(view.getResources(),
-                    model.get(DataSharingConsentProperties.PRIVACY_POLICY_URL));
-            String providerUrl = model.get(DataSharingConsentProperties.PROVIDER_URL);
+        if (key == DataSharingConsentProperties.PROPERTIES) {
+            DataSharingConsentProperties.Properties properties =
+                    model.get(DataSharingConsentProperties.PROPERTIES);
+
+            Resources resources = view.getResources();
+            NoUnderlineClickableSpan privacyPolicyLink =
+                    createLink(resources, properties.mPrivacyPolicyUrl);
+            NoUnderlineClickableSpan termsOfServiceLink =
+                    createLink(resources, properties.mTermsOfServiceUrl);
+
             String consentText = String.format(
                     view.getContext().getString(R.string.account_selection_data_sharing_consent),
-                    providerUrl);
+                    properties.mFormattedIdpUrl, properties.mFormattedRpUrl,
+                    properties.mFormattedRpUrl);
             SpannableString span = SpanApplier.applySpans(consentText,
                     new SpanApplier.SpanInfo("<link1>", "</link1>", privacyPolicyLink),
                     new SpanApplier.SpanInfo("<link2>", "</link2>", termsOfServiceLink));
@@ -206,20 +214,44 @@ class AccountSelectionViewBinder {
      * @param view The view to be bound.
      * @param key The key of the property to be bound.
      */
+    @SuppressWarnings("checkstyle:SetTextColorAndSetTextSizeCheck")
     static void bindContinueButtonView(PropertyModel model, View view, PropertyKey key) {
-        if (key == ContinueButtonProperties.ON_CLICK_LISTENER
-                || key == ContinueButtonProperties.ACCOUNT) {
+        Context context = view.getContext();
+        if (key == ContinueButtonProperties.IDP_METADATA) {
+            if (!ColorUtils.inNightMode(context)) {
+                IdentityProviderMetadata idpMetadata =
+                        model.get(ContinueButtonProperties.IDP_METADATA);
+                ButtonCompat button = view.findViewById(R.id.account_selection_continue_btn);
+
+                Integer backgroundColor = idpMetadata.getBrandBackgroundColor();
+                if (backgroundColor != null) {
+                    button.setButtonColor(ColorStateList.valueOf(backgroundColor));
+
+                    Integer textColor = idpMetadata.getBrandTextColor();
+                    if (textColor == null) {
+                        textColor = MaterialColors.getColor(context,
+                                ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor)
+                                        ? R.attr.colorOnPrimary
+                                        : R.attr.colorOnSurface,
+                                TAG);
+                    }
+                    button.setTextColor(textColor);
+                }
+            }
+        } else if (key == ContinueButtonProperties.ACCOUNT) {
             Account account = model.get(ContinueButtonProperties.ACCOUNT);
-            view.setOnClickListener(clickedView -> {
-                model.get(ContinueButtonProperties.ON_CLICK_LISTENER).onResult(account);
-            });
             // Prefers to use given name if it is provided otherwise falls back to using the name.
             String name =
                     account.getGivenName() != null ? account.getGivenName() : account.getName();
-            String btnText = String.format(
-                    view.getContext().getString(R.string.account_selection_continue), name);
+            String btnText =
+                    String.format(context.getString(R.string.account_selection_continue), name);
             Button button = view.findViewById(R.id.account_selection_continue_btn);
             button.setText(btnText);
+        } else if (key == ContinueButtonProperties.ON_CLICK_LISTENER) {
+            view.setOnClickListener(clickedView -> {
+                Account account = model.get(ContinueButtonProperties.ACCOUNT);
+                model.get(ContinueButtonProperties.ON_CLICK_LISTENER).onResult(account);
+            });
         } else {
             assert false : "Unhandled update to property:" + key;
         }
@@ -251,8 +283,8 @@ class AccountSelectionViewBinder {
      * @param key The key of the property to be bound.
      */
     static void bindHeaderView(PropertyModel model, View view, PropertyKey key) {
-        if (key == HeaderProperties.FORMATTED_URL || key == HeaderProperties.TYPE) {
-            TextView sheetTitleText = view.findViewById(R.id.account_selection_sheet_title);
+        if (key == HeaderProperties.FORMATTED_RP_URL || key == HeaderProperties.TYPE) {
+            TextView headerTitleText = view.findViewById(R.id.header_title);
             @StringRes
             int titleStringId = R.string.account_selection_sheet_title_single;
             switch (model.get(HeaderProperties.TYPE)) {
@@ -268,8 +300,14 @@ class AccountSelectionViewBinder {
             }
 
             String title = String.format(view.getContext().getString(titleStringId),
-                    model.get(HeaderProperties.FORMATTED_URL));
-            sheetTitleText.setText(title);
+                    model.get(HeaderProperties.FORMATTED_RP_URL));
+            headerTitleText.setText(title);
+        } else if (key == HeaderProperties.FORMATTED_IDP_URL) {
+            String subheadingText = String.format(
+                    view.getContext().getString(R.string.account_selection_sheet_idp_subheader),
+                    model.get(HeaderProperties.FORMATTED_IDP_URL));
+            TextView headerIdpUrlText = view.findViewById(R.id.header_idp_url);
+            headerIdpUrlText.setText(subheadingText);
         } else {
             assert false : "Unhandled update to property:" + key;
         }

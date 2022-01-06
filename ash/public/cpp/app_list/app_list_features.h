@@ -46,9 +46,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableSuggestedLocalFiles;
 // Enables the Assistant search redirection in the app list.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAssistantSearch;
 
-// Enables ghosting in any AppsGridView (folder or root) when dragging an item.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppGridGhost;
-
 // Enables hashed recording of a app list launches.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListLaunchRecording;
 
@@ -76,9 +73,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableLauncherSearchNormalization;
 // Enables categorical search in the launcher.
 ASH_PUBLIC_EXPORT extern const base::Feature kCategoricalSearch;
 
-// Enables search query highlighting in the launcher.
-ASH_PUBLIC_EXPORT extern const base::Feature kLauncherQueryHighlighting;
-
 // Forces the launcher to show the continue section even if there are no file
 // suggestions.
 ASH_PUBLIC_EXPORT extern const base::Feature kForceShowContinueSection;
@@ -91,7 +85,6 @@ bool ASH_PUBLIC_EXPORT IsAppReinstallZeroStateEnabled();
 bool ASH_PUBLIC_EXPORT IsSuggestedFilesEnabled();
 bool ASH_PUBLIC_EXPORT IsSuggestedLocalFilesEnabled();
 bool ASH_PUBLIC_EXPORT IsAssistantSearchEnabled();
-bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListLaunchRecordingEnabled();
 bool ASH_PUBLIC_EXPORT IsFuzzyAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsExactMatchForNonLatinLocaleEnabled();
@@ -101,7 +94,6 @@ bool ASH_PUBLIC_EXPORT IsAggregatedMlSearchRankingEnabled();
 bool ASH_PUBLIC_EXPORT IsNewDragSpecInLauncherEnabled();
 bool ASH_PUBLIC_EXPORT IsLauncherSearchNormalizationEnabled();
 bool ASH_PUBLIC_EXPORT IsCategoricalSearchEnabled();
-bool ASH_PUBLIC_EXPORT IsLauncherQueryHighlightingEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();

@@ -15,8 +15,8 @@
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
@@ -212,23 +212,32 @@ void UpdateServiceImpl::RegisterApp(
     base::OnceCallback<void(const RegistrationResponse&)> callback) {
   VLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback),
-                                RegistrationResponse(DoRegistration(request))));
-}
-
-int UpdateServiceImpl::DoRegistration(const RegistrationRequest& request) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Version current_version =
       persisted_data_->GetProductVersion(request.app_id);
   if (current_version.IsValid() &&
       current_version.CompareTo(request.version) == 1) {
-    return kRegistrationAlreadyRegistered;
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       RegistrationResponse(kRegistrationAlreadyRegistered)));
+    return;
   }
   persisted_data_->RegisterApp(request);
-  update_client_->SendRegistrationPing(request.app_id, request.version,
-                                       base::DoNothing());
-  return kRegistrationSuccess;
+  update_client::CrxComponent crx_component;
+  crx_component.app_id = request.app_id;
+  crx_component.version = request.version;
+  crx_component.requires_network_encryption = false;
+  crx_component.ap = request.ap;
+  // TODO(crbug.com/1259972): Set brand.
+  update_client_->SendRegistrationPing(
+      crx_component,
+      base::BindOnce(
+          [](base::OnceCallback<void(const RegistrationResponse&)> callback,
+             update_client::Error /*error*/) {
+            // Ping failures do not count as registration failures.
+            std::move(callback).Run(RegistrationResponse(kRegistrationSuccess));
+          },
+          std::move(callback)));
 }
 
 void UpdateServiceImpl::RunPeriodicTasks(base::OnceClosure callback) {

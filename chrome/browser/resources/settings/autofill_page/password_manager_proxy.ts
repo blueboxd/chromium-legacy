@@ -50,6 +50,31 @@ export interface PasswordManagerProxy {
   recordPasswordsPageAccessInSettings(): void;
 
   /**
+   * Requests whether the account store is a default location for saving
+   * passwords. False means the device store is a default one. Must be called
+   * when the current user has already opted-in for account storage.
+   * @return A promise that resolves to whether the account store is default.
+   */
+  isAccountStoreDefault(): Promise<boolean>;
+
+  /**
+   * Requests whether the given |url| meets the requirements to save a password
+   * for it (e.g. valid, has proper scheme etc.).
+   * @return A promise that resolves to the corresponding URLCollection on
+   *     success and to null otherwise.
+   */
+  getUrlCollection(url: string):
+      Promise<chrome.passwordsPrivate.UrlCollection|null>;
+
+  /**
+   * Saves a new password entry described by the given |options|.
+   * @param options Details about a new password and storage to be used.
+   * @return A promise that resolves when the new entry is added.
+   */
+  addPassword(options: chrome.passwordsPrivate.AddPasswordOptions):
+      Promise<void>;
+
+  /**
    * Changes the saved password corresponding to |ids|.
    * @param ids The ids for the password entry being updated.
    * @return A promise that resolves when the password is updated for all ids.
@@ -342,6 +367,26 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
 
   recordPasswordsPageAccessInSettings() {
     chrome.passwordsPrivate.recordPasswordsPageAccessInSettings();
+  }
+
+  isAccountStoreDefault() {
+    return new Promise<boolean>(resolve => {
+      chrome.passwordsPrivate.isAccountStoreDefault(resolve);
+    });
+  }
+
+  getUrlCollection(url: string) {
+    return new Promise<chrome.passwordsPrivate.UrlCollection|null>(resolve => {
+      chrome.passwordsPrivate.getUrlCollection(url, urlCollection => {
+        resolve(chrome.runtime.lastError ? null : urlCollection);
+      });
+    });
+  }
+
+  addPassword(options: chrome.passwordsPrivate.AddPasswordOptions) {
+    return new Promise<void>(resolve => {
+      chrome.passwordsPrivate.addPassword(options, resolve);
+    });
   }
 
   changeSavedPassword(

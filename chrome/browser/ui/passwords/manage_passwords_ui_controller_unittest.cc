@@ -117,9 +117,6 @@ class TestPasswordManagerClient
   TestPasswordManagerClient()
       : mock_profile_store_(new MockPasswordStoreInterface()) {}
 
-  ~TestPasswordManagerClient() override {
-  }
-
   MOCK_METHOD(void,
               TriggerReauthForPrimaryAccount,
               (signin_metrics::ReauthAccessPoint,
@@ -210,7 +207,7 @@ password_manager::PasswordForm BuildFormFromLoginAndURL(
   form.username_value = base::ASCIIToUTF16(username);
   form.password_value = base::ASCIIToUTF16(password);
   form.url = GURL(url);
-  form.signon_realm = form.url.GetOrigin().spec();
+  form.signon_realm = form.url.DeprecatedGetOriginAsURL().spec();
   return form;
 }
 
@@ -268,10 +265,12 @@ void ManagePasswordsUIControllerTest::SetUp() {
   // Create the test UIController here so that it's bound to
   // |test_web_contents_|, and will be retrieved correctly via
   // ManagePasswordsUIController::FromWebContents in |controller()|.
-  new TestManagePasswordsUIController(web_contents(), &client_);
+  new ::testing::NiceMock<TestManagePasswordsUIController>(web_contents(),
+                                                           &client_);
 
   test_local_form_.url = GURL("http://example.com/login");
-  test_local_form_.signon_realm = test_local_form_.url.GetOrigin().spec();
+  test_local_form_.signon_realm =
+      test_local_form_.url.DeprecatedGetOriginAsURL().spec();
   test_local_form_.username_value = u"username";
   test_local_form_.username_element = u"username_element";
   test_local_form_.password_value = u"12345";
@@ -281,7 +280,7 @@ void ManagePasswordsUIControllerTest::SetUp() {
 
   test_federated_form_.url = GURL("http://example.com/login");
   test_federated_form_.signon_realm =
-      test_federated_form_.url.GetOrigin().spec();
+      test_federated_form_.url.DeprecatedGetOriginAsURL().spec();
   test_federated_form_.username_value = u"username";
   test_federated_form_.federation_origin =
       url::Origin::Create(GURL("https://federation.test/"));
@@ -296,7 +295,6 @@ void ManagePasswordsUIControllerTest::SetUp() {
   submitted_form_.password_value = u"pass12345";
 
   // We need to be on a "webby" URL for most tests.
-  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kExampleUrl));
 }
@@ -431,7 +429,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleSuppressed) {
   std::vector<const PasswordForm*> best_matches;
   auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
   std::vector<password_manager::InteractionsStats> stats(1);
-  stats[0].origin_domain = submitted_form().url.GetOrigin();
+  stats[0].origin_domain = submitted_form().url.DeprecatedGetOriginAsURL();
   stats[0].username_value = submitted_form().username_value;
   stats[0].dismissal_count = kGreatDissmisalCount;
   EXPECT_CALL(*test_form_manager, GetInteractionsStats)
@@ -449,7 +447,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleNotSuppressed) {
   std::vector<const PasswordForm*> best_matches;
   auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
   std::vector<password_manager::InteractionsStats> stats(1);
-  stats[0].origin_domain = submitted_form().url.GetOrigin();
+  stats[0].origin_domain = submitted_form().url.DeprecatedGetOriginAsURL();
   stats[0].username_value = u"not my username";
   stats[0].dismissal_count = kGreatDissmisalCount;
   EXPECT_CALL(*test_form_manager, GetInteractionsStats)
@@ -1051,7 +1049,6 @@ TEST_F(ManagePasswordsUIControllerTest, OpenBubbleTwice) {
   // Open the autosignin bubble.
   std::vector<std::unique_ptr<PasswordForm>> local_credentials;
   local_credentials.emplace_back(new PasswordForm(test_local_form()));
-  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnAutoSignin(std::move(local_credentials),
                              url::Origin::Create(test_local_form().url));
   EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, controller()->GetState());
@@ -1061,7 +1058,6 @@ TEST_F(ManagePasswordsUIControllerTest, OpenBubbleTwice) {
 
   // Open the bubble again.
   local_credentials.emplace_back(new PasswordForm(test_local_form()));
-  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnAutoSignin(std::move(local_credentials),
                              url::Origin::Create(test_local_form().url));
   EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, controller()->GetState());
@@ -1294,6 +1290,36 @@ TEST_F(ManagePasswordsUIControllerTest,
   ExpectIconAndControllerStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
   EXPECT_EQ(u"new_username", controller()->GetPendingPassword().username_value);
   EXPECT_EQ(u"12345", controller()->GetPendingPassword().password_value);
+}
+
+TEST_F(ManagePasswordsUIControllerTest,
+       ManualFallbackForSaving_HideAutomaticBubble) {
+  // Open the automatic bubble first.
+  std::vector<const PasswordForm*> best_matches;
+  auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
+  controller()->OnPasswordSubmitted(std::move(test_form_manager));
+  ASSERT_TRUE(controller()->opened_automatic_bubble());
+  EXPECT_EQ(url::Origin::Create(test_local_form().url),
+            controller()->GetOrigin());
+
+  // User navigates to another origin and types into a password form.
+  test_local_form().url = GURL("http://nonexample.com/login");
+  test_local_form().signon_realm = "http://nonexample.com/";
+  test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
+  PasswordForm pending = test_local_form();
+  pending.username_value = u"manual_username";
+  pending.password_value = u"manual_pass1234";
+  EXPECT_CALL(*test_form_manager, GetPendingCredentials())
+      .WillRepeatedly(ReturnRef(pending));
+  controller()->OnShowManualFallbackForSaving(
+      std::move(test_form_manager), false /* has_generated_password */,
+      false /* is_update */);
+  ExpectIconAndControllerStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
+
+  // The automatic bubble is gone. The controller is managing the new origin.
+  EXPECT_FALSE(controller()->opened_automatic_bubble());
+  EXPECT_EQ(url::Origin::Create(test_local_form().url),
+            controller()->GetOrigin());
 }
 
 TEST_F(ManagePasswordsUIControllerTest,

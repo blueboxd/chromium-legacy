@@ -374,8 +374,6 @@ struct VideoFrameMetadata {
   mojo_base.mojom.TimeTicks? receive_time;
 
   mojo_base.mojom.TimeDelta? wallclock_frame_duration;
-
-  uint32 hw_protected_validation_id;
 };
 
 // This defines a mojo transport format for media::VideoFrame.
@@ -533,7 +531,8 @@ enum RendererType {
   kFlinging = 4,         // FlingingRendererClientFactory
   kCast = 5,             // CastRendererClientFactory
   kMediaFoundation = 6,  // MediaFoundationRendererClientFactory
-  kFuchsia = 7,          // FuchsiaRendererFactory
+  // kFuchsia = 7,       // Deprecated
   kRemoting = 8,         // RemotingRendererFactory for remoting::Receiver
   kCastStreaming = 9,    // CastStreamingRendererFactory
+  kContentEmbedderDefined = 10,  // Defined by the content embedder
 };

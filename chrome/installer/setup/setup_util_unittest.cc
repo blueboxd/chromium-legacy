@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -32,6 +33,10 @@
 #include "base/win/scoped_handle.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/network/mock_key_network_delegate.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/key_persistence_delegate_factory.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/mock_key_persistence_delegate.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/key_rotation_manager.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -615,6 +620,7 @@ TEST(SetupUtilTest, StoreDMTokenToRegistryShouldFailWhenDMTokenTooLarge) {
 }
 
 TEST(SetupUtilTest, RotateDTKeySuccess) {
+  base::test::TaskEnvironment task_environment;
   install_static::ScopedInstallDetails scoped_install_details(true);
   registry_util::RegistryOverrideManager registry_override_manager;
   ASSERT_NO_FATAL_FAILURE(
@@ -626,7 +632,33 @@ TEST(SetupUtilTest, RotateDTKeySuccess) {
   constexpr DWORD kExpectedSize = sizeof(kTokenData) - 1;
   std::string token(&kTokenData[0], kExpectedSize);
   ASSERT_EQ(token.length(), kExpectedSize);
-  ASSERT_TRUE(installer::RotateDeviceTrustKey(token));
+
+  GURL dmserver_url("dmserver.com");
+  std::string nonce = "nonce";
+
+  // Create a fake success response.
+  enterprise_management::DeviceManagementResponse response;
+  response.mutable_browser_public_key_upload_response()->set_response_code(
+      enterprise_management::BrowserPublicKeyUploadResponse::SUCCESS);
+  std::string response_str;
+  response.SerializeToString(&response_str);
+
+  // Trigger the key rotation with a real persistence delegate (empty) but with
+  // a mocked network delegate.
+  auto mock_network_delegate =
+      std::make_unique<enterprise_connectors::test::MockKeyNetworkDelegate>();
+  EXPECT_CALL(*mock_network_delegate,
+              SendPublicKeyToDmServerSync(dmserver_url, token, testing::_))
+      .WillOnce(testing::Return(response_str));
+
+  auto key_rotation_manager =
+      enterprise_connectors::KeyRotationManager::CreateForTesting(
+          std::move(mock_network_delegate),
+          enterprise_connectors::KeyPersistenceDelegateFactory::GetInstance()
+              ->CreateKeyPersistenceDelegate());
+
+  ASSERT_TRUE(installer::RotateDeviceTrustKey(std::move(key_rotation_manager),
+                                              dmserver_url, token, nonce));
 
   base::win::RegKey key;
   std::wstring signingkey_name;
@@ -658,7 +690,25 @@ TEST(SetupUtilTest, RotateDTKeyShouldFailWhenDMTokenTooLarge) {
   std::string token_too_large(installer::kMaxDMTokenLength + 1, 'x');
   ASSERT_GT(token_too_large.size(), installer::kMaxDMTokenLength);
 
-  EXPECT_FALSE(installer::RotateDeviceTrustKey(token_too_large));
+  auto mock_network_delegate = std::make_unique<testing::StrictMock<
+      enterprise_connectors::test::MockKeyNetworkDelegate>>();
+  auto mock_persistence_delegate = std::make_unique<testing::StrictMock<
+      enterprise_connectors::test::MockKeyPersistenceDelegate>>();
+  enterprise_connectors::test::MockKeyPersistenceDelegate::KeyInfo
+      empty_key_pair = {enterprise_management::BrowserPublicKeyUploadRequest::
+                            KEY_TRUST_LEVEL_UNSPECIFIED,
+                        std::vector<uint8_t>()};
+  EXPECT_CALL(*mock_persistence_delegate, LoadKeyPair())
+      .WillOnce(testing::Return(empty_key_pair));
+
+  auto key_rotation_manager =
+      enterprise_connectors::KeyRotationManager::CreateForTesting(
+          std::move(mock_network_delegate),
+          std::move(mock_persistence_delegate));
+
+  EXPECT_FALSE(installer::RotateDeviceTrustKey(std::move(key_rotation_manager),
+                                               GURL("dmserver.com"),
+                                               token_too_large, "nonce"));
 }
 
 namespace installer {

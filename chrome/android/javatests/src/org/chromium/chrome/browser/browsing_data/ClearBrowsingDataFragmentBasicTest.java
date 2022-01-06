@@ -187,7 +187,7 @@ public class ClearBrowsingDataFragmentBasicTest {
     @Feature({"RenderTest"})
     @EnableFeatures(ChromeFeatureList.SEARCH_HISTORY_LINK)
     public void testRenderSearchHistoryLinkSignedInGoogleDSE() throws IOException {
-        mAccountManagerTestRule.addTestAccountThenSignin();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         setSyncable(false);
         mSettingsActivityTestRule.startSettingsActivity();
         waitForOptionsMenu();

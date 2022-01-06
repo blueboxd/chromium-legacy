@@ -302,7 +302,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void SignalEndOfTest();
 
   // Retrieve the bounds of the parent View in screen coordinates.
-  virtual gfx::Rect GetViewBoundsInScreenCoordinates() const;
+  gfx::Rect GetViewBoundsInScreenCoordinates() const;
 
   // Fire an event telling native assistive technology to move focus to the
   // given find in page result.
@@ -544,7 +544,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   BrowserAccessibilityDelegate* delegate_;
 
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
-  std::map<int32_t, BrowserAccessibility*> id_wrapper_map_;
+  std::map<ui::AXNodeID, std::unique_ptr<BrowserAccessibility>> id_wrapper_map_;
 
   // True if the user has initiated a navigation to another page.
   bool user_is_navigating_away_;

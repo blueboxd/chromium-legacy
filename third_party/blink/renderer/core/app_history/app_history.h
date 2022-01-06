@@ -50,12 +50,13 @@ class CORE_EXPORT AppHistory final : public EventTargetWithInlineData,
   explicit AppHistory(LocalDOMWindow&);
   ~AppHistory() final = default;
 
-  void InitializeForNavigation(
-      HistoryItem& current,
-      const WebVector<WebHistoryItem>& back_entries,
-      const WebVector<WebHistoryItem>& forward_entries);
+  void InitializeForNewWindow(HistoryItem& current,
+                              WebFrameLoadType,
+                              CommitReason,
+                              AppHistory& previous,
+                              const WebVector<WebHistoryItem>& back_entries,
+                              const WebVector<WebHistoryItem>& forward_entries);
   void UpdateForNavigation(HistoryItem&, WebFrameLoadType);
-  void CloneFromPrevious(AppHistory&);
 
   // Web-exposed:
   AppHistoryEntry* current() const;
@@ -111,6 +112,7 @@ class CORE_EXPORT AppHistory final : public EventTargetWithInlineData,
  private:
   friend class NavigateReaction;
   friend class AppHistoryApiNavigation;
+  void CloneFromPrevious(AppHistory&);
   void PopulateKeySet();
   void FinalizeWithAbortedNavigationError(ScriptState*,
                                           AppHistoryApiNavigation*);
@@ -132,6 +134,8 @@ class CORE_EXPORT AppHistory final : public EventTargetWithInlineData,
 
   scoped_refptr<SerializedScriptValue> SerializeState(const ScriptValue&,
                                                       ExceptionState&);
+
+  bool HasEntriesAndEventsDisabled() const;
 
   HeapVector<Member<AppHistoryEntry>> entries_;
   HashMap<String, int> keys_to_indices_;

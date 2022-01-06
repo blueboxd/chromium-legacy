@@ -30,6 +30,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/win/event_creation_utils.h"
 #include "ui/base/win/shell.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/display/win/dpi.h"
@@ -266,8 +267,12 @@ void DesktopWindowTreeHostWin::Show(ui::WindowShowState show_state,
 
   gfx::Rect pixel_restore_bounds;
   if (show_state == ui::SHOW_STATE_MAXIMIZED) {
+    // The window parameter is intentionally passed as nullptr because a
+    // non-null window parameter causes errors when restoring windows to saved
+    // positions in variable-DPI situations. See https://crbug.com/1252564 for
+    // details.
     pixel_restore_bounds =
-        display::win::ScreenWin::DIPToScreenRect(GetHWND(), restore_bounds);
+        display::win::ScreenWin::DIPToScreenRect(nullptr, restore_bounds);
   }
   message_handler_->Show(show_state, pixel_restore_bounds);
 
@@ -629,6 +634,20 @@ void DesktopWindowTreeHostWin::SetBoundsInPixels(const gfx::Rect& bounds) {
   // different DSF, HWNDMessageHandler::OnDpiChanged() will be called and the
   // window size will be scaled automatically.
   message_handler_->SetBounds(new_expanded, old_content_size != bounds.size());
+}
+
+gfx::Rect
+DesktopWindowTreeHostWin::GetBoundsInAcceleratedWidgetPixelCoordinates() {
+  if (message_handler_->IsMinimized())
+    return gfx::Rect();
+  const gfx::Rect client_bounds =
+      message_handler_->GetClientAreaBoundsInScreen();
+  const gfx::Rect window_bounds = message_handler_->GetWindowBoundsInScreen();
+  if (window_bounds == client_bounds)
+    return gfx::Rect(window_bounds.size());
+  const gfx::Vector2d offset = client_bounds.origin() - window_bounds.origin();
+  DCHECK(offset.x() >= 0 && offset.y() >= 0);
+  return gfx::Rect(gfx::Point() + offset, client_bounds.size());
 }
 
 gfx::Point DesktopWindowTreeHostWin::GetLocationOnScreenInPixels() const {

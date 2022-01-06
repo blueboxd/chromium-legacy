@@ -248,8 +248,9 @@ FYI_BUILDERS = {
             'extra_args': [
                 '--output-format=histograms',
                 '--experimental-tbmv3-metrics',
-                '--device=custom',
-                '--custom-device-target=internal.astro_target',
+                '-d',
+                '--system-image-dir=../../third_party/fuchsia-sdk/images-internal/astro-release/smart_display_eng_arrested',
+                '--os-check=update',
             ],
             'type':
             TEST_TYPES.TELEMETRY,
@@ -316,8 +317,8 @@ FYI_BUILDERS = {
     },
     'fuchsia-builder-perf-fyi': {
         'additional_compile_targets': [
-            'web_engine_shell_pkg', 'http_pkg', 'cast_runner_pkg',
-            'web_runner_pkg', 'chromedriver', 'chromium_builder_perf'
+            'web_engine_shell_pkg', 'cast_runner_pkg', 'web_runner_pkg',
+            'chromedriver', 'chromium_builder_perf'
         ],
     },
 }

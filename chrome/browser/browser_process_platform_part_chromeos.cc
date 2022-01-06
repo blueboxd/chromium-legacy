@@ -8,11 +8,14 @@
 #include <utility>
 
 #include "ash/components/account_manager/account_manager_factory.h"
+#include "ash/components/geolocation/simple_geolocation_provider.h"
+#include "ash/components/timezone/timezone_resolver.h"
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/memory/singleton.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/login/saml/in_session_password_change_manager.h"
 #include "chrome/browser/ash/login/session/chrome_session_manager.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_impl.h"
@@ -46,8 +49,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/geolocation/simple_geolocation_provider.h"
-#include "chromeos/timezone/timezone_resolver.h"
 #include "components/app_restore/features.h"
 #include "components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "components/arc/enterprise/snapshot_hours_policy_service.h"
@@ -275,7 +276,7 @@ void BrowserProcessPlatformPart::ShutdownSchedulerConfigurationManager() {
 
 void BrowserProcessPlatformPart::InitializeKernelFeatureManager() {
   DCHECK(!kernel_feature_manager_);
-  kernel_feature_manager_ = std::make_unique<chromeos::KernelFeatureManager>(
+  kernel_feature_manager_ = std::make_unique<ash::KernelFeatureManager>(
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient());
 }
 
@@ -298,8 +299,8 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
               &BrowserProcessPlatformPart::ShutdownPrimaryProfileServices,
               base::Unretained(this)));
 
-  if (chromeos::SystemProxyManager::Get()) {
-    chromeos::SystemProxyManager::Get()->StartObservingPrimaryProfilePrefs(
+  if (ash::SystemProxyManager::Get()) {
+    ash::SystemProxyManager::Get()->StartObservingPrimaryProfilePrefs(
         primary_profile);
   }
 
@@ -315,8 +316,8 @@ void BrowserProcessPlatformPart::ShutdownPrimaryProfileServices() {
   if (manager)
     manager->policy_service()->StopObservingPrimaryProfilePrefs();
 
-  if (chromeos::SystemProxyManager::Get())
-    chromeos::SystemProxyManager::Get()->StopObservingPrimaryProfilePrefs();
+  if (ash::SystemProxyManager::Get())
+    ash::SystemProxyManager::Get()->StopObservingPrimaryProfilePrefs();
   in_session_password_change_manager_.reset();
 }
 
@@ -353,16 +354,16 @@ BrowserProcessPlatformPart::GetTimezoneResolverManager() {
   return timezone_resolver_manager_.get();
 }
 
-chromeos::TimeZoneResolver* BrowserProcessPlatformPart::GetTimezoneResolver() {
+ash::TimeZoneResolver* BrowserProcessPlatformPart::GetTimezoneResolver() {
   if (!timezone_resolver_.get()) {
-    timezone_resolver_ = std::make_unique<chromeos::TimeZoneResolver>(
+    timezone_resolver_ = std::make_unique<ash::TimeZoneResolver>(
         GetTimezoneResolverManager(),
         g_browser_process->shared_url_loader_factory(),
-        chromeos::SimpleGeolocationProvider::DefaultGeolocationProviderURL(),
+        ash::SimpleGeolocationProvider::DefaultGeolocationProviderURL(),
         base::BindRepeating(&ash::system::ApplyTimeZone),
         base::BindRepeating(
-            &chromeos::DelayNetworkCall,
-            base::Milliseconds(chromeos::kDefaultNetworkRetryDelayMS)),
+            &ash::DelayNetworkCall,
+            base::Milliseconds(ash::kDefaultNetworkRetryDelayMS)),
         g_browser_process->local_state());
   }
   return timezone_resolver_.get();
@@ -373,6 +374,16 @@ void BrowserProcessPlatformPart::StartTearDown() {
   // destroyed.  So we need to destroy |timezone_resolver_| here.
   timezone_resolver_.reset();
   profile_helper_.reset();
+}
+
+void BrowserProcessPlatformPart::AttemptExit(bool try_to_quit_application) {
+  // Request Lacros terminate early during shutdown to give it the opportunity
+  // to shutdown gracefully. Check to make sure `browser_manager` is available
+  // as it may be null in tests.
+  if (auto* browser_manager = crosapi::BrowserManager::Get())
+    browser_manager->Shutdown();
+
+  BrowserProcessPlatformPartBase::AttemptExit(try_to_quit_application);
 }
 
 chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {

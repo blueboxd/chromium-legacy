@@ -918,6 +918,11 @@ message NetworkInterface {
 
   // The mobile directory number associated with the device's sim card.
   optional string mdn = 7;
+
+  // List of EID (EUICC Identifier) of all cellular EUICCs
+  // (Embedded Universal Integrated Circuit Cards) on the device.
+  // 32 decimal digits encoded as ASCII string. e.g.
+  repeated string eids = 8;
 }
 
 // Information about configured/visible networks - this is separate from
@@ -2086,6 +2091,16 @@ message ChromeOsUserReportRequest {
   repeated PartialReportType partial_report_types = 3;
 }
 
+// Report user level status on all platforms. It includes the information of the
+// profile that user has signed in plus some basic browser and OS information.
+message ChromeProfileReportRequest {
+  // Browser related info
+  optional BrowserReport browser_report = 1;
+
+  // Basic OS information
+  optional OSReport os_report = 2;
+}
+
 // A validation issue from validating a policy value that was contained in
 // the payload of the policy fetch response.
 message PolicyValueValidationIssue {
@@ -2303,13 +2318,18 @@ message DeviceStatusReportResponse {
 
 // Response from DMServer to a Chrome desktop report request. The report
 // upload errors will be set in the containing DeviceManagementResponse or
-// eventually at the HTTP level as mentioned in a TODO.
+// eventually at the HTTP level.
 message ChromeDesktopReportResponse {}
 
 // Response from DMServer to a ChromeOS user report request. The report
 // upload errors will be set in the containing DeviceManagementResponse or
-// eventually at the HTTP level as mentioned in a TODO.
+// eventually at the HTTP level.
 message ChromeOsUserReportResponse {}
+
+// Response from DMServer to a profile report request. The report
+// upload errors will be set in the containing DeviceManagementResponse or
+// eventually at the HTTP level.
+message ChromeProfileReportResponse {}
 
 // Response from DMServer to update user devices' status.
 // It is possible that status report fails but policy request succeed.  In such
@@ -3932,6 +3952,12 @@ message BrowserPublicKeyUploadRequest {
     CHROME_BROWSER_OS_KEY = 2;
   }
 
+  enum KeyType {
+    KEY_TYPE_UNSPECIFIED = 0;
+    RSA_KEY = 1;
+    EC_KEY = 2;
+  }
+
   // Public key in EC_NID_X9_62_PRIME256V1_PUBLIC_DER format.
   optional bytes public_key = 1;
   // Signature of the new public key signed using the existing key, empty for
@@ -3939,6 +3965,8 @@ message BrowserPublicKeyUploadRequest {
   optional bytes signature = 2;
   // Trust Level of the key.
   optional KeyTrustLevel key_trust_level = 3;
+  // Type of the key.
+  optional KeyType key_type = 4;
 }
 
 // Response from server to device for cert upload request.

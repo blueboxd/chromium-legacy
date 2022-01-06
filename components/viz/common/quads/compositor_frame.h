@@ -6,11 +6,13 @@
 #define COMPONENTS_VIZ_COMMON_QUADS_COMPOSITOR_FRAME_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/common/surfaces/region_capture_bounds.h"
 #include "components/viz/common/viz_common_export.h"
 
 namespace viz {

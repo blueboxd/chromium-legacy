@@ -3,7 +3,7 @@
 <translationbundle lang="sq">
 <translation id="1096883626080133124">Bëj më shumë me një Google Chrome të thjeshtë, të sigurt dhe më të shpejtë se kurrë</translation>
 <translation id="1282031177488366470">Ndihmo në përmirësimin e veçorive dhe cilësisë së funksionimit të Chrome</translation>
-<translation id="1354592789402432496">Administratori yt kërkon që të identifikohesh me një llogari organizate. Llogaritë që janë kufizuar nga administratori yt janë fshehur.</translation>
+<translation id="1314663809820920746">Mund të shikosh ende të gjithë faqeshënuesit, historikun, fjalëkalimet dhe cilësime të tjera në këtë pajisjet. Nëse bën ndryshime, ato nuk do të sinkronizohen me "Llogarinë tënde të Google".</translation>
 <translation id="1479202195792305274">Chrome mund t'i kontrollojë fjalëkalimet e tua kur të identifikohesh me "Llogarinë tënde të Google".</translation>
 <translation id="1493827051843127077">Caktoje Chrome si parazgjedhje për të sinkronizuar skedat, fjalëkalimet dhe informacionet e pagesës në të gjitha pajisjet e tua</translation>
 <translation id="1504372625950710826">Chrome nuk mund të kontrollonte për përditësime. Provo të kontrollosh lidhjen e internetit.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Jashtë linje. Chrome nuk mund të kontrollojë për përditësime</translation>
 <translation id="5716154293141027663">Hap gjithmonë Chrome kur troket te lidhjet në aplikacionet e tjera</translation>
-<translation id="572883588166315317">Organizata jote kërkon që të identifikohesh për të përdorur Chrome. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Këshillë për Chrome. Disa butona ndodhen tani në fund të ekranit tënd, si p.sh. "Prapa", "Përpara" dhe "Kërko".</translation>
-<translation id="5876773482963502140">Nëse lejon që Chrome të dijë vendndodhjen tënde, Chrome e dërgon atë te çdo sajt që ti lejon. Sajtet mund të kërkojnë për vendndodhjen tënde kur ato kanë informacione lokale për të të shfaqur, si dyqanet në afërsi ose lajme.</translation>
 <translation id="5998675059699164418">Organizata jote kërkon që të identifikohesh për të përdorur Chrome.</translation>
 <translation id="6054613632208573261">Përdor Chrome me parazgjedhje</translation>
 <translation id="6063091872902370735">Lejo identifikimin në Chrome</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Zgjidh nëse do t'i pastrosh të dhënat e Chrome nga kjo pajisje apo do t'i mbash ato</translation>
 <translation id="8370517070665726704">Të drejtat e autorit <ph name="YEAR" /> Google LLC. Të gjitha të drejtat e rezervuara.</translation>
 <translation id="840168496893712993">Disa shtesa bëjnë që Chrome të ndërpritet aksidentalisht. Provo t'i çinstalosh ato.</translation>
+<translation id="8414886616817913619">Organizata jote kërkon që të identifikohesh për të përdorur Chrome. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Të dhënat e zgjedhura janë hequr nga Chrome dhe nga pajisjet e sinkronizuara. Llogaria jote e Google mund të ketë forma të tjera të historikut të shfletimit, si kërkimet dhe aktivitetet nga shërbimet e tjera të Google, në history.google.com.</translation>
 <translation id="850555388806794946">Për ta bërë Chrome shfletuesin e parazgjedhur:
   1. Hap "Cilësimet"

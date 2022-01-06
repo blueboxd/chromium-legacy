@@ -13,7 +13,6 @@ import tempfile
 
 from common_args import AddCommonArgs, AddTargetSpecificArgs, \
                         ConfigureLogging, GetDeploymentTargetForArgs
-from deploy_to_pkg_repo import InstallSymbols
 from net_test_server import SetupTestServer
 from run_test_package import RunTestPackage, RunTestPackageArgs
 from runner_exceptions import HandleExceptionAndReturnExitCode
@@ -206,7 +205,7 @@ def main():
         test_launcher_filter_files = args.test_launcher_filter_file.split(';')
         with tempfile.NamedTemporaryFile('a+b') as combined_filter_file:
           for filter_file in test_launcher_filter_files:
-            with open(filter_file, 'r') as f:
+            with open(filter_file, 'rb') as f:
               combined_filter_file.write(f.read())
           combined_filter_file.seek(0)
           target.PutFile(combined_filter_file.name,
@@ -220,12 +219,6 @@ def main():
         assert test_concurrency
         test_server = SetupTestServer(target, test_concurrency,
                                       args.package_name, test_realms)
-
-      if args.device is not None and args.fuchsia_out_dir is not None:
-        build_ids_path = os.path.join(args.fuchsia_out_dir, '.build-id')
-        for package in args.package:
-          InstallSymbols(os.path.join(os.path.dirname(package), 'ids.txt'),
-                         build_ids_path)
 
       run_package_args = RunTestPackageArgs.FromCommonArgs(args)
       if args.use_run_test_component:

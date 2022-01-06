@@ -187,13 +187,13 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
 
   // Negative coordinates are clamped to 0 such that clicks in the left and
   // top padding/border areas receive an X or Y coordinate of 0.
-  IntPoint clamped_point(RoundedIntPoint(map_point));
-  clamped_point.ClampNegativeToZero();
+  gfx::Point clamped_point = RoundedIntPoint(map_point);
+  clamped_point.SetToMax(gfx::Point());
 
   url.Append('?');
-  url.AppendNumber(clamped_point.X());
+  url.AppendNumber(clamped_point.x());
   url.Append(',');
-  url.AppendNumber(clamped_point.Y());
+  url.AppendNumber(clamped_point.y());
 }
 
 void HTMLAnchorElement::DefaultEventHandler(Event& event) {

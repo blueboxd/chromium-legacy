@@ -8,11 +8,14 @@
 
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/attestation_utils.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/proto/device_trust_attestation_ca.pb.h"
-#include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/memory_signing_key_pair.h"
-#include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/signing_key_pair.h"
-#include "components/enterprise/common/proto/device_trust_report_event.pb.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/key_persistence_delegate_factory.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/mock_key_persistence_delegate.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/scoped_key_persistence_delegate_factory.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/signing_key_pair.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -42,13 +45,16 @@ class DesktopAttestationServiceTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
-    // Make sure a signing key exists for the tests. This won't actual require
-    // admin rights because of MemorySigningKeyPair.
-    auto key_pair = test::CreateInMemorySigningKeyPair(nullptr, nullptr);
-    ASSERT_TRUE(key_pair->RotateWithAdminRights("fake_dm_token"));
+    // ScopedKeyPersistenceDelegateFactory creates mocked persistence delegates
+    // that already mimic the existence of a TPM key provider and stored key.
+    auto mock_persistence_delegate =
+        persistence_delegate_factory_.CreateMockedDelegate();
+    mock_persistence_delegate_ = mock_persistence_delegate.get();
+    EXPECT_CALL(*mock_persistence_delegate_, LoadKeyPair());
+    EXPECT_CALL(*mock_persistence_delegate_, GetTpmBackedKeyProvider());
 
-    attestation_service_ =
-        std::make_unique<DesktopAttestationService>(std::move(key_pair));
+    attestation_service_ = std::make_unique<DesktopAttestationService>(
+        std::move(mock_persistence_delegate));
   }
 
   DesktopAttestationService* attestation_service() {
@@ -58,7 +64,8 @@ class DesktopAttestationServiceTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<DesktopAttestationService> attestation_service_;
-  test::ScopedMemorySigningKeyPairPersistence persistence_scope_;
+  test::ScopedKeyPersistenceDelegateFactory persistence_delegate_factory_;
+  test::MockKeyPersistenceDelegate* mock_persistence_delegate_;
 };
 
 TEST_F(DesktopAttestationServiceTest, BuildChallengeResponse) {
@@ -86,22 +93,6 @@ TEST_F(DesktopAttestationServiceTest, BuildChallengeResponse) {
 
   EXPECT_NE(signed_data.data(), std::string());
   EXPECT_NE(signed_data.signature(), std::string());
-}
-
-// Tests that StampReport properly adds the credentials to the proto.
-TEST_F(DesktopAttestationServiceTest, StampReport) {
-  DeviceTrustReportEvent report;
-
-  attestation_service()->StampReport(report);
-
-  ASSERT_TRUE(report.has_attestation_credential());
-  ASSERT_TRUE(report.attestation_credential().has_credential());
-
-  const auto& credential = report.attestation_credential();
-  EXPECT_EQ(credential.credential(), attestation_service()->ExportPublicKey());
-  EXPECT_EQ(
-      credential.format(),
-      DeviceTrustReportEvent::Credential::EC_NID_X9_62_PRIME256V1_PUBLIC_DER);
 }
 
 }  // namespace enterprise_connectors

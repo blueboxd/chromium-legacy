@@ -40,7 +40,7 @@ void SVGMaskPainter::Paint(GraphicsContext& context,
   // TODO(fs): Should clip this with the bounds of the mask's PaintRecord.
   FloatRect visual_rect = properties->MaskClip()->PaintClipRect().Rect();
   DrawingRecorder recorder(context, display_item_client, DisplayItem::kSVGMask,
-                           EnclosingIntRect(visual_rect));
+                           ToGfxRect(EnclosingIntRect(visual_rect)));
 
   SVGResourceClient* client = SVGResources::GetClient(layout_object);
   const ComputedStyle& style = layout_object.StyleRef();
@@ -52,13 +52,14 @@ void SVGMaskPainter::Paint(GraphicsContext& context,
   SECURITY_DCHECK(!masker->SelfNeedsLayout());
   masker->ClearInvalidationMask();
 
-  FloatRect reference_box = SVGResources::ReferenceBoxForEffects(layout_object);
+  gfx::RectF reference_box =
+      SVGResources::ReferenceBoxForEffects(layout_object);
   AffineTransform content_transformation;
   if (masker->MaskContentUnits() ==
       SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
-    content_transformation.Translate(reference_box.X(), reference_box.Y());
-    content_transformation.ScaleNonUniform(reference_box.Width(),
-                                           reference_box.Height());
+    content_transformation.Translate(reference_box.x(), reference_box.y());
+    content_transformation.ScaleNonUniform(reference_box.width(),
+                                           reference_box.height());
   } else if (layout_object.IsSVGForeignObject()) {
     content_transformation.Scale(style.EffectiveZoom());
   }

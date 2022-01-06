@@ -13,7 +13,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
 #include "chrome/browser/ash/login/startup_utils.h"
@@ -39,7 +39,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 class NetworkPortalWebDialog;
 
@@ -253,4 +253,4 @@ INSTANTIATE_TEST_SUITE_P(CaptivePortalAuthenticationIgnoresProxy,
                          NetworkPortalDetectorImplBrowserTestIgnoreProxy,
                          testing::Bool());
 
-}  // namespace chromeos
+}  // namespace ash

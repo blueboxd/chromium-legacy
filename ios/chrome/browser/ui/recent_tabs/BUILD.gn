@@ -92,6 +92,7 @@ source_set("recent_tabs_ui") {
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication:signin_presenter",
     "//ios/chrome/browser/ui/authentication/cells",
+    "//ios/chrome/browser/ui/authentication/enterprise:enterprise_utils",
     "//ios/chrome/browser/ui/authentication/signin:signin_headers",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/settings/sync/utils",
@@ -145,8 +146,7 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("app_support+eg2") {
-  defines = [ "CHROME_EARL_GREY_2" ]
+source_set("eg_app_support+eg2") {
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
@@ -165,19 +165,23 @@ source_set("app_support+eg2") {
   ]
 }
 
-source_set("test_support+eg2") {
-  defines = [ "CHROME_EARL_GREY_2" ]
+source_set("eg_test_support+eg2") {
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [ "recent_tabs_app_interface.h" ]
-  deps = [ "//base" ]
+  sources = [
+    "recent_tabs_app_interface.h",
+    "recent_tabs_app_interface_stub.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/third_party/earl_grey2:test_lib",
+  ]
 }
 
 source_set("eg2_tests") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
@@ -185,8 +189,8 @@ source_set("eg2_tests") {
   testonly = true
   sources = [ "recent_tabs_egtest.mm" ]
   deps = [
+    ":eg_test_support+eg2",
     ":recent_tabs_ui_constants",
-    ":test_support+eg2",
     "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",

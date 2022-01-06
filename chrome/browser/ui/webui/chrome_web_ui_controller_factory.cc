@@ -127,6 +127,7 @@
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/download_shelf/download_shelf_ui.h"
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
+#include "chrome/browser/ui/webui/enterprise_casting/enterprise_casting_ui.h"
 #include "chrome/browser/ui/webui/feedback/feedback_ui.h"
 #include "chrome/browser/ui/webui/history/history_ui.h"
 #include "chrome/browser/ui/webui/identity_internals_ui.h"
@@ -152,18 +153,33 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
+#include "ash/services/network_health/public/mojom/network_health.mojom.h"  // nogncheck
+#include "ash/webui/camera_app_ui/camera_app_ui.h"
+#include "ash/webui/camera_app_ui/url_constants.h"
+#include "ash/webui/connectivity_diagnostics/connectivity_diagnostics_ui.h"
+#include "ash/webui/connectivity_diagnostics/url_constants.h"
 #include "ash/webui/diagnostics_ui/diagnostics_ui.h"
 #include "ash/webui/diagnostics_ui/url_constants.h"
+#include "ash/webui/eche_app_ui/eche_app_manager.h"
+#include "ash/webui/eche_app_ui/eche_app_ui.h"
+#include "ash/webui/eche_app_ui/url_constants.h"
 #include "ash/webui/file_manager/file_manager_ui.h"
 #include "ash/webui/file_manager/url_constants.h"
+#include "ash/webui/firmware_update_ui/firmware_update_app_ui.h"
+#include "ash/webui/firmware_update_ui/url_constants.h"
 #include "ash/webui/help_app_ui/help_app_ui.h"
 #include "ash/webui/help_app_ui/url_constants.h"
 #include "ash/webui/media_app_ui/media_app_ui.h"
 #include "ash/webui/media_app_ui/url_constants.h"
 #include "ash/webui/os_feedback_ui/os_feedback_ui.h"
 #include "ash/webui/os_feedback_ui/url_constants.h"
+#include "ash/webui/personalization_app/personalization_app_ui.h"
+#include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/print_management/print_management_ui.h"
 #include "ash/webui/print_management/url_constants.h"
+#include "ash/webui/projector_app/public/cpp/projector_app_constants.h"  // nogncheck
+#include "ash/webui/projector_app/trusted_projector_ui.h"
 #include "ash/webui/scanning/scanning_ui.h"
 #include "ash/webui/scanning/url_constants.h"
 #include "ash/webui/shimless_rma/shimless_rma.h"
@@ -184,8 +200,7 @@
 #include "chrome/browser/ash/scanning/chrome_scanning_app_delegate.h"
 #include "chrome/browser/ash/scanning/scan_service.h"
 #include "chrome/browser/ash/scanning/scan_service_factory.h"
-#include "chrome/browser/ash/secure_channel/secure_channel_client_provider.h"
-#include "chrome/browser/ash/web_applications/chrome_camera_app_ui_delegate.h"
+#include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/chrome_file_manager_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/media_app/chrome_media_app_ui_delegate.h"
@@ -212,7 +227,6 @@
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/drive_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/emoji/emoji_ui.h"
-#include "chrome/browser/ui/webui/chromeos/enterprise_casting/enterprise_casting_ui.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/lock_screen_network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/lock_screen_start_reauth_ui.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_ui.h"
@@ -235,23 +249,10 @@
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
-#include "chromeos/components/camera_app_ui/camera_app_ui.h"
-#include "chromeos/components/camera_app_ui/url_constants.h"
-#include "chromeos/components/connectivity_diagnostics/connectivity_diagnostics_ui.h"
-#include "chromeos/components/connectivity_diagnostics/url_constants.h"
-#include "chromeos/components/eche_app_ui/eche_app_manager.h"
-#include "chromeos/components/eche_app_ui/eche_app_ui.h"
-#include "chromeos/components/eche_app_ui/url_constants.h"
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
 #include "chromeos/components/multidevice/debug_webui/url_constants.h"
-#include "chromeos/components/personalization_app/personalization_app_ui.h"
-#include "chromeos/components/personalization_app/personalization_app_url_constants.h"
-#include "chromeos/components/projector_app/projector_app_constants.h"
-#include "chromeos/components/projector_app/trusted_projector_ui.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
-#include "chromeos/services/network_health/public/mojom/network_health.mojom.h"  // nogncheck
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #endif
 
@@ -390,9 +391,9 @@ WebUIController* NewWebUI<chromeos::OobeUI>(WebUI* web_ui, const GURL& url) {
 }
 
 template <>
-WebUIController* NewWebUI<chromeos::TrustedProjectorUI>(WebUI* web_ui,
-                                                        const GURL& url) {
-  return new chromeos::TrustedProjectorUI(web_ui, url);
+WebUIController* NewWebUI<ash::TrustedProjectorUI>(WebUI* web_ui,
+                                                   const GURL& url) {
+  return new ash::TrustedProjectorUI(web_ui, url);
 }
 
 void BindPrintManagement(
@@ -417,8 +418,8 @@ WebUIController* NewWebUI<ash::printing::printing_manager::PrintManagementUI>(
 }
 
 void BindEcheSignalingMessageExchanger(
-    chromeos::eche_app::EcheAppManager* manager,
-    mojo::PendingReceiver<chromeos::eche_app::mojom::SignalingMessageExchanger>
+    ash::eche_app::EcheAppManager* manager,
+    mojo::PendingReceiver<ash::eche_app::mojom::SignalingMessageExchanger>
         receiver) {
   if (manager) {
     manager->BindSignalingMessageExchangerInterface(std::move(receiver));
@@ -426,25 +427,24 @@ void BindEcheSignalingMessageExchanger(
 }
 
 void BindSystemInfoProvider(
-    chromeos::eche_app::EcheAppManager* manager,
-    mojo::PendingReceiver<chromeos::eche_app::mojom::SystemInfoProvider>
-        receiver) {
+    ash::eche_app::EcheAppManager* manager,
+    mojo::PendingReceiver<ash::eche_app::mojom::SystemInfoProvider> receiver) {
   if (manager) {
     manager->BindSystemInfoProviderInterface(std::move(receiver));
   }
 }
 
 void BindEcheUidGenerator(
-    chromeos::eche_app::EcheAppManager* manager,
-    mojo::PendingReceiver<chromeos::eche_app::mojom::UidGenerator> receiver) {
+    ash::eche_app::EcheAppManager* manager,
+    mojo::PendingReceiver<ash::eche_app::mojom::UidGenerator> receiver) {
   if (manager) {
     manager->BindUidGeneratorInterface(std::move(receiver));
   }
 }
 
 void BindEcheNotificationGenerator(
-    chromeos::eche_app::EcheAppManager* manager,
-    mojo::PendingReceiver<chromeos::eche_app::mojom::NotificationGenerator>
+    ash::eche_app::EcheAppManager* manager,
+    mojo::PendingReceiver<ash::eche_app::mojom::NotificationGenerator>
         receiver) {
   if (manager) {
     manager->BindNotificationGeneratorInterface(std::move(receiver));
@@ -452,12 +452,12 @@ void BindEcheNotificationGenerator(
 }
 
 template <>
-WebUIController* NewWebUI<chromeos::eche_app::EcheAppUI>(WebUI* web_ui,
-                                                         const GURL& url) {
+WebUIController* NewWebUI<ash::eche_app::EcheAppUI>(WebUI* web_ui,
+                                                    const GURL& url) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  chromeos::eche_app::EcheAppManager* manager =
-      chromeos::eche_app::EcheAppManagerFactory::GetForProfile(profile);
-  return new chromeos::eche_app::EcheAppUI(
+  ash::eche_app::EcheAppManager* manager =
+      ash::eche_app::EcheAppManagerFactory::GetForProfile(profile);
+  return new ash::eche_app::EcheAppUI(
       web_ui, base::BindRepeating(&BindEcheSignalingMessageExchanger, manager),
       base::BindRepeating(&BindSystemInfoProvider, manager),
       base::BindRepeating(&BindEcheUidGenerator, manager),
@@ -492,9 +492,15 @@ WebUIController* NewWebUI<ash::DiagnosticsDialogUI>(WebUI* web_ui,
   ash::HoldingSpaceKeyedService* holding_space_keyed_service =
       ash::HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(
           web_ui->GetWebContents()->GetBrowserContext());
+  // This directory stores routine and network event logs for a given
+  // |profile|.
+  static constexpr base::FilePath::CharType kDiagnosticsLogDirectoryName[] =
+      FILE_PATH_LITERAL("diagnostics");
   return new ash::DiagnosticsDialogUI(
       web_ui, base::BindRepeating(&CreateChromeSelectFilePolicy),
-      holding_space_keyed_service->client());
+      holding_space_keyed_service->client(),
+      Profile::FromWebUI(web_ui)->GetPath().Append(
+          kDiagnosticsLogDirectoryName));
 }
 
 void BindMultiDeviceSetup(
@@ -518,30 +524,27 @@ WebUIController* NewWebUI<chromeos::multidevice::ProximityAuthUI>(
       web_ui,
       ash::device_sync::DeviceSyncClientFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context)),
-      chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
-          ->GetClient(),
       base::BindRepeating(&BindMultiDeviceSetup, Profile::FromWebUI(web_ui)));
 }
 
 template <>
-WebUIController* NewWebUI<chromeos::ConnectivityDiagnosticsUI>(
-    WebUI* web_ui,
-    const GURL& url) {
-  return new chromeos::ConnectivityDiagnosticsUI(
+WebUIController* NewWebUI<ash::ConnectivityDiagnosticsUI>(WebUI* web_ui,
+                                                          const GURL& url) {
+  return new ash::ConnectivityDiagnosticsUI(
       web_ui,
       /* BindNetworkDiagnosticsServiceCallback */
       base::BindRepeating(
           [](mojo::PendingReceiver<
-              chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines>
+              ash::network_diagnostics::mojom::NetworkDiagnosticsRoutines>
                  receiver) {
-            chromeos::network_health::NetworkHealthService::GetInstance()
+            ash::network_health::NetworkHealthService::GetInstance()
                 ->BindDiagnosticsReceiver(std::move(receiver));
           }),
       /* BindNetworkHealthServiceCallback */
       base::BindRepeating(
           [](mojo::PendingReceiver<
-              chromeos::network_health::mojom::NetworkHealthService> receiver) {
-            chromeos::network_health::NetworkHealthService::GetInstance()
+              ash::network_health::mojom::NetworkHealthService> receiver) {
+            ash::network_health::NetworkHealthService::GetInstance()
                 ->BindHealthReceiver(std::move(receiver));
           }),
       /* SendFeedbackReportCallback */
@@ -744,6 +747,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Inline login UI is available on all platforms except Android.
   if (url.host_piece() == chrome::kChromeUIChromeSigninHost)
     return &NewWebUI<InlineLoginUI>;
+  if (base::FeatureList::IsEnabled(features::kEnterpriseCastingUI)) {
+      if (url.host_piece() == chrome::kChromeUIEnterpriseCastingHost)
+        return &NewWebUI<EnterpriseCastingUI>;
+  }
 #endif  // !defined(OS_ANDROID)
 #if defined(OS_WIN)
   if (url.host_piece() == chrome::kChromeUIConflictsHost)
@@ -811,14 +818,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == chrome::kChromeUIBluetoothPairingHost)
     return &NewWebUI<chromeos::BluetoothPairingDialogUI>;
-// TODO(crbug.com/1147032): The certificates settings page is temporarily
-// disabled for Lacros-Chrome until a better solution is found.
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
   if (url.host_piece() == chrome::kChromeUICertificateManagerHost)
     return &NewWebUI<chromeos::CertificateManagerDialogUI>;
-#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (url.host_piece() == chromeos::kChromeUIConnectivityDiagnosticsHost)
-    return &NewWebUI<chromeos::ConnectivityDiagnosticsUI>;
+  if (url.host_piece() == ash::kChromeUIConnectivityDiagnosticsHost)
+    return &NewWebUI<ash::ConnectivityDiagnosticsUI>;
   if (url.host_piece() == chrome::kChromeUICrostiniInstallerHost)
     return &NewWebUI<chromeos::CrostiniInstallerUI>;
   if (url.host_piece() == chrome::kChromeUICrostiniUpgraderHost)
@@ -829,9 +832,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::DriveInternalsUI>;
   if (url.host_piece() == chrome::kChromeUILauncherInternalsHost)
     return &NewWebUI<chromeos::LauncherInternalsUI>;
-  if (base::FeatureList::IsEnabled(features::kEnterpriseCastingUI) &&
-      url.host_piece() == chrome::kChromeUIEnterpriseCastingHost)
-    return &NewWebUI<chromeos::EnterpriseCastingUI>;
   if (url.host_piece() == ash::kChromeUIHelpAppHost)
     return &NewComponentUI<ash::HelpAppUI, ash::ChromeHelpAppUIDelegate>;
   if (url.host_piece() == chrome::kChromeUIMobileSetupHost)
@@ -866,6 +866,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     if (url.host_piece() == ash::kChromeUIShortcutCustomizationAppHost)
       return &NewWebUI<ash::ShortcutCustomizationAppUI>;
   }
+  if (ash::features::IsFirmwareUpdaterAppEnabled()) {
+    if (url.host_piece() == ash::kChromeUIFirmwareUpdateAppHost)
+      return &NewWebUI<ash::FirmwareUpdateAppUI>;
+  }
   if (url.host_piece() == chromeos::multidevice::kChromeUIProximityAuthHost &&
       !profile->IsOffTheRecord()) {
     return &NewWebUI<chromeos::multidevice::ProximityAuthUI>;
@@ -881,8 +885,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<nearby_share::NearbyShareDialogUI>;
   }
   if (ash::features::IsProjectorEnabled() &&
-      url.host_piece() == chromeos::kChromeUIProjectorAppHost) {
-    return &NewWebUI<chromeos::TrustedProjectorUI>;
+      url.host_piece() == ash::kChromeUIProjectorAppHost) {
+    return &NewWebUI<ash::TrustedProjectorUI>;
   }
   if (url.host_piece() == chrome::kChromeUISetTimeHost)
     return &NewWebUI<chromeos::SetTimeUI>;
@@ -898,11 +902,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SysInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIAssistantOptInHost)
     return &NewWebUI<chromeos::AssistantOptInUI>;
-  if (url.host_piece() == chromeos::kChromeUICameraAppHost) {
+  if (url.host_piece() == ash::kChromeUICameraAppHost) {
     auto* provider = web_app::WebAppProvider::GetForSystemWebApps(profile);
     if (provider && provider->system_web_app_manager().IsAppEnabled(
                         web_app::SystemAppType::CAMERA)) {
-      return &NewComponentUI<chromeos::CameraAppUI, ChromeCameraAppUIDelegate>;
+      return &NewComponentUI<ash::CameraAppUI, ChromeCameraAppUIDelegate>;
     }
   }
   if (url.host_piece() == chrome::kChromeUINearbyInternalsHost)
@@ -924,17 +928,16 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       base::FeatureList::IsEnabled(chromeos::features::kImeSystemEmojiPicker)) {
     return &NewWebUI<chromeos::EmojiUI>;
   }
-  if (url.host_piece() == chromeos::eche_app::kChromeUIEcheAppHost &&
-      base::FeatureList::IsEnabled(chromeos::features::kEcheSWA)) {
-    return &NewWebUI<chromeos::eche_app::EcheAppUI>;
+  if (url.host_piece() == ash::eche_app::kChromeUIEcheAppHost &&
+      base::FeatureList::IsEnabled(ash::features::kEcheSWA)) {
+    return &NewWebUI<ash::eche_app::EcheAppUI>;
   }
-  if (url.host_piece() == chrome::kChromeUIVmHost &&
-      base::FeatureList::IsEnabled(chromeos::features::kVmStatusPage)) {
+  if (url.host_piece() == chrome::kChromeUIVmHost) {
     return &NewWebUI<chromeos::VmUI>;
   }
-  if (url.host_piece() == chromeos::kChromeUIPersonalizationAppHost &&
+  if (url.host_piece() == ash::kChromeUIPersonalizationAppHost &&
       chromeos::features::IsWallpaperWebUIEnabled()) {
-    return &NewComponentUI<chromeos::PersonalizationAppUI,
+    return &NewComponentUI<ash::PersonalizationAppUI,
                            ChromePersonalizationAppUiDelegate>;
   }
 

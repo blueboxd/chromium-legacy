@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.signin;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.accounts.Account;
@@ -40,9 +39,7 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.externalauth.ExternalAuthUtils;
-import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.test.util.FakeAccountInfoService;
-import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.RenderTestRule;
@@ -55,18 +52,8 @@ import java.io.IOException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SigninFirstRunFragmentRenderTest {
     private static final String TEST_EMAIL1 = "test.account1@gmail.com";
-    private static final String CHILD_EMAIL = "child.account@gmail.com";
-
-    private final FakeAccountManagerFacade mFakeAccountManagerFacade =
-            new FakeAccountManagerFacade() {
-                @Override
-                public void checkChildAccountStatus(
-                        Account account, ChildAccountStatusListener listener) {
-                    listener.onStatusReady(account.name.equals(CHILD_EMAIL)
-                                    ? ChildAccountStatus.REGULAR_CHILD
-                                    : ChildAccountStatus.NOT_CHILD);
-                }
-            };
+    private static final Account CHILD_ACCOUNT =
+            AccountManagerTestRule.createChildAccount("account@gmail.com");
 
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -76,7 +63,7 @@ public class SigninFirstRunFragmentRenderTest {
 
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule =
-            new AccountManagerTestRule(mFakeAccountManagerFacade, new FakeAccountInfoService());
+            new AccountManagerTestRule(new FakeAccountInfoService());
 
     @Rule
     public final ChromeTabbedActivityTestRule mChromeActivityTestRule =
@@ -84,15 +71,16 @@ public class SigninFirstRunFragmentRenderTest {
 
     @Mock
     private ExternalAuthUtils mExternalAuthUtilsMock;
-
     @Mock
     private FirstRunPageDelegate mFirstRunPageDelegateMock;
-
     @Mock
     private PolicyLoadListener mPolicyLoadListenerMock;
-
     @Mock
     private SigninManager mSigninManagerMock;
+    @Mock
+    private SigninChecker mSigninCheckerMock;
+    @Mock
+    private IdentityServicesProvider mIdentityServicesProviderMock;
 
     private CustomSigninFirstRunFragment mFragment;
 
@@ -113,7 +101,7 @@ public class SigninFirstRunFragmentRenderTest {
     public void setUp() {
         when(mExternalAuthUtilsMock.canUseGooglePlayServices()).thenReturn(true);
         ExternalAuthUtils.setInstanceForTesting(mExternalAuthUtilsMock);
-        SigninCheckerProvider.setForTests(mock(SigninChecker.class));
+        SigninCheckerProvider.setForTests(mSigninCheckerMock);
         when(mPolicyLoadListenerMock.get()).thenReturn(false);
         when(mFirstRunPageDelegateMock.getPolicyLoadListener()).thenReturn(mPolicyLoadListenerMock);
         mChromeActivityTestRule.startMainActivityOnBlankPage();
@@ -166,7 +154,7 @@ public class SigninFirstRunFragmentRenderTest {
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testFragmentWithAccountWhenSigninIsDisabledByPolicy(boolean nightModeEnabled)
             throws IOException {
-        IdentityServicesProvider.setInstanceForTests(mock(IdentityServicesProvider.class));
+        IdentityServicesProvider.setInstanceForTests(mIdentityServicesProviderMock);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             when(IdentityServicesProvider.get().getSigninManager(
                          Profile.getLastUsedRegularProfile()))
@@ -213,7 +201,7 @@ public class SigninFirstRunFragmentRenderTest {
     @Feature("RenderTest")
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testFragmentWithChildAccount(boolean nightModeEnabled) throws IOException {
-        mAccountManagerTestRule.addAccountWithNameAndAvatar(CHILD_EMAIL);
+        mAccountManagerTestRule.addAccount(CHILD_ACCOUNT);
 
         launchActivityWithFragment();
 

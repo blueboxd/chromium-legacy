@@ -141,7 +141,7 @@ void AppendWhitelistedUrls(
       urls->insert(kv.second->url().spec());
       // Some non-navigation sources only record origin as a URL.
       // Add the origin from the navigation source to match those too.
-      urls->insert(kv.second->url().GetOrigin().spec());
+      urls->insert(kv.second->url().DeprecatedGetOriginAsURL().spec());
     }
   }
 }
@@ -173,15 +173,7 @@ bool HasUnknownMetrics(const builders::DecodeMap& decode_map,
 }  // namespace
 
 UkmRecorderImpl::UkmRecorderImpl()
-    : sampling_seed_(static_cast<uint32_t>(base::RandUint64())) {
-  max_sources_ = static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
-      kUkmFeature, "MaxSources", max_sources_));
-  max_kept_sources_ =
-      static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
-          kUkmFeature, "MaxKeptSources", max_kept_sources_));
-  max_entries_ = static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
-      kUkmFeature, "MaxEntries", max_entries_));
-}
+    : sampling_seed_(static_cast<uint32_t>(base::RandUint64())) {}
 
 UkmRecorderImpl::~UkmRecorderImpl() = default;
 

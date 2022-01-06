@@ -47,9 +47,8 @@ fuchsia::ui::scenic::ScenicPtr ConnectToScenic() {
       base::ComponentContextForProcess()
           ->svc()
           ->Connect<fuchsia::ui::scenic::Scenic>();
-  scenic.set_error_handler([](zx_status_t status) {
-    ZX_LOG(FATAL, status) << "Scenic connection failed";
-  });
+  scenic.set_error_handler(
+      base::LogFidlErrorAndExitProcess(FROM_HERE, "fuchsia.ui.scenic.Scenic"));
   return scenic;
 }
 
@@ -204,8 +203,8 @@ std::unique_ptr<PlatformWindowSurface>
 ScenicSurfaceFactory::CreatePlatformWindowSurface(
     gfx::AcceleratedWidget window) {
   DCHECK_NE(window, gfx::kNullAcceleratedWidget);
-  auto surface =
-      std::make_unique<ScenicSurface>(this, window, CreateScenicSession());
+  auto surface = std::make_unique<ScenicSurface>(this, &sysmem_buffer_manager_,
+                                                 window, CreateScenicSession());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ScenicSurfaceFactory::AttachSurfaceToWindow,
                                 weak_ptr_factory_.GetWeakPtr(), window,
@@ -227,6 +226,15 @@ scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
     gfx::BufferUsage usage,
     absl::optional<gfx::Size> framebuffer_size) {
   DCHECK(!framebuffer_size || framebuffer_size == size);
+
+  if (widget != gfx::kNullAcceleratedWidget &&
+      usage == gfx::BufferUsage::SCANOUT) {
+    // The usage SCANOUT is for a primary plane buffer.
+    auto* surface = GetSurface(widget);
+    CHECK(surface);
+    return surface->AllocatePrimaryPlanePixmap(vk_device, size, format);
+  }
+
   auto collection = sysmem_buffer_manager_.CreateCollection(vk_device, size,
                                                             format, usage, 1);
   if (!collection)

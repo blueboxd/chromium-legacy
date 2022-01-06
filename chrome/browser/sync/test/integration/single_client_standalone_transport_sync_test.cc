@@ -197,10 +197,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
       syncer::SyncService::DISABLE_REASON_USER_CHOICE));
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // On ChromeOS, the primary account should remain, and Sync should start up
   // again in standalone transport mode.
-  EXPECT_TRUE(GetSyncService(0)->IsAuthenticatedAccountPrimary());
+  // TODO(https://crbug.com/1233933): Update this when Lacros profiles support
+  //                                  signed-in-but-not-consented-to-sync state.
+  EXPECT_TRUE(GetSyncService(0)->HasSyncConsent());
   EXPECT_FALSE(GetSyncService(0)->HasDisableReason(
       syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
   EXPECT_NE(syncer::SyncService::TransportState::DISABLED,
@@ -214,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   // On non-ChromeOS platforms, the "Reset Sync" operation should also remove
   // the primary account. Note that this behavior may change in the future, see
   // crbug.com/246839.
-  EXPECT_FALSE(GetSyncService(0)->IsAuthenticatedAccountPrimary());
+  EXPECT_FALSE(GetSyncService(0)->HasSyncConsent());
   // Note: In real life, the account would remain as an *unconsented* primary
   // account, and so Sync would start up again in standalone transport mode.
   // However, since we haven't set up cookies in this test, the account is *not*

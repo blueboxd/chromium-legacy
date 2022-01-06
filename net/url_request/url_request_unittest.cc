@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "net/dns/public/secure_dns_policy.h"
+#include "net/log/net_log.h"
 #include "url/url_constants.h"
 
 #if defined(OS_WIN)
@@ -37,13 +38,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -150,6 +151,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/url_constants.h"
 #include "url/url_util.h"
 
 #if defined(OS_WIN)
@@ -672,7 +674,7 @@ class URLRequestTest : public PlatformTest, public WithTaskEnvironment {
       : job_factory_(std::make_unique<URLRequestJobFactory>()),
         default_context_(std::make_unique<TestURLRequestContext>(true)) {
     default_context_->set_network_delegate(&default_network_delegate_);
-    default_context_->set_net_log(&net_log_);
+    default_context_->set_net_log(NetLog::Get());
   }
 
   ~URLRequestTest() override {
@@ -716,7 +718,7 @@ class URLRequestTest : public PlatformTest, public WithTaskEnvironment {
   }
 
  protected:
-  RecordingTestNetLog net_log_;
+  RecordingNetLogObserver net_log_observer_;
   TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
   std::unique_ptr<URLRequestJobFactory> job_factory_;
   std::unique_ptr<TestURLRequestContext> default_context_;
@@ -1337,9 +1339,9 @@ TEST_F(URLRequestTest, NetworkDelegateProxyError) {
   EXPECT_EQ(1, network_delegate.completed_requests());
 }
 
-// Test that requests with "http" scheme are upgraded to "https" when DNS
-// indicates that the name is HTTPS-only.
-TEST_F(URLRequestTest, DnsHttpsRecordPresentCausesSchemeUpgrade) {
+// Test that when host resolution fails with `ERR_DNS_NAME_HTTPS_ONLY` for
+// "http://" requests, scheme is upgraded to "https://".
+TEST_F(URLRequestTest, DnsNameHttpsOnlyErrorCausesSchemeUpgrade) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeatureWithParameters(
       features::kUseDnsHttpsSvcb, {{"UseDnsHttpsSvcbHttpUpgrade", "true"}});
@@ -1356,11 +1358,20 @@ TEST_F(URLRequestTest, DnsHttpsRecordPresentCausesSchemeUpgrade) {
   replacements.SetSchemeStr(url::kHttpScheme);
   const GURL http_url = https_url.ReplaceComponents(replacements);
 
-  // Build a mocked resolver that returns ERR_DNS_NAME_HTTPS_ONLY for the
-  // first lookup, regardless of the request scheme. Real resolvers should
-  // only return this error when the scheme is "http" or "ws".
+  // Return `ERR_DNS_NAME_HTTPS_ONLY` for "http://" requests and an address for
+  // "https://" requests. This simulates the HostResolver behavior for a domain
+  // with an HTTPS DNS record.
   MockHostResolver host_resolver;
-  host_resolver.rules()->AddSimulatedHTTPSServiceFormRecord("*");
+  MockHostResolverBase::RuleResolver::RuleKey unencrypted_resolve_key;
+  unencrypted_resolve_key.scheme = url::kHttpScheme;
+  unencrypted_resolve_key.hostname_pattern = kHost;
+  host_resolver.rules()->AddRule(std::move(unencrypted_resolve_key),
+                                 ERR_DNS_NAME_HTTPS_ONLY);
+  MockHostResolverBase::RuleResolver::RuleKey encrypted_resolve_key;
+  encrypted_resolve_key.scheme = url::kHttpsScheme;
+  encrypted_resolve_key.hostname_pattern = kHost;
+  host_resolver.rules()->AddRule(std::move(encrypted_resolve_key),
+                                 https_server.GetIPLiteralString());
 
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
   TestURLRequestContext context(true);
@@ -1391,7 +1402,7 @@ TEST_F(URLRequestTest, DnsHttpsRecordPresentCausesSchemeUpgrade) {
 }
 
 // Test that DNS-based scheme upgrade supports deferred redirect.
-TEST_F(URLRequestTest, DnsHttpsRecordPresentCausesSchemeUpgradeDeferred) {
+TEST_F(URLRequestTest, DnsNameHttpsOnlyErrorCausesSchemeUpgradeDeferred) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeatureWithParameters(
       features::kUseDnsHttpsSvcb, {{"UseDnsHttpsSvcbHttpUpgrade", "true"}});
@@ -1408,11 +1419,20 @@ TEST_F(URLRequestTest, DnsHttpsRecordPresentCausesSchemeUpgradeDeferred) {
   replacements.SetSchemeStr(url::kHttpScheme);
   const GURL http_url = https_url.ReplaceComponents(replacements);
 
-  // Build a mocked resolver that returns ERR_DNS_NAME_HTTPS_ONLY for the
-  // first lookup, regardless of the request scheme. Real resolvers should
-  // only return this error when the scheme is "http" or "ws".
+  // Return `ERR_DNS_NAME_HTTPS_ONLY` for "http://" requests and an address for
+  // "https://" requests. This simulates the HostResolver behavior for a domain
+  // with an HTTPS DNS record.
   MockHostResolver host_resolver;
-  host_resolver.rules()->AddSimulatedHTTPSServiceFormRecord("*");
+  MockHostResolverBase::RuleResolver::RuleKey unencrypted_resolve_key;
+  unencrypted_resolve_key.scheme = url::kHttpScheme;
+  unencrypted_resolve_key.hostname_pattern = kHost;
+  host_resolver.rules()->AddRule(std::move(unencrypted_resolve_key),
+                                 ERR_DNS_NAME_HTTPS_ONLY);
+  MockHostResolverBase::RuleResolver::RuleKey encrypted_resolve_key;
+  encrypted_resolve_key.scheme = url::kHttpsScheme;
+  encrypted_resolve_key.hostname_pattern = kHost;
+  host_resolver.rules()->AddRule(std::move(encrypted_resolve_key),
+                                 https_server.GetIPLiteralString());
 
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
   TestURLRequestContext context(true);
@@ -1466,11 +1486,17 @@ TEST_F(URLRequestTest, DnsHttpsRecordPresentCausesWsSchemeUpgrade) {
   replacements.SetSchemeStr(url::kWsScheme);
   const GURL ws_url = https_url.ReplaceComponents(replacements);
 
-  // Build a mocked resolver that returns ERR_DNS_NAME_HTTPS_ONLY for the
-  // first lookup, regardless of the request scheme. Real resolvers should
-  // only return this error when the scheme is "http" or "ws".
   MockHostResolver host_resolver;
-  host_resolver.rules()->AddSimulatedHTTPSServiceFormRecord("*");
+  MockHostResolverBase::RuleResolver::RuleKey unencrypted_resolve_key;
+  unencrypted_resolve_key.scheme = url::kHttpScheme;
+  unencrypted_resolve_key.hostname_pattern = kHost;
+  host_resolver.rules()->AddRule(std::move(unencrypted_resolve_key),
+                                 ERR_DNS_NAME_HTTPS_ONLY);
+  MockHostResolverBase::RuleResolver::RuleKey encrypted_resolve_key;
+  encrypted_resolve_key.scheme = url::kHttpsScheme;
+  encrypted_resolve_key.hostname_pattern = kHost;
+  host_resolver.rules()->AddRule(std::move(encrypted_resolve_key),
+                                 https_server.GetIPLiteralString());
 
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
   TestURLRequestContext context(true);
@@ -1524,6 +1550,7 @@ TEST_F(URLRequestTest, DnsHttpsRecordAbsentNoSchemeUpgrade) {
   const GURL http_url = http_server.GetURL(kHost, "/defaultresponse");
 
   MockHostResolver host_resolver;
+  host_resolver.rules()->AddRule(kHost, http_server.GetIPLiteralString());
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
@@ -1553,6 +1580,7 @@ TEST_F(URLRequestTest, DnsHttpsRecordAbsentNoSchemeUpgrade) {
 
 TEST_F(URLRequestTest, SkipSecureDnsDisabledByDefault) {
   MockHostResolver host_resolver;
+  host_resolver.rules()->AddRule("example.com", "127.0.0.1");
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
@@ -1571,6 +1599,7 @@ TEST_F(URLRequestTest, SkipSecureDnsDisabledByDefault) {
 
 TEST_F(URLRequestTest, SkipSecureDnsEnabled) {
   MockHostResolver host_resolver;
+  host_resolver.rules()->AddRule("example.com", "127.0.0.1");
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
@@ -2092,7 +2121,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
 
     EXPECT_EQ(0, network_delegate.blocked_annotate_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-    auto entries = net_log_.GetEntries();
+    auto entries = net_log_observer_.GetEntries();
     for (const auto& entry : entries) {
       EXPECT_NE(entry.type,
                 NetLogEventType::COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE);
@@ -2116,7 +2145,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
 
     EXPECT_EQ(1, network_delegate.blocked_annotate_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-    auto entries = net_log_.GetEntries();
+    auto entries = net_log_observer_.GetEntries();
     ExpectLogContainsSomewhereAfter(
         entries, 0, NetLogEventType::COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE,
         NetLogEventPhase::NONE);
@@ -2146,7 +2175,7 @@ TEST_F(URLRequestTest, MAYBE_DoNotSaveCookies_ViaPolicy) {
 
     EXPECT_EQ(0, network_delegate.blocked_annotate_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-    auto entries = net_log_.GetEntries();
+    auto entries = net_log_observer_.GetEntries();
     for (const auto& entry : entries) {
       EXPECT_NE(entry.type,
                 NetLogEventType::COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE);
@@ -2168,7 +2197,7 @@ TEST_F(URLRequestTest, MAYBE_DoNotSaveCookies_ViaPolicy) {
 
     EXPECT_EQ(0, network_delegate.blocked_annotate_cookies_count());
     EXPECT_EQ(2, network_delegate.blocked_set_cookie_count());
-    auto entries = net_log_.GetEntries();
+    auto entries = net_log_observer_.GetEntries();
     ExpectLogContainsSomewhereAfter(
         entries, 0, NetLogEventType::COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE,
         NetLogEventPhase::NONE);
@@ -2479,6 +2508,31 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies) {
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kCrossOrigin);
     req->set_method("GET");
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ(std::string::npos,
+              d.data_received().find("StrictSameSiteCookie=1"));
+    EXPECT_NE(std::string::npos, d.data_received().find("LaxSameSiteCookie=1"));
+    EXPECT_EQ(0, network_delegate.blocked_annotate_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+
+  // Verify that the lax cookie is sent for cross-site initiators when the
+  // method is "safe" and the request is being forced to be considered as a
+  // main frame navigation.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+        test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_isolation_info(IsolationInfo::Create(
+        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies,
+        {} /* party_context */));
+    req->set_site_for_cookies(kSiteForCookies);
+    req->set_initiator(kCrossOrigin);
+    req->set_method("GET");
+    req->set_force_main_frame_for_same_site_cookies(true);
     req->Start();
     d.RunUntilComplete();
 
@@ -3838,8 +3892,9 @@ class URLRequestTestHTTP : public URLRequestTest {
     std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         redirect_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_method(request_method);
-    req->SetExtraRequestHeaderByName(HttpRequestHeaders::kOrigin,
-                                     redirect_url.GetOrigin().spec(), false);
+    req->SetExtraRequestHeaderByName(
+        HttpRequestHeaders::kOrigin,
+        redirect_url.DeprecatedGetOriginAsURL().spec(), false);
     req->Start();
 
     d.RunUntilComplete();
@@ -5170,7 +5225,7 @@ TEST_F(URLRequestTestHTTP, DelegateInfoBeforeStart) {
   TestDelegate request_delegate;
   TestURLRequestContext context(true);
   context.set_network_delegate(nullptr);
-  context.set_net_log(&net_log_);
+  context.set_net_log(NetLog::Get());
   context.Init();
 
   {
@@ -5192,7 +5247,7 @@ TEST_F(URLRequestTestHTTP, DelegateInfoBeforeStart) {
     EXPECT_EQ(OK, request_delegate.request_status());
   }
 
-  auto entries = net_log_.GetEntries();
+  auto entries = net_log_observer_.GetEntries();
   size_t log_position = ExpectLogContainsSomewhereAfter(
       entries, 0, NetLogEventType::DELEGATE_INFO, NetLogEventPhase::BEGIN);
 
@@ -5211,7 +5266,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfo) {
   AsyncLoggingNetworkDelegate network_delegate;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
-  context.set_net_log(&net_log_);
+  context.set_net_log(NetLog::Get());
   context.Init();
 
   {
@@ -5233,7 +5288,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfo) {
   EXPECT_EQ(1, network_delegate.destroyed_requests());
 
   size_t log_position = 0;
-  auto entries = net_log_.GetEntries();
+  auto entries = net_log_observer_.GetEntries();
   static const NetLogEventType kExpectedEvents[] = {
       NetLogEventType::NETWORK_DELEGATE_BEFORE_URL_REQUEST,
       NetLogEventType::NETWORK_DELEGATE_BEFORE_START_TRANSACTION,
@@ -5265,7 +5320,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoRedirect) {
   AsyncLoggingNetworkDelegate network_delegate;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
-  context.set_net_log(&net_log_);
+  context.set_net_log(NetLog::Get());
   context.Init();
 
   {
@@ -5287,7 +5342,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoRedirect) {
   EXPECT_EQ(1, network_delegate.destroyed_requests());
 
   size_t log_position = 0;
-  auto entries = net_log_.GetEntries();
+  auto entries = net_log_observer_.GetEntries();
   static const NetLogEventType kExpectedEvents[] = {
       NetLogEventType::NETWORK_DELEGATE_BEFORE_URL_REQUEST,
       NetLogEventType::NETWORK_DELEGATE_BEFORE_START_TRANSACTION,
@@ -5338,7 +5393,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfo) {
       AsyncLoggingUrlRequestDelegate::NO_CANCEL);
   TestURLRequestContext context(true);
   context.set_network_delegate(nullptr);
-  context.set_net_log(&net_log_);
+  context.set_net_log(NetLog::Get());
   context.Init();
 
   {
@@ -5358,7 +5413,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfo) {
     EXPECT_EQ(OK, request_delegate.request_status());
   }
 
-  auto entries = net_log_.GetEntries();
+  auto entries = net_log_observer_.GetEntries();
 
   size_t log_position = 0;
 
@@ -5395,7 +5450,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfoOnRedirect) {
       AsyncLoggingUrlRequestDelegate::NO_CANCEL);
   TestURLRequestContext context(true);
   context.set_network_delegate(nullptr);
-  context.set_net_log(&net_log_);
+  context.set_net_log(NetLog::Get());
   context.Init();
 
   {
@@ -5410,7 +5465,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfoOnRedirect) {
     EXPECT_EQ(OK, request_delegate.request_status());
   }
 
-  auto entries = net_log_.GetEntries();
+  auto entries = net_log_observer_.GetEntries();
 
   // Delegate info should only have been logged in OnReceivedRedirect and
   // OnResponseStarted.
@@ -5449,10 +5504,10 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateOnRedirectCancelled) {
 
   for (auto cancel_stage : kCancelStages) {
     AsyncLoggingUrlRequestDelegate request_delegate(cancel_stage);
-    RecordingTestNetLog net_log;
+    RecordingNetLogObserver net_log_observer;
     TestURLRequestContext context(true);
     context.set_network_delegate(nullptr);
-    context.set_net_log(&net_log);
+    context.set_net_log(NetLog::Get());
     context.Init();
 
     {
@@ -5469,7 +5524,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateOnRedirectCancelled) {
       base::RunLoop().RunUntilIdle();
     }
 
-    auto entries = net_log.GetEntries();
+    auto entries = net_log_observer.GetEntries();
 
     // Delegate info is always logged in both OnReceivedRedirect and
     // OnResponseStarted.  In the CANCEL_ON_RECEIVED_REDIRECT, the
@@ -6344,10 +6399,11 @@ TEST_F(URLRequestTestHTTP, PreloadExpectCTHeader) {
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS);
 
   TestNetworkDelegate network_delegate;
-  // Use a MockHostResolver (which by default maps all hosts to
-  // 127.0.0.1) so that the request can be sent to a site on the Expect
-  // CT preload list.
+  // Use a MockHostResolver, so that the request can be sent to a site on the
+  // Expect CT preload list.
   MockHostResolver host_resolver;
+  host_resolver.rules()->AddRule(kExpectCTStaticHostname,
+                                 https_test_server.GetIPLiteralString());
   TestURLRequestContext context(true);
   context.set_host_resolver(&host_resolver);
   context.set_transport_security_state(&transport_security_state);
@@ -7717,10 +7773,10 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
   FilteringTestNetworkDelegate network_delegate;
   network_delegate.SetCookieFilter("not_stored_cookie");
   network_delegate.set_block_annotate_cookies();
-  RecordingTestNetLog net_log;
+  RecordingNetLogObserver net_log_observer;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
-  context.set_net_log(&net_log);
+  context.set_net_log(net::NetLog::Get());
   context.Init();
   // Make sure cookies blocked from being stored are caught, and those that are
   // accepted are reported as well.
@@ -7749,8 +7805,8 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     EXPECT_TRUE(
         req->maybe_stored_cookies()[2].access_result.status.IsInclude());
     EXPECT_EQ("path_cookie", req->maybe_stored_cookies()[2].cookie->Name());
-    auto entries =
-        net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
+    auto entries = net_log_observer.GetEntriesWithType(
+        NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(3u, entries.size());
     EXPECT_EQ("{\"domain\":\"" + set_cookie_test_url.host() +
                   "\",\"name\":\"not_stored_cookie\",\"operation\":\"store\","
@@ -7766,7 +7822,7 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
             "\",\"name\":\"path_cookie\",\"operation\":\"store\","
             "\"path\":\"/set-cookie\",\"status\":\"INCLUDE, DO_NOT_WARN\"}",
         SerializeNetLogValueToJson(entries[2].params));
-    net_log.Clear();
+    net_log_observer.Clear();
   }
   {
     TestDelegate d;
@@ -7792,8 +7848,8 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
         req->maybe_sent_cookies()[1]
             .access_result.status.HasExactlyExclusionReasonsForTesting(
                 {net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES}));
-    auto entries =
-        net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
+    auto entries = net_log_observer.GetEntriesWithType(
+        NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(2u, entries.size());
     EXPECT_EQ("{\"domain\":\"" + set_cookie_test_url.host() +
                   "\",\"name\":\"path_cookie\",\"operation\":\"send\",\"path\":"
@@ -7805,13 +7861,13 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
             "\",\"name\":\"stored_cookie\",\"operation\":\"send\",\"path\":\"/"
             "\",\"status\":\"EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\"}",
         SerializeNetLogValueToJson(entries[1].params));
-    net_log.Clear();
+    net_log_observer.Clear();
   }
   {
     TestDelegate d;
     // Ensure that the log does not contain cookie names when not set to collect
     // sensitive data.
-    net_log.SetObserverCaptureMode(NetLogCaptureMode::kDefault);
+    net_log_observer.SetObserverCaptureMode(NetLogCaptureMode::kDefault);
 
     GURL test_url = test_server.GetURL("/echoheader?Cookie");
     std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
@@ -7819,8 +7875,8 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     req->Start();
     d.RunUntilComplete();
 
-    auto entries =
-        net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
+    auto entries = net_log_observer.GetEntriesWithType(
+        NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(2u, entries.size());
 
     // Ensure that the potentially-sensitive |name|, |domain|, and |path| fields
@@ -7834,8 +7890,9 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
         "DO_NOT_WARN\"}",
         SerializeNetLogValueToJson(entries[1].params));
 
-    net_log.Clear();
-    net_log.SetObserverCaptureMode(NetLogCaptureMode::kIncludeSensitive);
+    net_log_observer.Clear();
+    net_log_observer.SetObserverCaptureMode(
+        NetLogCaptureMode::kIncludeSensitive);
   }
 
   network_delegate.unset_block_annotate_cookies();
@@ -7858,8 +7915,8 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
                         {net::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH}));
     EXPECT_EQ("stored_cookie", req->maybe_sent_cookies()[1].cookie.Name());
     EXPECT_TRUE(req->maybe_sent_cookies()[1].access_result.status.IsInclude());
-    auto entries =
-        net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
+    auto entries = net_log_observer.GetEntriesWithType(
+        NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(2u, entries.size());
     EXPECT_EQ(
         "{\"domain\":\"" + set_cookie_test_url.host() +
@@ -7870,7 +7927,7 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
                   "\",\"name\":\"stored_cookie\",\"operation\":\"send\","
                   "\"path\":\"/\",\"status\":\"INCLUDE, DO_NOT_WARN\"}",
               SerializeNetLogValueToJson(entries[1].params));
-    net_log.Clear();
+    net_log_observer.Clear();
   }
 }
 
@@ -8335,12 +8392,14 @@ TEST_F(URLRequestTestHTTP, Redirect301Tests) {
   HTTPRedirectMethodTest(url, "PUT", "PUT", true);
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
 
-  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
   HTTPRedirectOriginHeaderTest(url, "POST", "GET", std::string());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET",
                                std::string());
-  HTTPRedirectOriginHeaderTest(url, "PUT", "PUT", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "PUT", "PUT",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "PUT", "PUT", "null");
 }
 
@@ -8355,12 +8414,14 @@ TEST_F(URLRequestTestHTTP, Redirect302Tests) {
   HTTPRedirectMethodTest(url, "PUT", "PUT", true);
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
 
-  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
   HTTPRedirectOriginHeaderTest(url, "POST", "GET", std::string());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET",
                                std::string());
-  HTTPRedirectOriginHeaderTest(url, "PUT", "PUT", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "PUT", "PUT",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "PUT", "PUT", "null");
 }
 
@@ -8381,9 +8442,11 @@ TEST_F(URLRequestTestHTTP, Redirect303Tests) {
   HTTPRedirectOriginHeaderTest(url, "DELETE", "GET", std::string());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "DELETE", "GET",
                                std::string());
-  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
-  HTTPRedirectOriginHeaderTest(url, "HEAD", "HEAD", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "HEAD", "HEAD",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "HEAD", "HEAD", "null");
   HTTPRedirectOriginHeaderTest(url, "OPTIONS", "GET", std::string());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "OPTIONS", "GET",
@@ -8406,11 +8469,14 @@ TEST_F(URLRequestTestHTTP, Redirect307Tests) {
   HTTPRedirectMethodTest(url, "PUT", "PUT", true);
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
 
-  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
-  HTTPRedirectOriginHeaderTest(url, "POST", "POST", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "POST", "POST",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "POST", "null");
-  HTTPRedirectOriginHeaderTest(url, "PUT", "PUT", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "PUT", "PUT",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "PUT", "PUT", "null");
 }
 
@@ -8425,11 +8491,14 @@ TEST_F(URLRequestTestHTTP, Redirect308Tests) {
   HTTPRedirectMethodTest(url, "PUT", "PUT", true);
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
 
-  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
-  HTTPRedirectOriginHeaderTest(url, "POST", "POST", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "POST", "POST",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "POST", "null");
-  HTTPRedirectOriginHeaderTest(url, "PUT", "PUT", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "PUT", "PUT",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "PUT", "PUT", "null");
 }
 
@@ -9247,8 +9316,9 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPToSameOriginHTTP) {
   // policy and already be stripped to the origin; thus this test case just
   // checks that this policy doesn't cause the referrer to change when following
   // a redirect.
-  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN, referrer.GetOrigin(),
-                              referrer.GetOrigin());
+  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN,
+                              referrer.DeprecatedGetOriginAsURL(),
+                              referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN,
                               referrer, referrer);
@@ -9259,7 +9329,7 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPToSameOriginHTTP) {
   // a redirect.
   VerifyReferrerAfterRedirect(
       ReferrerPolicy::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      referrer.GetOrigin(), referrer.GetOrigin());
+      referrer.DeprecatedGetOriginAsURL(), referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::NO_REFERRER, GURL(), GURL());
 }
@@ -9275,11 +9345,11 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPToCrossOriginHTTP) {
 
   VerifyReferrerAfterRedirect(
       ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN, referrer,
-      referrer.GetOrigin());
+      referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(
       ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN, referrer,
-      referrer.GetOrigin());
+      referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::NEVER_CLEAR, referrer, referrer);
 
@@ -9287,8 +9357,9 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPToCrossOriginHTTP) {
   // policy and already be stripped to the origin; thus this test case just
   // checks that this policy doesn't cause the referrer to change when following
   // a redirect.
-  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN, referrer.GetOrigin(),
-                              referrer.GetOrigin());
+  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN,
+                              referrer.DeprecatedGetOriginAsURL(),
+                              referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN,
                               referrer, GURL());
@@ -9299,7 +9370,7 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPToCrossOriginHTTP) {
   // a redirect.
   VerifyReferrerAfterRedirect(
       ReferrerPolicy::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      referrer.GetOrigin(), referrer.GetOrigin());
+      referrer.DeprecatedGetOriginAsURL(), referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::NO_REFERRER, GURL(), GURL());
 }
@@ -9326,8 +9397,9 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToSameOriginHTTPS) {
   // policy and already be stripped to the origin; thus this test case just
   // checks that this policy doesn't cause the referrer to change when following
   // a redirect.
-  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN, referrer.GetOrigin(),
-                              referrer.GetOrigin());
+  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN,
+                              referrer.DeprecatedGetOriginAsURL(),
+                              referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN,
                               referrer, referrer);
@@ -9338,7 +9410,7 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToSameOriginHTTPS) {
   // a redirect.
   VerifyReferrerAfterRedirect(
       ReferrerPolicy::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      referrer.GetOrigin(), referrer.GetOrigin());
+      referrer.DeprecatedGetOriginAsURL(), referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::NO_REFERRER, GURL(), GURL());
 }
@@ -9366,8 +9438,9 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToCrossOriginHTTPS) {
   // policy and already be stripped to the origin; thus this test case just
   // checks that this policy doesn't cause the referrer to change when following
   // a redirect.
-  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN, referrer.GetOrigin(),
-                              referrer.GetOrigin());
+  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN,
+                              referrer.DeprecatedGetOriginAsURL(),
+                              referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN,
                               referrer, GURL());
@@ -9378,7 +9451,7 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToCrossOriginHTTPS) {
   // a redirect.
   VerifyReferrerAfterRedirect(
       ReferrerPolicy::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      referrer.GetOrigin(), referrer.GetOrigin());
+      referrer.DeprecatedGetOriginAsURL(), referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::NO_REFERRER, GURL(), GURL());
 }
@@ -9406,8 +9479,9 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPToHTTPS) {
   // policy and already be stripped to the origin; thus this test case just
   // checks that this policy doesn't cause the referrer to change when following
   // a redirect.
-  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN, referrer.GetOrigin(),
-                              referrer.GetOrigin());
+  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN,
+                              referrer.DeprecatedGetOriginAsURL(),
+                              referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN,
                               referrer, GURL());
@@ -9418,7 +9492,7 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPToHTTPS) {
   // a redirect.
   VerifyReferrerAfterRedirect(
       ReferrerPolicy::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      referrer.GetOrigin(), referrer.GetOrigin());
+      referrer.DeprecatedGetOriginAsURL(), referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::NO_REFERRER, GURL(), GURL());
 }
@@ -9446,8 +9520,9 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToHTTP) {
   // policy and already be stripped to the origin; thus this test case just
   // checks that this policy doesn't cause the referrer to change when following
   // a redirect.
-  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN, referrer.GetOrigin(),
-                              referrer.GetOrigin());
+  VerifyReferrerAfterRedirect(ReferrerPolicy::ORIGIN,
+                              referrer.DeprecatedGetOriginAsURL(),
+                              referrer.DeprecatedGetOriginAsURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN,
                               referrer, GURL());
@@ -9457,7 +9532,7 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToHTTP) {
   // subsequently cleared during the downgrading redirect.
   VerifyReferrerAfterRedirect(
       ReferrerPolicy::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      referrer.GetOrigin(), GURL());
+      referrer.DeprecatedGetOriginAsURL(), GURL());
 
   VerifyReferrerAfterRedirect(ReferrerPolicy::NO_REFERRER, GURL(), GURL());
 }
@@ -9632,10 +9707,11 @@ TEST_F(HTTPSRequestTest, HTTPSPreloadedHSTSTest) {
   // We require that the URL be hsts-hpkp-preloaded.test. This is a test domain
   // that has a preloaded HSTS+HPKP entry in the TransportSecurityState. This
   // means that we have to use a MockHostResolver in order to direct
-  // hsts-hpkp-preloaded.test to the testserver. By default, MockHostResolver
-  // maps all hosts to 127.0.0.1.
+  // hsts-hpkp-preloaded.test to the testserver.
 
   MockHostResolver host_resolver;
+  host_resolver.rules()->AddRule("hsts-hpkp-preloaded.test",
+                                 test_server.GetIPLiteralString());
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
@@ -9676,10 +9752,11 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   // We require that the URL be hsts-hpkp-preloaded.test. This is a test domain
   // that has a preloaded HSTS+HPKP entry in the TransportSecurityState. This
   // means that we have to use a MockHostResolver in order to direct
-  // hsts-hpkp-preloaded.test to the testserver. By default, MockHostResolver
-  // maps all hosts to 127.0.0.1.
+  // hsts-hpkp-preloaded.test to the testserver.
 
   MockHostResolver host_resolver;
+  host_resolver.rules()->AddRule("hsts-hpkp-preloaded.test",
+                                 test_server.GetIPLiteralString());
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
@@ -9749,9 +9826,10 @@ TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
 
   // Per spec, TransportSecurityState expects a domain name, rather than an IP
   // address, so a MockHostResolver is needed to redirect www.somewhere.com to
-  // the EmbeddedTestServer.  By default, MockHostResolver maps all hosts
-  // to 127.0.0.1.
+  // the EmbeddedTestServer.
   MockHostResolver host_resolver;
+  host_resolver.rules()->AddRule("www.somewhere.com",
+                                 test_server.GetIPLiteralString());
 
   // Force https for www.somewhere.com.
   TransportSecurityState transport_security_state;

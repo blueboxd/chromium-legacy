@@ -13,9 +13,9 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/notreached.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
@@ -768,7 +768,7 @@ void URLFetcherCore::RetryOrCompleteUrlFetch() {
     // have a throttler manager.
     base::TimeTicks backoff_release_time = GetBackoffReleaseTime();
     backoff_delay = backoff_release_time - base::TimeTicks::Now();
-    if (backoff_delay < base::TimeDelta())
+    if (backoff_delay.is_negative())
       backoff_delay = base::TimeDelta();
 
     if (automatically_retry_on_5xx_ &&

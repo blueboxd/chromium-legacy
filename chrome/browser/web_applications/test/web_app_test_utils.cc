@@ -250,6 +250,7 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   const absl::optional<SkColor> theme_color = random.next_uint();
   absl::optional<SkColor> dark_mode_theme_color;
   const absl::optional<SkColor> background_color = random.next_uint();
+  absl::optional<SkColor> dark_mode_background_color;
   const absl::optional<SkColor> synced_theme_color = random.next_uint();
   auto app = std::make_unique<WebApp>(app_id);
 
@@ -272,6 +273,11 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
     dark_mode_theme_color = SkColorSetA(random.next_uint(), SK_AlphaOPAQUE);
   }
 
+  if (random.next_bool()) {
+    dark_mode_background_color =
+        SkColorSetA(random.next_uint(), SK_AlphaOPAQUE);
+  }
+
   app->SetName(name);
   app->SetDescription(description);
   app->SetManifestId(manifest_id);
@@ -280,6 +286,7 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   app->SetThemeColor(theme_color);
   app->SetDarkModeThemeColor(dark_mode_theme_color);
   app->SetBackgroundColor(background_color);
+  app->SetDarkModeBackgroundColor(dark_mode_background_color);
   app->SetIsLocallyInstalled(random.next_bool());
   app->SetIsFromSyncAndPendingInstallation(random.next_bool());
 
@@ -414,6 +421,9 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   const base::Time manifest_update_time =
       base::Time::UnixEpoch() + base::Milliseconds(random.next_uint());
   app->SetManifestUpdateTime(manifest_update_time);
+
+  if (random.next_bool())
+    app->SetParentAppId(base::NumberToString(random.next_uint()));
 
   // `random` should not be used after the chromeos block if the result
   // is expected to be deterministic across cros and non-cros builds.

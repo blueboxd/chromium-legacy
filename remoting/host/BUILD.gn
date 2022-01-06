@@ -152,6 +152,31 @@ source_set("base") {
   ]
 }
 
+source_set("ipc_constants") {
+  sources = [
+    "ipc_constants.cc",
+    "ipc_constants.h",
+  ]
+  deps = [
+    "//base",
+    "//mojo/public/cpp/platform",
+    "//remoting/host/mojo_ipc",
+  ]
+}
+
+source_set("chromoting_host_services_client") {
+  sources = [
+    "chromoting_host_services_client.cc",
+    "chromoting_host_services_client.h",
+  ]
+  deps = [
+    ":ipc_constants",
+    "//base",
+    "//mojo/public/cpp/platform",
+    "//remoting/host/mojom",
+  ]
+}
+
 # Split up from common to avoid circular dependency.
 source_set("client_session_control") {
   sources = [ "client_session_control.h" ]
@@ -263,8 +288,6 @@ static_library("common") {
     "continue_window.h",
     "crash_process.cc",
     "crash_process.h",
-    "current_process_stats_agent.cc",
-    "current_process_stats_agent.h",
     "curtain_mode.h",
     "daemon_process.cc",
     "daemon_process.h",
@@ -290,8 +313,6 @@ static_library("common") {
     "desktop_session_proxy.cc",
     "desktop_session_proxy.h",
     "evaluate_capability.cc",
-    "forward_process_stats_agent.cc",
-    "forward_process_stats_agent.h",
     "ftl_echo_message_listener.cc",
     "ftl_echo_message_listener.h",
     "ftl_host_change_notification_listener.cc",
@@ -328,8 +349,6 @@ static_library("common") {
     "ipc_action_executor.h",
     "ipc_audio_capturer.cc",
     "ipc_audio_capturer.h",
-    "ipc_constants.cc",
-    "ipc_constants.h",
     "ipc_desktop_environment.cc",
     "ipc_desktop_environment.h",
     "ipc_host_event_logger.cc",
@@ -360,9 +379,6 @@ static_library("common") {
     "pin_hash.h",
     "policy_watcher.cc",
     "policy_watcher.h",
-    "process_stats_agent.h",
-    "process_stats_sender.cc",
-    "process_stats_sender.h",
     "register_support_host_request.h",
     "remote_input_filter.cc",
     "remote_input_filter.h",
@@ -407,6 +423,7 @@ static_library("common") {
     ":client_session_control",
     ":clipboard",
     ":host_main_headers",
+    ":ipc_constants",
     ":resources",
     ":settings",
     "//base:i18n",
@@ -695,7 +712,6 @@ source_set("unit_tests") {
     "native_messaging/native_messaging_writer_unittest.cc",
     "pin_hash_unittest.cc",
     "policy_watcher_unittest.cc",
-    "process_stats_sender_unittest.cc",
     "remote_input_filter_unittest.cc",
     "remoting_register_support_host_request_unittest.cc",
     "resizing_host_observer_unittest.cc",
@@ -949,6 +965,7 @@ if (enable_me2me_host) {
       "//remoting/base",
       "//remoting/base:authorization",
       "//remoting/host",
+      "//remoting/host/mojom",
       "//remoting/host/security_key:security_key",
       "//remoting/proto",
       "//remoting/protocol:protocol",

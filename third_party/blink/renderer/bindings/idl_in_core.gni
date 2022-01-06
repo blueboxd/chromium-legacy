@@ -4,10 +4,6 @@
 
 # Statically-defined (not runtime-generated) IDL files in 'core' component
 # for production.
-#
-# CAUTION: static_idl_files_in_core is used only by a new V8 bindings generator,
-# which is under development.  You have to update core/core_idl_files.gni in
-# addition to this list.
 static_idl_files_in_core = get_path_info(
         [
           "//third_party/blink/renderer/core/animation/animatable.idl",
@@ -60,6 +56,8 @@ static_idl_files_in_core = get_path_info(
           "//third_party/blink/renderer/core/css/css_import_rule.idl",
           "//third_party/blink/renderer/core/css/css_keyframe_rule.idl",
           "//third_party/blink/renderer/core/css/css_keyframes_rule.idl",
+          "//third_party/blink/renderer/core/css/css_layer_block_rule.idl",
+          "//third_party/blink/renderer/core/css/css_layer_statement_rule.idl",
           "//third_party/blink/renderer/core/css/css_media_rule.idl",
           "//third_party/blink/renderer/core/css/css_namespace_rule.idl",
           "//third_party/blink/renderer/core/css/css_page_rule.idl",
@@ -275,6 +273,7 @@ static_idl_files_in_core = get_path_info(
           "//third_party/blink/renderer/core/frame/coop_access_violation_report_body.idl",
           "//third_party/blink/renderer/core/frame/csp/csp_violation_report_body.idl",
           "//third_party/blink/renderer/core/frame/deprecation_report_body.idl",
+          "//third_party/blink/renderer/core/frame/directive.idl",
           "//third_party/blink/renderer/core/frame/document_policy_violation_report_body.idl",
           "//third_party/blink/renderer/core/frame/external.idl",
           "//third_party/blink/renderer/core/frame/fragment_directive.idl",
@@ -308,7 +307,10 @@ static_idl_files_in_core = get_path_info(
           "//third_party/blink/renderer/core/frame/scroll_into_view_options.idl",
           "//third_party/blink/renderer/core/frame/scroll_options.idl",
           "//third_party/blink/renderer/core/frame/scroll_to_options.idl",
+          "//third_party/blink/renderer/core/frame/selector_directive.idl",
           "//third_party/blink/renderer/core/frame/test_report_body.idl",
+          "//third_party/blink/renderer/core/frame/text_directive.idl",
+          "//third_party/blink/renderer/core/frame/text_directive_options.idl",
           "//third_party/blink/renderer/core/frame/ua_data_values.idl",
           "//third_party/blink/renderer/core/frame/user_activation.idl",
           "//third_party/blink/renderer/core/frame/visual_viewport.idl",
@@ -645,6 +647,7 @@ static_idl_files_in_core = get_path_info(
           "//third_party/blink/renderer/core/svg/svg_view_element.idl",
           "//third_party/blink/renderer/core/svg/svg_zoom_and_pan.idl",
           "//third_party/blink/renderer/core/timing/dom_high_res_time_stamp.idl",
+          "//third_party/blink/renderer/core/timing/epoch_time_stamp.idl",
           "//third_party/blink/renderer/core/timing/event_counts.idl",
           "//third_party/blink/renderer/core/timing/internals_profiler.idl",
           "//third_party/blink/renderer/core/timing/largest_contentful_paint.idl",

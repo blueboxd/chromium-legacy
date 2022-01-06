@@ -122,7 +122,6 @@ import org.chromium.chrome.browser.gsa.GSAAccountChangeListener;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
-import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
@@ -142,7 +141,6 @@ import org.chromium.chrome.browser.night_mode.WebContentsDarkModeMessageControll
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorController;
-import org.chromium.chrome.browser.omaha.UpdateInfoBarController;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.page_info.ChromePageInfo;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
@@ -150,6 +148,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegateImpl;
@@ -186,7 +185,7 @@ import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.ui.messages.infobar.SimpleConfirmInfoBarBuilder;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManagerProvider;
@@ -221,6 +220,7 @@ import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.components.webapps.AddToHomescreenCoordinator;
 import org.chromium.components.webapps.InstallTrigger;
 import org.chromium.components.webxr.ArDelegate;
+import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -416,13 +416,19 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public boolean onIntentCallbackNotFoundError(String error) {
-        Tab tab = mActivityTabProvider.get();
-        if (tab != null) {
-            SimpleConfirmInfoBarBuilder.create(tab.getWebContents(),
-                    InfoBarIdentifier.WINDOW_ERROR_INFOBAR_DELEGATE_ANDROID, error, false);
-            return true;
+        createWindowErrorSnackbar(error, mSnackbarManager);
+        return true;
+    }
+
+    @VisibleForTesting
+    public static void createWindowErrorSnackbar(String error, SnackbarManager snackbarManager) {
+        if (snackbarManager != null) {
+            Snackbar snackbar = Snackbar.make(
+                    error, null, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_WINDOW_ERROR);
+            snackbar.setSingleLine(false);
+            snackbar.setDuration(SnackbarManager.DEFAULT_SNACKBAR_DURATION_LONG_MS);
+            snackbarManager.showSnackbar(snackbar);
         }
-        return false;
     }
 
     @Override
@@ -1291,11 +1297,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @CallSuper
     protected void initDeferredStartupForActivity() {
-        DeferredStartupHandler.getInstance().addDeferredTask(() -> {
-            if (isActivityFinishingOrDestroyed()) return;
-            UpdateInfoBarController.createInstance(ChromeActivity.this);
-        });
-
         final String simpleName = getClass().getSimpleName();
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
             if (isActivityFinishingOrDestroyed()) return;
@@ -1372,9 +1373,18 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     public void onStart() {
         // Sometimes mCompositorViewHolder is null, see crbug.com/1057613.
-        if (AsyncTabParamsManagerSingleton.getInstance().hasParamsWithTabToReparent()
-                && mCompositorViewHolderSupplier.hasValue()) {
-            mCompositorViewHolderSupplier.get().prepareForTabReparenting();
+        if (AsyncTabParamsManagerSingleton.getInstance().hasParamsWithTabToReparent()) {
+            // TODO(https://crbug.com/1252526): Remove logging once root cause of bug is identified
+            //  & fixed.
+            Log.i(TAG,
+                    "#onStart, num async tabs: "
+                            + AsyncTabParamsManagerSingleton.getInstance()
+                                      .getAsyncTabParams()
+                                      .size());
+
+            if (mCompositorViewHolderSupplier.hasValue()) {
+                mCompositorViewHolderSupplier.get().prepareForTabReparenting();
+            }
         }
         super.onStart();
 
@@ -1863,10 +1873,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 // can't be edited. If the current URL is only bookmarked by managed bookmarks, this
                 // will return INVALID_ID.
                 // TODO(bauerb): This does not take partner bookmarks into account.
-                final long bookmarkId = bridge.getUserBookmarkIdForTab(tabToBookmark);
-                if (bookmarkId != BookmarkId.INVALID_ID) {
-                    currentBookmarkItem =
-                            bookmarkModel.getBookmarkById(new BookmarkId(bookmarkId, bookmarkType));
+                final BookmarkId bookmarkId = bridge.getUserBookmarkIdForTab(tabToBookmark);
+                if (bookmarkId != null) {
+                    currentBookmarkItem = bookmarkModel.getBookmarkById(bookmarkId);
                 }
             }
 
@@ -2438,7 +2447,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return false;
         }
 
-        if (id == R.id.bookmark_this_page_id) {
+        if (id == R.id.bookmark_this_page_id || id == R.id.add_bookmark_menu_id
+                || id == R.id.edit_bookmark_menu_id) {
             addOrEditBookmark(currentTab);
             RecordUserAction.record("MobileMenuAddToBookmarks");
             return true;
@@ -2447,6 +2457,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (id == R.id.add_to_reading_list_menu_id) {
             addToReadingList(currentTab);
             RecordUserAction.record("MobileMenuAddToReadingList");
+            return true;
+        }
+
+        if (id == R.id.delete_from_reading_list_menu_id) {
+            ReadingListUtils.deleteFromReadingList(mSnackbarManager, /*activity=*/this, currentTab);
+            RecordUserAction.record("MobileMenuDeleteFromReadingList");
             return true;
         }
 
@@ -2530,7 +2546,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             boolean usingDesktopUserAgent =
                     currentTab.getWebContents().getNavigationController().getUseDesktopUserAgent();
             usingDesktopUserAgent = !usingDesktopUserAgent;
-            TabUtils.switchUserAgent(currentTab, usingDesktopUserAgent, /* forcedByUser */ true);
+            if (ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_GLOBAL)) {
+                Profile profile = getCurrentTabModel().getProfile();
+                RequestDesktopUtils.setRequestDesktopSiteContentSettingsForUrl(
+                        profile, currentTab.getUrl(), usingDesktopUserAgent);
+                currentTab.reload();
+            } else {
+                TabUtils.switchUserAgent(
+                        currentTab, usingDesktopUserAgent, /* forcedByUser */ true);
+            }
             RequestDesktopUtils.recordUserChangeUserAgent(usingDesktopUserAgent, getActivityTab());
             return true;
         }

@@ -25,6 +25,7 @@
 #include "net/base/isolation_info.h"
 #include "net/cookies/site_for_cookies.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 
@@ -73,15 +74,14 @@ ServiceWorkerMainResourceLoaderInterceptor::CreateForNavigation(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!ShouldCreateForNavigation(
-          url, request_info.begin_params->request_destination,
+          url, request_info.common_params->request_destination,
           navigation_handle->context_wrapper()->browser_context())) {
     return nullptr;
   }
 
   return base::WrapUnique(new ServiceWorkerMainResourceLoaderInterceptor(
       std::move(navigation_handle),
-      request_info.is_main_frame ? network::mojom::RequestDestination::kDocument
-                                 : network::mojom::RequestDestination::kIframe,
+      request_info.common_params->request_destination,
       request_info.begin_params->skip_service_worker,
       request_info.are_ancestors_secure, request_info.frame_tree_node_id,
       ChildProcessHost::kInvalidUniqueID, /* worker_token = */ nullptr,
@@ -156,8 +156,7 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
     base::WeakPtr<ServiceWorkerContainerHost> container_host;
     bool inherit_controller_only = false;
 
-    if (request_destination_ == network::mojom::RequestDestination::kDocument ||
-        request_destination_ == network::mojom::RequestDestination::kIframe) {
+    if (blink::IsRequestDestinationFrame(request_destination_)) {
       container_host = context_core->CreateContainerHostForWindow(
           std::move(host_receiver), are_ancestors_secure_,
           std::move(client_remote), frame_tree_node_id_);
@@ -199,20 +198,6 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
     }
   }
 
-  // If we know there's no service worker for the origin, let's skip asking
-  // the storage to check the existence.
-  bool skip_service_worker =
-      skip_service_worker_ ||
-      !handle_->context_wrapper()->MaybeHasRegistrationForOrigin(
-          url::Origin::Create(tentative_resource_request.url));
-
-  // Create and start the handler for this request. It will invoke the loader
-  // callback or fallback callback.
-  request_handler_ = std::make_unique<ServiceWorkerControlleeRequestHandler>(
-      context_core->AsWeakPtr(), handle_->container_host(),
-      request_destination_, skip_service_worker, frame_tree_node_id_,
-      handle_->service_worker_accessed_callback());
-
   // Update `isolation_info_` in case a redirect has occurred.
   url::Origin new_origin = url::Origin::Create(tentative_resource_request.url);
   switch (isolation_info_.request_type()) {
@@ -240,9 +225,25 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
       break;
   }
 
+  // If we know there's no service worker for the storage key, let's skip asking
+  // the storage to check the existence.
+  blink::StorageKey storage_key =
+      blink::StorageKey::FromNetIsolationInfo(isolation_info_);
+
+  bool skip_service_worker =
+      skip_service_worker_ ||
+      !handle_->context_wrapper()->MaybeHasRegistrationForStorageKey(
+          storage_key);
+
+  // Create and start the handler for this request. It will invoke the loader
+  // callback or fallback callback.
+  request_handler_ = std::make_unique<ServiceWorkerControlleeRequestHandler>(
+      context_core->AsWeakPtr(), handle_->container_host(),
+      request_destination_, skip_service_worker, frame_tree_node_id_,
+      handle_->service_worker_accessed_callback());
+
   request_handler_->MaybeCreateLoader(
-      tentative_resource_request,
-      blink::StorageKey::FromNetIsolationInfo(isolation_info_), browser_context,
+      tentative_resource_request, storage_key, browser_context,
       std::move(loader_callback), std::move(fallback_callback));
 }
 

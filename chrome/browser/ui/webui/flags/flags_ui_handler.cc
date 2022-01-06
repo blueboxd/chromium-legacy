@@ -14,7 +14,10 @@
 #include "components/version_info/channel.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/crosapi/browser_data_migrator.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/settings/about_flags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #endif
 
@@ -47,6 +50,12 @@ void FlagsUIHandler::RegisterMessages() {
       flags_ui::kResetAllFlags,
       base::BindRepeating(&FlagsUIHandler::HandleResetAllFlags,
                           base::Unretained(this)));
+#if defined(OS_CHROMEOS)
+  web_ui()->RegisterDeprecatedMessageCallback(
+      flags_ui::kCrosUrlFlagsRedirect,
+      base::BindRepeating(&FlagsUIHandler::HandleCrosUrlFlagsRedirect,
+                          base::Unretained(this)));
+#endif
 }
 
 void FlagsUIHandler::Init(flags_ui::FlagsStorage* flags_storage,
@@ -96,6 +105,13 @@ void FlagsUIHandler::SendExperimentalFeatures() {
                      about_flags::IsRestartNeededToCommitChanges());
   results.SetBoolean(flags_ui::kShowOwnerWarning,
                      access_ == flags_ui::kGeneralAccessFlagsOnly);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  const bool showSystemFlagsLink = crosapi::browser_util::IsLacrosEnabled();
+#else
+  const bool showSystemFlagsLink = true;
+#endif
+  results.SetBoolean(flags_ui::kShowSystemFlagsLink, showSystemFlagsLink);
 
 #if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
   version_info::Channel channel = chrome::GetChannel();
@@ -162,6 +178,14 @@ void FlagsUIHandler::HandleRestartBrowser(const base::ListValue* args) {
   ash::about_flags::FeatureFlagsUpdate(*flags_storage_,
                                        Profile::FromWebUI(web_ui())->GetPrefs())
       .UpdateSessionManager();
+  // Call `ClearMigrationStep()` so that we can run migration for the following
+  // case.
+  // 1. User has lacros enabled.
+  // 2. User logs in and migration is completed.
+  // 3. User disabled lacros in session.
+  // 4. User re-enables lacros in session.
+  ash::BrowserDataMigrator::ClearMigrationStep(
+      g_browser_process->local_state());
 #endif
   chrome::AttemptRestart();
 }
@@ -170,3 +194,9 @@ void FlagsUIHandler::HandleResetAllFlags(const base::ListValue* args) {
   DCHECK(flags_storage_);
   about_flags::ResetAllFlags(flags_storage_.get());
 }
+
+#if defined(OS_CHROMEOS)
+void FlagsUIHandler::HandleCrosUrlFlagsRedirect(const base::ListValue* args) {
+  about_flags::CrosUrlFlagsRedirect();
+}
+#endif

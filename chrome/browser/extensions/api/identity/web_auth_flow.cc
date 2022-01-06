@@ -10,9 +10,9 @@
 #include "base/base64.h"
 #include "base/location.h"
 #include "base/notreached.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -206,7 +206,8 @@ void WebAuthFlow::InnerWebContentsCreated(
   WebContentsObserver::Observe(inner_web_contents);
 }
 
-void WebAuthFlow::RenderProcessGone(base::TerminationStatus status) {
+void WebAuthFlow::PrimaryMainFrameRenderProcessGone(
+    base::TerminationStatus status) {
   if (delegate_)
     delegate_->OnAuthFlowFailure(WebAuthFlow::WINDOW_CLOSED);
 }

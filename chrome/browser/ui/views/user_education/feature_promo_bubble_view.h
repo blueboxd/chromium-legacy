@@ -64,8 +64,12 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
 
     const gfx::VectorIcon* body_icon = nullptr;
     std::u16string body_text;
-    absl::optional<std::u16string> title_text;
-    absl::optional<std::u16string> screenreader_text;
+    std::u16string title_text;
+    std::u16string screenreader_text;
+
+    // Additional message to be read to screen reader users to aid in
+    // navigation.
+    std::u16string keyboard_navigation_hint;
 
     std::vector<ButtonParams> buttons;
 
@@ -80,18 +84,16 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
     absl::optional<int> tutorial_progress_current;
     absl::optional<int> tutorial_progress_max;
 
-    // Changes the bubble timeout before and after hovering the bubble,
-    // respectively. If a timeout is not provided a default will be used. If
-    // |timeout_after_interaction| is 0, |timeout_no_interaction| is used in
-    // both cases. If both are 0, the bubble never times out. A bubble with
-    // buttons never times out regardless of the values.
-    absl::optional<base::TimeDelta> timeout_no_interaction;
-    absl::optional<base::TimeDelta> timeout_after_interaction;
+    // Sets the bubble timeout. If a timeout is not provided a default will
+    // be used. If the timeout is 0, the bubble never times out.
+    absl::optional<base::TimeDelta> timeout;
 
     // Used to call feature specific logic on dismiss.
-    absl::optional<base::RepeatingClosure> dismiss_callback;
+    // (TODO) dpenning: move to using a OnceClosure.
+    base::RepeatingClosure dismiss_callback;
 
     // Used to call feature specific logic on timeout.
+    // (TODO) dpenning: move to using a OnceClosure.
     base::RepeatingClosure timeout_callback;
   };
 
@@ -108,36 +110,44 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   views::Button* GetButtonForTesting(int index) const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FeaturePromoBubbleViewTest,
+                           RespectsProvidedTimeoutAfterActivate);
   explicit FeaturePromoBubbleView(CreateParams params);
 
-  void StartAutoCloseTimer(base::TimeDelta auto_close_duration);
+  void MaybeStartAutoCloseTimer();
 
   void OnTimeout();
 
   // BubbleDialogDelegateView:
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
   std::u16string GetAccessibleWindowTitle() const override;
   void UpdateHighlightedButton(bool highlighted) override {
     // Do nothing: the anchor for promo bubbles should not highlight.
   }
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
   gfx::Size CalculatePreferredSize() const override;
 
   // If the bubble has buttons, it must be focusable.
   std::vector<views::MdTextButton*> buttons_;
 
+  // This is the base accessible name of the window.
   std::u16string accessible_name_;
+
+  // This is any additional hint text to read.
+  std::u16string screenreader_hint_text_;
+
+  // Track the number of times the widget has been activated; if it's greater
+  // than 1 we won't re-read the screenreader hint again.
+  int activate_count_ = 0;
 
   absl::optional<int> preferred_width_;
 
-  // Auto close timeouts for before and after the bubble is hovered. If the
-  // latter is 0, only the former is used. If both are 0, the bubble never times
+  // Auto close timeout. If the value is 0 (default), the bubble never times
   // out.
-  base::TimeDelta timeout_no_interaction_;
-  base::TimeDelta timeout_after_interaction_;
-
+  base::TimeDelta timeout_;
   base::OneShotTimer auto_close_timer_;
+
+  // (TODO) dpenning: move to using a OnceClosure.
   base::RepeatingClosure timeout_callback_;
 };
 

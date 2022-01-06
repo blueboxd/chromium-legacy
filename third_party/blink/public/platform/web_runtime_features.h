@@ -142,6 +142,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnablePreciseMemoryInfo(bool);
   BLINK_PLATFORM_EXPORT static void EnablePrerender2(bool);
   BLINK_PLATFORM_EXPORT static bool IsPrerender2Enabled();
+  BLINK_PLATFORM_EXPORT static void EnablePrerender2RelatedFeatures(bool);
   BLINK_PLATFORM_EXPORT static void EnablePresentationAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnablePushMessaging(bool);
   BLINK_PLATFORM_EXPORT static void EnablePushSubscriptionChangeEvent(bool);
@@ -193,7 +194,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebXRLightEstimation(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRPlaneDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRViewportScale(bool);
-  BLINK_PLATFORM_EXPORT static void EnableWheelEventRegions(bool);
   BLINK_PLATFORM_EXPORT static void ForceOverlayFullscreenVideo(bool);
   BLINK_PLATFORM_EXPORT static void EnableTimerThrottlingForBackgroundTabs(
       bool);
@@ -232,7 +232,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableTrustTokensAlwaysAllowIssuance(bool);
 
   BLINK_PLATFORM_EXPORT static void EnableInstalledApp(bool);
-  BLINK_PLATFORM_EXPORT static void EnableTransformInterop(bool);
   BLINK_PLATFORM_EXPORT static void EnableBackfaceVisibilityInterop(bool);
   BLINK_PLATFORM_EXPORT static void EnableVideoWakeLockOptimisationHiddenMuted(
       bool);

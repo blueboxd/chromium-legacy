@@ -3,7 +3,7 @@
 <translationbundle lang="fr-CA">
 <translation id="1096883626080133124">Faites-en plus avec le navigateur Google Chrome : simple, sécuritaire et plus rapide que jamais</translation>
 <translation id="1282031177488366470">Nous aider à améliorer les fonctionnalités et les performances de Chrome</translation>
-<translation id="1354592789402432496">Votre administrateur vous demande de vous connecter avec un compte organisationnel. Les comptes dont l'accès est restreint par votre administrateur sont masqués.</translation>
+<translation id="1314663809820920746">Vous pouvez tout de même voir la totalité de vos favoris, de votre historique, de vos mots de passe et de vos autres paramètres sur cet appareil. Si vous apportez des modifications, elles ne seront pas synchronisées avec votre compte Google.</translation>
 <translation id="1479202195792305274">Chrome peut vérifier vos mots de passe lorsque vous vous connectez avec votre compte Google.</translation>
 <translation id="1493827051843127077">Définissez Chrome comme navigateur par défaut pour synchroniser vos onglets, vos mots de passe et vos renseignements de paiement sur tous vos appareils</translation>
 <translation id="1504372625950710826">Chrome n'a pas pu vérifier s'il y a des mises à jour. Essayez de vérifier votre connexion Internet.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Hors ligne, Chrome ne peut pas vérifier s'il y a des mises à jour</translation>
 <translation id="5716154293141027663">Ouvrez Chrome chaque fois que vous touchez des liens dans d'autres applications</translation>
-<translation id="572883588166315317">Votre organisation vous demande de vous connecter pour utiliser Chrome. <ph name="BEGIN_LINK" />Apprenez-en plus.<ph name="END_LINK" /></translation>
 <translation id="5854621639439811139">Conseil pour Chrome. Certains boutons se trouvent désormais en bas de votre écran, tels que Précédent, Suivant et Rechercher.</translation>
-<translation id="5876773482963502140">Si vous l'autorisez à connaître votre position, Chrome la communique à tous les sites que vous autorisez. Les sites peuvent vous demander votre position lorsqu'ils ont de l'information locale à vous présenter, comme des magasins à proximité ou des actualités.</translation>
 <translation id="5998675059699164418">Votre organisation vous demande de vous connecter pour utiliser Chrome.</translation>
 <translation id="6054613632208573261">Utiliser Chrome par défaut</translation>
 <translation id="6063091872902370735">Autoriser la connexion dans Chrome</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Voulez-vous effacer vos données Chrome de cet appareil ou les conserver?</translation>
 <translation id="8370517070665726704">© <ph name="YEAR" /> Google LLC. Tous droits réservés.</translation>
 <translation id="840168496893712993">Certains modules complémentaires provoquent le plantage de Chrome. Veuillez essayer de les désinstaller.</translation>
+<translation id="8414886616817913619">Votre organisation vous demande de vous connecter pour utiliser Chrome. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Les données sélectionnées ont été supprimées de Chrome et des appareils synchronisés. D'autres formes d'historique de navigation, telles que les recherches et l'activité d'autres services Google, peuvent exister sur votre compte Google. Plus de détails à history.google.com.</translation>
 <translation id="850555388806794946">Pour faire de Chrome votre navigateur par défaut :
   1. Ouvrez l'application Réglages.

@@ -12,12 +12,14 @@
 <link rel="import" href="../deep_linking_behavior.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
+<link rel="import" href="../route_observer_behavior.html">
 <link rel="import" href="../../controls/password_prompt_dialog.html">
 <link rel="import" href="../../settings_page/settings_animated_pages.html">
 <link rel="import" href="../../settings_page/settings_subpage.html">
 <link rel="import" href="../prefs_behavior.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../nearby_share_page/nearby_share_subpage.html">
+<link rel="import" href="../../shared/nearby_share_settings_behavior.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/localized_link/localized_link.html">
 <link rel="import" href="../metrics_recorder.html">
 <link rel="import" href="multidevice_browser_proxy.html">
@@ -209,7 +211,9 @@
       <template is="dom-if" if="[[isNearbyShareSupported_]]" restamp>
         <template is="dom-if" route-path="/multidevice/nearbyshare" restamp>
           <settings-subpage page-title="$i18n{nearbyShareTitle}">
-            <settings-nearby-share-subpage prefs="{{prefs}}">
+            <settings-nearby-share-subpage settings="{{settings}}"
+                prefs="{{prefs}}"
+                is-settings-retreived="[[isSettingsRetreived]]">
             </settings-nearby-share-subpage>
           </settings-subpage>
         </template>
@@ -220,10 +224,22 @@
           on-token-obtained="onTokenObtained_">
       </settings-password-prompt-dialog>
     </template>
-    <template is="dom-if" if="[[showNotificationAccessSetupDialog_]]" restamp>
+    <template is="dom-if" if="[[showPermissionsSetupDialog_(
+        showPhonePermissionSetupDialog_)]]"
+        restamp>
       <settings-multidevice-notification-access-setup-dialog
-          on-close="onHideNotificationSetupAccessDialog_">
+          is-password-dialog-showing="{{isPasswordDialogShowing_}}"
+          on-close="onHidePhonePermissionsSetupDialog_">
       </settings-multidevice-notification-access-setup-dialog>
+    </template>
+    <template is="dom-if"
+        if="[[showNewPermissionsSetupDialog_(
+        showPhonePermissionSetupDialog_)]]"
+        restamp>
+      <settings-multidevice-permissions-setup-dialog
+          is-password-dialog-showing="{{isPasswordDialogShowing_}}"
+          on-close="onHidePhonePermissionsSetupDialog_">
+      </settings-multidevice-permissions-setup-dialog>
     </template>
   </template>
   <script src="multidevice_page.js"></script>

@@ -23,11 +23,11 @@
 #include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
-#include "chrome/browser/apps/app_service/app_service_metrics.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/publishers/extension_apps_util.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/arc_web_contents_data.h"
@@ -57,7 +57,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/full_restore_utils.h"
-#include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
@@ -193,14 +193,16 @@ void ExtensionAppsChromeOs::LaunchAppWithIntent(
     int32_t event_flags,
     apps::mojom::IntentPtr intent,
     apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info) {
-  auto* tab = LaunchAppWithIntentImpl(app_id, event_flags, std::move(intent),
-                                      launch_source, std::move(window_info));
+    apps::mojom::WindowInfoPtr window_info,
+    LaunchAppWithIntentCallback callback) {
+  content::WebContents* web_contents = LaunchAppWithIntentImpl(
+      app_id, event_flags, std::move(intent), launch_source,
+      std::move(window_info), std::move(callback));
 
-  if (launch_source == apps::mojom::LaunchSource::kFromArc && tab) {
-    // Add a flag to remember this tab originated in the ARC context.
-    tab->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
-                     std::make_unique<arc::ArcWebContentsData>());
+  if (launch_source == apps::mojom::LaunchSource::kFromArc && web_contents) {
+    // Add a flag to remember this web_contents originated in the ARC context.
+    web_contents->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
+                              std::make_unique<arc::ArcWebContentsData>());
   }
 }
 
@@ -687,6 +689,8 @@ apps::mojom::AppPtr ExtensionAppsChromeOs::Convert(
     app->show_in_search = apps::mojom::OptionalBool::kFalse;
     app->show_in_shelf = apps::mojom::OptionalBool::kFalse;
   }
+  if (disable_for_lacros)
+    app->show_in_management = apps::mojom::OptionalBool::kFalse;
 
   // Add file_handlers.
   base::Extend(app->intent_filters,
@@ -795,7 +799,7 @@ void ExtensionAppsChromeOs::RegisterInstance(extensions::AppWindow* app_window,
 content::WebContents* ExtensionAppsChromeOs::LaunchImpl(
     AppLaunchParams&& params) {
   AppLaunchParams params_for_restore(
-      params.app_id, params.container, params.disposition, params.source,
+      params.app_id, params.container, params.disposition, params.launch_source,
       params.display_id, params.launch_files, params.intent);
 
   auto* web_contents = ExtensionAppsBase::LaunchImpl(std::move(params));

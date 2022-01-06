@@ -609,6 +609,7 @@ class GpuIntegrationTest(
       gpu_tags.append(gpu_helper.GetANGLERenderer(gpu_info))
       gpu_tags.append(gpu_helper.GetSwiftShaderGLRenderer(gpu_info))
       gpu_tags.append(gpu_helper.GetCommandDecoder(gpu_info))
+      gpu_tags.append(gpu_helper.GetOOPCanvasStatus(gpu_info.feature_status))
       if gpu_info and gpu_info.devices:
         for ii in range(0, len(gpu_info.devices)):
           gpu_vendor = gpu_helper.GetGpuVendorString(gpu_info, ii)
@@ -682,7 +683,6 @@ class GpuIntegrationTest(
         'arm-mali-t860',  # chromeos-board-kevin
         'qualcomm-adreno-(tm)-330',  # android-nexus-5
         'qualcomm-adreno-(tm)-418',  # android-nexus-5x
-        'qualcomm-adreno-(tm)-420',  # android-nexus-6
         'qualcomm-adreno-(tm)-540',  # android-pixel-2
         'qualcomm-adreno-(tm)-640',  # android-pixel-4
         'nvidia-nvidia-tegra',  # android-nexus-9 and android-shield-android-tv

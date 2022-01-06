@@ -36,6 +36,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
 
@@ -225,10 +226,16 @@ absl::optional<SkColor> WebAppBrowserController::GetThemeColor() const {
     return web_theme_color;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  absl::optional<SkColor> dark_mode_color =
-      registrar().GetAppDarkModeThemeColor(app_id());
-  if (ash::ColorProvider::Get()->IsDarkModeEnabled() && dark_mode_color) {
-    return dark_mode_color;
+  // ash::ColorProvider::Get()->IsDarkModeEnabled() flips semantics depending on
+  // the status of ash::Features::IsDarkLightModeEnabled(), so we have to check
+  // both.
+  if (ash::features::IsDarkLightModeEnabled()) {
+    absl::optional<SkColor> dark_mode_color =
+        registrar().GetAppDarkModeThemeColor(app_id());
+
+    if (ash::ColorProvider::Get()->IsDarkModeEnabled() && dark_mode_color) {
+      return dark_mode_color;
+    }
   }
 #endif
 
@@ -239,6 +246,15 @@ absl::optional<SkColor> WebAppBrowserController::GetBackgroundColor() const {
   if (auto color = AppBrowserController::GetBackgroundColor())
     return color;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (ash::features::IsDarkLightModeEnabled()) {
+    absl::optional<SkColor> dark_mode_color =
+        registrar().GetAppDarkModeBackgroundColor(app_id());
+    if (ash::ColorProvider::Get()->IsDarkModeEnabled() && dark_mode_color) {
+      return dark_mode_color;
+    }
+  }
+#endif
   return registrar().GetAppBackgroundColor(app_id());
 }
 
@@ -254,7 +270,7 @@ bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
   // https://w3c.github.io/manifest/#navigation-scope
   // If url is same origin as scope and url path starts with scope path, return
   // true. Otherwise, return false.
-  if (app_scope.GetOrigin() != url.GetOrigin()) {
+  if (app_scope.DeprecatedGetOriginAsURL() != url.DeprecatedGetOriginAsURL()) {
     // We allow an upgrade from http |app_scope| to https |url|.
     if (app_scope.scheme() != url::kHttpScheme)
       return false;
@@ -262,7 +278,8 @@ bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
     GURL::Replacements rep;
     rep.SetSchemeStr(url::kHttpsScheme);
     GURL secure_app_scope = app_scope.ReplaceComponents(rep);
-    if (secure_app_scope.GetOrigin() != url.GetOrigin())
+    if (secure_app_scope.DeprecatedGetOriginAsURL() !=
+        url.DeprecatedGetOriginAsURL())
       return false;
   }
 
@@ -391,7 +408,7 @@ void WebAppBrowserController::PerformDigitalAssetLinkVerification(
   if (!apk_web_app_service || !apk_web_app_service->IsWebOnlyTwa(app_id()))
     return;
 
-  const std::string origin = GetAppStartUrl().GetOrigin().spec();
+  const std::string origin = GetAppStartUrl().DeprecatedGetOriginAsURL().spec();
   const absl::optional<std::string> package_name =
       apk_web_app_service->GetPackageNameForWebApp(app_id());
   const absl::optional<std::string> fingerprint =

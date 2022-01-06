@@ -49,7 +49,7 @@ class ASH_EXPORT ScrollableAppsGridView : public AppsGridView {
 
   // AppsGridView:
   gfx::Size GetTileViewSize() const override;
-  gfx::Insets GetTilePadding() const override;
+  gfx::Insets GetTilePadding(int page) const override;
   gfx::Size GetTileGridSize() const override;
   int GetPaddingBetweenPages() const override;
   int GetTotalPages() const override;
@@ -58,8 +58,8 @@ class ASH_EXPORT ScrollableAppsGridView : public AppsGridView {
   void CalculateIdealBoundsForNonFolder() override;
   bool MaybeAutoScroll() override;
   void StopAutoScroll() override;
-  void HandleScrollFromAppListView(const gfx::Vector2d& offset,
-                                   ui::EventType type) override;
+  void HandleScrollFromParentView(const gfx::Vector2d& offset,
+                                  ui::EventType type) override;
   void SetFocusAfterEndDrag() override;
   void RecordAppMovingTypeMetrics(AppListAppMovingType type) override;
   int GetMaxRowsInPage(int page) const override;

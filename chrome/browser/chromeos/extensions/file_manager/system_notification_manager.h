@@ -8,6 +8,8 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ash/file_manager/io_task.h"
+#include "chrome/browser/ash/file_manager/io_task_controller.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
@@ -37,6 +39,50 @@ enum SystemNotificationManagerMountStatus {
   // Multiple child partitions with at least one in error.
   MOUNT_STATUS_MULTIPART_ERROR,
 };
+
+// Enum of possible UMA values for histogram Notification.Show.
+// Keep the order of this in sync with FileManagerNotificationType in
+// tools/metrics/histograms/enums.xml.
+enum class DeviceNotificationUmaType {
+  DEVICE_NAVIGATION_ALLOW_APP_ACCESS = 0,
+  DEVICE_NAVIGATION_APPS_HAVE_ACCESS = 1,
+  DEVICE_NAVIGATION = 2,
+  DEVICE_NAVIGATION_READONLY_POLICY = 3,
+  DEVICE_IMPORT = 4,
+  DEVICE_FAIL = 5,
+  DEVICE_FAIL_UNKNOWN = 6,
+  DEVICE_FAIL_UNKNOWN_READONLY = 7,
+  DEVICE_EXTERNAL_STORAGE_DISABLED = 8,
+  DEVICE_HARD_UNPLUGGED = 9,
+  FORMAT_START = 10,
+  FORMAT_SUCCESS = 11,
+  FORMAT_FAIL = 12,
+  RENAME_FAIL = 13,
+  PARTITION_START = 14,
+  PARTITION_SUCCESS = 15,
+  PARTITION_FAIL = 16,
+  kMaxValue = PARTITION_FAIL,
+};
+
+// Enum of possible UMA values for histogram Notification.UserAction.
+// Keep the order of this in sync with FileManagerNotificationUserAction in
+// tools/metrics/histograms/enums.xml.
+enum class DeviceNotificationUserActionUmaType {
+  OPEN_SETTINGS_FOR_ARC_STORAGE = 0,  // OPEN_EXTERNAL_STORAGE_PREFERENCES.
+  OPEN_MEDIA_DEVICE_NAVIGATION = 1,
+  OPEN_MEDIA_DEVICE_NAVIGATION_ARC = 2,
+  OPEN_MEDIA_DEVICE_FAIL = 3,
+  OPEN_MEDIA_DEVICE_IMPORT = 4,
+  kMaxValue = OPEN_MEDIA_DEVICE_IMPORT,
+};
+
+// Histogram name for Notification.Show.
+constexpr char kNotificationShowHistogramName[] =
+    "FileBrowser.Notification.Show";
+
+// Histogram name for Notification.UserAction.
+constexpr char kNotificationUserActionHistogramName[] =
+    "FileBrowser.Notification.UserAction";
 
 // Manages creation/deletion and update of system notifications on behalf
 // of the File Manager application.
@@ -102,6 +148,24 @@ class SystemNotificationManager {
       int progress);
 
   /**
+   * Returns an instance of an 'ash' Notification with progress value and Cancel
+   * button bound to CancelTaskId(task_id, ...);
+   */
+  std::unique_ptr<message_center::Notification>
+  CreateIOTaskProgressNotification(file_manager::io_task::IOTaskId task_id,
+                                   const std::string& notification_id,
+                                   const std::u16string& title,
+                                   const std::u16string& message,
+                                   int progress);
+
+  /**
+   * Click handler for the IO Task progress notification. Cancels the IO Task.
+   */
+  void CancelTaskId(file_manager::io_task::IOTaskId task_id,
+                    const std::string& notification_id,
+                    absl::optional<int> button_index);
+
+  /**
    *  Returns an instance of an 'ash' Notification with title and message
    *  specified by string ID values (for 110n).
    */
@@ -128,6 +192,12 @@ class SystemNotificationManager {
                        file_manager_private::CopyOrMoveProgressStatus& status);
 
   /**
+   * Processes progress event from IOTaskController.
+   */
+  void HandleIOTaskProgress(
+      const file_manager::io_task::ProgressStatus& status);
+
+  /**
    * Stores and updates the state of a device based on mount events for the top
    * level or any child partitions.
    */
@@ -151,6 +221,13 @@ class SystemNotificationManager {
    * Stores a reference to the DriveFS event router instance.
    */
   void SetDriveFSEventRouter(DriveFsEventRouter* drivefs_event_router);
+
+  /**
+   * Stores a pointer to the IOTaskController instance to be able to cancel
+   * tasks.
+   */
+  void SetIOTaskController(
+      file_manager::io_task::IOTaskController* io_task_controller);
 
  private:
   /**
@@ -185,8 +262,11 @@ class SystemNotificationManager {
   /**
    * Click handler for the removable device notification.
    */
-  void HandleRemovableNotificationClick(const std::string& path,
-                                        absl::optional<int> button_index);
+  void HandleRemovableNotificationClick(
+      const std::string& path,
+      const std::vector<DeviceNotificationUserActionUmaType>&
+          uma_types_for_buttons,
+      absl::optional<int> button_index);
 
   /**
    * Click handler for the progress notification.
@@ -233,6 +313,9 @@ class SystemNotificationManager {
   Profile* const profile_;
   // Reference to non-owned DriveFS event router.
   DriveFsEventRouter* drivefs_event_router_;
+
+  // IOTaskController is owned by VolumeManager.
+  file_manager::io_task::IOTaskController* io_task_controller_;
 
   // Cache the application name (used for notification display source).
   std::u16string app_name_;

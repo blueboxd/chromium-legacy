@@ -442,13 +442,11 @@ class TestPrintViewManagerForDLP : public TestPrintViewManager {
            restriction_level_ == RestrictionLevel::kWarnCancel;
   }
 
-  void ShowWarning(
-      base::OnceClosure on_print_preview_allowed_cb,
-      base::OnceClosure on_print_preview_rejected_cb) const override {
+  void ShowWarning(base::OnceCallback<void(bool)> callback) const override {
     if (restriction_level_ == RestrictionLevel::kWarnAllow) {
-      std::move(on_print_preview_allowed_cb).Run();
+      std::move(callback).Run(true);
     } else if (restriction_level_ == RestrictionLevel::kWarnCancel) {
-      std::move(on_print_preview_rejected_cb).Run();
+      std::move(callback).Run(false);
     }
   }
 
@@ -1394,7 +1392,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PDFPluginNotKeyboardFocusable) {
   const char kScript[] = R"(
     const button = document.getElementsByTagName('print-preview-app')[0]
                        .$['previewArea']
-                       .$$('iframe')
+                       .shadowRoot.querySelector('iframe')
                        .contentDocument.querySelector('pdf-viewer-pp')
                        .shadowRoot.querySelector('#zoom-toolbar')
                        .$['zoom-out-button'];
@@ -1465,7 +1463,7 @@ class PrintPrerenderBrowserTest : public PrintBrowserTest {
 };
 
 // Test that print() is silently ignored.
-// https://jeremyroman.github.io/alternate-loading-modes/#patch-modals
+// https://wicg.github.io/nav-speculation/prerendering.html#patch-modals
 IN_PROC_BROWSER_TEST_F(PrintPrerenderBrowserTest, QuietBlockWithWindowPrint) {
   // Navigate to an initial page.
   const GURL kUrl(embedded_test_server()->GetURL("/empty.html"));
@@ -1491,8 +1489,8 @@ IN_PROC_BROWSER_TEST_F(PrintPrerenderBrowserTest, QuietBlockWithWindowPrint) {
 
 // Test that execCommand('print') is silently ignored.
 // execCommand() is not specced, but
-// https://jeremyroman.github.io/alternate-loading-modes/#patch-modals indicates
-// the intent to silently ignore print APIs.
+// https://wicg.github.io/nav-speculation/prerendering.html#patch-modals
+// indicates the intent to silently ignore print APIs.
 IN_PROC_BROWSER_TEST_F(PrintPrerenderBrowserTest,
                        QuietBlockWithDocumentExecCommand) {
   // Navigate to an initial page.

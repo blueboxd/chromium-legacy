@@ -393,6 +393,9 @@ protocol::Audits::ContentSecurityPolicyViolationType CSPViolationTypeToProtocol(
     case ContentSecurityPolicyViolationType::kEvalViolation:
       return protocol::Audits::ContentSecurityPolicyViolationTypeEnum::
           KEvalViolation;
+    case ContentSecurityPolicyViolationType::kWasmEvalViolation:
+      return protocol::Audits::ContentSecurityPolicyViolationTypeEnum::
+          KWasmEvalViolation;
     case ContentSecurityPolicyViolationType::kInlineViolation:
       return protocol::Audits::ContentSecurityPolicyViolationTypeEnum::
           KInlineViolation;
@@ -429,6 +432,34 @@ void AuditsIssue::ReportSharedArrayBufferIssue(
       protocol::Audits::InspectorIssue::create()
           .setCode(
               protocol::Audits::InspectorIssueCodeEnum::SharedArrayBufferIssue)
+          .setDetails(std::move(issue_details))
+          .build();
+  execution_context->AddInspectorIssue(AuditsIssue(std::move(issue)));
+}
+
+// static
+void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
+                                         const String& message) {
+  auto source_location = SourceLocation::Capture(execution_context);
+  auto deprecation_issue_details =
+      protocol::Audits::DeprecationIssueDetails::create()
+          .setSourceCodeLocation(CreateProtocolLocation(*source_location))
+          .setMessage(message)
+          .build();
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+    auto affected_frame =
+        protocol::Audits::AffectedFrame::create()
+            .setFrameId(IdentifiersFactory::FrameId(window->GetFrame()))
+            .build();
+    deprecation_issue_details->setAffectedFrame(std::move(affected_frame));
+  }
+  auto issue_details =
+      protocol::Audits::InspectorIssueDetails::create()
+          .setDeprecationIssueDetails(std::move(deprecation_issue_details))
+          .build();
+  auto issue =
+      protocol::Audits::InspectorIssue::create()
+          .setCode(protocol::Audits::InspectorIssueCodeEnum::DeprecationIssue)
           .setDetails(std::move(issue_details))
           .build();
   execution_context->AddInspectorIssue(AuditsIssue(std::move(issue)));
@@ -582,4 +613,5 @@ AuditsIssue AuditsIssue::CreateContentSecurityPolicyIssue(
 
   return AuditsIssue(std::move(issue));
 }
+
 }  // namespace blink

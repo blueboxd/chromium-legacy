@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -2929,6 +2930,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram_suffixes name="ContentSettingsType" separator=".">
   <suffix name="app-banner" label="App banner exceptions"/>
+  <suffix name="auto-dark-web-content"
+      label="Auto-dark web contents exceptions"/>
   <suffix name="auto-select-certificate" label="Auto-select cert exceptions"/>
   <suffix name="automatic-downloads" label="Automatic downloads exceptions"/>
   <suffix name="autoplay" label="Autoplay exception"/>
@@ -2965,6 +2968,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="protected-media-identifier" label="Protected media exceptions"/>
   <suffix name="protocol-handler" label="Protocol handler exceptions"/>
   <suffix name="push-messaging" label="Push messaging exceptions"/>
+  <suffix name="request-desktop-site" label="Request desktop site exceptions"/>
   <suffix name="safe-browsing-url-check-data"
       label="Safe browsing url check data"/>
   <suffix name="serial-chooser-data" label="Serial chooser data"/>
@@ -5917,6 +5921,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="GoogleUpdate_Inline_InstallStatus" separator=".">
+  <obsolete>
+    Inline updates are deprecated as of M97.
+  </obsolete>
   <suffix name="Canceled" label="Canceled"/>
   <suffix name="Downloaded" label="Downloaded"/>
   <suffix name="Downloading" label="Downloading"/>
@@ -5931,8 +5938,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="GoogleUpdate_Result_UpdateType" separator=".">
-  <suffix base="true" name="Inline" label="Intent Updates"/>
-  <suffix base="true" name="Intent" label="Inline Updates"/>
+  <suffix base="true" name="Inline" label="Inline Updates">
+    <obsolete>
+      Inline updates are deprecated as of M97.
+    </obsolete>
+  </suffix>
+  <suffix base="true" name="Intent" label="Intent Updates"/>
   <suffix base="true" name="Unknown" label="Unknown Update Type"/>
   <affected-histogram name="GoogleUpdate.Result.Session"/>
   <affected-histogram name="GoogleUpdate.Result.TimeWindow"/>
@@ -7009,6 +7020,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="LevelDBClients" separator=".">
+<!-- Obsolete. Use LevelDBClient variant in leveldb_proto/histograms.xml instead. -->
+
   <suffix name="BudgetManager"
       label="Database for storing budget information for origins."/>
   <suffix name="CachedImageFetcherDatabase"
@@ -7101,19 +7114,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="Database for video tutorials (deprecated)."/>
   <suffix name="VideoTutorialsV2Database"
       label="Database for video tutorials."/>
+<!-- The following two histograms are obsolete. -->
+
   <affected-histogram name="LevelDB.ApproximateMemoryUse"/>
-  <affected-histogram name="LevelDB.ApproximateMemTableMemoryUse"/>
   <affected-histogram name="LevelDB.Open"/>
-  <affected-histogram name="ProtoDB.DestroySuccess"/>
-  <affected-histogram name="ProtoDB.GetErrorStatus"/>
-  <affected-histogram name="ProtoDB.GetFound"/>
-  <affected-histogram name="ProtoDB.GetSuccess"/>
-  <affected-histogram name="ProtoDB.InitStatus"/>
-  <affected-histogram name="ProtoDB.LoadEntriesSuccess"/>
-  <affected-histogram name="ProtoDB.LoadKeysAndEntriesSuccess"/>
-  <affected-histogram name="ProtoDB.LoadKeysSuccess"/>
-  <affected-histogram name="ProtoDB.UpdateErrorStatus"/>
-  <affected-histogram name="ProtoDB.UpdateSuccess"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LevelDBEnvBackupRestore" separator="">
@@ -9851,6 +9855,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       Kaleidoscope has been turned down.
     </obsolete>
   </suffix>
+  <suffix name="photos" label="Module ID for Google Photos module"/>
   <suffix name="recipe_tasks" label="Module ID for Recipe Tasks"/>
   <suffix name="shopping_tasks" label="Module ID for Shopping Tasks"/>
   <affected-histogram name="NewTabPage.Modules.Dismissed"/>
@@ -9864,9 +9869,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="NewTabPageProviders" separator=".">
-  <obsolete>
-    Removed in 06 2021.
-  </obsolete>
   <suffix name="allowlist"
       label="Installed allowlist entry point suggestions."/>
   <suffix name="client" label="Suggestions coming from the client."/>
@@ -10800,23 +10802,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="OptimizationGuide_OptimizationTargets" separator=".">
-  <suffix name="SegmentationChromeStartAndroid" label="Chrome Start Android"/>
-  <suffix name="SegmentationDummyFeature" label="Dummy feature"/>
+  <suffix name="AutofillAssistant" label="Autofill Assistant"/>
   <suffix name="LanguageDetection" label="Language detection"/>
   <suffix name="ModelValidation" label="Model validation triggered via CLI"/>
   <suffix name="NotificationPermissions" label="Notification permissions"/>
   <suffix name="PageEntities" label="Page entities"/>
   <suffix name="PageTopics" label="Page topics"/>
   <suffix name="PainfulPageLoad" label="Painful page load"/>
-  <suffix name="SegmentationQueryTiles" label="Query tiles"/>
+  <suffix name="SegmentationChromeStartAndroid" label="Chrome Start Android"/>
+  <suffix name="SegmentationDummyFeature" label="Dummy feature"/>
   <suffix name="SegmentationNewTab" label="Segmentation: New tab page user"/>
+  <suffix name="SegmentationQueryTiles" label="Query tiles"/>
   <suffix name="SegmentationShare" label="Segmentation: Share user"/>
   <suffix name="SegmentationVoice" label="Segmentation: Voice user"/>
   <affected-histogram name="OptimizationGuide.IsPredictionModelValid"/>
   <affected-histogram
       name="OptimizationGuide.PredictionManager.ModelTypeChanged"/>
-  <affected-histogram
-      name="OptimizationGuide.PredictionModelEvaluationLatency"/>
+  <affected-histogram name="OptimizationGuide.PredictionModelEvaluationLatency">
+    <obsolete>
+      Deprecated as of 2021/10.
+    </obsolete>
+  </affected-histogram>
   <affected-histogram name="OptimizationGuide.PredictionModelLoadedVersion"/>
   <affected-histogram name="OptimizationGuide.PredictionModelUpdateVersion"/>
   <affected-histogram
@@ -10828,7 +10834,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     </obsolete>
   </affected-histogram>
   <affected-histogram
-      name="OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus"/>
+      name="OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus">
+    <obsolete>
+      Deprecated as of 2021/10.
+    </obsolete>
+  </affected-histogram>
   <affected-histogram name="OptimizationGuide.TargetDecision"/>
 </histogram_suffixes>
 
@@ -10905,7 +10915,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="OptimizationGuide_RequestContexts" separator=".">
-  <suffix name="BatchUpdate" label="Batch update"/>
+  <suffix name="BatchUpdate" label="Batch update.">
+    <obsolete>
+      Obsolete as of 10/2021.
+    </obsolete>
+  </suffix>
+  <suffix name="BatchUpdateActiveTabs"
+      label="Batch update of hints for active tabs"/>
+  <suffix name="BatchUpdateGoogleSRP"
+      label="Batch update of hints for result links off the Google SRP"/>
+  <suffix name="BatchUpdateModels" label="Batch update of models"/>
   <suffix name="PageNavigation" label="Page navigation"/>
   <affected-histogram
       name="OptimizationGuide.HintsFetcher.GetHintsRequest.ActiveRequestCanceled"/>
@@ -15022,6 +15041,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Security.PageInfo.TimeOpen.Action"/>
   <affected-histogram name="Security.PageInfo.TimeOpen.NoAction"/>
   <affected-histogram name="Security.SafetyTips.Interaction"/>
+  <affected-histogram name="Security.SafetyTips.OpenTime.ChangePrimaryPage"/>
   <affected-histogram name="Security.SafetyTips.OpenTime.CloseTab"/>
   <affected-histogram name="Security.SafetyTips.OpenTime.Dismiss"/>
   <affected-histogram name="Security.SafetyTips.OpenTime.DismissWithClose"/>
@@ -15375,12 +15395,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>tgupta@chromium.org</owner>
   <owner>chrome-sharing-core@google.com</owner>
   <suffix name="AndroidShareSheet"
-      label="Option to show in the android share sheet"/>
+      label="Option to show in the android share sheet">
+    <obsolete>
+      Replaced with ShareSheet in 05/2021 (M92). More details in
+      crbug.com/1261416.
+    </obsolete>
+  </suffix>
   <suffix name="ContentMenu" label="Option shown in the content context menu"/>
   <suffix name="LinkMenu" label="Option shown in the link context menu"/>
   <suffix name="OmniboxIcon" label="Icon shown in the omnibox"/>
   <suffix name="OmniboxMenu" label="Option shown in the omnibox context menu"/>
   <suffix name="ShareMenu" label="Option shown in the share sheet menu"/>
+  <suffix name="ShareSheet" label="Option to show in the android share sheet"/>
   <suffix name="TabMenu" label="Option shown in the tab context menu"/>
   <affected-histogram name="SendTabToSelf.ClickResult"/>
 </histogram_suffixes>
@@ -15426,6 +15452,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="BACKGROUND_FETCH_FAIL" label=""/>
   <suffix name="BACKGROUND_FETCH_SUCCESS" label=""/>
   <suffix name="COOKIE_CHANGE" label="COOKIE_CHANGE"/>
+  <suffix name="FETCH_FENCED_FRAME" label="FETCH_FENCED_FRAME"/>
   <suffix name="FETCH_MAIN_FRAME" label="FETCH_MAIN_FRAME"/>
   <suffix name="FETCH_SHARED_WORKER" label="FETCH_SHARED_WORKER"/>
   <suffix name="FETCH_SUB_FRAME" label="FETCH_SUB_FRAME"/>
@@ -15943,6 +15970,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="plus" label="Custom histogram for Google+"/>
   <affected-histogram name="ServiceWorker.EventDispatchingDelay_ACTIVATE"/>
   <affected-histogram name="ServiceWorker.EventDispatchingDelay_COOKIE_CHANGE"/>
+  <affected-histogram
+      name="ServiceWorker.EventDispatchingDelay_FETCH_FENCED_FRAME"/>
   <affected-histogram
       name="ServiceWorker.EventDispatchingDelay_FETCH_MAIN_FRAME"/>
   <affected-histogram
@@ -17268,7 +17297,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram
       name="Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates"/>
   <affected-histogram name="Sync.DuplicateServerIdInApplyPendingUpdates"/>
-  <affected-histogram name="Sync.E2ELatency"/>
+  <affected-histogram name="Sync.E2ELatency">
+    <obsolete>
+      Deprecated 10/2021. Replaced by server-side metrics.
+    </obsolete>
+  </affected-histogram>
   <affected-histogram name="Sync.ModelTypeConfigurationTime.Ephemeral"/>
   <affected-histogram name="Sync.ModelTypeConfigurationTime.Persistent"/>
   <affected-histogram name="Sync.ModelTypeCount">
@@ -17306,6 +17339,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     </obsolete>
   </affected-histogram>
   <affected-histogram name="Sync.ModelTypeTimeUntilEncryptionKeyFound"/>
+  <affected-histogram name="Sync.ModelTypeTimeUntilEncryptionKeyFound2"/>
   <affected-histogram name="Sync.ModelTypeUndecryptablePendingUpdatesDropped"/>
   <affected-histogram name="Sync.NonReflectionUpdateFreshnessPossiblySkewed">
     <obsolete>
@@ -17526,22 +17560,92 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Apps.AppListSuggestedChipOpenType"/>
   <affected-histogram name="Apps.ContextMenuExecuteCommand.FromApp"/>
   <affected-histogram name="Apps.ContextMenuExecuteCommand.NotFromApp"/>
-  <affected-histogram name="Apps.ContextMenuShowSource.AppGrid"/>
-  <affected-histogram name="Apps.ContextMenuShowSource.Desktop"/>
-  <affected-histogram name="Apps.ContextMenuShowSource.SearchResult"/>
-  <affected-histogram name="Apps.ContextMenuShowSource.Shelf"/>
-  <affected-histogram name="Apps.ContextMenuShowSource.ShelfButton"/>
-  <affected-histogram name="Apps.ContextMenuShowSource.SuggestedAppFullscreen"/>
-  <affected-histogram name="Apps.ContextMenuShowSource.SuggestedAppPeeking"/>
-  <affected-histogram name="Apps.ContextMenuUserJourneyTime.AppGrid"/>
-  <affected-histogram name="Apps.ContextMenuUserJourneyTime.Desktop"/>
-  <affected-histogram name="Apps.ContextMenuUserJourneyTime.SearchResult"/>
-  <affected-histogram name="Apps.ContextMenuUserJourneyTime.Shelf"/>
-  <affected-histogram name="Apps.ContextMenuUserJourneyTime.ShelfButton"/>
+  <affected-histogram name="Apps.ContextMenuShowSource.AppGrid">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Apps.ContextMenuShowSource.Desktop">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Apps.ContextMenuShowSource.SearchResult">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Apps.ContextMenuShowSource.Shelf">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Apps.ContextMenuShowSource.ShelfButton">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Apps.ContextMenuShowSource.SuggestedAppFullscreen">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Apps.ContextMenuShowSource.SuggestedAppPeeking">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Apps.ContextMenuUserJourneyTime.AppGrid">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Apps.ContextMenuUserJourneyTime.Desktop">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Apps.ContextMenuUserJourneyTime.SearchResult">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Apps.ContextMenuUserJourneyTime.Shelf">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Apps.ContextMenuUserJourneyTime.ShelfButton">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
   <affected-histogram
-      name="Apps.ContextMenuUserJourneyTime.SuggestedAppFullscreen"/>
+      name="Apps.ContextMenuUserJourneyTime.SuggestedAppFullscreen">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
   <affected-histogram
-      name="Apps.ContextMenuUserJourneyTime.SuggestedAppPeeking"/>
+      name="Apps.ContextMenuUserJourneyTime.SuggestedAppPeeking">
+    <obsolete>
+      Obsoleted in October 2021. Replaced this suffix with variants in
+      histogram.xml
+    </obsolete>
+  </affected-histogram>
   <affected-histogram name="Apps.PaginationTransition.AnimationSmoothness"/>
   <affected-histogram
       name="Apps.PaginationTransition.DragScroll.PresentationTime"/>
@@ -18300,6 +18404,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     </obsolete>
   </suffix>
   <suffix name="Eche" label="Eche"/>
+  <suffix name="FirmwareUpdate" label="FirmwareUpdate"/>
   <suffix name="Help" label="Help"/>
   <suffix name="Media" label="Media"/>
   <suffix name="MediaAudio" label="MediaAudio">
@@ -18308,7 +18413,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     </obsolete>
   </suffix>
   <suffix name="OSFeedback" label="OSFeedback"/>
+  <suffix name="OsFlags" label="OsFlags"/>
   <suffix name="OSSettings" label="OS Settings"/>
+  <suffix name="OsUrlHandler" label="OsUrlHandler"/>
   <suffix name="Personalization" label="Personalization"/>
   <suffix name="PrintManagement" label="PrintManagement"/>
   <suffix name="Projector" label="Projector"/>

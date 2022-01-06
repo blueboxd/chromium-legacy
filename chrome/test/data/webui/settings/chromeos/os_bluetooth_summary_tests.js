@@ -13,7 +13,7 @@
 // #import {createDefaultBluetoothDevice, FakeBluetoothConfig,} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
 // #import {setBluetoothConfigForTesting} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
 // #import {mojoString16ToString} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_utils.js';
-// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// #import {eventToPromise} from 'chrome://test/test_util.js';
 // clang-format on
 
 suite('OsBluetoothSummaryTest', function() {
@@ -151,12 +151,18 @@ suite('OsBluetoothSummaryTest', function() {
     assertEquals('cr:bluetooth', getBluetoothStatusIcon().icon);
 
     const device1 = createDefaultBluetoothDevice(
-        /*id=*/ '123456789', /*publicName=*/ 'BeatsX', /*connected=*/ true,
+        /*id=*/ '123456789', /*publicName=*/ 'BeatsX',
+        /*connectionState=*/
+        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1');
     const device2 = createDefaultBluetoothDevice(
-        /*id=*/ '987654321', /*publicName=*/ 'MX 3', /*connected=*/ true);
+        /*id=*/ '987654321', /*publicName=*/ 'MX 3',
+        /*connectionState=*/
+        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected);
     const device3 = createDefaultBluetoothDevice(
-        /*id=*/ '456789', /*publicName=*/ 'Radio head', /*connected=*/ true,
+        /*id=*/ '456789', /*publicName=*/ 'Radio head',
+        /*connectionState=*/
+        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device3');
 
     const mockPairedBluetoothDeviceProperties = [
@@ -221,4 +227,30 @@ suite('OsBluetoothSummaryTest', function() {
 
     await toggleBluetoothPairingUiPromise;
   });
+
+  test('Secondary user', async function() {
+    const primaryUserEmail = 'test@gmail.com';
+    loadTimeData.overrideValues({
+      isSecondaryUser: true,
+      primaryUserEmail,
+    });
+    init();
+
+    bluetoothConfig.setBluetoothEnabledState(/*enabled=*/ true);
+    await flushAsync();
+    const bluetoothSummaryPrimary = bluetoothSummary.$$('#bluetoothSummary');
+    const bluetoothSummarySecondary =
+        bluetoothSummary.$$('#bluetoothSummarySeconday');
+    const bluetoothSummarySecondaryText =
+        bluetoothSummary.$$('#bluetoothSummarySecondayText');
+
+    assertFalse(!!bluetoothSummaryPrimary);
+    assertTrue(!!bluetoothSummarySecondary);
+
+    assertEquals(
+        bluetoothSummary.i18n(
+            'bluetoothPrimaryUserControlled', primaryUserEmail),
+        bluetoothSummarySecondaryText.textContent.trim());
+  });
+
 });

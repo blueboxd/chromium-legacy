@@ -12,10 +12,8 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/notreached.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/app_icon_source.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_forwarder.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
@@ -26,7 +24,7 @@
 #include "chrome/browser/web_applications/app_service/web_apps_publisher_host.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chromeos/lacros/lacros_service.h"
-#include "components/services/app_service/app_service_impl.h"
+#include "components/services/app_service/app_service_mojom_impl.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/types_util.h"
@@ -111,7 +109,6 @@ AppServiceProxyLacros::AppServiceProxyLacros(Profile* profile)
         std::make_unique<apps::BrowserAppInstanceForwarder>(
             *browser_app_instance_tracker_, registry);
   }
-  Initialize();
 }
 
 AppServiceProxyLacros::~AppServiceProxyLacros() = default;
@@ -123,15 +120,15 @@ void AppServiceProxyLacros::Initialize() {
 
   browser_app_launcher_ = std::make_unique<apps::BrowserAppLauncher>(profile_);
 
-  web_apps_publisher_host_ =
-      std::make_unique<web_app::WebAppsPublisherHost>(profile_);
-  web_apps_publisher_host_->Init();
+  if (profile_->IsMainProfile()) {
+    web_apps_publisher_host_ =
+        std::make_unique<web_app::WebAppsPublisherHost>(profile_);
+    web_apps_publisher_host_->Init();
+  }
 
-  // Asynchronously add app icon source, so we don't do too much work in the
-  // constructor.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&AppServiceProxyLacros::AddAppIconSource,
-                                weak_ptr_factory_.GetWeakPtr(), profile_));
+  // Make the chrome://app-icon/ resource available.
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<apps::AppIconSource>(profile_));
 
   auto* service = chromeos::LacrosService::Get();
 
@@ -194,7 +191,7 @@ BrowserAppLauncher* AppServiceProxyLacros::BrowserAppLauncher() {
   return browser_app_launcher_.get();
 }
 
-apps::PreferredAppsList& AppServiceProxyLacros::PreferredApps() {
+apps::PreferredAppsListHandle& AppServiceProxyLacros::PreferredApps() {
   return preferred_apps_;
 }
 
@@ -253,15 +250,6 @@ void AppServiceProxyLacros::LaunchAppWithFiles(
     int32_t event_flags,
     apps::mojom::LaunchSource launch_source,
     apps::mojom::FilePathsPtr file_paths) {
-  NOTIMPLEMENTED();
-}
-
-void AppServiceProxyLacros::LaunchAppWithFileUrls(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::LaunchSource launch_source,
-    const std::vector<GURL>& file_urls,
-    const std::vector<std::string>& mime_types) {
   NOTIMPLEMENTED();
 }
 
@@ -443,7 +431,25 @@ void AppServiceProxyLacros::AddPreferredApp(const std::string& app_id,
 void AppServiceProxyLacros::AddPreferredApp(
     const std::string& app_id,
     const apps::mojom::IntentPtr& intent) {
-  NOTIMPLEMENTED();
+  auto* service = chromeos::LacrosService::Get();
+
+  if (!service) {
+    return;
+  }
+
+  if (!service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
+    return;
+  }
+
+  // TODO(https://crbug.com/853604): Remove this and convert to a DCHECK
+  // after finding out the root cause.
+  if (app_id.empty()) {
+    base::debug::DumpWithoutCrashing();
+    return;
+  }
+
+  service->GetRemote<crosapi::mojom::AppServiceProxy>()->AddPreferredApp(
+      app_id, apps_util::ConvertAppServiceToCrosapiIntent(intent, profile_));
 }
 
 void AppServiceProxyLacros::SetSupportedLinksPreference(
@@ -461,12 +467,6 @@ void AppServiceProxyLacros::SetWindowMode(const std::string& app_id,
   NOTIMPLEMENTED();
 }
 
-void AppServiceProxyLacros::AddAppIconSource(Profile* profile) {
-  // Make the chrome://app-icon/ resource available.
-  content::URLDataSource::Add(profile,
-                              std::make_unique<apps::AppIconSource>(profile));
-}
-
 void AppServiceProxyLacros::OnApps(std::vector<apps::mojom::AppPtr> deltas,
                                    apps::mojom::AppType app_type,
                                    bool should_notify_initialized) {
@@ -474,30 +474,14 @@ void AppServiceProxyLacros::OnApps(std::vector<apps::mojom::AppPtr> deltas,
                              should_notify_initialized);
 }
 
-apps::mojom::IntentFilterPtr AppServiceProxyLacros::FindBestMatchingFilter(
-    const apps::mojom::IntentPtr& intent) {
-  apps::mojom::IntentFilterPtr best_matching_intent_filter;
-  if (!crosapi_receiver_.is_bound()) {
-    return best_matching_intent_filter;
-  }
+void AppServiceProxyLacros::OnPreferredAppsChanged(
+    apps::mojom::PreferredAppChangesPtr changes) {
+  preferred_apps_.ApplyBulkUpdate(std::move(changes));
+}
 
-  int best_match_level = apps_util::IntentFilterMatchLevel::kNone;
-  app_registry_cache_.ForEachApp(
-      [&intent, &best_match_level,
-       &best_matching_intent_filter](const apps::AppUpdate& update) {
-        for (const auto& filter : update.IntentFilters()) {
-          if (!apps_util::IntentMatchesFilter(intent, filter)) {
-            continue;
-          }
-          auto match_level = apps_util::GetFilterMatchLevel(filter);
-          if (match_level <= best_match_level) {
-            continue;
-          }
-          best_matching_intent_filter = filter->Clone();
-          best_match_level = match_level;
-        }
-      });
-  return best_matching_intent_filter;
+void AppServiceProxyLacros::InitializePreferredApps(
+    PreferredAppsList::PreferredApps preferred_apps) {
+  preferred_apps_.Init(preferred_apps);
 }
 
 void AppServiceProxyLacros::FlushMojoCallsForTesting() {

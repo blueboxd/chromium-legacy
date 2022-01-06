@@ -19,7 +19,7 @@ namespace ui {
 class AXPlatformNodeMac : public AXPlatformNodeBase {
  public:
   AXPlatformNodeMac();
-
+  ~AXPlatformNodeMac() override;
   AXPlatformNodeMac(const AXPlatformNodeMac&) = delete;
   AXPlatformNodeMac& operator=(const AXPlatformNodeMac&) = delete;
 
@@ -37,6 +37,7 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
   base::scoped_nsobject<AXPlatformNodeCocoa> ReleaseNativeWrapper() {
     return std::move(native_node_);
   }
+
   void SetNativeWrapper(AXPlatformNodeCocoa* native_node) {
     return native_node_.reset(native_node);
   }
@@ -47,8 +48,6 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
                           PlatformAttributeList* attributes) override;
 
  private:
-  ~AXPlatformNodeMac() override;
-
   base::scoped_nsobject<AXPlatformNodeCocoa> native_node_;
 };
 

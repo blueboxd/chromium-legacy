@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -86,6 +87,23 @@ using content::BrowserThread;
 using content::NonNestable;
 
 namespace safe_browsing {
+
+namespace {
+
+void OnGotCookies(
+    std::unique_ptr<mojo::Remote<network::mojom::CookieManager>> remote,
+    const std::vector<net::CanonicalCookie>& cookies) {
+  base::UmaHistogramBoolean("SafeBrowsing.HasCookieAtStartup",
+                            !cookies.empty());
+  if (!cookies.empty()) {
+    base::TimeDelta age = base::Time::Now() - cookies[0].CreationDate();
+    // Cookies can be up to 6 months old. Using millisecond precision over such
+    // a long time period overflows numeric limits. Instead, use a counts
+    // histogram and lower granularity.
+    base::UmaHistogramCounts10000("SafeBrowsing.CookieAgeHours", age.InHours());
+  }
+}
+}  // namespace
 
 // static
 base::FilePath SafeBrowsingService::GetCookieFilePathForTesting() {
@@ -174,25 +192,9 @@ void SafeBrowsingService::ShutDown() {
   proxy_config_monitor_.reset();
 }
 
-network::mojom::NetworkContext* SafeBrowsingService::GetNetworkContext() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return network_context_->GetNetworkContext();
-}
-
-scoped_refptr<network::SharedURLLoaderFactory>
-SafeBrowsingService::GetURLLoaderFactory() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!network_context_)
-    return nullptr;
-  return network_context_->GetURLLoaderFactory();
-}
-
 network::mojom::NetworkContext* SafeBrowsingService::GetNetworkContext(
     content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts))
-    return GetNetworkContext();
-
   NetworkContextService* service =
       NetworkContextServiceFactory::GetForBrowserContext(browser_context);
   if (!service)
@@ -205,9 +207,6 @@ scoped_refptr<network::SharedURLLoaderFactory>
 SafeBrowsingService::GetURLLoaderFactory(
     content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts))
-    return GetURLLoaderFactory();
-
   NetworkContextService* service =
       NetworkContextServiceFactory::GetForBrowserContext(browser_context);
   if (!service)
@@ -329,8 +328,6 @@ void SafeBrowsingService::SetDatabaseManagerForTest(
 
 void SafeBrowsingService::StartOnIOThread(
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
-        sb_url_loader_factory,
-    std::unique_ptr<network::PendingSharedURLLoaderFactory>
         browser_url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
@@ -341,7 +338,6 @@ void SafeBrowsingService::StartOnIOThread(
   V4ProtocolConfig v4_config = GetV4ProtocolConfig();
 
   services_delegate_->StartOnIOThread(
-      network::SharedURLLoaderFactory::Create(std::move(sb_url_loader_factory)),
       network::SharedURLLoaderFactory::Create(
           std::move(browser_url_loader_factory)),
       v4_config);
@@ -366,8 +362,6 @@ void SafeBrowsingService::Start() {
       FROM_HERE,
       base::BindOnce(
           &SafeBrowsingService::StartOnIOThread, this,
-          std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
-              GetURLLoaderFactory()),
           std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
               g_browser_process->shared_url_loader_factory())));
 }
@@ -430,6 +424,8 @@ void SafeBrowsingService::OnProfileAdded(Profile* profile) {
   RecordExtendedReportingMetrics(*pref_service);
 
   SafeBrowsingMetricsCollectorFactory::GetForProfile(profile)->StartLogging();
+
+  RecordCookieMetrics(profile);
 
   CreateServicesForProfile(profile);
 }
@@ -517,6 +513,22 @@ SafeBrowsingService::CreateNetworkContextParams() {
   }
   proxy_config_monitor_->AddToNetworkContextParams(params.get());
   return params;
+}
+
+void SafeBrowsingService::RecordCookieMetrics(Profile* profile) {
+  network::mojom::NetworkContext* network_context = GetNetworkContext(profile);
+  if (!network_context)
+    return;
+  auto cookie_manager_remote =
+      std::make_unique<mojo::Remote<network::mojom::CookieManager>>();
+  network_context->GetCookieManager(
+      cookie_manager_remote->BindNewPipeAndPassReceiver());
+
+  mojo::Remote<network::mojom::CookieManager>* cookie_manager_raw =
+      cookie_manager_remote.get();
+  (*cookie_manager_raw)
+      ->GetAllCookies(
+          base::BindOnce(&OnGotCookies, std::move(cookie_manager_remote)));
 }
 
 // The default SafeBrowsingServiceFactory.  Global, made a singleton so we

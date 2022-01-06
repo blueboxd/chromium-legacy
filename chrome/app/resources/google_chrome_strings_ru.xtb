@@ -48,7 +48,6 @@
 <translation id="2123055963409958220">Отправьте отчет о <ph name="BEGIN_LINK" />текущих настройках Chrome<ph name="END_LINK" />, чтобы помочь нам улучшить браузер</translation>
 <translation id="2151406531797534936">Перезапустите Chrome</translation>
 <translation id="2189289170880510015">Настройте самые важные параметры конфиденциальности Chrome</translation>
-<translation id="2246246234298806438">Если отсутствует встроенный просмотрщик PDF, предварительный просмотр в Google Chrome невозможен.</translation>
 <translation id="2290014774651636340">Отсутствуют ключи API Google. Некоторые функции Google Chrome могут не работать.</translation>
 <translation id="2290095356545025170">Вы действительно хотите удалить Google Chrome?</translation>
 <translation id="2309047409763057870">Это дополнительная установка Google Chrome. Его нельзя сделать браузером по умолчанию.</translation>
@@ -59,7 +58,6 @@
 <translation id="2429317896000329049">Google Chrome не удалось синхронизировать данные, поскольку служба Sync недоступна для вашего домена.</translation>
 <translation id="2467438592969358367">Чтобы экспортировать пароли из Google Chrome, введите пароль своего аккаунта Windows.</translation>
 <translation id="2485422356828889247">Удалить</translation>
-<translation id="2518751521812750372">Когда вы закрываете Chrome, браузер автоматически удаляет файлы cookie и данные тех сайтов, которые вы посетили.</translation>
 <translation id="2534507159460261402">Google Pay (скопирована в Chrome)</translation>
 <translation id="2574930892358684005">Пользователь <ph name="EXISTING_USER" /> уже вошел в этот профиль Chrome. Вы можете создать свой профиль, чтобы использовать браузер Chrome отдельно.</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
@@ -88,6 +86,7 @@
 <translation id="3037838751736561277">Google Chrome работает в фоновом режиме</translation>
 <translation id="3059710691562604940">Безопасный просмотр отключен. Chrome рекомендует включить его.</translation>
 <translation id="3065168410429928842">Вкладка Chrome</translation>
+<translation id="3069821012350118710">Ваши данные сохраняются на посещенных сайтах, пока вы не закроете браузер Chrome.</translation>
 <translation id="3080151273017101988">Не отключать работающие в фоновом режиме сервисы при закрытии браузера</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
 <translation id="3100998948628680988">Введите название профиля Chrome</translation>
@@ -98,6 +97,7 @@
 <translation id="3379938682270551431">{0,plural, =0{Chrome перезапускается}=1{Chrome перезапустится через 1 секунду}one{Chrome перезапустится через # секунду}few{Chrome перезапустится через # секунды}many{Chrome перезапустится через # секунд}other{Chrome перезапустится через # секунды}}</translation>
 <translation id="3395323229510056640">Справка Chrome OS</translation>
 <translation id="3396977131400919238">При установке произошла ошибка операционной системы. Скачайте Google Chrome снова.</translation>
+<translation id="3428747202529429621">Защищает вас в браузере Chrome и может использоваться для повышения безопасности в других приложениях Google при входе в аккаунт</translation>
 <translation id="3434246496373299699">Chrome сможет проверить ваши пароли, когда вы войдете в аккаунт Google.</translation>
 <translation id="3451115285585441894">Установка...</translation>
 <translation id="345171907106878721">Добавить пользователя Chrome</translation>
@@ -187,6 +187,7 @@
 <translation id="5804318322022881572">Не удалось запустить Chrome. Повторите попытку.</translation>
 <translation id="5867197326698922595">Google Chrome пытается изменить пароли</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
+<translation id="5901850848447342934">Когда вы закроете Chrome, вы <ph name="BEGIN_BOLD" />выйдете с большинства сайтов<ph name="END_BOLD" />. Если синхронизация отключена, вы также <ph name="BEGIN_BOLD" />выйдете из сервисов Google и браузера Chrome<ph name="END_BOLD" />.</translation>
 <translation id="5903106910045431592">"<ph name="PAGE_TITLE" />" – вход в сеть</translation>
 <translation id="5940385492829620908">Все веб-страницы, закладки и другие данные Chrome можно найти здесь.</translation>
 <translation id="5941830788786076944">Назначить Google Chrome браузером по умолчанию</translation>
@@ -196,11 +197,11 @@
 <translation id="6145313976051292476">Открывать PDF-файлы в Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome (бета-версия)</translation>
-<translation id="61852838583753520">Обновить &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Разрешить в Google Chrome передачу входящего трафика по протоколу mDNS</translation>
 <translation id="6291089322031436445">Приложения Chrome для разработчиков</translation>
 <translation id="6291549208091401781">Google Chrome уже установлен для всех пользователей вашего компьютера</translation>
 <translation id="6368958679917195344">Своим появлением Chrome OS обязана дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6412673304250309937">Сверяет URL со списком небезопасных сайтов в Chrome. Кроме того, если вы скачаете вредоносный файл или сайт попытается похитить ваш пароль, Chrome может отправить URL с образцами контента на проверку с помощью Безопасного просмотра.</translation>
 <translation id="6418662306461808273">Переключиться на существующий профиль Chrome?</translation>
 <translation id="6506909944137591434">Для создания 3D-карты места, в котором вы находитесь, браузеру Chrome требуется доступ к камере.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome для разработчиков</translation>
@@ -277,11 +278,11 @@
 <translation id="8614913330719544658">Google Chrome не отвечает. Перезапустить сейчас?</translation>
 <translation id="861702415419836452">Chrome запрашивает доступ к камере, чтобы создать 3D-карту места, в котором вы находитесь.</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome перезапустится через 1 минуту}one{Chrome перезапустится через # минуту}few{Chrome перезапустится через # минуты}many{Chrome перезапустится через # минут}other{Chrome перезапустится через # минуты}}</translation>
+<translation id="8629311577791198377">Когда вы закроете все окна браузера Chrome, файлы cookie и данные сайтов будут автоматически удалены.</translation>
 <translation id="8641606876632989680">Вы получите уведомление от Chrome, если войдете в аккаунт с паролем, который был раскрыт.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Кроме того, расширение изменило стартовую страницу Chrome.</translation>
 <translation id="8686817260976772516">Профили Chrome нужны для раздельного использования браузера, например разными людьми или в разных целях.</translation>
-<translation id="870251953148363156">Обновить &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome не удалось определить или задать браузер по умолчанию</translation>
 <translation id="8823341990149967727">Версия Chrome устарела</translation>
 <translation id="8834965163890861871">Google Chrome пытается изменить пароли. Чтобы разрешить это действие, введите свой пароль Windows.</translation>

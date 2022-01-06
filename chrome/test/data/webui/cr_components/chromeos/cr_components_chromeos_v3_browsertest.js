@@ -19,12 +19,21 @@ GEN('#include "content/public/test/browser_test.h"');
     'DeviceSelectionPage',
     'bluetooth/bluetooth_pairing_device_selection_page_test.js'
   ],
+  [
+    'PairingConfirmCode',
+    'bluetooth/bluetooth_pairing_confirm_code_page_test.js'
+  ],
   ['PairingDeviceItem', 'bluetooth/bluetooth_pairing_device_item_test.js'],
   [
     'PairingRequestCodePage',
     'bluetooth/bluetooth_pairing_request_code_page_test.js'
   ],
+  [
+    'PairingEnterCodePage',
+    'bluetooth/bluetooth_pairing_enter_code_page_test.js'
+  ],
   ['PairingUi', 'bluetooth/bluetooth_pairing_ui_test.js'],
+  ['SpinnerPage', 'bluetooth/bluetooth_spinner_page_test.js'],
  ].forEach(test => registerTest('Bluetooth', 'bluetooth-pairing', ...test));
 
 [['CrPolicyNetworkBehaviorMojo', 'network/cr_policy_network_behavior_mojo_tests.m.js'],
@@ -54,6 +63,9 @@ GEN('#include "content/public/test/browser_test.h"');
 [['NetworkDiagnostics', 'network_health/network_diagnostics_test.js'],
  ['RoutineGroup', 'network_health/routine_group_test.js'],
 ].forEach(test => registerTest('NetworkHealth', 'connectivity-diagnostics', ...test));
+
+[['TrafficCounters', 'traffic_counters/traffic_counters_test.js'],
+].forEach(test => registerTest('TrafficCounters', 'network', ...test));
 
 [
  ['Integration', 'multidevice_setup/integration_test.m.js'],

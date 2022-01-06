@@ -12,7 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -29,11 +29,11 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using captive_portal::CaptivePortalDetector;
-
-namespace chromeos {
+namespace ash {
 
 namespace {
+
+using ::captive_portal::CaptivePortalDetector;
 
 // Delay before portal detection caused by changes in proxy settings.
 constexpr int kProxyChangeDelaySec = 1;
@@ -362,7 +362,6 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
   attempt_timeout_.Cancel();
 
   CaptivePortalStatus status = CAPTIVE_PORTAL_STATUS_UNKNOWN;
-  bool no_response_since_portal = false;
   switch (result) {
     case captive_portal::RESULT_NO_RESPONSE:
       if (response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
@@ -370,7 +369,6 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
       } else if (network && network->IsShillCaptivePortal()) {
         // Take into account shill's detection results.
         status = CAPTIVE_PORTAL_STATUS_PORTAL;
-        no_response_since_portal = true;
       } else {
         status = CAPTIVE_PORTAL_STATUS_OFFLINE;
       }
@@ -471,4 +469,4 @@ void NetworkPortalDetectorImpl::ResetStrategyAndCounters() {
   strategy_->Reset();
 }
 
-}  // namespace chromeos
+}  // namespace ash

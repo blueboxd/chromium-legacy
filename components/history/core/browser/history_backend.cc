@@ -27,10 +27,10 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -570,7 +570,7 @@ OriginCountAndLastVisitMap HistoryBackend::GetCountsAndLastVisitForOrigins(
 
   URLRow row;
   while (it.GetNextURL(&row)) {
-    GURL origin = row.url().GetOrigin();
+    GURL origin = row.url().DeprecatedGetOriginAsURL();
     auto iter = origin_count_map.find(origin);
     if (iter != origin_count_map.end()) {
       std::pair<int, base::Time>& value = iter->second;
@@ -1454,7 +1454,8 @@ void HistoryBackend::AddContextAnnotationsForVisit(
 }
 
 std::vector<AnnotatedVisit> HistoryBackend::GetAnnotatedVisits(
-    const QueryOptions& options) {
+    const QueryOptions& options,
+    bool* limited_by_max_count) {
   // Gets `VisitVector` matching `options`, then for each visit, gets the
   // associated `URLRow`, `VisitContextAnnotations`, and
   // `VisitContentAnnotations`.
@@ -1468,8 +1469,13 @@ std::vector<AnnotatedVisit> HistoryBackend::GetAnnotatedVisits(
   //  two, while somehow still avoiding fetching unnecessary fields, such as
   //  `VisitContextAnnotations`. Probably we need to expand `QueryOptions`.
   VisitVector visit_rows;
-  // Ignore the return value, as we don't care if we have more visits.
-  db_->GetVisibleVisitsInRange(options, &visit_rows);
+
+  // Set the optional out-param if it's non-nullptr.
+  bool limited = db_->GetVisibleVisitsInRange(options, &visit_rows);
+  if (limited_by_max_count) {
+    *limited_by_max_count = limited;
+  }
+
   DCHECK_LE(static_cast<int>(visit_rows.size()), options.EffectiveMaxCount());
 
   VisitSourceMap sources;
@@ -2553,7 +2559,7 @@ void HistoryBackend::NotifyURLsModified(const URLRows& changed_urls,
 void HistoryBackend::NotifyURLsDeleted(DeletionInfo deletion_info) {
   std::set<GURL> origins;
   for (const history::URLRow& row : deletion_info.deleted_rows())
-    origins.insert(row.url().GetOrigin());
+    origins.insert(row.url().DeprecatedGetOriginAsURL());
 
   deletion_info.set_deleted_urls_origin_map(
       GetCountsAndLastVisitForOrigins(origins));

@@ -4,6 +4,7 @@
 
 #include "media/gpu/v4l2/test/vp9_decoder.h"
 
+#include <linux/media/vp9-ctrls.h>
 #include <sys/ioctl.h>
 
 #include "base/files/memory_mapped_file.h"
@@ -11,10 +12,115 @@
 #include "base/memory/ptr_util.h"
 #include "media/filters/ivf_parser.h"
 #include "media/filters/vp9_parser.h"
+#include "media/gpu/macros.h"
 
 namespace media {
 
 namespace v4l2_test {
+
+#define SET_IF(bit_field, cond, mask) (bit_field) |= ((cond) ? (mask) : 0)
+
+inline void conditionally_set_flag(
+    struct v4l2_ctrl_vp9_frame_decode_params& params,
+    bool condition,
+    enum v4l2_vp9_frame_flags flag) {
+  params.flags |= condition ? flag : 0;
+}
+
+void FillV4L2VP9QuantizationParams(
+    const Vp9QuantizationParams& vp9_quant_params,
+    struct v4l2_vp9_quantization* v4l2_quant) {
+  v4l2_quant->base_q_idx =
+      base::checked_cast<__u8>(vp9_quant_params.base_q_idx);
+  v4l2_quant->delta_q_y_dc =
+      base::checked_cast<__s8>(vp9_quant_params.delta_q_y_dc);
+  v4l2_quant->delta_q_uv_dc =
+      base::checked_cast<__s8>(vp9_quant_params.delta_q_uv_dc);
+  v4l2_quant->delta_q_uv_ac =
+      base::checked_cast<__s8>(vp9_quant_params.delta_q_uv_ac);
+}
+
+void FillV4L2VP9MvProbsParams(const Vp9FrameContext& vp9_ctx,
+                              struct v4l2_vp9_mv_probabilities* v4l2_mv_probs) {
+  SafeArrayMemcpy(v4l2_mv_probs->joint, vp9_ctx.mv_joint_probs);
+  SafeArrayMemcpy(v4l2_mv_probs->sign, vp9_ctx.mv_sign_prob);
+  SafeArrayMemcpy(v4l2_mv_probs->class_, vp9_ctx.mv_class_probs);
+  SafeArrayMemcpy(v4l2_mv_probs->class0_bit, vp9_ctx.mv_class0_bit_prob);
+  SafeArrayMemcpy(v4l2_mv_probs->bits, vp9_ctx.mv_bits_prob);
+  SafeArrayMemcpy(v4l2_mv_probs->class0_fr, vp9_ctx.mv_class0_fr_probs);
+  SafeArrayMemcpy(v4l2_mv_probs->fr, vp9_ctx.mv_fr_probs);
+  SafeArrayMemcpy(v4l2_mv_probs->class0_hp, vp9_ctx.mv_class0_hp_prob);
+  SafeArrayMemcpy(v4l2_mv_probs->hp, vp9_ctx.mv_hp_prob);
+}
+
+void FillV4L2VP9ProbsParams(const Vp9FrameContext& vp9_ctx,
+                            struct v4l2_vp9_probabilities* v4l2_probs) {
+  SafeArrayMemcpy(v4l2_probs->tx8, vp9_ctx.tx_probs_8x8);
+  SafeArrayMemcpy(v4l2_probs->tx16, vp9_ctx.tx_probs_16x16);
+  SafeArrayMemcpy(v4l2_probs->tx32, vp9_ctx.tx_probs_32x32);
+  SafeArrayMemcpy(v4l2_probs->coef, vp9_ctx.coef_probs);
+  SafeArrayMemcpy(v4l2_probs->skip, vp9_ctx.skip_prob);
+  SafeArrayMemcpy(v4l2_probs->inter_mode, vp9_ctx.inter_mode_probs);
+  SafeArrayMemcpy(v4l2_probs->interp_filter, vp9_ctx.interp_filter_probs);
+  SafeArrayMemcpy(v4l2_probs->is_inter, vp9_ctx.is_inter_prob);
+  SafeArrayMemcpy(v4l2_probs->comp_mode, vp9_ctx.comp_mode_prob);
+  SafeArrayMemcpy(v4l2_probs->single_ref, vp9_ctx.single_ref_prob);
+  SafeArrayMemcpy(v4l2_probs->comp_ref, vp9_ctx.comp_ref_prob);
+  SafeArrayMemcpy(v4l2_probs->y_mode, vp9_ctx.y_mode_probs);
+  SafeArrayMemcpy(v4l2_probs->uv_mode, vp9_ctx.uv_mode_probs);
+  SafeArrayMemcpy(v4l2_probs->partition, vp9_ctx.partition_probs);
+
+  FillV4L2VP9MvProbsParams(vp9_ctx, &v4l2_probs->mv);
+}
+
+void FillV4L2VP9LoopFilterParams(const Vp9LoopFilterParams& vp9_lf_params,
+                                 struct v4l2_vp9_loop_filter* v4l2_lf) {
+  SET_IF(v4l2_lf->flags, vp9_lf_params.delta_enabled,
+         V4L2_VP9_LOOP_FILTER_FLAG_DELTA_ENABLED);
+
+  SET_IF(v4l2_lf->flags, vp9_lf_params.delta_update,
+         V4L2_VP9_LOOP_FILTER_FLAG_DELTA_UPDATE);
+
+  v4l2_lf->level = vp9_lf_params.level;
+  v4l2_lf->sharpness = vp9_lf_params.sharpness;
+  SafeArrayMemcpy(v4l2_lf->ref_deltas, vp9_lf_params.ref_deltas);
+  SafeArrayMemcpy(v4l2_lf->mode_deltas, vp9_lf_params.mode_deltas);
+  SafeArrayMemcpy(v4l2_lf->level_lookup, vp9_lf_params.lvl);
+}
+
+void FillV4L2VP9SegmentationParams(const Vp9SegmentationParams& vp9_seg_params,
+                                   struct v4l2_vp9_segmentation* v4l2_seg) {
+  SET_IF(v4l2_seg->flags, vp9_seg_params.enabled,
+         V4L2_VP9_SEGMENTATION_FLAG_ENABLED);
+  SET_IF(v4l2_seg->flags, vp9_seg_params.update_map,
+         V4L2_VP9_SEGMENTATION_FLAG_UPDATE_MAP);
+  SET_IF(v4l2_seg->flags, vp9_seg_params.temporal_update,
+         V4L2_VP9_SEGMENTATION_FLAG_TEMPORAL_UPDATE);
+  SET_IF(v4l2_seg->flags, vp9_seg_params.update_data,
+         V4L2_VP9_SEGMENTATION_FLAG_UPDATE_DATA);
+  SET_IF(v4l2_seg->flags, vp9_seg_params.abs_or_delta_update,
+         V4L2_VP9_SEGMENTATION_FLAG_ABS_OR_DELTA_UPDATE);
+
+  SafeArrayMemcpy(v4l2_seg->tree_probs, vp9_seg_params.tree_probs);
+  SafeArrayMemcpy(v4l2_seg->pred_probs, vp9_seg_params.pred_probs);
+
+  static_assert(static_cast<size_t>(Vp9SegmentationParams::SEG_LVL_MAX) ==
+                    static_cast<size_t>(V4L2_VP9_SEGMENT_FEATURE_CNT),
+                "mismatch in number of segmentation features");
+
+  for (size_t j = 0;
+       j < std::extent<decltype(vp9_seg_params.feature_enabled), 0>::value;
+       j++) {
+    for (size_t i = 0;
+         i < std::extent<decltype(vp9_seg_params.feature_enabled), 1>::value;
+         i++) {
+      if (vp9_seg_params.feature_enabled[j][i])
+        v4l2_seg->feature_enabled[j] |= V4L2_VP9_SEGMENT_FEATURE_ENABLED(i);
+    }
+  }
+
+  SafeArrayMemcpy(v4l2_seg->feature_data, vp9_seg_params.feature_data);
+}
 
 Vp9Decoder::Vp9Decoder(std::unique_ptr<IvfParser> ivf_parser,
                        std::unique_ptr<V4L2IoctlShim> v4l2_ioctl,
@@ -125,15 +231,13 @@ bool Vp9Decoder::Initialize() {
   return true;
 }
 
-Vp9Parser::Result Vp9Decoder::ReadNextFrame(Vp9FrameHeader* vp9_frame_header,
+Vp9Parser::Result Vp9Decoder::ReadNextFrame(Vp9FrameHeader& vp9_frame_header,
                                             gfx::Size& size) {
-  DCHECK(vp9_frame_header);
-
   // TODO(jchinlee): reexamine this loop for cleanup.
   while (true) {
     std::unique_ptr<DecryptConfig> null_config;
     Vp9Parser::Result res =
-        vp9_parser_->ParseNextFrame(vp9_frame_header, &size, &null_config);
+        vp9_parser_->ParseNextFrame(&vp9_frame_header, &size, &null_config);
     if (res == Vp9Parser::kEOStream) {
       IvfFrameHeader ivf_frame_header{};
       const uint8_t* ivf_frame_data;
@@ -148,6 +252,109 @@ Vp9Parser::Result Vp9Decoder::ReadNextFrame(Vp9FrameHeader* vp9_frame_header,
 
     return res;
   }
+}
+
+Vp9Decoder::Result Vp9Decoder::DecodeNextFrame() {
+  gfx::Size size;
+  Vp9FrameHeader frame_hdr{};
+
+  Vp9Parser::Result parser_res = ReadNextFrame(frame_hdr, size);
+  switch (parser_res) {
+    case Vp9Parser::kInvalidStream:
+      LOG_ASSERT(false) << "Failed to parse frame";
+      return Vp9Decoder::kError;
+    case Vp9Parser::kAwaitingRefresh:
+      LOG_ASSERT(false) << "Unsupported parser return value";
+      return Vp9Decoder::kError;
+    case Vp9Parser::kEOStream:
+      return Vp9Decoder::kEOStream;
+    case Vp9Parser::kOk:
+      break;
+  }
+
+  struct v4l2_ctrl_vp9_frame_decode_params v4l2_frame_params;
+  memset(&v4l2_frame_params, 0, sizeof(v4l2_frame_params));
+
+  conditionally_set_flag(v4l2_frame_params,
+                         frame_hdr.frame_type == Vp9FrameHeader::KEYFRAME,
+                         V4L2_VP9_FRAME_FLAG_KEY_FRAME);
+  conditionally_set_flag(v4l2_frame_params, frame_hdr.show_frame,
+                         V4L2_VP9_FRAME_FLAG_SHOW_FRAME);
+  conditionally_set_flag(v4l2_frame_params, frame_hdr.error_resilient_mode,
+                         V4L2_VP9_FRAME_FLAG_ERROR_RESILIENT);
+  conditionally_set_flag(v4l2_frame_params, frame_hdr.intra_only,
+                         V4L2_VP9_FRAME_FLAG_INTRA_ONLY);
+  conditionally_set_flag(v4l2_frame_params, frame_hdr.allow_high_precision_mv,
+                         V4L2_VP9_FRAME_FLAG_ALLOW_HIGH_PREC_MV);
+  conditionally_set_flag(v4l2_frame_params, frame_hdr.refresh_frame_context,
+                         V4L2_VP9_FRAME_FLAG_REFRESH_FRAME_CTX);
+  conditionally_set_flag(v4l2_frame_params,
+                         frame_hdr.frame_parallel_decoding_mode,
+                         V4L2_VP9_FRAME_FLAG_PARALLEL_DEC_MODE);
+  conditionally_set_flag(v4l2_frame_params, frame_hdr.subsampling_x,
+                         V4L2_VP9_FRAME_FLAG_X_SUBSAMPLING);
+  conditionally_set_flag(v4l2_frame_params, frame_hdr.subsampling_y,
+                         V4L2_VP9_FRAME_FLAG_Y_SUBSAMPLING);
+  conditionally_set_flag(v4l2_frame_params, frame_hdr.color_range,
+                         V4L2_VP9_FRAME_FLAG_COLOR_RANGE_FULL_SWING);
+
+  v4l2_frame_params.compressed_header_size = frame_hdr.header_size_in_bytes;
+  v4l2_frame_params.uncompressed_header_size =
+      frame_hdr.uncompressed_header_size;
+  v4l2_frame_params.profile = frame_hdr.profile;
+  // As per the VP9 specification:
+  switch (frame_hdr.reset_frame_context) {
+    // "0 or 1 implies don’t reset."
+    case 0:
+    case 1:
+      v4l2_frame_params.reset_frame_context = V4L2_VP9_RESET_FRAME_CTX_NONE;
+      break;
+    // "2 resets just the context specified in the frame header."
+    case 2:
+      v4l2_frame_params.reset_frame_context = V4L2_VP9_RESET_FRAME_CTX_SPEC;
+      break;
+    // "3 reset all contexts."
+    case 3:
+      v4l2_frame_params.reset_frame_context = V4L2_VP9_RESET_FRAME_CTX_ALL;
+      break;
+    default:
+      LOG(FATAL) << "Invalid reset frame context value!";
+      v4l2_frame_params.reset_frame_context = V4L2_VP9_RESET_FRAME_CTX_NONE;
+      break;
+  }
+  v4l2_frame_params.frame_context_idx =
+      frame_hdr.frame_context_idx_to_save_probs;
+  v4l2_frame_params.bit_depth = frame_hdr.bit_depth;
+  v4l2_frame_params.interpolation_filter = frame_hdr.interpolation_filter;
+  v4l2_frame_params.tile_cols_log2 = frame_hdr.tile_cols_log2;
+  v4l2_frame_params.tile_rows_log2 = frame_hdr.tile_rows_log2;
+  v4l2_frame_params.tx_mode = frame_hdr.compressed_header.tx_mode;
+  v4l2_frame_params.reference_mode = frame_hdr.compressed_header.reference_mode;
+  static_assert(VP9_FRAME_LAST + (V4L2_REF_ID_CNT - 1) <
+                    std::extent<decltype(frame_hdr.ref_frame_sign_bias)>::value,
+                "array sizes are incompatible");
+  for (size_t i = 0; i < V4L2_REF_ID_CNT; i++) {
+    v4l2_frame_params.ref_frame_sign_biases |=
+        (frame_hdr.ref_frame_sign_bias[i + VP9_FRAME_LAST] ? (1 << i) : 0);
+  }
+  v4l2_frame_params.frame_width_minus_1 = frame_hdr.frame_width - 1;
+  v4l2_frame_params.frame_height_minus_1 = frame_hdr.frame_height - 1;
+  v4l2_frame_params.render_width_minus_1 = frame_hdr.render_width - 1;
+  v4l2_frame_params.render_height_minus_1 = frame_hdr.render_height - 1;
+
+  // TODO(stevecho): fill in the rest of |v4l2_frame_params| fields.
+  FillV4L2VP9QuantizationParams(frame_hdr.quant_params,
+                                &v4l2_frame_params.quant);
+  FillV4L2VP9ProbsParams(frame_hdr.frame_context, &v4l2_frame_params.probs);
+
+  const Vp9Parser::Context& context = vp9_parser_->context();
+  const Vp9LoopFilterParams& lf_params = context.loop_filter();
+  const Vp9SegmentationParams& segm_params = context.segmentation();
+
+  FillV4L2VP9LoopFilterParams(lf_params, &v4l2_frame_params.lf);
+  FillV4L2VP9SegmentationParams(segm_params, &v4l2_frame_params.seg);
+
+  return Vp9Decoder::kOk;
 }
 
 }  // namespace v4l2_test

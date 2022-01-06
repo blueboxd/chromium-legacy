@@ -15,7 +15,7 @@
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
-#include "components/signin/public/identity_manager/consent_level.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "content/public/browser/notification_source.h"
@@ -99,7 +99,7 @@ void UserCloudPolicyTokenForwarder::OverrideTimeForTesting(
 void UserCloudPolicyTokenForwarder::StartRequest() {
   refresh_oauth_token_timer_->Stop();
   // TODO(mnissler): Once a better way to reconfirm whether a user is on the
-  // login whitelist is available there is no reason to fetch the OAuth2 token
+  // login allowlist is available there is no reason to fetch the OAuth2 token
   // for regular user here if the client is already registered. If it is not
   // recurring token fetch for child user check and bail out here.
   signin::ScopeSet scopes;

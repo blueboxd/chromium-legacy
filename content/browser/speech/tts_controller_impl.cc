@@ -21,6 +21,7 @@
 #include "build/chromeos_buildflags.h"
 #include "content/browser/speech/tts_utterance_impl.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/tts_utterance.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -64,7 +65,15 @@ TtsUtteranceImpl* AsUtteranceImpl(TtsUtterance* utterance) {
 // VoiceData
 //
 
-VoiceData::VoiceData() : remote(false), native(false) {}
+VoiceData::VoiceData()
+    : remote(false),
+      native(false)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      ,
+      from_crosapi(false)
+#endif
+{
+}
 
 VoiceData::VoiceData(const VoiceData& other) = default;
 
@@ -203,7 +212,8 @@ bool TtsControllerImpl::StopCurrentUtteranceIfMatches(const GURL& source_url) {
   paused_ = false;
 
   if (!source_url.is_empty() && current_utterance_ &&
-      current_utterance_->GetSrcUrl().GetOrigin() != source_url.GetOrigin())
+      current_utterance_->GetSrcUrl().DeprecatedGetOriginAsURL() !=
+          source_url.DeprecatedGetOriginAsURL())
     return false;
 
   if (engine_delegate_ && current_utterance_ &&
@@ -317,6 +327,24 @@ void TtsControllerImpl::OnTtsEvent(int utterance_id,
 void TtsControllerImpl::GetVoices(BrowserContext* browser_context,
                                   const GURL& source_url,
                                   std::vector<VoiceData>* out_voices) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (GetTtsPlatform()->PlatformImplSupported())
+    GetTtsPlatform()->GetVoicesForBrowserContext(browser_context, source_url,
+                                                 out_voices);
+  else
+    GetVoicesInternal(browser_context, source_url, out_voices);
+#else
+  GetVoicesInternal(browser_context, source_url, out_voices);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+}
+
+void TtsControllerImpl::GetVoicesInternal(BrowserContext* browser_context,
+                                          const GURL& source_url,
+                                          std::vector<VoiceData>* out_voices) {
+  // Initialize GetTtsPlatform first, so that engine_delegate_ can be set
+  // if necessary.
+  TtsPlatform* tts_platform = GetTtsPlatform();
+
   std::vector<VoiceData> engine_delegate_voices;
   if (browser_context && engine_delegate_ &&
       engine_delegate_->IsBuiltInTtsEngineInitialized(browser_context)) {
@@ -324,7 +352,6 @@ void TtsControllerImpl::GetVoices(BrowserContext* browser_context,
                                 &engine_delegate_voices);
   }
 
-  TtsPlatform* tts_platform = GetTtsPlatform();
   DCHECK(tts_platform);
   std::vector<VoiceData> platform_voices;
   // Ensure we have all built-in voices loaded. This is a no-op if already
@@ -349,6 +376,17 @@ void TtsControllerImpl::GetVoices(BrowserContext* browser_context,
                        std::make_move_iterator(engine_delegate_voices.end()));
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Append lacros voices after ash voices.
+  if (remote_engine_delegate_) {
+    std::vector<VoiceData> crosapi_voices;
+    remote_engine_delegate_->GetVoices(browser_context, &crosapi_voices);
+    out_voices->insert(out_voices->end(),
+                       std::make_move_iterator(crosapi_voices.begin()),
+                       std::make_move_iterator(crosapi_voices.end()));
+  }
+#endif
+
   if (!allow_remote_voices_) {
     auto it =
         std::remove_if(out_voices->begin(), out_voices->end(),
@@ -371,8 +409,15 @@ void TtsControllerImpl::VoicesChanged() {
   for (auto& delegate : voices_changed_delegates_)
     delegate.OnVoicesChanged();
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!GetTtsPlatform()->PlatformImplSupported()) {
+    if (!current_utterance_ && !utterance_list_.empty())
+      SpeakNextUtterance();
+  }
+#else
   if (!current_utterance_ && !utterance_list_.empty())
     SpeakNextUtterance();
+#endif
 }
 
 void TtsControllerImpl::AddVoicesChangedDelegate(
@@ -912,7 +957,15 @@ void TtsControllerImpl::SetTtsControllerDelegateForTesting(
     TtsControllerDelegate* delegate) {
   delegate_ = delegate;
 }
-
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+void TtsControllerImpl::SetRemoteTtsEngineDelegate(
+    RemoteTtsEngineDelegate* delegate) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  remote_engine_delegate_ = delegate;
+#else
+  NOTREACHED();
+#endif
+}
 
 }  // namespace content

@@ -154,8 +154,8 @@ DiceWebSigninInterceptor::GetHeuristicOutcome(
   // is mandatory, return `absl::nullopt` so that more information on the
   // account is fetched.
   if (!policy::BrowserPolicyConnector::IsNonEnterpriseUser(email) &&
-      profile_->GetPrefs()->HasPrefPath(
-          prefs::kManagedAccountsSigninRestriction)) {
+      signin_util::ProfileSeparationEnforcedByPolicy(
+          profile_, /*account_level_policy_value=*/std::string())) {
     return absl::nullopt;
   }
 
@@ -357,8 +357,11 @@ bool DiceWebSigninInterceptor::ShouldEnforceEnterpriseProfileSeparation(
     const AccountInfo& intercepted_account_info) const {
   DCHECK(intercepted_account_info.IsValid());
 
-  if (!signin_util::ProfileSeparationEnforcedByPolicy(profile_))
+  if (!signin_util::ProfileSeparationEnforcedByPolicy(
+          profile_,
+          /*account_level_policy_value=*/std::string())) {
     return false;
+  }
   if (new_account_interception_)
     return intercepted_account_info.IsManaged();
 
@@ -444,18 +447,7 @@ void DiceWebSigninInterceptor::OnExtendedAccountInfoUpdated(
            !profile_->GetPrefs()
                 ->GetString(prefs::kManagedAccountsSigninRestriction)
                 .empty());
-    // In case of a reauth of an account that already had sync enabled,
-    // the user already accepted to use a managed profile. Simply update that
-    // fact.
-    if (!new_account_interception_ &&
-        identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSync) ==
-            info.account_id) {
-      chrome::enterprise_util::SetUserAcceptedAccountManagement(profile_, true);
-      RecordSigninInterceptionHeuristicOutcome(
-          SigninInterceptionHeuristicOutcome::kAbortAccountNotNew);
-      Reset();
-      return;
-    }
+
     if (switch_to_entry) {
       interception_type = SigninInterceptionType::kProfileSwitchForced;
       RecordSigninInterceptionHeuristicOutcome(
@@ -632,7 +624,6 @@ void DiceWebSigninInterceptor::OnEnterpriseProfileCreationResult(
             account_info.account_id) {
       chrome::enterprise_util::SetUserAcceptedAccountManagement(
           profile_, intercepted_account_management_accepted_);
-      Reset();
     } else {
       OnProfileCreationChoice(account_info, profile_color,
                               SigninInterceptionResult::kAccepted);
@@ -649,7 +640,9 @@ void DiceWebSigninInterceptor::OnEnterpriseProfileCreationResult(
             kDiceTurnOnSyncHelper_Abort);
   }
   signin_util::RecordEnterpriseProfileCreationUserChoice(
-      profile_, create == SigninInterceptionResult::kAccepted);
+      /*enforced_by_policy=*/signin_util::ProfileSeparationEnforcedByPolicy(
+          profile_, /*account_level_policy_value=*/std::string()),
+      /*created=*/create == SigninInterceptionResult::kAccepted);
 }
 
 void DiceWebSigninInterceptor::OnNewBrowserCreated(bool is_new_profile) {

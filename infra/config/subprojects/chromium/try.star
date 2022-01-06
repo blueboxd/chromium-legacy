@@ -17,7 +17,6 @@ try_.defaults.set(
             path = "win_toolchain",
         ),
     ],
-    configure_kitchen = True,
     cores = 8,
     cpu = cpu.X86_64,
     cq_group = "cq",
@@ -31,7 +30,6 @@ try_.defaults.set(
     pool = "luci.chromium.try",
     service_account = "chromium-try-builder@chops-service-accounts.iam.gserviceaccount.com",
     subproject_list_view = "luci.chromium.try",
-    swarming_tags = ["vpython:native-python-wrapper"],
     task_template_canary_percentage = 5,
 )
 
@@ -305,6 +303,9 @@ try_.chromium_android_builder(
     name = "android-binary-size",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
+    # TODO (kimstephanie): Change to cores = 16 and ssd = True once bots have
+    # landed
+    cores = "8|16",
     executable = "recipe:binary_size_trybot",
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
@@ -401,7 +402,9 @@ try_.chromium_android_builder(
     name = "android-marshmallow-x86-rel",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
-    cores = 16,
+    # TODO(crbug.com/1251739): Go back to targeting one core amount after
+    # collecting experiment results.
+    cores = "16|32",
     goma_jobs = goma.jobs.J300,
     ssd = True,
     use_java_coverage = True,
@@ -693,11 +696,6 @@ try_.chromium_angle_builder(
 )
 
 try_.chromium_angle_builder(
-    name = "android_angle_deqp_rel_ng",
-    os = os.LINUX_BIONIC_REMOVE,
-)
-
-try_.chromium_angle_builder(
     name = "android_angle_rel_ng",
     os = os.LINUX_BIONIC_REMOVE,
 )
@@ -722,11 +720,6 @@ try_.chromium_angle_builder(
     name = "linux-angle-chromium-try",
     os = os.LINUX_BIONIC_REMOVE,
     executable = "recipe:angle_chromium_trybot",
-)
-
-try_.chromium_angle_builder(
-    name = "linux_angle_deqp_rel_ng",
-    os = os.LINUX_BIONIC_REMOVE,
 )
 
 try_.chromium_angle_builder(
@@ -760,12 +753,6 @@ try_.chromium_angle_builder(
     executable = "recipe:angle_chromium_trybot",
 )
 
-try_.chromium_angle_builder(
-    name = "win-angle-x86-try",
-    os = os.WINDOWS_ANY,
-    executable = "recipe:angle_chromium_trybot",
-)
-
 try_.chromium_chromiumos_builder(
     name = "chromeos-amd64-generic-cfi-thin-lto-rel",
 )
@@ -789,10 +776,6 @@ try_.chromium_chromiumos_builder(
     main_list_view = "try",
     os = os.LINUX_BIONIC_REMOVE,
     tryjob = try_.job(),
-)
-
-try_.chromium_chromiumos_builder(
-    name = "chromeos-amd64-generic-rel-dchecks",
 )
 
 try_.chromium_chromiumos_builder(
@@ -854,23 +837,27 @@ try_.chromium_chromiumos_builder(
     name = "linux-chromeos-inverse-fieldtrials-fyi-rel",
 )
 
-try_.chromium_chromiumos_builder(
+try_.chromium_chromiumos_orchestrator_pair(
     name = "linux-chromeos-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
-    builderless = not settings.is_main,
-    cores = 8,
-    goma_jobs = goma.jobs.J300,
     main_list_view = "try",
-    tryjob = try_.job(),
     use_clang_coverage = True,
-    os = os.LINUX_BIONIC_REMOVE,
     coverage_test_types = ["unit", "overall"],
+    orchestrator_cores = 2,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 32,
+    compilator_goma_jobs = goma.jobs.J300,
+    compilator_name = "linux-chromeos-rel-compilator",
 )
 
 try_.chromium_chromiumos_builder(
     name = "linux-chromeos-js-code-coverage",
     use_clang_coverage = True,
     use_javascript_coverage = True,
+)
+
+try_.chromium_chromiumos_builder(
+    name = "linux-lacros-dbg",
 )
 
 try_.chromium_chromiumos_builder(
@@ -1090,6 +1077,26 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = "fuchsia-binary-size",
+    branch_selector = branches.STANDARD_MILESTONE,
+    builderless = True,
+    executable = "recipe:binary_size_fuchsia_trybot",
+    properties = {
+        "$build/binary_size": {
+            "analyze_targets": [
+                "//fuchsia/release:fuchsia_sizes",
+            ],
+            "compile_targets": [
+                "fuchsia_sizes",
+            ],
+        },
+    },
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
+)
+
+try_.chromium_linux_builder(
     name = "fuchsia-arm64-cast",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
@@ -1246,6 +1253,10 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = "linux-headless-shell-rel",
+)
+
+try_.chromium_linux_builder(
     name = "linux-inverse-fieldtrials-fyi-rel",
 )
 
@@ -1279,14 +1290,6 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
-    name = "linux-ozone-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
-    builderless = not settings.is_main,
-    main_list_view = "try",
-    tryjob = try_.job(),
-)
-
-try_.chromium_linux_builder(
     name = "linux-perfetto-rel",
     tryjob = try_.job(
         experiment_percentage = 100,
@@ -1300,86 +1303,31 @@ try_.chromium_linux_builder(
     ),
 )
 
-try_.chromium_linux_builder(
+try_.chromium_linux_orchestrator_pair(
     name = "linux-rel",
     branch_selector = branches.STANDARD_MILESTONE,
-    builderless = not settings.is_main,
-    goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(),
+    orchestrator_cores = "2|4",
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 16,
+    compilator_goma_jobs = goma.jobs.J150,
+    compilator_name = "linux-rel-compilator",
 )
 
-try_.chromium_linux_builder(
-    name = "linux-rel-orchestrator",
-    builderless = False,
-    cores = 4,
-    executable = "recipe:chromium/orchestrator",
+try_.chromium_android_orchestrator_pair(
+    name = "android-marshmallow-x86-rel-orchestrator",
     main_list_view = "try",
-    use_clang_coverage = True,
+    use_java_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    properties = {
-        "$build/chromium_orchestrator": {
-            "compilator": "linux-rel-compilator",
-            "compilator_watcher_git_revision": compilator_watcher_git_revision,
-        },
-    },
-    service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
-    tryjob = try_.job(
+    orchestrator_cores = 4,
+    orchestrator_tryjob = try_.job(
         experiment_percentage = 10,
     ),
-)
-
-try_.chromium_linux_builder(
-    name = "linux-rel-compilator",
-    builderless = False,
-    cores = None,
-    executable = "recipe:chromium/compilator",
-    goma_jobs = goma.jobs.J150,
-    main_list_view = "try",
-    use_clang_coverage = True,
-    coverage_test_types = ["unit", "overall"],
-    properties = {
-        "orchestrator": {
-            "builder_name": "linux-rel-orchestrator",
-            "builder_group": "tryserver.chromium.linux",
-        },
-    },
-)
-
-try_.chromium_android_builder(
-    name = "android-marshmallow-x86-rel-orchestrator",
-    builderless = False,
-    cores = 4,
-    executable = "recipe:chromium/orchestrator",
-    main_list_view = "try",
-    use_java_coverage = True,
-    coverage_test_types = ["unit", "overall"],
-    properties = {
-        "$build/chromium_orchestrator": {
-            "compilator": "android-marshmallow-x86-rel-compilator",
-            "compilator_watcher_git_revision": compilator_watcher_git_revision,
-        },
-    },
-    service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
-)
-
-try_.chromium_android_builder(
-    name = "android-marshmallow-x86-rel-compilator",
-    builderless = False,
-    cores = 32,
-    executable = "recipe:chromium/compilator",
-    goma_jobs = goma.jobs.J300,
-    ssd = True,
-    use_java_coverage = True,
-    coverage_test_types = ["unit", "overall"],
-    properties = {
-        "orchestrator": {
-            "builder_name": "android-marshmallow-x86-rel-orchestrator",
-            "builder_group": "tryserver.chromium.android",
-        },
-    },
+    compilator_cores = 32,
+    compilator_goma_jobs = goma.jobs.J300,
+    compilator_name = "android-marshmallow-x86-rel-compilator",
 )
 
 try_.chromium_linux_builder(
@@ -1389,8 +1337,6 @@ try_.chromium_linux_builder(
     reclient_jobs = 150,
     goma_backend = None,
     reclient_instance = "rbe-chromium-gvisor-shadow",
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     tryjob = try_.job(
         experiment_percentage = 10,
     ),
@@ -1402,9 +1348,7 @@ try_.chromium_linux_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 1,
-    ),
+    tryjob = try_.job(),
 )
 
 try_.chromium_linux_builder(
@@ -1447,13 +1391,15 @@ try_.chromium_linux_builder(
     name = "linux_chromium_archive_rel_ng",
 )
 
-try_.chromium_linux_builder(
+try_.chromium_linux_orchestrator_pair(
     name = "linux_chromium_asan_rel_ng",
     branch_selector = branches.STANDARD_MILESTONE,
-    goma_jobs = goma.jobs.J150,
-    ssd = True,
     main_list_view = "try",
-    tryjob = try_.job(),
+    orchestrator_cores = 2,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 16,
+    compilator_goma_jobs = goma.jobs.J150,
+    compilator_name = "linux_chromium_asan_rel_ng-compilator",
 )
 
 try_.chromium_linux_builder(
@@ -1541,13 +1487,15 @@ try_.chromium_linux_builder(
     goma_jobs = goma.jobs.J150,
 )
 
-try_.chromium_linux_builder(
+try_.chromium_linux_orchestrator_pair(
     name = "linux_chromium_tsan_rel_ng",
     branch_selector = branches.STANDARD_MILESTONE,
-    builderless = not settings.is_main,
-    goma_jobs = goma.jobs.J150,
     main_list_view = "try",
-    tryjob = try_.job(),
+    orchestrator_cores = 2,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 16,
+    compilator_goma_jobs = goma.jobs.J150,
+    compilator_name = "linux_chromium_tsan_rel_ng-compilator",
 )
 
 try_.chromium_linux_builder(
@@ -1665,6 +1613,39 @@ try_.chromium_mac_builder(
 )
 
 try_.chromium_mac_builder(
+    name = "mac-rel-orchestrator",
+    builderless = False,
+    cores = 2,
+    executable = "recipe:chromium/orchestrator",
+    use_clang_coverage = True,
+    main_list_view = "try",
+    os = os.LINUX_BIONIC,
+    ssd = None,
+    properties = {
+        "$build/chromium_orchestrator": {
+            "compilator": "mac-rel-compilator",
+            "compilator_watcher_git_revision": compilator_watcher_git_revision,
+        },
+    },
+    service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
+)
+
+try_.chromium_mac_builder(
+    name = "mac-rel-compilator",
+    builderless = False,
+    cores = 24,
+    executable = "recipe:chromium/compilator",
+    goma_jobs = goma.jobs.J150,
+    use_clang_coverage = True,
+    properties = {
+        "orchestrator": {
+            "builder_name": "mac-rel-orchestrator",
+            "builder_group": "tryserver.chromium.mac",
+        },
+    },
+)
+
+try_.chromium_mac_builder(
     name = "mac11-arm64-rel",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     goma_jobs = goma.jobs.J150,
@@ -1758,6 +1739,7 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = "ios-simulator-cronet",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -1774,6 +1756,7 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = "ios-simulator-full-configs",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
@@ -1796,6 +1779,11 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = "ios-simulator-noncq",
     xcode = xcode.x13main,
+    tryjob = try_.job(
+        location_regexp = [
+            ".+/[+]/third_party/crashpad/crashpad/.+",
+        ],
+    ),
 )
 
 try_.chromium_mac_ios_builder(
@@ -1956,55 +1944,17 @@ try_.chromium_win_builder(
     os = os.WINDOWS_10,
 )
 
-try_.chromium_win_builder(
+try_.chromium_win_orchestrator_pair(
     name = "win10_chromium_x64_rel_ng",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    goma_jobs = goma.jobs.J300,
-    os = os.WINDOWS_10,
-    cores = 16,
-    ssd = True,
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
-    tryjob = try_.job(),
-)
-
-try_.chromium_win_builder(
-    name = "win10-rel-orchestrator",
-    builderless = False,
-    cores = None,
-    os = os.LINUX_BIONIC,
-    executable = "recipe:chromium/orchestrator",
-    use_clang_coverage = True,
-    coverage_test_types = ["unit", "overall"],
-    properties = {
-        "$build/chromium_orchestrator": {
-            "compilator": "win10-rel-compilator",
-            "compilator_watcher_git_revision": compilator_watcher_git_revision,
-        },
-    },
-    service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
-    tryjob = try_.job(
-        experiment_percentage = 15,
-    ),
-)
-
-try_.chromium_win_builder(
-    name = "win10-rel-compilator",
-    builderless = False,
-    os = os.WINDOWS_10,
-    cores = None,
-    ssd = True,
-    goma_jobs = goma.jobs.J300,
-    executable = "recipe:chromium/compilator",
-    use_clang_coverage = True,
-    coverage_test_types = ["unit", "overall"],
-    properties = {
-        "orchestrator": {
-            "builder_name": "win10-rel-orchestrator",
-            "builder_group": "tryserver.chromium.win",
-        },
-    },
+    orchestrator_cores = 4,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 32,
+    compilator_goma_jobs = goma.jobs.J300,
+    compilator_name = "win10_chromium_x64_rel_ng-compilator",
 )
 
 try_.chromium_win_builder(
@@ -2186,6 +2136,28 @@ try_.gpu_chromium_win_builder(
     ),
 )
 
+try_.chromium_linux_builder(
+    name = "linux-stable-filter-rel",
+    builderless = False,
+    goma_jobs = goma.jobs.J150,
+    use_clang_coverage = True,
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
+    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+)
+
+try_.chromium_linux_builder(
+    name = "linux-stable-filter-combined-rel",
+    builderless = False,
+    goma_jobs = goma.jobs.J150,
+    use_clang_coverage = True,
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
+    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+)
+
 # RTS builders (https://crbug.com/1203048)
 try_.chromium_linux_builder(
     name = "linux-rel-rts",
@@ -2248,6 +2220,10 @@ try_.chromium_mac_ios_builder(
 try_.infra_builder(
     name = "linux-bootstrap",
     bootstrap = True,
+    mirrors = [
+        "ci/linux-bootstrap",
+        "ci/linux-bootstrap-tests",
+    ],
 )
 
 try_.infra_builder(
@@ -2397,6 +2373,10 @@ chrome_internal_verifier(
 
 chrome_internal_verifier(
     builder = "lacros-arm-generic-chrome",
+)
+
+chrome_internal_verifier(
+    builder = "lacros-arm-generic-chrome-skylab",
 )
 
 chrome_internal_verifier(

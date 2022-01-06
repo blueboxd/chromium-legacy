@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -131,10 +132,10 @@ Node* GetClosestNodeForLayoutObject(const LayoutObject* layout_object) {
 
 // Return true if display locked or inside slot recalc, false otherwise.
 // Also returns false if not a safe time to perform the check.
-bool IsDisplayLocked(const Node* node) {
+bool IsDisplayLocked(const Node* node, bool inclusive = false) {
   if (!node)
     return false;
-  // The LockedAncestorPreventingPaint() function will attempt to do
+  // The IsDisplayLockedPreventingPaint() function may attempt to do
   // a flat tree traversal of ancestors. If we're in a flat tree traversal
   // forbidden scope, return false. Additionally, flat tree traversal
   // might call AssignedSlot, so if we're in a slot assignment recalc
@@ -145,7 +146,18 @@ bool IsDisplayLocked(const Node* node) {
           .HasPendingSlotAssignmentRecalc()) {
     return false;  // Cannot safely perform this check now.
   }
-  return DisplayLockUtilities::LockedAncestorPreventingPaint(*node);
+  return DisplayLockUtilities::IsDisplayLockedPreventingPaint(node, inclusive);
+}
+
+bool IsDisplayLocked(const LayoutObject* object) {
+  bool inclusive = false;
+  while (object) {
+    if (const auto* node = object->GetNode())
+      return IsDisplayLocked(node, inclusive);
+    inclusive = true;
+    object = object->Parent();
+  }
+  return false;
 }
 
 bool IsActive(Document& document) {
@@ -346,11 +358,23 @@ bool IsShadowContentRelevantForAccessibility(const Node* node) {
   // https://chromium-review.googlesource.com/c/chromium/src/+/2965317
   // For some reason the iframe tests hang, waiting for content to change. In
   // other words, returning true here causes some tree updates not to occur.
-  return node->GetDocument().IsFlatTreeTraversalForbidden() ||
-         node->GetDocument()
-             .GetSlotAssignmentEngine()
-             .HasPendingSlotAssignmentRecalc() ||
-         LayoutTreeBuilderTraversal::FirstChild(*slot_element);
+  if (node->GetDocument().IsFlatTreeTraversalForbidden() ||
+      node->GetDocument()
+          .GetSlotAssignmentEngine()
+          .HasPendingSlotAssignmentRecalc()) {
+    return true;
+  }
+
+  // If the slot element's host is an <object> with any descendant nodes
+  // (including whitespace), LayoutTreeBuilderTraversal::FirstChild will
+  // return a node. We should only treat that node as slot content if it is
+  // being used as fallback content.
+  if (const HTMLObjectElement* object_element =
+          DynamicTo<HTMLObjectElement>(node->OwnerShadowHost())) {
+    return object_element->UseFallbackContent();
+  }
+
+  return LayoutTreeBuilderTraversal::FirstChild(*slot_element);
 }
 
 bool IsLayoutObjectRelevantForAccessibility(const LayoutObject& layout_object) {
@@ -436,7 +460,7 @@ bool IsNodeRelevantForAccessibility(const Node* node,
     // Layout has more info available to determine if whitespace is relevant.
     // If display-locked, layout object may be missing or stale:
     // Assume that all display-locked text nodes are relevant.
-    if (DisplayLockUtilities::LockedInclusiveAncestorPreventingLayout(*node))
+    if (IsDisplayLocked(node))
       return true;
 
     // If rendered, decision is from IsLayoutObjectRelevantForAccessibility().
@@ -448,6 +472,12 @@ bool IsNodeRelevantForAccessibility(const Node* node,
       DCHECK(node->IsInShadowTree());
       return false;
     }
+
+    // Children of an <iframe> tag will always be replaced by a new Document,
+    // either loaded from the iframe src or empty. In fact, we don't even parse
+    // them and they are treated like one text node. Consider irrelevant.
+    if (IsA<HTMLIFrameElement>(node->parentElement()))
+      return false;
 
     // If unrendered and in <canvas>, consider even whitespace relevant.
     // TODO(aleventhal) Consider including all text, even unrendered whitespace,
@@ -487,8 +517,7 @@ bool IsNodeRelevantForAccessibility(const Node* node,
   // When there is a layout object, the element is known to be visible, so
   // consider it relevant and return early. Checking the layout object is only
   // useful when display locking (content-visibility) is not used.
-  if (node->GetLayoutObject() &&
-      !DisplayLockUtilities::LockedInclusiveAncestorPreventingLayout(*node)) {
+  if (node->GetLayoutObject() && !IsDisplayLocked(node, true)) {
     return true;
   }
 
@@ -497,8 +526,7 @@ bool IsNodeRelevantForAccessibility(const Node* node,
   if (IsA<HTMLTitleElement>(node))
     return false;
 
-  // The node is either hidden or display locked:
-  // Do not consider <head>/<style>/<script> relevant in these cases.
+  // Do not consider <head>/<style>/<script> relevant.
   if (IsA<HTMLHeadElement>(node))
     return false;
   if (IsA<HTMLStyleElement>(node))
@@ -1035,8 +1063,10 @@ bool AXObjectCacheImpl::IsRelevantPseudoElement(const Node& node) {
     return false;  // Is the clearfix hack: ignore pseudo element.
   }
 
-  DCHECK(node.IsFirstLetterPseudoElement())
-      << "The only remaining type that should reach here.";
+  // The only other pseudo elements that matter are ::first-letter.
+  // E.g. backdrop does not get an accessibility object.
+  if (!node.IsFirstLetterPseudoElement())
+    return false;
 
   if (LayoutObject* layout_parent = node.GetLayoutObject()->Parent()) {
     if (Node* layout_parent_node = layout_parent->GetNode()) {
@@ -1141,7 +1171,7 @@ AXObject* AXObjectCacheImpl::CreateAndInit(Node* node,
   // a locked subtree, which are created based on its node.
   LayoutObject* layout_object = node->GetLayoutObject();
   if (layout_object && IsLayoutObjectRelevantForAccessibility(*layout_object) &&
-      !IsDisplayLocked(node)) {
+      !IsDisplayLocked(layout_object)) {
     return CreateAndInit(layout_object, parent_if_known, use_axid);
   }
 
@@ -1280,7 +1310,7 @@ AXObject* AXObjectCacheImpl::CreateAndInit(LayoutObject* layout_object,
   // old information. Note that Blink will recreate the AX objects as
   // AXLayoutObjects when a locked element is activated, aka it becomes visible.
   // Visit https://wicg.github.io/display-locking/#accessibility for more info.
-  if (DisplayLockUtilities::LockedAncestorPreventingPaint(*layout_object)) {
+  if (IsDisplayLocked(layout_object)) {
     if (!node) {
       // Nodeless objects such as anonymous blocks do not get accessible objects
       // in a locked subtree. Anonymous blocks are added to help layout when
@@ -2126,9 +2156,16 @@ void AXObjectCacheImpl::ChildrenChanged(const LayoutObject* layout_object) {
   //           \
   //           text
 
+  // The child traversal requires a flat tree traversal, so if it's forbidden,
+  // don't do it. Additionally, when visiting a slot, we may call AssignNodes,
+  // so also don't do this if slot (re-)assignment is forbidden.
   // TODO(aleventhal) Why is this needed for shadow-slot-assignment.js test?
-  if (GetDocument().IsFlatTreeTraversalForbidden())
+  if (GetDocument().IsFlatTreeTraversalForbidden() ||
+      node->GetDocument()
+          .GetSlotAssignmentEngine()
+          .HasPendingSlotAssignmentRecalc()) {
     return;
+  }
 
   for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node); child;
        child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
@@ -3779,7 +3816,7 @@ String AXObjectCacheImpl::ComputedNameForNode(Node* node) {
   return obj->ComputedName();
 }
 
-void AXObjectCacheImpl::OnTouchAccessibilityHover(const IntPoint& location) {
+void AXObjectCacheImpl::OnTouchAccessibilityHover(const gfx::Point& location) {
   DocumentLifecycle::DisallowTransitionScope disallow(document_->Lifecycle());
   AXObject* hit = Root()->AccessibilityHitTest(location);
   if (hit) {

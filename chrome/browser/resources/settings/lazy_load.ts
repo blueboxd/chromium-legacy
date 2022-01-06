@@ -29,8 +29,10 @@ import './site_settings/settings_category_default_radio_group.js';
 import './site_settings/site_data.js';
 import './site_settings/site_details.js';
 import './site_settings/zoom_levels.js';
-// <if expr="not chromeos">
+// <if expr="not chromeos and not lacros">
 import './people_page/import_data_dialog.js';
+// </if>
+// <if expr="not chromeos">
 import './people_page/manage_profile.js';
 // </if>
 import './people_page/signout_dialog.js';
@@ -53,14 +55,14 @@ import './system_page/system_page.js';
 
 // <if expr="not chromeos and not is_macosx">
 import './languages_page/edit_dictionary_page.js';
-
 // </if>
 
+export {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 export {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.js';
 export {FontsBrowserProxy, FontsBrowserProxyImpl} from './appearance_page/fonts_browser_proxy.js';
 export {CountryDetailManagerImpl} from './autofill_page/address_edit_dialog.js';
 export {AutofillManager, AutofillManagerImpl} from './autofill_page/autofill_section.js';
-// <if expr="chromeos">
+// <if expr="chromeos or lacros">
 export {BlockingRequestManager} from './autofill_page/blocking_request_manager.js';
 // </if>
 export {PaymentsManager, PaymentsManagerImpl} from './autofill_page/payments_section.js';
@@ -69,7 +71,7 @@ export {ChromeCleanupIdleReason} from './chrome_cleanup_page/chrome_cleanup_page
 export {ChromeCleanupProxy, ChromeCleanupProxyImpl} from './chrome_cleanup_page/chrome_cleanup_proxy.js';
 export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW} from './chrome_cleanup_page/items_to_remove_list.js';
 // </if>
-export {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, InstalledApp} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
+export {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, ClearBrowsingDataResult, InstalledApp} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.js';
 // <if expr="_google_chrome and is_win">
 export {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_page/incompatible_applications_browser_proxy.js';
@@ -80,8 +82,10 @@ export {LanguageSettingsActionType, LanguageSettingsMetricsProxy, LanguageSettin
 export {kMenuCloseDelay, SettingsLanguagesSubpageElement} from './languages_page/languages_subpage.js';
 export {LanguageHelper, LanguagesModel} from './languages_page/languages_types.js';
 // </if>
-// <if expr="not chromeos">
+// <if expr="not chromeos and not lacros">
 export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.js';
+// </if>
+// <if expr="not chromeos">
 export {ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from './people_page/manage_profile_browser_proxy.js';
 // </if>
 export {SettingsCollapseRadioButtonElement} from './privacy_page/collapse_radio_button.js';
@@ -98,9 +102,13 @@ export {CredentialManagementDialogPage} from './privacy_page/security_keys_crede
 export {ResetDialogPage} from './privacy_page/security_keys_reset_dialog.js';
 export {SetPINDialogPage} from './privacy_page/security_keys_set_pin_dialog.js';
 export {SafeBrowsingSetting, SettingsSecurityPageElement} from './privacy_page/security_page.js';
+export {SettingsOmniboxExtensionEntryElement} from './search_engines_page/omnibox_extension_entry.js';
+export {SettingsSearchEngineDialogElement} from './search_engines_page/search_engine_dialog.js';
+export {SettingsSearchEngineEntryElement} from './search_engines_page/search_engine_entry.js';
+export {SettingsSearchEnginesPageElement} from './search_engines_page/search_engines_page.js';
 export {AddSiteDialogElement} from './site_settings/add_site_dialog.js';
 // <if expr="chromeos">
-export {AndroidInfoBrowserProxyImpl} from './site_settings/android_info_browser_proxy.js';
+export {AndroidInfoBrowserProxy, AndroidInfoBrowserProxyImpl, AndroidSmsInfo} from './site_settings/android_info_browser_proxy.js';
 // </if>
 export {CategorySettingExceptionsElement} from './site_settings/category_setting_exceptions.js';
 export {ChooserType, ContentSetting, ContentSettingsTypes, CookieControlsMode, NotificationSetting, SITE_EXCEPTION_WILDCARD, SiteSettingSource, SortMethod} from './site_settings/constants.js';
@@ -110,7 +118,7 @@ export {LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from '.
 export {AppHandlerEntry, AppProtocolEntry, HandlerEntry, ProtocolEntry} from './site_settings/protocol_handlers.js';
 export {SettingsCategoryDefaultRadioGroupElement} from './site_settings/settings_category_default_radio_group.js';
 export {SiteListElement} from './site_settings/site_list.js';
-export {ContentSettingProvider, DefaultContentSetting, RawChooserException, RawSiteException, RecentSitePermissions, SiteException, SiteGroup, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl, ZoomLevelEntry} from './site_settings/site_settings_prefs_browser_proxy.js';
+export {ContentSettingProvider, CookiePrimarySetting, DefaultContentSetting, OriginInfo, RawChooserException, RawSiteException, RecentSitePermissions, SiteException, SiteGroup, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl, ZoomLevelEntry} from './site_settings/site_settings_prefs_browser_proxy.js';
 export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.js';
 export {SettingsRecentSitePermissionsElement} from './site_settings_page/recent_site_permissions.js';
 export {defaultSettingLabel} from './site_settings_page/site_settings_list.js';

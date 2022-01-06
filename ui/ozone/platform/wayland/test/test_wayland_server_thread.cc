@@ -16,7 +16,7 @@
 #include "base/files/scoped_file.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "ui/ozone/platform/wayland/test/test_gtk_primary_selection.h"
 #include "ui/ozone/platform/wayland/test/test_zwp_primary_selection.h"
 
@@ -95,6 +95,8 @@ bool TestWaylandServerThread::Start(const ServerConfig& config) {
   if (!zwp_linux_dmabuf_v1_.Initialize(display_.get()))
     return false;
   if (!overlay_prioritizer_.Initialize(display_.get()))
+    return false;
+  if (!surface_augmenter_.Initialize(display_.get()))
     return false;
 
   client_ = wl_client_create(display_.get(), server_fd.release());

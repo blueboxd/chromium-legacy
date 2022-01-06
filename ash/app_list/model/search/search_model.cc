@@ -18,10 +18,6 @@ SearchModel::SearchModel()
 
 SearchModel::~SearchModel() {}
 
-void SearchModel::SetTabletMode(bool is_tablet_mode) {
-  search_box_->SetTabletMode(is_tablet_mode);
-}
-
 void SearchModel::SetSearchEngineIsGoogle(bool is_google) {
   search_box_->SetSearchEngineIsGoogle(is_google);
 }
@@ -60,7 +56,8 @@ std::vector<SearchResult*> SearchModel::FilterSearchResultsByFunction(
 }
 
 void SearchModel::PublishResults(
-    std::vector<std::unique_ptr<SearchResult>> new_results) {
+    std::vector<std::unique_ptr<SearchResult>> new_results,
+    const std::vector<ash::AppListSearchResultCategory>& categories) {
   // The following algorithm is used:
   // 1. Transform the |results_| list into an unordered map from result ID
   // to item.
@@ -115,7 +112,8 @@ SearchResult* SearchModel::GetFirstVisibleResult() {
 }
 
 void SearchModel::DeleteAllResults() {
-  PublishResults(std::vector<std::unique_ptr<SearchResult>>());
+  PublishResults(std::vector<std::unique_ptr<SearchResult>>(),
+                 std::vector<ash::AppListSearchResultCategory>());
 }
 
 void SearchModel::DeleteResultById(const std::string& id) {

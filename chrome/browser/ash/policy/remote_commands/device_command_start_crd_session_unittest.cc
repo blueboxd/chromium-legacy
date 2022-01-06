@@ -13,8 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/test_future.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -27,7 +26,6 @@
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "components/policy/core/common/features.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -57,7 +55,6 @@ constexpr char kTestNoOAuthTokenReason[] = "Not authorized.";
 constexpr char kTestAccountEmail[] = "test.account.email@example.com";
 
 constexpr char kIdlenessCutoffFieldName[] = "idlenessCutoffSec";
-constexpr char kTerminateUponInputFieldName[] = "terminateUponInput";
 constexpr char kAckedUserPresenceFieldName[] = "ackedUserPresence";
 
 // Macro expecting success. We are using a macro because a function would
@@ -78,12 +75,10 @@ constexpr char kAckedUserPresenceFieldName[] = "ackedUserPresence";
     EXPECT_EQ(result.payload, CreateErrorPayload(error_code, ##__VA_ARGS__)); \
   })
 
-em::RemoteCommand GenerateCommandProto(
-    RemoteCommandJob::UniqueIDType unique_id,
-    base::TimeDelta age_of_command,
-    base::TimeDelta idleness_cutoff,
-    bool terminate_upon_input,
-    absl::optional<bool> acked_user_presence) {
+em::RemoteCommand GenerateCommandProto(RemoteCommandJob::UniqueIDType unique_id,
+                                       base::TimeDelta age_of_command,
+                                       base::TimeDelta idleness_cutoff,
+                                       bool acked_user_presence) {
   em::RemoteCommand command_proto;
   command_proto.set_type(
       enterprise_management::RemoteCommand_Type_DEVICE_START_CRD_SESSION);
@@ -94,12 +89,8 @@ em::RemoteCommand GenerateCommandProto(
   base::Value root_dict(base::Value::Type::DICTIONARY);
   root_dict.SetKey(kIdlenessCutoffFieldName,
                    base::Value((int)idleness_cutoff.InSeconds()));
-  root_dict.SetKey(kTerminateUponInputFieldName,
-                   base::Value(terminate_upon_input));
-  if (acked_user_presence.has_value()) {
-    root_dict.SetKey(kAckedUserPresenceFieldName,
-                     base::Value(acked_user_presence.value()));
-  }
+  root_dict.SetKey(kAckedUserPresenceFieldName,
+                   base::Value(acked_user_presence));
   base::JSONWriter::Write(root_dict, &payload);
   command_proto.set_payload(payload);
   return command_proto;
@@ -276,8 +267,6 @@ class DeviceCommandStartCrdSessionJobTest : public ash::DeviceSettingsTestBase {
 
   void SetOAuthToken(std::string value) { oauth_token_ = value; }
 
-  void SetTerminateUponInput(bool value) { terminate_upon_input_ = value; }
-
   void SetAckedUserPresence(bool value) { acked_user_presence_ = value; }
 
   void SetRobotAccountUserName(const std::string& user_name) {
@@ -298,12 +287,12 @@ class DeviceCommandStartCrdSessionJobTest : public ash::DeviceSettingsTestBase {
   ash::FakeChromeUserManager& user_manager() { return *user_manager_; }
 
   void InitializeJob() {
-    bool success = job().Init(
-        base::TimeTicks::Now(),
-        GenerateCommandProto(
-            kUniqueID, base::TimeTicks::Now() - test_start_time_,
-            idleness_cutoff_, terminate_upon_input_, acked_user_presence_),
-        nullptr);
+    bool success =
+        job().Init(base::TimeTicks::Now(),
+                   GenerateCommandProto(
+                       kUniqueID, base::TimeTicks::Now() - test_start_time_,
+                       idleness_cutoff_, acked_user_presence_),
+                   nullptr);
 
     if (oauth_token_)
       job().SetOAuthTokenForTest(oauth_token_.value());
@@ -337,8 +326,7 @@ class DeviceCommandStartCrdSessionJobTest : public ash::DeviceSettingsTestBase {
 
   absl::optional<std::string> oauth_token_;
   base::TimeDelta idleness_cutoff_ = base::Seconds(30);
-  bool terminate_upon_input_ = false;
-  absl::optional<bool> acked_user_presence_;
+  bool acked_user_presence_ = false;
 
   // Automatically installed as a singleton upon creation.
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
@@ -446,34 +434,8 @@ TEST_F(DeviceCommandStartCrdSessionJobTest,
                DeviceCommandStartCrdSessionJob::FAILURE_SERVICES_NOT_READY);
 }
 
-TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldFailForManagedGuestUser) {
-  base::test::ScopedFeatureList disable_crd_for_user_sessions_;
-  disable_crd_for_user_sessions_.InitAndDisableFeature(
-      features::kCrdForManagedUserSessions);
-
-  LogInAsManagedGuestSessionUser();
-
-  Result result = RunJobAndWaitForResult();
-
-  EXPECT_ERROR(result,
-               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
-}
-
 TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldFailForGuestUser) {
   LogInAsGuestUser();
-
-  Result result = RunJobAndWaitForResult();
-
-  EXPECT_ERROR(result,
-               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
-}
-
-TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldFailForAffiliatedUser) {
-  base::test::ScopedFeatureList disable_crd_for_user_sessions_;
-  disable_crd_for_user_sessions_.InitAndDisableFeature(
-      features::kCrdForManagedUserSessions);
-
-  LogInAsAffiliatedUser();
 
   Result result = RunJobAndWaitForResult();
 
@@ -650,34 +612,6 @@ TEST_F(DeviceCommandStartCrdSessionJobTest,
             crd_host_delegate().session_parameters().user_name);
 }
 
-TEST_F(DeviceCommandStartCrdSessionJobTest,
-       ShouldPassTerminateUponInputTrueToDelegateForKioskUser) {
-  LogInAsAutoLaunchedKioskAppUser();
-  SetOAuthToken(kTestOAuthToken);
-
-  SetTerminateUponInput(true);
-
-  Result result = RunJobAndWaitForResult();
-  EXPECT_SUCCESS(result);
-
-  EXPECT_EQ(true,
-            crd_host_delegate().session_parameters().terminate_upon_input);
-}
-
-TEST_F(DeviceCommandStartCrdSessionJobTest,
-       ShouldPassTerminateUponInputFalseToDelegate) {
-  LogInAsAutoLaunchedKioskAppUser();
-  SetOAuthToken(kTestOAuthToken);
-
-  SetTerminateUponInput(false);
-
-  Result result = RunJobAndWaitForResult();
-  EXPECT_SUCCESS(result);
-
-  EXPECT_EQ(false,
-            crd_host_delegate().session_parameters().terminate_upon_input);
-}
-
 TEST_F(
     DeviceCommandStartCrdSessionJobTest,
     ShouldPassTerminateUponInputTrueToDelegateForKioskUserIfAckedUserPresenceSetFalse) {
@@ -708,38 +642,6 @@ TEST_F(
             crd_host_delegate().session_parameters().terminate_upon_input);
 }
 
-TEST_F(
-    DeviceCommandStartCrdSessionJobTest,
-    TerminateUponInputFieldShouldBeIgnoredIfAckedUserPresenseFieldIsSetFalse) {
-  LogInAsAutoLaunchedKioskAppUser();
-  SetOAuthToken(kTestOAuthToken);
-
-  SetTerminateUponInput(false);
-  SetAckedUserPresence(false);
-
-  Result result = RunJobAndWaitForResult();
-  EXPECT_SUCCESS(result);
-
-  EXPECT_EQ(true,
-            crd_host_delegate().session_parameters().terminate_upon_input);
-}
-
-TEST_F(
-    DeviceCommandStartCrdSessionJobTest,
-    TerminateUponInputFieldShouldBeIgnoredIfAckedUserPresenseFieldIsSetTrue) {
-  LogInAsAutoLaunchedKioskAppUser();
-  SetOAuthToken(kTestOAuthToken);
-
-  SetTerminateUponInput(true);
-  SetAckedUserPresence(true);
-
-  Result result = RunJobAndWaitForResult();
-  EXPECT_SUCCESS(result);
-
-  EXPECT_EQ(false,
-            crd_host_delegate().session_parameters().terminate_upon_input);
-}
-
 TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldPassShowConfirmationDialogFalseToDelegateForKioskUser) {
   LogInAsAutoLaunchedKioskAppUser();
@@ -752,70 +654,14 @@ TEST_F(DeviceCommandStartCrdSessionJobTest,
             crd_host_delegate().session_parameters().show_confirmation_dialog);
 }
 
-// This test fixture enables the |kCrdForManagedUserSessions| feature flag,
-// and tests the additional functionality enabled by the flag.
-class DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest
-    : public DeviceCommandStartCrdSessionJobTest {
- public:
-  DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest() = default;
-  DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest(
-      const DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest&) =
-      delete;
-  DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest& operator=(
-      const DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest&) =
-      delete;
-  ~DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest() override =
-      default;
-
- private:
-  base::test::ScopedFeatureList enable_crd_for_user_sessions_{
-      features::kCrdForManagedUserSessions};
-};
-
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
-       ShouldSucceedForKioskUserWithZeroDelayAutoLaunch) {
-  SetOAuthToken(kTestOAuthToken);
-
-  LogInAsKioskAppUser();
-  ash::KioskAppManager::Get()
-      ->set_current_app_was_auto_launched_with_zero_delay_for_testing(true);
-
-  Result result = RunJobAndWaitForResult();
-
-  EXPECT_SUCCESS(result);
-}
-
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
-       ShouldFailForRegularUser) {
-  LogInAsRegularUser();
-
+TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldFailIfNoUserIsLoggedIn) {
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
                DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
-       ShouldFailForGuestUser) {
-  // Note that guest user != managed guest user
-  LogInAsGuestUser();
-
-  Result result = RunJobAndWaitForResult();
-
-  EXPECT_ERROR(result,
-               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
-}
-
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
-       ShouldFailIfNoUserIsLoggedIn) {
-  Result result = RunJobAndWaitForResult();
-
-  EXPECT_ERROR(result,
-               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
-}
-
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
-       ShouldSucceedForManagedGuestUser) {
+TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldSucceedForManagedGuestUser) {
   SetOAuthToken(kTestOAuthToken);
 
   LogInAsManagedGuestSessionUser();
@@ -824,8 +670,7 @@ TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
   EXPECT_SUCCESS(result);
 }
 
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
-       ShouldSucceedForAffiliatedUser) {
+TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldSucceedForAffiliatedUser) {
   SetOAuthToken(kTestOAuthToken);
 
   LogInAsAffiliatedUser();
@@ -834,7 +679,7 @@ TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
   EXPECT_SUCCESS(result);
 }
 
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldPassShowConfirmationDialogTrueToDelegateForManagedGuestUser) {
   LogInAsManagedGuestSessionUser();
   SetOAuthToken(kTestOAuthToken);
@@ -846,7 +691,7 @@ TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
             crd_host_delegate().session_parameters().show_confirmation_dialog);
 }
 
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldPassShowConfirmationDialogTrueToDelegateForAffiliatedUser) {
   LogInAsAffiliatedUser();
   SetOAuthToken(kTestOAuthToken);
@@ -858,35 +703,7 @@ TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
             crd_host_delegate().session_parameters().show_confirmation_dialog);
 }
 
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
-       ShouldPassTerminateUponInputFalseToDelegateForAffiliatedUser) {
-  LogInAsAffiliatedUser();
-  SetOAuthToken(kTestOAuthToken);
-
-  SetTerminateUponInput(true);
-
-  Result result = RunJobAndWaitForResult();
-  EXPECT_SUCCESS(result);
-
-  EXPECT_EQ(false,
-            crd_host_delegate().session_parameters().terminate_upon_input);
-}
-
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
-       ShouldPassTerminateUponInputFalseToDelegateForManagedGuestUser) {
-  LogInAsManagedGuestSessionUser();
-  SetOAuthToken(kTestOAuthToken);
-
-  SetTerminateUponInput(true);
-
-  Result result = RunJobAndWaitForResult();
-  EXPECT_SUCCESS(result);
-
-  EXPECT_EQ(false,
-            crd_host_delegate().session_parameters().terminate_upon_input);
-}
-
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldNeverSendTerminateUponInputTrueToDelegateForAffiliatedUser) {
   LogInAsAffiliatedUser();
   SetOAuthToken(kTestOAuthToken);
@@ -900,7 +717,7 @@ TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
             crd_host_delegate().session_parameters().terminate_upon_input);
 }
 
-TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldNeverSendTerminateUponInputTrueToDelegateForManagedGuestUser) {
   LogInAsManagedGuestSessionUser();
   SetOAuthToken(kTestOAuthToken);

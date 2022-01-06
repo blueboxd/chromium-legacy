@@ -32,6 +32,7 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/plaintext_reason.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -40,18 +41,18 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
-#elif defined(OS_MAC)
+#endif
+
+#if defined(OS_MAC)
 #include "chrome/browser/password_manager/password_manager_util_mac.h"
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/login/quick_unlock/auth_token.h"
-#include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
-#include "chrome/browser/ash/login/quick_unlock/quick_unlock_storage.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chromeos/login/auth/password_visibility_utils.h"
-#include "components/user_manager/user.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_utils_chromeos.h"
 #endif
 
 namespace {
@@ -61,12 +62,6 @@ namespace {
 const char kExportInProgress[] = "in-progress";
 // The error message returned to the UI when the user fails to reauthenticate.
 const char kReauthenticationFailed[] = "reauth-failed";
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-constexpr base::TimeDelta kShowPasswordAuthTokenLifetime =
-    password_manager::PasswordAccessAuthenticator::kAuthValidityPeriod;
-constexpr base::TimeDelta kExportPasswordsAuthTokenLifetime = base::Seconds(5);
-#endif
 
 // Map password_manager::ExportProgressStatus to
 // extensions::api::passwords_private::ExportProgressStatus.
@@ -215,6 +210,43 @@ void PasswordsPrivateDelegateImpl::GetPasswordExceptionsList(
     get_password_exception_list_callbacks_.push_back(std::move(callback));
 }
 
+absl::optional<api::passwords_private::UrlCollection>
+PasswordsPrivateDelegateImpl::GetUrlCollection(const std::string& url) {
+  GURL url_with_scheme = password_manager_util::ConstructGURLWithScheme(url);
+  if (!password_manager_util::IsValidPasswordURL(url_with_scheme)) {
+    return absl::nullopt;
+  }
+  return absl::optional<api::passwords_private::UrlCollection>(
+      CreateUrlCollectionFromGURL(
+          password_manager_util::StripAuthAndParams(url_with_scheme)));
+}
+
+bool PasswordsPrivateDelegateImpl::IsAccountStoreDefault(
+    content::WebContents* web_contents) {
+  auto* client = ChromePasswordManagerClient::FromWebContents(web_contents);
+  DCHECK(client);
+  DCHECK(client->GetPasswordFeatureManager()->IsOptedInForAccountStorage());
+  return client->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
+         password_manager::PasswordForm::Store::kAccountStore;
+}
+
+bool PasswordsPrivateDelegateImpl::AddPassword(const std::string& url,
+                                               const std::u16string& username,
+                                               const std::u16string& password,
+                                               bool use_account_store) {
+  password_manager::PasswordForm form;
+  form.url = password_manager_util::StripAuthAndParams(
+      password_manager_util::ConstructGURLWithScheme(url));
+  form.signon_realm = password_manager::GetSignonRealm(form.url);
+  form.username_value = username;
+  form.password_value = password;
+  form.in_store = use_account_store
+                      ? password_manager::PasswordForm::Store::kAccountStore
+                      : password_manager::PasswordForm::Store::kProfileStore;
+  form.type = password_manager::PasswordForm::Type::kManuallyAdded;
+  return saved_passwords_presenter_.AddPassword(form);
+}
+
 bool PasswordsPrivateDelegateImpl::ChangeSavedPassword(
     const std::vector<int>& ids,
     const std::u16string& new_username,
@@ -308,28 +340,11 @@ void PasswordsPrivateDelegateImpl::OsReauthCall(
   bool result = password_manager_util_mac::AuthenticateUser(purpose);
   std::move(callback).Run(result);
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
-  const bool user_cannot_manually_enter_password =
-      !chromeos::password_visibility::AccountHasUserFacingPassword(
-          chromeos::ProfileHelper::Get()
-              ->GetUserByProfile(profile_)
-              ->GetAccountId());
-  if (user_cannot_manually_enter_password) {
-    std::move(callback).Run(true);
-    return;
-  }
-  ash::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-      ash::quick_unlock::QuickUnlockFactory::GetForProfile(profile_);
-  const ash::quick_unlock::AuthToken* auth_token =
-      quick_unlock_storage->GetAuthToken();
-  if (!auth_token || !auth_token->GetAge()) {
-    std::move(callback).Run(false);
-    return;
-  }
-  const base::TimeDelta auth_token_lifespan =
-      (purpose == password_manager::ReauthPurpose::EXPORT)
-          ? kExportPasswordsAuthTokenLifetime
-          : kShowPasswordAuthTokenLifetime;
-  std::move(callback).Run(auth_token->GetAge() <= auth_token_lifespan);
+  bool result =
+      IsOsReauthAllowedAsh(profile_, GetAuthTokenLifetimeForPurpose(purpose));
+  std::move(callback).Run(result);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  IsOsReauthAllowedLacrosAsync(purpose, std::move(callback));
 #else
   std::move(callback).Run(true);
 #endif

@@ -70,7 +70,6 @@ namespace blink {
 class AccessibleNodeList;
 class AXObject;
 class AXObjectCacheImpl;
-class IntPoint;
 class LayoutObject;
 class LocalFrameView;
 class Node;
@@ -126,7 +125,7 @@ class NameSource {
   ax::mojom::blink::NameFrom type = ax::mojom::blink::NameFrom::kUninitialized;
   const QualifiedName& attribute;
   AtomicString attribute_value;
-  AXTextFromNativeHTML native_source = kAXTextFromNativeHTMLUninitialized;
+  AXTextSource native_source = kAXTextFromNativeSourceUninitialized;
   AXRelatedObjectVector related_objects;
 
   NameSource(bool superseded, const QualifiedName& attr)
@@ -149,7 +148,7 @@ class DescriptionSource {
       ax::mojom::blink::DescriptionFrom::kNone;
   const QualifiedName& attribute;
   AtomicString attribute_value;
-  AXTextFromNativeHTML native_source = kAXTextFromNativeHTMLUninitialized;
+  AXTextSource native_source = kAXTextFromNativeSourceUninitialized;
   AXRelatedObjectVector related_objects;
 
   DescriptionSource(bool superseded, const QualifiedName& attr)
@@ -164,6 +163,10 @@ class DescriptionSource {
 // Returns a ax::mojom::blink::MarkerType cast to an int, suitable
 // for serializing into AXNodeData.
 int32_t ToAXMarkerType(DocumentMarker::MarkerType marker_type);
+
+// Returns a ax::mojom::blink::HighlightType cast to an int, suitable
+// for serializing into AXNodeData.
+int32_t ToAXHighlightType(const AtomicString& highlight_type);
 
 }  // namespace blink
 
@@ -353,6 +356,14 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Check object role or purpose.
   ax::mojom::blink::Role RoleValue() const;
 
+  // This method is useful in cases where the final role exposed to ATs needs
+  // to change based on contextual information. For instance, an svgRoot should
+  // be exposed as an image if it lacks accessible children. Whether or not it
+  // has accessible children is not known at the time the role is assigned and
+  // may depend on whether or not a given platform includes children that other
+  // platforms ignore.
+  ax::mojom::blink::Role ComputeFinalRoleForSerialization() const;
+
   // Returns true if this object is an ARIA text field, i.e. it is neither an
   // <input> nor a <textarea>, but it has an ARIA role of textbox, searchbox or
   // (on certain platforms) combobox.
@@ -419,6 +430,11 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Check object state.
   virtual bool IsAutofillAvailable() const;
   virtual bool IsClickable() const;
+  // Is |this| disabled for any of the follow reasons:
+  // * aria-disabled
+  // * disabled form control
+  // * a focusable descendant of a disabled container
+  bool IsDisabled() const;
   virtual AccessibilityExpanded IsExpanded() const;
   virtual bool IsFocused() const;
   // aria-grabbed is deprecated in WAI-ARIA 1.1.
@@ -847,12 +863,12 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Hit testing.
   // Called on the root AX object to return the deepest available element.
-  virtual AXObject* AccessibilityHitTest(const IntPoint&) const {
+  virtual AXObject* AccessibilityHitTest(const gfx::Point&) const {
     return nullptr;
   }
   // Called on the AX object after the layout tree determines which is the right
   // AXLayoutObject.
-  AXObject* ElementAccessibilityHitTest(const IntPoint&) const;
+  AXObject* ElementAccessibilityHitTest(const gfx::Point&) const;
 
   //
   // High-level accessibility tree access. Other modules should only use these
@@ -1150,10 +1166,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Scrollable containers.
   bool IsScrollableContainer() const;
   bool IsUserScrollable() const;  // Only true if actual scrollbars are present.
-  IntPoint GetScrollOffset() const;
-  IntPoint MinimumScrollOffset() const;
-  IntPoint MaximumScrollOffset() const;
-  void SetScrollOffset(const IntPoint&) const;
+  gfx::Point GetScrollOffset() const;
+  gfx::Point MinimumScrollOffset() const;
+  gfx::Point MaximumScrollOffset() const;
+  void SetScrollOffset(const gfx::Point&) const;
 
   // Tables and grids.
   bool IsTableLikeRole() const;
@@ -1208,7 +1224,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool RequestClickAction();
   bool RequestFocusAction();
   bool RequestIncrementAction();
-  bool RequestScrollToGlobalPointAction(const IntPoint&);
+  bool RequestScrollToGlobalPointAction(const gfx::Point&);
   bool RequestScrollToMakeVisibleAction();
   bool RequestScrollToMakeVisibleWithSubFocusAction(
       const IntRect&,
@@ -1232,7 +1248,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual bool OnNativeClickAction();
   virtual bool OnNativeFocusAction();
   virtual bool OnNativeIncrementAction();
-  bool OnNativeScrollToGlobalPointAction(const IntPoint&) const;
+  bool OnNativeScrollToGlobalPointAction(const gfx::Point&) const;
   bool OnNativeScrollToMakeVisibleAction() const;
   bool OnNativeScrollToMakeVisibleWithSubFocusAction(
       const IntRect&,
@@ -1372,17 +1388,23 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Helpers for serialization.
   void SerializeActionAttributes(ui::AXNodeData* node_data);
-  void SerializeColorAttributes(ui::AXNodeData* node_data);
-  void SerializeStyleAttributes(ui::AXNodeData* node_data);
-  void SerializeSparseAttributes(ui::AXNodeData* node_data);
-  void SerializeTableAttributes(ui::AXNodeData* node_data);
-  void SerializeLangAttribute(ui::AXNodeData* node_data);
-  void SerializeListAttributes(ui::AXNodeData* node_data);
-  void SerializeScrollAttributes(ui::AXNodeData* node_data);
   void SerializeChooserPopupAttributes(ui::AXNodeData* node_data);
+  void SerializeColorAttributes(ui::AXNodeData* node_data);
   void SerializeElementAttributes(ui::AXNodeData* node_data);
   void SerializeHTMLTagAndClass(ui::AXNodeData* node_data);
   void SerializeHTMLAttributes(ui::AXNodeData* node_data);
+  void SerializeInlineTextBoxAttributes(ui::AXNodeData* node_data) const;
+  void SerializeLangAttribute(ui::AXNodeData* node_data);
+  void SerializeListAttributes(ui::AXNodeData* node_data);
+  void SerializeListMarkerAttributes(ui::AXNodeData* dst) const;
+  void SerializeLiveRegionAttributes(ui::AXNodeData* node_data) const;
+  void SerializeNameAndDescriptionAttributes(ui::AXMode accessibility_mode,
+                                             ui::AXNodeData* node_data) const;
+  void SerializeOtherScreenReaderAttributes(ui::AXNodeData* node_data) const;
+  void SerializeScrollAttributes(ui::AXNodeData* node_data);
+  void SerializeSparseAttributes(ui::AXNodeData* node_data);
+  void SerializeStyleAttributes(ui::AXNodeData* node_data);
+  void SerializeTableAttributes(ui::AXNodeData* node_data);
   void SerializeUnignoredAttributes(ui::AXNodeData* node_data,
                                     ui::AXMode accessibility_mode);
 
@@ -1390,6 +1412,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual void SerializeMarkerAttributes(ui::AXNodeData* node_data) const;
 
  private:
+  bool ComputeCanSetFocusAttribute() const;
+
   mutable int last_modification_count_;
 
   // The following cached attribute values (the ones starting with m_cached*)
@@ -1401,6 +1425,22 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   mutable bool cached_is_aria_hidden_ : 1;
   mutable bool cached_is_hidden_via_style : 1;
   mutable bool cached_is_descendant_of_disabled_node_ : 1;
+  mutable bool cached_can_set_focus_attribute_ : 1;
+
+  // Focusability can change in response to a new style (e.g. content-visibility
+  // added/removed), new dom (e.g. tabindex set/unset), or new AXCache
+  // modification count (e.g. new ax tree).
+  // TODO(accessibility) Determine whether it's worth it to store these extra
+  // variables rather than just using the usual caching mechanism in
+  // UpdateCachedAttributeValuesIfNeeded(). This reduces the number of calls to
+  // CanSetFocusAttribute() by 25% extra. It also causes updates when AXCache
+  // ModificationCount doesn't change but DOM version/style version do change.
+  // This can happen during focus action which forces a new style recalc without
+  // modifying the AX tree.
+  mutable uint64_t focus_attribute_style_version_ = 0;
+  mutable uint64_t focus_attribute_dom_tree_version_ = 0;
+  mutable int focus_attribute_cache_modification_count_ = -1;
+
   mutable Member<AXObject> cached_live_region_root_;
   mutable int cached_aria_column_index_;
   mutable int cached_aria_row_index_;
@@ -1431,14 +1471,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // objects generated. Returns nullptr if a native scroll action to the node is
   // not possible.
   LayoutObject* GetLayoutObjectForNativeScrollAction() const;
-
-  // Max length for attributes such as aria-label.
-  static const uint32_t kMaxStringAttributeLength = 10000;
-  void TruncateAndAddStringAttribute(
-      ui::AXNodeData* dst,
-      ax::mojom::blink::StringAttribute attribute,
-      const std::string& value,
-      uint32_t max_len = kMaxStringAttributeLength) const;
 
   static unsigned number_of_live_ax_objects_;
 };

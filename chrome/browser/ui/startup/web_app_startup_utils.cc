@@ -16,6 +16,8 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -24,8 +26,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/scoped_profile_keep_alive.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -48,279 +53,319 @@ namespace {
 
 using content::ProtocolHandler;
 
-void OnAppLaunched(
-    std::unique_ptr<ScopedKeepAlive> keep_alive,
-    std::vector<std::unique_ptr<ScopedProfileKeepAlive>> profile_keep_alives,
-    FinalizeWebAppLaunchCallback app_launched_callback,
-    Browser* browser,
-    apps::mojom::LaunchContainer container) {
-  std::move(app_launched_callback).Run(browser, container);
-  // The KeepAlives can now go out of scope, because the app is launched which
-  // will keep the process alive.
+base::OnceClosure& GetStartupDoneCallback() {
+  static base::NoDestructor<base::OnceClosure> instance;
+  return *instance;
 }
 
-void OnPersistProtocolHandlersUserChoiceCompleted(
-    const base::CommandLine& command_line,
-    const base::FilePath& cur_dir,
-    Profile* profile,
-    const GURL& protocol_url,
-    const AppId& app_id,
-    std::unique_ptr<ScopedKeepAlive> keep_alive,
-    std::vector<std::unique_ptr<ScopedProfileKeepAlive>> profile_keep_alives,
-    FinalizeWebAppLaunchCallback app_launched_callback,
-    bool allowed) {
-  if (!allowed)
-    return;  // Allow the process to exit without opening a browser.
+// Encapsulates web app startup logic. This object keeps itself alive via ref
+// counting, attaching a reference to each callback in its control flow. It will
+// be destroyed after a window is created or it has been determined that no
+// window should be created.
+class StartupWebAppCreator
+    : public base::RefCountedThreadSafe<StartupWebAppCreator> {
+ public:
+  // Factory to create a `StartupWebAppCreator` to handle the given command
+  // line. Will return false if this launch will not be handled as a web app
+  // launch, or true if it will.
+  static bool MaybeHandleWebAppLaunch(const base::CommandLine& command_line,
+                                      const base::FilePath& cur_dir,
+                                      Profile* profile) {
+    std::string app_id = command_line.GetSwitchValueASCII(switches::kAppId);
+    // There must be a kAppId switch arg in the command line to launch.
+    if (app_id.empty())
+      return false;
 
-  apps::AppServiceProxyFactory::GetForProfile(profile)
-      ->BrowserAppLauncher()
-      ->LaunchAppWithCallback(
-          app_id, command_line, cur_dir,
-          /*url_handler_launch_url=*/absl::nullopt, protocol_url,
-          /*launch_files=*/{},
-          base::BindOnce(&OnAppLaunched, std::move(keep_alive),
-                         std::move(profile_keep_alives),
-                         std::move(app_launched_callback)));
-}
-
-void OnProtocolHandlerDialogCompleted(
-    const base::CommandLine& command_line,
-    const base::FilePath& cur_dir,
-    Profile* profile,
-    const GURL& protocol_url,
-    const AppId& app_id,
-    std::unique_ptr<ScopedKeepAlive> keep_alive,
-    std::vector<std::unique_ptr<ScopedProfileKeepAlive>> profile_keep_alives,
-    FinalizeWebAppLaunchCallback app_launched_callback,
-    bool allowed,
-    bool remember_user_choice) {
-  auto launch_callback =
-      base::BindOnce(&OnPersistProtocolHandlersUserChoiceCompleted,
-                     command_line, cur_dir, profile, protocol_url, app_id,
-                     std::move(keep_alive), std::move(profile_keep_alives),
-                     std::move(app_launched_callback), allowed);
-
-  if (remember_user_choice) {
-    PersistProtocolHandlersUserChoice(profile, app_id, protocol_url, allowed,
-                                      std::move(launch_callback));
-  } else {
-    std::move(launch_callback).Run();
-  }
-}
-
-void OnFileHandlerDialogCompleted(
-    const base::CommandLine& command_line,
-    const base::FilePath& cur_dir,
-    Profile* profile,
-    std::vector<base::FilePath> launch_files,
-    const AppId& app_id,
-    std::unique_ptr<ScopedKeepAlive> keep_alive,
-    std::vector<std::unique_ptr<ScopedProfileKeepAlive>> profile_keep_alives,
-    FinalizeWebAppLaunchCallback app_launched_callback,
-    bool allowed,
-    bool remember_user_choice) {
-  if (!allowed)
-    return;
-
-  apps::AppServiceProxyFactory::GetForProfile(profile)
-      ->BrowserAppLauncher()
-      ->LaunchAppWithCallback(
-          app_id, command_line, cur_dir,
-          /*url_handler_launch_url=*/absl::nullopt,
-          /*protocol_handler_launch_url=*/absl::nullopt, launch_files,
-          base::BindOnce(&OnAppLaunched, std::move(keep_alive),
-                         std::move(profile_keep_alives),
-                         std::move(app_launched_callback)));
-}
-
-// Tries to launch the web app when the `provider` is ready. `startup_callback`
-// will run if there is no web app registered for `profile` that can handle
-// `protocol_url`. If os_integration_manager finds a web app, then check if the
-// web app has approval from the user to handle `protocol_url`. If the web app
-// didn't have approval from a previous launch, show the permission dialog to
-// ask for approval. The permission dialog will then launch the web app if the
-// user accepts the dialog or close the dialog window if the user cancels it.
-// If the web app did get permission in the past, the browser will directly
-// launch the web app with the translated url. The passed in `keep_alive` and
-// `profile_keep_alives` ensure the profiles and the browser are alive while
-// `provider` is waiting for the signal for "on_registry_ready()".
-void OnWebAppSystemReadyMaybeLaunchProtocolHandler(
-    WebAppProvider* provider,
-    const GURL& protocol_url,
-    const AppId& app_id,
-    const base::CommandLine& command_line,
-    const base::FilePath& cur_dir,
-    Profile* profile,
-    std::unique_ptr<ScopedKeepAlive> keep_alive,
-    std::vector<std::unique_ptr<ScopedProfileKeepAlive>> profile_keep_alives,
-    FinalizeWebAppLaunchCallback app_launched_callback,
-    ContinueStartupCallback startup_callback) {
-  // Check if the user has already disallowed this app to launch the protocol.
-  // This check takes priority over checking if the protocol is handled
-  // by the application. Do not run |startup_callback|, as that will launch the
-  // app to its normal start page.
-  WebAppRegistrar& registrar = provider->registrar();
-  if (registrar.IsDisallowedLaunchProtocol(app_id, protocol_url.scheme()))
-    return;
-
-  OsIntegrationManager& os_integration_manager =
-      provider->os_integration_manager();
-  const std::vector<ProtocolHandler> handlers =
-      os_integration_manager.GetHandlersForProtocol(protocol_url.scheme());
-
-  // TODO(https://crbug.com/1249907): This code should be simplified such that
-  // it only checks if the protocol is associated with the app_id.
-  // |GetHandlersForProtocol| will return a list of all apps that can handle
-  // the protocol, which is unnecessary here.
-  if (!base::Contains(handlers, true, [](const auto& handler) {
-        return handler.web_app_id().has_value();
-      })) {
-    std::move(startup_callback).Run();
-    return;
+    base::AdoptRef(
+        new StartupWebAppCreator(command_line, cur_dir, profile, app_id))
+        ->Start();
+    return true;
   }
 
-  // Check if we have permission to launch the app directly.
-  if (registrar.IsAllowedLaunchProtocol(app_id, protocol_url.scheme())) {
-    apps::AppServiceProxyFactory::GetForProfile(profile)
+  REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+
+ private:
+  friend class base::RefCountedThreadSafe<StartupWebAppCreator>;
+
+  enum class LaunchResult {
+    kHandled,
+    kNotHandled,
+  };
+
+  StartupWebAppCreator(const base::CommandLine& command_line,
+                       const base::FilePath& cur_dir,
+                       Profile* profile,
+                       const AppId& app_id)
+      : command_line_(command_line),
+        cur_dir_(cur_dir),
+        profile_(profile),
+        app_id_(app_id),
+        profile_keep_alive_(
+            profile,
+            ProfileKeepAliveOrigin::kWebAppPermissionDialogWindow),
+        keep_alive_(KeepAliveOrigin::WEB_APP_INTENT_PICKER,
+                    KeepAliveRestartOption::DISABLED) {}
+
+  ~StartupWebAppCreator() {
+    auto startup_done = std::move(GetStartupDoneCallback());
+    if (startup_done)
+      std::move(startup_done).Run();
+  }
+
+  void Start() {
+    WebAppProvider* const provider = WebAppProvider::GetForWebApps(profile_);
+    DCHECK(provider);
+    provider->on_registry_ready().Post(
+        FROM_HERE, base::BindOnce(&StartupWebAppCreator::OnAppRegistryReady,
+                                  base::WrapRefCounted(this)));
+  }
+
+  void OnAppRegistryReady() {
+    if (MaybeLaunchProtocolHandler() == LaunchResult::kHandled)
+      return;
+
+    DCHECK(protocol_url_.is_empty());
+
+    if (MaybeLaunchFileHandler() == LaunchResult::kHandled)
+      return;
+
+    DCHECK(launch_files_.empty());
+
+    launch_mode_ = LaunchMode::kAsWebAppInWindowByAppId;
+
+    // Fall back to a normal app launch. This opens an empty browser window if
+    // the app_id is invalid.
+    LaunchApp();
+  }
+
+  void LaunchApp() {
+    absl::optional<GURL> protocol;
+    if (!protocol_url_.is_empty())
+      protocol = protocol_url_;
+    apps::AppServiceProxyFactory::GetForProfile(profile_)
         ->BrowserAppLauncher()
         ->LaunchAppWithCallback(
-            app_id, command_line, cur_dir,
-            /*url_handler_launch_url=*/absl::nullopt, protocol_url,
-            /*launch_files=*/{},
-            base::BindOnce(&OnAppLaunched, std::move(keep_alive),
-                           std::move(profile_keep_alives),
-                           std::move(app_launched_callback)));
-  } else {
-    auto launch_callback = base::BindOnce(
-        &OnProtocolHandlerDialogCompleted, command_line, cur_dir, profile,
-        protocol_url, app_id, std::move(keep_alive),
-        std::move(profile_keep_alives), std::move(app_launched_callback));
-
-    // ShowWebAppProtocolHandlerIntentPicker keeps the `profile` alive through
-    // running of `launch_callback`.
-    chrome::ShowWebAppProtocolHandlerIntentPicker(protocol_url, profile, app_id,
-                                                  std::move(launch_callback));
-  }
-}
-
-void OnWebAppSystemReadyMaybeLaunchFileHandler(
-    WebAppProvider* provider,
-    std::vector<base::FilePath> launch_files,
-    const AppId& app_id,
-    const base::CommandLine& command_line,
-    const base::FilePath& cur_dir,
-    Profile* profile,
-    std::unique_ptr<ScopedKeepAlive> keep_alive,
-    std::vector<std::unique_ptr<ScopedProfileKeepAlive>> profile_keep_alives,
-    FinalizeWebAppLaunchCallback app_launched_callback,
-    ContinueStartupCallback startup_callback) {
-  absl::optional<GURL> file_handler_url =
-      provider->os_integration_manager().GetMatchingFileHandlerURL(
-          app_id, launch_files);
-  if (!file_handler_url) {
-    std::move(startup_callback).Run();
-    return;
+            app_id_, command_line_, cur_dir_,
+            /*url_handler_launch_url=*/absl::nullopt, protocol, launch_files_,
+            base::BindOnce(&StartupWebAppCreator::OnAppLaunched,
+                           base::WrapRefCounted(this)));
   }
 
-  auto launch_callback = base::BindOnce(
-      &OnFileHandlerDialogCompleted, command_line, cur_dir, profile,
-      std::move(launch_files), app_id, std::move(keep_alive),
-      std::move(profile_keep_alives), std::move(app_launched_callback));
+  // Determines if the launch is a protocol handler launch. If so, takes
+  // responsibility for the rest of the launch process.
+  LaunchResult MaybeLaunchProtocolHandler() {
+    GURL protocol_url;
+    base::CommandLine::StringVector args = command_line_.GetArgs();
+    for (const auto& arg : args) {
+#if defined(OS_WIN)
+      GURL potential_protocol(base::AsStringPiece16(arg));
+#else
+      GURL potential_protocol(arg);
+#endif  // defined(OS_WIN)
+      // protocol_url is checked for validity later with getting the provider
+      // and consulting the os_integration_manager. However because that process
+      // has a wait for "on_registry_ready()", `potential_protocol` checks for
+      // blink::IsValidCustomHandlerScheme() here to avoid loading the
+      // WebAppProvider with a false positive.
+      bool unused_has_custom_scheme_prefix = false;
+      if (potential_protocol.is_valid() &&
+          blink::IsValidCustomHandlerScheme(potential_protocol.scheme(),
+                                            /*allow_ext_prefix=*/false,
+                                            unused_has_custom_scheme_prefix)) {
+        protocol_url = std::move(potential_protocol);
+        break;
+      }
+    }
+    if (protocol_url.is_empty())
+      return LaunchResult::kNotHandled;
 
-  // ShowWebAppProtocolHandlerIntentPicker keeps the `profile` alive through
-  // running of `launch_callback`.
-  // TODO(estade): this should use a file handling dialog, but until that's
-  // implemented, this reuses the PH dialog as a stand-in.
-  chrome::ShowWebAppProtocolHandlerIntentPicker(
-      *file_handler_url, profile, app_id, std::move(launch_callback));
-}
+    // Check if the user has already disallowed this app to launch the protocol.
+    // This check takes priority over checking if the protocol is handled
+    // by the application.
+    WebAppProvider* const provider = WebAppProvider::GetForWebApps(profile_);
+    DCHECK(provider->on_registry_ready().is_signaled());
+    WebAppRegistrar& registrar = provider->registrar();
+    if (registrar.IsDisallowedLaunchProtocol(app_id_, protocol_url.scheme())) {
+      // If disallowed, return `kHandled` to signal that the launch is spoken
+      // for, but do not launch a browser or app window. `this` will be deleted.
+      return LaunchResult::kHandled;
+    }
+
+    OsIntegrationManager& os_integration_manager =
+        provider->os_integration_manager();
+    const std::vector<ProtocolHandler> handlers =
+        os_integration_manager.GetHandlersForProtocol(protocol_url.scheme());
+
+    // TODO(https://crbug.com/1249907): This code should be simplified such that
+    // it only checks if the protocol is associated with the app_id.
+    // |GetHandlersForProtocol| will return a list of all apps that can handle
+    // the protocol, which is unnecessary here.
+    if (!base::Contains(handlers, true, [](const auto& handler) {
+          return handler.web_app_id().has_value();
+        })) {
+      return LaunchResult::kNotHandled;
+    }
+
+    protocol_url_ = protocol_url;
+
+    // `this` will stay alive until `launch_callback` is executed or destroyed.
+    auto launch_callback =
+        base::BindOnce(&StartupWebAppCreator::OnUserDecisionDialogCompleted,
+                       base::WrapRefCounted(this));
+
+    // Check if we have permission to launch the app directly.
+    if (registrar.IsAllowedLaunchProtocol(app_id_, protocol_url_.scheme())) {
+      std::move(launch_callback)
+          .Run(/*allowed=*/true, /*remember_user_choice=*/false);
+    } else {
+      chrome::ShowWebAppProtocolHandlerIntentPicker(
+          protocol_url_, profile_, app_id_, std::move(launch_callback));
+    }
+    return LaunchResult::kHandled;
+  }
+
+  // Determines if the launch is a file handler launch. If so, takes
+  // responsibility for the rest of the launch process.
+  LaunchResult MaybeLaunchFileHandler() {
+    // This path is only used when file handling is gated on settings.
+    if (!base::FeatureList::IsEnabled(
+            features::kDesktopPWAsFileHandlingSettingsGated)) {
+      return LaunchResult::kNotHandled;
+    }
+
+    std::vector<base::FilePath> launch_files =
+        apps::GetLaunchFilesFromCommandLine(command_line_);
+    if (launch_files.empty())
+      return LaunchResult::kNotHandled;
+
+    WebAppProvider* const provider = WebAppProvider::GetForWebApps(profile_);
+    absl::optional<GURL> file_handler_url =
+        provider->os_integration_manager().GetMatchingFileHandlerURL(
+            app_id_, launch_files);
+    if (!file_handler_url)
+      return LaunchResult::kNotHandled;
+
+    launch_files_ = std::move(launch_files);
+
+    const WebApp* web_app = provider->registrar().GetAppById(app_id_);
+    DCHECK(web_app);
+
+    // `this` will stay alive until `launch_callback` is executed or destroyed.
+    auto launch_callback =
+        base::BindOnce(&StartupWebAppCreator::OnUserDecisionDialogCompleted,
+                       base::WrapRefCounted(this));
+
+    switch (web_app->file_handler_approval_state()) {
+      case ApiApprovalState::kRequiresPrompt:
+        chrome::ShowWebAppFileLaunchDialog(launch_files_, profile_, app_id_,
+                                           std::move(launch_callback));
+        break;
+      case ApiApprovalState::kAllowed:
+        std::move(launch_callback)
+            .Run(/*allowed=*/true, /*remember_user_choice=*/false);
+        break;
+      case ApiApprovalState::kDisallowed:
+        // The disallowed case should have been handled by
+        // `GetMatchingFileHandlerURL()`.
+        NOTREACHED();
+        break;
+    }
+    return LaunchResult::kHandled;
+  }
+
+  void OnPersistUserChoiceCompleted(bool allowed) {
+    if (allowed)
+      LaunchApp();
+    // `this` will be deleted.
+  }
+
+  void OnUserDecisionDialogCompleted(bool allowed, bool remember_user_choice) {
+    // `this` will stay alive until `persist_callback` is executed or destroyed.
+    auto persist_callback =
+        base::BindOnce(&StartupWebAppCreator::OnPersistUserChoiceCompleted,
+                       base::WrapRefCounted(this), allowed);
+
+    if (remember_user_choice) {
+      if (!protocol_url_.is_empty()) {
+        PersistProtocolHandlersUserChoice(profile_, app_id_, protocol_url_,
+                                          allowed, std::move(persist_callback));
+      } else {
+        DCHECK(!launch_files_.empty());
+        PersistFileHandlersUserChoice(profile_, app_id_, allowed,
+                                      std::move(persist_callback));
+      }
+    } else {
+      std::move(persist_callback).Run();
+    }
+  }
+
+  void OnAppLaunched(Browser* browser, apps::mojom::LaunchContainer container) {
+    FinalizeWebAppLaunch(launch_mode_, browser, container);
+  }
+
+  // Command line for this launch.
+  const base::CommandLine command_line_;
+  const base::FilePath cur_dir_;
+  Profile* const profile_;
+
+  // The app id for this launch, corresponding to --app-id on the command line.
+  const AppId app_id_;
+
+  // This object keeps the profile and browser process alive while determining
+  // whether to launch a window.
+  ScopedProfileKeepAlive profile_keep_alive_;
+  ScopedKeepAlive keep_alive_;
+
+  absl::optional<LaunchMode> launch_mode_;
+
+  // At most one of the following members should be non-empty.
+  // If non-empty, this launch will be treated as a protocol handler launch.
+  GURL protocol_url_;
+  // If non-empty, this launch will be treated as a file handler launch.
+  std::vector<base::FilePath> launch_files_;
+};
 
 }  // namespace
 
-bool MaybeHandleEarlyWebAppLaunch(
-    const base::CommandLine& command_line,
-    const base::FilePath& cur_dir,
-    Profile* profile,
-    Profile* last_used_profile,
-    const std::vector<Profile*>& last_opened_profiles,
-    FinalizeWebAppLaunchCallback finalize_callback,
-    ContinueStartupCallback startup_callback) {
-  std::string app_id = command_line.GetSwitchValueASCII(switches::kAppId);
-  // There must be a kAppId switch arg in the command line to launch.
-  if (app_id.empty())
-    return false;
+bool MaybeHandleWebAppLaunch(const base::CommandLine& command_line,
+                             const base::FilePath& cur_dir,
+                             Profile* profile) {
+  return StartupWebAppCreator::MaybeHandleWebAppLaunch(command_line, cur_dir,
+                                                       profile);
+}
 
-  GURL protocol_url;
-  base::CommandLine::StringVector args = command_line.GetArgs();
-  for (const auto& arg : args) {
-#if defined(OS_WIN)
-    GURL potential_protocol(base::AsStringPiece16(arg));
-#else
-    GURL potential_protocol(arg);
-#endif  // defined(OS_WIN)
-    // protocol_url is checked for validity later with getting the provider and
-    // consulting the os_integration_manager. However because that process has a
-    // wait for "on_registry_ready()", `potential_protocol` checks for
-    // blink::IsValidCustomHandlerScheme() here to avoid loading the
-    // WebAppProvider with a false positive.
-    bool unused_has_custom_scheme_prefix = false;
-    if (potential_protocol.is_valid() &&
-        blink::IsValidCustomHandlerScheme(potential_protocol.scheme(),
-                                          /*allow_ext_prefix=*/false,
-                                          unused_has_custom_scheme_prefix)) {
-      protocol_url = std::move(potential_protocol);
+void FinalizeWebAppLaunch(absl::optional<LaunchMode> app_launch_mode,
+                          Browser* browser,
+                          apps::mojom::LaunchContainer container) {
+  if (!browser)
+    return;
+
+  LaunchMode mode;
+  switch (container) {
+    case apps::mojom::LaunchContainer::kLaunchContainerWindow:
+      DCHECK(browser->is_type_app());
+      mode = app_launch_mode.value_or(LaunchMode::kAsWebAppInWindowOther);
       break;
-    }
-  }
-  std::vector<base::FilePath> launch_files;
-  if (protocol_url.is_empty()) {
-    // This path is only used when file handling is gated on settings.
-    if (base::FeatureList::IsEnabled(
-            features::kDesktopPWAsFileHandlingSettingsGated)) {
-      launch_files = apps::GetLaunchFilesFromCommandLine(command_line);
-    }
-    if (launch_files.empty())
-      return false;
-  }
-
-  WebAppProvider* const provider = WebAppProvider::GetForWebApps(profile);
-  DCHECK(provider);
-  // Create the keep_alives so the profiles and the browser stays alive as we
-  // wait for the provider() to be ready.
-  auto keep_alive = std::make_unique<ScopedKeepAlive>(
-      KeepAliveOrigin::WEB_APP_PROTOCOL_HANDLER_LAUNCH,
-      KeepAliveRestartOption::DISABLED);
-  std::vector<std::unique_ptr<ScopedProfileKeepAlive>> profile_keep_alives;
-  profile_keep_alives.push_back(std::make_unique<ScopedProfileKeepAlive>(
-      profile, ProfileKeepAliveOrigin::kWebAppProtocolHandlerLaunch));
-  profile_keep_alives.push_back(std::make_unique<ScopedProfileKeepAlive>(
-      last_used_profile, ProfileKeepAliveOrigin::kWebAppProtocolHandlerLaunch));
-  for (Profile* last_opened_profile : last_opened_profiles) {
-    profile_keep_alives.push_back(std::make_unique<ScopedProfileKeepAlive>(
-        last_opened_profile,
-        ProfileKeepAliveOrigin::kWebAppProtocolHandlerLaunch));
+    case apps::mojom::LaunchContainer::kLaunchContainerTab:
+      DCHECK(!browser->is_type_app());
+      mode = LaunchMode::kAsWebAppInTab;
+      break;
+    case apps::mojom::LaunchContainer::kLaunchContainerPanelDeprecated:
+      NOTREACHED();
+      FALLTHROUGH;
+    case apps::mojom::LaunchContainer::kLaunchContainerNone:
+      DCHECK(!browser->is_type_app());
+      mode = LaunchMode::kUnknownWebApp;
+      break;
   }
 
-  if (!protocol_url.is_empty()) {
-    provider->on_registry_ready().Post(
-        FROM_HERE,
-        base::BindOnce(
-            OnWebAppSystemReadyMaybeLaunchProtocolHandler, provider,
-            std::move(protocol_url), std::move(app_id), command_line, cur_dir,
-            profile, std::move(keep_alive), std::move(profile_keep_alives),
-            std::move(finalize_callback), std::move(startup_callback)));
-  } else {
-    DCHECK(!launch_files.empty());
-    provider->on_registry_ready().Post(
-        FROM_HERE,
-        base::BindOnce(
-            OnWebAppSystemReadyMaybeLaunchFileHandler, provider,
-            std::move(launch_files), std::move(app_id), command_line, cur_dir,
-            profile, std::move(keep_alive), std::move(profile_keep_alives),
-            std::move(finalize_callback), std::move(startup_callback)));
-  }
+  LaunchModeRecorder().SetLaunchMode(mode);
 
-  return true;
+  StartupBrowserCreatorImpl::MaybeToggleFullscreen(browser);
+}
+
+void SetStartupDoneCallbackForTesting(base::OnceClosure callback) {
+  GetStartupDoneCallback() = std::move(callback);
 }
 
 }  // namespace startup

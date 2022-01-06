@@ -14,6 +14,7 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/web_applications/test/mock_os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/common/chrome_constants.h"
@@ -29,140 +30,6 @@
 
 namespace web_app {
 namespace {
-
-class MockOsIntegrationManager : public OsIntegrationManager {
- public:
-  MockOsIntegrationManager()
-      : OsIntegrationManager(nullptr, nullptr, nullptr, nullptr, nullptr) {}
-  explicit MockOsIntegrationManager(
-      std::unique_ptr<WebAppProtocolHandlerManager> protocol_handler_manager)
-      : OsIntegrationManager(nullptr,
-                             nullptr,
-                             nullptr,
-                             std::move(protocol_handler_manager),
-                             nullptr) {}
-  ~MockOsIntegrationManager() override = default;
-
-  // Installation:
-  MOCK_METHOD(void,
-              CreateShortcuts,
-              (const AppId& app_id,
-               bool add_to_desktop,
-               CreateShortcutsCallback callback),
-              (override));
-
-  MOCK_METHOD(void,
-              RegisterFileHandlers,
-              (const AppId& app_id,
-               base::OnceCallback<void(bool success)> callback),
-              (override));
-
-  MOCK_METHOD(void,
-              RegisterProtocolHandlers,
-              (const AppId& app_id,
-               base::OnceCallback<void(bool success)> callback),
-              (override));
-  MOCK_METHOD(void,
-              RegisterUrlHandlers,
-              (const AppId& app_id,
-               base::OnceCallback<void(bool success)> callback),
-              (override));
-  MOCK_METHOD(void,
-              RegisterShortcutsMenu,
-              (const AppId& app_id,
-               const std::vector<WebApplicationShortcutsMenuItemInfo>&
-                   shortcuts_menu_item_infos,
-               const ShortcutsMenuIconBitmaps& shortcuts_menu_icon_bitmaps,
-               base::OnceCallback<void(bool success)> callback),
-              (override));
-
-  MOCK_METHOD(void,
-              ReadAllShortcutsMenuIconsAndRegisterShortcutsMenu,
-              (const AppId& app_id,
-               base::OnceCallback<void(bool success)> callback),
-              (override));
-
-  MOCK_METHOD(void,
-              RegisterRunOnOsLogin,
-              (const AppId& app_id, RegisterRunOnOsLoginCallback callback),
-              (override));
-
-  MOCK_METHOD(void,
-              MacAppShimOnAppInstalledForProfile,
-              (const AppId& app_id),
-              (override));
-
-  MOCK_METHOD(void, AddAppToQuickLaunchBar, (const AppId& app_id), (override));
-
-  MOCK_METHOD(void,
-              RegisterWebAppOsUninstallation,
-              (const AppId& app_id, const std::string& name),
-              (override));
-
-  // Uninstallation:
-  MOCK_METHOD(bool, UnregisterShortcutsMenu, (const AppId& app_id), (override));
-  MOCK_METHOD(void,
-              UnregisterRunOnOsLogin,
-              (const AppId& app_id,
-               const base::FilePath& profile_path,
-               const std::u16string& shortcut_title,
-               UnregisterRunOnOsLoginCallback callback),
-              (override));
-  MOCK_METHOD(void,
-              DeleteShortcuts,
-              (const AppId& app_id,
-               const base::FilePath& shortcuts_data_dir,
-               std::unique_ptr<ShortcutInfo> shortcut_info,
-               DeleteShortcutsCallback callback),
-              (override));
-  MOCK_METHOD(void,
-              UnregisterFileHandlers,
-              (const AppId& app_id, base::OnceCallback<void(bool)> callback),
-              (override));
-  MOCK_METHOD(void,
-              UnregisterProtocolHandlers,
-              (const AppId& app_id, base::OnceCallback<void(bool)> callback),
-              (override));
-  MOCK_METHOD(void, UnregisterUrlHandlers, (const AppId& app_id), (override));
-  MOCK_METHOD(void,
-              UnregisterWebAppOsUninstallation,
-              (const AppId& app_id),
-              (override));
-
-  // Update:
-  MOCK_METHOD(void,
-              UpdateFileHandlers,
-              (const AppId& app_id,
-               FileHandlerUpdateAction file_handlers_need_os_update),
-              (override));
-  MOCK_METHOD(void,
-              UpdateShortcuts,
-              (const AppId& app_id,
-               base::StringPiece old_name,
-               base::OnceClosure callback),
-              (override));
-  MOCK_METHOD(void,
-              UpdateShortcutsMenu,
-              (const AppId& app_id, const WebApplicationInfo& web_app_info),
-              (override));
-  MOCK_METHOD(void,
-              UpdateUrlHandlers,
-              (const AppId& app_id,
-               base::OnceCallback<void(bool success)> callback),
-              (override));
-  MOCK_METHOD(void,
-              UpdateProtocolHandlers,
-              (const AppId& app_id,
-               bool force_shortcut_updates_if_needed,
-               base::OnceClosure update_finished_callback),
-              (override));
-
-  // Utility methods:
-  MOCK_METHOD(std::unique_ptr<ShortcutInfo>,
-              BuildShortcutInfo,
-              (const AppId& app_id),
-              (override));
-};
 
 #if defined(OS_WIN)
 const base::FilePath::CharType kFakeProfilePath[] =
@@ -247,7 +114,7 @@ TEST_F(OsIntegrationManagerTest, InstallOsHooksEverything) {
   EXPECT_CALL(manager, AddAppToQuickLaunchBar(app_id)).Times(1);
   EXPECT_CALL(manager, ReadAllShortcutsMenuIconsAndRegisterShortcutsMenu(
                            app_id, testing::_))
-      .WillOnce(base::test::RunOnceCallback<1>(true));
+      .WillOnce(base::test::RunOnceCallback<1>(Result::kOk));
   EXPECT_CALL(manager, RegisterRunOnOsLogin(app_id, testing::_)).Times(1);
 
   InstallOsHooksOptions options;
@@ -292,7 +159,7 @@ TEST_F(OsIntegrationManagerTest, UninstallOsHooksEverything) {
           testing::Return(testing::ByMove(CreateTestShorcutInfo(app_id))));
   EXPECT_CALL(manager, DeleteShortcuts(app_id, kExpectedShortcutPath,
                                        testing::_, testing::_))
-      .WillOnce(base::test::RunOnceCallback<3>(true));
+      .WillOnce(base::test::RunOnceCallback<3>(Result::kOk));
   EXPECT_CALL(manager, UnregisterFileHandlers(app_id, testing::_)).Times(1);
   EXPECT_CALL(manager, UnregisterProtocolHandlers(app_id, testing::_)).Times(1);
   EXPECT_CALL(manager, UnregisterUrlHandlers(app_id)).Times(1);
@@ -303,6 +170,13 @@ TEST_F(OsIntegrationManagerTest, UninstallOsHooksEverything) {
               UnregisterRunOnOsLogin(app_id, base::FilePath(kFakeProfilePath),
                                      kFakeAppTitle, testing::_))
       .Times(1);
+
+  EXPECT_CALL(manager, UninstallAllOsHooks(testing::_, testing::_))
+      .WillOnce(
+          [&manager](const AppId& app_id, UninstallOsHooksCallback callback) {
+            return manager.OsIntegrationManager::UninstallAllOsHooks(
+                app_id, std::move(callback));
+          });
 
   manager.UninstallAllOsHooks(app_id, std::move(callback));
   run_loop.Run();
@@ -322,8 +196,9 @@ TEST_F(OsIntegrationManagerTest, UpdateOsHooksEverything) {
   WebApplicationInfo web_app_info;
   base::StringPiece old_name = "test-name";
 
-  EXPECT_CALL(manager,
-              UpdateFileHandlers(app_id, FileHandlerUpdateAction::kUpdate))
+  EXPECT_CALL(
+      manager,
+      UpdateFileHandlers(app_id, FileHandlerUpdateAction::kUpdate, testing::_))
       .Times(1);
   EXPECT_CALL(manager, UpdateShortcuts(app_id, old_name, testing::_)).Times(1);
   EXPECT_CALL(manager, UpdateShortcutsMenu(app_id, testing::_)).Times(1);
@@ -356,16 +231,16 @@ TEST_F(OsIntegrationManagerTest, UpdateProtocolHandlers) {
 #endif
 
   EXPECT_CALL(manager, UnregisterProtocolHandlers(app_id, testing::_))
-      .WillOnce([](const AppId& app_id,
-                   base::OnceCallback<void(bool)> update_finished_callback) {
-        std::move(update_finished_callback).Run(true);
-      });
+      .WillOnce(
+          [](const AppId& app_id, ResultCallback update_finished_callback) {
+            std::move(update_finished_callback).Run(Result::kOk);
+          });
 
   EXPECT_CALL(manager, RegisterProtocolHandlers(app_id, testing::_))
-      .WillOnce([](const AppId& app_id,
-                   base::OnceCallback<void(bool)> update_finished_callback) {
-        std::move(update_finished_callback).Run(true);
-      });
+      .WillOnce(
+          [](const AppId& app_id, ResultCallback update_finished_callback) {
+            std::move(update_finished_callback).Run(Result::kOk);
+          });
 
   auto update_finished_callback =
       base::BindLambdaForTesting([&]() { run_loop.Quit(); });

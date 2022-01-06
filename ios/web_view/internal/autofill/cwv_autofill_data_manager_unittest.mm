@@ -21,6 +21,7 @@
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 #import "ios/web_view/internal/passwords/cwv_password_internal.h"
 #import "ios/web_view/public/cwv_autofill_data_manager_observer.h"
+#import "ios/web_view/public/cwv_credential_provider_extension_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -59,7 +60,8 @@ class CWVAutofillDataManagerTest : public PlatformTest {
 
     password_store_ = new password_manager::TestPasswordStore(
         password_manager::IsAccountStore(true));
-    password_store_->Init(nullptr);
+    password_store_->Init(/*prefs=*/nullptr,
+                          /*affiliated_match_helper=*/nullptr);
 
     autofill_data_manager_ = [[CWVAutofillDataManager alloc]
         initWithPersonalDataManager:personal_data_manager_.get()
@@ -260,6 +262,32 @@ TEST_F(CWVAutofillDataManagerTest, PasswordsDidChangeCallback) {
 
     [observer verify];
   }
+}
+
+// Tests CWVAutofillDataManager can add a new password created from the
+// credential provider extension.
+TEST_F(CWVAutofillDataManagerTest,
+       AddNewPasswordFromCredentialProviderExtension) {
+  NSString* keychain_identifier = @"keychain-identifier";
+  [CWVCredentialProviderExtensionUtils
+      storePasswordForKeychainIdentifier:keychain_identifier
+                                password:@"testpassword"];
+  [autofill_data_manager_ addNewPasswordForUsername:@"testusername"
+                                  serviceIdentifier:@"https://www.chromium.org/"
+                                 keychainIdentifier:keychain_identifier];
+
+  NSArray<CWVPassword*>* passwords = FetchPasswords();
+  ASSERT_EQ(1ul, passwords.count);
+  CWVPassword* password = passwords.firstObject;
+  EXPECT_NSEQ(@"testusername", password.username);
+
+  // The following expectation fails because the TestPasswordStore does not
+  // use the LoginDatabase underneath. A LoginDatabase will properly decrypt
+  // the password from the keychain identifier and fill it out.
+  // EXPECT_NSEQ(@"testpassword", password.password);
+
+  EXPECT_NSEQ(@"https://www.chromium.org/", password.site);
+  EXPECT_NSEQ(keychain_identifier, password.keychainIdentifier);
 }
 
 }  // namespace ios_web_view

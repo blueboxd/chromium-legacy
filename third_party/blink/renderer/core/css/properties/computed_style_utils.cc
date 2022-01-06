@@ -1469,7 +1469,7 @@ static bool IsSVGObjectWithWidthAndHeight(const LayoutObject& layout_object) {
 FloatSize ComputedStyleUtils::UsedBoxSize(const LayoutObject& layout_object) {
   if (layout_object.IsSVGChild() &&
       IsSVGObjectWithWidthAndHeight(layout_object)) {
-    FloatSize size(layout_object.ObjectBoundingBox().Size());
+    FloatSize size(layout_object.ObjectBoundingBox().size());
     // The object bounding box does not have zoom applied. Multiply with zoom
     // here since we'll divide by it when we produce the CSS value.
     size.Scale(layout_object.StyleRef().EffectiveZoom());
@@ -1871,7 +1871,8 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
         result->Append(*CSSNumericLiteralValue::Create(
             scale.X(), CSSPrimitiveValue::UnitType::kNumber));
       }
-      if (id == CSSValueID::kScaleY || id == CSSValueID::kScale ||
+      if (id == CSSValueID::kScaleY ||
+          (id == CSSValueID::kScale && scale.Y() != scale.X()) ||
           id == CSSValueID::kScale3d) {
         result->Append(*CSSNumericLiteralValue::Create(
             scale.Y(), CSSPrimitiveValue::UnitType::kNumber));
@@ -1897,7 +1898,8 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
         result->Append(
             *CSSPrimitiveValue::CreateFromLength(translate.X(), zoom));
       }
-      if (id == CSSValueID::kTranslateY || id == CSSValueID::kTranslate ||
+      if (id == CSSValueID::kTranslateY ||
+          (id == CSSValueID::kTranslate && (translate.Y().Value() != 0.f)) ||
           id == CSSValueID::kTranslate3d) {
         result->Append(
             *CSSPrimitiveValue::CreateFromLength(translate.Y(), zoom));
@@ -1966,9 +1968,13 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
       const auto& perspective = To<PerspectiveTransformOperation>(operation);
       auto* result =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kPerspective);
-      result->Append(*CSSNumericLiteralValue::Create(
-          perspective.Perspective() / zoom,
-          CSSPrimitiveValue::UnitType::kPixels));
+      if (perspective.Perspective()) {
+        result->Append(*CSSNumericLiteralValue::Create(
+            *perspective.Perspective() / zoom,
+            CSSPrimitiveValue::UnitType::kPixels));
+      } else {
+        result->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
+      }
       return result;
     }
     case TransformOperation::kMatrix: {
@@ -2029,7 +2035,7 @@ CSSValue* ComputedStyleUtils::ComputedTransformList(
     const LayoutObject* layout_object) {
   FloatSize box_size(0, 0);
   if (layout_object)
-    box_size = ReferenceBoxForTransform(*layout_object).Size();
+    box_size = ReferenceBoxForTransform(*layout_object).size();
 
   return ValueForTransformList(style.Transform(), style.EffectiveZoom(),
                                box_size);

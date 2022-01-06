@@ -4,8 +4,10 @@
 
 #include "chromeos/services/bluetooth_config/cros_bluetooth_config.h"
 
+#include "chromeos/services/bluetooth_config/device_name_manager.h"
 #include "chromeos/services/bluetooth_config/device_operation_handler.h"
 #include "chromeos/services/bluetooth_config/discovery_session_manager.h"
+#include "chromeos/services/bluetooth_config/fast_pair_delegate.h"
 #include "chromeos/services/bluetooth_config/initializer.h"
 #include "chromeos/services/bluetooth_config/system_properties_provider_impl.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -15,12 +17,16 @@ namespace bluetooth_config {
 
 CrosBluetoothConfig::CrosBluetoothConfig(
     Initializer& initializer,
-    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
+    FastPairDelegate* fast_pair_delegate)
     : adapter_state_controller_(
           initializer.CreateAdapterStateController(bluetooth_adapter)),
+      device_name_manager_(
+          initializer.CreateDeviceNameManager(bluetooth_adapter)),
       device_cache_(
           initializer.CreateDeviceCache(adapter_state_controller_.get(),
-                                        bluetooth_adapter)),
+                                        bluetooth_adapter,
+                                        device_name_manager_.get())),
       system_properties_provider_(
           std::make_unique<SystemPropertiesProviderImpl>(
               adapter_state_controller_.get(),
@@ -31,9 +37,21 @@ CrosBluetoothConfig::CrosBluetoothConfig(
           device_cache_.get())),
       device_operation_handler_(initializer.CreateDeviceOperationHandler(
           adapter_state_controller_.get(),
-          bluetooth_adapter)) {}
+          bluetooth_adapter)),
+      fast_pair_delegate_(fast_pair_delegate) {
+  if (fast_pair_delegate_)
+    fast_pair_delegate_->SetDeviceNameManager(device_name_manager_.get());
+}
 
-CrosBluetoothConfig::~CrosBluetoothConfig() = default;
+CrosBluetoothConfig::~CrosBluetoothConfig() {
+  if (fast_pair_delegate_)
+    fast_pair_delegate_->SetDeviceNameManager(nullptr);
+}
+
+void CrosBluetoothConfig::SetPrefs(PrefService* logged_in_profile_prefs,
+                                   PrefService* local_state) {
+  device_name_manager_->SetPrefs(local_state);
+}
 
 void CrosBluetoothConfig::BindPendingReceiver(
     mojo::PendingReceiver<mojom::CrosBluetoothConfig> pending_receiver) {
@@ -69,6 +87,11 @@ void CrosBluetoothConfig::Disconnect(
 void CrosBluetoothConfig::Forget(const std::string& device_id,
                                  CrosBluetoothConfig::ForgetCallback callback) {
   device_operation_handler_->Forget(device_id, std::move(callback));
+}
+
+void CrosBluetoothConfig::SetDeviceNickname(const std::string& device_id,
+                                            const std::string& nickname) {
+  device_name_manager_->SetDeviceNickname(device_id, nickname);
 }
 
 }  // namespace bluetooth_config

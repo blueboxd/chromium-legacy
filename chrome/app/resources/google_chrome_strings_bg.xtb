@@ -51,7 +51,6 @@
 <translation id="2123055963409958220">Помогнете за подобряването на Chrome, като подадете сигнал за <ph name="BEGIN_LINK" />текущите настройки<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Моля, рестартирайте Chrome сега</translation>
 <translation id="2189289170880510015">Персонализирайте някои от най-важните настройки за поверителност на Chrome</translation>
-<translation id="2246246234298806438">Google Chrome не може да покаже визуализацията за печат, когато вграденият визуализатор на PDF файлове липсва.</translation>
 <translation id="2290014774651636340">Ключовете на приложния програмен интерфейс (API) на Google липсват. Някои функции на Google Chrome ще бъдат деактивирани.</translation>
 <translation id="2290095356545025170">Наистина ли искате да деинсталирате Google Chrome?</translation>
 <translation id="2309047409763057870">Тази инсталация на Google Chrome е алтернативна и не може да се зададе като браузър по подразбиране.</translation>
@@ -62,7 +61,6 @@
 <translation id="2429317896000329049">Google Chrome не можа да синхронизира данните ви, защото синхронизирането не е налице за домейна ви.</translation>
 <translation id="2467438592969358367">Google Chrome иска да експортира паролите ви. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
-<translation id="2518751521812750372">Когато затворите Chrome, „бисквитките“ и данните за сайтовете от страниците, които сте посетили, се изчистват автоматично</translation>
 <translation id="2534507159460261402">Google Pay (копирано в Chrome)</translation>
 <translation id="2574930892358684005">Този потребителски профил в Chrome вече се използва от <ph name="EXISTING_USER" />. За да бъде сърфирането ви отделно, браузърът може да създаде ваш собствен потребителски профил.</translation>
 <translation id="2580411288591421699">Не може да се инсталира същата версия на Google Chrome, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
@@ -91,6 +89,7 @@
 <translation id="3037838751736561277">Google Chrome работи на заден план.</translation>
 <translation id="3059710691562604940">Функцията „Безопасно сърфиране“ е изключена. Chrome препоръчва да я включите.</translation>
 <translation id="3065168410429928842">Раздел в Chrome</translation>
+<translation id="3069821012350118710">Сайтовете, които посещавате, помнят информацията ви, докато затворите Chrome</translation>
 <translation id="3080151273017101988">Изпълняване на приложения на заден план при затворен браузър Google Chrome</translation>
 <translation id="3089968997497233615">Налице е нова, по-сигурна версия на Google Chrome.</translation>
 <translation id="3100998948628680988">Наименуване на потребителския ви профил в Chrome</translation>
@@ -101,6 +100,7 @@
 <translation id="3379938682270551431">{0,plural, =0{Chrome ще се стартира отново сега}=1{Chrome ще се стартира отново след 1 секунда}other{Chrome ще се стартира отново след # секунди}}</translation>
 <translation id="3395323229510056640">Получаване на помощ за Chrome OS</translation>
 <translation id="3396977131400919238">По време на инсталирането възникна грешка в операционната система. Моля, изтеглете Google Chrome отново.</translation>
+<translation id="3428747202529429621">Осигурява безопасността ви в Chrome и може да се използва с цел подобряване на сигурността ви в други приложения на Google, докато сте в профила си.</translation>
 <translation id="3434246496373299699">Chrome може да проверява паролите ви, когато влезете с профила си в Google</translation>
 <translation id="3451115285585441894">Добавя се към Chrome...</translation>
 <translation id="345171907106878721">Добавяне на вас към Chrome</translation>
@@ -190,6 +190,7 @@
 <translation id="5804318322022881572">Chrome не можа да се стартира. Опитайте отново.</translation>
 <translation id="5867197326698922595">Google Chrome се опитва да редактира паролите.</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
+<translation id="5901850848447342934">Когато затворите Chrome, <ph name="BEGIN_BOLD" />ще излезете от повечето сайтове<ph name="END_BOLD" />. Ако синхронизирането е изключено, <ph name="BEGIN_BOLD" />ще излезете и от услугите на Google и Chrome<ph name="END_BOLD" />.</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Вход в мрежата</translation>
 <translation id="5940385492829620908">Тук ще намерите посещаваните от вас места в мрежата, отметките и другите си неща в Chrome.</translation>
 <translation id="5941830788786076944">Искам Google Chrome да бъде браузърът по подразбиране</translation>
@@ -199,11 +200,11 @@
 <translation id="6145313976051292476">Отваряне на PDF файловете в Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome бета</translation>
-<translation id="61852838583753520">Актуализиране на &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Правило за Google Chrome за допускане на входящия трафик за mDNS.</translation>
 <translation id="6291089322031436445">Приложения за Chrome Dev</translation>
 <translation id="6291549208091401781">Google Chrome вече е инсталиран за всички потребители на компютъра ви.</translation>
 <translation id="6368958679917195344">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6412673304250309937">Проверка на URL адресите в съхраняван в Chrome списък с опасни сайтове. Ако сайт се опита да открадне паролата ви или изтеглите опасен файл от сайт, Chrome може също така да изпрати до „Безопасно сърфиране“ URL адресите и част от съдържанието на страницата.</translation>
 <translation id="6418662306461808273">Искате ли да превключите към съществуващ потребителски профил в Chrome?</translation>
 <translation id="6506909944137591434">Chrome се нуждае от разрешение за достъп до камерата, за да създаде триизмерна карта на заобикалящата ви среда</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
@@ -280,11 +281,11 @@
 <translation id="8614913330719544658">Google Chrome блокира. Да се стартира ли отново сега?</translation>
 <translation id="861702415419836452">Chrome се нуждае от разрешение за достъп до камерата ви, за да създаде триизмерна карта на заобикалящата ви среда</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome ще се стартира отново след 1 минута}other{Chrome ще се стартира отново след # минути}}</translation>
+<translation id="8629311577791198377">Когато затворите прозорците на Chrome, „бисквитките“ и данните за сайтовете автоматично се изчистват</translation>
 <translation id="8641606876632989680">Chrome ще ви уведоми, когато влизате в профил с компрометирана парола</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">То също контролира коя страница се показва при стартиране на Chrome.</translation>
 <translation id="8686817260976772516">С помощта на потребителските профили в Chromium можете да разделите данните си в браузъра. Създайте потребителски профили за близки и приятели или за разделяне на работата от забавленията.</translation>
-<translation id="870251953148363156">Актуализиране на &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome не може да определи или зададе браузъра по подразбиране</translation>
 <translation id="8823341990149967727">Chrome не е актуален</translation>
 <translation id="8834965163890861871">Google Chrome опитва да редактира паролите. За да разрешите това, въведете паролата си за Windows.</translation>

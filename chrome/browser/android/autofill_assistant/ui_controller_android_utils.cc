@@ -3,8 +3,13 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
+
+#include <utility>
+#include <vector>
+
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/containers/flat_map.h"
 #include "base/notreached.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantChip_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantColor_jni.h"
@@ -14,7 +19,7 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDrawable_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoPopup_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantValue_jni.h"
-#include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantServiceInjector_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantDependencyInjector_jni.h"
 #include "chrome/browser/android/autofill_assistant/client_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "components/autofill_assistant/browser/generic_ui_java_generated_enums.h"
@@ -402,6 +407,15 @@ std::string SafeConvertJavaStringToNative(
   return native_string;
 }
 
+base::android::ScopedJavaLocalRef<jstring> ConvertNativeOptionalStringToJava(
+    JNIEnv* env,
+    const absl::optional<std::string> optional_string) {
+  if (!optional_string.has_value()) {
+    return nullptr;
+  }
+  return base::android::ConvertUTF8ToJavaString(env, *optional_string);
+}
+
 BottomSheetState ToNativeBottomSheetState(int state) {
   switch (state) {
     case 1:
@@ -475,7 +489,7 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaAssistantChipList(
   return jlist;
 }
 
-std::map<std::string, std::string> CreateStringMapFromJava(
+base::flat_map<std::string, std::string> CreateStringMapFromJava(
     JNIEnv* env,
     const base::android::JavaRef<jobjectArray>& names,
     const base::android::JavaRef<jobjectArray>& values) {
@@ -484,12 +498,12 @@ std::map<std::string, std::string> CreateStringMapFromJava(
   std::vector<std::string> values_vector;
   base::android::AppendJavaStringArrayToStringVector(env, values,
                                                      &values_vector);
-  std::map<std::string, std::string> result;
+  std::vector<std::pair<std::string, std::string>> result;
   DCHECK_EQ(names_vector.size(), values_vector.size());
   for (size_t i = 0; i < names_vector.size(); ++i) {
-    result.insert(std::make_pair(names_vector[i], values_vector[i]));
+    result.emplace_back(names_vector[i], values_vector[i]);
   }
-  return result;
+  return base::flat_map<std::string, std::string>(std::move(result));
 }
 
 std::unique_ptr<TriggerContext> CreateTriggerContext(
@@ -527,7 +541,7 @@ bool IsCustomTab(content::WebContents* web_contents) {
 std::unique_ptr<Service> GetServiceToInject(JNIEnv* env,
                                             ClientAndroid* client_android) {
   jlong jtest_service_to_inject =
-      Java_AutofillAssistantServiceInjector_getServiceToInject(
+      Java_AutofillAssistantDependencyInjector_getServiceToInject(
           env, reinterpret_cast<intptr_t>(client_android));
   std::unique_ptr<Service> test_service = nullptr;
   if (jtest_service_to_inject) {
@@ -540,7 +554,7 @@ std::unique_ptr<Service> GetServiceToInject(JNIEnv* env,
 std::unique_ptr<ServiceRequestSender> GetServiceRequestSenderToInject(
     JNIEnv* env) {
   jlong jtest_service_request_sender_to_inject =
-      Java_AutofillAssistantServiceInjector_getServiceRequestSenderToInject(
+      Java_AutofillAssistantDependencyInjector_getServiceRequestSenderToInject(
           env);
   std::unique_ptr<ServiceRequestSender> test_service_request_sender;
   if (jtest_service_request_sender_to_inject) {
@@ -548,6 +562,18 @@ std::unique_ptr<ServiceRequestSender> GetServiceRequestSenderToInject(
         reinterpret_cast<void*>(jtest_service_request_sender_to_inject)));
   }
   return test_service_request_sender;
+}
+
+std::unique_ptr<AutofillAssistantTtsController> GetTtsControllerToInject(
+    JNIEnv* env) {
+  jlong jtest_tts_controller_to_inject =
+      Java_AutofillAssistantDependencyInjector_getTtsControllerToInject(env);
+  std::unique_ptr<AutofillAssistantTtsController> test_tts_controller;
+  if (jtest_tts_controller_to_inject) {
+    test_tts_controller.reset(static_cast<AutofillAssistantTtsController*>(
+        reinterpret_cast<void*>(jtest_tts_controller_to_inject)));
+  }
+  return test_tts_controller;
 }
 
 }  // namespace ui_controller_android_utils

@@ -33,13 +33,11 @@ import "services/network/public/mojom/isolation_info.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/origin_policy_manager.mojom";
 import "services/network/public/mojom/parsed_headers.mojom";
-import "services/network/public/mojom/p2p.mojom";
-import "services/network/public/mojom/p2p_trusted.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
 import "services/network/public/mojom/proxy_config_with_annotation.mojom";
 import "services/network/public/mojom/proxy_lookup_client.mojom";
 import "services/network/public/mojom/proxy_resolving_socket.mojom";
-import "services/network/public/mojom/reporting_report.mojom";
+import "services/network/public/mojom/reporting_service.mojom";
 import "services/network/public/mojom/restricted_cookie_manager.mojom";
 import "services/network/public/mojom/site_for_cookies.mojom";
 import "services/network/public/mojom/ssl_config.mojom";
@@ -58,6 +56,12 @@ import "url/mojom/url.mojom";
 
 [EnableIf=is_chromeos_ash]
 import "services/network/public/mojom/dhcp_wpad_url_client.mojom";
+
+[EnableIf=is_p2p_enabled]
+import "services/network/public/mojom/p2p.mojom";
+
+[EnableIf=is_p2p_enabled]
+import "services/network/public/mojom/p2p_trusted.mojom";
 
 const uint32 kWebSocketOptionNone = 0;
 // Disallow the request from sending cookies. Disallow the response from writing
@@ -118,7 +122,7 @@ struct CertVerifierServiceRemoteParams {
 
 // Client to update the custom proxy config.
 interface CustomProxyConfigClient {
-  OnCustomProxyConfigUpdated(CustomProxyConfig proxy_config);
+  OnCustomProxyConfigUpdated(CustomProxyConfig proxy_config) => ();
 
   // Marks the custom proxies in |bad_proxies| as temporarily bad, so they are
   // not layered onto the proxy resolution results for subsequent requests.
@@ -1232,6 +1236,7 @@ interface NetworkContext {
   // |network_isolation_key| is the network cache shard to associate with the
   // P2PSocketManager instance, and affects DNS cache shard used and proxy
   // connection sharing.
+  [EnableIf=is_p2p_enabled]
   CreateP2PSocketManager(
       NetworkIsolationKey network_isolation_key,
       pending_remote<P2PTrustedSocketManagerClient> client,
@@ -1345,6 +1350,11 @@ interface NetworkContext {
   AddAuthCacheEntry(AuthChallengeInfo challenge,
                     NetworkIsolationKey network_isolation_key,
                     AuthCredentials credentials) => ();
+
+  // Sets whether
+  // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name is
+  // supported in this network context.
+  SetCorsNonWildcardRequestHeadersSupport(bool value);
 
   // Looks up credentials in the HttpAuthCache using the origin and path from
   // |url|. Only supports basic auth scheme. Only looks up server (not proxy)

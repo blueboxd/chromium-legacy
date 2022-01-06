@@ -74,6 +74,7 @@ include_rules = [
   # //ash can use the public interfaces of various services.
   "+chromeos/services/assistant/public" ,
   "+chromeos/services/assistant/test_support",
+  "+chromeos/services/bluetooth_config",
   "+chromeos/services/libassistant/public",
   "+chromeos/services/machine_learning/public",
   "+chromeos/services/multidevice_setup/public",
@@ -115,6 +116,12 @@ specific_include_rules = {
   ],
   "shell.cc": [
     "+ash/host/ash_window_tree_host_init_params.h"
+  ],
+  "shell_delegate.h": [
+    "+components/favicon_base/favicon_callback.h"
+  ],
+  "test_shell_delegate.h": [
+    "+components/favicon_base/favicon_callback.h"
   ],
   "window_manager.cc": [
     "+ash/host/ash_window_tree_host.h"

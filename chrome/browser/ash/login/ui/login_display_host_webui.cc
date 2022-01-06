@@ -10,6 +10,7 @@
 
 #include "ash/accessibility/ui/focus_ring_controller.h"
 #include "ash/components/audio/sounds.h"
+#include "ash/components/timezone/timezone_resolver.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/locale_update_controller.h"
 #include "ash/public/cpp/login_accelerators.h"
@@ -24,11 +25,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -85,7 +83,6 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/settings/timezone_settings.h"
-#include "chromeos/timezone/timezone_resolver.h"
 #include "components/account_id/account_id.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
@@ -103,6 +100,7 @@
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -712,7 +710,8 @@ content::WebContents* LoginDisplayHostWebUI::GetOobeWebContents() const {
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, WebContentsObserver:
 
-void LoginDisplayHostWebUI::RenderProcessGone(base::TerminationStatus status) {
+void LoginDisplayHostWebUI::PrimaryMainFrameRenderProcessGone(
+    base::TerminationStatus status) {
   // Do not try to restore on shutdown
   if (browser_shutdown::HasShutdownStarted())
     return;
@@ -1286,37 +1285,9 @@ void ShowLoginWizard(OobeScreenId first_screen) {
   TriggerShowLoginWizardFinish(locale, std::move(data));
 }
 
-class WebUIToViewsSwitchMetricsReporter
-    : public session_manager::SessionManagerObserver {
- public:
-  WebUIToViewsSwitchMetricsReporter() {
-    session_observation_.Observe(session_manager::SessionManager::Get());
-  }
-
-  // session_manager::SessionManagerObserver:
-  void OnLoginOrLockScreenVisible() override {
-    if (LoginDisplayHost::default_host()->GetOobeUI()) {
-      DCHECK_EQ(OobeUI::kGaiaSigninDisplay,
-                LoginDisplayHost::default_host()->GetOobeUI()->display_type());
-    }
-    base::UmaHistogramTimes("OOBE.WebUIToViewsSwitch.Duration",
-                            timer_.Elapsed());
-    base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-  }
-
- private:
-  base::ScopedObservation<session_manager::SessionManager,
-                          session_manager::SessionManagerObserver>
-      session_observation_{this};
-  base::ElapsedTimer timer_;
-};
-
 void SwitchWebUItoMojo() {
   DCHECK_EQ(LoginDisplayHost::default_host()->GetOobeUI()->display_type(),
             OobeUI::kOobeDisplay);
-
-  // The object deletes itself.
-  new WebUIToViewsSwitchMetricsReporter();
 
   // This replaces WebUI host with the Mojo (views) host.
   ShowLoginWizard(OobeScreen::SCREEN_UNKNOWN);

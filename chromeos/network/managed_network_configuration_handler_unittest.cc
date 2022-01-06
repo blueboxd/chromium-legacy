@@ -101,13 +101,18 @@ class TestNetworkProfileHandler : public NetworkProfileHandler {
  public:
   TestNetworkProfileHandler() { Init(); }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkProfileHandler);
+  TestNetworkProfileHandler(const TestNetworkProfileHandler&) = delete;
+  TestNetworkProfileHandler& operator=(const TestNetworkProfileHandler&) =
+      delete;
 };
 
 class TestNetworkPolicyObserver : public NetworkPolicyObserver {
  public:
   TestNetworkPolicyObserver() = default;
+
+  TestNetworkPolicyObserver(const TestNetworkPolicyObserver&) = delete;
+  TestNetworkPolicyObserver& operator=(const TestNetworkPolicyObserver&) =
+      delete;
 
   void PoliciesApplied(const std::string& userhash) override {
     policies_applied_count_++;
@@ -121,15 +126,22 @@ class TestNetworkPolicyObserver : public NetworkPolicyObserver {
 
  private:
   int policies_applied_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkPolicyObserver);
 };
 
 }  // namespace
 
 class ManagedNetworkConfigurationHandlerTest : public testing::Test {
  public:
-  ManagedNetworkConfigurationHandlerTest() {
+  ManagedNetworkConfigurationHandlerTest() = default;
+  ManagedNetworkConfigurationHandlerTest(
+      const ManagedNetworkConfigurationHandlerTest&) = delete;
+  ManagedNetworkConfigurationHandlerTest& operator=(
+      const ManagedNetworkConfigurationHandlerTest&) = delete;
+
+  ~ManagedNetworkConfigurationHandlerTest() override = default;
+
+  // testing::Test:
+  void SetUp() override {
     shill_clients::InitializeFakes();
     hermes_clients::InitializeFakes();
 
@@ -137,9 +149,9 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     network_device_handler_ = NetworkDeviceHandler::InitializeForTesting(
         network_state_handler_.get());
     network_profile_handler_ = NetworkProfileHandler::InitializeForTesting();
-    network_configuration_handler_.reset(
+    network_configuration_handler_ =
         NetworkConfigurationHandler::InitializeForTest(
-            network_state_handler_.get(), network_device_handler_.get()));
+            network_state_handler_.get(), network_device_handler_.get());
     network_connection_handler_ =
         std::make_unique<FakeNetworkConnectionHandler>();
     cellular_inhibitor_ = std::make_unique<CellularInhibitor>();
@@ -190,12 +202,9 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  ManagedNetworkConfigurationHandlerTest(
-      const ManagedNetworkConfigurationHandlerTest&) = delete;
-  ManagedNetworkConfigurationHandlerTest& operator=(
-      const ManagedNetworkConfigurationHandlerTest&) = delete;
-
-  ~ManagedNetworkConfigurationHandlerTest() override {
+  void TearDown() override {
+    // Run remaining tasks.
+    base::RunLoop().RunUntilIdle();
     ResetManagedNetworkConfigurationHandler();
     cellular_policy_handler_.reset();
     cellular_esim_installer_.reset();

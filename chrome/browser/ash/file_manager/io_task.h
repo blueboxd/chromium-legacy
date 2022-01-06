@@ -17,6 +17,8 @@ namespace file_manager {
 
 namespace io_task {
 
+class IOTaskController;
+
 enum class State {
   // Task has been queued, but not yet started.
   kQueued,
@@ -41,6 +43,23 @@ enum class OperationType {
   kZip,
 };
 
+// Unique identifier for any type of task.
+using IOTaskId = uint64_t;
+
+// Represents the status of a particular entry in an I/O task.
+struct EntryStatus {
+  EntryStatus(storage::FileSystemURL file_url,
+              absl::optional<base::File::Error> file_error);
+  ~EntryStatus();
+
+  EntryStatus(EntryStatus&& other);
+  EntryStatus& operator=(EntryStatus&& other);
+
+  storage::FileSystemURL url;
+  // May be empty if the entry has not been fully processed yet.
+  absl::optional<base::File::Error> error;
+};
+
 // Represents the current progress of an I/O task.
 struct ProgressStatus {
   // Out-of-line constructors to appease the style linter.
@@ -60,21 +79,27 @@ struct ProgressStatus {
   OperationType type;
 
   // Files the operation processes.
-  std::vector<storage::FileSystemURL> source_urls;
+  std::vector<EntryStatus> sources;
 
-  // One error per source_url. Absence of value indicates file has not been
-  // processed yet.
-  std::vector<absl::optional<base::File::Error>> errors;
+  // Entries created by the I/O task. These files aren't necessarily related to
+  // |sources|.
+  std::vector<EntryStatus> outputs;
 
   // Optional destination folder for operations that transfer files to a
   // directory (e.g. copy or move).
   storage::FileSystemURL destination_folder;
 
-  // ProgressStatus over all |source_urls|.
-  int64_t bytes_transferred;
+  // ProgressStatus over all |sources|.
+  int64_t bytes_transferred = 0;
 
-  // Total size of all |source_urls|.
-  int64_t total_bytes;
+  // Total size of all |sources|.
+  int64_t total_bytes = 0;
+
+  // The task id for this progress status.
+  IOTaskId task_id = 0;
+
+  // The estimate time to finish the operation.
+  double remaining_seconds = 0;
 };
 
 // An IOTask represents an I/O operation over multiple files, and is responsible
@@ -99,12 +124,17 @@ class IOTask {
   virtual void Cancel() = 0;
 
   // Gets the current progress status of the task.
-  virtual const ProgressStatus& progress() = 0;
+  const ProgressStatus& progress() { return progress_; }
 
  protected:
   IOTask() = default;
   IOTask(const IOTask& other) = delete;
   IOTask& operator=(const IOTask& other) = delete;
+
+  ProgressStatus progress_;
+
+  // Task Controller can update `progress_`.
+  friend class IOTaskController;
 };
 
 // No-op IO Task for testing.
@@ -122,13 +152,9 @@ class DummyIOTask : public IOTask {
 
   void Cancel() override;
 
-  const ProgressStatus& progress() override;
-
  private:
   void DoProgress();
   void DoComplete();
-
-  ProgressStatus progress_;
 
   ProgressCallback progress_callback_;
   CompleteCallback complete_callback_;

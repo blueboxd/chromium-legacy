@@ -116,6 +116,8 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_app_info(enable_reporting);
     proto->set_report_print_jobs(enable_reporting);
     proto->set_report_login_logout(enable_reporting);
+    proto->set_report_network_telemetry_collection_rate_ms(frequency);
+    proto->set_report_network_telemetry_event_checking_rate_ms(frequency);
     proto->set_device_status_frequency(frequency);
     BuildAndInstallDevicePolicy();
   }
@@ -208,9 +210,17 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
       EXPECT_EQ(expected_enable_value, *provider_->Get(setting))
           << "Value for " << setting << " does not match expected";
     }
+
+    const char* const reporting_frequency_settings[] = {
+        kReportUploadFrequency,
+        kReportDeviceNetworkTelemetryCollectionRateMs,
+        kReportDeviceNetworkTelemetryEventCheckingRateMs,
+    };
     const base::Value expected_frequency_value(expected_frequency);
-    EXPECT_EQ(expected_frequency_value,
-              *provider_->Get(kReportUploadFrequency));
+    for (auto* frequency_setting : reporting_frequency_settings) {
+      EXPECT_EQ(expected_frequency_value, *provider_->Get(frequency_setting))
+          << "Value for " << frequency_setting << " does not match expected";
+    }
   }
 
   // Helper routine to ensure log upload policy has been correctly
@@ -989,8 +999,8 @@ TEST_F(DeviceSettingsProviderTest, DeviceWilcoDtcAllowedSetting) {
 }
 
 TEST_F(DeviceSettingsProviderTest, DeviceDockMacAddressSourceSetting) {
-  // Policy should not be set by default
-  VerifyPolicyValue(kDeviceDockMacAddressSource, nullptr);
+  const base::Value default_value(3);
+  VerifyPolicyValue(kDeviceDockMacAddressSource, &default_value);
 
   SetDeviceDockMacAddressSourceSetting(
       em::DeviceDockMacAddressSourceProto::DEVICE_DOCK_MAC_ADDRESS);
@@ -1338,6 +1348,24 @@ TEST_F(DeviceSettingsProviderTest,
   BuildAndInstallDevicePolicy();
   EXPECT_EQ(base::Value(false),
             *provider_->Get(kDeviceRestrictedManagedGuestSessionEnabled));
+}
+
+TEST_F(DeviceSettingsProviderTest, KioskCRXManifestUpdateURLIgnoredEnabled) {
+  device_policy_->payload()
+      .mutable_kiosk_crx_manifest_update_url_ignored()
+      ->set_value(true);
+  BuildAndInstallDevicePolicy();
+  EXPECT_EQ(base::Value(true),
+            *provider_->Get(kKioskCRXManifestUpdateURLIgnored));
+}
+
+TEST_F(DeviceSettingsProviderTest, KioskCRXManigestUpdateURLIngoredDisabled) {
+  device_policy_->payload()
+      .mutable_kiosk_crx_manifest_update_url_ignored()
+      ->set_value(false);
+  BuildAndInstallDevicePolicy();
+  EXPECT_EQ(base::Value(false),
+            *provider_->Get(kKioskCRXManifestUpdateURLIgnored));
 }
 
 }  // namespace ash

@@ -32,6 +32,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/app_menu_constants.h"
+#include "ash/webui/projector_app/public/cpp/projector_app_constants.h"  // nogncheck
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/menu_item_constants.h"
@@ -39,7 +40,6 @@
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/projector_app/projector_app_constants.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
@@ -57,8 +57,7 @@ apps::mojom::AppType GetWebAppType() {
 // to kSystemWeb for this case and the kWeb app type will be published from
 // the publisher for Lacros web apps.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (crosapi::browser_util::IsLacrosEnabled() &&
-      base::FeatureList::IsEnabled(features::kWebAppsCrosapi)) {
+  if (crosapi::browser_util::IsLacrosEnabled() && IsWebAppsCrosapiEnabled()) {
     return apps::mojom::AppType::kSystemWeb;
   }
 #endif
@@ -182,8 +181,7 @@ void WebApps::LoadIcon(const std::string& app_id,
                        bool allow_placeholder_icon,
                        LoadIconCallback callback) {
   publisher_helper().LoadIcon(app_id, std::move(icon_key), std::move(icon_type),
-                              size_hint_in_dip, allow_placeholder_icon,
-                              std::move(callback));
+                              size_hint_in_dip, std::move(callback));
 }
 
 void WebApps::Launch(const std::string& app_id,
@@ -206,9 +204,11 @@ void WebApps::LaunchAppWithIntent(const std::string& app_id,
                                   int32_t event_flags,
                                   apps::mojom::IntentPtr intent,
                                   apps::mojom::LaunchSource launch_source,
-                                  apps::mojom::WindowInfoPtr window_info) {
+                                  apps::mojom::WindowInfoPtr window_info,
+                                  LaunchAppWithIntentCallback callback) {
   publisher_helper().LaunchAppWithIntent(app_id, event_flags, std::move(intent),
-                                         launch_source, std::move(window_info));
+                                         launch_source, std::move(window_info),
+                                         std::move(callback));
 }
 
 void WebApps::SetPermission(const std::string& app_id,
@@ -222,11 +222,10 @@ void WebApps::OpenNativeSettings(const std::string& app_id) {
 
 void WebApps::PublishWebApps(std::vector<apps::mojom::AppPtr> apps) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  const WebApp* web_app =
-      GetWebApp(chromeos::kChromeUITrustedProjectorSwaAppId);
+  const WebApp* web_app = GetWebApp(ash::kChromeUITrustedProjectorSwaAppId);
   if (web_app) {
-    AddDefaultPreferredApp(chromeos::kChromeUITrustedProjectorSwaAppId,
-                           GURL(chromeos::kChromeUIUntrustedProjectorPwaUrl),
+    AddDefaultPreferredApp(ash::kChromeUITrustedProjectorSwaAppId,
+                           GURL(ash::kChromeUIUntrustedProjectorPwaUrl),
                            app_service_);
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -248,13 +247,13 @@ void WebApps::PublishWebApps(std::vector<apps::mojom::AppPtr> apps) {
 
 void WebApps::PublishWebApp(apps::mojom::AppPtr app) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (app->app_id == chromeos::kChromeUITrustedProjectorSwaAppId) {
+  if (app->app_id == ash::kChromeUITrustedProjectorSwaAppId) {
     // After OOBE, PublishWebApps() above could execute before the intent filter
     // has been registered. Since we need to call AddDefaultPreferredApp() after
     // the intent filter has been registered, we need this call for the OOBE
     // case.
-    AddDefaultPreferredApp(chromeos::kChromeUITrustedProjectorSwaAppId,
-                           GURL(chromeos::kChromeUIUntrustedProjectorPwaUrl),
+    AddDefaultPreferredApp(ash::kChromeUITrustedProjectorSwaAppId,
+                           GURL(ash::kChromeUIUntrustedProjectorPwaUrl),
                            app_service_);
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

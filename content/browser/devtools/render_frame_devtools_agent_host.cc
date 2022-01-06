@@ -114,7 +114,7 @@ FrameTreeNode* GetFrameTreeNodeAncestor(FrameTreeNode* frame_tree_node) {
 scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetOrCreateFor(
     WebContents* web_contents) {
   FrameTreeNode* node =
-      static_cast<WebContentsImpl*>(web_contents)->GetFrameTree()->root();
+      static_cast<WebContentsImpl*>(web_contents)->GetPrimaryFrameTree().root();
   // TODO(dgozman): this check should not be necessary. See
   // http://crbug.com/489664.
   if (!node)
@@ -156,7 +156,7 @@ bool RenderFrameDevToolsAgentHost::ShouldCreateDevToolsForHost(
 
 // static
 scoped_refptr<DevToolsAgentHost>
-RenderFrameDevToolsAgentHost::CreateForLocalRootOrPortalNavigation(
+RenderFrameDevToolsAgentHost::CreateForLocalRootOrEmbeddedPageNavigation(
     NavigationRequest* request) {
   // Note that this method does not use FrameTreeNode::current_frame_host(),
   // since it is used while the frame host may not be set as current yet,
@@ -178,14 +178,14 @@ scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::FindForDangling(
 // static
 bool DevToolsAgentHost::HasFor(WebContents* web_contents) {
   FrameTreeNode* node =
-      static_cast<WebContentsImpl*>(web_contents)->GetFrameTree()->root();
+      static_cast<WebContentsImpl*>(web_contents)->GetPrimaryFrameTree().root();
   return node ? FindAgentHost(node) != nullptr : false;
 }
 
 // static
 bool DevToolsAgentHost::IsDebuggerAttached(WebContents* web_contents) {
   FrameTreeNode* node =
-      static_cast<WebContentsImpl*>(web_contents)->GetFrameTree()->root();
+      static_cast<WebContentsImpl*>(web_contents)->GetPrimaryFrameTree().root();
   RenderFrameDevToolsAgentHost* host = node ? FindAgentHost(node) : nullptr;
   return host && host->IsAttached();
 }
@@ -194,7 +194,10 @@ bool DevToolsAgentHost::IsDebuggerAttached(WebContents* web_contents) {
 void RenderFrameDevToolsAgentHost::AddAllAgentHosts(
     DevToolsAgentHost::List* result) {
   for (WebContentsImpl* wc : WebContentsImpl::GetAllWebContents()) {
-    for (FrameTreeNode* node : wc->GetFrameTree()->Nodes()) {
+    // TODO(https://crbug.com/1264031): With MPArch a WebContents might have
+    // multiple FrameTrees. This probably needs to iterate over all FrameTrees.
+    // Investigate.
+    for (FrameTreeNode* node : wc->GetPrimaryFrameTree().Nodes()) {
       if (!node->current_frame_host() || !ShouldCreateDevToolsForNode(node))
         continue;
       if (!node->current_frame_host()->IsRenderFrameLive())
@@ -343,7 +346,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
       GetId(), auto_attacher_.get(), session->GetRootSession()));
   session->AddHandler(std::make_unique<protocol::PageHandler>(
       emulation_handler_ptr, browser_handler_ptr,
-      session->GetClient()->MayReadLocalFiles()));
+      session->GetClient()->AllowUnsafeOperations()));
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {
     session->AddHandler(
@@ -421,7 +424,7 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
         request->GetRenderFrameHost()->is_local_root_subframe()) {
       // An agent may have been created earlier if auto attach is on.
       if (!FindAgentHost(request->frame_tree_node()))
-        CreateForLocalRootOrPortalNavigation(request);
+        CreateForLocalRootOrEmbeddedPageNavigation(request);
     }
     return;
   }
@@ -647,7 +650,7 @@ void RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(
 }
 
 void RenderFrameDevToolsAgentHost::UpdatePortals() {
-  auto_attacher_->UpdatePortals();
+  auto_attacher_->UpdatePages();
 }
 
 void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
@@ -733,8 +736,18 @@ std::string RenderFrameDevToolsAgentHost::GetTitle() {
     if (!title.empty())
       return title;
   }
-  if (IsChildFrame() && frame_host_)
-    return frame_host_->GetLastCommittedURL().spec();
+  if (frame_host_) {
+    if (IsChildFrame())
+      return frame_host_->GetLastCommittedURL().spec();
+    if (!frame_host_->GetPage().IsPrimary()) {
+      NavigationEntryImpl* entry = frame_host_->frame_tree_node()
+                                       ->frame_tree()
+                                       ->controller()
+                                       .GetLastCommittedEntry();
+      return entry ? base::UTF16ToUTF8(entry->GetTitleForDisplay())
+                   : std::string();
+    }
+  }
   if (web_contents())
     return base::UTF16ToUTF8(web_contents()->GetTitle());
   return GetURL().spec();
@@ -749,11 +762,12 @@ std::string RenderFrameDevToolsAgentHost::GetDescription() {
 
 GURL RenderFrameDevToolsAgentHost::GetURL() {
   // Order is important here.
-  WebContents* web_contents = GetWebContents();
-  if (web_contents && !IsChildFrame())
-    return web_contents->GetVisibleURL();
-  if (frame_host_)
+  if (frame_host_ && (IsChildFrame() || !frame_host_->GetPage().IsPrimary()))
     return frame_host_->GetLastCommittedURL();
+  WebContents* web_contents = GetWebContents();
+  if (web_contents) {
+    return web_contents->GetVisibleURL();
+  }
   return GURL();
 }
 

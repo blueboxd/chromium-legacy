@@ -38,6 +38,7 @@
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/browser/protocol_util.h"
+#include "components/page_load_metrics/common/page_visit_final_status.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/site_engagement/content/site_engagement_service.h"
@@ -61,6 +62,8 @@
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #endif
+
+using page_load_metrics::PageVisitFinalStatus;
 
 namespace {
 
@@ -857,8 +860,6 @@ void UkmPageLoadMetricsObserver::RecordPageLoadMetrics(
   if (third_party_cookie_blocking_enabled) {
     builder.SetThirdPartyCookieBlockingEnabledForSite(
         third_party_cookie_blocking_enabled.value());
-    UMA_HISTOGRAM_BOOLEAN("Privacy.ThirdPartyCookieBlockingEnabledForSite",
-                          third_party_cookie_blocking_enabled.value());
   }
 
   absl::optional<base::TimeDelta> foreground_duration =
@@ -1088,21 +1089,21 @@ void UkmPageLoadMetricsObserver::RecordAbortMetrics(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     base::TimeTicks page_end_time,
     ukm::builders::PageLoad* builder) {
-  PageLoadType page_load_type = PageLoadType::kNeverForegrounded;
+  PageVisitFinalStatus page_visit_status =
+      PageVisitFinalStatus::kNeverForegrounded;
   if (page_load_metrics::WasInForeground(GetDelegate())) {
-    page_load_type = timing.paint_timing->first_contentful_paint.has_value()
-                         ? PageLoadType::kReachedFCP
-                         : PageLoadType::kAborted;
+    page_visit_status = timing.paint_timing->first_contentful_paint.has_value()
+                            ? PageVisitFinalStatus::kReachedFCP
+                            : PageVisitFinalStatus::kAborted;
   }
   if (currently_in_foreground_ && !last_time_shown_.is_null()) {
     total_foreground_duration_ += page_end_time - last_time_shown_;
   }
-  UMA_HISTOGRAM_ENUMERATION("PageLoad.Experimental.PageLoadType",
-                            page_load_type);
+  UMA_HISTOGRAM_ENUMERATION("PageLoad.PageVisitFinalStatus", page_visit_status);
   PAGE_LOAD_LONG_HISTOGRAM("PageLoad.Experimental.TotalForegroundDuration",
                            total_foreground_duration_);
 
-  builder->SetExperimental_PageLoadType(static_cast<int>(page_load_type))
+  builder->SetPageVisitFinalStatus(static_cast<int>(page_visit_status))
       .SetExperimental_TotalForegroundDuration(
           ukm::GetExponentialBucketMinForUserTiming(
               total_foreground_duration_.InMilliseconds()));
@@ -1210,23 +1211,25 @@ void UkmPageLoadMetricsObserver::RecordSmoothnessMetrics() {
 
 void UkmPageLoadMetricsObserver::RecordMobileFriendlinessMetrics() {
   ukm::builders::MobileFriendliness builder(GetDelegate().GetPageUkmSourceId());
-  const blink::MobileFriendliness& mf = GetDelegate().GetMobileFriendliness();
+  const absl::optional<blink::MobileFriendliness>& mf =
+      GetDelegate().GetMobileFriendliness();
+  if (!mf.has_value())
+    return;
 
-  builder.SetViewportDeviceWidth(mf.viewport_device_width);
-  builder.SetAllowUserZoom(mf.allow_user_zoom);
+  builder.SetViewportDeviceWidth(mf->viewport_device_width);
+  builder.SetAllowUserZoom(mf->allow_user_zoom);
 
-  builder.SetSmallTextRatio(mf.small_text_ratio);
+  builder.SetSmallTextRatio(mf->small_text_ratio);
   builder.SetViewportInitialScaleX10(
-      page_load_metrics::GetBucketedViewportInitialScale(mf));
+      page_load_metrics::GetBucketedViewportInitialScale(*mf));
   builder.SetViewportHardcodedWidth(
-      page_load_metrics::GetBucketedViewportHardcodedWidth(mf));
+      page_load_metrics::GetBucketedViewportHardcodedWidth(*mf));
   builder.SetTextContentOutsideViewportPercentage(
-      mf.text_content_outside_viewport_percentage);
-  builder.SetBadTapTargetsRatio(mf.bad_tap_targets_ratio);
+      mf->text_content_outside_viewport_percentage);
+  builder.SetBadTapTargetsRatio(mf->bad_tap_targets_ratio);
 
   // Make sure at least one MF evaluation happen.
-  if (mf.bad_tap_targets_ratio != -1 || mf.small_text_ratio != -1)
-    builder.Record(ukm::UkmRecorder::Get());
+  builder.Record(ukm::UkmRecorder::Get());
 }
 
 void UkmPageLoadMetricsObserver::RecordPageEndMetrics(

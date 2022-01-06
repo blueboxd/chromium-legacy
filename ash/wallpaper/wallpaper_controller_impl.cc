@@ -50,11 +50,11 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -65,6 +65,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "third_party/icu/source/i18n/unicode/gregocal.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -1403,8 +1404,7 @@ void WallpaperControllerImpl::MinimizeInactiveWindows(
 void WallpaperControllerImpl::RestoreMinimizedWindows(
     const std::string& user_id_hash) {
   if (!window_state_manager_) {
-    NOTREACHED() << "This should only be called after calling "
-                 << "MinimizeInactiveWindows.";
+    DVLOG(1) << "No minimized window state saved";
     return;
   }
   window_state_manager_->RestoreMinimizedWindows(user_id_hash);
@@ -1523,6 +1523,13 @@ void WallpaperControllerImpl::OnColorCalculationComplete() {
     CacheProminentColors(colors, current_wallpaper_->wallpaper_info().location);
   }
   SetProminentColors(colors);
+}
+
+void WallpaperControllerImpl::OnActiveUserSessionChanged(
+    const AccountId& account_id) {
+  // It is possible to switch to another user when preview is on. In this case,
+  // we should close the preview and show the user's actual wallpaper.
+  MaybeClosePreviewWallpaper();
 }
 
 void WallpaperControllerImpl::OnSessionStateChanged(
@@ -2480,8 +2487,7 @@ void WallpaperControllerImpl::SetDailyRefreshCollectionId(
   // If Daily Refresh is disabled without selecting another wallpaper, we should
   // keep the current wallpaper and change to type `WallpaperType::kOnline`, so
   // daily refreshes stop.
-  if (collection_id.empty()) {
-    DCHECK(info.type == WallpaperType::kDaily);
+  if (collection_id.empty() && info.type == WallpaperType::kDaily) {
     info.type = WallpaperType::kOnline;
   }
   SetUserWallpaperInfo(account_id, info);

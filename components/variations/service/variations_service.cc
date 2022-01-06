@@ -67,10 +67,6 @@
 #endif  // OS_ANDROID
 
 namespace variations {
-
-const base::Feature kHttpRetryFeature{"VariationsHttpRetry",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 namespace {
 
 // Constants used for encrypting the if-none-match header if we are retrieving a
@@ -482,12 +478,10 @@ GURL VariationsService::GetVariationsServerURL(HttpOptions http_options) {
   }
 
   // Add milestone to the request URL.
-  std::string version = version_info::GetVersionNumber();
-  std::vector<std::string> version_parts = base::SplitString(
-      version, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (version_parts.size() > 0) {
-    server_url = net::AppendOrReplaceQueryParameter(server_url, "milestone",
-                                                    version_parts[0]);
+  const std::string milestone = version_info::GetMajorVersionNumber();
+  if (!milestone.empty()) {
+    server_url =
+        net::AppendOrReplaceQueryParameter(server_url, "milestone", milestone);
   }
 
   DCHECK(server_url.is_valid());
@@ -720,12 +714,9 @@ void VariationsService::InitResourceRequestedAllowedNotifier() {
 void VariationsService::StartRepeatedVariationsSeedFetch() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Initialize the Variations server URL.
+  // Initialize Variations server URLs.
   variations_server_url_ = GetVariationsServerURL(USE_HTTPS);
-
-  // Initialize the fallback HTTP URL if the HTTP retry feature is enabled.
-  if (base::FeatureList::IsEnabled(kHttpRetryFeature))
-    insecure_variations_server_url_ = GetVariationsServerURL(USE_HTTP);
+  insecure_variations_server_url_ = GetVariationsServerURL(USE_HTTP);
 
   DCHECK(!request_scheduler_);
   request_scheduler_.reset(VariationsRequestScheduler::Create(
@@ -958,13 +949,13 @@ std::string VariationsService::GetLatestCountry() const {
   return field_trial_creator_.GetLatestCountry();
 }
 
-bool VariationsService::SetupFieldTrials(
+bool VariationsService::SetUpFieldTrials(
     const std::vector<std::string>& variation_ids,
     const std::vector<base::FeatureList::FeatureOverrideInfo>& extra_overrides,
     std::unique_ptr<base::FeatureList> feature_list,
     variations::PlatformFieldTrials* platform_field_trials,
     bool extend_variations_safe_mode) {
-  return field_trial_creator_.SetupFieldTrials(
+  return field_trial_creator_.SetUpFieldTrials(
       variation_ids, extra_overrides, CreateLowEntropyProvider(),
       std::move(feature_list), state_manager_, platform_field_trials,
       &safe_seed_manager_, state_manager_->GetLowEntropySource(),

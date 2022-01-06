@@ -16,11 +16,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_runner_util.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
@@ -292,6 +292,8 @@ class MockSurfaceLayerBridge : public WebSurfaceLayerBridge {
   MOCK_METHOD1(SetContentsOpaque, void(bool));
   MOCK_METHOD0(CreateSurfaceLayer, void());
   MOCK_METHOD0(ClearObserver, void());
+  MOCK_METHOD0(RegisterFrameSinkHierarchy, void());
+  MOCK_METHOD0(UnregisterFrameSinkHierarchy, void());
 };
 
 class MockVideoFrameCompositor : public VideoFrameCompositor {
@@ -2065,6 +2067,19 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureStateChange) {
   wmpi_->OnSurfaceIdUpdated(surface_id_);
 
   EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
+}
+
+TEST_F(WebMediaPlayerImplTest, RegisterFrameSinkHierarchy) {
+  InitializeWebMediaPlayerImpl();
+  media::PipelineMetadata metadata;
+  metadata.has_video = true;
+  OnMetadata(metadata);
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, RegisterFrameSinkHierarchy());
+  wmpi_->RegisterFrameSinkHierarchy();
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, UnregisterFrameSinkHierarchy());
+  wmpi_->UnregisterFrameSinkHierarchy();
 }
 
 TEST_F(WebMediaPlayerImplTest, OnProgressClearsStale) {

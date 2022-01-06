@@ -52,28 +52,20 @@ class CastWebService : public mojom::CastWebService,
   CastWebService& operator=(const CastWebService&) = delete;
   ~CastWebService() override;
 
-  // This is a temporary method to allow in-process embedders to directly own
+  // These are temporary methods to allow in-process embedders to directly own
   // the CastWebView. This will be removed once the lifetime of CastWebview is
   // scoped by the CastWebContents mojo::Remote.
   CastWebView::Scoped CreateWebViewInternal(
-      const CastWebView::CreateParams& create_params,
       mojom::CastWebViewParamsPtr params);
 
   // This implementation varies by platform (Aura vs Android).
   std::unique_ptr<CastContentWindow> CreateWindow(
-      base::WeakPtr<CastContentWindow::Delegate> delegate,
       mojom::CastWebViewParamsPtr params);
 
   content::BrowserContext* browser_context() { return browser_context_; }
   LRURendererCache* overlay_renderer_cache() {
     return overlay_renderer_cache_.get();
   }
-
-  void FlushDomLocalStorage();
-
-  // |callback| is called when data deletion is done or at least the deletion
-  // is scheduled.
-  void ClearLocalStorage(base::OnceClosure callback);
 
   // mojom::CastWebService implementation:
   void CreateWebView(
@@ -82,6 +74,8 @@ class CastWebService : public mojom::CastWebService,
       mojo::PendingReceiver<mojom::CastContentWindow> window) override;
   void RegisterWebUiClient(mojo::PendingRemote<mojom::WebUiClient> client,
                            const std::vector<std::string>& hosts) override;
+  void FlushDomLocalStorage() override;
+  void ClearLocalStorage(ClearLocalStorageCallback callback) override;
 
   // mojom::BrowserIdentificationSettingsManager implementation:
   void CreateSessionWithSubstitutions(
@@ -107,7 +101,7 @@ class CastWebService : public mojom::CastWebService,
 
   // Immediately deletes all owned CastWebViews. This should happen before
   // CastWebService is deleted, to prevent UAF of shared browser objects.
-  void DeleteExpiringWebViews();
+  void DeleteOwnedWebViews();
 
  private:
   void OwnerDestroyed(CastWebView* web_view);
@@ -120,10 +114,17 @@ class CastWebService : public mojom::CastWebService,
   CastWebViewFactory* const web_view_factory_;
   CastWindowManager* const window_manager_;
 
-  // If a CastWebView is marked for delayed deletion, it is temporarily held
-  // here for a short time after the original owner releases the CastWebView.
-  // After the desired shutdown time elapses, the CastWebView is deleted.
-  base::flat_set<std::unique_ptr<CastWebView>> expiring_web_views_;
+  // These CastWebViews are owned by CastWebService. This happens in two
+  // scenarios:
+  //
+  // 1. The CastWebView was created via the Mojo service. This CastWebView will
+  // be deleted when the mojo::Remote disconnects.
+  //
+  // 2. The CastWebView is in the process of extended shutdown. It is
+  // temporarily held here for a short time after the original owner releases
+  // the CastWebView. After the desired shutdown time elapses, the CastWebView
+  // is deleted.
+  base::flat_set<std::unique_ptr<CastWebView>> web_views_;
 
   const std::unique_ptr<LRURendererCache> overlay_renderer_cache_;
   bool immediately_delete_webviews_ = false;

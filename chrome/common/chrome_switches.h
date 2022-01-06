@@ -106,7 +106,6 @@ extern const char kExtensionsInstallVerification[];
 extern const char kExtensionsNotWebstore[];
 extern const char kForceAppMode[];
 extern const char kForceFirstRun[];
-extern const char kForceStackedTabStripLayout[];
 extern const char kHideCrashRestoreBubble[];
 extern const char kHomePage[];
 extern const char kIncognito[];
@@ -215,7 +214,6 @@ extern const char kWmClass[];
 
 #if defined(OS_MAC)
 extern const char kAppsKeepChromeAliveInTests[];
-extern const char kDisableHostedAppShimCreation[];
 extern const char kEnableUserMetrics[];
 extern const char kMetricsClientID[];
 extern const char kRelauncherProcess[];

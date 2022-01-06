@@ -9,6 +9,9 @@
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 
 class BackForwardCachePageLoadMetricsObserverTest;
+namespace base {
+class TickClock;
+}
 
 namespace internal {
 
@@ -128,6 +131,7 @@ class BackForwardCachePageLoadMetricsObserver
   // back forward cache at least once.
   // Does nothing if the page has never been restored.
   void MaybeRecordForegroundDurationAfterBackForwardCacheRestore(
+      const base::TickClock* clock,
       bool app_entering_background) const;
 
   // Records a page end reason when the page is navigated away from or closed,
@@ -159,6 +163,12 @@ class BackForwardCachePageLoadMetricsObserver
   // cache, or was ever hidden. Resets to false if the page re-enters the
   // back-forward cache.
   bool was_hidden_ = false;
+
+  // Whether the current set of page metrics (CLS, LCP, etc) have already been
+  // logged due to the page being backgrounded. Used to avoid double-logging
+  // these metrics. This value gets re-set to false if the page is restored
+  // from the BFCache.
+  bool page_metrics_logged_due_to_backgrounding_ = false;
 
   // The layout shift score. These are recorded when the page is navigated away.
   // These serve as "deliminators" between back-forward cache navigations.

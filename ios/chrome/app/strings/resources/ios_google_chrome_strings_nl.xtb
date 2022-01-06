@@ -3,7 +3,7 @@
 <translationbundle lang="nl">
 <translation id="1096883626080133124">Krijg meer gedaan met Google Chrome. Nu nog eenvoudiger, veiliger en sneller dan ooit</translation>
 <translation id="1282031177488366470">Help de functies en prestaties van Chrome verbeteren</translation>
-<translation id="1354592789402432496">Je beheerder vereist dat je inlogt met een organisatorisch account. Accounts die door je beheerder worden beperkt, zijn verborgen.</translation>
+<translation id="1314663809820920746">Je bookmarks, geschiedenis, wachtwoorden en andere instellingen blijven zichtbaar op dit apparaat. Als je wijzigingen aanbrengt, worden deze niet gesynchroniseerd met je Google-account.</translation>
 <translation id="1479202195792305274">Chrome kan je wachtwoorden checken als je inlogt met je Google-account.</translation>
 <translation id="1493827051843127077">Stel Chrome in als je standaardbrowser om je tabbladen, wachtwoorden en betalingsgegevens op al je apparaten te synchroniseren</translation>
 <translation id="1504372625950710826">Chrome kan niet checken op updates. Check de internetverbinding.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Offline. Chrome kan niet checken op updates</translation>
 <translation id="5716154293141027663">Chrome openen wanneer je op links in andere apps tikt</translation>
-<translation id="572883588166315317">Je organisatie vereist dat je inlogt om Chrome te gebruiken. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="5854621639439811139">Chrome-tip. Sommige knoppen zoals Terug, Vooruit en Zoeken zie je nu onderaan het scherm.</translation>
-<translation id="5876773482963502140">Als je Chrome toestaat je locatie te gebruiken, stuurt Chrome deze naar sites waarvoor je toestemming geeft. Sites kunnen om je locatie vragen als ze je lokale informatie willen laten zien, zoals winkels in de buurt of lokaal nieuws.</translation>
 <translation id="5998675059699164418">Je organisatie vereist dat je inlogt om Chrome te gebruiken.</translation>
 <translation id="6054613632208573261">Chrome standaard gebruiken</translation>
 <translation id="6063091872902370735">Inloggen bij Chrome toestaan</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Kies of je je Chrome-gegevens voor dit apparaat wilt verwijderen of behouden</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Alle rechten voorbehouden.</translation>
 <translation id="840168496893712993">Sommige add-ons kunnen ervoor zorgen dat Chrome crasht. Verwijder deze add-ons.</translation>
+<translation id="8414886616817913619">Je organisatie vereist dat je inlogt om Chrome te gebruiken. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">De geselecteerde gegevens zijn verwijderd uit Chrome en van gesynchroniseerde apparaten. Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekopdrachten en activiteit uit andere Google-services) beschikbaar zijn via history.google.com.</translation>
 <translation id="850555388806794946">Zo stel je Chrome in als standaardbrowser:
 1. Open Instellingen.

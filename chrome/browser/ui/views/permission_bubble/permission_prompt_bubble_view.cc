@@ -44,7 +44,11 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
+
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PermissionPromptBubbleView,
+                                      kPermissionPromptBubbleViewIdentifier);
 
 PermissionPromptBubbleView::PermissionPromptBubbleView(
     Browser* browser,
@@ -144,6 +148,8 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
     extra_text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     extra_text_label->SetMultiLine(true);
   }
+  SetProperty(views::kElementIdentifierKey,
+              kPermissionPromptBubbleViewIdentifier);
 }
 
 PermissionPromptBubbleView::~PermissionPromptBubbleView() = default;
@@ -152,8 +158,10 @@ void PermissionPromptBubbleView::Show() {
   DCHECK(browser_->window());
 
   // Set |parent_window| because some valid anchors can become hidden.
+  DCHECK(browser_->window());
   set_parent_window(
       platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
+  UpdateAnchorPosition();
 
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
   // If a browser window (or popup) other than the bubble parent has focus,
@@ -165,11 +173,6 @@ void PermissionPromptBubbleView::Show() {
 
   SizeToContents();
 
-  DCHECK(browser_->window());
-  set_parent_window(
-      platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
-
-  UpdateAnchorPosition();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PERMISSIONS);
 }
 
@@ -267,6 +270,15 @@ std::u16string PermissionPromptBubbleView::GetWindowTitle() const {
     message_id = IDS_PERMISSIONS_BUBBLE_PROMPT;
   }
   return l10n_util::GetStringFUTF16(message_id, GetDisplayName());
+}
+
+void PermissionPromptBubbleView::OnWidgetDestroying(views::Widget* widget) {
+  if (on_bubble_dismissed_by_user_callback_ &&
+      (widget->closed_reason() == views::Widget::ClosedReason::kEscKeyPressed ||
+       widget->closed_reason() ==
+           views::Widget::ClosedReason::kCloseButtonClicked)) {
+    std::move(on_bubble_dismissed_by_user_callback_).Run();
+  }
 }
 
 std::u16string PermissionPromptBubbleView::GetAccessibleWindowTitle() const {

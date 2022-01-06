@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -32,6 +31,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSize.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace blink {
 
@@ -66,7 +67,7 @@ void DrawIcon(cc::PaintCanvas* canvas,
   // area) and so that all placeholder images on the same page look consistent.
   canvas->drawImageRect(
       icon_image->PaintImageForCurrentFrame(),
-      IntRect(IntPoint::Zero(), icon_image->Size()),
+      IntRect(gfx::Point(), icon_image->Size()),
       FloatRect(x, y, scale_factor * kIconWidth, scale_factor * kIconHeight),
       sampling, &flags, SkCanvas::kFast_SrcRectConstraint);
 }
@@ -78,8 +79,8 @@ void DrawCenteredIcon(cc::PaintCanvas* canvas,
                       float scale_factor) {
   DrawIcon(
       canvas, flags,
-      dest_rect.X() + (dest_rect.Width() - scale_factor * kIconWidth) / 2.0f,
-      dest_rect.Y() + (dest_rect.Height() - scale_factor * kIconHeight) / 2.0f,
+      dest_rect.x() + (dest_rect.width() - scale_factor * kIconWidth) / 2.0f,
+      dest_rect.y() + (dest_rect.height() - scale_factor * kIconHeight) / 2.0f,
       sampling, scale_factor);
 }
 
@@ -240,7 +241,7 @@ PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
   auto builder = CreatePaintImageBuilder().set_completion_state(
       PaintImage::CompletionState::DONE);
 
-  const IntRect dest_rect(0, 0, size_.Width(), size_.Height());
+  const gfx::Rect dest_rect(0, 0, size_.width(), size_.height());
   if (paint_record_for_current_frame_) {
     return builder
         .set_paint_record(paint_record_for_current_frame_, dest_rect,
@@ -249,8 +250,9 @@ PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
   }
 
   PaintRecorder paint_recorder;
-  Draw(paint_recorder.beginRecording(FloatRect(dest_rect)), PaintFlags(),
-       FloatRect(dest_rect), FloatRect(dest_rect), ImageDrawOptions());
+  SkRect sk_dest_rect = gfx::RectToSkRect(dest_rect);
+  Draw(paint_recorder.beginRecording(sk_dest_rect), PaintFlags(), sk_dest_rect,
+       sk_dest_rect, ImageDrawOptions());
 
   paint_record_for_current_frame_ = paint_recorder.finishRecordingAsPicture();
   paint_record_content_id_ = PaintImage::GetNextContentId();
@@ -275,8 +277,8 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
                             const FloatRect& src_rect,
                             const ImageDrawOptions& draw_options) {
   if (!src_rect.Intersects(FloatRect(0.0f, 0.0f,
-                                     static_cast<float>(size_.Width()),
-                                     static_cast<float>(size_.Height())))) {
+                                     static_cast<float>(size_.width()),
+                                     static_cast<float>(size_.height())))) {
     return;
   }
 
@@ -285,9 +287,9 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
   flags.setColor(SkColorSetARGB(0x80, 0xD9, 0xD9, 0xD9));
   canvas->drawRect(dest_rect, flags);
 
-  if (dest_rect.Width() <
+  if (dest_rect.width() <
           icon_and_text_scale_factor_ * (kIconWidth + 2 * kFeaturePaddingX) ||
-      dest_rect.Height() <
+      dest_rect.height() <
           icon_and_text_scale_factor_ * (kIconHeight + 2 * kIconPaddingY)) {
     return;
   }
@@ -312,7 +314,7 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
       icon_and_text_scale_factor_ *
           (kIconWidth + 2 * kFeaturePaddingX + kPaddingBetweenIconAndText);
 
-  if (dest_rect.Width() < icon_and_text_width) {
+  if (dest_rect.width() < icon_and_text_width) {
     DrawCenteredIcon(canvas, base_flags, dest_rect,
                      draw_options.sampling_options,
                      icon_and_text_scale_factor_);
@@ -320,10 +322,10 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
   }
 
   const float feature_x =
-      dest_rect.X() + (dest_rect.Width() - icon_and_text_width) / 2.0f;
+      dest_rect.x() + (dest_rect.width() - icon_and_text_width) / 2.0f;
   const float feature_y =
-      dest_rect.Y() +
-      (dest_rect.Height() -
+      dest_rect.y() +
+      (dest_rect.height() -
        icon_and_text_scale_factor_ * (kIconHeight + 2 * kIconPaddingY)) /
           2.0f;
 

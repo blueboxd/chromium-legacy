@@ -17,7 +17,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
@@ -112,6 +112,10 @@ static void EosOnReadDone(bool* got_eos_buffer,
 // Fixture class to facilitate writing tests.  Takes care of setting up the
 // FFmpeg, pipeline and filter host mocks.
 class FFmpegDemuxerTest : public testing::Test {
+ public:
+  FFmpegDemuxerTest(const FFmpegDemuxerTest&) = delete;
+  FFmpegDemuxerTest& operator=(const FFmpegDemuxerTest&) = delete;
+
  protected:
   FFmpegDemuxerTest() = default;
 
@@ -360,8 +364,6 @@ class FFmpegDemuxerTest : public testing::Test {
     data_source_ = std::make_unique<FileDataSource>();
     EXPECT_TRUE(data_source_->Initialize(file_path));
   }
-
-  DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxerTest);
 };
 
 TEST_F(FFmpegDemuxerTest, Initialize_OpenFails) {
@@ -553,10 +555,10 @@ TEST_F(FFmpegDemuxerTest, Read_Video) {
 TEST_F(FFmpegDemuxerTest, SeekInitialized_NoVideoStartTime) {
   CreateDemuxer("audio-start-time-only.webm");
   InitializeDemuxer();
-  // Video stream should be preferred for seeking even if video start time is
-  // unknown.
-  DemuxerStream* vstream = GetStream(DemuxerStream::VIDEO);
-  EXPECT_EQ(vstream, preferred_seeking_stream(base::TimeDelta()));
+  // Video would normally be preferred, but not if it's a zero packet
+  // stream.
+  DemuxerStream* expected_stream = GetStream(DemuxerStream::AUDIO);
+  EXPECT_EQ(expected_stream, preferred_seeking_stream(base::TimeDelta()));
 }
 
 TEST_F(FFmpegDemuxerTest, Seeking_PreferredStreamSelection) {

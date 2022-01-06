@@ -16,11 +16,11 @@
 #include "chrome/browser/ash/arc/enterprise/cert_store/cert_store_service.h"
 #include "chrome/browser/ash/arc/keymaster/arc_keymaster_bridge.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_service_factory.h"
+#include "chrome/browser/ash/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/ash/policy/affiliation/affiliation_mixin.h"
 #include "chrome/browser/ash/policy/affiliation/affiliation_test_helper.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_service_factory.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/platform_keys/extension_key_permissions_service.h"
 #include "chrome/browser/platform_keys/extension_key_permissions_service_factory.h"
@@ -110,9 +110,12 @@ class FakeArcCertInstaller : public ArcCertInstaller {
       std::vector<CertDescription> certs,
       InstallArcCertsCallback callback) override {
     certs_.clear();
+    cert_ids_.clear();
     for (const auto& cert : certs) {
-      certs_[x509_certificate_model::GetCertNameOrNickname(
-          cert.nss_cert.get())] = GetDerCert64(cert.nss_cert.get());
+      std::string cert_name =
+          x509_certificate_model::GetCertNameOrNickname(cert.nss_cert.get());
+      certs_[cert_name] = GetDerCert64(cert.nss_cert.get());
+      cert_ids_[cert_name] = cert.id;
     }
 
     callback_ = std::move(callback);
@@ -136,9 +139,12 @@ class FakeArcCertInstaller : public ArcCertInstaller {
 
   std::map<std::string, std::string> certs() const { return certs_; }
 
+  std::map<std::string, std::string> cert_ids() const { return cert_ids_; }
+
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
   std::map<std::string, std::string> certs_;
+  std::map<std::string, std::string> cert_ids_;
   InstallArcCertsCallback callback_;
 };
 
@@ -376,8 +382,8 @@ void CertStoreServiceTest::SetUpCommandLine(base::CommandLine* command_line) {
 
 void CertStoreServiceTest::SetUpInProcessBrowserTestFixture() {
   MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  chromeos::platform_keys::PlatformKeysServiceFactory::GetInstance()
-      ->SetTestingMode(true);
+  ash::platform_keys::PlatformKeysServiceFactory::GetInstance()->SetTestingMode(
+      true);
 
   // Set up a system slot so tests can access device certs.
   ASSERT_NO_FATAL_FAILURE(SetUpTestSystemSlot());
@@ -415,8 +421,8 @@ void CertStoreServiceTest::TearDownOnMainThread() {
 }
 
 void CertStoreServiceTest::TearDownInProcessBrowserTestFixture() {
-  chromeos::platform_keys::PlatformKeysServiceFactory::GetInstance()
-      ->SetTestingMode(false);
+  ash::platform_keys::PlatformKeysServiceFactory::GetInstance()->SetTestingMode(
+      false);
   MixinBasedInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
 }
 
@@ -507,20 +513,15 @@ void CertStoreServiceTest::CheckInstalledCerts(
       EXPECT_EQ(x509_certificate_model::GetCertNameOrNickname(nss_cert.get()),
                 cert_name);
       found = true;
-      // Check KeyInfo.
-      auto key_info =
-          service->GetKeyInfoForDummySpki(installer_->certs()[cert_name]);
-      EXPECT_TRUE(key_info.has_value());
-      EXPECT_EQ(key_info.value().nickname, cert_name);
+      std::string cert_id = installer_->cert_ids()[cert_name];
       // Check CKA_ID and slot.
       int slot_id;
-      std::string hex_encoded_id = base::HexEncode(key_info.value().id.data(),
-                                                   key_info.value().id.size());
+      std::string hex_encoded_id =
+          base::HexEncode(cert_id.data(), cert_id.size());
       EXPECT_EQ(hex_encoded_id,
                 chromeos::NetworkCertLoader::GetPkcs11IdAndSlotForCert(
                     nss_cert.get(), &slot_id));
-      EXPECT_TRUE(PlaceholdersContainIdAndSlot(key_info.value().id,
-                                               cert.test_data.slot));
+      EXPECT_TRUE(PlaceholdersContainIdAndSlot(cert_id, cert.test_data.slot));
       break;
     }
     // Check the required cert was found.

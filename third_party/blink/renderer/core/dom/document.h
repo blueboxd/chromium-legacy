@@ -249,8 +249,6 @@ enum DocumentClass {
   kXMLDocumentClass = 1 << 6,
 };
 
-enum ShadowCascadeOrder { kShadowCascadeNone, kShadowCascade };
-
 using DocumentClassFlags = unsigned char;
 
 // A map of IDL attribute name to Element list value, for one particular
@@ -1424,6 +1422,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // This hides all visible popups up to, but not including,
   // |endpoint|. If |endpoint| is nullptr, all popups are hidden.
   void HideAllPopupsUntil(const HTMLPopupElement* endpoint);
+  // This hides the provided popup, if it is showing. This will also
+  // hide all popups above |popup| in the popup stack.
+  void HidePopupIfShowing(const HTMLPopupElement* popup);
 
   // A non-null template_document_host_ implies that |this| was created by
   // EnsureTemplateDocument().
@@ -1487,14 +1488,9 @@ class CORE_EXPORT Document : public ContainerNode,
   SnapCoordinator& GetSnapCoordinator();
   void PerformScrollSnappingTasks();
 
-  ShadowCascadeOrder GetShadowCascadeOrder() const {
-    return shadow_cascade_order_;
-  }
-  void SetShadowCascadeOrder(ShadowCascadeOrder);
+  void SetContainsShadowRoot() { may_contain_shadow_roots_ = true; }
 
-  bool ContainsShadowTree() const {
-    return shadow_cascade_order_ == ShadowCascadeOrder::kShadowCascade;
-  }
+  bool MayContainShadowRoots() const { return may_contain_shadow_roots_; }
 
   RootScrollerController& GetRootScrollerController() const {
     DCHECK(root_scroller_controller_);
@@ -1665,11 +1661,6 @@ class CORE_EXPORT Document : public ContainerNode,
     return !pending_javascript_urls_.IsEmpty();
   }
 
-  String GetFragmentDirective() const { return fragment_directive_string_; }
-  bool UseCountFragmentDirective() const {
-    return use_count_fragment_directive_;
-  }
-
   void ApplyScrollRestorationLogic();
 
   void MarkHasFindInPageRequest();
@@ -1809,7 +1800,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void UpdateStyleInvalidationIfNeeded();
   void UpdateStyle();
-  void NotifyLayoutTreeOfSubtreeChanges();
   bool ChildrenCanHaveStyle() const final;
 
   // Objects and embeds depend on "being rendered" for delaying the load event.
@@ -1837,8 +1827,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool ChildTypeAllowed(NodeType) const final;
   Node* Clone(Document&, CloneChildrenFlag) const override;
   void CloneDataFromDocument(const Document&);
-
-  ShadowCascadeOrder shadow_cascade_order_ = kShadowCascadeNone;
 
   void UpdateTitle(const String&);
   void DispatchDidReceiveTitle();
@@ -1922,7 +1910,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Vector<base::OnceClosure> will_dispatch_prerenderingchange_callbacks_;
 
   // The callback list for post-prerendering activation step.
-  // https://jeremyroman.github.io/alternate-loading-modes/#document-post-prerendering-activation-steps-list
+  // https://wicg.github.io/nav-speculation/prerendering.html#document-post-prerendering-activation-steps-list
   Vector<base::OnceClosure> post_prerendering_activation_callbacks_;
 
   bool evaluate_media_queries_on_style_recalc_;
@@ -2048,6 +2036,10 @@ class CORE_EXPORT Document : public ContainerNode,
   bool is_dns_prefetch_enabled_;
   bool have_explicitly_disabled_dns_prefetch_;
   bool contains_plugins_;
+
+  // Set to true whenever shadow root is attached to document. Does not
+  // get reset if all roots are removed.
+  bool may_contain_shadow_roots_ = false;
 
   // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#ignore-destructive-writes-counter
   unsigned ignore_destructive_write_count_;
@@ -2287,10 +2279,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool is_for_markup_sanitization_ = false;
 
-  String fragment_directive_string_;
   Member<FragmentDirective> fragment_directive_;
-
-  bool use_count_fragment_directive_ = false;
 
   HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementsMap>>
       element_explicitly_set_attr_elements_map_;

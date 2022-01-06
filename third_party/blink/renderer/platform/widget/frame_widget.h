@@ -14,7 +14,6 @@
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 #include "ui/base/ime/mojom/virtual_keyboard_types.mojom-blink.h"
@@ -75,12 +74,13 @@ class PLATFORM_EXPORT FrameWidget {
   virtual void RequestDecode(const cc::PaintImage&,
                              base::OnceCallback<void(bool)>) = 0;
 
-  // Forwards to WebFrameWidget::NotifySwapAndPresentationTime().
-  // The |callback| will be fired when the corresponding renderer frame is
-  // submitted (still called "swapped") to the display compositor (either with
-  // DidSwap or DidNotSwap).
+  // Forwards to `WebFrameWidget::NotifyPresentationTime()`.
+  // `presentation_callback` will be fired when the corresponding renderer frame
+  // is presented to the user. If the presentation is successful, the argument
+  // passed to the callback is the presentation timestamp; otherwise, it would
+  // be timestamp of when the failure is detected.
   virtual void NotifyPresentationTimeInBlink(
-      WebReportTimeCallback presentation_callback) = 0;
+      base::OnceCallback<void(base::TimeTicks)> presentation_callback) = 0;
 
   // Enable or disable BeginMainFrameNotExpected signals from the compositor,
   // which are consumed by the blink scheduler.

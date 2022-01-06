@@ -172,6 +172,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/region_capture_crop_id.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -208,13 +209,16 @@ class DisplayLockStyleScope {
   }
   void DidUpdateChildStyle() { did_update_children_ = true; }
   // Returns true if the element was force unlocked due to missing requirements.
-  bool DidUpdateSelfStyle() {
+  StyleRecalcChange DidUpdateSelfStyle(StyleRecalcChange change) {
     if (auto* context = element_->GetDisplayLockContext()) {
-      bool was_locked = context->IsLocked();
       context->DidStyleSelf();
-      return was_locked && !context->IsLocked();
+      // After we notified context that we styled self, it may cause an unlock /
+      // modification to the blocked style change, so accumulate the change here
+      // again. Note that if the context is locked we will restore it as the
+      // blocked style change in RecalcStyle.
+      return change.Combine(context->TakeBlockedStyleRecalcChange());
     }
-    return false;
+    return change;
   }
 
   void NotifyChildStyleRecalcWasBlocked(const StyleRecalcChange& change) {
@@ -223,15 +227,6 @@ class DisplayLockStyleScope {
     DCHECK(element_->GetDisplayLockContext());
 
     element_->GetDisplayLockContext()->NotifyChildStyleRecalcWasBlocked(change);
-  }
-
-  StyleRecalcChange AdjustStyleRecalcChangeForChildren(
-      StyleRecalcChange change) {
-    if (auto* context = element_->GetDisplayLockContext()) {
-      DCHECK(context->ShouldStyleChildren());
-      return context->AdjustStyleRecalcChangeForChildren(change);
-    }
-    return change;
   }
 
  private:
@@ -1069,9 +1064,10 @@ const AtomicString& Element::getAttribute(const QualifiedName& name) const {
   return g_null_atom;
 }
 
-AtomicString Element::LowercaseIfNecessary(const AtomicString& name) const {
-  return IsHTMLElement() && IsA<HTMLDocument>(GetDocument()) ? name.LowerASCII()
-                                                             : name;
+AtomicString Element::LowercaseIfNecessary(AtomicString name) const {
+  return IsHTMLElement() && IsA<HTMLDocument>(GetDocument())
+             ? AtomicString::LowerASCII(std::move(name))
+             : std::move(name);
 }
 
 const AtomicString& Element::nonce() const {
@@ -1432,7 +1428,7 @@ int Element::clientWidth() {
         return result;
       }
       int result = AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                       LayoutUnit(layout_view->GetLayoutSize().Width()),
+                       LayoutUnit(layout_view->GetLayoutSize().width()),
                        layout_view->StyleRef())
                        .Round();
       RecordScrollbarSizeForStudy(result, /* is_width= */ true,
@@ -1486,7 +1482,7 @@ int Element::clientHeight() {
         return result;
       }
       int result = AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                       LayoutUnit(layout_view->GetLayoutSize().Height()),
+                       LayoutUnit(layout_view->GetLayoutSize().height()),
                        layout_view->StyleRef())
                        .Round();
       RecordScrollbarSizeForStudy(result, /* is_width= */ false,
@@ -1547,7 +1543,7 @@ double Element::scrollLeft() {
     }
 
     return AdjustForAbsoluteZoom::AdjustScroll(
-        scrollable_area->GetScrollOffset().Width(), *GetLayoutBox());
+        scrollable_area->GetScrollOffset().width(), *GetLayoutBox());
   }
 
   return 0;
@@ -1580,7 +1576,7 @@ double Element::scrollTop() {
     }
 
     return AdjustForAbsoluteZoom::AdjustScroll(
-        scrollable_area->GetScrollOffset().Height(), *GetLayoutBox());
+        scrollable_area->GetScrollOffset().height(), *GetLayoutBox());
   }
 
   return 0;
@@ -1622,10 +1618,10 @@ void Element::setScrollLeft(double new_left) {
     }
 
     ScrollOffset end_offset(new_left * box->Style()->EffectiveZoom(),
-                            scrollable_area->GetScrollOffset().Height());
+                            scrollable_area->GetScrollOffset().height());
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndPosition(
-            gfx::Vector2dF(scrollable_area->ScrollOffsetToPosition(end_offset)),
+            ToGfxVector2dF(scrollable_area->ScrollOffsetToPosition(end_offset)),
             true, false);
     absl::optional<FloatPoint> snap_point =
         scrollable_area->GetSnapPositionAndSetTarget(*strategy);
@@ -1673,11 +1669,11 @@ void Element::setScrollTop(double new_top) {
       }
     }
 
-    ScrollOffset end_offset(scrollable_area->GetScrollOffset().Width(),
+    ScrollOffset end_offset(scrollable_area->GetScrollOffset().width(),
                             new_top * box->Style()->EffectiveZoom());
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndPosition(
-            gfx::Vector2dF(scrollable_area->ScrollOffsetToPosition(end_offset)),
+            ToGfxVector2dF(scrollable_area->ScrollOffsetToPosition(end_offset)),
             false, true);
     absl::optional<FloatPoint> snap_point =
         scrollable_area->GetSnapPositionAndSetTarget(*strategy);
@@ -1701,7 +1697,7 @@ int Element::scrollWidth() {
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().View()) {
       return AdjustForAbsoluteZoom::AdjustInt(
-          GetDocument().View()->LayoutViewport()->ContentsSize().Width(),
+          GetDocument().View()->LayoutViewport()->ContentsSize().width(),
           GetDocument().GetFrame()->PageZoomFactor());
     }
     return 0;
@@ -1724,7 +1720,7 @@ int Element::scrollHeight() {
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().View()) {
       return AdjustForAbsoluteZoom::AdjustInt(
-          GetDocument().View()->LayoutViewport()->ContentsSize().Height(),
+          GetDocument().View()->LayoutViewport()->ContentsSize().height(),
           GetDocument().GetFrame()->PageZoomFactor());
     }
     return 0;
@@ -1803,8 +1799,8 @@ void Element::ScrollLayoutBoxBy(const ScrollToOptions* scroll_to_options) {
     return;
   if (PaintLayerScrollableArea* scrollable_area = box->GetScrollableArea()) {
     DCHECK(box);
-    gfx::Vector2dF current_position(scrollable_area->ScrollPosition().X(),
-                                    scrollable_area->ScrollPosition().Y());
+    gfx::Vector2dF current_position(scrollable_area->ScrollPosition().x(),
+                                    scrollable_area->ScrollPosition().y());
     displacement.Scale(box->Style()->EffectiveZoom());
     gfx::Vector2dF new_offset(current_position + displacement);
     FloatPoint new_position(new_offset.x(), new_offset.y());
@@ -1857,19 +1853,19 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
 
     ScrollOffset new_offset = scrollable_area->GetScrollOffset();
     if (scroll_to_options->hasLeft()) {
-      new_offset.SetWidth(
+      new_offset.set_width(
           ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
           box->Style()->EffectiveZoom());
     }
     if (scroll_to_options->hasTop()) {
-      new_offset.SetHeight(
+      new_offset.set_height(
           ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
           box->Style()->EffectiveZoom());
     }
 
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndPosition(
-            gfx::Vector2dF(scrollable_area->ScrollOffsetToPosition(new_offset)),
+            ToGfxVector2dF(scrollable_area->ScrollOffsetToPosition(new_offset)),
             scroll_to_options->hasLeft(), scroll_to_options->hasTop());
     absl::optional<FloatPoint> snap_point =
         scrollable_area->GetSnapPositionAndSetTarget(*strategy);
@@ -1909,7 +1905,7 @@ void Element::ScrollFrameBy(const ScrollToOptions* scroll_to_options) {
   FloatPoint new_position = viewport->ScrollPosition() +
                             FloatPoint(displacement.x(), displacement.y());
 
-  gfx::Vector2dF current_position(viewport->ScrollPosition());
+  gfx::Vector2dF current_position = ToGfxVector2dF(viewport->ScrollPosition());
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndAndDirection(
           current_position, displacement,
@@ -1936,12 +1932,12 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
 
   ScrollOffset new_offset = viewport->GetScrollOffset();
   if (scroll_to_options->hasLeft()) {
-    new_offset.SetWidth(
+    new_offset.set_width(
         ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
         frame->PageZoomFactor());
   }
   if (scroll_to_options->hasTop()) {
-    new_offset.SetHeight(
+    new_offset.set_height(
         ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
         frame->PageZoomFactor());
   }
@@ -1949,7 +1945,7 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
   FloatPoint new_position = viewport->ScrollOffsetToPosition(new_offset);
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndPosition(
-          gfx::Vector2dF(new_position), scroll_to_options->hasLeft(),
+          ToGfxVector2dF(new_position), scroll_to_options->hasLeft(),
           scroll_to_options->hasTop());
   new_position =
       viewport->GetSnapPositionAndSetTarget(*strategy).value_or(new_position);
@@ -1981,7 +1977,7 @@ IntRect Element::BoundsInViewport() const {
     // TODO(pdr): This should include stroke.
     if (IsA<SVGGraphicsElement>(svg_element)) {
       quads.push_back(GetLayoutObject()->LocalToAbsoluteQuad(
-          GetLayoutObject()->ObjectBoundingBox()));
+          FloatRect(GetLayoutObject()->ObjectBoundingBox())));
     }
   } else {
     // Get the bounding rectangle from the box model.
@@ -1994,7 +1990,7 @@ IntRect Element::BoundsInViewport() const {
 
   IntRect result = quads[0].EnclosingBoundingBox();
   for (wtf_size_t i = 1; i < quads.size(); ++i)
-    result.Unite(quads[i].EnclosingBoundingBox());
+    result.Union(quads[i].EnclosingBoundingBox());
 
   return view->FrameToViewport(result);
 }
@@ -2068,7 +2064,7 @@ IntRect Element::VisibleBoundsInVisualViewport() const {
     visible_rect =
         GetDocument().GetPage()->GetVisualViewport().RootFrameToViewport(
             visible_rect);
-    visible_rect.Intersect(IntRect(IntPoint(), viewport_size));
+    visible_rect.Intersect(IntRect(gfx::Point(), viewport_size));
   }
   return visible_rect;
 }
@@ -2091,7 +2087,7 @@ void Element::ClientQuads(Vector<FloatQuad>& quads) const {
     // If stroke is desired, we can update this to use AbsoluteQuads, below.
     if (IsA<SVGGraphicsElement>(svg_element)) {
       quads.push_back(element_layout_object->LocalToAbsoluteQuad(
-          element_layout_object->ObjectBoundingBox()));
+          FloatRect(element_layout_object->ObjectBoundingBox())));
     }
     return;
   }
@@ -2125,7 +2121,7 @@ FloatRect Element::GetBoundingClientRectNoLifecycleUpdate() const {
 
   FloatRect result = quads[0].BoundingBox();
   for (wtf_size_t i = 1; i < quads.size(); ++i)
-    result.Unite(quads[i].BoundingBox());
+    result.Union(quads[i].BoundingBox());
 
   LayoutObject* element_layout_object = GetLayoutObject();
   DCHECK(element_layout_object);
@@ -2584,7 +2580,6 @@ Node::InsertionNotificationRequest Element::InsertedInto(
     ElementRareData* rare_data = GetElementRareData();
     if (ElementIntersectionObserverData* observer_data =
             rare_data->IntersectionObserverData()) {
-      observer_data->InvalidateCachedRects();
       observer_data->TrackWithController(
           GetDocument().EnsureIntersectionObserverController());
       if (!observer_data->IsEmpty()) {
@@ -2777,6 +2772,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
   if (layout_object) {
     if (layout_object->AffectsWhitespaceSiblings())
       context.previous_in_flow = layout_object;
+    layout_object->HandleSubtreeModifications();
   } else {
     context.previous_in_flow = children_context.previous_in_flow;
   }
@@ -2904,6 +2900,15 @@ bool Element::SkipStyleRecalcForContainer(
       return false;
     }
   }
+
+  // If we are moving the ::backdrop element to the top layer while laying out
+  // its originating element, it means we will add a layout-dirty box as a
+  // preceding sibling of the originating element's box which means we will not
+  // reach the box for ::backdrop during layout. Don't skip style recalc for
+  // children of containers in the top layer for this reason.
+  if (IsInTopLayer())
+    return false;
+
   // Store the child_change so that we can continue interleaved style layout
   // from where we left off.
   EnsureElementRareData().EnsureContainerQueryData().SkipStyleRecalc(
@@ -2971,23 +2976,35 @@ void Element::RecalcStyle(const StyleRecalcChange change,
   }
 
   // We're done with self style, notify the display lock.
-  display_lock_style_scope.DidUpdateSelfStyle();
+  child_change = display_lock_style_scope.DidUpdateSelfStyle(child_change);
   if (!display_lock_style_scope.ShouldUpdateChildStyle()) {
     display_lock_style_scope.NotifyChildStyleRecalcWasBlocked(child_change);
     if (HasCustomStyleCallbacks())
       DidRecalcStyle(child_change);
     return;
   }
-  child_change =
-      display_lock_style_scope.AdjustStyleRecalcChangeForChildren(child_change);
 
   if (!child_change.ReattachLayoutTree()) {
-    LayoutObject* layout_object = GetLayoutObject();
-    if (layout_object && layout_object->WhitespaceChildrenMayChange()) {
-      if (Node* first_child = LayoutTreeBuilderTraversal::FirstChild(*this))
-        first_child->MarkAncestorsWithChildNeedsReattachLayoutTree();
-      else
-        layout_object->SetWhitespaceChildrenMayChange(false);
+    if (LayoutObject* layout_object = GetLayoutObject()) {
+      // If a layout subtree was synchronously detached on DOM or flat tree
+      // changes, we need to revisit the element during layout tree rebuild for
+      // two reasons:
+      //
+      // 1. SubtreeDidChange() needs to be called on list-item layout objects
+      //    ancestors for markers (see SubtreeDidChange() implementation on list
+      //    item layout objects).
+      // 2. Whitespace siblings of removed subtrees may change to have their
+      //    layout object added or removed as the need for rendering the
+      //    whitespace may have changed.
+      bool mark_ancestors = layout_object->WasNotifiedOfSubtreeChange();
+      if (layout_object->WhitespaceChildrenMayChange()) {
+        if (LayoutTreeBuilderTraversal::FirstChild(*this))
+          mark_ancestors = true;
+        else
+          layout_object->SetWhitespaceChildrenMayChange(false);
+      }
+      if (mark_ancestors)
+        MarkAncestorsWithChildNeedsReattachLayoutTree();
     }
   }
 
@@ -3254,13 +3271,11 @@ StyleRecalcChange Element::RecalcOwnStyle(
   }
 
   if (auto* context = GetDisplayLockContext()) {
-    // If the context is unlocked, then we should ensure to adjust the child
-    // change for children, since this could be the first time we unlocked the
-    // context and as a result need to process more of the subtree than we would
-    // normally. Note that if this is not the first time, then
-    // AdjustStyleRecalcChangeForChildren() won't do any adjustments.
-    if (context->ShouldStyleChildren())
-      child_change = context->AdjustStyleRecalcChangeForChildren(child_change);
+    // Combine the change from the display lock context. If the context is
+    // locked and is preventing child update, we'll store this style recalc
+    // change again from Element::RecalcStyle.
+    child_change =
+        child_change.Combine(context->TakeBlockedStyleRecalcChange());
   }
 
   if (new_style) {
@@ -3341,7 +3356,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     ReattachLayoutTree(reattach_context);
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
-  } else if (!ChildStyleRecalcBlockedByDisplayLock()) {
+  } else if (NeedsRebuildChildLayoutTrees(whitespace_attacher) &&
+             !ChildStyleRecalcBlockedByDisplayLock()) {
     // TODO(crbug.com/972752): Make the condition above a DCHECK instead when
     // style recalc and dirty bit propagation uses flat-tree traversal.
     // We create a local WhitespaceAttacher when rebuilding children of an
@@ -3381,6 +3397,7 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   DCHECK(!NeedsReattachLayoutTree());
   DCHECK(!ChildNeedsReattachLayoutTree() ||
          ChildStyleRecalcBlockedByDisplayLock());
+  HandleSubtreeModifications();
 }
 
 void Element::RebuildShadowRootLayoutTree(
@@ -3451,6 +3468,11 @@ void Element::RebuildMarkerLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     if (marker->NeedsRebuildLayoutTree(whitespace_attacher))
       marker->RebuildLayoutTree(whitespace_attacher);
   }
+}
+
+void Element::HandleSubtreeModifications() {
+  if (auto* layout_object = GetLayoutObject())
+    layout_object->HandleSubtreeModifications();
 }
 
 void Element::UpdateCallbackSelectors(const ComputedStyle* old_style,
@@ -3601,25 +3623,26 @@ void Element::SetNeedsCompositingUpdate() {
     layout_object->Layer()->SetNeedsRepaint();
 }
 
-RegionCaptureCropId Element::MarkWithRegionCaptureCropId() {
-  if (GetRegionCaptureCropId().is_empty()) {
-    EnsureElementRareData().SetRegionCaptureCropId(
-        std::make_unique<base::UnguessableToken>(
-            base::UnguessableToken::Create()));
+void Element::SetRegionCaptureCropId(
+    std::unique_ptr<RegionCaptureCropId> crop_id) {
+  ElementRareData& rare_data = EnsureElementRareData();
 
-    // The crop ID needs to be propagated to the paint system by the time that
-    // capture begins. The API requires the implementation to propagate the
-    // token right away, so we force invalidate here.
-    if (GetLayoutObject()) {
-      GetLayoutObject()->SetShouldDoFullPaintInvalidation();
-    }
+  CHECK(!rare_data.GetRegionCaptureCropId());
+
+  // Propagate efficient form through the rendering pipeline.
+  rare_data.SetRegionCaptureCropId(std::move(crop_id));
+
+  // The crop ID needs to be propagated to the paint system by the time that
+  // capture begins. The API requires the implementation to propagate the
+  // token right away, so we force invalidate here.
+  if (GetLayoutObject()) {
+    GetLayoutObject()->SetShouldDoFullPaintInvalidation();
   }
-  return GetRegionCaptureCropId();
 }
 
-RegionCaptureCropId Element::GetRegionCaptureCropId() const {
-  return HasRareData() ? GetElementRareData()->RegionCaptureCropId()
-                       : base::UnguessableToken::Null();
+const RegionCaptureCropId* Element::GetRegionCaptureCropId() const {
+  return HasRareData() ? GetElementRareData()->GetRegionCaptureCropId()
+                       : nullptr;
 }
 
 void Element::SetCustomElementDefinition(CustomElementDefinition* definition) {
@@ -3647,11 +3670,11 @@ const AtomicString& Element::IsValue() const {
 }
 
 void Element::SetDidAttachInternals() {
-  SetElementFlag(ElementFlags::kDidAttachInternals, true);
+  EnsureElementRareData().SetDidAttachInternals();
 }
 
 bool Element::DidAttachInternals() const {
-  return HasElementFlag(ElementFlags::kDidAttachInternals);
+  return HasRareData() && GetElementRareData()->DidAttachInternals();
 }
 
 ElementInternals& Element::EnsureElementInternals() {
@@ -3801,6 +3824,7 @@ void Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
 
 ShadowRoot& Element::CreateUserAgentShadowRoot() {
   DCHECK(!GetShadowRoot());
+  GetDocument().SetContainsShadowRoot();
   return CreateAndAttachShadowRoot(ShadowRootType::kUserAgent);
 }
 
@@ -3815,7 +3839,7 @@ ShadowRoot& Element::AttachShadowRootInternal(
       << type;
   DCHECK(!AlwaysCreateUserAgentShadowRoot());
 
-  GetDocument().SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascade);
+  GetDocument().SetContainsShadowRoot();
 
   if (auto* shadow_root = GetShadowRoot()) {
     // NEW. If shadow host has a non-null shadow root whose "is declarative
@@ -3896,8 +3920,7 @@ ShadowRoot& Element::EnsureUserAgentShadowRoot() {
     DCHECK(shadow_root->GetType() == ShadowRootType::kUserAgent);
     return *shadow_root;
   }
-  ShadowRoot& shadow_root =
-      CreateAndAttachShadowRoot(ShadowRootType::kUserAgent);
+  ShadowRoot& shadow_root = CreateUserAgentShadowRoot();
   DidAddUserAgentShadowRoot(shadow_root);
   return shadow_root;
 }
@@ -4472,11 +4495,10 @@ bool Element::IsAutofocusable() const {
 }
 
 bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
-  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
-      GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount() ==
-          GetDocument()
-              .GetDisplayLockDocumentState()
-              .DisplayLockBlockingAllActivationCount())
+  if (GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount() ==
+      GetDocument()
+          .GetDisplayLockDocumentState()
+          .DisplayLockBlockingAllActivationCount())
     return false;
 
   HeapVector<std::pair<Member<Element>, Member<Element>>> activatable_targets;
@@ -4509,24 +4531,27 @@ bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
 }
 
 bool Element::StyleShouldForceLegacyLayoutInternal() const {
-  return HasElementFlag(ElementFlags::kStyleShouldForceLegacyLayout);
+  return GetElementRareData()->StyleShouldForceLegacyLayout();
 }
+
 void Element::SetStyleShouldForceLegacyLayoutInternal(bool force) {
-  SetElementFlag(ElementFlags::kStyleShouldForceLegacyLayout, force);
+  EnsureElementRareData().SetStyleShouldForceLegacyLayout(force);
 }
 
 bool Element::ShouldForceLegacyLayoutForChildInternal() const {
-  return HasElementFlag(ElementFlags::kShouldForceLegacyLayoutForChild);
+  return GetElementRareData()->ShouldForceLegacyLayoutForChild();
 }
+
 void Element::SetShouldForceLegacyLayoutForChildInternal(bool force) {
-  SetElementFlag(ElementFlags::kShouldForceLegacyLayoutForChild, force);
+  EnsureElementRareData().SetShouldForceLegacyLayoutForChild(force);
 }
 
 bool Element::HasUndoStack() const {
-  return HasElementFlag(ElementFlags::kHasUndoStack);
+  return HasRareData() && GetElementRareData()->HasUndoStack();
 }
+
 void Element::SetHasUndoStack(bool value) {
-  SetElementFlag(ElementFlags::kHasUndoStack, value);
+  EnsureElementRareData().SetHasUndoStack(value);
 }
 
 bool Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
@@ -4569,8 +4594,8 @@ bool Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
     // (e.g. if the only reason was a table, and that table is removed, we'll
     // still be using legacy layout).
     if (new_style.InsideNGFragmentationContext()) {
-      ForceLegacyLayoutInFragmentationContext(new_style);
-      needs_reattach = true;
+      if (ForceLegacyLayoutInFragmentationContext(new_style))
+        needs_reattach = true;
     }
   } else if (old_force) {
     // TODO(mstensho): If we have ancestors that got legacy layout just because
@@ -4611,7 +4636,7 @@ bool Element::ForceLegacyLayoutInFormattingContext(
   return needs_reattach;
 }
 
-void Element::ForceLegacyLayoutInFragmentationContext(
+bool Element::ForceLegacyLayoutInFragmentationContext(
     const ComputedStyle& new_style) {
   // This element cannot be laid out natively by LayoutNG. We now need to switch
   // all enclosing block fragmentation contexts over to using legacy
@@ -4622,29 +4647,35 @@ void Element::ForceLegacyLayoutInFragmentationContext(
   // block of the table is on the outside of the fragmentation context, we're
   // still going to fall back to legacy.
 
+  bool needs_reattach = false;
+  Element* parent;
+  for (Element* walker = this; walker; walker = parent) {
+    parent = DynamicTo<Element>(LayoutTreeBuilderTraversal::Parent(*walker));
+    if (walker->ShouldForceLegacyLayoutForChild())
+      return needs_reattach;
+
+    if (!walker->GetComputedStyle()->SpecifiesColumns())
+      continue;
+    // Found an element that establishes a fragmentation context. Force it to do
+    // legacy layout. Keep looking for outer fragmentation contexts, since we
+    // need to force them over to legacy as well.
+    walker->SetShouldForceLegacyLayoutForChild(true);
+    walker->SetNeedsReattachLayoutTree();
+    needs_reattach = true;
+    if (parent && !parent->GetComputedStyle()->InsideNGFragmentationContext())
+      return needs_reattach;
+  }
+
   if (GetDocument().Printing()) {
     // Force legacy layout on the entire document, since we're printing, and
     // there's some fragmentable box that needs legacy layout inside somewhere.
     Element* root = GetDocument().documentElement();
     root->SetShouldForceLegacyLayoutForChild(true);
     root->SetNeedsReattachLayoutTree();
-    return;
+    needs_reattach = true;
   }
 
-  Element* parent;
-  for (Element* walker = this; walker; walker = parent) {
-    parent = DynamicTo<Element>(LayoutTreeBuilderTraversal::Parent(*walker));
-    if (!walker->GetComputedStyle()->SpecifiesColumns())
-      continue;
-
-    // Found an element that establishes a fragmentation context. Force it to do
-    // legacy layout. Keep looking for outer fragmentation contexts, since we
-    // need to force them over to legacy as well.
-    walker->SetShouldForceLegacyLayoutForChild(true);
-    walker->SetNeedsReattachLayoutTree();
-    if (parent && !parent->GetComputedStyle()->InsideNGFragmentationContext())
-      return;
-  }
+  return needs_reattach;
 }
 
 bool Element::IsFocusedElementInDocument() const {
@@ -4892,8 +4923,6 @@ Element::EnsureResizeObserverData() {
 }
 
 DisplayLockContext* Element::GetDisplayLockContextFromRareData() const {
-  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
-    return nullptr;
   DCHECK(HasDisplayLockContext());
   DCHECK(HasRareData());
   return GetElementRareData()->GetDisplayLockContext();
@@ -5436,15 +5465,19 @@ void Element::UpdatePseudoElement(
   }
 
   if (change.ShouldUpdatePseudoElement(*element)) {
-    if (CanGeneratePseudoElement(pseudo_id)) {
+    bool generate_pseudo = CanGeneratePseudoElement(pseudo_id);
+    if (generate_pseudo) {
       element->RecalcStyle(change.ForPseudoElement(), style_recalc_context);
-      if (!element->NeedsReattachLayoutTree())
-        return;
-      if (PseudoElementLayoutObjectIsNeeded(element->GetComputedStyle(), this))
-        return;
+      if (element->NeedsReattachLayoutTree() &&
+          !PseudoElementLayoutObjectIsNeeded(element->GetComputedStyle(),
+                                             this)) {
+        generate_pseudo = false;
+      }
     }
-    GetElementRareData()->SetPseudoElement(pseudo_id, nullptr);
-    GetDocument().GetStyleEngine().PseudoElementRemoved(*this);
+    if (!generate_pseudo) {
+      GetElementRareData()->SetPseudoElement(pseudo_id, nullptr);
+      GetDocument().GetStyleEngine().PseudoElementRemoved(*this);
+    }
   }
 }
 
@@ -5911,7 +5944,7 @@ bool Element::FastAttributeLookupAllowed(const QualifiedName& name) const {
 }
 #endif
 
-#ifdef DUMP_NODE_STATISTICS
+#if DUMP_NODE_STATISTICS
 bool Element::HasNamedNodeMap() const {
   return HasRareData() && GetElementRareData()->AttributeMap();
 }
@@ -6486,17 +6519,27 @@ void Element::UpdatePresentationAttributeStyle() {
   element_data.SetPresentationAttributeStyleIsDirty(false);
   element_data.presentation_attribute_style_ =
       ComputePresentationAttributeStyle(*this);
+
+  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled(GetExecutionContext())) {
+    // We could do this in CreatePresentationAttributeStyle or
+    // HTMLElement::CollectStyleForPresentationAttribute when we actually
+    // iterate over attributes, but the presentational style gets cached so
+    // those functions aren't necessarily called every time. This function
+    // actually gets called every time, so we must do this check here.
+    AttributeCollection attributes = AttributesWithoutUpdate();
+    auto* hidden_attr = attributes.Find("hidden");
+    if (hidden_attr && hidden_attr->Value() == "until-found") {
+      EnsureDisplayLockContext().SetIsHiddenUntilFoundElement(true);
+    } else if (DisplayLockContext* context = GetDisplayLockContext()) {
+      context->SetIsHiddenUntilFoundElement(false);
+    }
+  }
 }
 
 CSSPropertyValueSet* Element::CreatePresentationAttributeStyle() {
   auto* style = MakeGarbageCollected<MutableCSSPropertyValueSet>(
       IsSVGElement() ? kSVGAttributeMode : kHTMLStandardMode);
   AttributeCollection attributes = AttributesWithoutUpdate();
-  if (DisplayLockContext* context = GetDisplayLockContext()) {
-    // CollectStyleForPresentationAttribute will set this to true if it actually
-    // applies.
-    context->SetActivateForFindInPage(false);
-  }
   for (const Attribute& attr : attributes)
     CollectStyleForPresentationAttribute(attr.GetName(), attr.Value(), style);
   CollectExtraStyleForPresentationAttribute(style);

@@ -69,6 +69,7 @@ net::RequestPriority GetRequestPriority(
     case network::mojom::RequestDestination::kWebBundle:
     case network::mojom::RequestDestination::kWorker:
     case network::mojom::RequestDestination::kXslt:
+    case network::mojom::RequestDestination::kFencedframe:
       return net::LOWEST;
   }
 }
@@ -204,7 +205,7 @@ void LoadingPredictorTabHelper::PageData::
 
 LoadingPredictorTabHelper::DocumentPageDataHolder::DocumentPageDataHolder(
     content::RenderFrameHost* rfh)
-    : content::RenderDocumentHostUserData<DocumentPageDataHolder>(rfh),
+    : content::DocumentUserData<DocumentPageDataHolder>(rfh),
       page_data_(base::MakeRefCounted<PageData>()) {}
 LoadingPredictorTabHelper::DocumentPageDataHolder::~DocumentPageDataHolder() =
     default;
@@ -542,8 +543,7 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
 
 NAVIGATION_HANDLE_USER_DATA_KEY_IMPL(
     LoadingPredictorTabHelper::NavigationPageDataHolder);
-RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(
-    LoadingPredictorTabHelper::DocumentPageDataHolder);
+DOCUMENT_USER_DATA_KEY_IMPL(LoadingPredictorTabHelper::DocumentPageDataHolder);
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LoadingPredictorTabHelper);
 
 }  // namespace predictors

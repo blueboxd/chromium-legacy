@@ -4,6 +4,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
+#include "ash/webui/eche_app_ui/url_constants.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/web_applications/system_web_app_integration_test.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
-#include "chromeos/components/eche_app_ui/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
@@ -36,7 +36,7 @@ class EcheAppIntegrationTest : public SystemWebAppIntegrationTest {
 // Test that the Eche App installs and launches correctly. Runs some spot checks
 // on the manifest.
 IN_PROC_BROWSER_TEST_P(EcheAppIntegrationTest, EcheApp) {
-  const GURL url(chromeos::eche_app::kChromeUIEcheAppURL);
+  const GURL url(ash::eche_app::kChromeUIEcheAppURL);
   EXPECT_NO_FATAL_FAILURE(
       ExpectSystemWebAppValid(web_app::SystemAppType::ECHE, url, "Eche App"));
 }

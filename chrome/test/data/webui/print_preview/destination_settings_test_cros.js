@@ -6,8 +6,8 @@ import {Destination, DestinationStore, DestinationType, NativeLayerCrosImpl, Nat
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {eventToPromise, fakeDataBind, waitBeforeNextRender} from '../test_util.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {eventToPromise, fakeDataBind, waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
 
 import {NativeLayerCrosStub} from './native_layer_cros_stub.js';
 import {NativeLayerStub} from './native_layer_stub.js';
@@ -174,7 +174,11 @@ suite(destination_settings_test_cros.suiteName, function() {
               // we don't try to fetch the license again.
               nativeLayer.resetResolver('getPrinterCapabilities');
               destinationSettings.shadowRoot.querySelector('#destinationSelect')
-                  .fire('selected-option-change', 'ID1/chrome_os/');
+                  .dispatchEvent(new CustomEvent('selected-option-change', {
+                    bubbles: true,
+                    composed: true,
+                    detail: 'ID1/chrome_os/',
+                  }));
             })
             .then(() => {
               assertEquals(

@@ -47,7 +47,6 @@ class AppMenuItemViewBinder {
             setContentDescription(view.findViewById(R.id.menu_item_text), model);
         } else if (key == AppMenuItemProperties.ENABLED) {
             boolean enabled = model.get(AppMenuItemProperties.ENABLED);
-            ((TextView) view.findViewById(R.id.menu_item_text)).setEnabled(enabled);
             view.setEnabled(enabled);
         } else if (key == AppMenuItemProperties.HIGHLIGHTED) {
             if (model.get(AppMenuItemProperties.HIGHLIGHTED)) {
@@ -204,7 +203,7 @@ class AppMenuItemViewBinder {
         if (model.get(AppMenuItemProperties.CHECKED)) {
             ApiCompatibilityUtils.setImageTintList(button,
                     AppCompatResources.getColorStateList(
-                            button.getContext(), R.color.blue_mode_tint));
+                            button.getContext(), R.color.default_icon_color_accent1_tint_list));
         }
 
         setupMenuButton(button, model, appMenuClickHandler);

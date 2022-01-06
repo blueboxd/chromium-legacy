@@ -14,10 +14,10 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -72,6 +72,7 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
   }
 
   SetMetricsType(GetSearchResultType());
+  SetCategory(Category::kApps);
 
   switch (app_type_) {
     case apps::mojom::AppType::kBuiltIn:
@@ -165,10 +166,10 @@ void AppServiceAppResult::Launch(int event_flags,
     return;
   }
 
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
 
-  // For Chrome apps or Web apps, if it is non-platform app, it could be
+  // For Crostini apps, non-platform Chrome apps, Web apps, it could be
   // selecting an existing delegate for the app, so call
   // ChromeShelfController's ActivateApp interface. Platform apps or ARC
   // apps, Crostini apps treat activations as a launch. The app can decide
@@ -180,9 +181,9 @@ void AppServiceAppResult::Launch(int event_flags,
   proxy->AppRegistryCache().ForOneApp(
       app_id(), [&is_active_app](const apps::AppUpdate& update) {
         if (update.AppType() == apps::mojom::AppType::kCrostini ||
-            ((update.AppType() == apps::mojom::AppType::kExtension ||
-              update.AppType() == apps::mojom::AppType::kSystemWeb ||
-              update.AppType() == apps::mojom::AppType::kWeb) &&
+            update.AppType() == apps::mojom::AppType::kWeb ||
+            update.AppType() == apps::mojom::AppType::kSystemWeb ||
+            (update.AppType() == apps::mojom::AppType::kExtension &&
              update.IsPlatformApp() == apps::mojom::OptionalBool::kFalse)) {
           is_active_app = true;
         }

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
@@ -70,9 +70,10 @@ void ThreadedWorkletMessagingProxy::Initialize(
           window->Url(), mojom::blink::ScriptType::kModule, global_scope_name,
           user_agent, frame_client->UserAgentMetadata(),
           frame_client->CreateWorkerFetchContext(),
-          mojo::Clone(csp->GetParsedPolicies()), window->GetReferrerPolicy(),
-          window->GetSecurityOrigin(), window->IsSecureContext(),
-          window->GetHttpsState(), worker_clients,
+          mojo::Clone(csp->GetParsedPolicies()),
+          Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
+          window->GetReferrerPolicy(), window->GetSecurityOrigin(),
+          window->IsSecureContext(), window->GetHttpsState(), worker_clients,
           frame_client->CreateWorkerContentSettingsClient(),
           window->AddressSpace(), OriginTrialContext::GetTokens(window).get(),
           base::UnguessableToken::Create(),

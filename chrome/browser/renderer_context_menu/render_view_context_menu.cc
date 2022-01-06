@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -241,8 +243,8 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/intent_helper/open_with_menu.h"
 #include "chrome/browser/ash/arc/intent_helper/start_smart_selection_action_menu.h"
-#include "chrome/browser/ash/policy/dlp/dlp_rules_manager.h"
-#include "chrome/browser/ash/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/renderer_context_menu/quick_answers_menu_observer.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "ui/aura/window.h"
@@ -653,7 +655,7 @@ void RenderViewContextMenu::AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
 }
 
 RenderViewContextMenu::RenderViewContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params)
     : RenderViewContextMenuBase(render_frame_host, params),
       extension_items_(browser_context_,
@@ -1080,11 +1082,13 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
     } else if (doc_url == GURL(chrome::kChromeUIDownloadsURL)) {
       base::RecordAction(base::UserMetricsAction(
           "Downloads_OpenUrlOfDownloadedItemFromContextMenu"));
-    } else if (doc_url.GetOrigin() == chrome::kChromeSearchMostVisitedUrl) {
+    } else if (doc_url.DeprecatedGetOriginAsURL() ==
+               chrome::kChromeSearchMostVisitedUrl) {
       base::RecordAction(
           base::UserMetricsAction("MostVisited_ClickedFromContextMenu"));
-    } else if (doc_url.GetOrigin() == GURL(chrome::kChromeUINewTabPageURL) ||
-               doc_url.GetOrigin() ==
+    } else if (doc_url.DeprecatedGetOriginAsURL() ==
+                   GURL(chrome::kChromeUINewTabPageURL) ||
+               doc_url.DeprecatedGetOriginAsURL() ==
                    GURL(chrome::kChromeUIUntrustedNewTabPageUrl)) {
       base::RecordAction(base::UserMetricsAction(
           "NewTabPage.LinkOpenedFromContextMenu.WebUI"));
@@ -2324,7 +2328,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CONTEXT_RELOADFRAME:
       return params_.frame_url.is_valid() &&
-             params_.frame_url.GetOrigin() != chrome::kChromeUIPrintURL;
+             params_.frame_url.DeprecatedGetOriginAsURL() !=
+                 chrome::kChromeUIPrintURL;
 
     case IDC_CONTENT_CONTEXT_UNDO:
       return !!(params_.edit_flags & ContextMenuDataEditFlags::kCanUndo);
@@ -2860,6 +2865,11 @@ void RenderViewContextMenu::RegisterMenuShownCallbackForTesting(
   *GetMenuShownCallback() = std::move(cb);
 }
 
+void RenderViewContextMenu::RegisterExecutePluginActionCallbackForTesting(
+    ExecutePluginActionCallback cb) {
+  execute_plugin_action_callback_ = std::move(cb);
+}
+
 ProtocolHandlerRegistry::ProtocolHandlerList
 RenderViewContextMenu::GetHandlersForLinkUrl() {
   ProtocolHandlerRegistry::ProtocolHandlerList handlers =
@@ -2893,6 +2903,20 @@ const policy::DlpRulesManager* RenderViewContextMenu::GetDlpRulesManager()
   return policy::DlpRulesManagerFactory::GetForPrimaryProfile();
 }
 #endif
+
+bool RenderViewContextMenu::IsSaveAsItemAllowedByPolicy() const {
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  // Check if file-selection dialogs are forbidden by policy.
+  if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
+    return false;
+  // Check if all downloads are forbidden by policy.
+  if (DownloadPrefs::FromBrowserContext(GetProfile())->download_restriction() ==
+      DownloadPrefs::DownloadRestriction::ALL_FILES) {
+    return false;
+  }
+  return true;
+}
 
 // Controller functions --------------------------------------------------------
 
@@ -2951,10 +2975,7 @@ bool RenderViewContextMenu::IsTranslateEnabled() const {
 }
 
 bool RenderViewContextMenu::IsSaveLinkAsEnabled() const {
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  // Test if file-selection dialogs are forbidden by policy.
-  if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
+  if (!IsSaveAsItemAllowedByPolicy())
     return false;
 
   PolicyBlocklistService* service =
@@ -2982,20 +3003,14 @@ bool RenderViewContextMenu::IsSaveLinkAsEnabled() const {
 }
 
 bool RenderViewContextMenu::IsSaveImageAsEnabled() const {
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  // Test if file-selection dialogs are forbidden by policy.
-  if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
+  if (!IsSaveAsItemAllowedByPolicy())
     return false;
 
   return params_.has_image_contents;
 }
 
 bool RenderViewContextMenu::IsSaveAsEnabled() const {
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  // Test if file-selection dialogs are forbidden by policy.
-  if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
+  if (!IsSaveAsItemAllowedByPolicy())
     return false;
 
   const GURL& url = params_.src_url;
@@ -3020,10 +3035,7 @@ bool RenderViewContextMenu::IsSavePageEnabled() const {
   if (browser && !browser->CanSaveContents(embedder_web_contents_))
     return false;
 
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  // Test if file-selection dialogs are forbidden by policy.
-  if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
+  if (!IsSaveAsItemAllowedByPolicy())
     return false;
 
   // We save the last committed entry (which the user is looking at), as
@@ -3195,8 +3207,7 @@ void RenderViewContextMenu::ExecOpenWebApp() {
 
   apps::AppLaunchParams launch_params(
       *app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::CURRENT_TAB,
-      apps::mojom::AppLaunchSource::kSourceContextMenu);
+      WindowOpenDisposition::CURRENT_TAB, apps::mojom::LaunchSource::kFromMenu);
   launch_params.override_url = params_.link_url;
   apps::AppServiceProxyFactory::GetForProfile(GetProfile())
       ->BrowserAppLauncher()
@@ -3563,27 +3574,28 @@ void RenderViewContextMenu::MediaPlayerActionAt(
 void RenderViewContextMenu::PluginActionAt(
     const gfx::Point& location,
     blink::mojom::PluginActionType plugin_action) {
+  content::RenderFrameHost* plugin_rfh = nullptr;
 #if BUILDFLAG(ENABLE_PDF)
   // A PDF plugin exists in a child frame embedded inside the extension's
   // main frame when Pepper-free PDF viewer is enabled. To trigger any plugin
   // action, we need to detect this child frame and trigger the actions from
   // there.
-  RenderFrameHost* pdf_rfh =
+  plugin_rfh =
       pdf_frame_util::FindPdfChildFrame(source_web_contents_->GetMainFrame());
-  if (pdf_rfh) {
-    // Calculate the local location in view coordinates before executing the
-    // plugin action from the PDF render frame.
-    gfx::PointF local_location =
-        pdf_rfh->GetView()->TransformRootPointToViewCoordSpace(
-            gfx::PointF(location));
-    pdf_rfh->ExecutePluginActionAtLocalLocation(
-        gfx::ToFlooredPoint(local_location), plugin_action);
-    return;
-  }
 #endif
-  source_web_contents_->GetMainFrame()
-      ->GetRenderViewHost()
-      ->ExecutePluginActionAtLocation(location, plugin_action);
+  if (!plugin_rfh)
+    plugin_rfh = source_web_contents_->GetMainFrame();
+
+  // TODO(crbug.com/776807): See if this needs to be done for OOPIFs as well.
+  // Calculate the local location in view coordinates inside the plugin before
+  // executing the plugin action.
+  gfx::Point local_location = gfx::ToFlooredPoint(
+      plugin_rfh->GetView()->TransformRootPointToViewCoordSpace(
+          gfx::PointF(location)));
+  plugin_rfh->ExecutePluginActionAtLocalLocation(local_location, plugin_action);
+
+  if (execute_plugin_action_callback_)
+    std::move(execute_plugin_action_callback_).Run(plugin_rfh, plugin_action);
 }
 
 Browser* RenderViewContextMenu::GetBrowser() const {

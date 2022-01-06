@@ -20,11 +20,19 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl} from './search_engines_browser_proxy.js';
 
+export interface SettingsSearchEngineEntryElement {
+  $: {
+    delete: HTMLButtonElement,
+    makeDefault: HTMLButtonElement,
+    edit: HTMLButtonElement,
+  };
+}
+
 const SettingsSearchEngineEntryElementBase =
     mixinBehaviors([FocusRowBehavior], PolymerElement) as
     {new (): PolymerElement & FocusRowBehavior};
 
-class SettingsSearchEngineEntryElement extends
+export class SettingsSearchEngineEntryElement extends
     SettingsSearchEngineEntryElementBase {
   static get is() {
     return 'settings-search-engine-entry';
@@ -50,10 +58,10 @@ class SettingsSearchEngineEntryElement extends
         computed: 'computeIsDefault_(engine)'
       },
 
-      showMenuButton: {
+      disableMenuButton: {
         reflectToAttribute: true,
         type: Boolean,
-        computed: 'computeShowMenuButton_(engine)'
+        computed: 'computeDisableMenuButton_(engine)'
       },
 
     };
@@ -64,7 +72,7 @@ class SettingsSearchEngineEntryElement extends
   showQueryUrl: boolean;
   isActiveSearchEnginesFlagEnabled: boolean;
   isDefault: boolean;
-  showMenuButton: boolean;
+  disableMenuButton: boolean;
   private browserProxy_: SearchEnginesBrowserProxy =
       SearchEnginesBrowserProxyImpl.getInstance();
 
@@ -76,8 +84,8 @@ class SettingsSearchEngineEntryElement extends
     return this.engine.default;
   }
 
-  private computeShowMenuButton_(): boolean {
-    return !this.isActiveSearchEnginesFlagEnabled || !this.engine.default;
+  private computeDisableMenuButton_(): boolean {
+    return this.isActiveSearchEnginesFlagEnabled && this.engine.default;
   }
 
   private onDeleteTap_() {
@@ -123,6 +131,12 @@ class SettingsSearchEngineEntryElement extends
     this.closePopupMenu_();
     this.browserProxy_.setIsActiveSearchEngine(
         this.engine.modelIndex, /*is_active=*/ false);
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-search-engine-entry': SettingsSearchEngineEntryElement;
   }
 }
 

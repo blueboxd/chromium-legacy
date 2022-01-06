@@ -4,7 +4,7 @@
 #include "base/test/trace_test_utils.h"
 
 #include "base/no_destructor.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/tracing/perfetto_platform.h"
 #include "third_party/perfetto/include/perfetto/tracing.h"
@@ -93,6 +93,7 @@ TracingEnvironment::~TracingEnvironment() {
     // Wait for any posted destruction tasks to execute.
     task_environment_->RunUntilIdle();
   }
+  perfetto::Tracing::ResetForTesting();
 }
 
 // static

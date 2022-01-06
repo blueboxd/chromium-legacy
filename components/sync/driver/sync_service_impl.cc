@@ -28,7 +28,6 @@
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/stop_source.h"
-#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/sync_util.h"
 #include "components/sync/driver/backend_migrator.h"
 #include "components/sync/driver/configure_context.h"
@@ -243,7 +242,7 @@ void SyncServiceImpl::Initialize() {
   RecordSyncInitialState(GetDisableReasons(),
                          user_settings_->IsFirstSetupComplete());
 
-  if (!IsAuthenticatedAccountPrimary()) {
+  if (!HasSyncConsent()) {
     // Remove after 11/2021. Migration logic to set SyncRequested to false if
     // the user is signed-out or signed-in but not syncing (crbug.com/1147026).
     user_settings_->SetSyncRequested(false);
@@ -320,9 +319,8 @@ void SyncServiceImpl::AccountStateChanged() {
   // Once the feature toggle is enabled, Sync and master sync should only remain
   // coupled if the former stays enabled and the latter disabled. Upon sign-out
   // set the pref so they are decoupled on the next time Sync is turned on.
-  if (!IsAuthenticatedAccountPrimary() &&
-      base::FeatureList::IsEnabled(
-          switches::kDecoupleSyncFromAndroidMasterSync)) {
+  if (!HasSyncConsent() && base::FeatureList::IsEnabled(
+                               switches::kDecoupleSyncFromAndroidMasterSync)) {
     sync_prefs_.SetDecoupledFromAndroidMasterSync();
   }
 #endif  // defined(OS_ANDROID)
@@ -334,7 +332,7 @@ void SyncServiceImpl::AccountStateChanged() {
     DCHECK(!engine_);
   } else {
     // Either a new account was signed in, or the existing account's
-    // |is_primary| bit was changed. Start up or reconfigure.
+    // |is_sync_consented| bit was changed. Start up or reconfigure.
     if (!engine_) {
       // Note: We only get here after an actual sign-in (not during browser
       // startup with an existing signed-in account), so no need for deferred
@@ -427,8 +425,7 @@ void SyncServiceImpl::OnDataTypeRequestsSyncStartup(ModelType type) {
 void SyncServiceImpl::StartUpSlowEngineComponents() {
   DCHECK(IsEngineAllowedToRun());
 
-  const CoreAccountInfo authenticated_account_info =
-      GetAuthenticatedAccountInfo();
+  const CoreAccountInfo authenticated_account_info = GetAccountInfo();
 
   if (IsLocalSyncEnabled()) {
     // With local sync (roaming profiles) there is no identity manager and hence
@@ -463,12 +460,12 @@ void SyncServiceImpl::StartUpSlowEngineComponents() {
       create_http_post_provider_factory_cb_, MakeUserAgentForSync(channel_),
       url_loader_factory_->Clone());
   params.authenticated_account_info = authenticated_account_info;
-  if (!base::FeatureList::IsEnabled(switches::kSyncE2ELatencyMeasurement)) {
-    invalidation::InvalidationService* invalidator =
-        sync_client_->GetInvalidationService();
-    params.invalidator_client_id =
-        invalidator ? invalidator->GetInvalidatorClientId() : std::string();
-  }
+
+  invalidation::InvalidationService* invalidator =
+      sync_client_->GetInvalidationService();
+  params.invalidator_client_id =
+      invalidator ? invalidator->GetInvalidatorClientId() : std::string();
+
   params.sync_manager_factory =
       std::make_unique<SyncManagerFactory>(network_connection_tracker_);
   if (sync_prefs_.IsLocalSyncEnabled()) {
@@ -762,7 +759,7 @@ void SyncServiceImpl::OnEngineInitialized(
           debug_info_listener, &data_type_controllers_, &crypto_, engine_.get(),
           this);
 
-  crypto_.SetSyncEngine(GetAuthenticatedAccountInfo(), engine_.get());
+  crypto_.SetSyncEngine(GetAccountInfo(), engine_.get());
 
   // Auto-start means IsFirstSetupComplete gets set automatically.
   if (start_behavior_ == AUTO_START &&
@@ -846,7 +843,11 @@ void SyncServiceImpl::OnActionableError(const SyncProtocolError& error) {
       // Note: StopAndClear sets IsSyncRequested to false, which ensures that
       // Sync-the-feature remains off.
       StopAndClear();
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+      // TODO(https://crbug.com/1233933): Update this when Lacros profiles
+      //     support signed-in-but-not-consented-to-sync state.
+
       // On every platform except ChromeOS, revoke the Sync consent in
       // IdentityManager after a dashboard clear.
       if (!IsLocalSyncEnabled() &&
@@ -1045,7 +1046,7 @@ void SyncServiceImpl::TriggerRefresh(const ModelTypeSet& types) {
 
 bool SyncServiceImpl::IsSignedIn() const {
   // Sync is logged in if there is a non-empty account id.
-  return !GetAuthenticatedAccountInfo().account_id.empty();
+  return !GetAccountInfo().account_id.empty();
 }
 
 base::Time SyncServiceImpl::GetLastSyncedTimeForDebugging() const {
@@ -1119,8 +1120,7 @@ void SyncServiceImpl::ConfigureDataTypeManager(ConfigureReason reason) {
   DCHECK(!engine_->GetCacheGuid().empty());
 
   ConfigureContext configure_context;
-  configure_context.authenticated_account_id =
-      GetAuthenticatedAccountInfo().account_id;
+  configure_context.authenticated_account_id = GetAccountInfo().account_id;
   configure_context.cache_guid = engine_->GetCacheGuid();
   configure_context.sync_mode = SyncMode::kFull;
   configure_context.reason = reason;
@@ -1233,7 +1233,7 @@ void SyncServiceImpl::UpdateDataTypesForInvalidations() {
   }
 
   // No need to register invalidations for non-protocol or commit-only types.
-  // TODO(crbug.com/1232372): This could break with dynamic proxy types.
+  // TODO(crbug.com/1260836): This could break with dynamic proxy types.
   ModelTypeSet types = Intersection(GetDataTypesToConfigure(), ProtocolTypes());
   types.RemoveAll(CommitOnlyTypes());
   if (!sessions_invalidations_enabled_) {
@@ -1287,8 +1287,12 @@ std::unique_ptr<base::Value> SyncServiceImpl::GetTypeStatusMapForDebugging() {
   type_status_header->SetString("state", "State");
   result->Append(std::move(type_status_header));
 
-  const ModelTypeSet registered = GetRegisteredDataTypes();
-  for (ModelType type : registered) {
+  for (const std::pair<const ModelType, std::unique_ptr<DataTypeController>>&
+           type_and_controller : data_type_controllers_) {
+    const ModelType type = type_and_controller.first;
+    const DataTypeController* const controller =
+        type_and_controller.second.get();
+
     auto type_status = std::make_unique<base::DictionaryValue>();
     type_status->SetString("name", ModelTypeToString(type));
 
@@ -1297,32 +1301,53 @@ std::unique_ptr<base::Value> SyncServiceImpl::GetTypeStatusMapForDebugging() {
       DCHECK(error.IsSet());
       switch (error.GetSeverity()) {
         case SyncError::SYNC_ERROR_SEVERITY_ERROR:
-          type_status->SetString("status", "error");
+          type_status->SetString("status", "severity_error");
           type_status->SetString(
               "message", "Error: " + error.location().ToString() + ", " +
                              error.GetMessagePrefix() + error.message());
           break;
         case SyncError::SYNC_ERROR_SEVERITY_INFO:
-          type_status->SetString("status", "disabled");
+          type_status->SetString("status", "severity_info");
           type_status->SetString("message", error.message());
           break;
       }
     } else if (throttled_types.Has(type)) {
-      type_status->SetString("status", "warning");
+      type_status->SetString("status", "severity_warning");
       type_status->SetString("message", " Throttled");
     } else if (backed_off_types.Has(type)) {
-      type_status->SetString("status", "warning");
+      type_status->SetString("status", "severity_warning");
       type_status->SetString("message", "Backed off");
     } else {
-      type_status->SetString("status", "ok");
       type_status->SetString("message", "");
+
+      // Determine the row color based on the controller's state.
+      switch (controller->state()) {
+        case DataTypeController::NOT_RUNNING:
+          // One common case is that the sync was just disabled by the user,
+          // which is not very different to certain SYNC_ERROR_SEVERITY_INFO
+          // cases like preconditions not having been met due to user
+          // configuration.
+          type_status->SetString("status", "severity_info");
+          break;
+        case DataTypeController::MODEL_STARTING:
+        case DataTypeController::MODEL_LOADED:
+        case DataTypeController::STOPPING:
+          // These are all transitional states that should be rare to observe.
+          type_status->SetString("status", "transitioning");
+          break;
+        case DataTypeController::RUNNING:
+          type_status->SetString("status", "ok");
+          break;
+        case DataTypeController::FAILED:
+          // Note that most of the errors (possibly all) should have been
+          // handled earlier via |data_type_error_map_|.
+          type_status->SetString("status", "severity_error");
+          break;
+      }
     }
 
-    const auto& dtc_iter = data_type_controllers_.find(type);
-    if (dtc_iter != data_type_controllers_.end()) {
-      type_status->SetString("state", DataTypeController::StateToString(
-                                          dtc_iter->second->state()));
-    }
+    type_status->SetString(
+        "state", DataTypeController::StateToString(controller->state()));
 
     result->Append(std::move(type_status));
   }
@@ -1441,7 +1466,7 @@ void SyncServiceImpl::OnAccountsInCookieUpdatedWithCallback(
 
 bool SyncServiceImpl::HasCookieJarMismatch(
     const std::vector<gaia::ListedAccount>& cookie_jar_accounts) {
-  CoreAccountId account_id = GetAuthenticatedAccountInfo().account_id;
+  CoreAccountId account_id = GetAccountInfo().account_id;
   // Iterate through list of accounts, looking for current sync account.
   for (const auto& account : cookie_jar_accounts) {
     if (account.id == account_id)
@@ -1571,7 +1596,7 @@ void SyncServiceImpl::GetAllNodesForDebugging(
   }
 }
 
-CoreAccountInfo SyncServiceImpl::GetAuthenticatedAccountInfo() const {
+CoreAccountInfo SyncServiceImpl::GetAccountInfo() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!auth_manager_) {
     // Some crashes on iOS (crbug.com/962384) suggest that SyncServiceImpl
@@ -1583,14 +1608,14 @@ CoreAccountInfo SyncServiceImpl::GetAuthenticatedAccountInfo() const {
   return auth_manager_->GetActiveAccountInfo().account_info;
 }
 
-bool SyncServiceImpl::IsAuthenticatedAccountPrimary() const {
+bool SyncServiceImpl::HasSyncConsent() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!auth_manager_) {
     // This is a precautionary check to be consistent with the check in
-    // GetAuthenticatedAccountInfo().
+    // GetAccountInfo().
     return false;
   }
-  return auth_manager_->GetActiveAccountInfo().is_primary;
+  return auth_manager_->GetActiveAccountInfo().is_sync_consented;
 }
 
 void SyncServiceImpl::SetInvalidationsForSessionsEnabled(bool enabled) {

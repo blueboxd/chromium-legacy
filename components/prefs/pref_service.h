@@ -48,10 +48,6 @@ namespace base {
 class FilePath;
 }
 
-namespace metrics {
-class CleanExitBeacon;
-}
-
 namespace prefs {
 class ScopedDictionaryPrefUpdate;
 }
@@ -427,10 +423,6 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   friend class PrefChangeRegistrar;
   friend class subtle::PrefMemberBase;
 
-  // Give access to CommitPendingWriteSynchronously().
-  // TODO(crbug/1218908): Maybe limit CleanExitBeacon's access.
-  friend class metrics::CleanExitBeacon;
-
   // These are protected so they can only be accessed by the friend
   // classes listed above.
   //
@@ -476,12 +468,6 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // actually get the value.).
   const base::Value* GetPreferenceValue(const std::string& path) const;
   const base::Value* GetPreferenceValueChecked(const std::string& path) const;
-
-  // Like CommitPendingWrite(), but writes to disk on this thread synchronously
-  // rather than scheduling a write. CommitPendingWriteSynchronously() is
-  // appropriate to call only in the exceptional situation in which you need to
-  // write to disk early on during startup before threads have been started.
-  void CommitPendingWriteSynchronously();
 
   const scoped_refptr<PrefRegistry> pref_registry_;
 

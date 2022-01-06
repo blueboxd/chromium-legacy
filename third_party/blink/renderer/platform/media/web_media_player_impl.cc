@@ -21,12 +21,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -1383,7 +1383,7 @@ WebMediaPlayerImpl::GetPaintCanvasVideoRenderer() {
 bool WebMediaPlayerImpl::WouldTaintOrigin() const {
   if (demuxer_found_hls_) {
     // HLS manifests might pull segments from a different origin. We can't know
-    // for sure, so we conservatively say no here.
+    // for sure, so we conservatively say yes here.
     return true;
   }
 
@@ -3901,6 +3901,16 @@ bool WebMediaPlayerImpl::HasUnmutedAudio() const {
 bool WebMediaPlayerImpl::IsVideoBeingCaptured() const {
   // 5 seconds chosen arbitrarily since most videos are never captured.
   return tick_clock_->NowTicks() - last_frame_request_time_ < base::Seconds(5);
+}
+
+void WebMediaPlayerImpl::RegisterFrameSinkHierarchy() {
+  DCHECK(bridge_);
+  bridge_->RegisterFrameSinkHierarchy();
+}
+
+void WebMediaPlayerImpl::UnregisterFrameSinkHierarchy() {
+  DCHECK(bridge_);
+  bridge_->UnregisterFrameSinkHierarchy();
 }
 
 }  // namespace blink

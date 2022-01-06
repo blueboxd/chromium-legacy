@@ -8,14 +8,20 @@
 
 #include "ash/app_list/app_list_bubble_presenter.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_test_model.h"
+#include "ash/app_list/model/search/test_search_result.h"
 #include "ash/app_list/views/app_list_bubble_apps_page.h"
+#include "ash/app_list/views/app_list_bubble_search_page.h"
 #include "ash/app_list/views/app_list_bubble_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/productivity_launcher_search_view.h"
+#include "ash/app_list/views/search_result_page_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "base/guid.h"
@@ -30,7 +36,7 @@ AppListTestHelper::AppListTestHelper() {
   DCHECK(app_list_controller_);
 
   // Use a new app list client for each test
-  app_list_client_ = std::make_unique<TestAppListClient>();
+  app_list_client_ = std::make_unique<TestAppListClient>(app_list_controller_);
   app_list_controller_->SetClient(app_list_client_.get());
 }
 
@@ -90,19 +96,32 @@ void AppListTestHelper::CheckState(AppListViewState state) {
 }
 
 void AppListTestHelper::AddAppItems(int num_apps) {
-  int num_apps_already_added =
-      app_list_controller_->GetModel()->top_level_item_list()->item_count();
+  AppListModel* const model = AppListModelProvider::Get()->model();
+  const int num_apps_already_added = model->top_level_item_list()->item_count();
   for (int i = 0; i < num_apps; i++) {
-    app_list_controller_->GetModel()->AddItem(std::make_unique<AppListItem>(
-        /*app_id=*/base::NumberToString(i + num_apps_already_added)));
+    model->AddItem(std::make_unique<AppListItem>(
+        test::AppListTestModel::GetItemName(i + num_apps_already_added)));
   }
 }
 
 void AppListTestHelper::AddPageBreakItem() {
   auto page_break_item = std::make_unique<AppListItem>(base::GenerateGUID());
   page_break_item->set_is_page_break(true);
-  Shell::Get()->app_list_controller()->GetModel()->AddItem(
-      std::move(page_break_item));
+  AppListModelProvider::Get()->model()->AddItem(std::move(page_break_item));
+}
+
+void AppListTestHelper::AddRecentApps(int num_apps) {
+  for (int i = 0; i < num_apps; i++) {
+    auto result = std::make_unique<TestSearchResult>();
+    // Use the same "Item #" convention as AppListTestModel uses. The search
+    // result IDs must match app item IDs in the app list data model.
+    result->set_result_id(test::AppListTestModel::GetItemName(i));
+    result->set_result_type(AppListSearchResultType::kInstalledApp);
+    // TODO(crbug.com/1216662): Replace with a real display type after the ML
+    // team gives us a way to query directly for recent apps.
+    result->set_display_type(SearchResultDisplayType::kList);
+    GetSearchResults()->Add(std::move(result));
+  }
 }
 
 bool AppListTestHelper::IsInFolderView() {
@@ -185,6 +204,17 @@ AppListBubbleAssistantPage* AppListTestHelper::GetBubbleAssistantPage() {
   return app_list_controller_->bubble_presenter_for_test()
       ->bubble_view_for_test()
       ->assistant_page_;
+}
+
+SearchModel::SearchResults* AppListTestHelper::GetSearchResults() {
+  return AppListModelProvider::Get()->search_model()->results();
+}
+
+ProductivityLauncherSearchView*
+AppListTestHelper::GetProductivityLauncherSearchView() {
+  return app_list_controller_->bubble_presenter_for_test()
+      ->bubble_view_for_test()
+      ->search_page_->search_view();
 }
 
 }  // namespace ash

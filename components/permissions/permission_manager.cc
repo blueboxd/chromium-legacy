@@ -9,8 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -179,8 +177,9 @@ void ContentSettingCallbackWrapper(
 GURL GetEmbeddingOrigin(content::WebContents* web_contents,
                         const GURL& requesting_origin) {
   if (PermissionsClient::Get()->DoOriginsMatchNewTabPage(
-          requesting_origin, web_contents->GetLastCommittedURL().GetOrigin())) {
-    return web_contents->GetLastCommittedURL().GetOrigin();
+          requesting_origin,
+          web_contents->GetLastCommittedURL().DeprecatedGetOriginAsURL())) {
+    return web_contents->GetLastCommittedURL().DeprecatedGetOriginAsURL();
   } else {
     return PermissionUtil::GetLastCommittedOriginAsURL(web_contents);
   }
@@ -527,7 +526,7 @@ void PermissionManager::ResetPermission(PermissionType permission,
     return;
   context->ResetPermission(
       GetCanonicalOrigin(type, requesting_origin, embedding_origin),
-      embedding_origin.GetOrigin());
+      embedding_origin.DeprecatedGetOriginAsURL());
 }
 
 PermissionStatus PermissionManager::GetPermissionStatus(
@@ -656,9 +655,6 @@ void PermissionManager::UnsubscribePermissionStatusChange(
   if (!subscription)
     return;
 
-  if (is_processing_permission_change_)
-    base::debug::DumpWithoutCrashing();
-
   ContentSettingsType type = subscription->permission;
   subscriptions_.Remove(subscription_id);
   auto type_count = subscription_type_counts_.find(type);
@@ -680,20 +676,17 @@ bool PermissionManager::IsPermissionKillSwitchOn(
 void PermissionManager::OnPermissionChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type) {
+    ContentSettingsTypeSet content_type_set) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(primary_pattern.IsValid());
   DCHECK(secondary_pattern.IsValid());
 
   std::vector<base::OnceClosure> callbacks;
   callbacks.reserve(subscriptions_.size());
-  base::AutoReset<bool> reset(&is_processing_permission_change_, true);
-  SCOPED_CRASH_KEY_NUMBER("PermissionManager", "content_type",
-                          static_cast<int>(content_type));
   for (SubscriptionsMap::iterator iter(&subscriptions_); !iter.IsAtEnd();
        iter.Advance()) {
     Subscription* subscription = iter.GetCurrentValue();
-    if (subscription->permission != content_type)
+    if (!content_type_set.Contains(subscription->permission))
       continue;
 
     // The RFH may be null if the request is for a worker.
@@ -753,8 +746,8 @@ PermissionResult PermissionManager::GetPermissionStatusHelper(
     return PermissionResult(status, PermissionStatusSource::UNSPECIFIED);
   PermissionContextBase* context = GetPermissionContext(permission);
   PermissionResult result = context->GetPermissionStatus(
-      render_frame_host, canonical_requesting_origin.GetOrigin(),
-      embedding_origin.GetOrigin());
+      render_frame_host, canonical_requesting_origin.DeprecatedGetOriginAsURL(),
+      embedding_origin.DeprecatedGetOriginAsURL());
   DCHECK(result.content_setting == CONTENT_SETTING_ALLOW ||
          result.content_setting == CONTENT_SETTING_ASK ||
          result.content_setting == CONTENT_SETTING_BLOCK);

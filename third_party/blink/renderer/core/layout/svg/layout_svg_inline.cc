@@ -82,24 +82,24 @@ bool LayoutSVGInline::IsObjectBoundingBoxValid() const {
 
 // static
 void LayoutSVGInline::ObjectBoundingBoxForCursor(NGInlineCursor& cursor,
-                                                 FloatRect& bounds) {
+                                                 gfx::RectF& bounds) {
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
     const NGFragmentItem& item = *cursor.CurrentItem();
     if (item.Type() == NGFragmentItem::kSvgText) {
-      bounds.Unite(cursor.Current().ObjectBoundingBox(cursor));
+      bounds.Union(cursor.Current().ObjectBoundingBox(cursor));
     } else if (NGInlineCursor descendants = cursor.CursorForDescendants()) {
       for (; descendants; descendants.MoveToNext()) {
         const NGFragmentItem& descendant_item = *descendants.CurrentItem();
         if (descendant_item.Type() == NGFragmentItem::kSvgText)
-          bounds.Unite(descendants.Current().ObjectBoundingBox(cursor));
+          bounds.Union(descendants.Current().ObjectBoundingBox(cursor));
       }
     }
   }
 }
 
-FloatRect LayoutSVGInline::ObjectBoundingBox() const {
+gfx::RectF LayoutSVGInline::ObjectBoundingBox() const {
   NOT_DESTROYED();
-  FloatRect bounds;
+  gfx::RectF bounds;
   if (IsInLayoutNGInlineFormattingContext()) {
     NGInlineCursor cursor;
     cursor.MoveToIncludingCulledInline(*this);
@@ -107,21 +107,21 @@ FloatRect LayoutSVGInline::ObjectBoundingBox() const {
     return bounds;
   }
   for (InlineFlowBox* box : *LineBoxes())
-    bounds.Unite(FloatRect(box->FrameRect()));
+    bounds.Union(gfx::RectF(box->FrameRect()));
   return bounds;
 }
 
-FloatRect LayoutSVGInline::StrokeBoundingBox() const {
+gfx::RectF LayoutSVGInline::StrokeBoundingBox() const {
   NOT_DESTROYED();
   if (!IsObjectBoundingBoxValid())
-    return FloatRect();
+    return gfx::RectF();
   return SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, ObjectBoundingBox());
 }
 
-FloatRect LayoutSVGInline::VisualRectInLocalSVGCoordinates() const {
+gfx::RectF LayoutSVGInline::VisualRectInLocalSVGCoordinates() const {
   NOT_DESTROYED();
   if (!IsObjectBoundingBoxValid())
-    return FloatRect();
+    return gfx::RectF();
   return SVGLayoutSupport::ComputeVisualRectForText(*this, ObjectBoundingBox());
 }
 
@@ -148,17 +148,18 @@ void LayoutSVGInline::AbsoluteQuads(Vector<FloatQuad>& quads,
       const NGFragmentItem& item = *cursor.CurrentItem();
       if (item.Type() == NGFragmentItem::kSvgText) {
         quads.push_back(LocalToAbsoluteQuad(
-            SVGLayoutSupport::ExtendTextBBoxWithStroke(
-                *this, cursor.Current().ObjectBoundingBox(cursor)),
+            FloatRect(SVGLayoutSupport::ExtendTextBBoxWithStroke(
+                *this, cursor.Current().ObjectBoundingBox(cursor))),
             mode));
       }
     }
     return;
   }
   for (InlineFlowBox* box : *LineBoxes()) {
-    FloatRect box_rect(box->FrameRect());
+    gfx::RectF box_rect(box->FrameRect());
     quads.push_back(LocalToAbsoluteQuad(
-        SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, box_rect), mode));
+        FloatRect(SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, box_rect)),
+        mode));
   }
 }
 

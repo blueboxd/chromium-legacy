@@ -358,10 +358,12 @@ def _RevisionNumberColumns(data, prefix):
       # branch in the chromium/src repo.
       revision_supplemental_columns[prefix + 'commit_pos'] = revision
   except ValueError:
+    logging.warn('Revision has non-integer value: "%s".', data['rev'])
     # The dashboard requires ordered integer revision numbers. If the revision
-    # is not an integer, assume it's a git hash and send a timestamp.
+    # is not an integer or None, assume it's a git hash and send a timestamp.
     revision = _GetTimestamp()
-    revision_supplemental_columns[prefix + 'chromium'] = data['rev']
+    if data['rev'] != None:
+      revision_supplemental_columns[prefix + 'chromium'] = data['rev']
 
   # An explicit data['point_id'] overrides the default behavior.
   if 'point_id' in data:
@@ -373,7 +375,7 @@ def _RevisionNumberColumns(data, prefix):
       revision_supplemental_columns[prefix + key] = data[key]
 
   # If possible, also send the git hash.
-  if 'git_revision' in data and data['git_revision'] != 'undefined':
+  if 'git_revision' in data and data['git_revision'] not in [None, 'undefined']:
     revision_supplemental_columns[prefix + 'chromium'] = data['git_revision']
 
   return revision, revision_supplemental_columns
@@ -461,7 +463,7 @@ def _SendHistogramJson(url, histogramset_json, token_generator_callback):
   try:
     oauth_token = token_generator_callback()
 
-    data = zlib.compress(histogramset_json)
+    data = zlib.compress(histogramset_json.encode('utf-8'))
     headers = {
         'Authorization': 'Bearer %s' % oauth_token,
         'User-Agent': 'perf-uploader/1.0'
@@ -495,4 +497,4 @@ def _SendHistogramJson(url, histogramset_json, token_generator_callback):
     else:
       logging.info('Upload completion token created. Token id: %s' % token)
   except Exception as e:  # pylint: disable=broad-except
-    logging.warn('Error fetching upload completion token: %r' % e.message)
+    logging.warn('Error fetching upload completion token: %s' % e)

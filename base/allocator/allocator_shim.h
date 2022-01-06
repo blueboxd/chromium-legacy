@@ -11,6 +11,7 @@
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/base_export.h"
+#include "base/types/strong_alias.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
@@ -169,16 +170,20 @@ BASE_EXPORT void InitializeAllocatorShim();
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 BASE_EXPORT void EnablePartitionAllocMemoryReclaimer();
 
-BASE_EXPORT void ReconfigurePartitionAllocLazyCommit();
-#endif
+BASE_EXPORT void ReconfigurePartitionAllocLazyCommit(bool enabled);
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
-BASE_EXPORT void ConfigurePartitionBackupRefPtrSupport(bool enable_brp);
-#endif
+using EnableBrp = base::StrongAlias<class EnableBrpTag, bool>;
+using ForceSplitPartitions =
+    base::StrongAlias<class ForceSplitPartitionsTag, bool>;
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+BASE_EXPORT void ConfigurePartitions(
+    EnableBrp enable_brp,
+    ForceSplitPartitions force_split_partitions);
+
+#if defined(PA_ALLOW_PCSCAN)
 BASE_EXPORT void EnablePCScan(base::internal::PCScan::InitConfig);
 #endif
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 }  // namespace allocator
 }  // namespace base

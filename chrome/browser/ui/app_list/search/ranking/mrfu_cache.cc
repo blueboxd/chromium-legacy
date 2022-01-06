@@ -34,7 +34,7 @@ constexpr int kVersion = 2;
 //  - D is the decay coefficient
 //  - N is the boost factor
 //
-// We want an equation for the score after using an new item N times - ie.
+// We want an equation for the score after using a new item N times - ie.
 // f_N(0) - and then solve for k.
 //
 //    f(x) = Dx + (1-Dx)k
@@ -86,6 +86,11 @@ MrfuCache::MrfuCache(const base::FilePath& path, const Params& params) {
 
 MrfuCache::~MrfuCache() {}
 
+void MrfuCache::Sort(Items& items) {
+  std::sort(items.begin(), items.end(),
+            [](auto const& a, auto const& b) { return a.second > b.second; });
+}
+
 void MrfuCache::Use(const std::string& item) {
   if (!proto_.initialized())
     return;
@@ -133,7 +138,51 @@ float MrfuCache::Get(const std::string& item) {
 }
 
 float MrfuCache::GetNormalized(const std::string& item) {
+  if (!proto_.initialized() || proto_->total_score() == 0.0f)
+    return 0.0f;
   return Get(item) / proto_->total_score();
+}
+
+MrfuCache::Items MrfuCache::GetAll() {
+  if (!proto_.initialized())
+    return {};
+
+  MrfuCache::Items results;
+  for (auto& item_score : *proto_->mutable_items()) {
+    Score& score = item_score.second;
+    Decay(&score);
+    results.emplace_back(item_score.first, score.score());
+  }
+  return results;
+}
+
+MrfuCache::Items MrfuCache::GetAllNormalized() {
+  if (!proto_.initialized() || proto_->total_score() == 0.0f)
+    return {};
+
+  auto results = GetAll();
+  const float total = proto_->total_score();
+  for (auto& pair : results)
+    pair.second /= total;
+  return results;
+}
+
+void MrfuCache::ResetWithItems(const Items& items) {
+  DCHECK(proto_.initialized());
+  proto_->Clear();
+
+  proto_->set_update_count(0);
+  float total_score = 0.0f;
+  auto* proto_items = proto_->mutable_items();
+  for (const auto& item_score : items) {
+    Score score;
+    score.set_score(item_score.second);
+    score.set_last_update_count(0);
+    proto_items->insert({item_score.first, score});
+    total_score += item_score.second;
+  }
+  proto_->set_total_score(total_score);
+  proto_.QueueWrite();
 }
 
 void MrfuCache::Decay(Score* score) {

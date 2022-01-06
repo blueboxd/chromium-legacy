@@ -357,22 +357,23 @@ void NGFragmentItem::SetSvgLineLocalRect(const PhysicalRect& unscaled_rect) {
   rect_ = unscaled_rect;
 }
 
-FloatRect NGFragmentItem::ObjectBoundingBox(
+gfx::RectF NGFragmentItem::ObjectBoundingBox(
     const NGFragmentItems& items) const {
   DCHECK_EQ(Type(), kSvgText);
   const Font scaled_font = ScaledFont();
-  FloatRect ink_bounds = scaled_font.TextInkBounds(TextPaintInfo(items));
+  gfx::RectF ink_bounds =
+      ToGfxRectF(scaled_font.TextInkBounds(TextPaintInfo(items)));
   if (const auto* font_data = scaled_font.PrimaryFont())
-    ink_bounds.Move(0.0f, font_data->GetFontMetrics().FloatAscent());
+    ink_bounds.Offset(0.0f, font_data->GetFontMetrics().FloatAscent());
   ink_bounds.Scale(SvgFragmentData()->length_adjust_scale, 1.0f);
-  const FloatRect& scaled_rect = SvgFragmentData()->rect;
+  const gfx::RectF& scaled_rect = SvgFragmentData()->rect;
   if (!IsHorizontal()) {
     ink_bounds =
-        FloatRect(scaled_rect.Width() - ink_bounds.MaxY(), ink_bounds.X(),
-                  ink_bounds.Height(), ink_bounds.Width());
+        gfx::RectF(scaled_rect.width() - ink_bounds.bottom(), ink_bounds.x(),
+                   ink_bounds.height(), ink_bounds.width());
   }
-  ink_bounds.MoveBy(scaled_rect.Location());
-  ink_bounds.Unite(scaled_rect);
+  ink_bounds.Offset(scaled_rect.OffsetFromOrigin());
+  ink_bounds.Union(scaled_rect);
   if (HasSvgTransformForBoundingBox())
     ink_bounds = BuildSvgTransformForBoundingBox().MapRect(ink_bounds);
   ink_bounds.Scale(1 / SvgScalingFactor());
@@ -381,8 +382,8 @@ FloatRect NGFragmentItem::ObjectBoundingBox(
 
 FloatQuad NGFragmentItem::SvgUnscaledQuad() const {
   DCHECK_EQ(Type(), kSvgText);
-  FloatQuad quad =
-      BuildSvgTransformForBoundingBox().MapQuad(SvgFragmentData()->rect);
+  FloatQuad quad = BuildSvgTransformForBoundingBox().MapQuad(
+      FloatRect(SvgFragmentData()->rect));
   const float scaling_factor = SvgScalingFactor();
   quad.Scale(1 / scaling_factor, 1 / scaling_factor);
   return quad;
@@ -407,18 +408,15 @@ float NGFragmentItem::ScaleInlineOffset(LayoutUnit inline_offset) const {
          SvgFragmentData()->length_adjust_scale;
 }
 
-bool NGFragmentItem::Contains(const FloatPoint& position) const {
-  if (Type() != kSvgText)
-    return FloatRect(rect_).Contains(position);
-  const float scaling_factor = SvgScalingFactor();
-  FloatPoint scaled_position = position;
-  scaled_position.Scale(scaling_factor, scaling_factor);
-  FloatRect item_rect = SvgFragmentData()->rect;
+bool NGFragmentItem::InclusiveContains(const gfx::PointF& position) const {
+  DCHECK_EQ(Type(), kSvgText);
+  gfx::PointF scaled_position = gfx::ScalePoint(position, SvgScalingFactor());
+  const gfx::RectF& item_rect = SvgFragmentData()->rect;
   if (!HasSvgTransformForBoundingBox())
-    return item_rect.Contains(scaled_position);
+    return item_rect.InclusiveContains(scaled_position);
   return BuildSvgTransformForBoundingBox()
-      .MapQuad(FloatQuad(item_rect))
-      .ContainsPoint(scaled_position);
+      .MapQuad(gfx::QuadF(item_rect))
+      .Contains(scaled_position);
 }
 
 bool NGFragmentItem::HasNonVisibleOverflow() const {
@@ -632,11 +630,11 @@ AffineTransform NGFragmentItem::BuildSvgTransformForLengthAdjust() const {
         svg_data.in_text_path && svg_data.angle != 0.0f;
     // We'd like to scale only inline-size without moving inline position.
     if (is_horizontal) {
-      float x = svg_data.rect.X();
+      float x = svg_data.rect.x();
       scale_transform.SetMatrix(
           scale, 0, 0, 1, with_text_path_transform ? 0 : x - scale * x, 0);
     } else {
-      float y = svg_data.rect.Y();
+      float y = svg_data.rect.y();
       scale_transform.SetMatrix(1, 0, 0, scale, 0,
                                 with_text_path_transform ? 0 : y - scale * y);
     }
@@ -663,14 +661,14 @@ AffineTransform NGFragmentItem::BuildSvgTransformForTextPath(
   // |x| in the horizontal writing-mode and |y| in the vertical writing-mode
   // point the center of the baseline.  See |NGSvgTextLayoutAlgorithm::
   // PositionOnPath()|.
-  float x = svg_data.rect.X();
-  float y = svg_data.rect.Y();
+  float x = svg_data.rect.x();
+  float y = svg_data.rect.y();
   if (IsHorizontal()) {
     y += font_data->GetFontMetrics().FixedAscent(font_baseline);
-    transform.Translate(-svg_data.rect.Width() / 2, svg_data.baseline_shift);
+    transform.Translate(-svg_data.rect.width() / 2, svg_data.baseline_shift);
   } else {
     x += font_data->GetFontMetrics().FixedDescent(font_baseline);
-    transform.Translate(svg_data.baseline_shift, -svg_data.rect.Height() / 2);
+    transform.Translate(svg_data.baseline_shift, -svg_data.rect.height() / 2);
   }
   transform.Multiply(length_adjust);
   transform.SetE(transform.E() + x);
@@ -704,10 +702,10 @@ AffineTransform NGFragmentItem::BuildSvgTransformForBoundingBox() const {
   // However it doesn't look correct for RTL and vertical text.
   float ascent =
       font_data ? font_data->GetFontMetrics().FixedAscent().ToFloat() : 0.0f;
-  float y = svg_data.rect.Y() + ascent;
-  transform.SetE(transform.E() + svg_data.rect.X());
+  float y = svg_data.rect.y() + ascent;
+  transform.SetE(transform.E() + svg_data.rect.x());
   transform.SetF(transform.F() + y);
-  transform.Translate(-svg_data.rect.X(), -y);
+  transform.Translate(-svg_data.rect.x(), -y);
   return transform;
 }
 
@@ -939,8 +937,8 @@ LayoutUnit NGFragmentItem::InlinePositionForOffset(
   if (!offset || UNLIKELY(IsRtl(Style().Direction())))
     return LayoutUnit();
   if (Type() == kSvgText) {
-    return LayoutUnit(IsHorizontal() ? SvgFragmentData()->rect.Width()
-                                     : SvgFragmentData()->rect.Height());
+    return LayoutUnit(IsHorizontal() ? SvgFragmentData()->rect.width()
+                                     : SvgFragmentData()->rect.height());
   }
   return IsHorizontal() ? Size().width : Size().height;
 }
@@ -979,11 +977,11 @@ PhysicalRect NGFragmentItem::LocalRect(StringView text,
   if (Type() == kSvgText) {
     const NGSvgFragmentData& data = *SvgFragmentData();
     if (IsHorizontal()) {
-      width = LayoutUnit(data.rect.Size().Width() / data.length_adjust_scale);
-      height = LayoutUnit(data.rect.Size().Height());
+      width = LayoutUnit(data.rect.size().width() / data.length_adjust_scale);
+      height = LayoutUnit(data.rect.size().height());
     } else {
-      width = LayoutUnit(data.rect.Size().Width());
-      height = LayoutUnit(data.rect.Size().Height() / data.length_adjust_scale);
+      width = LayoutUnit(data.rect.size().width());
+      height = LayoutUnit(data.rect.size().height() / data.length_adjust_scale);
     }
   }
   if (start_offset == StartOffset() && end_offset == EndOffset()) {

@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
@@ -133,13 +134,6 @@ class WebAppInstallTask : content::WebContentsObserver {
                                webapps::WebappInstallSource install_source,
                                OnceInstallCallback callback);
 
-  void UpdateWebAppFromInfo(
-      content::WebContents* web_contents,
-      const AppId& app_id,
-      std::unique_ptr<WebApplicationInfo> web_application_info,
-      bool update_product_icons,
-      OnceInstallCallback callback);
-
   // Obtains WebApplicationInfo about web app located at |start_url|, fallbacks
   // to title/favicon if manifest is not present.
   void LoadAndRetrieveWebApplicationInfoWithIcons(
@@ -154,6 +148,10 @@ class WebAppInstallTask : content::WebContentsObserver {
 
   // WebContentsObserver:
   void WebContentsDestroyed() override;
+
+  // Collects install errors (unbounded) if the |kRecordWebAppDebugInfo|
+  // flag is enabled to be used by: chrome://web-app-internals
+  base::Value TakeErrorDict();
 
   void SetInstallFinalizerForTesting(WebAppInstallFinalizer* install_finalizer);
 
@@ -172,9 +170,11 @@ class WebAppInstallTask : content::WebContentsObserver {
   // install_callback_.
   bool ShouldStopInstall() const;
 
-  void OnWebAppUrlLoadedGetWebApplicationInfo(WebAppUrlLoader::Result result);
+  void OnWebAppUrlLoadedGetWebApplicationInfo(const GURL& url_to_load,
+                                              WebAppUrlLoader::Result result);
 
   void OnWebAppUrlLoadedCheckAndRetrieveManifest(
+      const GURL& url_to_load,
       content::WebContents* web_contents,
       WebAppUrlLoader::Result result);
   void OnWebAppInstallabilityChecked(blink::mojom::ManifestPtr opt_manifest,
@@ -224,15 +224,15 @@ class WebAppInstallTask : content::WebContentsObserver {
   void OnIconsRetrieved(
       std::unique_ptr<WebApplicationInfo> web_app_info,
       WebAppInstallFinalizer::FinalizeOptions finalize_options,
-      IconsMap icons_map);
+      IconsDownloadedResult result,
+      IconsMap icons_map,
+      DownloadedIconsHttpResults icons_http_results);
   void OnIconsRetrievedShowDialog(
       std::unique_ptr<WebApplicationInfo> web_app_info,
       ForInstallableSite for_installable_site,
-      IconsMap icons_map);
-  void OnIconsRetrievedFinalizeUpdate(
-      std::unique_ptr<WebApplicationInfo> web_app_info,
-      bool update_product_icons,
-      IconsMap icons_map);
+      IconsDownloadedResult result,
+      IconsMap icons_map,
+      DownloadedIconsHttpResults icons_http_results);
   void OnDialogCompleted(ForInstallableSite for_installable_site,
                          bool user_accepted,
                          std::unique_ptr<WebApplicationInfo> web_app_info);
@@ -244,6 +244,27 @@ class WebAppInstallTask : content::WebContentsObserver {
   void OnOsHooksCreated(DisplayMode user_display_mode,
                         const AppId& app_id,
                         const OsHooksErrors os_hook_errors);
+
+  void RecordDownloadedIconsHttpResultsCodeClassForSyncOrCreate(
+      IconsDownloadedResult result,
+      const DownloadedIconsHttpResults& icons_http_results);
+
+  void LogHeaderIfLogEmpty(const std::string& url);
+  void LogErrorObject(const char* stage,
+                      const std::string& url,
+                      base::Value object);
+
+  void LogUrlLoaderError(const char* stage,
+                         const std::string& url,
+                         WebAppUrlLoader::Result result);
+  void LogExpectedAppIdError(const char* stage,
+                             const std::string& url,
+                             const AppId& app_id);
+  void LogDownloadedIconsErrors(
+      const WebApplicationInfo& web_app_info,
+      IconsDownloadedResult icons_downloaded_result,
+      const IconsMap& icons_map,
+      const DownloadedIconsHttpResults& icons_http_results);
 
   // Whether the install task has been 'initiated' by calling one of the public
   // methods.
@@ -275,8 +296,9 @@ class WebAppInstallTask : content::WebContentsObserver {
   Profile* const profile_;
   WebAppRegistrar* registrar_;
 
-  base::WeakPtrFactory<WebAppInstallTask> weak_ptr_factory_{this};
+  std::unique_ptr<base::Value> error_dict_;
 
+  base::WeakPtrFactory<WebAppInstallTask> weak_ptr_factory_{this};
 };
 
 }  // namespace web_app

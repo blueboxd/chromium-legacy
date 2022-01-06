@@ -45,6 +45,21 @@ var MediaAppUIGtestBrowserTest = class extends testing.Test {
   }
 };
 
+// js2gtest fixtures require var here (https://crbug.com/1033337).
+// eslint-disable-next-line no-var
+var MediaAppUIWithAudioGtestBrowserTest =
+    class extends MediaAppUIGtestBrowserTest {
+  /** @override */
+  get featureList() {
+    return {
+      enabled: [
+        ...super.featureList.enabled,
+        'ash::features::kMediaAppHandlesAudio',
+      ]
+    };
+  }
+};
+
 async function GetTestHarness() {
   const testHarnessPolicy = trustedTypes.createPolicy('test-harness', {
     createScriptURL: () => './media_app_ui_browsertest.js',
@@ -134,12 +149,24 @@ TEST_F('MediaAppUIGtestBrowserTest', 'MultipleFilesHaveTokens', () => {
   runMediaAppTest('MultipleFilesHaveTokens');
 });
 
+TEST_F('MediaAppUIWithAudioGtestBrowserTest', 'SingleAudioLaunch', () => {
+  runMediaAppTest('SingleAudioLaunch');
+});
+
 TEST_F('MediaAppUIGtestBrowserTest', 'MultipleSelectionLaunch', () => {
   runMediaAppTest('MultipleSelectionLaunch');
 });
 
+TEST_F('MediaAppUIGtestBrowserTest', 'NotifyCurrentFile', () => {
+  runMediaAppTest('NotifyCurrentFile');
+});
+
 TEST_F('MediaAppUIGtestBrowserTest', 'LaunchUnopenableFile', () => {
   runMediaAppTest('LaunchUnopenableFile');
+});
+
+TEST_F('MediaAppUIGtestBrowserTest', 'LaunchUnnavigableDirectory', () => {
+  runMediaAppTest('LaunchUnnavigableDirectory');
 });
 
 TEST_F('MediaAppUIGtestBrowserTest', 'NavigateWithUnopenableSibling', () => {
@@ -198,6 +225,10 @@ TEST_F('MediaAppUIGtestBrowserTest', 'RenameMissingFile', () => {
   runMediaAppTest('RenameMissingFile');
 });
 
+TEST_F('MediaAppUIGtestBrowserTest', 'OpenAllowedFileIPC', () => {
+  runMediaAppTest('OpenAllowedFileIPC');
+});
+
 TEST_F('MediaAppUIGtestBrowserTest', 'NavigateIPC', () => {
   runMediaAppTest('NavigateIPC');
 });
@@ -228,6 +259,10 @@ TEST_F('MediaAppUIGtestBrowserTest', 'SaveAsErrorHandling', () => {
 
 TEST_F('MediaAppUIGtestBrowserTest', 'OpenFileIPC', () => {
   runMediaAppTest('OpenFileIPC');
+});
+
+TEST_F('MediaAppUIGtestBrowserTest', 'OpenFilesWithFilePickerIPC', () => {
+  runMediaAppTest('OpenFilesWithFilePickerIPC');
 });
 
 TEST_F('MediaAppUIGtestBrowserTest', 'RelatedFiles', () => {

@@ -6,28 +6,37 @@ package org.chromium.chrome.browser.content_creation.reactions.scene;
 
 import android.app.Activity;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.widget.RelativeLayout;
 
-import androidx.appcompat.content.res.AppCompatResources;
-
+import org.chromium.base.Callback;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.content_creation.reactions.LightweightReactionsMediator;
+import org.chromium.chrome.browser.content_creation.reactions.ReactionGifDrawable;
 import org.chromium.chrome.browser.content_creation.reactions.internal.R;
+import org.chromium.chrome.browser.content_creation.reactions.toolbar.ToolbarReactionsDelegate;
+import org.chromium.components.content_creation.reactions.ReactionMetadata;
 import org.chromium.ui.LayoutInflaterUtils;
 import org.chromium.ui.base.ViewUtils;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Manages the scene UI and the reactions on the scene.
  */
-public class SceneCoordinator implements SceneEditorDelegate {
-    private static final int DEFAULT_REACTION_SIZE_DP = 100;
+public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDelegate {
+    private static final int DEFAULT_REACTION_SIZE_DP = 192;
     private static final int REACTION_OFFSET_DP = 45;
     private static final int MAX_REACTION_COUNT = 10;
 
     private final Activity mActivity;
+    private final LightweightReactionsMediator mMediator;
     private final Set<ReactionLayout> mReactionLayouts;
 
+    private ReactionLayout mActiveReaction;
     private RelativeLayout mSceneBackground;
 
     /**
@@ -35,41 +44,82 @@ public class SceneCoordinator implements SceneEditorDelegate {
      *
      * @param activity The current {@link Activity}.
      */
-    public SceneCoordinator(Activity activity) {
+    public SceneCoordinator(Activity activity, LightweightReactionsMediator mediator) {
         mActivity = activity;
+        mMediator = mediator;
         mReactionLayouts = new HashSet<>();
     }
 
     public void setSceneBackground(RelativeLayout sceneBackground) {
         mSceneBackground = sceneBackground;
+        mSceneBackground.setOnClickListener(
+                (view) -> { markActiveStatus(mActiveReaction, false); });
     }
 
-    public void addInitialReaction() {
-        if (mSceneBackground == null) {
-            return;
+    public void addReactionInDefaultLocation(ReactionMetadata reaction) {
+        mMediator.getGifForUrl(reaction.assetUrl, (baseGifImage) -> {
+            if (mSceneBackground == null) {
+                return;
+            }
+
+            ReactionGifDrawable drawable =
+                    new ReactionGifDrawable(reaction, baseGifImage, Bitmap.Config.ARGB_8888);
+
+            ReactionLayout reactionLayout = (ReactionLayout) LayoutInflaterUtils.inflate(
+                    mActivity, R.layout.reaction_layout, null);
+            reactionLayout.init(drawable, this);
+
+            int reactionSizePx = ViewUtils.dpToPx(mActivity, DEFAULT_REACTION_SIZE_DP);
+            RelativeLayout.LayoutParams lp =
+                    new RelativeLayout.LayoutParams(reactionSizePx, reactionSizePx);
+            Resources res = mActivity.getResources();
+            int leftPx = res.getDisplayMetrics().widthPixels / 2 - reactionSizePx / 2;
+            int topPx = res.getDisplayMetrics().heightPixels / 2 - reactionSizePx / 2
+                    - res.getDimensionPixelSize(R.dimen.toolbar_total_height);
+            lp.setMargins(leftPx, topPx, 0, 0);
+
+            addReactionLayoutToScene(reactionLayout, lp);
+        });
+    }
+
+    /**
+     * Advances all reactions to the next frame. The given callback is invoked when all reactions
+     * have decoded their next frame and are ready to be drawn.
+     */
+    public void stepReactions(Callback<Void> cb) {
+        AtomicInteger expectedCallbacks = new AtomicInteger(mReactionLayouts.size());
+
+        for (ReactionLayout rl : mReactionLayouts) {
+            rl.getReaction().step(new Callback<Void>() {
+                @Override
+                public void onResult(Void v) {
+                    if (expectedCallbacks.decrementAndGet() == 0) {
+                        // The BaseGifDrawable class posts the result of the frame decoding to the
+                        // UI thread. Post the callback back to a worker thread.
+                        PostTask.postTask(
+                                TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> { cb.onResult(null); });
+                    }
+                }
+            });
         }
-        assert mReactionLayouts.isEmpty();
-
-        ReactionLayout reactionLayout = (ReactionLayout) LayoutInflaterUtils.inflate(
-                mActivity, R.layout.reaction_layout, null);
-        reactionLayout.init(
-                AppCompatResources.getDrawable(mActivity, org.chromium.chrome.R.drawable.qr_code),
-                this);
-
-        int reactionSizePx = ViewUtils.dpToPx(mActivity, DEFAULT_REACTION_SIZE_DP);
-        RelativeLayout.LayoutParams lp =
-                new RelativeLayout.LayoutParams(reactionSizePx, reactionSizePx);
-        Resources res = mActivity.getResources();
-        int leftPx = res.getDisplayMetrics().widthPixels / 2 - reactionSizePx / 2;
-        int topPx = res.getDisplayMetrics().heightPixels / 2 - reactionSizePx / 2
-                - res.getDimensionPixelSize(R.dimen.toolbar_total_height);
-        lp.setMargins(leftPx, topPx, 0, 0);
-
-        mSceneBackground.addView(reactionLayout, lp);
-        mReactionLayouts.add(reactionLayout);
     }
 
-    // SceneEditorCallback implementation.
+    private void replaceActiveReaction(ReactionMetadata reaction) {
+        assert mActiveReaction != null;
+        mMediator.getGifForUrl(reaction.assetUrl,
+                (baseGifImage)
+                        -> mActiveReaction.setDrawable(new ReactionGifDrawable(
+                                reaction, baseGifImage, Bitmap.Config.ARGB_8888)));
+    }
+
+    private void addReactionLayoutToScene(
+            ReactionLayout reactionLayout, RelativeLayout.LayoutParams layoutParams) {
+        mSceneBackground.addView(reactionLayout, layoutParams);
+        mReactionLayouts.add(reactionLayout);
+        markActiveStatus(reactionLayout, true);
+    }
+
+    // SceneEditorDelegate implementation.
     @Override
     public boolean canAddReaction() {
         return mReactionLayouts.size() < MAX_REACTION_COUNT;
@@ -89,20 +139,39 @@ public class SceneCoordinator implements SceneEditorDelegate {
         int offsetPx = ViewUtils.dpToPx(mActivity, REACTION_OFFSET_DP);
         newLayoutParams.leftMargin = oldLayoutParams.leftMargin + offsetPx;
         newLayoutParams.topMargin = oldLayoutParams.topMargin + offsetPx;
-        newReactionLayout.setLayoutParams(newLayoutParams);
+        newReactionLayout.setRotation(reactionLayout.getRotation());
 
-        mSceneBackground.addView(newReactionLayout);
-        mReactionLayouts.add(newReactionLayout);
+        addReactionLayoutToScene(newReactionLayout, newLayoutParams);
     }
 
     @Override
     public void removeReaction(ReactionLayout reactionLayout) {
+        markActiveStatus(reactionLayout, false);
         mSceneBackground.removeView(reactionLayout);
         mReactionLayouts.remove(reactionLayout);
     }
 
     @Override
     public void markActiveStatus(ReactionLayout reactionLayout, boolean isActive) {
-        // no-op for now
+        if (isActive) {
+            if (mActiveReaction != null) {
+                mActiveReaction.setActive(false);
+            }
+            reactionLayout.setActive(true);
+            mActiveReaction = reactionLayout;
+        } else if (mActiveReaction != null) {
+            mActiveReaction.setActive(false);
+            mActiveReaction = null;
+        }
+    }
+
+    // ToolbarReactionsDelegate implementation.
+    @Override
+    public void onToolbarReactionTapped(ReactionMetadata reaction) {
+        if (mActiveReaction != null) {
+            replaceActiveReaction(reaction);
+        } else {
+            addReactionInDefaultLocation(reaction);
+        }
     }
 }

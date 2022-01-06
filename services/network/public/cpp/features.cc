@@ -81,17 +81,10 @@ const base::Feature kProactivelyThrottleLowPriorityRequests{
 
 // Enables Cross-Origin-Embedder-Policy: credentialless.
 // https://github.com/mikewest/credentiallessness
+// TODO(https://crbug.com/1175099): Remove one week after M96: 2021-11-25
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginEmbedderPolicyCredentialless{
     "CrossOriginEmbedderPolicyCredentialless",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables Cross-Origin-Embedder-Policy credentialless origin trial. It will be
-// used as a kill switch during the experiment.
-// Intent-to-experiment:
-// https://groups.google.com/a/chromium.org/g/blink-dev/c/Sdc0G1bvKr0/m/YHR8RuWyAAAJ
-const base::Feature kCrossOriginEmbedderPolicyCredentiallessOriginTrial{
-    "CrossOriginEmbedderPolicyCredentiallessOriginTrial",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables Cross-Origin Opener Policy (COOP).
@@ -223,12 +216,15 @@ constexpr base::FeatureParam<int> kLoaderChunkSize{
 
 // static
 uint32_t GetDataPipeDefaultAllocationSize(DataPipeAllocationSize option) {
-  if (option == DataPipeAllocationSize::kDefaultSizeOnly)
-    return kDataPipeDefaultAllocationSize;
   // For low-memory devices, always use the (smaller) default buffer size.
   if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512)
     return kDataPipeDefaultAllocationSize;
-  return base::saturated_cast<uint32_t>(kDataPipeAllocationSize.Get());
+  switch (option) {
+    case DataPipeAllocationSize::kDefaultSizeOnly:
+      return kDataPipeDefaultAllocationSize;
+    case DataPipeAllocationSize::kLargerSizeIfPossible:
+      return base::saturated_cast<uint32_t>(kDataPipeAllocationSize.Get());
+  }
 }
 
 // static
@@ -240,6 +236,32 @@ uint32_t GetLoaderChunkSize() {
 // Android.
 const base::Feature kRecordRadioWakeupTrigger{
     "RecordRadioWakeupTrigger", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Check disk cache to see if the queued requests (especially those don't need
+// validation) have already been cached. If yes, start them as they may not
+// contend for network.
+const base::Feature kCheckCacheForQueuedRequests{
+    "CheckCacheForQueuedRequests", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// The time interval before checking the cache for queued request.
+constexpr base::FeatureParam<base::TimeDelta> kQueuedRequestsCacheCheckInterval{
+    &kCheckCacheForQueuedRequests, "queued_requests_cache_check_interval",
+    base::Milliseconds(100)};
+
+// Cache check is only valid for requests queued for long than this threshold.
+constexpr base::FeatureParam<base::TimeDelta>
+    kQueuedRequestsCacheCheckTimeThreshold{
+        &kCheckCacheForQueuedRequests,
+        "queued_requests_cache_check_time_threshold", base::Milliseconds(100)};
+
+// https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name
+const base::Feature kCorsNonWildcardRequestHeadersSupport{
+    "CorsNonWildcardRequestHeadersSupport", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Whether the sync client optimization is used for communication between the
+// CorsURLLoader and URLLoader.
+const base::Feature kURLLoaderSyncClient{"URLLoaderSyncClient",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace network

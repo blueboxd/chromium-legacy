@@ -174,7 +174,7 @@ void SavePasswordMessageDelegate::CreateMessage(bool update_password) {
 
   if (!update_password) {
     message_->SetSecondaryIconResourceId(
-        ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_AUTOFILL_SETTINGS));
+        ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_MESSAGE_SETTINGS));
     message_->SetSecondaryButtonMenuText(
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLOCKLIST_BUTTON));
     message_->SetSecondaryActionCallback(
@@ -321,8 +321,11 @@ void SavePasswordMessageDelegate::RecordMessageShownMetrics() {
 
 void SavePasswordMessageDelegate::RecordDismissalReasonMetrics(
     password_manager::metrics_util::UIDismissalReason ui_dismissal_reason) {
+  auto submission_event =
+      passwords_state_.form_manager()->GetPendingCredentials().submission_event;
   password_manager::metrics_util::LogSaveUIDismissalReason(
-      ui_dismissal_reason, /*user_state=*/absl::nullopt);
+      ui_dismissal_reason, submission_event,
+      /*user_state=*/absl::nullopt);
   if (passwords_state_.form_manager()->WasUnblocklisted()) {
     password_manager::metrics_util::LogSaveUIDismissalReasonAfterUnblocklisting(
         ui_dismissal_reason);

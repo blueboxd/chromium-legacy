@@ -274,7 +274,6 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_CONST_METHOD0(GetMaxDecodeRequests, int());
   MOCK_CONST_METHOD0(CanReadWithoutStalling, bool());
   MOCK_CONST_METHOD0(NeedsBitstreamConversion, bool());
-  MOCK_CONST_METHOD0(IsOptimizedForRTC, bool());
 
  private:
   const bool is_platform_decoder_;
@@ -733,6 +732,9 @@ class MockCdm : public ContentDecryptionModule {
           const SessionKeysChangeCB& session_keys_change_cb,
           const SessionExpirationUpdateCB& session_expiration_update_cb);
 
+  MockCdm(const MockCdm&) = delete;
+  MockCdm& operator=(const MockCdm&) = delete;
+
   void Initialize(
       const std::string& key_system,
       const SessionMessageCB& session_message_cb,
@@ -788,8 +790,6 @@ class MockCdm : public ContentDecryptionModule {
   SessionClosedCB session_closed_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
   SessionExpirationUpdateCB session_expiration_update_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockCdm);
 };
 
 class MockCdmFactory : public CdmFactory {

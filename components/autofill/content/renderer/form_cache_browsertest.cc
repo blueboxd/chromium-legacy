@@ -10,6 +10,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/form_cache_test_api.h"
+#include "components/autofill/content/renderer/test_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/test/render_view_test.h"
@@ -55,21 +56,6 @@ const FormData* GetFormByName(const std::vector<FormData>& forms,
       return &form;
   }
   return nullptr;
-}
-
-FrameToken GetFrameToken(blink::WebElement iframe_element) {
-  blink::WebFrame* frame =
-      blink::WebFrame::FromFrameOwnerElement(iframe_element);
-  if (frame && frame->IsWebLocalFrame()) {
-    return LocalFrameToken(
-        frame->ToWebLocalFrame()->GetLocalFrameToken().value());
-  } else if (frame && frame->IsWebRemoteFrame()) {
-    return RemoteFrameToken(
-        frame->ToWebRemoteFrame()->GetRemoteFrameToken().value());
-  } else {
-    NOTREACHED();
-    return FrameToken();
-  }
 }
 
 class FormCacheBrowserTest : public content::RenderViewTest {
@@ -269,9 +255,9 @@ TEST_P(FormCacheIframeBrowserTest, ExtractFrames) {
   )");
 
   FrameToken frame1_token =
-      GetFrameToken(GetMainFrame()->GetDocument().GetElementById("frame1"));
+      GetFrameToken(GetMainFrame()->GetDocument(), "frame1");
   FrameToken frame2_token =
-      GetFrameToken(GetMainFrame()->GetDocument().GetElementById("frame2"));
+      GetFrameToken(GetMainFrame()->GetDocument(), "frame2");
 
   FormCache form_cache(GetMainFrame());
   FormCache::UpdateFormCacheResult forms =
@@ -348,9 +334,9 @@ TEST_P(FormCacheIframeBrowserTest, ExtractFramesAfterVisibilityChange) {
     <iframe id="frame3" style="display: none;"></iframe>
   )");
 
-  WebElement iframe1 = GetMainFrame()->GetDocument().GetElementById("frame1");
-  WebElement iframe2 = GetMainFrame()->GetDocument().GetElementById("frame2");
-  WebElement iframe3 = GetMainFrame()->GetDocument().GetElementById("frame3");
+  WebElement iframe1 = GetElementById(GetMainFrame()->GetDocument(), "frame1");
+  WebElement iframe2 = GetElementById(GetMainFrame()->GetDocument(), "frame2");
+  WebElement iframe3 = GetElementById(GetMainFrame()->GetDocument(), "frame3");
 
   auto GetSize = [](const WebElement& element) {
     gfx::Rect bounds = element.BoundsInViewport();
@@ -465,9 +451,9 @@ TEST_P(ParameterizedFormCacheBrowserTest, FillAndClear) {
   values_to_fill.fields[2].is_autofilled = true;
 
   WebDocument doc = GetMainFrame()->GetDocument();
-  auto text = doc.GetElementById("text").To<WebInputElement>();
-  auto checkbox = doc.GetElementById("checkbox").To<WebInputElement>();
-  auto select_element = doc.GetElementById("select").To<WebSelectElement>();
+  auto text = GetFormControlElementById(doc, "text");
+  auto checkbox = GetElementById(doc, "checkbox").To<WebInputElement>();
+  auto select_element = GetFormControlElementById(doc, "select");
 
   form_util::FillOrPreviewForm(values_to_fill, text,
                                mojom::RendererFormDataAction::kFill);
@@ -513,10 +499,8 @@ TEST_P(ParameterizedFormCacheBrowserTest,
   values_to_fill.fields[1].value = u"Smith";
   values_to_fill.fields[1].is_autofilled = true;
 
-  auto fname = GetMainFrame()
-                   ->GetDocument()
-                   .GetElementById("fname")
-                   .To<WebInputElement>();
+  auto fname =
+      GetFormControlElementById(GetMainFrame()->GetDocument(), "fname");
 
   // Simulate filling the form using Autofill.
   form_util::FillOrPreviewForm(values_to_fill, fname,
@@ -612,9 +596,9 @@ TEST_P(ParameterizedFormCacheBrowserTest,
   values_to_fill.fields[2].is_autofilled = true;
 
   WebDocument doc = GetMainFrame()->GetDocument();
-  auto text = doc.GetElementById("text").To<WebInputElement>();
-  auto select_date = doc.GetElementById("date").To<WebSelectElement>();
-  auto select_month = doc.GetElementById("month").To<WebSelectElement>();
+  auto text = GetFormControlElementById(doc, "text");
+  auto select_date = GetFormControlElementById(doc, "date");
+  auto select_month = GetFormControlElementById(doc, "month");
 
   form_util::FillOrPreviewForm(values_to_fill, text,
                                mojom::RendererFormDataAction::kFill);
@@ -664,9 +648,9 @@ TEST_P(ParameterizedFormCacheBrowserTest,
       "</form></html>");
 
   WebDocument doc = GetMainFrame()->GetDocument();
-  auto first_name_element = doc.GetElementById("fname").To<WebInputElement>();
-  auto middle_name_element = doc.GetElementById("mname").To<WebInputElement>();
-  auto last_name_element = doc.GetElementById("lname").To<WebInputElement>();
+  auto first_name_element = GetFormControlElementById(doc, "fname");
+  auto middle_name_element = GetFormControlElementById(doc, "mname");
+  auto last_name_element = GetFormControlElementById(doc, "lname");
 
   FormCache form_cache(GetMainFrame());
   FormCache::UpdateFormCacheResult forms =
@@ -856,29 +840,29 @@ TEST_P(ParameterizedFormCacheBrowserTest, FieldLimit) {
 // clearing their frames and skipping the then-empty forms.
 TEST_P(FormCacheIframeBrowserTest, FrameLimit) {
   std::string html;
-  for (unsigned int i = 0; i < MaxParseableChildFrames(0) + 1; i++)
+  for (unsigned int i = 0; i < kMaxParseableChildFrames + 1; i++)
     html += "<form><iframe></iframe></form>";
   LoadHTML(html.c_str());
 
-  ASSERT_EQ(MaxParseableChildFrames(0) + 1,
+  ASSERT_EQ(kMaxParseableChildFrames + 1,
             GetMainFrame()->GetDocument().Forms().size());
 
   FormCache form_cache(GetMainFrame());
   FormCache::UpdateFormCacheResult forms =
       form_cache.ExtractNewForms(/*field_data_manager=*/nullptr);
 
-  EXPECT_EQ(MaxParseableChildFrames(0), forms.updated_forms.size());
+  EXPECT_EQ(kMaxParseableChildFrames, forms.updated_forms.size());
   EXPECT_TRUE(forms.removed_forms.empty());
 }
 
 // Test that FormCache::ExtractNewForms() limits the number of total fields and
 // total frames:
-// - the forms [0, MaxParseableChildFrames(0)) should be unchanged,
-// - the forms [MaxParseableChildFrames(0), kMaxParseableFields) should have
+// - the forms [0, kMaxParseableChildFrames) should be unchanged,
+// - the forms [kMaxParseableChildFrames, kMaxParseableFields) should have
 //   empty FormData::child_frames,
 // - the forms [kMaxParseableFields, end) should be skipped.
 TEST_P(FormCacheIframeBrowserTest, FieldAndFrameLimit) {
-  ASSERT_LE(MaxParseableChildFrames(0), kMaxParseableFields);
+  ASSERT_LE(kMaxParseableChildFrames, kMaxParseableFields);
 
   std::string html;
   for (unsigned int i = 0; i < kMaxParseableFields + 1; i++)
@@ -897,11 +881,10 @@ TEST_P(FormCacheIframeBrowserTest, FieldAndFrameLimit) {
                                     &std::vector<FormFieldData>::empty,
                                     &FormData::fields));
   EXPECT_TRUE(base::ranges::none_of(
-      base::make_span(forms.updated_forms)
-          .subspan(0, MaxParseableChildFrames(0)),
+      base::make_span(forms.updated_forms).subspan(0, kMaxParseableChildFrames),
       &std::vector<FrameTokenWithPredecessor>::empty, &FormData::child_frames));
   EXPECT_TRUE(base::ranges::all_of(
-      base::make_span(forms.updated_forms).subspan(MaxParseableChildFrames(0)),
+      base::make_span(forms.updated_forms).subspan(kMaxParseableChildFrames),
       &std::vector<FrameTokenWithPredecessor>::empty, &FormData::child_frames));
 
   EXPECT_TRUE(forms.removed_forms.empty());

@@ -529,15 +529,14 @@ component("headless_non_renderer") {
 
   # Normally set to false (see build/args/headless.gn), but we can optionally
   # use external v8 startup data too.
-  if ((is_win && is_component_build) || !is_win) {
-    if (v8_use_external_startup_data) {
-      public_deps += [ "//v8" ]
-      if (use_v8_context_snapshot) {
-        data += [ "$root_out_dir/$v8_context_snapshot_filename" ]
-        data_deps += [ "//tools/v8_context_snapshot" ]
-      } else {
-        data += [ "$root_out_dir/snapshot_blob.bin" ]
-      }
+  if ((!is_win || is_component_build) && v8_use_external_startup_data) {
+    public_deps += [ "//v8" ]
+    if (use_v8_context_snapshot) {
+      data += [ "$root_out_dir/$v8_context_snapshot_filename" ]
+      data_deps += [ "//tools/v8_context_snapshot" ]
+    }
+    if (!use_v8_context_snapshot || include_both_v8_snapshots) {
+      data += [ "$root_out_dir/snapshot_blob.bin" ]
     }
   }
 
@@ -879,7 +878,10 @@ static_library("headless_shell_lib") {
     "//printing/buildflags",
   ]
 
-  public_deps = [ "//base" ]
+  public_deps = [
+    "//base",
+    "//third_party/inspector_protocol:crdtp",
+  ]
 
   if (!is_component_build) {
     public_deps += [ ":headless_non_renderer" ]
@@ -926,13 +928,13 @@ static_library("headless_shell_lib") {
 if (is_fuchsia) {
   cr_fuchsia_package("headless_shell_pkg") {
     binary = ":headless_shell"
-    package_name_override = "headless_shell"
+    package_name = "headless_shell"
     manifest = "//build/config/fuchsia/test/minimum_capabilities.test-cmx"
   }
 
-  fuchsia_package_runner("headless_shell_fuchsia") {
+  fuchsia_package_installer("headless_shell_fuchsia") {
     package = ":headless_shell_pkg"
-    package_name_override = "headless_shell"
+    package_name = "headless_shell"
   }
 }
 

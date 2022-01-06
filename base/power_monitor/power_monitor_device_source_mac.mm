@@ -75,6 +75,10 @@ PowerMonitorDeviceSource::GetCurrentThermalState() {
   return PowerThermalObserver::DeviceThermalState::kUnknown;
 }
 
+int PowerMonitorDeviceSource::GetCurrentSpeedLimit() {
+  return thermal_state_observer_->GetCurrentSpeedLimit();
+}
+
 namespace {
 
 void BatteryEventCallback(void*) {
@@ -109,8 +113,9 @@ void PowerMonitorDeviceSource::PlatformInit() {
 
   if (@available(macOS 10.10.3, *)) {
     thermal_state_observer_ = std::make_unique<ThermalStateObserverMac>(
-        BindRepeating(&PowerMonitorSource::ProcessThermalEvent));
-  };
+        BindRepeating(&PowerMonitorSource::ProcessThermalEvent),
+        BindRepeating(&PowerMonitorSource::ProcessSpeedLimitEvent));
+  }
 }
 
 void PowerMonitorDeviceSource::PlatformDestroy() {

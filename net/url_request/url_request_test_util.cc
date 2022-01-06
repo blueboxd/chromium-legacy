@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/supports_user_data.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/host_port_pair.h"
@@ -87,7 +87,10 @@ void TestURLRequestContext::Init() {
 
   if (!host_resolver())
     context_storage_.set_host_resolver(
-        std::unique_ptr<HostResolver>(new MockCachingHostResolver()));
+        std::unique_ptr<HostResolver>(new MockCachingHostResolver(
+            /*cache_invalidation_num=*/0,
+            /*default_result=*/net::MockHostResolverBase::RuleResolver::
+                GetLocalhostResult())));
   if (!proxy_resolution_service())
     context_storage_.set_proxy_resolution_service(
         ConfiguredProxyResolutionService::CreateDirect());

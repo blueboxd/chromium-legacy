@@ -141,7 +141,6 @@ component("web_engine_core") {
     "//media/mojo/common",
     "//media/mojo/services",
     "//mojo/public/cpp/bindings",
-    "//sandbox/policy",
     "//services/media_session/public/mojom",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
@@ -266,8 +265,12 @@ component("web_engine_core") {
     "context_provider_main.h",
     "renderer/url_request_rules_receiver.cc",
     "renderer/url_request_rules_receiver.h",
+    "renderer/web_engine_audio_renderer.cc",
+    "renderer/web_engine_audio_renderer.h",
     "renderer/web_engine_content_renderer_client.cc",
     "renderer/web_engine_content_renderer_client.h",
+    "renderer/web_engine_media_renderer_factory.cc",
+    "renderer/web_engine_media_renderer_factory.h",
     "renderer/web_engine_render_frame_observer.cc",
     "renderer/web_engine_render_frame_observer.h",
     "renderer/web_engine_url_loader_throttle_provider.cc",
@@ -340,9 +343,14 @@ source_set("webui_resources") {
 }
 
 _web_engine_excluded_files = [
-  # TODO(crbug.com/1022542): Swiftshader is never used under Fuchsia.
+  # TODO(crbug.com/1022542): SwiftShader is used only in tests. It should
+  # not be included in the WebEngine package.
+  # Whenever this list is update the exclusions in cast_runner package should
+  # be updated as well (see fuchsia/runners/BUILD.gn).
   "lib/libswiftshader_libEGL.so",
   "lib/libswiftshader_libGLESv2.so",
+  "lib/libvk_swiftshader.so",
+  "vk_swiftshader_icd.json",
 ]
 
 # Definitions for the main web_engine package. The package contains the
@@ -375,9 +383,8 @@ fuchsia_package("web_engine") {
   excluded_files = _web_engine_excluded_files
 }
 
-fuchsia_package_runner("web_engine_installer") {
+fuchsia_package_installer("web_engine_installer") {
   package = ":web_engine"
-  install_only = true
 }
 
 # Definitions for a variant of the web_engine package that bundles the WebUI
@@ -413,9 +420,8 @@ fuchsia_package("web_engine_with_webui") {
   excluded_files = _web_engine_excluded_files
 }
 
-fuchsia_package_runner("web_engine_with_webui_installer") {
+fuchsia_package_installer("web_engine_with_webui_installer") {
   package = ":web_engine_with_webui"
-  install_only = true
 }
 
 source_set("browsertest_core") {
@@ -475,6 +481,9 @@ test("web_engine_browsertests") {
     "browser/mock_virtual_keyboard.h",
     "browser/navigation_policy_browsertest.cc",
     "browser/permissions_browsertest.cc",
+    "browser/popup_browsertest.cc",
+    "browser/post_message_browsertest.cc",
+    "browser/request_monitoring_browsertest.cc",
     "browser/theme_manager_browsertest.cc",
     "browser/virtual_keyboard_browsertest.cc",
   ]
@@ -558,6 +567,7 @@ test("web_engine_unittests") {
     "context_provider_impl_unittest.cc",
     "fake_context.cc",
     "fake_context.h",
+    "renderer/web_engine_audio_renderer_test.cc",
     "test/run_all_unittests.cc",
   ]
   deps = [
@@ -646,13 +656,13 @@ cr_fuchsia_package("web_engine_shell_pkg") {
   testonly = true
   manifest = "test/web_engine_shell.cmx"
   binary = ":web_engine_shell_exec"
-  package_name_override = "web_engine_shell"
+  package_name = "web_engine_shell"
 }
 
-fuchsia_package_runner("web_engine_shell") {
+fuchsia_package_installer("web_engine_shell") {
   testonly = true
   package = ":web_engine_shell_pkg"
-  package_name_override = "web_engine_shell"
+  package_name = "web_engine_shell"
   package_deps = [
     [
       ":web_engine",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chromecast/cast_core/cast_runtime_service.h"
 #include "chromecast/cast_core/cast_runtime_service_impl.h"
 
@@ -14,7 +14,8 @@ std::unique_ptr<CastRuntimeService> CastRuntimeService::Create(
     CastWindowManager* window_manager,
     media::MediaPipelineBackendManager* media_pipeline_backend_manager,
     CastRuntimeService::NetworkContextGetter network_context_getter,
-    PrefService* pref_service) {
+    PrefService* pref_service,
+    media::VideoPlaneController* video_plane_controller) {
   return std::make_unique<CastRuntimeServiceImpl>(
       browser_context, window_manager, std::move(network_context_getter));
 }

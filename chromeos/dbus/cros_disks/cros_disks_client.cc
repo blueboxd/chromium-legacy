@@ -25,7 +25,7 @@
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
@@ -157,6 +157,9 @@ void MaybeGetStringFromDictionaryValue(const base::Value& dict,
 class CrosDisksClientImpl : public CrosDisksClient {
  public:
   CrosDisksClientImpl() : proxy_(nullptr) {}
+
+  CrosDisksClientImpl(const CrosDisksClientImpl&) = delete;
+  CrosDisksClientImpl& operator=(const CrosDisksClientImpl&) = delete;
 
   // CrosDisksClient override.
   void AddObserver(Observer* observer) override {
@@ -573,8 +576,6 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<CrosDisksClientImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CrosDisksClientImpl);
 };
 
 }  // namespace

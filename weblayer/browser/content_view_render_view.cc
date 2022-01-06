@@ -155,7 +155,9 @@ void ContentViewRenderView::SurfaceChanged(
 }
 
 void ContentViewRenderView::SetNeedsRedraw(JNIEnv* env) {
-  compositor_->SetNeedsRedraw();
+  if (compositor_) {
+    compositor_->SetNeedsRedraw();
+  }
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -177,6 +179,12 @@ void ContentViewRenderView::SetRequiresAlphaChannel(
     jboolean requires_alpha_channel) {
   requires_alpha_channel_ = requires_alpha_channel;
   UpdateBackgroundColor(env);
+}
+
+void ContentViewRenderView::SetDidSwapBuffersCallbackEnabled(JNIEnv* env,
+                                                             jboolean enable) {
+  InitCompositor();
+  compositor_->SetDidSwapBuffersCallbackEnabled(enable);
 }
 
 void ContentViewRenderView::UpdateLayerTreeHost() {

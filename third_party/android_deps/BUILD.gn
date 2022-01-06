@@ -1237,7 +1237,7 @@ if (!limit_android_deps) {
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
   android_aar_prebuilt("com_google_android_material_material_java") {
     aar_path =
-        "libs/com_google_android_material_material/material-1.5.0-alpha02.aar"
+        "libs/com_google_android_material_material/material-1.5.0-alpha05.aar"
     info_path = "libs/com_google_android_material_material/com_google_android_material_material.info"
 
     # Material Design is pulled in via Doubledown, thus this target should not
@@ -1254,6 +1254,7 @@ if (!limit_android_deps) {
       "//third_party/androidx:androidx_constraintlayout_constraintlayout_java",
       "//third_party/androidx:androidx_coordinatorlayout_coordinatorlayout_java",
       "//third_party/androidx:androidx_core_core_java",
+      "//third_party/androidx:androidx_drawerlayout_drawerlayout_java",
       "//third_party/androidx:androidx_dynamicanimation_dynamicanimation_java",
       "//third_party/androidx:androidx_fragment_fragment_java",
       "//third_party/androidx:androidx_lifecycle_lifecycle_runtime_java",
@@ -1265,6 +1266,7 @@ if (!limit_android_deps) {
 
     # Reduce binary size. https:crbug.com/954584
     ignore_proguard_configs = true
+    proguard_configs = [ "material_design.flags" ]
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1432,6 +1434,17 @@ if (!limit_android_deps) {
       ":org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm_java",
     ]
     requires_android = true
+  }
+
+  # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+  java_prebuilt("org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm_java") {
+    jar_path = "libs/org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm/kotlinx-coroutines-core-jvm-1.5.0.jar"
+    output_name = "org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm"
+    supports_android = true
+    deps = [
+      ":org_jetbrains_kotlin_kotlin_stdlib_common_java",
+      ":org_jetbrains_kotlin_kotlin_stdlib_jdk8_java",
+    ]
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -2563,24 +2576,6 @@ if (!limit_android_deps) {
     deps = [
       ":org_jetbrains_kotlin_kotlin_stdlib_java",
       ":org_jetbrains_kotlin_kotlin_stdlib_jdk7_java",
-    ]
-  }
-
-  # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-  java_prebuilt("org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm_java") {
-    jar_path = "libs/org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm/kotlinx-coroutines-core-jvm-1.5.0.jar"
-    output_name = "org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm"
-    supports_android = true
-
-    # To remove visibility constraint, add this dependency to
-    # //third_party/android_deps/build.gradle.
-    visibility = [
-      ":*",
-      "//third_party/androidx:*",
-    ]
-    deps = [
-      ":org_jetbrains_kotlin_kotlin_stdlib_common_java",
-      ":org_jetbrains_kotlin_kotlin_stdlib_jdk8_java",
     ]
   }
 

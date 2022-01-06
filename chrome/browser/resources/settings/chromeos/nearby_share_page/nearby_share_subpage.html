@@ -7,10 +7,11 @@
 <link rel="import" href="../../prefs/prefs.html">
 <link rel="import" href="../prefs_behavior.html">
 <link rel="import" href="../../router.html">
+<link rel="import" href="../route_observer_behavior.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../../shared/nearby_contact_manager.html">
-<link rel="import" href="../../shared/nearby_share_settings_behavior.html">
 <link rel="import" href="../deep_linking_behavior.html">
+<link rel="import" href="../../shared/nearby_share_settings_behavior.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="nearby_account_manager_browser_proxy.html">
 <link rel="import" href="nearby_share_contact_visibility_dialog.html">
@@ -62,7 +63,7 @@
       }
 
       .enabled-toggle-on {
-        color: var(--cr-toggle-color);
+        color: var(--cros-toggle-color);
         font-weight: 500;
       }
 
@@ -248,7 +249,9 @@
     </template>
     <template is="dom-if" if="[[showReceiveDialog_]]" restamp>
       <nearby-share-receive-dialog id="receiveDialog"
-          on-close="onReceiveDialogClose_" settings="{{settings}}">
+          on-close="onReceiveDialogClose_" settings="{{settings}}"
+          prefs="{{prefs}}"
+          is-settings-retreived="[[isSettingsRetreived]]">
       </nearby-share-receive-dialog>
     </template>
   </template>

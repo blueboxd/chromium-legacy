@@ -64,31 +64,9 @@ class ThreadCacheInspector;
 class ThreadCache;
 
 extern BASE_EXPORT PartitionTlsKey g_thread_cache_key;
-// On Windows, |thread_local| variables cannot be marked "dllexport", see
-// compiler error C2492 at
-// https://docs.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/compiler-error-c2492?view=msvc-160.
-// Don't use it there.
-//
 // On Android, we have to go through emutls, since this is always a shared
 // library, so don't bother.
-//
-// On macOS and iOS with PartitionAlloc-Everywhere enabled, thread_local
-// allocates memory and it causes an infinite loop of ThreadCache::Get() ->
-// malloc_zone_malloc -> ShimMalloc -> ThreadCache::Get() -> ...
-// Exact stack trace is:
-//   libsystem_malloc.dylib`_malloc_zone_malloc
-//   libdyld.dylib`tlv_allocate_and_initialize_for_key
-//   libdyld.dylib`tlv_get_addr
-//   libbase.dylib`thread-local wrapper routine for
-//       base::internal::g_thread_cache
-//   libbase.dylib`base::internal::ThreadCache::Get()
-// where tlv_allocate_and_initialize_for_key performs memory allocation.
-//
-// Finally, we have crashes with component builds on macOS,
-// see crbug.com/1243375.
-#if !(defined(OS_WIN) && defined(COMPONENT_BUILD)) && !defined(OS_ANDROID) && \
-    !(defined(OS_APPLE) &&                                                    \
-      (BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) || defined(COMPONENT_BUILD)))
+#if defined(PA_THREAD_LOCAL_TLS) && !defined(OS_ANDROID)
 #define PA_THREAD_CACHE_FAST_TLS
 #endif
 
@@ -551,12 +529,12 @@ ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket, void* slot_start) {
   uintptr_t address = reinterpret_cast<uintptr_t>(slot_start);
 #endif
 
-  // We assume that the cacheline size is 64 byte, which is true on all x86_64
-  // CPUs as of 2021.
-  //
   // The pointer is always 16 bytes aligned, so its start address is always == 0
   // % 16. Its distance to the next cacheline is 64 - ((address & 63) / 16) *
   // 16.
+  static_assert(
+      kPartitionCachelineSize == 64,
+      "The computation below assumes that cache lines are 64 bytes long.");
   int distance_to_next_cacheline_in_16_bytes = 4 - ((address >> 4) & 3);
   int slot_size_remaining_in_16_bytes =
       std::min(bucket.slot_size / 16, distance_to_next_cacheline_in_16_bytes);

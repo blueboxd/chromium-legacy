@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_USER_DATA_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_USER_DATA_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/cud_condition.pb.h"
@@ -61,8 +61,12 @@ struct LoginChoice {
       int priority,
       const absl::optional<InfoPopupProto>& info_popup,
       const absl::optional<std::string>& edit_button_content_description);
+  LoginChoice();
   LoginChoice(const LoginChoice& another);
   ~LoginChoice();
+
+  // Compares login choices by preselect_priority. Sorts in ascending order.
+  static bool CompareByPriority(const LoginChoice& lhs, const LoginChoice& rhs);
 
   // Uniquely identifies this login choice.
   std::string identifier;
@@ -113,14 +117,14 @@ class UserData {
     AVAILABLE_PAYMENT_INSTRUMENTS,
   };
 
-  std::string login_choice_identifier_;
   TermsAndConditionsState terms_and_conditions_ = NOT_SELECTED;
   absl::optional<DateProto> date_time_range_start_date_;
   absl::optional<DateProto> date_time_range_end_date_;
   absl::optional<int> date_time_range_start_timeslot_;
   absl::optional<int> date_time_range_end_timeslot_;
 
-  std::vector<std::unique_ptr<autofill::AutofillProfile>> available_profiles_;
+  std::vector<std::unique_ptr<autofill::AutofillProfile>> available_contacts_;
+  std::vector<std::unique_ptr<autofill::AutofillProfile>> available_addresses_;
   std::vector<std::unique_ptr<PaymentInstrument>>
       available_payment_instruments_;
 
@@ -138,6 +142,9 @@ class UserData {
 
   // The selected card.
   const autofill::CreditCard* selected_card() const;
+
+  // The selected login choice.
+  const LoginChoice* selected_login_choice() const;
 
   // Set an additional value for |key|.
   void SetAdditionalValue(const std::string& name, const ValueProto& value);
@@ -160,15 +167,19 @@ class UserData {
   friend class UserModel;
   // The address key requested by the autofill action.
   // Written by |UserModel| to ensure that it stays in sync.
-  std::map<std::string, std::unique_ptr<autofill::AutofillProfile>>
+  base::flat_map<std::string, std::unique_ptr<autofill::AutofillProfile>>
       selected_addresses_;
 
   // The selected credit card.
   // Written by |UserModel| to ensure that it stays in sync.
   std::unique_ptr<autofill::CreditCard> selected_card_;
 
+  // The selected login choice.
+  // Written by |UserModel| to ensure that it stays in sync.
+  std::unique_ptr<LoginChoice> selected_login_choice_;
+
   // A set of additional key/value pairs to be stored in client_memory.
-  std::map<std::string, ValueProto> additional_values_;
+  base::flat_map<std::string, ValueProto> additional_values_;
 };
 
 // Struct for holding the payment request options.
@@ -199,6 +210,9 @@ struct CollectUserDataOptions {
   std::vector<RequiredDataPiece> required_shipping_address_data_pieces;
   std::vector<RequiredDataPiece> required_credit_card_data_pieces;
   std::vector<RequiredDataPiece> required_billing_address_data_pieces;
+
+  bool should_store_data_changes = false;
+  bool can_edit_contacts = true;
 
   // If empty, terms and conditions should not be shown.
   std::string accept_terms_and_conditions_text;

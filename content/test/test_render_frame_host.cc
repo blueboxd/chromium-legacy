@@ -32,6 +32,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/parsed_headers.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
@@ -311,7 +312,6 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
           std::string() /* headers */, net::LOAD_NORMAL,
           false /* skip_service_worker */,
           blink::mojom::RequestContextType::HYPERLINK,
-          network::mojom::RequestDestination::kDocument,
           blink::mojom::MixedContentContextType::kBlockable,
           false /* is_form_submission */,
           false /* was_initiated_by_link_click */,
@@ -332,6 +332,8 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   common_params->navigation_type =
       blink::mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->has_user_gesture = has_user_gesture;
+  common_params->request_destination =
+      network::mojom::RequestDestination::kDocument;
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;
@@ -542,11 +544,8 @@ TestRenderFrameHost::BuildDidCommitParams(bool did_create_new_entry,
     params->should_replace_current_entry |= (GetLastCommittedURL() == url);
   } else {
     params->should_replace_current_entry |=
-        (!is_main_frame() &&
-         frame_tree_node()
-             ->is_on_initial_empty_document_or_subsequent_empty_documents());
+        (!is_main_frame() && frame_tree_node()->is_on_initial_empty_document());
   }
-  params->gesture = NavigationGestureUser;
   params->contents_mime_type = "text/html";
   params->method = "GET";
   params->http_status_code = response_code;

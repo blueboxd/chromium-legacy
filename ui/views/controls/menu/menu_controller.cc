@@ -113,11 +113,12 @@ bool AcceleratorShouldCancelMenu(const ui::Accelerator& accelerator) {
 
 bool ShouldIgnoreScreenBoundsForMenus() {
 #if defined(USE_OZONE)
-  // Wayland requires placing menus is screen coordinates. See comment in
-  // ozone_platform_wayland.cc.
-  return ui::OzonePlatform::GetInstance()
-      ->GetPlatformProperties()
-      .ignore_screen_bounds_for_menus;
+  // Some platforms, such as Wayland, disallow client applications to manipulate
+  // global screen coordinates, requiring menus to be positioned relative to
+  // their parent windows. See comment in ozone_platform_wayland.cc.
+  return !ui::OzonePlatform::GetInstance()
+              ->GetPlatformProperties()
+              .supports_global_screen_coordinates;
 #else
   return false;
 #endif
@@ -2723,24 +2724,20 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(
       }
     }
 
-    if (is_win11_menu) {
-      // Make sure the menu doesn't exceed the monitor bounds while cancelling
-      // out the border and shadow at the top and bottom.
-      menu_size.set_height(std::min(
-          menu_size.height(),
-          monitor_bounds.height() + border_and_shadow_insets.height()));
-      y = item_bounds.y() - border_and_shadow_insets.top();
-      y = base::clamp(y, monitor_bounds.y() - border_and_shadow_insets.top(),
-                      monitor_bounds.bottom() +
-                          border_and_shadow_insets.bottom() -
-                          menu_size.height());
-    } else {
-      y = item_bounds.y() - border_and_shadow_insets.top() -
-          menu_config.vertical_touchable_menu_item_padding;
-      y = base::clamp(y, monitor_bounds.y() - border_and_shadow_insets.top(),
-                      monitor_bounds.bottom() - menu_size.height() +
-                          border_and_shadow_insets.top());
-    }
+    // Make sure the menu doesn't exceed the monitor bounds while cancelling
+    // out the border and shadow at the top and bottom.
+    menu_size.set_height(
+        std::min(menu_size.height(),
+                 monitor_bounds.height() + border_and_shadow_insets.height()));
+    y = item_bounds.y() - border_and_shadow_insets.top() -
+        (is_win11_menu ? 0 : menu_config.vertical_touchable_menu_item_padding);
+    auto y_min = monitor_bounds.y() - border_and_shadow_insets.top();
+    auto y_max = is_win11_menu ? monitor_bounds.bottom() +
+                                     border_and_shadow_insets.bottom() -
+                                     menu_size.height()
+                               : monitor_bounds.bottom() - menu_size.height() +
+                                     border_and_shadow_insets.top();
+    y = base::clamp(y, y_min, y_max);
   }
 
   auto menu_bounds = gfx::Rect(x, y, menu_size.width(), menu_size.height());
@@ -2999,25 +2996,23 @@ void MenuController::SelectByChar(char16_t character) {
 
 void MenuController::RepostEventAndCancel(SubmenuView* source,
                                           const ui::LocatedEvent* event) {
-  // Cancel can lead to the deletion |source| so we save the view and window to
-  // be used when reposting the event.
   gfx::Point screen_loc(event->location());
   View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
-
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
-  gfx::NativeView native_view = source->GetWidget()->GetNativeView();
-  gfx::NativeWindow window = nullptr;
-  if (native_view) {
-    display::Screen* screen = display::Screen::GetScreen();
-    window = screen->GetWindowAtScreenPoint(screen_loc);
-  }
-#endif
 
 #if defined(OS_WIN)
   if (event->IsMouseEvent() || event->IsTouchEvent()) {
     base::WeakPtr<MenuController> this_ref = AsWeakPtr();
     if (state_.item) {
+      // This must be done before we ReleaseCapture() below, which can lead to
+      // deleting the `source`.
+      gfx::NativeView native_view = source->GetWidget()->GetNativeView();
+      gfx::NativeWindow window =
+          native_view
+              ? display::Screen::GetScreen()->GetWindowAtScreenPoint(screen_loc)
+              : nullptr;
+
       state_.item->GetRootMenuItem()->GetSubmenu()->ReleaseCapture();
+
       // We're going to close and we own the event capture. We need to repost
       // the event, otherwise the window the user clicked on won't get the
       // event.

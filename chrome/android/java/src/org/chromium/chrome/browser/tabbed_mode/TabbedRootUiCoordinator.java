@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tabbed_mode;
 
-import android.os.Build;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 
@@ -43,7 +42,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.continuous_search.ContinuousSearchContainerCoordinator;
 import org.chromium.chrome.browser.continuous_search.ContinuousSearchContainerCoordinator.HeightObserver;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
-import org.chromium.chrome.browser.feed.shared.FeedFeatures;
+import org.chromium.chrome.browser.feed.FeedFeatures;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedFollowIntroController;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -60,6 +59,7 @@ import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.language.AppLanguagePromoDialog;
 import org.chromium.chrome.browser.language.LanguageAskPrompt;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceIphController;
@@ -77,9 +77,7 @@ import org.chromium.chrome.browser.read_later.ReadLaterIPHController;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextIPHController;
-import org.chromium.chrome.browser.share.scroll_capture.ScrollCaptureManager;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
-import org.chromium.chrome.browser.signin.ui.SigninPromoUtil;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsService;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
@@ -100,6 +98,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.default_browser_promo.DefaultBrowserPromoUtils;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController.StatusBarColorProvider;
 import org.chromium.chrome.browser.ui.tablet.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.version.ChromeVersionInfo;
@@ -157,12 +156,12 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
     private HeightObserver mContinuousSearchObserver;
     private TabObscuringHandler.Observer mContinuousSearchTabObscuringHandlerObserver;
     private FindToolbarObserver mContinuousSearchFindToolbarObserver;
-    private @Nullable ScrollCaptureManager mScrollCaptureManager;
     private CommerceSubscriptionsService mCommerceSubscriptionsService;
     private UndoGroupSnackbarController mUndoGroupSnackbarController;
     private final int mControlContainerHeightResource;
     private final Supplier<InsetObserverView> mInsetObserverViewSupplier;
     private final Function<Tab, Boolean> mBackButtonShouldCloseTabFn;
+    private LayoutStateProvider.LayoutStateObserver mGestureNavLayoutObserver;
 
     private int mStatusIndicatorHeight;
     private int mContinuousSearchHeight;
@@ -194,6 +193,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
         @Override
         public void destroy() {
+            if (mLayoutStateProvider != null && mGestureNavLayoutObserver != null) {
+                mLayoutStateProvider.removeObserver(mGestureNavLayoutObserver);
+            }
             super.destroy();
             swapToTab(null);
         }
@@ -346,8 +348,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
         if (mRootUiTabObserver != null) mRootUiTabObserver.destroy();
 
-        if (mAddToHomescreenIPHController != null) mAddToHomescreenIPHController.destroy();
-
         if (mAppBannerInProductHelpController != null) {
             AppBannerInProductHelpControllerFactory.detach(mAppBannerInProductHelpController);
         }
@@ -385,11 +385,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         if (mCommerceSubscriptionsService != null) {
             mCommerceSubscriptionsService.destroy();
             mCommerceSubscriptionsService = null;
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && mScrollCaptureManager != null) {
-            mScrollCaptureManager.destroy();
-            mScrollCaptureManager = null;
         }
 
         super.onDestroy();
@@ -482,6 +477,12 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                         return isShowingStartSurfaceHomepage();
                     }
                 }, mCompositorViewHolderSupplier.get()::addTouchEventObserver, mLayoutManager);
+        mGestureNavLayoutObserver = new LayoutStateProvider.LayoutStateObserver() {
+            @Override
+            public void onStartedShowing(int layoutType, boolean showToolbar) {
+                if (layoutType == LayoutType.TAB_SWITCHER) mHistoryNavigationCoordinator.reset();
+            }
+        };
         mRootUiTabObserver.swapToTab(mActivityTabProvider.get());
 
         // TODO(twellington): Supply TabModelSelector as well and move initialization earlier.
@@ -520,24 +521,22 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 PwaBottomSheetControllerFactory.createPwaBottomSheetController(mActivity);
         PwaBottomSheetControllerFactory.attach(mWindowAndroid, mPwaBottomSheetController);
         initContinuousSearchCoordinator();
-        initScrollCapture();
         initCommerceSubscriptionsService();
         initUndoGroupSnackbarController();
+    }
+
+    @Override
+    protected void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
+        super.setLayoutStateProvider(layoutStateProvider);
+        if (mGestureNavLayoutObserver != null) {
+            layoutStateProvider.addObserver(mGestureNavLayoutObserver);
+        }
     }
 
     private boolean isShowingStartSurfaceHomepage() {
         return mStartSurfaceSupplier.get() != null
                 && mStartSurfaceSupplier.get().getController().getStartSurfaceState()
                 == StartSurfaceState.SHOWN_HOMEPAGE;
-    }
-
-    private void initScrollCapture() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S
-                || !ChromeFeatureList.isEnabled(ChromeFeatureList.SCROLL_CAPTURE)) {
-            return;
-        }
-
-        mScrollCaptureManager = new ScrollCaptureManager(mActivityTabProvider);
     }
 
     // Protected class methods
@@ -681,7 +680,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
     }
 
     private void initCommerceSubscriptionsService() {
-        if (!PriceTrackingUtilities.ENABLE_PRICE_NOTIFICATION.getValue()) {
+        if (!PriceTrackingUtilities.getPriceTrackingNotificationsEnabled()) {
             return;
         }
 

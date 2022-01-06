@@ -132,6 +132,10 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceSystemInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDevicePrintJobs[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceLoginLogout[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceNetworkTelemetryCollectionRateMs[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceNetworkTelemetryEventCheckingRateMs[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kHeartbeatEnabled[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kHeartbeatFrequency[];
@@ -187,6 +191,9 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceDisplayResolutionKeyRecommended[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kDisplayRotationDefault[];
+
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kKioskCRXManifestUpdateURLIgnored[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kLoginAuthenticationBehavior[];
@@ -388,6 +395,7 @@ using ::chromeos::kExtensionCacheSize;
 using ::chromeos::kFeatureFlags;
 using ::chromeos::kHeartbeatEnabled;
 using ::chromeos::kHeartbeatFrequency;
+using ::chromeos::kKioskCRXManifestUpdateURLIgnored;
 using ::chromeos::kLoginAuthenticationBehavior;
 using ::chromeos::kLoginVideoCaptureAllowedUrls;
 using ::chromeos::kPluginVmAllowed;
@@ -414,6 +422,8 @@ using ::chromeos::kReportDeviceMemoryInfo;
 using ::chromeos::kReportDeviceNetworkConfiguration;
 using ::chromeos::kReportDeviceNetworkInterfaces;
 using ::chromeos::kReportDeviceNetworkStatus;
+using ::chromeos::kReportDeviceNetworkTelemetryCollectionRateMs;
+using ::chromeos::kReportDeviceNetworkTelemetryEventCheckingRateMs;
 using ::chromeos::kReportDevicePowerStatus;
 using ::chromeos::kReportDevicePrintJobs;
 using ::chromeos::kReportDeviceSecurityStatus;

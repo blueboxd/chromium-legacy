@@ -55,9 +55,10 @@ class WebContentsViewChildFrame : public WebContentsView,
 #if defined(OS_MAC)
   bool CloseTabAfterEventTrackingIfNeeded() override;
 #endif
+  void OnCapturerCountChanged() override;
 
   // Backend implementation of RenderViewHostDelegateView.
-  void ShowContextMenu(RenderFrameHost* render_frame_host,
+  void ShowContextMenu(RenderFrameHost& render_frame_host,
                        const ContextMenuParams& params) override;
   void StartDragging(const DropData& drop_data,
                      blink::DragOperationsMask allowed_ops,

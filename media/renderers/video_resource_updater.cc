@@ -140,6 +140,8 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
       }
       // TODO(mcasas): Support other formats such as e.g. P012.
       buffer_formats[0] = gfx::BufferFormat::R_16;
+      // TODO(https://crbug.com/1233228): This needs to be
+      // gfx::BufferFormat::RG_1616.
       buffer_formats[1] = gfx::BufferFormat::RG_88;
       return VideoFrameResourceType::YUV;
 
@@ -433,6 +435,9 @@ class VideoResourceUpdater::HardwarePlaneResource
         sii->GenUnverifiedSyncToken().GetConstData());
   }
 
+  HardwarePlaneResource(const HardwarePlaneResource&) = delete;
+  HardwarePlaneResource& operator=(const HardwarePlaneResource&) = delete;
+
   ~HardwarePlaneResource() override {
     gpu::SyncToken sync_token;
     ContextGL()->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
@@ -465,8 +470,6 @@ class VideoResourceUpdater::HardwarePlaneResource
   gpu::Mailbox mailbox_;
   GLenum texture_target_ = GL_TEXTURE_2D;
   bool overlay_candidate_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(HardwarePlaneResource);
 };
 
 VideoResourceUpdater::SoftwarePlaneResource*
@@ -677,8 +680,6 @@ void VideoResourceUpdater::AppendQuads(
                            nearest_neighbor, false, protected_video_type);
       texture_quad->set_resource_size_in_pixels(coded_size);
       texture_quad->is_video_frame = true;
-      texture_quad->hw_protected_validation_id =
-          frame->metadata().hw_protected_validation_id;
       for (viz::ResourceId resource_id : texture_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
       }

@@ -176,8 +176,7 @@ class MetricsMediatorLogLaunchTest : public PlatformTest {
  protected:
   MetricsMediatorLogLaunchTest()
       : num_tabs_has_been_called_(FALSE),
-        num_ntp_tabs_has_been_called_(FALSE),
-        num_live_ntp_tabs_has_been_called_(FALSE) {}
+        num_ntp_tabs_has_been_called_(FALSE) {}
 
   void initiateMetricsMediator(BOOL coldStart, int tabCount) {
     num_tabs_swizzle_block_ = [^(id self, int numTab) {
@@ -189,9 +188,6 @@ class MetricsMediatorLogLaunchTest : public PlatformTest {
       num_ntp_tabs_has_been_called_ = YES;
       // Tests.
       EXPECT_EQ(tabCount, numTab);
-    } copy];
-    num_live_ntp_tabs_swizzle_block_ = [^(id self, int numTab) {
-      num_live_ntp_tabs_has_been_called_ = YES;
     } copy];
     if (coldStart) {
       tabs_uma_histogram_swizzler_.reset(new ScopedBlockSwizzler(
@@ -207,9 +203,6 @@ class MetricsMediatorLogLaunchTest : public PlatformTest {
       ntp_tabs_uma_histogram_swizzler_.reset(new ScopedBlockSwizzler(
           [MetricsMediator class], @selector(recordNumNTPTabAtResume:),
           num_ntp_tabs_swizzle_block_));
-      live_ntp_tabs_uma_histogram_swizzler_.reset(new ScopedBlockSwizzler(
-          [MetricsMediator class], @selector(recordNumLiveNTPTabAtResume:),
-          num_live_ntp_tabs_swizzle_block_));
     }
   }
 
@@ -222,13 +215,10 @@ class MetricsMediatorLogLaunchTest : public PlatformTest {
   NSArray<FakeSceneState*>* connected_scenes_;
   __block BOOL num_tabs_has_been_called_;
   __block BOOL num_ntp_tabs_has_been_called_;
-  __block BOOL num_live_ntp_tabs_has_been_called_;
   LogLaunchMetricsBlock num_tabs_swizzle_block_;
   LogLaunchMetricsBlock num_ntp_tabs_swizzle_block_;
-  LogLaunchMetricsBlock num_live_ntp_tabs_swizzle_block_;
   std::unique_ptr<ScopedBlockSwizzler> tabs_uma_histogram_swizzler_;
   std::unique_ptr<ScopedBlockSwizzler> ntp_tabs_uma_histogram_swizzler_;
-  std::unique_ptr<ScopedBlockSwizzler> live_ntp_tabs_uma_histogram_swizzler_;
   std::set<std::unique_ptr<TestBrowser>> browsers_;
 };
 
@@ -303,7 +293,6 @@ TEST_F(MetricsMediatorLogLaunchTest, logLaunchMetricsNoBackgroundDate) {
                                           connectedScenes:connected_scenes_];
   // Tests.
   verifySwizzleHasBeenCalled();
-  EXPECT_TRUE(num_live_ntp_tabs_has_been_called_);
 }
 
 using MetricsMediatorNoFixtureTest = PlatformTest;

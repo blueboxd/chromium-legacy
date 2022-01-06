@@ -11,7 +11,7 @@
     align-items: center;
     display: flex;
     justify-content: space-between;
-    padding: 16px;
+    padding: 16px 24px;
   }
 
   .visibility-hidden {
@@ -22,6 +22,9 @@
     background-color: var(--cr-card-background-color);
     border-radius: var(--cr-card-border-radius);
     box-shadow: var(--cr-card-shadow);
+    display: flex;
+    flex-flow: column;
+    min-height: 432px;
   }
 </style>
 <div class="privacy-review-card">
@@ -33,7 +36,7 @@
   <template is="dom-if"
       if="[[showFragment_(
              privacyReviewStepEnum_.WELCOME, privacyReviewStep_)]]">
-      <privacy-review-welcome-fragment id="welcomeFragment"
+      <privacy-review-welcome-fragment id="welcomeFragment" prefs="{{prefs}}"
           on-start-button-click="onNextButtonClick_">
       </privacy-review-welcome-fragment>
   </template>
@@ -68,6 +71,19 @@
     <privacy-review-history-sync-fragment id="historySyncFragment"
         prefs="{{prefs}}">
     </privacy-review-history-sync-fragment>
+  </template>
+  <template is="dom-if"
+      if="[[showFragment_(
+             privacyReviewStepEnum_.SAFE_BROWSING, privacyReviewStep_)]]">
+    <privacy-review-safe-browsing-fragment id="safeBrowsingFragment"
+        prefs="{{prefs}}">
+    </privacy-review-safe-browsing-fragment>
+  </template>
+  <template is="dom-if"
+      if="[[showFragment_(
+             privacyReviewStepEnum_.COOKIES, privacyReviewStep_)]]">
+    <privacy-review-cookies-fragment id="cookiesFragment" prefs="{{prefs}}">
+    </privacy-review-cookies-fragment>
   </template>
   <template is="dom-if" if="[[showAnySettingFragment_(privacyReviewStep_)]]">
     <div id="settingFooter" class="footer hr">

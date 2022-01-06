@@ -46,17 +46,22 @@ export class WrapupRestockPageElement extends PolymerElement {
 
   /** @protected */
   onShutdownButtonClicked_() {
-    this.shimlessRmaService_.shutdownForRestock().then(
-        (state) => this.dispatchEvent(new CustomEvent(
-            'load-next-state',
-            {bubbles: true, composed: true, detail: state},
-            )));
+    this.dispatchEvent(new CustomEvent(
+        'transition-state',
+        {
+          bubbles: true,
+          composed: true,
+          detail: (() => {
+            return this.shimlessRmaService_.shutdownForRestock();
+          })
+        },
+        ));
   }
 
   /** @return {!Promise<StateResult>} */
   onNextButtonClick() {
     return this.shimlessRmaService_.continueFinalizationAfterRestock();
   }
-};
+}
 
 customElements.define(WrapupRestockPageElement.is, WrapupRestockPageElement);

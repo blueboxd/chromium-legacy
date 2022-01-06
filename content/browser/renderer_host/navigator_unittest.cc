@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/navigation_request_info.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_frame_host_manager.h"
+#include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"
@@ -453,7 +454,7 @@ TEST_F(NavigatorTest, BeginNavigation) {
   contents()->NavigateAndCommit(kUrl1);
 
   // Add a subframe.
-  FrameTreeNode* root_node = contents()->GetFrameTree()->root();
+  FrameTreeNode* root_node = contents()->GetPrimaryFrameTree().root();
   TestRenderFrameHost* subframe_rfh = main_test_rfh()->AppendChild("Child");
   ASSERT_TRUE(subframe_rfh);
 

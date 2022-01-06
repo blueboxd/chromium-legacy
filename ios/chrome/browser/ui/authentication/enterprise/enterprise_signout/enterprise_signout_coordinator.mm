@@ -20,9 +20,11 @@
 #error "This file requires ARC support."
 #endif
 
+#if !TARGET_OS_MACCATALYST
 namespace {
 constexpr CGFloat kHalfSheetCornerRadius = 20;
 }  // namespace
+#endif
 
 @interface EnterpriseSignoutCoordinator () <
     ConfirmationAlertActionHandler,
@@ -67,15 +69,21 @@ constexpr CGFloat kHalfSheetCornerRadius = 20;
   self.viewController.presentationController.delegate = self;
   self.viewController.actionHandler = self;
 
+#if !TARGET_OS_MACCATALYST
   if (@available(iOS 15, *)) {
     self.viewController.modalPresentationStyle = UIModalPresentationPageSheet;
     UISheetPresentationController* presentationController =
-        base::mac::ObjCCast<UISheetPresentationController>(
-            self.viewController.presentationController);
-    presentationController.detents =
-        @[ UISheetPresentationControllerDetent.mediumDetent ];
+        self.viewController.sheetPresentationController;
+    presentationController.prefersEdgeAttachedInCompactHeight = YES;
+    presentationController.detents = @[
+      UISheetPresentationControllerDetent.mediumDetent,
+      UISheetPresentationControllerDetent.largeDetent
+    ];
     presentationController.preferredCornerRadius = kHalfSheetCornerRadius;
   } else {
+#else
+  {
+#endif
     self.viewController.modalPresentationStyle = UIModalPresentationFormSheet;
   }
 

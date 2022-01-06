@@ -111,6 +111,7 @@ class RenderWidgetHostOwnerDelegate;
 class SyntheticGestureController;
 class TimeoutMonitor;
 class TouchEmulator;
+class VisibleTimeRequestTrigger;
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
@@ -222,6 +223,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return agent_scheduling_group_;
   }
 
+  // Returns the object that tracks the start of content to visible events for
+  // the WebContents. May be nullptr if there is no RenderWidgetHostView.
+  VisibleTimeRequestTrigger* GetVisibleTimeRequestTrigger();
+
   // RenderWidgetHost implementation.
   const viz::FrameSinkId& GetFrameSinkId() override;
   void UpdateTextDirection(base::i18n::TextDirection direction) override;
@@ -251,8 +256,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       RenderWidgetHost::InputEventObserver* observer) override;
   void AddObserver(RenderWidgetHostObserver* observer) override;
   void RemoveObserver(RenderWidgetHostObserver* observer) override;
-  void GetScreenInfo(display::ScreenInfo* result) override;
-  display::ScreenInfos GetScreenInfos() override;
+  display::ScreenInfo GetScreenInfo() const override;
+  display::ScreenInfos GetScreenInfos() const override;
   float GetDeviceScaleFactor() override;
   absl::optional<cc::TouchAction> GetAllowedTouchAction() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
@@ -443,9 +448,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // but it failed, thus HasFocus() returns false.
   bool is_focused() const { return is_focused_; }
 
-  // Support for focus tracking on multi-WebContents cases. This will notify all
-  // renderers involved in a page about a page-level focus update. Users other
-  // than WebContents and RenderWidgetHost should use Focus()/Blur().
+  // Support for focus tracking on multi-FrameTree cases. This will notify all
+  // descendants (including nested FrameTrees) to distribute a "page focus"
+  // update. Users other than WebContents and RenderWidgetHost should use
+  // Focus()/Blur().
   void SetPageFocus(bool focused);
 
   // Called to notify the RenderWidget that it has lost the mouse lock.
@@ -839,10 +845,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return blink_widget_host_receiver_;
   }
 
-  // Returns the visual properties that were last sent to the renderer.
-  absl::optional<blink::VisualProperties>
-  GetLastVisualPropertiesSentToRendererForTesting();
-
   absl::optional<blink::VisualProperties> LastComputedVisualProperties() const;
 
   // Generates widget creation params that will be passed to the renderer to
@@ -932,7 +934,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                            InputRouterReceivesHasTouchEventHandlers);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, EventDispatchPostDetach);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, InputEventRWHLatencyComponent);
-  FRIEND_TEST_ALL_PREFIXES(DevToolsManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(DevToolsAgentHostImplTest,
                            NoUnresponsiveDialogInInspectedContents);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest,
                            ConflictingAllocationsResolve);

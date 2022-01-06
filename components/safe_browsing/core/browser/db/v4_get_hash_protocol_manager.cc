@@ -343,8 +343,7 @@ void V4GetHashProtocolManager::GetFullHashes(
                        &resource_request->headers);
 
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies))
-    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   std::unique_ptr<network::SimpleURLLoader> owned_loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        traffic_annotation);
@@ -369,7 +368,8 @@ void V4GetHashProtocolManager::GetFullHashesWithApis(
   DCHECK(url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme));
 
   std::vector<FullHash> full_hashes;
-  V4ProtocolManagerUtil::UrlToFullHashes(url.GetOrigin(), &full_hashes);
+  V4ProtocolManagerUtil::UrlToFullHashes(url.DeprecatedGetOriginAsURL(),
+                                         &full_hashes);
 
   FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
   for (const FullHash& full_hash : full_hashes) {

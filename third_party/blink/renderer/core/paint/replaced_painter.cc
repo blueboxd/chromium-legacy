@@ -104,11 +104,16 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   if (ShouldPaintBoxDecorationBackground(local_paint_info)) {
     bool should_paint_background = false;
     if (layout_replaced_.StyleRef().Visibility() == EVisibility::kVisible) {
-      if (layout_replaced_.HasBoxDecorationBackground())
+      if (layout_replaced_.HasBoxDecorationBackground()) {
         should_paint_background = true;
-      if (layout_replaced_.HasEffectiveAllowedTouchAction() ||
-          layout_replaced_.InsideBlockingWheelEventHandler()) {
+      } else if (layout_replaced_.HasEffectiveAllowedTouchAction() ||
+                 layout_replaced_.InsideBlockingWheelEventHandler()) {
         should_paint_background = true;
+      } else {
+        Element* element = DynamicTo<Element>(layout_replaced_.GetNode());
+        if (element && element->GetRegionCaptureCropId()) {
+          should_paint_background = true;
+        }
       }
     }
     if (should_paint_background) {
@@ -117,6 +122,9 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
         // the background but still need to paint the hit test rects.
         BoxPainter(layout_replaced_)
             .RecordHitTestData(local_paint_info, border_rect, layout_replaced_);
+        BoxPainter(layout_replaced_)
+            .RecordRegionCaptureData(local_paint_info, border_rect,
+                                     layout_replaced_);
         return;
       }
 
@@ -164,7 +172,8 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
     DCHECK(scrollable_area);
     if (!scrollable_area->HasLayerForScrollCorner()) {
       ScrollableAreaPainter(*scrollable_area)
-          .PaintResizer(local_paint_info.context, RoundedIntPoint(paint_offset),
+          .PaintResizer(local_paint_info.context,
+                        ToRoundedVector2d(paint_offset),
                         local_paint_info.GetCullRect());
     }
     // Otherwise the resizer will be painted by the scroll corner layer.
@@ -205,7 +214,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
 
     DrawingRecorder recorder(local_paint_info.context, layout_replaced_,
                              DisplayItem::kSelectionTint,
-                             selection_painting_int_rect);
+                             ToGfxRect(selection_painting_int_rect));
     Color selection_bg = HighlightPaintingUtils::HighlightBackgroundColor(
         layout_replaced_.GetDocument(), layout_replaced_.StyleRef(),
         layout_replaced_.GetNode(), kPseudoIdSelection);

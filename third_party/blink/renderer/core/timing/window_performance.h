@@ -33,7 +33,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_WINDOW_PERFORMANCE_H_
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -50,8 +49,6 @@
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace blink {
-
-class IntSize;
 
 class CORE_EXPORT WindowPerformance final : public Performance,
                                             public PerformanceMonitor::Client,
@@ -133,11 +130,11 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void AddElementTiming(const AtomicString& name,
                         const String& url,
-                        const FloatRect& rect,
+                        const gfx::RectF& rect,
                         base::TimeTicks start_time,
                         base::TimeTicks load_time,
                         const AtomicString& identifier,
-                        const IntSize& intrinsic_size,
+                        const gfx::Size& intrinsic_size,
                         const AtomicString& id,
                         Element*);
 
@@ -147,12 +144,14 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   // PageVisibilityObserver
   void PageVisibilityChanged() override;
 
-  void OnLargestContentfulPaintUpdated(base::TimeTicks paint_time,
-                                       uint64_t paint_size,
-                                       base::TimeTicks load_time,
-                                       const AtomicString& id,
-                                       const String& url,
-                                       Element*);
+  void OnLargestContentfulPaintUpdated(
+      base::TimeTicks paint_time,
+      uint64_t paint_size,
+      base::TimeTicks load_time,
+      base::TimeTicks first_animated_frame_time,
+      const AtomicString& id,
+      const String& url,
+      Element*);
 
   void Trace(Visitor*) const override;
 
@@ -187,7 +186,6 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   // add all event timings that have not been added since the last presentation
   // promise.
   void ReportEventTimings(uint64_t frame_index,
-                          WebSwapResult result,
                           base::TimeTicks presentation_timestamp);
 
   void DispatchFirstInputTiming(PerformanceEventTiming* entry);

@@ -72,7 +72,7 @@ class FormControlsBrowserTest : public ContentBrowserTest {
     platform_suffix = "_win";
 #elif defined(OS_LINUX)
     platform_suffix = "_linux";
-#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif defined(OS_CHROMEOS)
     platform_suffix = "_chromeos";
 #elif defined(OS_ANDROID)
     int sdk_int = base::android::BuildInfo::GetInstance()->sdk_int();
@@ -81,6 +81,8 @@ class FormControlsBrowserTest : public ContentBrowserTest {
     } else {
       platform_suffix = "_android";
     }
+#elif defined(OS_FUCHSIA)
+    platform_suffix = "_fuchsia";
 #endif
 
     base::FilePath dir_test_data;
@@ -111,7 +113,8 @@ class FormControlsBrowserTest : public ContentBrowserTest {
         /* avg_abs_error_limit */ 20.f,
         /* max_abs_error_limit */ 120.f,
         /* small_error_threshold */ 0);
-#elif defined(OS_ANDROID) || defined(OS_WIN) || (OS_LINUX)
+#elif defined(OS_ANDROID) || defined(OS_WIN) || (OS_LINUX) || \
+    defined(OS_FUCHSIA)
     // Different versions of android may have slight differences in rendering.
     // Some versions have more significant differences than others, which are
     // tracked separately in separate baseline image files. The less significant

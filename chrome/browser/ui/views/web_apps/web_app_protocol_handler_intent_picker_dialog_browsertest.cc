@@ -8,27 +8,25 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
-#include "base/test/mock_callback.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/web_apps/web_app_protocol_handler_intent_picker_dialog_view.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/keep_alive_registry/keep_alive_types.h"
-#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
 
+namespace web_app {
+
 namespace {
 
-web_app::AppId InstallTestWebApp(Profile* profile) {
+AppId InstallTestWebApp(Profile* profile) {
   const GURL example_url = GURL("http://example.org/");
   auto app_info = std::make_unique<WebApplicationInfo>();
   app_info->title = u"Test app";
@@ -38,157 +36,88 @@ web_app::AppId InstallTestWebApp(Profile* profile) {
   protocol_handler.protocol = "web+test";
   protocol_handler.url = GURL("http://example.org/?uri=%s");
   app_info->protocol_handlers.push_back(std::move(protocol_handler));
-  return web_app::test::InstallWebApp(profile, std::move(app_info));
+  return test::InstallWebApp(profile, std::move(app_info));
 }
 
 }  // namespace
 
 class WebAppProtocolHandlerIntentPickerDialogInProcessBrowserTest
-    : public InProcessBrowserTest {};
+    : public InProcessBrowserTest {
+ public:
+  void ShowDialogAndCloseWithReason(views::Widget::ClosedReason reason,
+                                    bool expected_allowed,
+                                    bool expected_remember_user_choice) {
+    views::NamedWidgetShownWaiter waiter(
+        views::test::AnyWidgetTestPasskey{},
+        "WebAppProtocolHandlerIntentPickerView");
+    GURL protocol_url("web+test://test");
+    AppId test_app_id = InstallTestWebApp(browser()->profile());
+
+    base::RunLoop run_loop;
+    auto dialog_finished = base::BindLambdaForTesting(
+        [&](bool allowed, bool remember_user_choice) {
+          run_loop.Quit();
+          EXPECT_EQ(expected_allowed, allowed);
+          EXPECT_EQ(expected_remember_user_choice, remember_user_choice);
+        });
+
+    chrome::ShowWebAppProtocolHandlerIntentPicker(
+        protocol_url, browser()->profile(), test_app_id,
+        std::move(dialog_finished));
+
+    waiter.WaitIfNeededAndGet()->CloseWithReason(reason);
+    run_loop.Run();
+  }
+};
 
 IN_PROC_BROWSER_TEST_F(
     WebAppProtocolHandlerIntentPickerDialogInProcessBrowserTest,
     WebAppProtocolHandlerIntentPickerDialog_EscapeDoesNotRememberPreference) {
-  views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
-                                       "WebAppProtocolHandlerIntentPickerView");
-  GURL protocol_url("web+test://test");
-  web_app::AppId test_app_id = InstallTestWebApp(browser()->profile());
-
-  base::MockCallback<chrome::WebAppProtocolHandlerAcceptanceCallback>
-      show_dialog;
-  EXPECT_CALL(show_dialog,
-              Run(/*allowed=*/false, /*remember_user_choice=*/false));
-
-  auto profile_keep_alive = std::make_unique<ScopedProfileKeepAlive>(
-      browser()->profile(),
-      ProfileKeepAliveOrigin::kWebAppPermissionDialogWindow);
-  auto keep_alive = std::make_unique<ScopedKeepAlive>(
-      KeepAliveOrigin::WEB_APP_INTENT_PICKER, KeepAliveRestartOption::DISABLED);
   WebAppProtocolHandlerIntentPickerView::SetDefaultRememberSelectionForTesting(
       true);
-  WebAppProtocolHandlerIntentPickerView::Show(
-      protocol_url, browser()->profile(), test_app_id,
-      std::move(profile_keep_alive), std::move(keep_alive), show_dialog.Get());
-
-  waiter.WaitIfNeededAndGet()->CloseWithReason(
-      views::Widget::ClosedReason::kEscKeyPressed);
-  WebAppProtocolHandlerIntentPickerView::SetDefaultRememberSelectionForTesting(
-      false);
+  ShowDialogAndCloseWithReason(views::Widget::ClosedReason::kEscKeyPressed,
+                               /*allowed=*/false,
+                               /*remember_user_choice=*/false);
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebAppProtocolHandlerIntentPickerDialogInProcessBrowserTest,
     ProtocolHandlerIntentPickerDialog_DisallowAndRemember) {
-  views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
-                                       "WebAppProtocolHandlerIntentPickerView");
-  GURL protocol_url("web+test://test");
-  web_app::AppId test_app_id = InstallTestWebApp(browser()->profile());
-
-  base::MockCallback<chrome::WebAppProtocolHandlerAcceptanceCallback>
-      show_dialog;
-  EXPECT_CALL(show_dialog,
-              Run(/*allowed=*/false, /*remember_user_choice=*/true));
-
-  auto profile_keep_alive = std::make_unique<ScopedProfileKeepAlive>(
-      browser()->profile(),
-      ProfileKeepAliveOrigin::kWebAppPermissionDialogWindow);
-  auto keep_alive = std::make_unique<ScopedKeepAlive>(
-      KeepAliveOrigin::WEB_APP_INTENT_PICKER, KeepAliveRestartOption::DISABLED);
   WebAppProtocolHandlerIntentPickerView::SetDefaultRememberSelectionForTesting(
       true);
-  WebAppProtocolHandlerIntentPickerView::Show(
-      protocol_url, browser()->profile(), test_app_id,
-      std::move(profile_keep_alive), std::move(keep_alive), show_dialog.Get());
-
-  waiter.WaitIfNeededAndGet()->CloseWithReason(
-      views::Widget::ClosedReason::kCancelButtonClicked);
-  WebAppProtocolHandlerIntentPickerView::SetDefaultRememberSelectionForTesting(
-      false);
+  ShowDialogAndCloseWithReason(
+      views::Widget::ClosedReason::kCancelButtonClicked,
+      /*allowed=*/false,
+      /*remember_user_choice=*/true);
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebAppProtocolHandlerIntentPickerDialogInProcessBrowserTest,
     ProtocolHandlerIntentPickerDialog_DisallowDoNotRemember) {
-  views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
-                                       "WebAppProtocolHandlerIntentPickerView");
-  GURL protocol_url("web+test://test");
-  web_app::AppId test_app_id = InstallTestWebApp(browser()->profile());
-
-  base::MockCallback<chrome::WebAppProtocolHandlerAcceptanceCallback>
-      show_dialog;
-  EXPECT_CALL(show_dialog,
-              Run(/*allowed=*/false, /*remember_user_choice=*/false));
-
-  auto profile_keep_alive = std::make_unique<ScopedProfileKeepAlive>(
-      browser()->profile(),
-      ProfileKeepAliveOrigin::kWebAppPermissionDialogWindow);
-  auto keep_alive = std::make_unique<ScopedKeepAlive>(
-      KeepAliveOrigin::WEB_APP_INTENT_PICKER, KeepAliveRestartOption::DISABLED);
-  WebAppProtocolHandlerIntentPickerView::Show(
-      protocol_url, browser()->profile(), test_app_id,
-      std::move(profile_keep_alive), std::move(keep_alive), show_dialog.Get());
-
-  waiter.WaitIfNeededAndGet()->CloseWithReason(
-      views::Widget::ClosedReason::kCancelButtonClicked);
+  ShowDialogAndCloseWithReason(
+      views::Widget::ClosedReason::kCancelButtonClicked,
+      /*allowed=*/false,
+      /*remember_user_choice=*/false);
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebAppProtocolHandlerIntentPickerDialogInProcessBrowserTest,
     ProtocolHandlerIntentPickerDialog_AcceptAndRemember) {
-  views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
-                                       "WebAppProtocolHandlerIntentPickerView");
-  GURL protocol_url("web+test://test");
-  web_app::AppId test_app_id = InstallTestWebApp(browser()->profile());
-
-  base::MockCallback<chrome::WebAppProtocolHandlerAcceptanceCallback>
-      show_dialog;
-  EXPECT_CALL(show_dialog,
-              Run(/*allowed=*/true, /*remember_user_choice=*/true));
-
-  auto profile_keep_alive = std::make_unique<ScopedProfileKeepAlive>(
-      browser()->profile(),
-      ProfileKeepAliveOrigin::kWebAppPermissionDialogWindow);
-  auto keep_alive = std::make_unique<ScopedKeepAlive>(
-      KeepAliveOrigin::WEB_APP_INTENT_PICKER, KeepAliveRestartOption::DISABLED);
-
   WebAppProtocolHandlerIntentPickerView::SetDefaultRememberSelectionForTesting(
       true);
-  WebAppProtocolHandlerIntentPickerView::Show(
-      protocol_url, browser()->profile(), test_app_id,
-      std::move(profile_keep_alive), std::move(keep_alive), show_dialog.Get());
-
-  waiter.WaitIfNeededAndGet()->CloseWithReason(
-      views::Widget::ClosedReason::kAcceptButtonClicked);
-
-  WebAppProtocolHandlerIntentPickerView::SetDefaultRememberSelectionForTesting(
-      false);
+  ShowDialogAndCloseWithReason(
+      views::Widget::ClosedReason::kAcceptButtonClicked,
+      /*allowed=*/true,
+      /*remember_user_choice=*/true);
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebAppProtocolHandlerIntentPickerDialogInProcessBrowserTest,
     ProtocolHandlerIntentPickerDialog_AcceptDoNotRemember) {
-  views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
-                                       "WebAppProtocolHandlerIntentPickerView");
-  GURL protocol_url("web+test://test");
-  web_app::AppId test_app_id = InstallTestWebApp(browser()->profile());
-
-  base::MockCallback<chrome::WebAppProtocolHandlerAcceptanceCallback>
-      show_dialog;
-  EXPECT_CALL(show_dialog,
-              Run(/*allowed=*/true, /*remember_user_choice=*/false));
-
-  auto profile_keep_alive = std::make_unique<ScopedProfileKeepAlive>(
-      browser()->profile(),
-      ProfileKeepAliveOrigin::kWebAppPermissionDialogWindow);
-  auto keep_alive = std::make_unique<ScopedKeepAlive>(
-      KeepAliveOrigin::WEB_APP_INTENT_PICKER, KeepAliveRestartOption::DISABLED);
-
-  WebAppProtocolHandlerIntentPickerView::Show(
-      protocol_url, browser()->profile(), test_app_id,
-      std::move(profile_keep_alive), std::move(keep_alive), show_dialog.Get());
-
-  waiter.WaitIfNeededAndGet()->CloseWithReason(
-      views::Widget::ClosedReason::kAcceptButtonClicked);
+  ShowDialogAndCloseWithReason(
+      views::Widget::ClosedReason::kAcceptButtonClicked,
+      /*allowed=*/true,
+      /*remember_user_choice=*/false);
 }
 
 class WebAppProtocolHandlerIntentPickerDialogInteractiveBrowserTest
@@ -200,17 +129,9 @@ class WebAppProtocolHandlerIntentPickerDialogInteractiveBrowserTest
         views::test::AnyWidgetTestPasskey{},
         "WebAppProtocolHandlerIntentPickerView");
     GURL protocol_url("web+test://test");
-    web_app::AppId test_app_id = InstallTestWebApp(browser()->profile());
-    auto profile_keep_alive = std::make_unique<ScopedProfileKeepAlive>(
-        browser()->profile(),
-        ProfileKeepAliveOrigin::kWebAppPermissionDialogWindow);
-    auto keep_alive = std::make_unique<ScopedKeepAlive>(
-        KeepAliveOrigin::WEB_APP_INTENT_PICKER,
-        KeepAliveRestartOption::DISABLED);
-    WebAppProtocolHandlerIntentPickerView::Show(
-        protocol_url, browser()->profile(), test_app_id,
-        std::move(profile_keep_alive), std::move(keep_alive),
-        base::DoNothing());
+    AppId test_app_id = InstallTestWebApp(browser()->profile());
+    chrome::ShowWebAppProtocolHandlerIntentPicker(
+        protocol_url, browser()->profile(), test_app_id, base::DoNothing());
     waiter.WaitIfNeededAndGet()->CloseWithReason(
         views::Widget::ClosedReason::kEscKeyPressed);
   }
@@ -221,3 +142,5 @@ IN_PROC_BROWSER_TEST_F(
     InvokeUi_CloseDialog) {
   ShowAndVerifyUi();
 }
+
+}  // namespace web_app

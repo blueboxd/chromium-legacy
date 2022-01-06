@@ -16,9 +16,10 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "media/base/bitrate.h"
+#include "media/base/video_codecs.h"
 #include "media/base/win/dxgi_device_manager.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_encode_accelerator.h"
@@ -38,8 +39,12 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // If |compatible_with_win7| is true, MediaFoundationVideoEncoderAccelerator
   // works on Windows 7. Some attributes of the encoder are not supported on old
   // systems, which may impact the performance or quality of the output.
-  explicit MediaFoundationVideoEncodeAccelerator(bool compatible_with_win7,
-                                                 bool enable_async_mft);
+  explicit MediaFoundationVideoEncodeAccelerator(bool compatible_with_win7);
+
+  MediaFoundationVideoEncodeAccelerator(
+      const MediaFoundationVideoEncodeAccelerator&) = delete;
+  MediaFoundationVideoEncodeAccelerator& operator=(
+      const MediaFoundationVideoEncodeAccelerator&) = delete;
 
   // VideoEncodeAccelerator implementation.
   VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
@@ -65,8 +70,14 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Holds output buffers coming from the encoder.
   class EncodeOutput;
 
-  // Enumerates all hardware encoder backed IMFTransform instances.
-  uint32_t EnumerateHardwareEncoders(IMFActivate*** pp_activate);
+  // Get supported profiles for specific codec.
+  VideoEncodeAccelerator::SupportedProfiles GetSupportedProfilesForCodec(
+      VideoCodec codec);
+
+  // Enumerates all hardware encoder backed IMFTransform instances for given
+  // codec.
+  uint32_t EnumerateHardwareEncoders(VideoCodec codec,
+                                     IMFActivate*** pp_activate);
 
   // Activates the asynchronous encoder instance |encoder_| according to codec
   // merit.
@@ -83,23 +94,21 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // |main_client_task_runner_|.
   void NotifyError(VideoEncodeAccelerator::Error error);
 
-  // Encoding tasks to be run on |encoder_thread_|.
+  // Encoding task to be run on |encoder_thread_|.
   void EncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
-  void AsyncEncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
-  void SyncEncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
 
   // Processes the input video frame for the encoder.
   HRESULT ProcessInput(scoped_refptr<VideoFrame> frame, bool force_keyframe);
 
   // Populates input sample buffer with contents of a video frame
   HRESULT PopulateInputSampleBuffer(scoped_refptr<VideoFrame> frame);
+  HRESULT PopulateInputSampleBufferGpu(scoped_refptr<VideoFrame> frame);
 
   int AssignTemporalId(bool keyframe);
   bool temporalScalableCoding() { return num_temporal_layers_ > 1; }
 
   // Checks for and copies encoded output on |encoder_thread_|.
-  void ProcessOutputAsync();
-  void ProcessOutputSync();
+  void ProcessOutput();
 
   // Drains pending output samples on |encoder_thread_|.
   void DrainPendingOutputs();
@@ -133,12 +142,6 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   const bool compatible_with_win7_;
 
-  // Flag to enable the usage of MFTEnumEx.
-  const bool enable_async_mft_;
-
-  // Whether asynchronous hardware encoder enabled or not.
-  bool is_async_mft_;
-
   // Bitstream buffers ready to be used to return encoded output as a FIFO.
   base::circular_deque<std::unique_ptr<BitstreamBufferRef>>
       bitstream_buffer_queue_;
@@ -156,6 +159,9 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   Bitrate bitrate_;
   bool low_latency_mode_;
   int num_temporal_layers_ = 1;
+
+  // Codec type used for encoding.
+  VideoCodec codec_ = VideoCodec::kUnknown;
 
   // Group of picture length for encoded output stream, indicates the
   // distance between two key frames.
@@ -203,8 +209,6 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // other destructors run.
   base::WeakPtrFactory<MediaFoundationVideoEncodeAccelerator>
       encoder_task_weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MediaFoundationVideoEncodeAccelerator);
 };
 
 }  // namespace media

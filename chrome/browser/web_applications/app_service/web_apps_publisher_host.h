@@ -24,10 +24,6 @@
 
 class Profile;
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace web_app {
 
 class WebApp;
@@ -57,32 +53,13 @@ class WebAppsPublisherHost : public crosapi::mojom::AppController,
 
   void SetPublisherForTesting(crosapi::mojom::AppPublisher* publisher);
 
-  // TODO(crbug.com/1194709): Add these to crosapi::mojom::AppController:
-  content::WebContents* Launch(const std::string& app_id,
-                               int32_t event_flags,
-                               apps::mojom::LaunchSource launch_source,
-                               apps::mojom::WindowInfoPtr window_info);
-  content::WebContents* LaunchAppWithFiles(
-      const std::string& app_id,
-      int32_t event_flags,
-      apps::mojom::LaunchSource launch_source,
-      apps::mojom::FilePathsPtr file_paths);
-  content::WebContents* LaunchAppWithIntent(
-      const std::string& app_id,
-      int32_t event_flags,
-      apps::mojom::IntentPtr intent,
-      apps::mojom::LaunchSource launch_source,
-      apps::mojom::WindowInfoPtr window_info);
-
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppsPublisherHostBrowserTest,
                            ExecuteContextMenuCommand);
   FRIEND_TEST_ALL_PREFIXES(WebAppsPublisherHostBrowserTest, PauseUnpause);
   FRIEND_TEST_ALL_PREFIXES(WebAppsPublisherHostBrowserTest, OpenNativeSettings);
   FRIEND_TEST_ALL_PREFIXES(WebAppsPublisherHostBrowserTest, WindowMode);
+  FRIEND_TEST_ALL_PREFIXES(WebAppsPublisherHostBrowserTest, Launch);
 
   void OnReady();
 
@@ -110,6 +87,8 @@ class WebAppsPublisherHost : public crosapi::mojom::AppController,
       const std::string& id,
       ExecuteContextMenuCommandCallback callback) override;
   void StopApp(const std::string& app_id) override;
+  void SetPermission(const std::string& app_id,
+                     apps::mojom::PermissionPtr permission) override;
 
   // WebAppPublisherHelper::Delegate:
   void PublishWebApps(std::vector<apps::mojom::AppPtr> apps) override;

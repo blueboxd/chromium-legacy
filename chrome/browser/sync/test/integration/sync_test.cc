@@ -60,7 +60,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/public/identity_manager/consent_level.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -632,8 +632,10 @@ bool SyncTest::SetupClients() {
   // Uses a fake app list model updater to avoid interacting with Ash.
   model_updater_factory_ = std::make_unique<
       app_list::AppListSyncableService::ScopedModelUpdaterFactoryForTest>(
-      base::BindRepeating([]() -> std::unique_ptr<AppListModelUpdater> {
-        return std::make_unique<FakeAppListModelUpdater>();
+      base::BindRepeating([](app_list::AppListReorderDelegate* reorder_delegate)
+                              -> std::unique_ptr<AppListModelUpdater> {
+        return std::make_unique<FakeAppListModelUpdater>(
+            /*profile=*/nullptr, reorder_delegate);
       }));
 #endif
 
@@ -972,8 +974,30 @@ void SyncTest::TearDownOnMainThread() {
   // used profile by path will fail. To work around that, set the last used
   // profile back to the originally created default profile (which does live in
   // the user data dir, and which we don't use otherwise).
-  if (previous_profile_)
+  if (previous_profile_) {
     profiles::SetLastUsedProfile(previous_profile_->GetBaseName());
+    previous_profile_ = nullptr;
+  }
+
+  if (fake_server_.get()) {
+    for (const std::unique_ptr<fake_server::FakeServerInvalidationSender>&
+             observer : fake_server_invalidation_observers_) {
+      fake_server_->RemoveObserver(observer.get());
+    }
+    fake_server_sync_invalidation_sender_.reset();
+    fake_server_.reset();
+  }
+
+  // Delete things that unsubscribe in destructor before their targets are gone.
+  configuration_refresher_.reset();
+
+  // Note: Closing all the browsers (see below) may destroy the Profiles, if
+  // kDestroyProfileOnBrowserClose is enabled. So clear them out here, to make
+  // sure they're not used anymore.
+  profiles_.clear();
+  clients_.clear();
+  // TODO(crbug.com/1260897): There are various other Profile-related members
+  // around like profile_to_*_map_ - those should probably be cleaned up too.
 
 #if !defined(OS_ANDROID)
   // Closing all browsers created by this test. The calls here block until
@@ -987,21 +1011,10 @@ void SyncTest::TearDownOnMainThread() {
       closed_browser_count++;
     }
   }
+  browsers_.clear();
   ASSERT_EQ(chrome::GetTotalBrowserCount(),
             initial_total_browser_count - closed_browser_count);
 #endif
-
-  if (fake_server_.get()) {
-    for (const std::unique_ptr<fake_server::FakeServerInvalidationSender>&
-             observer : fake_server_invalidation_observers_) {
-      fake_server_->RemoveObserver(observer.get());
-    }
-    fake_server_sync_invalidation_sender_.reset();
-    fake_server_.reset();
-  }
-
-  // Delete things that unsubscribe in destructor before their targets are gone.
-  configuration_refresher_.reset();
   PlatformBrowserTest::TearDownOnMainThread();
 }
 

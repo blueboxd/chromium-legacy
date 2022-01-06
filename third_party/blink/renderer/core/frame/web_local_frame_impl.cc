@@ -292,7 +292,7 @@ class ChromePrintContext : public PrintContext {
 
   virtual float GetPageShrink(uint32_t page_number) const {
     IntRect page_rect = page_rects_[page_number];
-    return printed_page_width_ / page_rect.Width();
+    return printed_page_width_ / page_rect.width();
   }
 
   float SpoolSinglePage(cc::PaintCanvas* canvas, int page_number) {
@@ -335,8 +335,8 @@ class ChromePrintContext : public PrintContext {
 
     ComputePageRects(page_size_in_pixels);
 
-    FloatRect all_pages_rect(0, 0, spool_size_in_pixels.Width(),
-                             spool_size_in_pixels.Height());
+    FloatRect all_pages_rect(0, 0, spool_size_in_pixels.width(),
+                             spool_size_in_pixels.height());
 
     auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
     GraphicsContext& context = builder->Context();
@@ -356,8 +356,8 @@ class ChromePrintContext : public PrintContext {
         context.SetStrokeThickness(1);
         context.SetStrokeColor(Color(0, 0, 255));
         context.DrawLine(
-            IntPoint(0, current_height - 1),
-            IntPoint(spool_size_in_pixels.Width(), current_height - 1),
+            gfx::Point(0, current_height - 1),
+            gfx::Point(spool_size_in_pixels.width(), current_height - 1),
             AutoDarkMode::Disabled());
         context.Restore();
       }
@@ -368,17 +368,17 @@ class ChromePrintContext : public PrintContext {
       WebPrintPageDescription description;
       GetFrame()->GetDocument()->GetPageDescription(page_index, &description);
       if (description.orientation == PageOrientation::kUpright) {
-        current_height += page_size_in_pixels.Height() + 1;
+        current_height += page_size_in_pixels.height() + 1;
       } else {
         if (description.orientation == PageOrientation::kRotateRight) {
-          transform.Translate(page_size_in_pixels.Height(), 0);
+          transform.Translate(page_size_in_pixels.height(), 0);
           transform.Rotate(90);
         } else {
           DCHECK_EQ(description.orientation, PageOrientation::kRotateLeft);
-          transform.Translate(0, page_size_in_pixels.Width());
+          transform.Translate(0, page_size_in_pixels.width());
           transform.Rotate(-90);
         }
-        current_height += page_size_in_pixels.Width() + 1;
+        current_height += page_size_in_pixels.width() + 1;
       }
 
 #if defined(OS_WIN) || defined(OS_MAC)
@@ -406,14 +406,14 @@ class ChromePrintContext : public PrintContext {
   // do the scaling and ignore the return value.
   virtual float SpoolPage(GraphicsContext& context, int page_number) {
     IntRect page_rect = page_rects_[page_number];
-    float scale = printed_page_width_ / page_rect.Width();
+    float scale = printed_page_width_ / page_rect.width();
 
     AffineTransform transform;
 #if defined(OS_POSIX) && !defined(OS_MAC)
     transform.Scale(scale);
 #endif
-    transform.Translate(static_cast<float>(-page_rect.X()),
-                        static_cast<float>(-page_rect.Y()));
+    transform.Translate(static_cast<float>(-page_rect.x()),
+                        static_cast<float>(-page_rect.y()));
     context.Save();
     context.ConcatCTM(transform);
     context.ClipRect(page_rect);
@@ -428,7 +428,7 @@ class ChromePrintContext : public PrintContext {
         builder->Context(),
         kGlobalPaintNormalPhase | kGlobalPaintFlattenCompositingLayers |
             kGlobalPaintAddUrlMetadata,
-        CullRect(page_rect));
+        CullRect(ToGfxRect(page_rect)));
     {
       ScopedPaintChunkProperties scoped_paint_chunk_properties(
           builder->Context().GetPaintController(), property_tree_state,
@@ -492,8 +492,8 @@ class ChromePluginPrintContext final : public ChromePrintContext {
   }
 
   void ComputePageRects(const FloatSize& print_size) override {
-    IntRect rect(IntPoint(0, 0), FlooredIntSize(print_size));
-    print_params_.print_content_area = rect;
+    IntRect rect(gfx::Point(0, 0), FlooredIntSize(print_size));
+    print_params_.print_content_area = ToGfxRect(rect);
     page_rects_.Fill(rect, plugin_->PrintBegin(print_params_));
   }
 
@@ -560,7 +560,7 @@ class PaintPreviewContext : public PrintContext {
       flags |= kGlobalPaintAddUrlMetadata;
 
     frame_view->PaintContentsOutsideOfLifecycle(builder->Context(), flags,
-                                                CullRect(bounds));
+                                                CullRect(ToGfxRect(bounds)));
     if (include_linked_destinations) {
       // Add anchors.
       ScopedPaintChunkProperties scoped_paint_chunk_properties(
@@ -618,6 +618,13 @@ int WebFrame::InstanceCount() {
 WebFrame* WebFrame::FromFrameToken(const FrameToken& frame_token) {
   auto* frame = Frame::ResolveFrame(frame_token);
   return WebFrame::FromCoreFrame(frame);
+}
+
+// static
+WebLocalFrame* WebLocalFrame::FromFrameToken(
+    const LocalFrameToken& frame_token) {
+  auto* frame = LocalFrame::FromFrameToken(frame_token);
+  return WebLocalFrameImpl::FromFrame(frame);
 }
 
 WebLocalFrame* WebLocalFrame::FrameForCurrentContext() {
@@ -767,14 +774,14 @@ void WebLocalFrameImpl::CopyToFindPboard() {
 
 gfx::Vector2dF WebLocalFrameImpl::GetScrollOffset() const {
   if (ScrollableArea* scrollable_area = LayoutViewport()) {
-    return gfx::Vector2dF(scrollable_area->GetScrollOffset());
+    return ToGfxVector2dF(scrollable_area->GetScrollOffset());
   }
   return gfx::Vector2dF();
 }
 
 void WebLocalFrameImpl::SetScrollOffset(const gfx::Vector2dF& offset) {
   if (ScrollableArea* scrollable_area = LayoutViewport()) {
-    scrollable_area->SetScrollOffset(ScrollOffset(offset.x(), offset.y()),
+    scrollable_area->SetScrollOffset(ScrollOffset(offset),
                                      mojom::blink::ScrollType::kProgrammatic);
   }
 }
@@ -783,9 +790,9 @@ gfx::Size WebLocalFrameImpl::DocumentSize() const {
   if (!GetFrameView() || !GetFrameView()->GetLayoutView())
     return gfx::Size();
 
-  return gfx::Size(
+  return ToGfxSize(
       PixelSnappedIntRect(GetFrameView()->GetLayoutView()->DocumentRect())
-          .Size());
+          .size());
 }
 
 bool WebLocalFrameImpl::HasVisibleContent() const {
@@ -802,7 +809,7 @@ bool WebLocalFrameImpl::HasVisibleContent() const {
 
 gfx::Rect WebLocalFrameImpl::VisibleContentRect() const {
   if (LocalFrameView* view = GetFrameView())
-    return view->LayoutViewport()->VisibleContentRect();
+    return ToGfxRect(view->LayoutViewport()->VisibleContentRect());
   return gfx::Rect();
 }
 
@@ -1178,7 +1185,7 @@ bool WebLocalFrameImpl::FirstRectForCharacterRange(
   if (range.IsNull())
     return false;
   rect_in_viewport =
-      GetFrame()->View()->FrameToViewport(FirstRectForRange(range));
+      ToGfxRect(GetFrame()->View()->FrameToViewport(FirstRectForRange(range)));
   return true;
 }
 
@@ -1437,7 +1444,7 @@ void WebLocalFrameImpl::MoveRangeSelectionExtent(const gfx::Point& point) {
       DocumentUpdateReason::kSelection);
 
   GetFrame()->Selection().MoveRangeSelectionExtent(
-      GetFrame()->View()->ViewportToFrame(IntPoint(point)));
+      GetFrame()->View()->ViewportToFrame(point));
 }
 
 void WebLocalFrameImpl::MoveRangeSelection(
@@ -1455,8 +1462,8 @@ void WebLocalFrameImpl::MoveRangeSelection(
   if (granularity == WebFrame::kWordGranularity)
     blink_granularity = blink::TextGranularity::kWord;
   GetFrame()->Selection().MoveRangeSelection(
-      GetFrame()->View()->ViewportToFrame(IntPoint(base_in_viewport)),
-      GetFrame()->View()->ViewportToFrame(IntPoint(extent_in_viewport)),
+      GetFrame()->View()->ViewportToFrame(base_in_viewport),
+      GetFrame()->View()->ViewportToFrame(extent_in_viewport),
       blink_granularity);
 }
 
@@ -1468,8 +1475,8 @@ void WebLocalFrameImpl::MoveCaretSelection(
   // needs to be audited.  see http://crbug.com/590369 for more details.
   GetFrame()->GetDocument()->UpdateStyleAndLayout(
       DocumentUpdateReason::kSelection);
-  const IntPoint point_in_contents =
-      GetFrame()->View()->ViewportToFrame(IntPoint(point_in_viewport));
+  const gfx::Point point_in_contents =
+      GetFrame()->View()->ViewportToFrame(point_in_viewport);
   GetFrame()->Selection().MoveCaretSelection(point_in_contents);
 }
 
@@ -1710,7 +1717,7 @@ uint32_t WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
   }
 
   FloatSize size(print_params.print_content_area.size());
-  print_context_->BeginPrintMode(size.Width(), size.Height());
+  print_context_->BeginPrintMode(size.width(), size.height());
   print_context_->ComputePageRects(size);
 
   return print_context_->PageCount();
@@ -1815,15 +1822,16 @@ gfx::Rect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {
   DCHECK(GetFrame());  // Not valid after the Frame is detached.
   GetFrame()->View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kSelection);
-  return HasSelection() ? PixelSnappedIntRect(
-                              GetFrame()->Selection().AbsoluteUnclippedBounds())
-                        : gfx::Rect();
+  return HasSelection()
+             ? ToGfxRect(PixelSnappedIntRect(
+                   GetFrame()->Selection().AbsoluteUnclippedBounds()))
+             : gfx::Rect();
 }
 
 gfx::Point WebLocalFrameImpl::GetPositionInViewportForTesting() const {
   DCHECK(GetFrame());  // Not valid after the Frame is detached.
   LocalFrameView* view = GetFrameView();
-  return view->ConvertToRootFrame(IntPoint());
+  return view->ConvertToRootFrame(gfx::Point());
 }
 
 // WebLocalFrameImpl public --------------------------------------------------
@@ -2257,8 +2265,8 @@ void WebLocalFrameImpl::DidFinish() {
 }
 
 HitTestResult WebLocalFrameImpl::HitTestResultForVisualViewportPos(
-    const IntPoint& pos_in_viewport) {
-  IntPoint root_frame_point(
+    const gfx::Point& pos_in_viewport) {
+  gfx::Point root_frame_point(
       GetFrame()->GetPage()->GetVisualViewport().ViewportToRootFrame(
           pos_in_viewport));
   HitTestLocation location(
@@ -2349,6 +2357,7 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
     bool is_client_redirect,
     bool has_transient_user_activation,
     const WebSecurityOrigin& initiator_origin,
+    bool is_browser_initiated,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(GetFrame());
   DCHECK(!url.ProtocolIs("javascript"));
@@ -2360,7 +2369,8 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
                          : ClientRedirectPolicy::kNotClientRedirect,
       has_transient_user_activation, initiator_origin.Get(),
       /*is_synchronously_committed=*/false,
-      mojom::blink::TriggeringEventInfo::kNotFromEvent, std::move(extra_data));
+      mojom::blink::TriggeringEventInfo::kNotFromEvent, is_browser_initiated,
+      std::move(extra_data));
 }
 
 bool WebLocalFrameImpl::IsLoading() const {
@@ -2379,16 +2389,16 @@ bool WebLocalFrameImpl::IsNavigationScheduledWithin(
          GetFrame()->GetDocument()->IsHttpRefreshScheduledWithin(interval);
 }
 
-void WebLocalFrameImpl::SetCommittedFirstRealLoad() {
+void WebLocalFrameImpl::SetIsNotOnInitialEmptyDocument() {
   DCHECK(GetFrame());
   GetFrame()->GetDocument()->OverrideIsInitialEmptyDocument();
-  GetFrame()->Loader().SetDidLoadNonEmptyDocument();
+  GetFrame()->Loader().SetIsNotOnInitialEmptyDocument();
   GetFrame()->SetShouldSendResourceTimingInfoToParent(false);
 }
 
-bool WebLocalFrameImpl::HasCommittedFirstRealLoad() {
+bool WebLocalFrameImpl::IsOnInitialEmptyDocument() {
   DCHECK(GetFrame());
-  return !GetFrame()->GetDocument()->IsInitialEmptyDocument();
+  return GetFrame()->GetDocument()->IsInitialEmptyDocument();
 }
 
 void WebLocalFrameImpl::BlinkFeatureUsageReport(
@@ -2527,7 +2537,7 @@ WebFrameWidget* WebLocalFrameImpl::FrameWidget() const {
 
 void WebLocalFrameImpl::CopyImageAtForTesting(
     const gfx::Point& pos_in_viewport) {
-  GetFrame()->CopyImageAtViewportPoint(IntPoint(pos_in_viewport));
+  GetFrame()->CopyImageAtViewportPoint(pos_in_viewport);
 }
 
 void WebLocalFrameImpl::ShowContextMenuFromExternal(

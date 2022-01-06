@@ -460,7 +460,7 @@ void FillNonTypedOrFilledPropertiesMasks(std::vector<FormFieldData>* fields,
 // need to set up the mojo connection as before (i.e., we can't defer binding
 // the interface). Instead, we enqueue our messages here as post-activation
 // tasks. See post-prerendering activation steps here:
-// https://jeremyroman.github.io/alternate-loading-modes/#prerendering-bcs-subsection
+// https://wicg.github.io/nav-speculation/prerendering.html#prerendering-bcs-subsection
 class PasswordAutofillAgent::DeferringPasswordManagerDriver
     : public mojom::PasswordManagerDriver {
  public:
@@ -471,8 +471,11 @@ class PasswordAutofillAgent::DeferringPasswordManagerDriver
  private:
   template <typename F, typename... Args>
   void SendMsg(F fn, Args&&... args) {
-    DCHECK(agent_->password_manager_driver_);
-    (agent_->password_manager_driver_.get()->*fn)(std::forward<Args>(args)...);
+    DCHECK(!agent_->IsPrerendering());
+    mojom::PasswordManagerDriver& password_manager_driver =
+        agent_->GetPasswordManagerDriver();
+    DCHECK_NE(&password_manager_driver, this);
+    (password_manager_driver.*fn)(std::forward<Args>(args)...);
   }
   template <typename F, typename... Args>
   void DeferMsg(F fn, Args... args) {
@@ -1883,11 +1886,6 @@ void PasswordAutofillAgent::HidePopup() {
 
 mojom::PasswordManagerDriver&
 PasswordAutofillAgent::GetPasswordManagerDriver() {
-  if (!password_manager_driver_) {
-    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
-        &password_manager_driver_);
-  }
-
   if (IsPrerendering()) {
     if (!deferring_password_manager_driver_) {
       deferring_password_manager_driver_ =
@@ -1895,6 +1893,13 @@ PasswordAutofillAgent::GetPasswordManagerDriver() {
     }
     return *deferring_password_manager_driver_;
   }
+
+  // Lazily bind this interface.
+  if (!password_manager_driver_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &password_manager_driver_);
+  }
+
   return *password_manager_driver_;
 }
 

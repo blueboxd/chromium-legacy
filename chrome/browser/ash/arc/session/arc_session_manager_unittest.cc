@@ -56,8 +56,8 @@
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/fake_arc_session.h"
@@ -1061,6 +1061,26 @@ TEST_F(ArcSessionManagerTest, RequestDisableDoesNotRemoveData) {
 
   // Data removal is not requested.
   EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+
+  // Correctly stop service.
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, RequestDisableWithArcDataRemoval) {
+  // Start ARC.
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+
+  // Disable ARC and remove ARC data.
+  arc_session_manager()->RequestDisableWithArcDataRemoval();
+
+  // Data removal is requested.
+  EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
 
   // Correctly stop service.

@@ -9,18 +9,21 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/model/app_list_item_list_observer.h"
+#include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/app_list_model_observer.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/apps_grid_view_folder_delegate.h"
 #include "ash/app_list/views/folder_header_view.h"
 #include "ash/app_list/views/folder_header_view_delegate.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
-#include "ui/views/view_observer.h"
 
 namespace ash {
 
@@ -34,12 +37,14 @@ class AppsContainerView;
 class AppsGridView;
 class FolderHeaderView;
 class PageSwitcher;
+class ScrollViewGradientHelper;
 
 // Displays folder contents via an AppsGridView. App items can be dragged out
 // of the folder to the main apps grid.
 class ASH_EXPORT AppListFolderView
     : public views::View,
       public FolderHeaderViewDelegate,
+      public AppListModelProvider::Observer,
       public AppListModelObserver,
       public views::ViewObserver,
       public AppsGridViewFolderDelegate,
@@ -56,7 +61,6 @@ class ASH_EXPORT AppListFolderView
 
   AppListFolderView(AppListFolderController* folder_controller,
                     AppsGridView* root_apps_grid_view,
-                    AppListModel* model,
                     ContentsView* contents_view,
                     AppListA11yAnnouncer* a11y_announcer,
                     AppListViewDelegate* view_delegate);
@@ -108,11 +112,15 @@ class ASH_EXPORT AppListFolderView
   void ChildPreferredSizeChanged(View* child) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  // AppListModelObserver
-  void OnAppListItemWillBeDeleted(AppListItem* item) override;
+  // AppListModelProvider::Observer:
+  void OnActiveAppListModelsChanged(AppListModel* model,
+                                    SearchModel* search_model) override;
 
   // views::ViewObserver:
   void OnViewIsDeleting(views::View* view) override;
+
+  // AppListModelObserver
+  void OnAppListItemWillBeDeleted(AppListItem* item) override;
 
   // Updates preferred bounds of this view based on the activated folder item
   // icon's bounds.
@@ -154,6 +162,10 @@ class ASH_EXPORT AppListFolderView
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
 
+  // views::View:
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+
   // Overridden from FolderHeaderViewDelegate:
   void SetItemName(AppListFolderItem* item, const std::string& name) override;
 
@@ -179,6 +191,8 @@ class ASH_EXPORT AppListFolderView
 
   const AppListConfig* GetAppListConfig() const;
 
+  views::ScrollView* scroll_view_for_test() { return scroll_view_; }
+
  private:
   // Creates an apps grid view with fixed-size pages.
   void CreatePagedAppsGrid(ContentsView* contents_view);
@@ -189,6 +203,10 @@ class ASH_EXPORT AppListFolderView
   // Returns the compositor associated to the widget containing this view.
   // Returns nullptr if there isn't one associated with this widget.
   ui::Compositor* GetCompositor();
+
+  // Called from the root apps grid view to cancel reparent drag from the root
+  // apps grid.
+  void CancelReparentDragFromRootGrid();
 
   // Calculates whether the folder would fit in the bounding box if it had the
   // max allowed number of rows, and condenses the margins between grid items if
@@ -229,13 +247,16 @@ class ASH_EXPORT AppListFolderView
   FolderHeaderView* folder_header_view_;  // Owned by views hierarchy.
   AppsGridView* items_grid_view_;         // Owned by views hierarchy.
 
-  // Only used for non-AppListBubble. Owned by views hierarchy.
+  // Only used for non-ProductivityLauncher. Owned by views hierarchy.
   PageSwitcher* page_switcher_ = nullptr;
 
-  // Only used for AppListBubble. Owned by views hierarchy.
+  // Only used for ProductivityLauncher. Owned by views hierarchy.
   views::ScrollView* scroll_view_ = nullptr;
 
-  AppListModel* const model_;
+  // Adds fade in/out gradients to `scroll_view_`.
+  // Only used for ProductivityLauncher.
+  std::unique_ptr<ScrollViewGradientHelper> gradient_helper_;
+
   AppListViewDelegate* const view_delegate_;
   AppListFolderItem* folder_item_ = nullptr;  // Not owned.
 
@@ -259,12 +280,17 @@ class ASH_EXPORT AppListFolderView
   // Records smoothness of the folder show/hide animation.
   absl::optional<ui::ThroughputTracker> show_hide_metrics_tracker_;
 
+  base::ScopedObservation<AppListModel, AppListModelObserver>
+      model_observation_{this};
+
   // Observes `folder_item_view_` deletion, so the folder state can be cleared
   // if the folder item view is destroyed (for example, the view may get deleted
   // during folder hide animation if the backing item gets deleted from the
   // model, and animations depend on the folder item view).
   base::ScopedObservation<views::View, views::ViewObserver>
       folder_item_view_observer_{this};
+
+  base::WeakPtrFactory<AppListFolderView> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

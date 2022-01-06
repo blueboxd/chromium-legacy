@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -156,7 +157,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.AdaptiveToolbarButton.SettingsToggle.Changed"
-    enum="BooleanEnabled" expires_after="2022-02-01">
+    enum="BooleanEnabled" expires_after="2022-04-24">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -226,6 +227,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     report information about the processor on which the metric was collected.
     This can happen on heterogeneous-processor SoCs. The metric is logged once
     every startup.
+  </summary>
+</histogram>
+
+<histogram name="Android.AutofillAssistant.DependenciesInvalidated"
+    enum="AutofillAssistantDependenciesInvalidated" expires_after="2022-10-27">
+  <owner>fga@google.com</owner>
+  <owner>autofill_assistant+watch@google.com</owner>
+  <summary>
+    Reports when the platform-specific dependencies are invalidated. For
+    example: When the activity is changed on Android.
   </summary>
 </histogram>
 
@@ -354,7 +365,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.ExactTaskCreated"
-    enum="BackgroundTaskId" expires_after="2021-12-01">
+    enum="BackgroundTaskId" expires_after="2022-05-01">
   <owner>fgorski@chromium.org</owner>
   <owner>nator@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
@@ -388,7 +399,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskCreated.WithExpiration"
-    enum="BackgroundTaskId" expires_after="2021-12-01">
+    enum="BackgroundTaskId" expires_after="2022-05-01">
   <owner>fgorski@chromium.org</owner>
   <owner>nator@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
@@ -399,7 +410,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskCreated.WithoutExpiration"
-    enum="BackgroundTaskId" expires_after="2021-12-01">
+    enum="BackgroundTaskId" expires_after="2022-05-01">
   <owner>fgorski@chromium.org</owner>
   <owner>nator@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
@@ -410,7 +421,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskExpired"
-    enum="BackgroundTaskId" expires_after="2022-04-24">
+    enum="BackgroundTaskId" expires_after="2022-05-01">
   <owner>fgorski@chromium.org</owner>
   <owner>nator@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
@@ -421,7 +432,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskLoadedNative"
-    enum="BackgroundTaskId" expires_after="2022-04-17">
+    enum="BackgroundTaskId" expires_after="2022-05-01">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>
@@ -431,7 +442,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskLoadedNative.FullBrowser"
-    enum="BackgroundTaskId" expires_after="2022-04-24">
+    enum="BackgroundTaskId" expires_after="2022-05-01">
   <owner>mheikal@chromium.org</owner>
   <owner>hanxi@chromium.org</owner>
   <owner>hnakashima@chromium.org</owner>
@@ -442,7 +453,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskLoadedNative.ReducedMode"
-    enum="BackgroundTaskId" expires_after="2022-04-24">
+    enum="BackgroundTaskId" expires_after="2022-05-01">
   <owner>mheikal@chromium.org</owner>
   <owner>hanxi@chromium.org</owner>
   <owner>hnakashima@chromium.org</owner>
@@ -461,7 +472,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskScheduled.Success"
-    enum="BackgroundTaskId" expires_after="2022-04-17">
+    enum="BackgroundTaskId" expires_after="2022-05-01">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>
@@ -470,14 +481,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskStarted"
-    enum="BackgroundTaskId" expires_after="2022-04-03">
+    enum="BackgroundTaskId" expires_after="2022-05-01">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>Records that a specific background task has been started.</summary>
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskStopped"
-    enum="BackgroundTaskId" expires_after="2021-12-01">
+    enum="BackgroundTaskId" expires_after="2022-05-01">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>
@@ -505,6 +516,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Measures time from {type} child process starts to right before main. Only
     recorded on Android N+. Zygote measurements are recorded on Q+.
+
+    Zygote measurements capture the CPU time (thread time) spent to create the
+    app zygote process, before the zygote preload starts. For other processes it
+    measures the time (uptimeMillis) to create the child process service.
   </summary>
   <token key="type">
     <variant name=".All" summary="all (excluding zygote)"/>
@@ -724,8 +739,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram
-    name="Android.DarkTheme.AutoDarkMode.SettingsChangeSource.{NewState}"
+<histogram name="Android.DarkTheme.AutoDarkMode.SettingsChangeSource{NewState}"
     enum="AndroidAutoDarkModeSettingsChangeSource" expires_after="2022-04-01">
   <owner>nemco@google.com</owner>
   <owner>wenyufu@chromium.org</owner>
@@ -1460,6 +1474,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>chrome-incognito@google.com</owner>
   <summary>
     Records the clicks on Home button in Android toolbar for each profile type.
+  </summary>
+</histogram>
+
+<histogram name="Android.IncognitoNotification.FileNotDeleted" enum="Boolean"
+    expires_after="2022-04-10">
+  <owner>roagarwal@chromium.org</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <summary>
+    Records the count of any cases when clicking on the &quot;Close all
+    Incognito tabs&quot; notification may not delete any files which were opened
+    in the Incognito session. True value denotes file was not deleted and false
+    otherwise.
   </summary>
 </histogram>
 
@@ -3027,6 +3053,30 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>The number of bytes written for the tab metadata file.</summary>
 </histogram>
 
+<histogram name="Android.TaskScheduling.BootstrapTaskRunnerType"
+    enum="BootstrapTaskRunnerType" expires_after="2022-06-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>scheduler-dev@chromium.org</owner>
+  <summary>
+    Records creation of Java task runners that are created with BOOTSTRAP task
+    type, bucketed by whether they are configured to post at the back or the
+    front of the task queue.
+  </summary>
+</histogram>
+
+<histogram name="Android.TaskScheduling.PreNativeTaskPostType"
+    enum="PreNativeTaskPostType" expires_after="2022-06-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>scheduler-dev@chromium.org</owner>
+  <summary>
+    Records whether Java tasks that are targeted for scheduling pre-native
+    initialization are (a) posted at the back of the Looper's task queue, (b)
+    posted at the front of its task queue, or (c) not posted at all (deferring
+    to native task runner initialization). Emitted at the time of scheduling the
+    task.
+  </summary>
+</histogram>
+
 <histogram name="Android.ThemeColor" enum="Android.ThemeColor"
     expires_after="2022-04-17">
   <owner>sinansahin@google.com</owner>
@@ -3484,6 +3534,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records if application is in night mode and if it has light theme on each
     main frame navigation entry committed.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.DarkMode.PrefersDarkFromTheme"
+    enum="BooleanYesNo" expires_after="2022-03-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records if WebView shall set prefers-color-scheme to dark according to app's
+    theme after FORCE_DARK_AUTO fails. It is recorded on each main frame
+    navigation entry committed.
   </summary>
 </histogram>
 
@@ -4045,6 +4106,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Android.WebView.PageTimeSpent.{Scheme}" units="ms"
     expires_after="2022-07-01">
+  <obsolete>
+    Removed in October 2021.
+  </obsolete>
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4073,6 +4137,47 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="Other"/>
     <variant name="Sms"/>
     <variant name="Tel"/>
+  </token>
+</histogram>
+
+<histogram name="Android.WebView.PageTimeSpent2.{Scheme}{Party}" units="ms"
+    expires_after="2022-07-01">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Time spent on a page with a {Scheme} scheme. This is measured from
+    navigation commit to the start of the next navigation. For http and https
+    schemes it is additionally recorded whether it is a first or third party
+    page. This uses an optional key, in this case the value is
+    &quot;{Party}&quot;.
+  </summary>
+  <token key="Scheme">
+    <variant name="App"/>
+    <variant name="Blob"/>
+    <variant name="Chrome"/>
+    <variant name="ChromeNative"/>
+    <variant name="Content"/>
+    <variant name="CustomTab"/>
+    <variant name="Data"/>
+    <variant name="Devtools"/>
+    <variant name="Document"/>
+    <variant name="File"/>
+    <variant name="Filesystem"/>
+    <variant name="Ftp"/>
+    <variant name="Http"/>
+    <variant name="Https"/>
+    <variant name="Inline"/>
+    <variant name="Intent"/>
+    <variant name="Jar"/>
+    <variant name="JavaScript"/>
+    <variant name="Other"/>
+    <variant name="Sms"/>
+    <variant name="Tel"/>
+  </token>
+  <token key="Party">
+    <variant name=""/>
+    <variant name=".FirstParty"/>
+    <variant name=".ThirdParty"/>
   </token>
 </histogram>
 

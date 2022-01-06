@@ -131,6 +131,7 @@
 <translation id="2122305276694332719">A ligação automática a uma rede oculta permite que terceiros vejam o seu dispositivo e algumas definições da rede, pelo que não é recomendada.</translation>
 <translation id="2125607626296734455">Khmer</translation>
 <translation id="2139545522194199494">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />%, gerida pelo administrador, ligar</translation>
+<translation id="2141347188420181405">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Intensidade do sinal <ph name="SIGNAL_STRENGTH" />%, Bloqueada pelo administrador, Detalhes</translation>
 <translation id="2142680004883808240">Russo com teclado YaZHert fonético</translation>
 <translation id="2143778271340628265">Configuração manual do proxy</translation>
 <translation id="2163152940313951844">Caráter inválido: <ph name="CHARACTER_NAME" /></translation>
@@ -185,6 +186,7 @@
 <translation id="2563185590376525700">Sapo</translation>
 <translation id="2578394532502990878">Fonética de tâmil</translation>
 <translation id="2579959351793446050">Oriá</translation>
+<translation id="2602810353103180630">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Intensidade do sinal <ph name="SIGNAL_STRENGTH" />%, Bloqueada pelo administrador, Detalhes</translation>
 <translation id="2614589611416690597">Vídeo <ph name="VIDEO_TYPE" /></translation>
 <translation id="2617342710774726426">O cartão SIM está bloqueado</translation>
 <translation id="2620090360073999360">Não é possível aceder ao Google Drive neste momento.</translation>
@@ -349,7 +351,7 @@
 <translation id="4057991113334098539">A activar...</translation>
 <translation id="4092890906744441904">Irlandês</translation>
 <translation id="4124935795427217608">Unicórnio</translation>
-<translation id="4158739975813877944">Abrir playlist</translation>
+<translation id="4158739975813877944">Abrir lista de reprodução</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> movido.</translation>
 <translation id="4186579485882418952">Ativar modo offline</translation>
 <translation id="4193154014135846272">Documento do Google</translation>
@@ -739,7 +741,7 @@
 <translation id="751507702149411736">Bielorrusso</translation>
 <translation id="7532029025027028521">Transliteração de persa</translation>
 <translation id="7544830582642184299">Conceda autorização às apps Linux para aceder a ficheiros no seu Google Drive. As alterações serão sincronizadas com os seus outros dispositivos.</translation>
-<translation id="7544853251252956727">Aleatório</translation>
+<translation id="7544853251252956727">Reproduzir aleatoriamente</translation>
 <translation id="7547009467130558110">Sapatilha</translation>
 <translation id="7547780573915868306">Lituano</translation>
 <translation id="7547811415869834682">Holandês</translation>

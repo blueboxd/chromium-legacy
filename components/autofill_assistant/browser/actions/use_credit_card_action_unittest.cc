@@ -33,7 +33,6 @@ const char kExpirationYear[] = "2050";
 using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::Eq;
-using ::testing::Expectation;
 using ::testing::InSequence;
 using ::testing::NotNull;
 using ::testing::Pointee;
@@ -562,7 +561,7 @@ TEST_F(UseCreditCardActionTest, AutofillFailureWithoutRequiredFieldsIsFatal) {
 
   EXPECT_EQ(processed_action.status(),
             ProcessedActionStatusProto::OTHER_ACTION_STATUS);
-  EXPECT_EQ(processed_action.has_status_details(), false);
+  EXPECT_EQ(processed_action.status_details().ByteSizeLong(), 0u);
 }
 
 TEST_F(UseCreditCardActionTest,

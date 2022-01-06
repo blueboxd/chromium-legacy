@@ -130,7 +130,11 @@ class TestResultSinkMessage(TestResultSinkTestBase):
             },
             {
                 'key': 'web_tests_flag_specific_config_name',
-                'value': ''
+                'value': '',
+            },
+            {
+                'key': 'web_tests_base_timeout',
+                'value': '6'
             },
             {
                 'key': 'web_tests_used_expectations_file',
@@ -186,7 +190,11 @@ class TestResultSinkMessage(TestResultSinkTestBase):
             },
             {
                 'key': 'web_tests_flag_specific_config_name',
-                'value': ''
+                'value': '',
+            },
+            {
+                'key': 'web_tests_base_timeout',
+                'value': '6'
             },
             {
                 'key': 'web_tests_used_expectations_file',

@@ -111,20 +111,15 @@ class OzonePlatformScenic : public OzonePlatform,
       PlatformWindowInitProperties properties) override {
     BindInMainProcessIfNecessary();
 
-    if (!properties.view_token && !properties.allow_null_view_token_for_test) {
+    if (!properties.view_token.value) {
       auto view_tokens = scenic::ViewTokenPair::New();
-      properties.view_token = std::move(view_tokens.view_token.value);
+      properties.view_token = std::move(view_tokens.view_token);
       properties.view_ref_pair = scenic::ViewRefPair::New();
       ::ui::fuchsia::GetScenicViewPresenter().Run(
           std::move(view_tokens.view_holder_token),
           CloneViewRef(properties.view_ref_pair.view_ref));
     }
 
-    // Allow tests to create a view themselves.
-    if (!properties.view_token) {
-      CHECK(properties.allow_null_view_token_for_test);
-      ui::fuchsia::InitializeViewTokenAndPresentView(&properties);
-    }
     return std::make_unique<ScenicWindow>(window_manager_.get(), delegate,
                                           std::move(properties));
   }

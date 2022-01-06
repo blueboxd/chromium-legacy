@@ -47,18 +47,11 @@
 
   .data-points-column {
     border-bottom: 1px solid var(--google-grey-200);
-    border-top: 1px solid var(--google-grey-200);
     padding-inline: 24px;
   }
 
   .routine-container {
     @apply --diagnostics-default-font;
-  }
-
-  .spacing {
-    margin-bottom: 16px;
-    margin-top: 12px;
-    padding-inline: 20px;
   }
 
   .top-section {
@@ -67,8 +60,8 @@
     margin-top: 16px;
   }
 
-  .top-section-padding {
-    padding-inline: 20px;
+  .top-section-networking {
+    margin-top: 0;
   }
 </style>
 <diagnostics-card-frame>
@@ -83,7 +76,7 @@
         hidden$="[[hideDataPoints]]">
       <slot name="body"></slot>
     </div>
-    <div id="routines" class="routine-container spacing">
+    <div id="routines" class="routine-container">
       <slot name="routines"></slot>
     </div>
   </div>

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_folder_view.h"
@@ -50,16 +51,20 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_utils.h"
-
-using views::BoxLayout;
 
 namespace ash {
 
 namespace {
 
-// The number of columns in the tablet mode productivity apps grid.
-constexpr int kPreferredGridColumnsForProductivityLauncher = 5;
+// The number of rows for portrait mode with mode productivity launcher
+// enabled.
+constexpr int kPreferredGridRowsInPortraitProductivityLauncher = 5;
+
+// The number of columns for portrait mode with mode productivity launcher
+// enabled.
+constexpr int kPreferredGridColumnsInPortraitProductivityLauncher = 5;
 
 // The long apps grid dimension when productivity launcher is not enabled:
 // * number of columns in landscape mode
@@ -115,11 +120,11 @@ constexpr int kPageSwitcherEndMargin = 16;
 // which is used as a margin for the `AppsGridView` contents.
 constexpr int kGridFadeoutZoneHeight = 24;
 
-// The space between sort buttons.
-constexpr int kSortButtonSpacing = 10;
+// The space between sort ui controls (including sort button and redo button).
+constexpr int kSortUiControlSpacing = 10;
 
-// The preferred size of a sort button.
-constexpr int kSortButtonPreferredSize = 20;
+// The preferred size of sort ui controls (like sort button and redo button).
+constexpr int kSortUiControlPreferredSize = 20;
 
 // The number of columns available for the ContinueSectionView.
 constexpr int kContinueColumnCount = 4;
@@ -130,55 +135,112 @@ constexpr int kSeparatorVerticalInset = 16;
 // The width of the separator.
 constexpr int kSeparatorWidth = 240;
 
-// SortButton ------------------------------------------------------------------
+// SortUiControl ---------------------------------------------------------------
 
-// A button for sorting the app icons on the launcher. Shown only when the
-// launcher apps sort is enabled.
-class SortButton : public views::ImageButton {
+class SortUiControl : public views::ImageButton {
  public:
-  METADATA_HEADER(SortButton);
-
-  SortButton(bool is_alphabetical, AppListViewDelegate* delegate)
-      : views::ImageButton(
-            base::BindRepeating(&SortButton::LauncherSortTriggered,
-                                base::Unretained(this))),
-        is_alphabetical_(is_alphabetical),
-        delegate_(delegate) {
+  SortUiControl(AppListViewDelegate* delegate,
+                views::Button::PressedCallback pressed_callback)
+      : views::ImageButton(pressed_callback), delegate_(delegate) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
     SetPreferredSize(
-        gfx::Size(kSortButtonPreferredSize, kSortButtonPreferredSize));
+        gfx::Size(kSortUiControlPreferredSize, kSortUiControlPreferredSize));
 
     // This view is used behind the feature flag and is immature. Therefore
     // ignore it in a11y for now.
     GetViewAccessibility().OverrideIsIgnored(true);
   }
-  SortButton(const SortButton&) = delete;
-  SortButton& operator=(const SortButton&) = delete;
-  ~SortButton() override = default;
+  SortUiControl(const SortUiControl&) = delete;
+  SortUiControl& operator=(const SortUiControl&) = delete;
+  ~SortUiControl() override = default;
 
   // views::View:
   void OnThemeChanged() override {
     views::View::OnThemeChanged();
-    auto* color_provider = AshColorProvider::Get();
-    const SkColor icon_color = color_provider->GetContentLayerColor(
+    auto* inkdrop_host = views::InkDrop::Get(this);
+    AshColorProvider::Get()->DecorateInkDrop(
+        inkdrop_host, AshColorProvider::kConfigBaseColor |
+                          AshColorProvider::kConfigHighlightOpacity |
+                          AshColorProvider::kConfigHighlightOpacity);
+    views::InstallFixedSizeCircleHighlightPathGenerator(
+        this, kSortUiControlPreferredSize / 2);
+    views::InkDrop::UseInkDropForFloodFillRipple(inkdrop_host,
+                                                 /*highlight_on_hover=*/true,
+                                                 /*highlight_on_focus=*/true);
+  }
+
+ protected:
+  AppListViewDelegate* const delegate_;
+};
+
+// RedoButton ------------------------------------------------------------------
+
+// A button for reverting the temporary sort order if any.
+// TODO(https://crbug.com/1263999): remove `RedoButton` when the app list sort
+// is enabled as default.
+class RedoButton : public SortUiControl {
+ public:
+  METADATA_HEADER(RedoButton);
+
+  explicit RedoButton(AppListViewDelegate* delegate)
+      : SortUiControl(delegate,
+                      base::BindRepeating(&RedoButton::RevertAppListSort,
+                                          base::Unretained(this))) {}
+  RedoButton(const RedoButton&) = delete;
+  RedoButton& operator=(const RedoButton&) = delete;
+  ~RedoButton() override = default;
+
+ private:
+  // views::View:
+  void OnThemeChanged() override {
+    SortUiControl::OnThemeChanged();
+    const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kButtonIconColor);
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(kCloseButtonIcon, GetPreferredSize().width(),
+                                   icon_color));
+  }
+
+  void RevertAppListSort() {
+    views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
+        views::InkDropState::ACTION_TRIGGERED);
+    delegate_->RevertAppListSort();
+  }
+};
+
+BEGIN_METADATA(RedoButton, views::View)
+END_METADATA
+
+// SortButton ------------------------------------------------------------------
+
+// A button for sorting the app icons on the launcher. Shown only when the
+// launcher apps sort is enabled.
+// TODO(https://crbug.com/1263999): remove `SortButton` when the app list sort
+// is enabled as default.
+class SortButton : public SortUiControl {
+ public:
+  METADATA_HEADER(SortButton);
+
+  SortButton(bool is_alphabetical, AppListViewDelegate* delegate)
+      : SortUiControl(delegate,
+                      base::BindRepeating(&SortButton::LauncherSortTriggered,
+                                          base::Unretained(this))),
+        is_alphabetical_(is_alphabetical) {}
+  SortButton(const SortButton&) = delete;
+  SortButton& operator=(const SortButton&) = delete;
+  ~SortButton() override = default;
+
+ private:
+  void OnThemeChanged() override {
+    SortUiControl::OnThemeChanged();
+    const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kButtonIconColor);
     SetImage(views::Button::STATE_NORMAL,
              gfx::CreateVectorIcon(is_alphabetical_ ? kOverflowShelfLeftIcon
                                                     : kOverflowShelfRightIcon,
                                    GetPreferredSize().width(), icon_color));
-
-    auto* inkdrop_host = views::InkDrop::Get(this);
-    color_provider->DecorateInkDrop(
-        inkdrop_host, AshColorProvider::kConfigBaseColor |
-                          AshColorProvider::kConfigHighlightOpacity |
-                          AshColorProvider::kConfigHighlightOpacity);
-    views::InstallFixedSizeCircleHighlightPathGenerator(
-        this, kSortButtonPreferredSize / 2);
-    views::InkDrop::UseInkDropForFloodFillRipple(inkdrop_host,
-                                                 /*highlight_on_hover=*/true,
-                                                 /*highlight_on_focus=*/true);
   }
 
   void LauncherSortTriggered() {
@@ -189,24 +251,21 @@ class SortButton : public views::ImageButton {
                                : AppListSortOrder::kNameReverseAlphabetical);
   }
 
- private:
   // If true, apps are sorted by the app name alphabetical order; otherwise,
   // apps are sorted by the app name reverse alphabetical order.
   const bool is_alphabetical_;
-
-  AppListViewDelegate* const delegate_;
 };
 
 BEGIN_METADATA(SortButton, views::View)
 END_METADATA
 
-// SortButtonContainer ---------------------------------------------------------
+// SortUiControlContainer ------------------------------------------------------
 
-class SortButtonContainer : public views::View {
+class SortUiControlContainer : public views::View {
  public:
-  METADATA_HEADER(SortButtonContainer);
+  METADATA_HEADER(SortUiControlContainer);
 
-  explicit SortButtonContainer(AppListViewDelegate* delegate) {
+  explicit SortUiControlContainer(AppListViewDelegate* delegate) {
     // The layer is required in animation.
     SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
@@ -214,7 +273,7 @@ class SortButtonContainer : public views::View {
     auto box_layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal,
         /*inside_border_insets=*/gfx::Insets(),
-        /*between_child_spacing=*/kSortButtonSpacing);
+        /*between_child_spacing=*/kSortUiControlSpacing);
     box_layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
     box_layout->set_cross_axis_alignment(
@@ -226,22 +285,24 @@ class SortButtonContainer : public views::View {
         std::make_unique<SortButton>(/*is_alphabetical_=*/true, delegate));
     AddChildView(
         std::make_unique<SortButton>(/*is_alphabetical_=*/false, delegate));
+    AddChildView(std::make_unique<RedoButton>(delegate));
 
     GetViewAccessibility().OverrideIsIgnored(true);
   }
-  SortButtonContainer(const SortButtonContainer&) = delete;
-  SortButtonContainer& operator=(const SortButtonContainer&) = delete;
-  ~SortButtonContainer() override = default;
+  SortUiControlContainer(const SortUiControlContainer&) = delete;
+  SortUiControlContainer& operator=(const SortUiControlContainer&) = delete;
+  ~SortUiControlContainer() override = default;
 };
 
-BEGIN_METADATA(SortButtonContainer, views::View)
+BEGIN_METADATA(SortUiControlContainer, views::View)
 END_METADATA
 
 }  // namespace
 
-AppsContainerView::AppsContainerView(ContentsView* contents_view,
-                                     AppListModel* model)
+AppsContainerView::AppsContainerView(ContentsView* contents_view)
     : contents_view_(contents_view) {
+  AppListModelProvider::Get()->AddObserver(this);
+
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
 
   scrollable_container_ = AddChildView(std::make_unique<views::View>());
@@ -258,16 +319,15 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
         scrollable_container_->AddChildView(std::make_unique<views::View>());
     continue_container_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
 
-    auto* layout = continue_container_->SetLayoutManager(
-        std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical));
-    layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
+    continue_container_->SetLayoutManager(std::make_unique<views::FlexLayout>())
+        ->SetOrientation(views::LayoutOrientation::kVertical);
 
-    auto* continue_section =
+    continue_section_ =
         continue_container_->AddChildView(std::make_unique<ContinueSectionView>(
-            view_delegate, kContinueColumnCount));
-    continue_section->SetPaintToLayer();
-    continue_section->layer()->SetFillsBoundsOpaquely(false);
-    continue_section->UpdateSuggestionTasks();
+            view_delegate, kContinueColumnCount, /*tablet_mode=*/true));
+    continue_section_->SetPaintToLayer();
+    continue_section_->layer()->SetFillsBoundsOpaquely(false);
+    continue_section_->UpdateSuggestionTasks();
 
     recent_apps_ = continue_container_->AddChildView(
         std::make_unique<RecentAppsView>(this, view_delegate));
@@ -285,6 +345,11 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
                   kSeparatorVerticalInset * 2 + views::Separator::kThickness));
     separator_->SetPaintToLayer();
     separator_->layer()->SetFillsBoundsOpaquely(false);
+    separator_->SetProperty(views::kCrossAxisAlignmentKey,
+                            views::LayoutAlignment::kCenter);
+
+    separator_->SetVisible(recent_apps_->GetItemViewCount() > 0 ||
+                           continue_section_->GetTasksSuggestionsCount() > 0);
   } else {
     // Add child view at index 0 so focus traversal goes to suggestion chips
     // before the views in the scrollable_container.
@@ -315,8 +380,7 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
   page_switcher_ = AddChildView(std::move(page_switcher));
 
   auto app_list_folder_view = std::make_unique<AppListFolderView>(
-      this, apps_grid_view_, model, contents_view_, a11y_announcer,
-      view_delegate);
+      this, apps_grid_view_, contents_view_, a11y_announcer, view_delegate);
   folder_background_view_ = AddChildView(
       std::make_unique<FolderBackgroundView>(app_list_folder_view.get()));
 
@@ -326,7 +390,7 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
 
   if (features::IsLauncherAppSortEnabled()) {
     sort_button_container_ =
-        AddChildView(std::make_unique<SortButtonContainer>(view_delegate));
+        AddChildView(std::make_unique<SortUiControlContainer>(view_delegate));
   }
 
   // NOTE: At this point, the apps grid folder and recent apps grids are not
@@ -338,6 +402,8 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
 }
 
 AppsContainerView::~AppsContainerView() {
+  AppListModelProvider::Get()->RemoveObserver(this);
+
   if (features::IsProductivityLauncherEnabled())
     apps_grid_view_->pagination_model()->RemoveObserver(this);
 
@@ -352,23 +418,23 @@ AppsContainerView::~AppsContainerView() {
   delete app_list_folder_view_;
 }
 
-void AppsContainerView::UpdateTopLevelGridDimensions(
-    const GridLayout& grid_layout) {
+void AppsContainerView::UpdateTopLevelGridDimensions() {
+  const GridLayout grid_layout = CalculateGridLayout();
   if (features::IsProductivityLauncherEnabled()) {
     apps_grid_view_->SetMaxColumnsAndRows(
         /*max_columns=*/grid_layout.columns,
-        /*max_rows_on_first_page=*/grid_layout.rows - 1,
+        /*max_rows_on_first_page=*/grid_layout.first_page_rows,
         /*max_rows=*/grid_layout.rows);
   } else {
     apps_grid_view_->SetMaxColumnsAndRows(
         /*max_columns=*/grid_layout.columns,
-        /*max_rows_on_first_page=*/grid_layout.rows,
+        /*max_rows_on_first_page=*/grid_layout.first_page_rows,
         /*max_rows=*/grid_layout.rows);
   }
 }
 
-void AppsContainerView::UpdateAppListConfig(const gfx::Rect& contents_bounds,
-                                            const GridLayout& grid_layout) {
+gfx::Rect AppsContainerView::CalculateAvailableBoundsForAppsGrid(
+    const gfx::Rect& contents_bounds) const {
   gfx::Rect available_bounds = contents_bounds;
   // Reserve horizontal margins to accommodate page switcher.
   available_bounds.Inset(GetMinHorizontalMarginForAppsGrid(), 0);
@@ -380,6 +446,17 @@ void AppsContainerView::UpdateAppListConfig(const gfx::Rect& contents_bounds,
       0, 0);
   // Subtracts apps grid view insets from space available for apps grid.
   available_bounds.Inset(0, kGridFadeoutZoneHeight);
+
+  return available_bounds;
+}
+
+void AppsContainerView::UpdateAppListConfig(const gfx::Rect& contents_bounds) {
+  // For productivity launcher, the rows for this grid layout will be ignored
+  // during creation of a new config.
+  GridLayout grid_layout = CalculateGridLayout();
+
+  const gfx::Rect available_bounds =
+      CalculateAvailableBoundsForAppsGrid(contents_bounds);
 
   std::unique_ptr<AppListConfig> new_config =
       AppListConfigProvider::Get().CreateForFullscreenAppList(
@@ -412,6 +489,16 @@ void AppsContainerView::UpdateAppListConfig(const gfx::Rect& contents_bounds,
     recent_apps_->UpdateAppListConfig(app_list_config_.get());
 }
 
+void AppsContainerView::OnActiveAppListModelsChanged(
+    AppListModel* model,
+    SearchModel* search_model) {
+  // Nothing to do if the apps grid views have not yet been initialized.
+  if (!app_list_config_)
+    return;
+
+  UpdateForActiveAppListModel();
+}
+
 void AppsContainerView::ShowFolderForItemView(
     AppListItemView* folder_item_view) {
   // Prevent new animations from starting if there are currently animations
@@ -441,6 +528,7 @@ void AppsContainerView::ShowFolderForItemView(
 
 void AppsContainerView::ShowApps(AppListItemView* folder_item_view,
                                  bool select_folder) {
+  DVLOG(1) << __FUNCTION__;
   if (app_list_folder_view_->IsAnimationRunning())
     return;
 
@@ -458,6 +546,7 @@ void AppsContainerView::ShowApps(AppListItemView* folder_item_view,
 }
 
 void AppsContainerView::ResetForShowApps() {
+  DVLOG(1) << __FUNCTION__;
   UpdateSuggestionChips();
   UpdateRecentApps();
   SetShowState(SHOW_APPS, false);
@@ -484,6 +573,10 @@ bool AppsContainerView::IsInFolderView() const {
 }
 
 void AppsContainerView::ReparentDragEnded() {
+  DVLOG(1) << __FUNCTION__;
+  // The container will be showing apps if the folder was deleted mid-drag.
+  if (show_state_ == SHOW_APPS)
+    return;
   DCHECK_EQ(SHOW_ITEM_REPARENT, show_state_);
   show_state_ = AppsContainerView::SHOW_APPS;
 }
@@ -548,6 +641,9 @@ bool AppsContainerView::IsPointWithinBottomDragBuffer(
   const int kBottomDragBufferMin = scrollable_container_->bounds().bottom() -
                                    apps_grid_view_->GetInsets().bottom() -
                                    page_flip_zone_size;
+  // TODO(crbug.com/1234064): In ProductivityLauncher, with a variable row size,
+  // the size of the bottom drag buffer can visually change. Figure out how we
+  // want to handle this and update this code to reflect that.
   return point_in_parent.y() > kBottomDragBufferMin &&
          point_in_parent.y() < kBottomDragBufferMax;
 }
@@ -702,8 +798,6 @@ void AppsContainerView::Layout() {
                   GetExpectedSuggestionChipY(kAppListFullscreenProgressValue) -
                   chip_container_rect.height());
 
-  UpdateTopLevelGridDimensions(CalculateGridLayout());
-
   // Layout apps grid.
   const gfx::Insets grid_insets = apps_grid_view_->GetInsets();
   const gfx::Insets margins = CalculateMarginsForAvailableBounds(
@@ -727,6 +821,12 @@ void AppsContainerView::Layout() {
     apps_grid_view_->set_first_page_offset(
         continue_container_->bounds().height());
   }
+
+  // Make sure that UpdateTopLevelGridDimensions() happens after setting the
+  // apps grid's first page offset, because it can change the number of rows
+  // shown in the grid.
+  UpdateTopLevelGridDimensions();
+
   apps_grid_view_->SetBoundsRect(
       gfx::Rect(0, 0, grid_rect.width(), grid_rect.height()));
 
@@ -788,24 +888,23 @@ void AppsContainerView::OnBoundsChanged(const gfx::Rect& old_bounds) {
   // The size and layout of apps grid items depend on the dimensions of the
   // display on which the apps container is shown. Given that the apps container
   // is shown in fullscreen app list view (and covers complete app list view
-  // bounds), changes in the `AppsContainerView` bounds can be used a a proxy to
-  // detect display size changes.
-  const GridLayout grid_layout = CalculateGridLayout();
-  UpdateAppListConfig(GetContentsBounds(), grid_layout);
+  // bounds), changes in the `AppsContainerView` bounds can be used as a proxy
+  // to detect display size changes.
+  UpdateAppListConfig(GetContentsBounds());
   DCHECK(app_list_config_);
+  UpdateTopLevelGridDimensions();
 
   // Finish initialization of views that require app list config.
-  if (creating_initial_config) {
-    UpdateTopLevelGridDimensions(grid_layout);
+  if (creating_initial_config)
+    UpdateForActiveAppListModel();
+}
 
-    AppListViewDelegate* view_delegate =
-        contents_view_->GetAppListMainView()->view_delegate();
-
-    apps_grid_view_->SetModel(view_delegate->GetModel());
-    apps_grid_view_->SetItemList(
-        view_delegate->GetModel()->top_level_item_list());
-    UpdateRecentApps();
-    SetShowState(SHOW_APPS, false);
+void AppsContainerView::ChildVisibilityChanged(views::View* child) {
+  if (!features::IsProductivityLauncherEnabled())
+    return;
+  if (child == continue_section_ || child == recent_apps_) {
+    separator_->SetVisible(recent_apps_->GetItemViewCount() > 0 ||
+                           continue_section_->GetTasksSuggestionsCount() > 0);
   }
 }
 
@@ -977,6 +1076,8 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
     return cached_container_margins_.margins;
   }
 
+  // For productivity launcher, the `grid_layout`'s rows will be ignored because
+  // the vertical margin will be constant.
   const GridLayout grid_layout = CalculateGridLayout();
   const gfx::Size min_grid_size = apps_grid_view()->GetMinimumTileGridSize(
       grid_layout.columns, grid_layout.rows);
@@ -1010,14 +1111,20 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
     return ideal_margin;
   };
 
-  const int ideal_vertical_margin = GetIdealVerticalMargin();
-  const int vertical_margin =
-      calculate_margin(ideal_vertical_margin, available_height,
-                       min_grid_size.height(), max_grid_size.height());
+  int vertical_margin = 0;
+  if (features::IsProductivityLauncherEnabled()) {
+    // Productivity launcher does not have a preset number of rows per page.
+    // Instead of adjusting the margins to fit a set number of rows, the grid
+    // will change the number of rows to fit within the provided space.
+    vertical_margin = kGridFadeoutZoneHeight;
+  } else {
+    vertical_margin =
+        calculate_margin(GetIdealVerticalMargin(), available_height,
+                         min_grid_size.height(), max_grid_size.height());
+  }
 
-  const int ideal_horizontal_margin = GetIdealHorizontalMargin();
   const int horizontal_margin =
-      calculate_margin(ideal_horizontal_margin, available_bounds.width(),
+      calculate_margin(GetIdealHorizontalMargin(), available_bounds.width(),
                        min_grid_size.width(), max_grid_size.width());
 
   const int min_horizontal_margin = GetMinHorizontalMarginForAppsGrid();
@@ -1037,10 +1144,9 @@ void AppsContainerView::UpdateRecentApps() {
   if (!recent_apps_ || !app_list_config_)
     return;
 
-  AppListViewDelegate* view_delegate =
-      contents_view_->GetAppListMainView()->view_delegate();
-  recent_apps_->ShowResults(view_delegate->GetSearchModel(),
-                            view_delegate->GetModel());
+  AppListModelProvider* const model_provider = AppListModelProvider::Get();
+  recent_apps_->ShowResults(model_provider->search_model(),
+                            model_provider->model());
 }
 
 void AppsContainerView::UpdateSuggestionChips() {
@@ -1048,10 +1154,7 @@ void AppsContainerView::UpdateSuggestionChips() {
     return;
 
   suggestion_chip_container_view_->SetResults(
-      contents_view_->GetAppListMainView()
-          ->view_delegate()
-          ->GetSearchModel()
-          ->results());
+      AppListModelProvider::Get()->search_model()->results());
 }
 
 base::ScopedClosureRunner AppsContainerView::DisableSuggestionChipsBlur() {
@@ -1196,21 +1299,45 @@ AppsContainerView::GridLayout AppsContainerView::CalculateGridLayout() const {
           ->GetDisplayNearestView(GetWidget()->GetNativeView())
           .work_area()
           .size();
+  const bool is_portrait_mode = size.height() > size.width();
+  const int available_height =
+      CalculateAvailableBoundsForAppsGrid(GetContentsBounds()).height();
+
+  int preferred_columns = 0;
+  int preferred_rows = 0;
+
+  if (is_portrait_mode) {
+    preferred_rows = features::IsProductivityLauncherEnabled()
+                         ? kPreferredGridRowsInPortraitProductivityLauncher
+                         : kPreferredGridColumns;
+    preferred_columns =
+        features::IsProductivityLauncherEnabled()
+            ? kPreferredGridColumnsInPortraitProductivityLauncher
+            : kPreferredGridRows;
+  } else {
+    preferred_rows = kPreferredGridRows;
+    preferred_columns = kPreferredGridColumns;
+  }
 
   GridLayout result;
-  // Switch columns and rows for portrait mode.
-  if (size.width() < size.height()) {
-    result.columns = features::IsProductivityLauncherEnabled()
-                         ? kPreferredGridColumnsForProductivityLauncher
-                         : kPreferredGridRows;
-    result.rows = kPreferredGridColumns;
-  } else {
-    result.columns = features::IsProductivityLauncherEnabled()
-                         ? kPreferredGridColumnsForProductivityLauncher
-                         : kPreferredGridColumns;
-    result.rows = kPreferredGridRows;
-  }
+  result.columns = preferred_columns;
+  result.rows =
+      apps_grid_view_->CalculateMaxRows(available_height, preferred_rows);
+  result.first_page_rows = apps_grid_view_->CalculateFirstPageMaxRows(
+      available_height, preferred_rows);
   return result;
+}
+
+void AppsContainerView::UpdateForActiveAppListModel() {
+  AppListModel* const model = AppListModelProvider::Get()->model();
+  apps_grid_view_->SetModel(model);
+  apps_grid_view_->SetItemList(model->top_level_item_list());
+  UpdateRecentApps();
+  UpdateSuggestionChips();
+
+  // If model changes, close the folder view if it's open, as the associated
+  // item list is about to go away.
+  SetShowState(SHOW_APPS, false);
 }
 
 void AppsContainerView::OnSuggestionChipsBlurDisablerReleased() {

@@ -110,6 +110,14 @@ bool StructTraits<crosapi::mojom::AppDataView, apps::mojom::AppPtr>::Read(
   if (!data.ReadWindowMode(&window_mode))
     return false;
 
+  std::vector<apps::mojom::PermissionPtr> permissions;
+  if (!data.ReadPermissions(&permissions))
+    return false;
+
+  apps::mojom::OptionalBool allow_uninstall;
+  if (!data.ReadAllowUninstall(&allow_uninstall))
+    return false;
+
   auto app = apps::mojom::App::New();
   app->app_type = std::move(app_type);
   app->app_id = app_id;
@@ -135,6 +143,8 @@ bool StructTraits<crosapi::mojom::AppDataView, apps::mojom::AppPtr>::Read(
   app->paused = paused;
   app->intent_filters = std::move(intent_filters);
   app->window_mode = window_mode;
+  app->permissions = std::move(permissions);
+  app->allow_uninstall = allow_uninstall;
   *out = std::move(app);
   return true;
 }
@@ -744,6 +754,24 @@ EnumTraits<crosapi::mojom::LaunchSource, apps::mojom::LaunchSource>::ToMojom(
       return crosapi::mojom::LaunchSource::kFromSmartTextContextMenu;
     case apps::mojom::LaunchSource::kFromDiscoverTabNotification:
       return crosapi::mojom::LaunchSource::kFromDiscoverTabNotification;
+    case apps::mojom::LaunchSource::kFromManagementApi:
+      return crosapi::mojom::LaunchSource::kFromManagementApi;
+    case apps::mojom::LaunchSource::kFromKiosk:
+      return crosapi::mojom::LaunchSource::kFromKiosk;
+    case apps::mojom::LaunchSource::kFromNewTabPage:
+      return crosapi::mojom::LaunchSource::kFromNewTabPage;
+    case apps::mojom::LaunchSource::kFromIntentUrl:
+      return crosapi::mojom::LaunchSource::kFromIntentUrl;
+    case apps::mojom::LaunchSource::kFromOsLogin:
+      return crosapi::mojom::LaunchSource::kFromOsLogin;
+    case apps::mojom::LaunchSource::kFromProtocolHandler:
+      return crosapi::mojom::LaunchSource::kFromProtocolHandler;
+    case apps::mojom::LaunchSource::kFromUrlHandler:
+      return crosapi::mojom::LaunchSource::kFromUrlHandler;
+    case apps::mojom::LaunchSource::kFromCommandLine:
+    case apps::mojom::LaunchSource::kFromBackgroundMode:
+      NOTREACHED();
+      return crosapi::mojom::LaunchSource::kUnknown;
   }
   NOTREACHED();
 }
@@ -821,10 +849,215 @@ bool EnumTraits<crosapi::mojom::LaunchSource, apps::mojom::LaunchSource>::
     case crosapi::mojom::LaunchSource::kFromDiscoverTabNotification:
       *output = apps::mojom::LaunchSource::kFromDiscoverTabNotification;
       return true;
+    case crosapi::mojom::LaunchSource::kFromManagementApi:
+      *output = apps::mojom::LaunchSource::kFromManagementApi;
+      return true;
+    case crosapi::mojom::LaunchSource::kFromKiosk:
+      *output = apps::mojom::LaunchSource::kFromKiosk;
+      return true;
+    case crosapi::mojom::LaunchSource::kFromNewTabPage:
+      *output = apps::mojom::LaunchSource::kFromNewTabPage;
+      return true;
+    case crosapi::mojom::LaunchSource::kFromIntentUrl:
+      *output = apps::mojom::LaunchSource::kFromIntentUrl;
+      return true;
+    case crosapi::mojom::LaunchSource::kFromOsLogin:
+      *output = apps::mojom::LaunchSource::kFromOsLogin;
+      return true;
+    case crosapi::mojom::LaunchSource::kFromProtocolHandler:
+      *output = apps::mojom::LaunchSource::kFromProtocolHandler;
+      return true;
+    case crosapi::mojom::LaunchSource::kFromUrlHandler:
+      *output = apps::mojom::LaunchSource::kFromUrlHandler;
+      return true;
   }
 
   NOTREACHED();
   return false;
+}
+
+bool StructTraits<
+    crosapi::mojom::PermissionDataView,
+    apps::mojom::PermissionPtr>::Read(crosapi::mojom::PermissionDataView data,
+                                      apps::mojom::PermissionPtr* out) {
+  apps::mojom::PermissionType permission_type;
+  if (!data.ReadPermissionType(&permission_type))
+    return false;
+
+  apps::mojom::PermissionValuePtr value;
+  if (!data.ReadValue(&value))
+    return false;
+
+  auto permission = apps::mojom::Permission::New();
+  permission->permission_type = permission_type;
+  permission->value = std::move(value);
+  permission->is_managed = data.is_managed();
+  *out = std::move(permission);
+  return true;
+}
+
+crosapi::mojom::PermissionType EnumTraits<
+    crosapi::mojom::PermissionType,
+    apps::mojom::PermissionType>::ToMojom(apps::mojom::PermissionType input) {
+  switch (input) {
+    case apps::mojom::PermissionType::kUnknown:
+      return crosapi::mojom::PermissionType::kUnknown;
+    case apps::mojom::PermissionType::kCamera:
+      return crosapi::mojom::PermissionType::kCamera;
+    case apps::mojom::PermissionType::kLocation:
+      return crosapi::mojom::PermissionType::kLocation;
+    case apps::mojom::PermissionType::kMicrophone:
+      return crosapi::mojom::PermissionType::kMicrophone;
+    case apps::mojom::PermissionType::kNotifications:
+      return crosapi::mojom::PermissionType::kNotifications;
+    case apps::mojom::PermissionType::kContacts:
+      return crosapi::mojom::PermissionType::kContacts;
+    case apps::mojom::PermissionType::kStorage:
+      return crosapi::mojom::PermissionType::kStorage;
+    case apps::mojom::PermissionType::kPrinting:
+      NOTREACHED();
+      return crosapi::mojom::PermissionType::kUnknown;
+  }
+}
+
+bool EnumTraits<crosapi::mojom::PermissionType, apps::mojom::PermissionType>::
+    FromMojom(crosapi::mojom::PermissionType input,
+              apps::mojom::PermissionType* output) {
+  switch (input) {
+    case crosapi::mojom::PermissionType::kUnknown:
+      *output = apps::mojom::PermissionType::kUnknown;
+      return true;
+    case crosapi::mojom::PermissionType::kCamera:
+      *output = apps::mojom::PermissionType::kCamera;
+      return true;
+    case crosapi::mojom::PermissionType::kLocation:
+      *output = apps::mojom::PermissionType::kLocation;
+      return true;
+    case crosapi::mojom::PermissionType::kMicrophone:
+      *output = apps::mojom::PermissionType::kMicrophone;
+      return true;
+    case crosapi::mojom::PermissionType::kNotifications:
+      *output = apps::mojom::PermissionType::kNotifications;
+      return true;
+    case crosapi::mojom::PermissionType::kContacts:
+      *output = apps::mojom::PermissionType::kContacts;
+      return true;
+    case crosapi::mojom::PermissionType::kStorage:
+      *output = apps::mojom::PermissionType::kStorage;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+crosapi::mojom::TriState
+EnumTraits<crosapi::mojom::TriState, apps::mojom::TriState>::ToMojom(
+    apps::mojom::TriState input) {
+  switch (input) {
+    case apps::mojom::TriState::kAllow:
+      return crosapi::mojom::TriState::kAllow;
+    case apps::mojom::TriState::kBlock:
+      return crosapi::mojom::TriState::kBlock;
+    case apps::mojom::TriState::kAsk:
+      return crosapi::mojom::TriState::kAsk;
+  }
+
+  NOTREACHED();
+}
+
+bool EnumTraits<crosapi::mojom::TriState, apps::mojom::TriState>::FromMojom(
+    crosapi::mojom::TriState input,
+    apps::mojom::TriState* output) {
+  switch (input) {
+    case crosapi::mojom::TriState::kAllow:
+      *output = apps::mojom::TriState::kAllow;
+      return true;
+    case crosapi::mojom::TriState::kBlock:
+      *output = apps::mojom::TriState::kBlock;
+      return true;
+    case crosapi::mojom::TriState::kAsk:
+      *output = apps::mojom::TriState::kAsk;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+crosapi::mojom::PermissionValueDataView::Tag
+UnionTraits<crosapi::mojom::PermissionValueDataView,
+            apps::mojom::PermissionValuePtr>::
+    GetTag(const apps::mojom::PermissionValuePtr& r) {
+  if (r->is_bool_value()) {
+    return crosapi::mojom::PermissionValueDataView::Tag::BOOL_VALUE;
+  } else if (r->is_tristate_value()) {
+    return crosapi::mojom::PermissionValueDataView::Tag::TRISTATE_VALUE;
+  }
+  NOTREACHED();
+  return crosapi::mojom::PermissionValueDataView::Tag::BOOL_VALUE;
+}
+
+bool UnionTraits<crosapi::mojom::PermissionValueDataView,
+                 apps::mojom::PermissionValuePtr>::
+    Read(crosapi::mojom::PermissionValueDataView data,
+         apps::mojom::PermissionValuePtr* out) {
+  *out = apps::mojom::PermissionValue::New();
+  switch (data.tag()) {
+    case crosapi::mojom::PermissionValueDataView::Tag::BOOL_VALUE: {
+      (*out)->set_bool_value(data.bool_value());
+      return true;
+    }
+    case crosapi::mojom::PermissionValueDataView::Tag::TRISTATE_VALUE: {
+      apps::mojom::TriState tristate_value;
+      if (!data.ReadTristateValue(&tristate_value))
+        return false;
+      (*out)->set_tristate_value(tristate_value);
+      return true;
+    }
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool StructTraits<crosapi::mojom::PreferredAppDataView,
+                  apps::mojom::PreferredAppPtr>::
+    Read(crosapi::mojom::PreferredAppDataView data,
+         apps::mojom::PreferredAppPtr* out) {
+  apps::mojom::IntentFilterPtr intent_filter;
+  if (!data.ReadIntentFilter(&intent_filter))
+    return false;
+
+  std::string app_id;
+  if (!data.ReadAppId(&app_id))
+    return false;
+
+  auto preferred_app = apps::mojom::PreferredApp::New();
+  preferred_app->intent_filter = std::move(intent_filter);
+  preferred_app->app_id = app_id;
+  *out = std::move(preferred_app);
+  return true;
+}
+
+bool StructTraits<crosapi::mojom::PreferredAppChangesDataView,
+                  apps::mojom::PreferredAppChangesPtr>::
+    Read(crosapi::mojom::PreferredAppChangesDataView data,
+         apps::mojom::PreferredAppChangesPtr* out) {
+  base::flat_map<std::string, std::vector<apps::mojom::IntentFilterPtr>>
+      added_filters;
+  if (!data.ReadAddedFilters(&added_filters))
+    return false;
+
+  base::flat_map<std::string, std::vector<apps::mojom::IntentFilterPtr>>
+      removed_filters;
+  if (!data.ReadRemovedFilters(&removed_filters))
+    return false;
+
+  auto preferred_app_changes = apps::mojom::PreferredAppChanges::New();
+  preferred_app_changes->added_filters = std::move(added_filters);
+  preferred_app_changes->removed_filters = std::move(removed_filters);
+  *out = std::move(preferred_app_changes);
+  return true;
 }
 
 }  // namespace mojo

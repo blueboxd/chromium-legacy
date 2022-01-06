@@ -627,8 +627,8 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
     'graphicsSymbol',
     'suggestion',
   ]);
-  for (const key in Output.ROLE_INFO) {
-    const value = Output.ROLE_INFO[key];
+  for (const key in OutputRoleInfo) {
+    const value = OutputRoleInfo[key];
     if (value.msgId) {
       Msgs.getMsg(value.msgId);
       if (!kNoBrailleMessageRequired.has(key)) {
@@ -884,7 +884,8 @@ TEST_F('ChromeVoxOutputE2ETest', 'BrailleAncestry', function() {
             [
               {value: new OutputNodeSpan(text), start: 0, end: 4},
               {value: new OutputNodeSpan(link), start: 5, end: 8},
-              {value: new OutputNodeSpan(listItem), start: 9, end: 15}
+              {value: new OutputNodeSpan(listItem), start: 9, end: 15},
+              {value: new OutputNodeSpan(list), start: 16, end: 23}
             ],
             o);
 

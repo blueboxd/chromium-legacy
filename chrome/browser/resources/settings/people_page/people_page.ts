@@ -23,7 +23,7 @@ import '../settings_page/settings_subpage.js';
 import '../settings_shared_css.js';
 
 // <if expr="chromeos">
-import {convertImageSequenceToPng} from 'chrome://resources/cr_elements/chromeos/cr_picture/png.m.js';
+import {convertImageSequenceToPng} from 'chrome://resources/cr_elements/chromeos/cr_picture/png.js';
 // </if>
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -366,7 +366,7 @@ class SettingsPeoplePageElement extends SettingsPeoplePageElementBase {
     Router.getInstance().navigateTo(routes.SYNC);
   }
 
-  // <if expr="not chromeos">
+  // <if expr="not chromeos and not lacros">
   private onImportDataTap_() {
     Router.getInstance().navigateTo(routes.IMPORT_DATA);
   }

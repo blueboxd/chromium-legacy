@@ -10,7 +10,9 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
@@ -21,6 +23,7 @@ import android.view.ViewStub;
 import android.view.animation.BaseInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -64,7 +67,7 @@ class StartSurfaceToolbarView extends RelativeLayout {
     private boolean mIsNewTabButtonAtStart;
     private boolean mShouldShowNewTabViewText;
     private HomeButton mHomeButton;
-    private View mLogo;
+    private ImageView mLogo;
     private View mTabSwitcherButtonView;
 
     @Nullable
@@ -169,6 +172,22 @@ class StartSurfaceToolbarView extends RelativeLayout {
     void setLogoVisibility(boolean isVisible) {
         mIsLogoVisible = isVisible;
         if (!mShowTransitionAnimations) mLogo.setVisibility(getVisibility(isVisible));
+    }
+
+    /**
+     * Set the logo image.
+     * @param logoImage The logo image in bitmap format.
+     */
+    void setLogoImage(Bitmap logoImage) {
+        mLogo.setImageDrawable(new BitmapDrawable(getResources(), logoImage));
+    }
+
+    /**
+     * @param logoContentDescription The content description of the logo.
+     */
+    void setLogoContentDescription(String logoContentDescription) {
+        mLogo.setFocusable(logoContentDescription != null);
+        mLogo.setContentDescription(logoContentDescription);
     }
 
     /**

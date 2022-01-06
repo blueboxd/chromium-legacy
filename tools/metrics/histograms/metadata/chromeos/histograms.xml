@@ -27,6 +27,16 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   ChromeOS.FeatureUsage.* histograms to record different events related to the
   feature -->
 
+  <variant name="ClamshellLauncher" summary="app launcher in clamshell mode">
+    <owner>jamescook@chromium.org</owner>
+    <owner>tbarzic@chromium.org</owner>
+    <owner>chromeos-launcher@google.com</owner>
+  </variant>
+  <variant name="DiagnosticsUi" summary="CROS Diagnostics Application">
+    <owner>jimmyxgong@chromium.org</owner>
+    <owner>zentaro@chromium.org</owner>
+    <owner>cros-peripherals@google.com</owner>
+  </variant>
   <variant name="ESim" summary="esim">
     <owner>azeemarshad@chromium.org</owner>
     <owner>cros-connectivity@google.com</owner>
@@ -57,6 +67,47 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     <owner>hansenmichael@google.com</owner>
     <owner>nearby-share-chromeos-eng@google.com</owner>
   </variant>
+  <variant name="NumberpadDynamicActivations"
+      summary="Turning on number pad mode for a dynamic numberpad.">
+    <owner>kenalba@google.com</owner>
+    <owner>chromeos-tango@google.com</owner>
+  </variant>
+  <variant name="NumberpadDynamicCancellations"
+      summary="Turning off number pad mode for a dynamic numberpad, without
+               having used a number-pad key.">
+    <owner>kenalba@google.com</owner>
+    <owner>chromeos-tango@google.com</owner>
+  </variant>
+  <variant name="NumberpadDynamicEnterKeystrokes"
+      summary="Pressing enter on dynamic number pad.">
+    <owner>kenalba@google.com</owner>
+    <owner>chromeos-tango@google.com</owner>
+  </variant>
+  <variant name="NumberpadDynamicNonEnterKeystrokes"
+      summary="Pressing key other than enter on dynamic number pad.">
+    <owner>kenalba@google.com</owner>
+    <owner>chromeos-tango@google.com</owner>
+  </variant>
+  <variant name="NumberpadExternalEnterKeystrokes"
+      summary="Pressing number pad enter on external keyboard.">
+    <owner>kenalba@google.com</owner>
+    <owner>chromeos-tango@google.com</owner>
+  </variant>
+  <variant name="NumberpadExternalNonEnterKeystrokes"
+      summary="Pressing number pad key other than enter on external keyboard.">
+    <owner>kenalba@google.com</owner>
+    <owner>chromeos-tango@google.com</owner>
+  </variant>
+  <variant name="NumberpadInternalEnterKeystrokes"
+      summary="Pressing enter on number pad on internal keyboard.">
+    <owner>kenalba@google.com</owner>
+    <owner>chromeos-tango@google.com</owner>
+  </variant>
+  <variant name="NumberpadInternalNonEnterKeystrokes"
+      summary="Pressing number pad key other than enter on internal keyboard.">
+    <owner>kenalba@google.com</owner>
+    <owner>chromeos-tango@google.com</owner>
+  </variant>
   <variant name="SmartLock" summary="Smart Lock">
     <owner>hansberry@chromium.org</owner>
     <owner>chromeos-cross-device-eng@google.com</owner>
@@ -76,6 +127,11 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
                replaced into garage">
     <owner>kenalba@google.com</owner>
     <owner>chromeos-tango@google.com</owner>
+  </variant>
+  <variant name="TabletLauncher" summary="app launcher in tablet mode">
+    <owner>jamescook@chromium.org</owner>
+    <owner>tbarzic@chromium.org</owner>
+    <owner>chromeos-launcher@google.com</owner>
   </variant>
 </variants>
 
@@ -426,6 +482,16 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.DiagnosticsUi.InitialScreen"
+    units="CrosDiagnosticsNavigationView" expires_after="2022-06-15">
+  <owner>gavindodd@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records requested initial screen when opening the Diagnostics App.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.DiagnosticsUi.MemoryRoutineDuration" units="s"
     expires_after="2022-06-15">
   <owner>gavindodd@chromium.org</owner>
@@ -689,7 +755,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.IioService.SensorClientConcurrent" units="clients"
-    expires_after="2021-11-01">
+    expires_after="2022-05-01">
   <owner>chenghaoyang@chromium.org</owner>
   <owner>chromeos-sensors-eng@google.com</owner>
   <summary>
@@ -700,7 +766,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.IioService.SensorObserver" units="observers"
-    expires_after="2021-11-01">
+    expires_after="2022-05-01">
   <owner>chenghaoyang@chromium.org</owner>
   <owner>chromeos-sensors-eng@google.com</owner>
   <summary>
@@ -711,7 +777,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.IioService.SensorObserverOpen" units="observers"
-    expires_after="2021-11-01">
+    expires_after="2022-05-01">
   <owner>chenghaoyang@chromium.org</owner>
   <owner>chromeos-sensors-eng@google.com</owner>
   <summary>
@@ -722,7 +788,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.IioService.SensorUsage.{Frequency}Hz"
-    enum="ChromeOSIioServiceSensorUsage" expires_after="2021-11-01">
+    enum="ChromeOSIioServiceSensorUsage" expires_after="2022-05-01">
   <owner>chenghaoyang@chromium.org</owner>
   <owner>chromeos-sensors-eng@google.com</owner>
   <summary>
@@ -1131,7 +1197,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="ChromeOS.Settings.Accessibility.FullscreenMagnifierFocusFollowing"
-    enum="BooleanToggled" expires_after="2021-10-29">
+    enum="BooleanToggled" expires_after="2022-10-29">
   <owner>josiahk@chromium.org</owner>
   <owner>chromium-accessibility@chromium.org</owner>
   <summary>
@@ -1602,13 +1668,15 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.AppCount2.{AppType}" units="apps"
-    expires_after="M95">
+    expires_after="2022-10-08">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
     Records number of {AppType} apps found for a given intent in the Sharesheet
     when the sharesheet is invoked. Has 100 exponential buckets. (The original
     histogram had 1000 linear buckets).
+
+    Warning: this histogram was expired from M95 to M96; data may be missing.
   </summary>
   <token key="AppType">
     <variant name="All" summary="all apps"/>
@@ -1618,7 +1686,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.FileCount" units="files"
-    expires_after="2022-05-01">
+    expires_after="2022-10-08">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1628,14 +1696,14 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.FormFactor"
-    enum="ChromeOSSharesheetFormFactor" expires_after="2022-04-24">
+    enum="ChromeOSSharesheetFormFactor" expires_after="2022-10-08">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>Records the form factor when the Sharesheet is invoked.</summary>
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.IsDriveFolder" enum="Boolean"
-    expires_after="M97">
+    expires_after="2022-10-08">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1645,7 +1713,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.IsImagePreviewPressed"
-    enum="BooleanSelected" expires_after="2022-04-24">
+    enum="BooleanSelected" expires_after="2022-10-08">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1655,23 +1723,29 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.LaunchSource"
-    enum="ChromeOSSharesheetLaunchSource" expires_after="M95">
+    enum="ChromeOSSharesheetLaunchSource" expires_after="2022-10-08">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
-  <summary>Records the source from which the Sharesheet is invoked.</summary>
+  <summary>
+    Records the source from which the Sharesheet is invoked.
+
+    Warning: this histogram was expired from M95 to M96; data may be missing.
+  </summary>
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.ShareActionCount"
-    enum="ChromeOSSharesheetAction" expires_after="M95">
+    enum="ChromeOSSharesheetAction" expires_after="2022-10-08">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
     Records each action found for a given intent when the Sharesheet is invoked.
+
+    Warning: this histogram was expired from M95 to M96; data may be missing.
   </summary>
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.UserAction"
-    enum="ChromeOSSharesheetAction" expires_after="2022-04-10">
+    enum="ChromeOSSharesheetAction" expires_after="2022-10-08">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>Records user action on sharesheet invocations.</summary>
@@ -1943,6 +2017,17 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     the lower 16-bits represent the user type (found at
     http://shortn/_uK3ZM4pC0a). So a nonprofit user (0x03) on an enterprise
     device (0x02) would be 0x00020003 or 131075.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.WebAPK.MinterResponseOrErrorCode"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2022-04-14">
+  <owner>tsergeant@chromium.org</owner>
+  <owner>chromeos-apps-foundation-team@google.com</owner>
+  <summary>
+    HTTP response code or net error code for requests made to the WebAPK minter
+    service. Logged after a request to generate a WebAPK finishes, which happens
+    when a PWA which supports Web Share Target is installed or updated.
   </summary>
 </histogram>
 

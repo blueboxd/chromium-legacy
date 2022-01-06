@@ -91,7 +91,7 @@ using base::SysUTF8ToNSString;
 
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
                           brandCode:(NSString* _Nullable)brandCode
-                                tag:(NSString* _Nullable)tag
+                                tag:(NSString* _Nullable)ap
                             version:(NSString* _Nullable)version
                existenceCheckerPath:(NSString* _Nullable)existenceCheckerPath
                               reply:(void (^_Nonnull)(int rc))reply {
@@ -105,7 +105,7 @@ using base::SysUTF8ToNSString;
       remoteObjectProxyWithErrorHandler:errorHandler]
       registerForUpdatesWithAppId:appId
                         brandCode:brandCode
-                              tag:tag
+                              tag:ap
                           version:version
              existenceCheckerPath:existenceCheckerPath
                             reply:reply];
@@ -158,6 +158,11 @@ using base::SysUTF8ToNSString;
 
 namespace updater {
 
+scoped_refptr<UpdateService> CreateUpdateServiceProxy(
+    UpdaterScope updater_scope) {
+  return base::MakeRefCounted<UpdateServiceProxy>(updater_scope);
+}
+
 UpdateServiceProxy::UpdateServiceProxy(UpdaterScope scope) {
   client_.reset([[CRUUpdateServiceProxyImpl alloc] initWithScope:scope]);
   callback_runner_ = base::SequencedTaskRunnerHandle::Get();
@@ -194,7 +199,7 @@ void UpdateServiceProxy::RegisterApp(
   [client_
       registerForUpdatesWithAppId:SysUTF8ToNSString(request.app_id)
                         brandCode:SysUTF8ToNSString(request.brand_code)
-                              tag:SysUTF8ToNSString(request.tag)
+                              tag:SysUTF8ToNSString(request.ap)
                           version:SysUTF8ToNSString(request.version.GetString())
              existenceCheckerPath:SysUTF8ToNSString(
                                       request.existence_checker_path

@@ -8,7 +8,10 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/observer_list.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+class PrefService;
 
 namespace chromeos {
 namespace bluetooth_config {
@@ -17,7 +20,17 @@ namespace bluetooth_config {
 // is local to only the device and is visible to all users of the device.
 class DeviceNameManager {
  public:
-  virtual ~DeviceNameManager() = default;
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override = default;
+
+    // Invoked when the nickname of device with id |device_id| has changed to
+    // |nickname|.
+    virtual void OnDeviceNicknameChanged(const std::string& device_id,
+                                         const std::string& nickname) = 0;
+  };
+
+  virtual ~DeviceNameManager();
 
   // Retrieves the nickname of the Bluetooth device with ID |device_id| or
   // abs::nullopt if not found.
@@ -29,8 +42,19 @@ class DeviceNameManager {
   virtual void SetDeviceNickname(const std::string& device_id,
                                  const std::string& nickname) = 0;
 
+  // Sets the PrefService used to store nicknames.
+  virtual void SetPrefs(PrefService* local_state) = 0;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  protected:
-  DeviceNameManager() = default;
+  DeviceNameManager();
+
+  void NotifyDeviceNicknameChanged(const std::string& device_id,
+                                   const std::string& nickname);
+
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace bluetooth_config

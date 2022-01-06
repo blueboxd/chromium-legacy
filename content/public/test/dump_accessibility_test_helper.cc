@@ -53,7 +53,7 @@ const TypeInfo kTypeInfos[] = {
     {
         "android",
         {
-            "@ANDROID",
+            "@ANDROID-",
             FILE_PATH_LITERAL("-android"),
             [](base::CommandLine*) {},
         },
@@ -61,15 +61,23 @@ const TypeInfo kTypeInfos[] = {
     {
         "blink",
         {
-            "@BLINK",
+            "@BLINK-",
             FILE_PATH_LITERAL("-blink"),
+            [](base::CommandLine*) {},
+        },
+    },
+    {
+        "fuchsia",
+        {
+            "@FUCHSIA-",
+            FILE_PATH_LITERAL("-fuchsia"),
             [](base::CommandLine*) {},
         },
     },
     {
         "linux",
         {
-            "@AURALINUX",
+            "@AURALINUX-",
             FILE_PATH_LITERAL("-auralinux"),
             [](base::CommandLine*) {},
         },
@@ -77,7 +85,7 @@ const TypeInfo kTypeInfos[] = {
     {
         "mac",
         {
-            "@MAC",
+            "@MAC-",
             FILE_PATH_LITERAL("-mac"),
             [](base::CommandLine*) {},
         },
@@ -93,7 +101,7 @@ const TypeInfo kTypeInfos[] = {
     {
         "uia",
         {
-            "@UIA-WIN",
+            "@UIA-WIN-",
             FILE_PATH_LITERAL("-uia-win"),
             [](base::CommandLine* command_line) {
 #if defined(OS_WIN)
@@ -106,7 +114,7 @@ const TypeInfo kTypeInfos[] = {
     {
         "win",
         {
-            "@WIN",
+            "@WIN-",
             FILE_PATH_LITERAL("-win"),
             [](base::CommandLine* command_line) {
 #if defined(OS_WIN)
@@ -189,6 +197,17 @@ ui::AXInspectScenario DumpAccessibilityTestHelper::ParseScenario(
                                      default_filters);
 }
 
+absl::optional<ui::AXInspectScenario>
+DumpAccessibilityTestHelper::ParseScenario(
+    const base::FilePath& scenario_path,
+    const std::vector<ui::AXPropertyFilter>& default_filters) {
+  const TypeInfo::Mapping* mapping = TypeMapping(expectation_type_);
+  if (!mapping)
+    return ui::AXInspectScenario();
+  return ui::AXInspectScenario::From(mapping->directive_prefix, scenario_path,
+                                     default_filters);
+}
+
 // static
 std::vector<AXInspectFactory::Type>
 DumpAccessibilityTestHelper::TreeTestPasses() {
@@ -202,6 +221,8 @@ DumpAccessibilityTestHelper::TreeTestPasses() {
       {AXInspectFactory::kBlink, AXInspectFactory::kMac};
 #elif defined(OS_ANDROID)
       {AXInspectFactory::kAndroid};
+#elif defined(OS_FUCHSIA)
+      {AXInspectFactory::kFuchsia};
 #else  // linux
       {AXInspectFactory::kBlink, AXInspectFactory::kLinux};
 #endif
@@ -356,6 +377,14 @@ DumpAccessibilityTestHelper::GetVersionSpecificExpectedFileSuffix(
       suffix = FILE_PATH_LITERAL("-") + expectations_qualifier;
     return suffix + FILE_PATH_LITERAL("-expected-auralinux-") + version_name +
            FILE_PATH_LITERAL(".txt");
+  }
+#endif
+#if defined(OS_CHROMEOS)
+  if (expectation_type_ == "blink") {
+    FilePath::StringType suffix;
+    if (!expectations_qualifier.empty())
+      suffix = FILE_PATH_LITERAL("-") + expectations_qualifier;
+    return suffix + FILE_PATH_LITERAL("-expected-blink-cros.txt");
   }
 #endif
   return FILE_PATH_LITERAL("");

@@ -16,13 +16,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
-#include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
@@ -33,12 +33,13 @@
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/system_monitor.h"
 #include "base/task/current_thread.h"
+#include "base/task/deferred_sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/initialization_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -162,6 +163,7 @@
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup.h"
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
+#include "content/common/android/cpu_affinity_setter.h"
 #include "media/base/android/media_drm_bridge_client.h"
 #include "ui/android/screen_android.h"
 #include "ui/display/screen.h"
@@ -220,12 +222,6 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "content/browser/media/cdm_registry_impl.h"
-#endif
-
-#if defined(USE_X11)
-#include "gpu/config/gpu_driver_bug_workaround_type.h"
-#include "ui/base/ui_base_features.h"
-#include "ui/base/x/x11_util.h"           // nogncheck
 #endif
 
 #if defined(USE_NSS_CERTS)
@@ -509,19 +505,26 @@ void BrowserMainLoop::Init() {
 int BrowserMainLoop::EarlyInitialization() {
   TRACE_EVENT0("startup", "BrowserMainLoop::EarlyInitialization");
 
+#if defined(OS_ANDROID)
+  if (base::GetFieldTrialParamByFeatureAsBool(
+          features::kBigLittleScheduling,
+          features::kBigLittleSchedulingBrowserMainBiggerParam, false)) {
+    SetCpuAffinityForCurrentThread(base::HasBiggerCpuCores()
+                                       ? base::CpuAffinityMode::kBiggerCoresOnly
+                                       : base::CpuAffinityMode::kBigCoresOnly);
+  } else if (base::GetFieldTrialParamByFeatureAsBool(
+                 features::kBigLittleScheduling,
+                 features::kBigLittleSchedulingBrowserMainBigParam, false)) {
+    SetCpuAffinityForCurrentThread(base::CpuAffinityMode::kBigCoresOnly);
+  }
+#endif
+
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   // The initialization of the sandbox host ends up with forking the Zygote
   // process and requires no thread been forked. The initialization has happened
   // by now since a thread to start the ServiceManager has been created
   // before the browser main loop starts.
   DCHECK(SandboxHostLinux::GetInstance()->IsInitialized());
-#endif
-
-#if defined(USE_X11)
-  if (!features::IsUsingOzonePlatform() && UsingInProcessGpu() &&
-      !x11::Connection::Get()->Ready()) {
-    LOG(ERROR) << "Failed to open an X11 connection.";
-  }
 #endif
 
   // GLib's spawning of new processes is buggy, so it's important that at this
@@ -1378,16 +1381,6 @@ bool BrowserMainLoop::InitializeToolkit() {
 #endif
 
 #if defined(USE_AURA)
-
-#if defined(USE_X11)
-  if (!features::IsUsingOzonePlatform() &&
-      !parsed_command_line_.HasSwitch(switches::kHeadless) &&
-      !x11::Connection::Get()->Ready()) {
-    LOG(ERROR) << "Unable to open X display.";
-    return false;
-  }
-#endif
-
   // Env creates the compositor. Aura widgets need the compositor to be created
   // before they can be initialized by the browser.
   env_ = aura::Env::CreateInstance();

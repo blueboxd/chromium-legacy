@@ -92,7 +92,7 @@ bool BubbleContentsWrapper::HandleKeyboardEvent(
 }
 
 bool BubbleContentsWrapper::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
   // Ignores context menu.
   return true;
@@ -110,7 +110,8 @@ void BubbleContentsWrapper::RenderViewHostChanged(
                                             gfx::Size(INT_MAX, INT_MAX));
 }
 
-void BubbleContentsWrapper::RenderProcessGone(base::TerminationStatus status) {
+void BubbleContentsWrapper::PrimaryMainFrameRenderProcessGone(
+    base::TerminationStatus status) {
   CloseUI();
 }
 

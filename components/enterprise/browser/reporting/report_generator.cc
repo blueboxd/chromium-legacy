@@ -43,13 +43,6 @@ void ReportGenerator::CreateBasicRequest(
     std::unique_ptr<ReportRequest> basic_request,
     ReportType report_type,
     ReportCallback callback) {
-  if (report_type == kExtensionRequest) {
-    basic_request->add_partial_report_types(
-        em::PartialReportType::EXTENSION_REQUEST);
-    GenerateReport(report_type, std::move(callback), std::move(basic_request));
-    return;
-  }
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   delegate_->SetAndroidAppInfos(basic_request.get());
 #else
@@ -107,7 +100,6 @@ void ReportGenerator::GenerateReport(
     ReportCallback callback,
     std::unique_ptr<ReportRequest> basic_request) {
   browser_report_generator_.Generate(
-      report_type,
       base::BindOnce(&ReportGenerator::OnBrowserReportReady,
                      weak_ptr_factory_.GetWeakPtr(), std::move(basic_request),
                      report_type, std::move(callback)));
@@ -120,10 +112,10 @@ void ReportGenerator::OnBrowserReportReady(
     std::unique_ptr<em::BrowserReport> browser_report) {
   basic_request->set_allocated_browser_report(browser_report.release());
 
-  if (report_type != kBrowserVersion) {
+  if (report_type != ReportType::kBrowserVersion) {
     // Generate a queue of requests containing detailed profile information.
     std::move(callback).Run(
-        report_request_queue_generator_.Generate(report_type, *basic_request));
+        report_request_queue_generator_.Generate(*basic_request));
     return;
   }
 

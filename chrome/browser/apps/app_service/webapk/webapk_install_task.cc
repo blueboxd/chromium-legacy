@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_traits.h"
@@ -23,9 +24,9 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/mojom/webapk.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "components/version_info/version_info.h"
 #include "components/webapk/webapk.pb.h"
@@ -460,12 +461,19 @@ void WebApkInstallTask::OnUrlLoaderComplete(
     std::unique_ptr<std::string> response_body) {
   timer_.Stop();
 
-  int response_code = -1;
-  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
-    response_code = url_loader_->ResponseInfo()->headers->response_code();
+  int response_or_error_code = -1;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
+    response_or_error_code =
+        url_loader_->ResponseInfo()->headers->response_code();
+  } else {
+    response_or_error_code = url_loader_->NetError();
+  }
+  base::UmaHistogramSparse(kWebApkMinterErrorCodeHistogram,
+                           response_or_error_code);
 
-  if (!response_body || response_code != net::HTTP_OK) {
-    LOG(WARNING) << "WebAPK server returned response code " << response_code;
+  if (!response_body || response_or_error_code != net::HTTP_OK) {
+    LOG(WARNING) << "WebAPK server request returned error "
+                 << response_or_error_code;
     DeliverResult(WebApkInstallStatus::kNetworkError);
     return;
   }

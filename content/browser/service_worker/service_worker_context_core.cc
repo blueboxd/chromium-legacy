@@ -16,8 +16,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/storage/public/cpp/quota_client_callback_wrapper.h"
 #include "content/browser/log_console_message.h"
@@ -171,6 +171,10 @@ class ClearAllServiceWorkersHelper
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
+  ClearAllServiceWorkersHelper(const ClearAllServiceWorkersHelper&) = delete;
+  ClearAllServiceWorkersHelper& operator=(const ClearAllServiceWorkersHelper&) =
+      delete;
+
   void OnResult(blink::ServiceWorkerStatusCode) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // We do nothing in this method. We use this class to wait for all callbacks
@@ -210,7 +214,6 @@ class ClearAllServiceWorkersHelper
   }
 
   base::OnceClosure callback_;
-  DISALLOW_COPY_AND_ASSIGN(ClearAllServiceWorkersHelper);
 };
 
 }  // namespace
@@ -922,8 +925,8 @@ void ServiceWorkerContextCore::NotifyAllRegistrationsDeletedForStorageKey(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observer_list_->Notify(
       FROM_HERE,
-      &ServiceWorkerContextCoreObserver::OnAllRegistrationsDeletedForOrigin,
-      key.origin());
+      &ServiceWorkerContextCoreObserver::OnAllRegistrationsDeletedForStorageKey,
+      key);
 }
 
 void ServiceWorkerContextCore::OnStorageWiped() {

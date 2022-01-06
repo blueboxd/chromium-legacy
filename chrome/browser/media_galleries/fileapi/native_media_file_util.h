@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "storage/browser/file_system/async_file_util.h"
 
 namespace net {
@@ -89,14 +89,14 @@ class NativeMediaFileUtil : public storage::AsyncFileUtil {
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& src_url,
       const storage::FileSystemURL& dest_url,
-      CopyOrMoveOption option,
+      CopyOrMoveOptionSet options,
       CopyFileProgressCallback progress_callback,
       StatusCallback callback) override;
   void MoveFileLocal(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& src_url,
       const storage::FileSystemURL& dest_url,
-      CopyOrMoveOption option,
+      CopyOrMoveOptionSet options,
       StatusCallback callback) override;
   void CopyInForeignFile(
       std::unique_ptr<storage::FileSystemOperationContext> context,

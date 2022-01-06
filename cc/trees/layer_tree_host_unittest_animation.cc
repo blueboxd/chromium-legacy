@@ -33,6 +33,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "ui/gfx/animation/keyframe/animation_curve.h"
 #include "ui/gfx/animation/keyframe/timing_function.h"
+#include "ui/gfx/geometry/test/geometry_util.h"
 #include "ui/gfx/geometry/transform_operations.h"
 
 namespace cc {
@@ -1022,12 +1023,18 @@ class LayerTreeHostPresentationDuringAnimation
     PostSetNeedsCommitToMainThread();
   }
 
+  void WillCommit(CommitState* commit_state) override {
+    if (commit_state->source_frame_number == 2) {
+      commit_state->pending_presentation_time_callbacks.push_back(
+          base::BindOnce(
+              &LayerTreeHostPresentationDuringAnimation::OnPresentation,
+              base::Unretained(this)));
+    }
+  }
+
   void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
     if (host_impl->active_tree()->source_frame_number() == 1) {
       request_token_ = host_impl->next_frame_token();
-      layer_tree_host()->RequestPresentationTimeForNextFrame(base::BindOnce(
-          &LayerTreeHostPresentationDuringAnimation::OnPresentation,
-          base::Unretained(this)));
       host_impl->BlockNotifyReadyToActivateForTesting(true);
     }
   }
@@ -1466,7 +1473,7 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
     // starting state which is 6,7.
     gfx::Transform expected_transform;
     expected_transform.Translate(6.0, 7.0);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform, child->DrawTransform());
+    EXPECT_TRANSFORM_EQ(expected_transform, child->DrawTransform());
     // And the sync tree layer should know it is animating.
     EXPECT_TRUE(child->screen_space_transform_is_animating());
 
@@ -1714,8 +1721,7 @@ class LayerTreeHostAnimationTestRemoveKeyframeModel
         // applied.
         gfx::Transform expected_transform;
         expected_transform.Translate(10.f, 10.f);
-        EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
-                                        child->DrawTransform());
+        EXPECT_TRANSFORM_EQ(expected_transform, child->DrawTransform());
         EXPECT_FALSE(child->screen_space_transform_is_animating());
         animation_stopped_ = true;
         PostSetNeedsCommitToMainThread();
@@ -1894,8 +1900,8 @@ class LayerTreeHostAnimationTestAnimationFinishesDuringCommit
       AddAnimatedTransformToAnimation(animation_child_.get(), 0.04, 5, 5);
   }
 
-  void WillCommit() override {
-    if (layer_tree_host()->SourceFrameNumber() == 2) {
+  void WillCommit(CommitState* commit_state) override {
+    if (commit_state->source_frame_number == 2) {
       // Block until the animation finishes on the compositor thread. Since
       // animations have already been ticked on the main thread, when the commit
       // happens the state on the main thread will be consistent with having a
@@ -1914,8 +1920,7 @@ class LayerTreeHostAnimationTestAnimationFinishesDuringCommit
         gfx::Transform expected_transform;
         expected_transform.Translate(5.f, 5.f);
         LayerImpl* layer_impl = host_impl->sync_tree()->LayerById(layer_->id());
-        EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
-                                        layer_impl->DrawTransform());
+        EXPECT_TRANSFORM_EQ(expected_transform, layer_impl->DrawTransform());
         EndTest();
         break;
     }
@@ -1965,8 +1970,8 @@ class LayerTreeHostAnimationTestImplSideInvalidation
       AddAnimatedTransformToAnimation(animation_child_.get(), 0.04, 5, 5);
   }
 
-  void WillCommit() override {
-    if (layer_tree_host()->SourceFrameNumber() == 2) {
+  void WillCommit(CommitState* commit_state) override {
+    if (commit_state->source_frame_number == 2) {
       // Block until the animation finishes on the compositor thread. Since
       // animations have already been ticked on the main thread, when the commit
       // happens the state on the main thread will be consistent with having a
@@ -2002,8 +2007,7 @@ class LayerTreeHostAnimationTestImplSideInvalidation
         gfx::Transform expected_transform;
         expected_transform.Translate(5.f, 5.f);
         LayerImpl* layer_impl = host_impl->sync_tree()->LayerById(layer_->id());
-        EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
-                                        layer_impl->DrawTransform());
+        EXPECT_TRANSFORM_EQ(expected_transform, layer_impl->DrawTransform());
         EndTest();
         break;
     }
@@ -2047,8 +2051,8 @@ class LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit
     EndTest();
   }
 
-  void WillCommit() override {
-    if (layer_tree_host()->SourceFrameNumber() == 1) {
+  void WillCommit(CommitState* commit_state) override {
+    if (commit_state->source_frame_number == 1) {
       // Block until the invalidation is done after animation finishes on the
       // compositor thread. We need to make sure the pending tree has valid
       // information based on invalidation only.
@@ -2109,8 +2113,7 @@ class ImplSideInvalidationWithoutCommitTestTransform
       return;
     EXPECT_EQ(0, host_impl->active_tree()->source_frame_number());
     LayerImpl* layer_impl = host_impl->active_tree()->LayerById(layer_->id());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                    layer_impl->DrawTransform());
+    EXPECT_TRANSFORM_EQ(gfx::Transform(), layer_impl->DrawTransform());
   }
 
   void DidInvalidateContentOnImplSide(LayerTreeHostImpl* host_impl) override {
@@ -2119,8 +2122,7 @@ class ImplSideInvalidationWithoutCommitTestTransform
     gfx::Transform expected_transform;
     expected_transform.Translate(5.f, 5.f);
     LayerImpl* layer_impl = host_impl->sync_tree()->LayerById(layer_->id());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
-                                    layer_impl->DrawTransform());
+    EXPECT_TRANSFORM_EQ(expected_transform, layer_impl->DrawTransform());
     LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit::
         DidInvalidateContentOnImplSide(host_impl);
   }
@@ -2296,7 +2298,7 @@ class LayerTreeHostAnimationTestChangeAnimation
     translate.Translate(5, 5);
     switch (host_impl->sync_tree()->source_frame_number()) {
       case 2:
-        EXPECT_TRANSFORMATION_MATRIX_EQ(node->local, translate);
+        EXPECT_TRANSFORM_EQ(node->local, translate);
         EndTest();
         break;
       default:

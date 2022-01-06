@@ -23,7 +23,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/address_family.h"
@@ -1681,6 +1681,13 @@ int MockSSLClientSocket::ExportKeyingMaterial(const base::StringPiece& label,
                                               unsigned int outlen) {
   memset(out, 'A', outlen);
   return OK;
+}
+
+std::vector<uint8_t> MockSSLClientSocket::GetECHRetryConfigs() {
+  // TODO(crbug.com/1091403): Add a mechanism to specify this, when testing the
+  // retry portions of the recovery flow.
+  NOTIMPLEMENTED();
+  return {};
 }
 
 void MockSSLClientSocket::RunCallbackAsync(CompletionOnceCallback callback,

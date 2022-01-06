@@ -423,8 +423,8 @@ bool ChromeVirtualKeyboardDelegate::IsSettingsEnabled() {
 
 void ChromeVirtualKeyboardDelegate::OnClipboardHistoryItemListAddedOrRemoved() {
   EventRouter* router = EventRouter::Get(browser_context_);
-  if (!router->HasEventListener(
-          keyboard_api::OnClipboardHistoryChanged::kEventName)) {
+  if (!router || !router->HasEventListener(
+                     keyboard_api::OnClipboardHistoryChanged::kEventName)) {
     return;
   }
 
@@ -447,8 +447,8 @@ void ChromeVirtualKeyboardDelegate::OnClipboardHistoryItemListAddedOrRemoved() {
 void ChromeVirtualKeyboardDelegate::OnClipboardHistoryItemsUpdated(
     const std::vector<base::UnguessableToken>& menu_item_ids) {
   EventRouter* router = EventRouter::Get(browser_context_);
-  if (!router->HasEventListener(
-          keyboard_api::OnClipboardItemUpdated::kEventName)) {
+  if (!router || !router->HasEventListener(
+                     keyboard_api::OnClipboardItemUpdated::kEventName)) {
     return;
   }
 
@@ -528,6 +528,10 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       base::FeatureList::IsEnabled(
           chromeos::features::kHandwritingLegacyRecognition)));
   features.Append(GenerateFeatureFlag(
+      "handwritinglegacyrecognitionall",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kHandwritingLegacyRecognitionAllLang)));
+  features.Append(GenerateFeatureFlag(
       "multiword", chromeos::features::IsAssistiveMultiWordEnabled()));
   features.Append(GenerateFeatureFlag(
       "stylushandwriting",
@@ -557,6 +561,9 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "systemchinesephysicaltyping",
       chromeos::features::IsSystemChinesePhysicalTypingEnabled()));
   features.Append(GenerateFeatureFlag(
+      "systemjapanesephysicaltyping",
+      chromeos::features::IsSystemJapanesePhysicalTypingEnabled()));
+  features.Append(GenerateFeatureFlag(
       "systemkoreanphysicaltyping",
       chromeos::features::IsSystemKoreanPhysicalTypingEnabled()));
   features.Append(GenerateFeatureFlag(
@@ -585,8 +592,8 @@ void ChromeVirtualKeyboardDelegate::DispatchConfigChangeEvent(
     std::unique_ptr<base::DictionaryValue> settings) {
   EventRouter* router = EventRouter::Get(browser_context_);
 
-  if (!router->HasEventListener(
-          keyboard_api::OnKeyboardConfigChanged::kEventName))
+  if (!router || !router->HasEventListener(
+                     keyboard_api::OnKeyboardConfigChanged::kEventName))
     return;
 
   auto event_args = std::make_unique<base::ListValue>();

@@ -33,8 +33,6 @@ class TestReceivingUiHandler : public ReceivingUiHandler {
 
   size_t number_displayed_entries() const { return number_displayed_entries_; }
 
-  const Profile* profile() const override { return nullptr; }
-
  private:
   size_t number_displayed_entries_ = 0;
 };

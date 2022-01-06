@@ -45,6 +45,7 @@
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/disallow_activation_reason.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -178,7 +179,8 @@ const struct {
     {chrome::DIR_DEFAULT_DOWNLOADS, nullptr, kDontBlockChildren},
     {chrome::DIR_DEFAULT_DOWNLOADS_SAFE, nullptr, kDontBlockChildren},
     // The Chrome installation itself should not be modified by the web.
-    {chrome::DIR_APP, nullptr, kBlockAllChildren},
+    {base::DIR_EXE, nullptr, kBlockAllChildren},
+    {base::DIR_MODULE, nullptr, kBlockAllChildren},
     // And neither should the configuration of at least the currently running
     // Chrome instance (note that this does not take --user-data-dir command
     // line overrides into account).
@@ -489,8 +491,30 @@ class ChromeFileSystemAccessPermissionContext::PermissionGrantImpl
     // Otherwise, perform checks and ask the user for permission.
 
     content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(frame_id);
-    if (!rfh || !rfh->IsActive()) {
+    if (!rfh) {
       // Requested from a no longer valid render frame host.
+      RunCallbackAndRecordPermissionRequestOutcome(
+          std::move(callback), PermissionRequestOutcome::kInvalidFrame);
+      return;
+    }
+
+    // Don't show request permission UI for an inactive RenderFrameHost as the
+    // page might not distinguish properly between user denying the permission
+    // and automatic rejection, leading to an inconsistent UX once the page
+    // becomes active again.
+    // - If this is called when RenderFrameHost is in BackForwardCache, evict
+    //   the document from the cache.
+    // - If this is called when RenderFrameHost is in prerendering, cancel
+    //   prerendering.
+    if (rfh->IsInactiveAndDisallowActivation(
+            content::DisallowActivationReasonId::
+                kFileSystemAccessPermissionRequest)) {
+      RunCallbackAndRecordPermissionRequestOutcome(
+          std::move(callback), PermissionRequestOutcome::kInvalidFrame);
+      return;
+    }
+    // We don't allow file system access from fenced frames.
+    if (rfh->IsNestedWithinFencedFrame()) {
       RunCallbackAndRecordPermissionRequestOutcome(
           std::move(callback), PermissionRequestOutcome::kInvalidFrame);
       return;

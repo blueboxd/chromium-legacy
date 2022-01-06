@@ -197,13 +197,17 @@ void ChromeClientImpl::ChromeDestroyed() {
 
 void ChromeClientImpl::SetWindowRect(const IntRect& r, LocalFrame& frame) {
   DCHECK_EQ(&frame, web_view_->MainFrameImpl()->GetFrame());
-  web_view_->MainFrameViewWidget()->SetWindowRect(r);
+  web_view_->MainFrameViewWidget()->SetWindowRect(ToGfxRect(r));
 }
 
 IntRect ChromeClientImpl::RootWindowRect(LocalFrame& frame) {
   // The WindowRect() for each WebFrameWidget will be the same rect of the top
   // level window.
   return IntRect(frame.GetWidgetForLocalRoot()->WindowRect());
+}
+
+void ChromeClientImpl::DidAccessInitialMainDocument() {
+  web_view_->DidAccessInitialMainDocument();
 }
 
 void ChromeClientImpl::FocusPage() {
@@ -313,8 +317,8 @@ void ChromeClientImpl::Show(const blink::LocalFrameToken& opener_frame_token,
                             NavigationPolicy navigation_policy,
                             const IntRect& initial_rect,
                             bool user_gesture) {
-  web_view_->Show(opener_frame_token, navigation_policy, initial_rect,
-                  user_gesture);
+  web_view_->Show(opener_frame_token, navigation_policy,
+                  ToGfxRect(initial_rect), user_gesture);
 }
 
 bool ChromeClientImpl::ShouldReportDetailedMessageForSourceAndSeverity(
@@ -457,7 +461,7 @@ IntRect ChromeClientImpl::ViewportToScreen(
 
   gfx::Rect screen_rect =
       frame.GetWidgetForLocalRoot()->BlinkSpaceToEnclosedDIPs(
-          gfx::Rect(rect_in_viewport));
+          ToGfxRect(rect_in_viewport));
   gfx::Rect view_rect = frame.GetWidgetForLocalRoot()->ViewRect();
 
   screen_rect.Offset(view_rect.x(), view_rect.y());
@@ -493,7 +497,7 @@ void ChromeClientImpl::OverrideVisibleRectForMainFrame(
     IntRect* visible_rect) const {
   DCHECK(frame.IsMainFrame());
   return web_view_->GetDevToolsEmulator()->OverrideVisibleRect(
-      IntRect(frame.GetWidgetForLocalRoot()->ViewRect()).Size(), visible_rect);
+      IntRect(frame.GetWidgetForLocalRoot()->ViewRect()).size(), visible_rect);
 }
 
 float ChromeClientImpl::InputEventsScaleForEmulation() const {
@@ -985,19 +989,6 @@ void ChromeClientImpl::SetEventListenerProperties(
   }
 
   widget->SetEventListenerProperties(event_class, properties);
-}
-
-cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(
-    LocalFrame* frame,
-    cc::EventListenerClass event_class) const {
-  if (!frame)
-    return cc::EventListenerProperties::kNone;
-
-  WebFrameWidgetImpl* widget =
-      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
-  if (!widget)
-    return cc::EventListenerProperties::kNone;
-  return widget->EventListenerProperties(event_class);
 }
 
 void ChromeClientImpl::BeginLifecycleUpdates(LocalFrame& main_frame) {

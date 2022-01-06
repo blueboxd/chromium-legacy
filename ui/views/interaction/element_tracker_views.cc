@@ -113,6 +113,23 @@ class ElementTrackerViews::ElementDataViews : public ViewObserver,
     }
   }
 
+  View* FindFirstViewInContext(ui::ElementContext context) {
+    for (const ViewData& data : view_data_) {
+      if (data.context == context)
+        return data.view;
+    }
+    return nullptr;
+  }
+
+  ViewList FindAllViewsInContext(ui::ElementContext context) {
+    ViewList result;
+    for (const ViewData& data : view_data_) {
+      if (data.context == context)
+        result.push_back(data.view);
+    }
+    return result;
+  }
+
  private:
   struct ViewData {
     explicit ViewData(View* v, ui::ElementContext initial_context)
@@ -198,14 +215,60 @@ ui::ElementContext ElementTrackerViews::GetContextForWidget(Widget* widget) {
   return ui::ElementContext(widget->GetPrimaryWindowWidget());
 }
 
-TrackedElementViews* ElementTrackerViews::GetElementForView(View* view) {
-  const auto identifier = view->GetProperty(kElementIdentifierKey);
-  if (!identifier)
-    return nullptr;
+TrackedElementViews* ElementTrackerViews::GetElementForView(
+    View* view,
+    bool assign_temporary_id) {
+  ui::ElementIdentifier identifier = view->GetProperty(kElementIdentifierKey);
+  if (!identifier) {
+    if (!assign_temporary_id)
+      return nullptr;
+
+    // We shouldn't be assigning temporary IDs to views which are not yet on
+    // widgets (how did we even get a reference to the view?)
+    DCHECK(view->GetWidget());
+    identifier = ui::ElementTracker::kTemporaryIdentifier;
+    view->SetProperty(kElementIdentifierKey, identifier);
+  }
   const auto it = element_data_.find(identifier);
+  if (it == element_data_.end()) {
+    DCHECK(!assign_temporary_id);
+    return nullptr;
+  }
+  return it->second->GetElementForView(view);
+}
+
+const TrackedElementViews* ElementTrackerViews::GetElementForView(
+    const View* view) const {
+  // Const casts are justified as `assign_temporary_id` = false will not result
+  // in any modification to existing data.
+  return const_cast<ElementTrackerViews*>(this)->GetElementForView(
+      const_cast<View*>(view), false);
+}
+
+View* ElementTrackerViews::GetUniqueView(ui::ElementIdentifier id,
+                                         ui::ElementContext context) {
+  ui::TrackedElement* const element =
+      ui::ElementTracker::GetElementTracker()->GetUniqueElement(id, context);
+  // Note: this will crash if element is not a TrackedElementViews, but this
+  // method *should* crash if the element is present but of the wrong type.
+  return element ? element->AsA<TrackedElementViews>()->view() : nullptr;
+}
+
+View* ElementTrackerViews::GetFirstMatchingView(ui::ElementIdentifier id,
+                                                ui::ElementContext context) {
+  const auto it = element_data_.find(id);
   if (it == element_data_.end())
     return nullptr;
-  return it->second->GetElementForView(view);
+  return it->second->FindFirstViewInContext(context);
+}
+
+ElementTrackerViews::ViewList ElementTrackerViews::GetAllMatchingViews(
+    ui::ElementIdentifier id,
+    ui::ElementContext context) {
+  const auto it = element_data_.find(id);
+  if (it == element_data_.end())
+    return ViewList();
+  return it->second->FindAllViewsInContext(context);
 }
 
 void ElementTrackerViews::RegisterView(ui::ElementIdentifier element_id,

@@ -14,12 +14,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/reporting/client/report_queue.h"
 #include "components/reporting/client/report_queue_configuration.h"
-#include "components/reporting/proto/record.pb.h"
-#include "components/reporting/proto/record_constants.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/storage/storage_module_interface.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/statusor.h"
@@ -41,9 +41,10 @@ namespace reporting {
 class ReportQueueImpl : public ReportQueue {
  public:
   // Factory
-  static std::unique_ptr<ReportQueueImpl> Create(
+  static void Create(
       std::unique_ptr<ReportQueueConfiguration> config,
-      scoped_refptr<StorageModuleInterface> storage);
+      scoped_refptr<StorageModuleInterface> storage,
+      base::OnceCallback<void(StatusOr<std::unique_ptr<ReportQueue>>)> cb);
 
   ~ReportQueueImpl() override;
   ReportQueueImpl(const ReportQueueImpl& other) = delete;

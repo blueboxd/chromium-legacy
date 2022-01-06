@@ -286,9 +286,7 @@ absl::optional<int> AXPlatformNodeBase::CompareTo(AXPlatformNodeBase& other) {
 
 void AXPlatformNodeBase::Destroy() {
   g_unique_id_map.Get().erase(GetUniqueId());
-
   AXPlatformNode::Destroy();
-
   delegate_ = nullptr;
   Dispose();
 }
@@ -1142,6 +1140,9 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
       case ax::mojom::DescriptionFrom::kSummary:
         from = "summary";
         break;
+      case ax::mojom::DescriptionFrom::kSvgDescElement:
+        from = "svg-desc-element";
+        break;
       case ax::mojom::DescriptionFrom::kTableCaption:
         from = "table-caption";
         break;
@@ -1430,12 +1431,9 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
     AddAttributeToList("text-model", "a1", attributes);
 
   // Expose input-text type attribute.
-  std::string type;
-  std::string html_tag =
-      GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-  if (IsAtomicTextField() && base::LowerCaseEqualsASCII(html_tag, "input") &&
-      GetHtmlAttribute("type", &type)) {
-    AddAttributeToList("text-input-type", type, attributes);
+  if (IsAtomicTextField() || ui::IsDateOrTimeInput(GetRole())) {
+    AddAttributeToList(ax::mojom::StringAttribute::kInputType,
+                       "text-input-type", attributes);
   }
 
   std::string details_roles = ComputeDetailsRoles();
@@ -2128,14 +2126,6 @@ std::string AXPlatformNodeBase::GetInvalidValue() const {
     case ax::mojom::InvalidState::kTrue:
       invalid_value = "true";
       break;
-    case ax::mojom::InvalidState::kOther: {
-      if (!target->GetStringAttribute(
-              ax::mojom::StringAttribute::kAriaInvalidValue, &invalid_value)) {
-        // Set the attribute to "true", since we cannot be more specific.
-        invalid_value = "true";
-      }
-      break;
-    }
   }
   return invalid_value;
 }

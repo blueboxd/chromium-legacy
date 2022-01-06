@@ -63,8 +63,11 @@ constexpr int kMinimumCharacterCountForInvalid = 7;
 }  // namespace
 
 // static
-BrowserAccessibility* BrowserAccessibility::Create() {
-  return new BrowserAccessibilityAndroid();
+std::unique_ptr<BrowserAccessibility> BrowserAccessibility::Create(
+    BrowserAccessibilityManager* manager,
+    ui::AXNode* node) {
+  return std::unique_ptr<BrowserAccessibilityAndroid>(
+      new BrowserAccessibilityAndroid(manager, node));
 }
 
 using UniqueIdMap = std::unordered_map<int32_t, BrowserAccessibilityAndroid*>;
@@ -83,7 +86,10 @@ BrowserAccessibilityAndroid* BrowserAccessibilityAndroid::GetFromUniqueId(
   return nullptr;
 }
 
-BrowserAccessibilityAndroid::BrowserAccessibilityAndroid() {
+BrowserAccessibilityAndroid::BrowserAccessibilityAndroid(
+    BrowserAccessibilityManager* manager,
+    ui::AXNode* node)
+    : BrowserAccessibility(manager, node) {
   g_unique_id_map.Get()[unique_id()] = this;
 }
 
@@ -164,18 +170,14 @@ bool BrowserAccessibilityAndroid::IsClickable() const {
   if (IsHeadingLink())
     return true;
 
-  if (!IsEnabled()) {
-    // TalkBack won't announce a control as disabled unless it's also marked
-    // as clickable. In other words, Talkback wants to know if the control
-    // might be clickable, if it wasn't disabled.
-    return ui::IsControl(GetRole());
-  }
-
   // Skip web areas, PDFs and iframes, they're focusable but not clickable.
   if (ui::IsIframe(GetRole()) || ui::IsPlatformDocument(GetRole()))
     return false;
 
-  // Otherwise it's clickable if it's a control.
+  // Otherwise it's clickable if it's a control. We include disabled nodes
+  // because TalkBack won't announce a control as disabled unless it's also
+  // marked as clickable. In other words, Talkback wants to know if the control
+  // might be clickable, if it wasn't disabled.
   return ui::IsControlOnAndroid(GetRole(), IsFocusable());
 }
 
@@ -319,7 +321,8 @@ bool BrowserAccessibilityAndroid::IsMultiselectable() const {
 
 bool BrowserAccessibilityAndroid::IsRangeControlWithoutAriaValueText() const {
   return GetData().IsRangeValueSupported() &&
-         !HasStringAttribute(ax::mojom::StringAttribute::kValue);
+         !HasStringAttribute(ax::mojom::StringAttribute::kValue) &&
+         HasFloatAttribute(ax::mojom::FloatAttribute::kValueForRange);
 }
 
 bool BrowserAccessibilityAndroid::IsReportingCheckable() const {
@@ -609,14 +612,26 @@ std::u16string BrowserAccessibilityAndroid::GetInnerText() const {
   }
 
   std::u16string text = GetNameAsString16();
-  if (text.empty()) {
-    // When a node does not have a name (e.g. a label), use its value instead.
-    text = value;
-  } else if (ui::IsRangeValueSupported(GetRole()) && !value.empty()) {
+  if (ui::IsRangeValueSupported(GetRole())) {
     // For controls that support range values such as sliders, when a non-empty
     // name is present (e.g. a label), append this to the value so both the
     // valuetext and label are included, rather than replacing the value.
-    text = value + u", " + text;
+    // If the value itself is empty on a progress indicator, then this would
+    // suggest it is indeterminate, so add that keyword.
+    if (value.empty() && GetRole() == ax::mojom::Role::kProgressIndicator) {
+      content::ContentClient* content_client = content::GetContentClient();
+      value = content_client->GetLocalizedString(IDS_AX_INDETERMINATE_VALUE);
+    }
+
+    // To prevent extra commas, only add if the text is non-empty
+    if (!text.empty() && !value.empty()) {
+      text = value + u", " + text;
+    } else if (!value.empty()) {
+      text = value;
+    }
+  } else if (text.empty()) {
+    // When a node does not have a name (e.g. a label), use its value instead.
+    text = value;
   }
 
   // For almost all focusable nodes we try to get text from contents, but for
@@ -1461,7 +1476,31 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
       message_id = IDS_AX_ROLE_MARQUEE;
       break;
     case ax::mojom::Role::kMath:
+    case ax::mojom::Role::kMathMLMath:
       message_id = IDS_AX_ROLE_MATH;
+      break;
+    case ax::mojom::Role::kMathMLFraction:
+    case ax::mojom::Role::kMathMLIdentifier:
+    case ax::mojom::Role::kMathMLMultiscripts:
+    case ax::mojom::Role::kMathMLNoneScript:
+    case ax::mojom::Role::kMathMLNumber:
+    case ax::mojom::Role::kMathMLOperator:
+    case ax::mojom::Role::kMathMLOver:
+    case ax::mojom::Role::kMathMLPrescriptDelimiter:
+    case ax::mojom::Role::kMathMLRoot:
+    case ax::mojom::Role::kMathMLRow:
+    case ax::mojom::Role::kMathMLSquareRoot:
+    case ax::mojom::Role::kMathMLStringLiteral:
+    case ax::mojom::Role::kMathMLSub:
+    case ax::mojom::Role::kMathMLSubSup:
+    case ax::mojom::Role::kMathMLSup:
+    case ax::mojom::Role::kMathMLTable:
+    case ax::mojom::Role::kMathMLTableCell:
+    case ax::mojom::Role::kMathMLTableRow:
+    case ax::mojom::Role::kMathMLText:
+    case ax::mojom::Role::kMathMLUnder:
+    case ax::mojom::Role::kMathMLUnderOver:
+      // No role description.
       break;
     case ax::mojom::Role::kMenu:
       message_id = IDS_AX_ROLE_MENU;
@@ -2373,6 +2412,7 @@ bool BrowserAccessibilityAndroid::ShouldExposeValueAsName() const {
   switch (GetRole()) {
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
+    case ax::mojom::Role::kInputTime:
       return true;
     case ax::mojom::Role::kColorWell:
       return false;
@@ -2449,16 +2489,31 @@ std::u16string BrowserAccessibilityAndroid::GetContentInvalidErrorMessage()
 
     case ax::mojom::InvalidState::kTrue:
       message_id = CONTENT_INVALID_TRUE;
-      break;
-    case ax::mojom::InvalidState::kOther:
-      std::string ariaInvalid = GetData().GetStringAttribute(
-          ax::mojom::StringAttribute::kAriaInvalidValue);
-      if (ariaInvalid == "spelling")
-        message_id = CONTENT_INVALID_SPELLING;
-      else if (ariaInvalid == "grammar")
-        message_id = CONTENT_INVALID_GRAMMAR;
-      else
-        message_id = CONTENT_INVALID_TRUE;
+      // Handle Grammar or Spelling errors.
+      // TODO(accessibility): using FindTextOnlyObjectsInRange or
+      // NextInTreeOrder doesn't work because Android's IsLeaf implementation
+      // deliberately excludes a lot of nodes.
+      for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd();
+           ++it) {
+        BrowserAccessibilityAndroid* child =
+            static_cast<BrowserAccessibilityAndroid*>(it.get());
+        if (child->IsText()) {
+          const std::vector<int32_t>& marker_types = child->GetIntListAttribute(
+              ax::mojom::IntListAttribute::kMarkerTypes);
+
+          for (size_t i = 0; i < marker_types.size(); ++i) {
+            if (marker_types[i] &
+                static_cast<int32_t>(ax::mojom::MarkerType::kSpelling)) {
+              message_id = CONTENT_INVALID_SPELLING;
+              break;
+            } else if (marker_types[i] &
+                       static_cast<int32_t>(ax::mojom::MarkerType::kGrammar)) {
+              message_id = CONTENT_INVALID_GRAMMAR;
+              break;
+            }
+          }
+        }
+      }
       break;
   }
 

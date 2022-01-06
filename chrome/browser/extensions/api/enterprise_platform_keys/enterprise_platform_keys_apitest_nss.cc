@@ -18,9 +18,10 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/platform_keys/platform_keys_service_factory.h"
+#include "chrome/browser/ash/platform_keys/platform_keys_service_test_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/scoped_test_system_nss_key_slot_mixin.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_test_base.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/policy/extension_force_install_mixin.h"
@@ -255,6 +256,12 @@ class EnterprisePlatformKeysTest
                                 base::size(privateKeyPkcs8System),
                                 system_slot->slot());
   }
+
+  // Allows tests to generate software-backed keys by configuring fake ChapsUtil
+  // instances to be created in its constructor (and undoing the change in its
+  // destructor).
+  ash::platform_keys::test_util::ScopedChapsUtilOverride
+      scoped_chaps_util_override_;
 };
 
 }  // namespace
@@ -344,7 +351,7 @@ class EnterprisePlatformKeysLoginScreenTest
 
  private:
   void SetUp() override {
-    chromeos::platform_keys::PlatformKeysServiceFactory::GetInstance()
+    ash::platform_keys::PlatformKeysServiceFactory::GetInstance()
         ->SetTestingMode(true);
 
     MixinBasedInProcessBrowserTest::SetUp();
@@ -371,6 +378,12 @@ class EnterprisePlatformKeysLoginScreenTest
   chromeos::ScopedTestSystemNSSKeySlotMixin system_nss_key_slot_mixin_{
       &mixin_host_};
   ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
+
+  // Allows tests to generate software-backed keys by configuring fake ChapsUtil
+  // instances to be created in its constructor (and undoing the change in its
+  // destructor).
+  ash::platform_keys::test_util::ScopedChapsUtilOverride
+      scoped_chaps_util_override_;
 };
 
 IN_PROC_BROWSER_TEST_F(EnterprisePlatformKeysLoginScreenTest, Basic) {

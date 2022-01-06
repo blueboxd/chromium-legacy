@@ -23,9 +23,10 @@ import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.j
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
-import {Route, RouteObserverBehavior, Router} from '../../router.js';
+import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
 import {routes} from '../os_route.m.js';
+import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 import {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, AboutPageUpdateInfo, BrowserChannel, browserChannelToI18nId, ChannelInfo, isTargetChannelMoreStable, RegulatoryInfo, TPMFirmwareUpdateStatusChangedEvent, UpdateStatus, UpdateStatusChangedEvent, VersionInfo} from './about_page_browser_proxy.js';
 import {DeviceNameBrowserProxy, DeviceNameBrowserProxyImpl, DeviceNameMetadata} from './device_name_browser_proxy.js';
@@ -166,20 +167,9 @@ Polymer({
     browserProxy.getChannelInfo().then(info => {
       this.channelInfo_ = info;
       // Display the target channel for the 'Currently on' message.
-      const browserChannel =
-          this.i18n(browserChannelToI18nId(info.targetChannel, info.isLts));
-      // TODO(crbug.com/1259245) On LTS we should already show "Currently on
-      // long-term support channel", whereas for other channels we still say
-      // "Currently on stable", without the word "channel". This will be changed
-      // and made consistent with the abovementioned ticket and this if-else
-      // will be refactored.
-      if (info.isLts) {
-        this.currentlyOnChannelText_ =
-            this.i18n('aboutCurrentlyOnChannelInfo', browserChannel);
-      } else {
-        this.currentlyOnChannelText_ =
-            this.i18n('aboutCurrentlyOnChannel', browserChannel);
-      }
+      this.currentlyOnChannelText_ = this.i18n(
+          'aboutCurrentlyOnChannelInfo',
+          this.i18n(browserChannelToI18nId(info.targetChannel, info.isLts)));
     });
   },
 

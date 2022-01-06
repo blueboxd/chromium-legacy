@@ -19,7 +19,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/pattern.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
@@ -41,6 +43,7 @@
 #include "components/variations/variations_seed_processor.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/channel.h"
+#include "components/version_info/version_info.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -173,7 +176,7 @@ std::string VariationsFieldTrialCreator::GetLatestCountry() const {
              : local_state()->GetString(prefs::kVariationsCountry);
 }
 
-bool VariationsFieldTrialCreator::SetupFieldTrials(
+bool VariationsFieldTrialCreator::SetUpFieldTrials(
     const std::vector<std::string>& variation_ids,
     const std::vector<base::FeatureList::FeatureOverrideInfo>& extra_overrides,
     std::unique_ptr<const base::FieldTrial::EntropyProvider>
@@ -189,36 +192,9 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
   DCHECK(platform_field_trials);
   DCHECK(safe_seed_manager);
 
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kForceFieldTrialParams)) {
-    bool result = AssociateParamsFromString(
-        command_line->GetSwitchValueASCII(switches::kForceFieldTrialParams));
-    if (!result) {
-      // Some field trial params implement things like csv or json with a
-      // particular param. If some control characters are not %-encoded, it can
-      // lead to confusing error messages, so add a hint here.
-      ExitWithMessage(base::StringPrintf(
-          "Invalid --%s list specified. Make sure you %%-"
-          "encode the following characters in param values: %%:/.,",
-          switches::kForceFieldTrialParams));
-    }
-  }
-
-  // Ensure any field trials specified on the command line are initialized.
-  if (command_line->HasSwitch(::switches::kForceFieldTrials)) {
-    // Create field trials without activating them, so that this behaves in a
-    // consistent manner with field trials created from the server.
-    bool result = base::FieldTrialList::CreateTrialsFromString(
-        command_line->GetSwitchValueASCII(::switches::kForceFieldTrials));
-    if (!result) {
-      ExitWithMessage(base::StringPrintf("Invalid --%s list specified.",
-                                         ::switches::kForceFieldTrials));
-    }
-  }
-
-#if !defined(OS_ANDROID)
-  // TODO(crbug/1248239): Enable Extended Variations Safe Mode on Android.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // TODO(crbug/1248239): Enable Extended Variations Safe Mode on Clank.
+  // TODO(crbug/1255305): Re-enable it on iOS.
   if (extend_variations_safe_mode &&
       !metrics_state_manager->is_background_session()) {
     // If the session is expected to be a background session, then do not extend
@@ -228,11 +204,16 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     // crashes.
     MaybeExtendVariationsSafeMode(metrics_state_manager);
   }
-#endif
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
+  // TODO(crbug/1257204): Some FieldTrial-setup-related code is here and some is
+  // in MetricsStateManager::InstantiateFieldTrialList(). It's not ideal that
+  // it's in two places.
   VariationsIdsProvider* http_header_provider =
       VariationsIdsProvider::GetInstance();
   http_header_provider->SetLowEntropySourceValue(low_entropy_source_value);
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   // Force the variation ids selected in chrome://flags and/or specified using
   // the command-line flag.
   auto result = http_header_provider->ForceVariationIds(
@@ -291,7 +272,7 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
                                      feature_list.get(), safe_seed_manager);
   }
 
-  platform_field_trials->SetupFeatureControllingFieldTrials(
+  platform_field_trials->SetUpFeatureControllingFieldTrials(
       used_seed, low_entropy_provider.get(), feature_list.get());
 
   base::FeatureList::SetInstance(std::move(feature_list));
@@ -305,7 +286,7 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
   }
 
   // This must be called after |local_state_| is initialized.
-  platform_field_trials->SetupFieldTrials();
+  platform_field_trials->SetUpFieldTrials();
 
   return used_seed;
 }
@@ -469,6 +450,29 @@ bool VariationsFieldTrialCreator::IsOverrideResourceMapEmpty() {
   return overridden_strings_map_.empty();
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+void VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode(
+    metrics::MetricsStateManager* metrics_state_manager) {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName(kExtendedSafeModeTrial);
+  if (group_name.empty() || group_name == kDefaultGroup)
+    return;
+
+  if (group_name == kControlGroup) {
+    // Populate the histogram for the control group to more easily compare it
+    // with the groups that introduce new behavior.
+    SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
+        "Variations.ExtendedSafeMode.WritePrefsTime");
+    return;
+  }
+
+  DCHECK_EQ(group_name, kSignalAndWriteViaFileUtilGroup);
+  metrics_state_manager->LogHasSessionShutdownCleanly(
+      /*has_session_shutdown_cleanly=*/false,
+      /*write_synchronously=*/true);
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
 bool VariationsFieldTrialCreator::HasSeedExpired(bool is_safe_seed) {
   const base::Time fetch_time = is_safe_seed
                                     ? GetSeedStore()->GetSafeSeedFetchTime()
@@ -497,6 +501,30 @@ bool VariationsFieldTrialCreator::HasSeedExpired(bool is_safe_seed) {
                                      ? VariationsSeedExpiry::kExpired
                                      : VariationsSeedExpiry::kNotExpired);
   return has_seed_expired;
+}
+
+bool VariationsFieldTrialCreator::IsSeedForFutureMilestone(bool is_safe_seed) {
+  const std::string milestone_pref = is_safe_seed
+                                         ? prefs::kVariationsSafeSeedMilestone
+                                         : prefs::kVariationsSeedMilestone;
+
+  // The regular and safe seed milestone prefs were added in M97, so the prefs
+  // are not populated for seeds stored before then.
+  int seed_milestone = local_state()->GetInteger(milestone_pref);
+  if (!seed_milestone)
+    return false;
+
+  int client_milestone;
+  if (base::StringToInt(version_info::GetMajorVersionNumber(),
+                        &client_milestone)) {
+    return seed_milestone > client_milestone;
+  }
+
+  // There shouldn't be an issue parsing the major version (aka milestone) to
+  // an int because GetMajorVersionNumber() parses the milestone from a number
+  // to a string.
+  NOTREACHED();
+  return false;
 }
 
 bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
@@ -528,8 +556,15 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
     LoadSeedResult result =
         GetSeedStore()->LoadSafeSeed(&seed, client_filterable_state.get());
     if (result == LoadSeedResult::kSuccess) {
+      // TODO(crbug/1261685): The expiry and milestone checks are repeated below
+      // for regular seeds. Refactor this.
       if (HasSeedExpired(/*is_safe_seed=*/true)) {
         RecordVariationsSeedUsage(SeedUsage::kExpiredSafeSeedNotUsed);
+        return false;
+      }
+      if (IsSeedForFutureMilestone(/*is_safe_seed=*/true)) {
+        RecordVariationsSeedUsage(
+            SeedUsage::kSafeSeedForFutureMilestoneNotUsed);
         return false;
       }
       RecordVariationsSeedUsage(SeedUsage::kSafeSeedUsed);
@@ -557,6 +592,11 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
                 ? SeedUsage::kExpiredRegularSeedNotUsedAfterEmptySafeSeedLoaded
                 : SeedUsage::kExpiredRegularSeedNotUsed;
         RecordVariationsSeedUsage(seed_usage);
+        return false;
+      }
+      if (IsSeedForFutureMilestone(/*is_safe_seed=*/false)) {
+        RecordVariationsSeedUsage(
+            SeedUsage::kRegularSeedForFutureMilestoneNotUsed);
         return false;
       }
       seed_usage = should_run_in_safe_mode
@@ -589,9 +629,10 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   // running in safe mode – once running in safe mode, there can never be a need
   // to save the active state to the safe seed prefs.
   if (!run_in_safe_mode) {
-    safe_seed_manager->SetActiveSeedState(seed_data, base64_seed_signature,
-                                          std::move(client_filterable_state),
-                                          seed_store_->GetLastFetchTime());
+    safe_seed_manager->SetActiveSeedState(
+        seed_data, base64_seed_signature,
+        local_state()->GetInteger(prefs::kVariationsSeedMilestone),
+        std::move(client_filterable_state), seed_store_->GetLastFetchTime());
   }
 
   UMA_HISTOGRAM_TIMES("Variations.SeedProcessingTime",
@@ -629,44 +670,5 @@ Study::Platform VariationsFieldTrialCreator::GetPlatform() {
     return platform_override_;
   return ClientFilterableState::GetCurrentPlatform();
 }
-
-#if !defined(OS_ANDROID)
-void VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode(
-    metrics::MetricsStateManager* metrics_state_manager) const {
-  version_info::Channel channel = client_->GetChannelForVariations();
-  if (channel != version_info::Channel::UNKNOWN &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::DEV) {
-    return;
-  }
-
-  int default_group;
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          kExtendedSafeModeTrial, 100, kDefaultGroup,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, &default_group));
-
-  const int control_group = trial->AppendGroup(kControlGroup, 25);
-  const int write_only_group =
-      trial->AppendGroup(kWriteSynchronouslyViaPrefServiceGroup, 25);
-  trial->AppendGroup(kSignalAndWriteSynchronouslyViaPrefServiceGroup, 25);
-  trial->AppendGroup(kSignalAndWriteViaFileUtilGroup, 25);
-  const int assigned_group = trial->group();
-
-  if (assigned_group == control_group)
-    return;
-
-  // For clients in the SignalAndWrite* groups, the beacon is updated and a
-  // synchronous write is performed. Conversely, for clients in
-  // |write_only_group|, i.e. the WriteSynchronouslyViaPrefService group, prefs
-  // are written synchronously without updating the beacon, i.e. without
-  // signaling that Chrome should start watching for crashes.
-  bool update_beacon = assigned_group != write_only_group;
-
-  metrics_state_manager->LogHasSessionShutdownCleanly(
-      /*has_session_shutdown_cleanly=*/false, /*write_synchronously=*/true,
-      update_beacon);
-}
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace variations

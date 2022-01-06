@@ -27,23 +27,25 @@ bool IsNicknameValid(const std::string& nickname) {
 }  // namespace
 
 // static
-void DeviceNameManagerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
+void DeviceNameManagerImpl::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kDeviceIdToNicknameMapPrefName,
                                    base::Value(base::Value::Type::DICTIONARY));
 }
 
 DeviceNameManagerImpl::DeviceNameManagerImpl(
-    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-    PrefService* pref_service)
-    : bluetooth_adapter_(std::move(bluetooth_adapter)),
-      pref_service_(pref_service) {}
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)
+    : bluetooth_adapter_(std::move(bluetooth_adapter)) {}
 
 DeviceNameManagerImpl::~DeviceNameManagerImpl() = default;
 
 absl::optional<std::string> DeviceNameManagerImpl::GetDeviceNickname(
     const std::string& device_id) {
+  if (!local_state_)
+    return absl::nullopt;
+
   const std::string* nickname =
-      pref_service_->GetDictionary(kDeviceIdToNicknameMapPrefName)
+      local_state_->GetDictionary(kDeviceIdToNicknameMapPrefName)
           ->FindStringKey(device_id);
   if (!nickname)
     return absl::nullopt;
@@ -67,11 +69,23 @@ void DeviceNameManagerImpl::SetDeviceNickname(const std::string& device_id,
     return;
   }
 
+  if (!local_state_) {
+    BLUETOOTH_LOG(ERROR) << "SetDeviceNickname for device failed because "
+                            "no local_state_ was set.";
+    return;
+  }
+
   base::DictionaryValue* device_id_to_nickname_map =
-      DictionaryPrefUpdate(pref_service_, kDeviceIdToNicknameMapPrefName).Get();
+      DictionaryPrefUpdate(local_state_, kDeviceIdToNicknameMapPrefName).Get();
   DCHECK(device_id_to_nickname_map)
       << "Device ID to nickname map pref is unregistered.";
   device_id_to_nickname_map->SetStringKey(device_id, nickname);
+
+  NotifyDeviceNicknameChanged(device_id, nickname);
+}
+
+void DeviceNameManagerImpl::SetPrefs(PrefService* local_state) {
+  local_state_ = local_state;
 }
 
 bool DeviceNameManagerImpl::DoesDeviceExist(

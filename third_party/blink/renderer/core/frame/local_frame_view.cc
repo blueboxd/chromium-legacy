@@ -97,7 +97,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
-#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
@@ -124,6 +124,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_handler.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
@@ -204,9 +205,9 @@ void LogCursorSizeCounter(LocalFrame* frame, const ui::Cursor& cursor) {
   // whether the cursor exceeds its maximum size (see event_handler.cc).
   auto scaled_size = IntSize(bitmap.width(), bitmap.height());
   scaled_size.Scale(1 / cursor.image_scale_factor());
-  if (scaled_size.Width() > 64 || scaled_size.Height() > 64) {
+  if (scaled_size.width() > 64 || scaled_size.height() > 64) {
     UseCounter::Count(frame->GetDocument(), WebFeature::kCursorImageGT64x64);
-  } else if (scaled_size.Width() > 32 || scaled_size.Height() > 32) {
+  } else if (scaled_size.width() > 32 || scaled_size.height() > 32) {
     UseCounter::Count(frame->GetDocument(), WebFeature::kCursorImageGT32x32);
   } else {
     UseCounter::Count(frame->GetDocument(), WebFeature::kCursorImageLE32x32);
@@ -239,7 +240,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame)
 }
 
 LocalFrameView::LocalFrameView(LocalFrame& frame, const IntSize& initial_size)
-    : LocalFrameView(frame, IntRect(IntPoint(), initial_size)) {
+    : LocalFrameView(frame, IntRect(gfx::Point(), initial_size)) {
   SetLayoutSizeInternal(initial_size);
   Show();
 }
@@ -321,6 +322,7 @@ void LocalFrameView::Trace(Visitor* visitor) const {
   visitor->Trace(viewport_scrollable_area_);
   visitor->Trace(anchoring_adjustment_queue_);
   visitor->Trace(scroll_event_queue_);
+  visitor->Trace(pre_composited_layers_);
   visitor->Trace(layout_shift_tracker_);
   visitor->Trace(paint_timing_detector_);
   visitor->Trace(mobile_friendliness_checker_);
@@ -519,8 +521,8 @@ void LocalFrameView::SetLifecycleUpdatesThrottledForTesting(bool throttled) {
 }
 
 void LocalFrameView::FrameRectsChanged(const IntRect& old_rect) {
-  const bool width_changed = Size().Width() != old_rect.Width();
-  const bool height_changed = Size().Height() != old_rect.Height();
+  const bool width_changed = Size().width() != old_rect.width();
+  const bool height_changed = Size().height() != old_rect.height();
 
   PropagateFrameRects();
 
@@ -609,7 +611,7 @@ void LocalFrameView::AdjustViewSize() {
 
   DCHECK_EQ(frame_->View(), this);
   SetLayoutOverflowSize(
-      PixelSnappedIntRect(layout_view->DocumentRect()).Size());
+      PixelSnappedIntRect(layout_view->DocumentRect()).size());
 }
 
 void LocalFrameView::CountObjectsNeedingLayout(unsigned& needs_layout_objects,
@@ -663,38 +665,6 @@ bool LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
   return true;
 }
 
-void LocalFrameView::PrepareLayoutAnalyzer() {
-  bool is_tracing = false;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), &is_tracing);
-  if (!is_tracing) {
-    analyzer_.reset();
-    return;
-  }
-  if (!analyzer_)
-    analyzer_ = std::make_unique<LayoutAnalyzer>();
-  analyzer_->Reset();
-}
-
-std::unique_ptr<TracedValue> LocalFrameView::AnalyzerCounters() {
-  if (!analyzer_)
-    return std::make_unique<TracedValue>();
-  std::unique_ptr<TracedValue> value = analyzer_->ToTracedValue();
-  value->SetString("host", GetLayoutView()->GetDocument().location()->host());
-  value->SetString(
-      "frame",
-      String::Format("0x%" PRIxPTR, reinterpret_cast<uintptr_t>(frame_.Get())));
-  value->SetInteger(
-      "contentsHeightAfterLayout",
-      PixelSnappedIntRect(GetLayoutView()->DocumentRect()).Height());
-  value->SetInteger("visibleHeight", Height());
-  value->SetInteger("approximateBlankCharacterCount",
-                    base::saturated_cast<int>(
-                        FontFaceSetDocument::ApproximateBlankCharacterCount(
-                            *frame_->GetDocument())));
-  return value;
-}
-
 #define PERFORM_LAYOUT_TRACE_CATEGORIES \
   "blink,benchmark,rail," TRACE_DISABLED_BY_DEFAULT("blink.debug.layout")
 
@@ -740,7 +710,7 @@ void LocalFrameView::PerformLayout() {
       if (IsA<HTMLFrameSetElement>(*body)) {
         body->GetLayoutObject()->SetChildNeedsLayout();
       } else if (IsA<HTMLBodyElement>(*body)) {
-        if (!first_layout_ && size_.Height() != GetLayoutSize().Height() &&
+        if (!first_layout_ && size_.Height() != GetLayoutSize().height() &&
             body->GetLayoutObject()->EnclosingBox()->StretchesToViewport())
           body->GetLayoutObject()->SetChildNeedsLayout();
       }
@@ -790,7 +760,6 @@ void LocalFrameView::PerformLayout() {
   TRACE_EVENT_BEGIN1(
       PERFORM_LAYOUT_TRACE_CATEGORIES, "LocalFrameView::performLayout",
       "contentsHeightBeforeLayout", contents_height_before_layout);
-  PrepareLayoutAnalyzer();
 
   if (in_subtree_layout && HasOrthogonalWritingModeRoots()) {
     // If we're going to lay out from each subtree root, rather than once from
@@ -814,10 +783,6 @@ void LocalFrameView::PerformLayout() {
     // TODO(szager): Remove this after diagnosing crash.
     DocumentLifecycle::CheckNoTransitionScope check_no_transition(Lifecycle());
     if (in_subtree_layout) {
-      if (analyzer_) {
-        analyzer_->Increment(LayoutAnalyzer::kPerformLayoutRootLayoutObjects,
-                             layout_subtree_root_list_.size());
-      }
       // This map will be used to avoid rebuilding several times the fragment
       // tree spine of a common ancestor.
       HeapHashMap<Member<const LayoutBlock>, unsigned> fragment_tree_spines;
@@ -873,9 +838,8 @@ void LocalFrameView::PerformLayout() {
 
   Lifecycle().AdvanceTo(DocumentLifecycle::kAfterPerformLayout);
 
-  TRACE_EVENT_END1(PERFORM_LAYOUT_TRACE_CATEGORIES,
-                   "LocalFrameView::performLayout", "counters",
-                   AnalyzerCounters());
+  TRACE_EVENT_END0(PERFORM_LAYOUT_TRACE_CATEGORIES,
+                   "LocalFrameView::performLayout");
   FirstMeaningfulPaintDetector::From(*document)
       .MarkNextPaintAsMeaningfulIfNeeded(
           layout_object_counter_, contents_height_before_layout,
@@ -884,8 +848,8 @@ void LocalFrameView::PerformLayout() {
   IntSize new_size(Size());
   if (old_size != new_size) {
     MarkViewportConstrainedObjectsForLayout(
-        old_size.Width() != new_size.Width(),
-        old_size.Height() != new_size.Height());
+        old_size.width() != new_size.width(),
+        old_size.height() != new_size.height());
   }
 
   if (frame_->IsMainFrame()) {
@@ -988,8 +952,8 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
     return FloatSize();
 
   FloatSize layout_size;
-  layout_size.SetWidth(layout_view->ViewWidth(kIncludeScrollbars) / zoom);
-  layout_size.SetHeight(layout_view->ViewHeight(kIncludeScrollbars) / zoom);
+  layout_size.set_width(layout_view->ViewWidth(kIncludeScrollbars) / zoom);
+  layout_size.set_height(layout_view->ViewHeight(kIncludeScrollbars) / zoom);
 
   BrowserControls& browser_controls = frame_->GetPage()->GetBrowserControls();
   if (browser_controls.PermittedState() != cc::BrowserControlsState::kHidden) {
@@ -1000,15 +964,15 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
     // be the viewport with browser controls showing, we add the browser
     // controls height, compensating for page scale as well, since we want to
     // use the viewport with browser controls hidden for vh (to match Safari).
-    int viewport_width = frame_->GetPage()->GetVisualViewport().Size().Width();
-    if (frame_->IsMainFrame() && layout_size.Width() && viewport_width) {
+    int viewport_width = frame_->GetPage()->GetVisualViewport().Size().width();
+    if (frame_->IsMainFrame() && layout_size.width() && viewport_width) {
       // TODO(bokan/eirage): BrowserControl height may need to account for the
       // zoom factor when use-zoom-for-dsf is enabled on Android. Confirm this
       // works correctly when that's turned on. https://crbug.com/737777.
-      float page_scale_at_layout_width = viewport_width / layout_size.Width();
-      layout_size.Expand(0, (browser_controls.TotalHeight() -
-                             browser_controls.TotalMinHeight()) /
-                                page_scale_at_layout_width);
+      float page_scale_at_layout_width = viewport_width / layout_size.width();
+      layout_size.Enlarge(0, (browser_controls.TotalHeight() -
+                              browser_controls.TotalMinHeight()) /
+                                 page_scale_at_layout_width);
     }
   }
 
@@ -1055,7 +1019,7 @@ void LocalFrameView::RunIntersectionObserverSteps() {
     IntRect main_frame_dimensions =
         To<LayoutBox>(layout_object)->PixelSnappedLayoutOverflowRect();
     GetFrame().Client()->OnMainFrameIntersectionChanged(IntRect(
-        0, 0, main_frame_dimensions.Width(), main_frame_dimensions.Height()));
+        0, 0, main_frame_dimensions.width(), main_frame_dimensions.height()));
   }
 
   TRACE_EVENT0("blink,benchmark",
@@ -1858,8 +1822,10 @@ void LocalFrameView::DismissFragmentAnchor() {
   if (!fragment_anchor_)
     return;
 
-  if (fragment_anchor_->Dismiss())
+  if (fragment_anchor_->Dismiss()) {
+    TextFragmentHandler::RemoveSelectorsFromUrl(frame_);
     fragment_anchor_ = nullptr;
+  }
 }
 
 bool LocalFrameView::UpdatePlugins() {
@@ -2083,6 +2049,7 @@ Color LocalFrameView::DocumentBackgroundColor() {
 }
 
 void LocalFrameView::WillBeRemovedFromFrame() {
+  mobile_friendliness_checker_->WillBeRemovedFromFrame();
   if (paint_artifact_compositor_)
     paint_artifact_compositor_->WillBeRemovedFromFrame();
 
@@ -2854,6 +2821,11 @@ bool LocalFrameView::RunAccessibilityLifecyclePhase(
     DocumentLifecycle::LifecycleState target_state) {
   TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::RunAccessibilityLifecyclePhase");
+
+  // Reduce redundant ancestor chain walking for display lock computations.
+  auto display_lock_memoization_scope =
+      DisplayLockUtilities::CreateLockCheckMemoizationScope();
+
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     if (AXObjectCache* cache = frame_view.ExistingAXObjectCache()) {
       frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInAccessibility);
@@ -2979,6 +2951,7 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
     if (paint_controller_->ShouldForcePaintForBenchmark() ||
         GetLayoutView()->Layer()->SelfOrDescendantNeedsRepaint() ||
         visual_viewport_or_overlay_needs_repaint_) {
+      pre_composited_layers_.clear();
       GraphicsContext graphics_context(*paint_controller_);
 
       // Draw the overlay layer (video or WebXR DOM overlay) if present.
@@ -3084,9 +3057,13 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
   return repainted;
 }
 
-const cc::Layer* LocalFrameView::RootCcLayer() const {
+cc::Layer* LocalFrameView::RootCcLayer() {
   return paint_artifact_compositor_ ? paint_artifact_compositor_->RootLayer()
                                     : nullptr;
+}
+
+const cc::Layer* LocalFrameView::RootCcLayer() const {
+  return const_cast<LocalFrameView*>(this)->RootCcLayer();
 }
 
 void LocalFrameView::CreatePaintTimelineEvents() {
@@ -3192,7 +3169,6 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
       std::move(document_transition_requests));
 
   CreatePaintTimelineEvents();
-  probe::LayerTreePainted(&GetFrame());
 }
 
 void LocalFrameView::AppendDocumentTransitionRequests(
@@ -3415,11 +3391,11 @@ void LocalFrameView::ForceLayoutForPagination(
   // trick to see the state of things before and after the layout
   if (LayoutView* layout_view = GetLayoutView()) {
     float page_logical_width = layout_view->StyleRef().IsHorizontalWritingMode()
-                                   ? page_size.Width()
-                                   : page_size.Height();
+                                   ? page_size.width()
+                                   : page_size.height();
     float page_logical_height =
-        layout_view->StyleRef().IsHorizontalWritingMode() ? page_size.Height()
-                                                          : page_size.Width();
+        layout_view->StyleRef().IsHorizontalWritingMode() ? page_size.height()
+                                                          : page_size.width();
 
     LayoutUnit floored_page_logical_width =
         static_cast<LayoutUnit>(page_logical_width);
@@ -3448,16 +3424,16 @@ void LocalFrameView::ForceLayoutForPagination(
       // while we want it rounded -- so make sure it's rounded here.
       FloatSize expected_page_size(
           std::min<float>(document_rect.Width().Round(),
-                          page_size.Width() * maximum_shrink_factor),
+                          page_size.width() * maximum_shrink_factor),
           std::min<float>(document_rect.Height().Round(),
-                          page_size.Height() * maximum_shrink_factor));
+                          page_size.height() * maximum_shrink_factor));
       FloatSize max_page_size = frame_->ResizePageRectsKeepingRatio(
-          FloatSize(original_page_size.Width(), original_page_size.Height()),
+          FloatSize(original_page_size.width(), original_page_size.height()),
           expected_page_size);
-      page_logical_width = horizontal_writing_mode ? max_page_size.Width()
-                                                   : max_page_size.Height();
-      page_logical_height = horizontal_writing_mode ? max_page_size.Height()
-                                                    : max_page_size.Width();
+      page_logical_width = horizontal_writing_mode ? max_page_size.width()
+                                                   : max_page_size.height();
+      page_logical_height = horizontal_writing_mode ? max_page_size.height()
+                                                    : max_page_size.width();
 
       floored_page_logical_width = static_cast<LayoutUnit>(page_logical_width);
       floored_page_logical_height =
@@ -3470,31 +3446,27 @@ void LocalFrameView::ForceLayoutForPagination(
       frame_->GetDocument()->UpdateStyleAndLayout(
           DocumentUpdateReason::kPrinting);
 
-      PhysicalRect updated_document_rect(layout_view->DocumentRect());
-      LayoutUnit doc_logical_height = horizontal_writing_mode
-                                          ? updated_document_rect.Height()
-                                          : updated_document_rect.Width();
-      LayoutUnit doc_logical_top = horizontal_writing_mode
-                                       ? updated_document_rect.Y()
-                                       : updated_document_rect.X();
-      LayoutUnit doc_logical_right = horizontal_writing_mode
-                                         ? updated_document_rect.Right()
-                                         : updated_document_rect.Bottom();
+      WritingModeConverter converter(
+          layout_view->StyleRef().GetWritingDirection(),
+          PhysicalSize(layout_view->Size()));
+      LogicalRect logical_rect =
+          converter.ToLogical(layout_view->DocumentRect());
       LayoutUnit clipped_logical_left;
       if (!layout_view->StyleRef().IsLeftToRightDirection()) {
         clipped_logical_left =
-            LayoutUnit(doc_logical_right - page_logical_width);
+            LayoutUnit(logical_rect.InlineEndOffset() - page_logical_width);
       }
-      LayoutRect overflow(clipped_logical_left, doc_logical_top,
-                          LayoutUnit(page_logical_width), doc_logical_height);
+      logical_rect.offset.inline_offset = clipped_logical_left;
+      logical_rect.size.inline_size = LayoutUnit(page_logical_width);
 
-      if (!horizontal_writing_mode)
-        overflow = overflow.TransposedRect();
       AdjustViewSize();
       UpdateStyleAndLayout();
       // This is how we clip in case we overflow again.
       layout_view->ClearLayoutOverflow();
-      layout_view->AddLayoutOverflow(overflow);
+      layout_view->AddLayoutOverflow(
+          converter.ToPhysical(logical_rect)
+              .ToLayoutFlippedRect(layout_view->StyleRef(),
+                                   PhysicalSize(layout_view->Size())));
       return;
     }
   }
@@ -3506,14 +3478,14 @@ void LocalFrameView::ForceLayoutForPagination(
 }
 
 IntRect LocalFrameView::RootFrameToDocument(const IntRect& rect_in_root_frame) {
-  IntPoint offset = RootFrameToDocument(rect_in_root_frame.Location());
+  gfx::Point offset = RootFrameToDocument(rect_in_root_frame.origin());
   IntRect local_rect = rect_in_root_frame;
-  local_rect.SetLocation(offset);
+  local_rect.set_origin(offset);
   return local_rect;
 }
 
-IntPoint LocalFrameView::RootFrameToDocument(
-    const IntPoint& point_in_root_frame) {
+gfx::Point LocalFrameView::RootFrameToDocument(
+    const gfx::Point& point_in_root_frame) {
   return FlooredIntPoint(RootFrameToDocument(FloatPoint(point_in_root_frame)));
 }
 
@@ -3529,7 +3501,7 @@ FloatPoint LocalFrameView::RootFrameToDocument(
 
 IntRect LocalFrameView::DocumentToFrame(const IntRect& rect_in_document) const {
   IntRect rect_in_frame = rect_in_document;
-  rect_in_frame.SetLocation(DocumentToFrame(rect_in_document.Location()));
+  rect_in_frame.set_origin(DocumentToFrame(rect_in_document.origin()));
   return rect_in_frame;
 }
 
@@ -3542,9 +3514,9 @@ DoublePoint LocalFrameView::DocumentToFrame(
   return point_in_document - layout_viewport->GetScrollOffset();
 }
 
-IntPoint LocalFrameView::DocumentToFrame(
-    const IntPoint& point_in_document) const {
-  return FlooredIntPoint(DocumentToFrame(DoublePoint(point_in_document)));
+gfx::Point LocalFrameView::DocumentToFrame(
+    const gfx::Point& point_in_document) const {
+  return ToFlooredPoint(DocumentToFrame(DoublePoint(point_in_document)));
 }
 
 FloatPoint LocalFrameView::DocumentToFrame(
@@ -3568,8 +3540,9 @@ PhysicalRect LocalFrameView::DocumentToFrame(
                       rect_in_document.size);
 }
 
-IntPoint LocalFrameView::FrameToDocument(const IntPoint& point_in_frame) const {
-  return FlooredIntPoint(FrameToDocument(PhysicalOffset(point_in_frame)));
+gfx::Point LocalFrameView::FrameToDocument(
+    const gfx::Point& point_in_frame) const {
+  return ToFlooredPoint(FrameToDocument(PhysicalOffset(point_in_frame)));
 }
 
 PhysicalOffset LocalFrameView::FrameToDocument(
@@ -3583,8 +3556,7 @@ PhysicalOffset LocalFrameView::FrameToDocument(
 }
 
 IntRect LocalFrameView::FrameToDocument(const IntRect& rect_in_frame) const {
-  return IntRect(FrameToDocument(rect_in_frame.Location()),
-                 rect_in_frame.Size());
+  return IntRect(FrameToDocument(rect_in_frame.origin()), rect_in_frame.size());
 }
 
 PhysicalRect LocalFrameView::FrameToDocument(
@@ -3602,7 +3574,7 @@ IntRect LocalFrameView::ConvertToContainingEmbeddedContentView(
 
     IntRect rect(local_rect);
     // Add borders and padding
-    rect.Move(
+    rect.Offset(
         (layout_object->BorderLeft() + layout_object->PaddingLeft()).ToInt(),
         (layout_object->BorderTop() + layout_object->PaddingTop()).ToInt());
     return PixelSnappedIntRect(
@@ -3616,7 +3588,7 @@ IntRect LocalFrameView::ConvertFromContainingEmbeddedContentView(
     const IntRect& parent_rect) const {
   if (ParentFrameView()) {
     IntRect local_rect = parent_rect;
-    local_rect.MoveBy(-Location());
+    local_rect.Offset(-ToIntSize(Location()));
     return local_rect;
   }
   return parent_rect;
@@ -3692,9 +3664,9 @@ DoublePoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
   return parent_point;
 }
 
-IntPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
-    const IntPoint& local_point) const {
-  return RoundedIntPoint(
+gfx::Point LocalFrameView::ConvertToContainingEmbeddedContentView(
+    const gfx::Point& local_point) const {
+  return ToRoundedPoint(
       ConvertToContainingEmbeddedContentView(PhysicalOffset(local_point)));
 }
 
@@ -3901,11 +3873,11 @@ void LocalFrameView::PropagateFrameRects() {
   // To limit the number of Mojo communications, only notify the browser when
   // the rect's size changes, not when the position changes. The size needs to
   // be replicated if the iframe goes out-of-process.
-  IntSize frame_size = FrameRect().Size();
+  IntSize frame_size = FrameRect().size();
   if (!frame_size_ || *frame_size_ != frame_size) {
     frame_size_ = frame_size;
     GetFrame().GetLocalFrameHostRemote().FrameSizeChanged(
-        gfx::Size(frame_size));
+        ToGfxSize(frame_size));
   }
 
   // It's possible for changing the frame rect to not generate a layout
@@ -4000,9 +3972,9 @@ IntRect LocalFrameView::ViewportToFrame(const IntRect& rect_in_viewport) const {
   return ConvertFromRootFrame(rect_in_root_frame);
 }
 
-IntPoint LocalFrameView::ViewportToFrame(
-    const IntPoint& point_in_viewport) const {
-  return RoundedIntPoint(ViewportToFrame(PhysicalOffset(point_in_viewport)));
+gfx::Point LocalFrameView::ViewportToFrame(
+    const gfx::Point& point_in_viewport) const {
+  return ToRoundedPoint(ViewportToFrame(PhysicalOffset(point_in_viewport)));
 }
 
 IntRect LocalFrameView::FrameToViewport(const IntRect& rect_in_frame) const {
@@ -4011,8 +3983,9 @@ IntRect LocalFrameView::FrameToViewport(const IntRect& rect_in_frame) const {
       rect_in_root_frame);
 }
 
-IntPoint LocalFrameView::FrameToViewport(const IntPoint& point_in_frame) const {
-  IntPoint point_in_root_frame = ConvertToRootFrame(point_in_frame);
+gfx::Point LocalFrameView::FrameToViewport(
+    const gfx::Point& point_in_frame) const {
+  gfx::Point point_in_root_frame = ConvertToRootFrame(point_in_frame);
   return frame_->GetPage()->GetVisualViewport().RootFrameToViewport(
       point_in_root_frame);
 }
@@ -4023,9 +3996,9 @@ IntRect LocalFrameView::FrameToScreen(const IntRect& rect) const {
   return IntRect();
 }
 
-IntPoint LocalFrameView::SoonToBeRemovedUnscaledViewportToContents(
-    const IntPoint& point_in_viewport) const {
-  IntPoint point_in_root_frame = FlooredIntPoint(
+gfx::Point LocalFrameView::SoonToBeRemovedUnscaledViewportToContents(
+    const gfx::Point& point_in_viewport) const {
+  gfx::Point point_in_root_frame = FlooredIntPoint(
       frame_->GetPage()->GetVisualViewport().ViewportCSSPixelsToRootFrame(
           FloatPoint(point_in_viewport)));
   return ConvertFromRootFrame(point_in_root_frame);
@@ -4067,7 +4040,7 @@ bool LocalFrameView::CapturePaintPreview(GraphicsContext& context,
   DrawingRecorder recorder(context, *GetFrame().OwnerLayoutObject(),
                            DisplayItem::kDocumentBackground);
   context.Save();
-  context.Translate(paint_offset.Width(), paint_offset.Height());
+  context.Translate(paint_offset.width(), paint_offset.height());
   DCHECK(context.Canvas());
 
   auto* tracker = context.Canvas()->GetPaintPreviewTracker();
@@ -4075,12 +4048,12 @@ bool LocalFrameView::CapturePaintPreview(GraphicsContext& context,
 
   // Create a placeholder ID that maps to an embedding token.
   context.Canvas()->recordCustomData(tracker->CreateContentForRemoteFrame(
-      FrameRect(), maybe_embedding_token.value()));
+      ToGfxRect(FrameRect()), maybe_embedding_token.value()));
   context.Restore();
 
   // Send a request to the browser to trigger a capture of the frame.
   GetFrame().GetLocalFrameHostRemote().CapturePaintPreviewOfSubframe(
-      FrameRect(), tracker->Guid());
+      ToGfxRect(FrameRect()), tracker->Guid());
   return true;
 }
 
@@ -4226,8 +4199,9 @@ IntRect LocalFrameView::ConvertToRootFrame(const IntRect& local_rect) const {
   return local_rect;
 }
 
-IntPoint LocalFrameView::ConvertToRootFrame(const IntPoint& local_point) const {
-  return RoundedIntPoint(ConvertToRootFrame(PhysicalOffset(local_point)));
+gfx::Point LocalFrameView::ConvertToRootFrame(
+    const gfx::Point& local_point) const {
+  return ToRoundedPoint(ConvertToRootFrame(PhysicalOffset(local_point)));
 }
 
 PhysicalOffset LocalFrameView::ConvertToRootFrame(
@@ -4270,9 +4244,9 @@ IntRect LocalFrameView::ConvertFromRootFrame(
   return rect_in_root_frame;
 }
 
-IntPoint LocalFrameView::ConvertFromRootFrame(
-    const IntPoint& point_in_root_frame) const {
-  return RoundedIntPoint(
+gfx::Point LocalFrameView::ConvertFromRootFrame(
+    const gfx::Point& point_in_root_frame) const {
+  return ToRoundedPoint(
       ConvertFromRootFrame(PhysicalOffset(point_in_root_frame)));
 }
 
@@ -4344,12 +4318,12 @@ void LocalFrameView::Hide() {
 }
 
 int LocalFrameView::ViewportWidth() const {
-  int viewport_width = GetLayoutSize().Width();
+  int viewport_width = GetLayoutSize().width();
   return AdjustForAbsoluteZoom::AdjustInt(viewport_width, GetLayoutView());
 }
 
 int LocalFrameView::ViewportHeight() const {
-  int viewport_height = GetLayoutSize().Height();
+  int viewport_height = GetLayoutSize().height();
   return AdjustForAbsoluteZoom::AdjustInt(viewport_height, GetLayoutView());
 }
 
@@ -4737,12 +4711,12 @@ void LocalFrameView::SetInitialViewportSize(const IntSize& viewport_size) {
 
 int LocalFrameView::InitialViewportWidth() const {
   DCHECK(frame_->IsMainFrame());
-  return initial_viewport_size_.Width();
+  return initial_viewport_size_.width();
 }
 
 int LocalFrameView::InitialViewportHeight() const {
   DCHECK(frame_->IsMainFrame());
-  return initial_viewport_size_.Height();
+  return initial_viewport_size_.height();
 }
 
 MainThreadScrollingReasons LocalFrameView::MainThreadScrollingReasonsPerFrame()

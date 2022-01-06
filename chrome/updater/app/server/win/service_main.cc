@@ -21,7 +21,6 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/win/win_constants.h"
 #include "chrome/updater/win/win_util.h"
-#include "chrome/updater/win/wrl_module.h"
 
 namespace updater {
 

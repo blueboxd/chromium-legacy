@@ -109,7 +109,8 @@ class PLATFORM_EXPORT DisplayItem {
     kForeignLayerLinkHighlight,
     kForeignLayerViewportScroll,
     kForeignLayerViewportScrollbar,
-    kForeignLayerLast = kForeignLayerViewportScrollbar,
+    kForeignLayerDocumentTransitionContent,
+    kForeignLayerLast = kForeignLayerDocumentTransitionContent,
 
     kClipPaintPhaseFirst,
     kClipPaintPhaseLast = kClipPaintPhaseFirst + kPaintPhaseMax,
@@ -132,6 +133,9 @@ class PLATFORM_EXPORT DisplayItem {
     // include content that does not paint. Hit test data ensure a layer exists
     // and is sized properly even if no content would otherwise be painted.
     kHitTest,
+
+    // Used for paint chunks that contain region capture data.
+    kRegionCapture,
 
     // Used both for specifying the paint-order scroll location, and for non-
     // composited scroll hit testing (see: hit_test_data.h).

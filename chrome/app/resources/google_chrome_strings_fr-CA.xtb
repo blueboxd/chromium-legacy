@@ -52,7 +52,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2123055963409958220">Aidez-nous à améliorer Google Chrome en nous signalant les <ph name="BEGIN_LINK" />paramètres actuels<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Veuillez redémarrer Chrome maintenant</translation>
 <translation id="2189289170880510015">Personnaliser certains des choix de confidentialité les plus importants de Chrome</translation>
-<translation id="2246246234298806438">Google Chrome ne peut pas afficher l'aperçu avant impression lorsque le visualiseur de documents PDF intégré n'est pas installé.</translation>
 <translation id="2290014774651636340">Les clés d'API Google sont manquantes. Certaines fonctionnalités de Google Chrome seront désactivées.</translation>
 <translation id="2290095356545025170">Voulez-vous vraiment désinstaller Google Chrome?</translation>
 <translation id="2309047409763057870">Cette installation de Google Chrome est secondaire. Celui-ci ne peut donc pas servir de navigateur par défaut.</translation>
@@ -63,7 +62,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2429317896000329049">Google Chrome ne peut pas synchroniser vos données, car la synchronisation n'est pas offerte pour votre domaine.</translation>
 <translation id="2467438592969358367">Google Chrome veut exporter vos mots de passe. Pour autoriser cette action, entrez votre mot de passe Windows.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
-<translation id="2518751521812750372">Lorsque vous fermez Chrome, les témoins et les données relatives aux sites des pages visitées sont automatiquement effacés</translation>
 <translation id="2534507159460261402">Google Pay (copiée dans Chrome)</translation>
 <translation id="2574930892358684005"><ph name="EXISTING_USER" /> est déjà connecté à ce profil Chrome. Pour maintenir votre navigation séparée, Chrome peut créer un profil pour vous.</translation>
 <translation id="2580411288591421699">Vous ne pouvez pas installer la version de Google Chrome qui est en cours d'exécution. Veuillez fermer Google Chrome et essayez de nouveau.</translation>
@@ -92,6 +90,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="3037838751736561277">Google Chrome fonctionne en mode arrière-plan.</translation>
 <translation id="3059710691562604940">La navigation sécurisée est désactivée. Chrome vous recommande de l'activer.</translation>
 <translation id="3065168410429928842">Onglet Chrome</translation>
+<translation id="3069821012350118710">Les sites que vous consultez gardent vos informations en mémoire tant que vous ne fermez pas Chrome</translation>
 <translation id="3080151273017101988">Continuer l'exécution des applications en arrière-plan après la fermeture de Google Chrome</translation>
 <translation id="3089968997497233615">Une nouvelle version de Google Chrome encore plus sûre est maintenant offerte.</translation>
 <translation id="3100998948628680988">Nommer votre profil Chrome</translation>
@@ -102,6 +101,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="3379938682270551431">{0,plural, =0{Chrome va maintenant redémarrer}=1{Chrome redémarrera dans 1 seconde}one{Chrome redémarrera dans # seconde}other{Chrome redémarrera dans # secondes}}</translation>
 <translation id="3395323229510056640">Obtenir de l'aide pour Chrome OS</translation>
 <translation id="3396977131400919238">Une erreur de système d'exploitation s'est produite pendant l'installation. Veuillez télécharger de nouveau Google Chrome.</translation>
+<translation id="3428747202529429621">Il vous protège dans Chrome et peut être utilisé pour améliorer votre sécurité dans d'autres applications Google lorsque vous êtes connecté à votre compte</translation>
 <translation id="3434246496373299699">Chrome peut vérifier vos mots de passe lorsque vous vous connectez avec votre compte Google</translation>
 <translation id="3451115285585441894">Ajout à Google Chrome en cours…</translation>
 <translation id="345171907106878721">Ajouter un utilisateur à Google Chrome</translation>
@@ -195,6 +195,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5804318322022881572">Impossible de lancer Chrome. Réessayez.</translation>
 <translation id="5867197326698922595">Google Chrome essaie de modifier des mots de passe.</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
+<translation id="5901850848447342934">Vous serez <ph name="BEGIN_BOLD" />déconnecté de la plupart des sites<ph name="END_BOLD" /> lorsque vous fermerez Chrome. Si la synchronisation est désactivée, vous serez également <ph name="BEGIN_BOLD" />déconnecté des services Google et de Chrome<ph name="END_BOLD" />.</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Connexion au réseau</translation>
 <translation id="5940385492829620908">Votre contenu Web, vos favoris et toutes vos données de Google Chrome sont conservés ici.</translation>
 <translation id="5941830788786076944">Faire de Google Chrome le navigateur par défaut</translation>
@@ -204,11 +205,11 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6145313976051292476">Ouvrir les PDF dans Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> — Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome bêta</translation>
-<translation id="61852838583753520">Mettre à jour &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Règle de trafic entrant pour Google Chrome autorisant le trafic mDNS.</translation>
 <translation id="6291089322031436445">Applications Chrome Dev</translation>
 <translation id="6291549208091401781">Google Chrome est déjà installé pour tous les utilisateurs sur votre ordinateur.</translation>
 <translation id="6368958679917195344">Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels libres<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6412673304250309937">Il vérifie les URL en fonction d'une liste de sites non sécuritaires stockée dans Chrome. Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chrome peut également envoyer les URL concernées, y compris des extraits du contenu de pages, à la navigation sécurisée.</translation>
 <translation id="6418662306461808273">Passer au profil Chrome existant?</translation>
 <translation id="6506909944137591434">Chrome requiert l'autorisation d'accéder à l'appareil photo pour créer une carte 3D de votre environnement</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome pour les concepteurs</translation>
@@ -285,11 +286,11 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8614913330719544658">Google Chrome ne répond pas. Voulez-vous le relancer maintenant?</translation>
 <translation id="861702415419836452">Chrome a besoin de votre autorisation pour accéder à votre appareil photo afin de créer une carte 3D de votre environnement</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome redémarrera dans 1 minute}one{Chrome redémarrera dans # minute}other{Chrome redémarrera dans # minutes}}</translation>
+<translation id="8629311577791198377">Lorsque vous fermez toutes les fenêtres de Chrome, les témoins et les données relatives aux sites sont automatiquement effacés</translation>
 <translation id="8641606876632989680">Chrome vous avisera lorsque vous utilisez un mot de passe compromis pour vous connecter</translation>
 <translation id="8669527147644353129">Application d'aide de Google Chrome</translation>
 <translation id="8679801911857917785">Elle contrôle également la page qui s'affiche au démarrage de Chrome.</translation>
 <translation id="8686817260976772516">Utilisez les profils Chrome pour dissocier toutes vos données Chrome. Créez des profils pour vos amis et votre famille, ou créez un profil pour le travail et un autre pour les divertissements.</translation>
-<translation id="870251953148363156">Mise à jour de &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome ne parvient pas à déterminer quel est le navigateur par défaut ou à le définir</translation>
 <translation id="8823341990149967727">Google Chrome n'est plus à jour</translation>
 <translation id="8834965163890861871">Google Chrome essaie de modifier des mots de passe. Pour autoriser cette action, entrez votre mot de passe Windows.</translation>

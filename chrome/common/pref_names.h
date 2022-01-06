@@ -224,6 +224,8 @@ extern const char kMouseScrollAcceleration[];
 extern const char kPointingStickAcceleration[];
 extern const char kTouchpadAcceleration[];
 extern const char kTouchpadScrollAcceleration[];
+extern const char kTouchpadHapticFeedback[];
+extern const char kTouchpadHapticClickSensitivity[];
 extern const char kMouseSensitivity[];
 extern const char kMouseScrollSensitivity[];
 extern const char kTouchpadSensitivity[];
@@ -281,6 +283,10 @@ extern const char kUnifiedDesktopEnabledByDefault[];
 extern const char kHatsLastInteractionTimestamp[];
 extern const char kHatsSurveyCycleEndTimestamp[];
 extern const char kHatsDeviceIsSelected[];
+extern const char kHatsStabilitySurveyCycleEndTs[];
+extern const char kHatsStabilityDeviceIsSelected[];
+extern const char kHatsPerformanceSurveyCycleEndTs[];
+extern const char kHatsPerformanceDeviceIsSelected[];
 extern const char kHatsOnboardingSurveyCycleEndTs[];
 extern const char kHatsOnboardingDeviceIsSelected[];
 extern const char kHatsUnlockDeviceIsSelected[];
@@ -759,7 +765,6 @@ extern const char kDeviceEnrollmentSubOrganization[];
 extern const char kDeviceEnrollmentAutoStart[];
 extern const char kDeviceEnrollmentCanExit[];
 extern const char kDeviceDMToken[];
-extern const char kTimesHIDDialogShown[];
 extern const char kUsersLastInputMethod[];
 extern const char kEchoCheckedOffers[];
 extern const char kCachedMultiProfileUserBehavior[];
@@ -810,8 +815,6 @@ extern const char kChromeOsReleaseChannel[];
 
 extern const char kPerformanceTracingEnabled[];
 
-extern const char kTabStripStackedLayout[];
-
 extern const char kRegisteredBackgroundContents[];
 
 extern const char kTotalMemoryLimitMb[];
@@ -848,7 +851,6 @@ extern const char kCipherSuiteBlacklist[];
 extern const char kH2ClientCertCoalescingHosts[];
 extern const char kHSTSPolicyBypassList[];
 extern const char kCECPQ2Enabled[];
-extern const char kTripleDESEnabled[];
 
 extern const char kBuiltInDnsClientEnabled[];
 extern const char kDnsOverHttpsMode[];
@@ -929,6 +931,7 @@ extern const char kShortcutMigrationVersion[];
 extern const char kRLZBrand[];
 extern const char kRLZDisabled[];
 extern const char kAppListLocalState[];
+extern const char kAppListPreferredOrder[];
 #endif
 
 extern const char kAppShortcutsVersion[];
@@ -1096,7 +1099,7 @@ extern const char kAllowSyncXHRInPageDismissal[];
 extern const char kUsageStatsEnabled[];
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 extern const char kClientCertificateManagementAllowed[];
 extern const char kCACertificateManagementAllowed[];
 #endif
@@ -1134,8 +1137,6 @@ extern const char kPromptOnMultipleMatchingCertificates[];
 extern const char kMediaFeedsBackgroundFetching[];
 extern const char kMediaFeedsSafeSearchEnabled[];
 extern const char kMediaFeedsAutoSelectEnabled[];
-
-extern const char kAppCacheForceEnabled[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kAdbSideloadingDisallowedNotificationShown[];
@@ -1199,6 +1200,10 @@ extern const char kLastWhatsNewVersion[];
 #if !defined(OS_ANDROID)
 extern const char kLensRegionSearchEnabled[];
 #endif
+
+extern const char kPrivacyReviewShowWelcomeCard[];
+
+extern const char kCorsNonWildcardRequestHeadersSupport[];
 
 }  // namespace prefs
 

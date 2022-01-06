@@ -2253,6 +2253,11 @@ class CacheStorageSideDataSizeChecker
         cache_name_(cache_name),
         url_(url) {}
 
+  CacheStorageSideDataSizeChecker(const CacheStorageSideDataSizeChecker&) =
+      delete;
+  CacheStorageSideDataSizeChecker& operator=(
+      const CacheStorageSideDataSizeChecker&) = delete;
+
  private:
   friend class base::RefCounted<CacheStorageSideDataSizeChecker>;
 
@@ -2284,7 +2289,8 @@ class CacheStorageSideDataSizeChecker
     (*cache_storage_cache_)
         ->Match(std::move(scoped_request),
                 blink::mojom::CacheQueryOptions::New(),
-                /*in_related_fetch_event=*/false, /*trace_id=*/0,
+                /*in_related_fetch_event=*/false,
+                /*in_range_fetch_event=*/false, /*trace_id=*/0,
                 base::BindOnce(&CacheStorageSideDataSizeChecker::
                                    OnCacheStorageCacheMatchCallback,
                                this, result, std::move(continuation)));
@@ -2322,7 +2328,6 @@ class CacheStorageSideDataSizeChecker
       cache_storage_cache_;
   const std::string cache_name_;
   const GURL url_;
-  DISALLOW_COPY_AND_ASSIGN(CacheStorageSideDataSizeChecker);
 };
 
 class ServiceWorkerV8CodeCacheForCacheStorageTest
@@ -3392,7 +3397,7 @@ class ServiceWorkerBackForwardCacheAndKeepActiveFreezingBrowserTest
   }
 
   RenderFrameHostImpl* current_frame_host() {
-    return web_contents()->GetFrameTree()->root()->current_frame_host();
+    return web_contents()->GetPrimaryFrameTree().root()->current_frame_host();
   }
 
   const std::string kTryToTriggerEvictionScript = R"(
@@ -3630,8 +3635,8 @@ class ServiceWorkerBackForwardCacheBrowserTest
 
   RenderFrameHostImpl* current_frame_host() {
     return static_cast<WebContentsImpl*>(shell()->web_contents())
-        ->GetFrameTree()
-        ->root()
+        ->GetPrimaryFrameTree()
+        .root()
         ->current_frame_host();
   }
 

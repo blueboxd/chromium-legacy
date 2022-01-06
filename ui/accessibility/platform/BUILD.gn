@@ -83,6 +83,19 @@ source_set("platform") {
     "//ui/display",
   ]
 
+  if (is_fuchsia) {
+    sources += [
+      "fuchsia/accessibility_bridge_fuchsia.h",
+      "fuchsia/accessibility_bridge_fuchsia_registry.cc",
+      "fuchsia/accessibility_bridge_fuchsia_registry.h",
+      "fuchsia/fuchsia_types.cc",
+      "fuchsia/fuchsia_types.h",
+    ]
+
+    public_deps +=
+        [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics" ]
+  }
+
   if (has_native_accessibility) {
     sources += [
       "ax_platform_text_boundary.cc",
@@ -133,6 +146,7 @@ source_set("platform") {
         "ax_platform_node_cocoa.mm",
         "ax_platform_node_mac.h",
         "ax_platform_node_mac.mm",
+        "ax_private_attributes_mac.h",
         "ax_private_webkit_constants_mac.h",
         "ax_private_webkit_constants_mac.mm",
       ]

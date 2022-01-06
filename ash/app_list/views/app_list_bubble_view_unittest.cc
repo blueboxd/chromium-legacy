@@ -11,6 +11,7 @@
 
 #include "ash/app_list/app_list_bubble_presenter.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/model/app_list_test_model.h"
 #include "ash/app_list/model/search/test_search_result.h"
 #include "ash/app_list/test/app_list_test_helper.h"
@@ -32,15 +33,18 @@
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/test_utils.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
@@ -50,39 +54,28 @@ using views::Widget;
 namespace ash {
 namespace {
 
+SearchModel* GetSearchModel() {
+  return AppListModelProvider::Get()->search_model();
+}
+
 void AddSearchResult(const std::string& id, const std::u16string& title) {
   auto search_result = std::make_unique<TestSearchResult>();
   search_result->set_result_id(id);
   search_result->set_display_type(SearchResultDisplayType::kList);
   search_result->set_title(title);
-  Shell::Get()->app_list_controller()->GetSearchModel()->results()->Add(
-      std::move(search_result));
-}
-
-void AddRecentApps(int num_apps) {
-  auto* search_model = Shell::Get()->app_list_controller()->GetSearchModel();
-  for (int i = 0; i < num_apps; i++) {
-    auto result = std::make_unique<TestSearchResult>();
-    // Use the same "Item #" convention as AppListTestModel uses. The search
-    // result IDs must match app item IDs in the app list data model.
-    result->set_result_id(base::StringPrintf("Item %d", i));
-    result->set_result_type(AppListSearchResultType::kInstalledApp);
-    // TODO(crbug.com/1216662): Replace with a real display type after the ML
-    // team gives us a way to query directly for recent apps.
-    result->set_display_type(SearchResultDisplayType::kChip);
-    search_model->results()->Add(std::move(result));
-  }
+  search_result->set_best_match(true);
+  GetSearchModel()->results()->Add(std::move(search_result));
 }
 
 void AddContinueSuggestionResult(int num_suggestions) {
-  auto* search_model = Shell::Get()->app_list_controller()->GetSearchModel();
+  auto* search_model = GetSearchModel();
   for (int i = 0; i < num_suggestions; i++) {
     auto result = std::make_unique<TestSearchResult>();
     result->set_result_id(base::NumberToString(i));
     result->set_result_type(AppListSearchResultType::kFileChip);
     // TODO(crbug.com/1216662): Replace with a real display type after the ML
     // team gives us a way to query directly for recent apps.
-    result->set_display_type(SearchResultDisplayType::kChip);
+    result->set_display_type(SearchResultDisplayType::kContinue);
     search_model->results()->Add(std::move(result));
   }
 }
@@ -91,17 +84,26 @@ AppListBubblePresenter* GetBubblePresenter() {
   return Shell::Get()->app_list_controller()->bubble_presenter_for_test();
 }
 
-views::View* GetSeparator() {
+views::View* GetSearchBoxSeparator() {
   return GetBubblePresenter()->bubble_view_for_test()->separator_for_test();
 }
 
 // Simulates the Assistant being enabled.
 void SimulateAssistantEnabled() {
-  Shell::Get()
-      ->app_list_controller()
-      ->GetSearchModel()
-      ->search_box()
-      ->SetShowAssistantButton(true);
+  GetSearchModel()->search_box()->SetShowAssistantButton(true);
+}
+
+// Waits for a layer animation to complete.
+void WaitForLayerAnimation(ui::Layer* layer) {
+  auto* compositor = layer->GetCompositor();
+  while (layer->GetAnimator()->is_animating()) {
+    EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+  }
+
+  // Ensure there is one more frame presented after animation finishes
+  // to allow animation throughput data is passed from cc to ui.
+  ignore_result(
+      ui::WaitForNextFrameToBePresented(compositor, base::Milliseconds(200)));
 }
 
 class AppListBubbleViewTest : public AshTestBase {
@@ -114,14 +116,18 @@ class AppListBubbleViewTest : public AshTestBase {
   // testing::Test:
   void SetUp() override {
     AshTestBase::SetUp();
-    auto model = std::make_unique<test::AppListTestModel>();
-    app_list_test_model_ = model.get();
-    Shell::Get()->app_list_controller()->SetAppListModelForTest(
-        std::move(model));
+    app_list_test_model_ = std::make_unique<test::AppListTestModel>();
+    search_model_ = std::make_unique<SearchModel>();
+    Shell::Get()->app_list_controller()->SetActiveModel(
+        app_list_test_model_.get(), search_model_.get());
   }
 
   // Shows the app list on the primary display.
   void ShowAppList() { GetAppListTestHelper()->ShowAppList(); }
+
+  void AddRecentApps(int num_apps) {
+    GetAppListTestHelper()->AddRecentApps(num_apps);
+  }
 
   void AddAppItems(int num_items) {
     app_list_test_model_->PopulateApps(num_items);
@@ -142,6 +148,14 @@ class AppListBubbleViewTest : public AshTestBase {
 
   AppListBubbleAppsPage* GetAppsPage() {
     return GetAppListTestHelper()->GetBubbleAppsPage();
+  }
+
+  views::View* GetAppsPageSeparator() {
+    return GetAppsPage()->separator_for_test();
+  }
+
+  ContinueSectionView* GetContinueSectionView() {
+    return GetAppListTestHelper()->GetContinueSectionView();
   }
 
   RecentAppsView* GetRecentAppsView() {
@@ -173,7 +187,8 @@ class AppListBubbleViewTest : public AshTestBase {
   }
 
   base::test::ScopedFeatureList scoped_features_;
-  test::AppListTestModel* app_list_test_model_ = nullptr;
+  std::unique_ptr<test::AppListTestModel> app_list_test_model_;
+  std::unique_ptr<SearchModel> search_model_;
 };
 
 TEST_F(AppListBubbleViewTest, LayerConfiguration) {
@@ -207,9 +222,104 @@ TEST_F(AppListBubbleViewTest, Layout) {
 
   // The separator is immediately under the search box.
   gfx::Point separator_origin;
-  views::View::ConvertPointToWidget(GetSeparator(), &separator_origin);
+  views::View::ConvertPointToWidget(GetSearchBoxSeparator(), &separator_origin);
   EXPECT_EQ(0, separator_origin.x());
   EXPECT_EQ(search_box_view->height(), separator_origin.y());
+}
+
+TEST_F(AppListBubbleViewTest, OpeningBubbleTriggersAnimations) {
+  // Enable animations.
+  base::test::ScopedFeatureList feature(
+      features::kProductivityLauncherAnimation);
+  ui::ScopedAnimationDurationScaleMode duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Show an app list with all sections.
+  AddContinueSuggestionResult(4);
+  AddRecentApps(5);
+  AddAppItems(5);
+  ShowAppList();
+
+  // The bubble view starts animating.
+  auto* app_list_bubble_view = GetAppListTestHelper()->GetBubbleView();
+  auto* bubble_animator = app_list_bubble_view->layer()->GetAnimator();
+  ASSERT_TRUE(bubble_animator);
+  EXPECT_TRUE(bubble_animator->IsAnimatingProperty(
+      ui::LayerAnimationElement::AnimatableProperty::BOUNDS));
+  EXPECT_TRUE(bubble_animator->IsAnimatingProperty(
+      ui::LayerAnimationElement::AnimatableProperty::OPACITY));
+
+  // Each section view starts animating.
+  auto* animator = GetContinueSectionView()->layer()->GetAnimator();
+  ASSERT_TRUE(animator);
+  EXPECT_TRUE(animator->IsAnimatingProperty(
+      ui::LayerAnimationElement::AnimatableProperty::TRANSFORM));
+
+  animator = GetRecentAppsView()->layer()->GetAnimator();
+  ASSERT_TRUE(animator);
+  EXPECT_TRUE(animator->IsAnimatingProperty(
+      ui::LayerAnimationElement::AnimatableProperty::TRANSFORM));
+
+  animator = GetAppsGridView()->layer()->GetAnimator();
+  ASSERT_TRUE(animator);
+  EXPECT_TRUE(animator->IsAnimatingProperty(
+      ui::LayerAnimationElement::AnimatableProperty::TRANSFORM));
+}
+
+TEST_F(AppListBubbleViewTest, ShowAnimationCreatesAndDestroysLayers) {
+  // Enable animations.
+  base::test::ScopedFeatureList feature(
+      features::kProductivityLauncherAnimation);
+  ui::ScopedAnimationDurationScaleMode duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Show an app list with all sections.
+  AddContinueSuggestionResult(4);
+  AddRecentApps(5);
+  AddAppItems(5);
+  ShowAppList();
+
+  // The animating sections have layers created.
+  auto* continue_section = GetAppListTestHelper()->GetContinueSectionView();
+  EXPECT_TRUE(continue_section->layer());
+  auto* recent_apps = GetRecentAppsView();
+  EXPECT_TRUE(recent_apps->layer());
+  auto* separator = GetAppsPage()->separator_for_test();
+  EXPECT_TRUE(separator->layer());
+  auto* apps_grid_view = GetAppsGridView();
+  EXPECT_TRUE(apps_grid_view->layer());
+
+  // Finish the animation.
+  WaitForLayerAnimation(apps_grid_view->layer());
+
+  // Temporary layers are cleaned up.
+  EXPECT_FALSE(continue_section->layer());
+  EXPECT_FALSE(recent_apps->layer());
+  EXPECT_FALSE(separator->layer());
+
+  // The apps grid view always has a layer, it still exists.
+  EXPECT_TRUE(apps_grid_view->layer());
+}
+
+TEST_F(AppListBubbleViewTest, ShowAnimationRecordsSmoothnessHistogram) {
+  base::HistogramTester histograms;
+
+  // Enable animations.
+  base::test::ScopedFeatureList feature(
+      features::kProductivityLauncherAnimation);
+  ui::ScopedAnimationDurationScaleMode duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Show an app list with just the apps grid.
+  AddAppItems(5);
+  ShowAppList();
+
+  // Wait for the animation to finish.
+  WaitForLayerAnimation(GetAppsGridView()->layer());
+
+  // Smoothness was recorded.
+  histograms.ExpectTotalCount(
+      "Apps.ClamshellLauncher.AnimationSmoothness.OpenAppsPage", 1);
 }
 
 TEST_F(AppListBubbleViewTest, OpeningBubbleFocusesSearchBox) {
@@ -252,7 +362,7 @@ TEST_F(AppListBubbleViewTest, ClickingAssistantButtonShowsAssistantPage) {
   LeftClickOn(search_box->assistant_button());
 
   EXPECT_FALSE(search_box->GetVisible());
-  EXPECT_FALSE(GetSeparator()->GetVisible());
+  EXPECT_FALSE(GetSearchBoxSeparator()->GetVisible());
   EXPECT_FALSE(GetAppsPage()->GetVisible());
   EXPECT_FALSE(GetSearchPage()->GetVisible());
   EXPECT_TRUE(GetAssistantPage()->GetVisible());
@@ -518,8 +628,7 @@ TEST_F(AppListBubbleViewTest, UpArrowFromRecentsSelectsContinueTasks) {
   ShowAppList();
 
   ContinueTaskView* last_continue_task =
-      GetAppListTestHelper()->GetContinueSectionView()->GetTaskViewAtForTesting(
-          3);
+      GetContinueSectionView()->GetTaskViewAtForTesting(3);
   auto* recent_apps_view = GetRecentAppsView();
 
   // Pressing 'up' from any column in recent apps moves to the last continue
@@ -579,9 +688,9 @@ TEST_F(AppListBubbleViewTest,
 
   PressAndReleaseKey(ui::VKEY_UP);
 
-  auto* continue_section = GetAppListTestHelper()->GetContinueSectionView();
   auto* focus_manager = GetAppsPage()->GetFocusManager();
-  EXPECT_TRUE(continue_section->Contains(focus_manager->GetFocusedView()))
+  EXPECT_TRUE(
+      GetContinueSectionView()->Contains(focus_manager->GetFocusedView()))
       << GetFocusedViewName();
 }
 
@@ -599,11 +708,11 @@ TEST_F(AppListBubbleViewTest, DownArrowMovesFocusToContinueTasks) {
 
   // Pressing down arrow moves focus through the continue tasks. It does not
   // trigger ScrollView scrolling.
-  auto* continue_section = GetAppListTestHelper()->GetContinueSectionView();
   auto* focus_manager = GetAppsPage()->GetFocusManager();
   for (int i = 0; i < 4; i++) {
     PressAndReleaseKey(ui::VKEY_DOWN);
-    EXPECT_TRUE(continue_section->Contains(focus_manager->GetFocusedView()));
+    EXPECT_TRUE(
+        GetContinueSectionView()->Contains(focus_manager->GetFocusedView()));
   }
 
   // Pressing down arrow again moves focus into the apps grid.
@@ -769,7 +878,7 @@ TEST_F(AppListBubbleViewTest, OpeningFolderRemovesOtherViewsFromAccessibility) {
   auto* search_box = GetSearchBoxView();
   EXPECT_TRUE(search_box->GetViewAccessibility().IsIgnored());
   EXPECT_TRUE(search_box->GetViewAccessibility().IsLeaf());
-  auto* continue_section = GetAppListTestHelper()->GetContinueSectionView();
+  auto* continue_section = GetContinueSectionView();
   EXPECT_TRUE(continue_section->GetViewAccessibility().IsIgnored());
   EXPECT_TRUE(continue_section->GetViewAccessibility().IsLeaf());
   auto* recent_apps = GetRecentAppsView();
@@ -847,6 +956,62 @@ TEST_F(AppListBubbleViewTest, CloseFolderWithSelectedItemFocusesFolderItem) {
   EXPECT_TRUE(root_apps_grid_view->has_selected_view());
   EXPECT_TRUE(root_apps_grid_view->IsSelectedView(folder_item));
   EXPECT_TRUE(folder_item->HasFocus()) << GetFocusedViewName();
+}
+
+TEST_F(AppListBubbleViewTest, ScrollInFolderHeaderScrollsFolder) {
+  // Add a folder with enough apps that its grid will be scrollable.
+  AddFolderWithApps(30);
+  ShowAppList();
+
+  // Open the folder and get the initial scroll position.
+  AppListItemView* folder_item = GetAppsGridView()->GetItemViewAt(0);
+  LeftClickOn(folder_item);
+  auto* folder_view = GetAppListTestHelper()->GetBubbleFolderView();
+  auto* scroll_view = folder_view->scroll_view_for_test();
+  const int initial_scroll_offset = scroll_view->GetVisibleRect().y();
+
+  // Simulate a mouse wheel scroll up event in the folder header.
+  auto* generator = GetEventGenerator();
+  generator->MoveMouseTo(
+      folder_view->folder_header_view()->GetBoundsInScreen().CenterPoint());
+  generator->MoveMouseWheel(0, -10);
+
+  // The view scrolled.
+  const int final_scroll_offset = scroll_view->GetVisibleRect().y();
+  EXPECT_GT(final_scroll_offset, initial_scroll_offset);
+}
+
+TEST_F(AppListBubbleViewTest,
+       SeparatorWontShowWithNoRecentAppsNorContinueFiles) {
+  AddAppItems(5);
+  ShowAppList();
+
+  ASSERT_EQ(0, GetRecentAppsView()->GetItemViewCount());
+  ASSERT_EQ(0u, GetContinueSectionView()->GetTasksSuggestionsCount());
+
+  EXPECT_FALSE(GetAppsPageSeparator()->GetVisible());
+}
+
+TEST_F(AppListBubbleViewTest, SeparatorShowsWithRecentApps) {
+  AddAppItems(5);
+  AddRecentApps(4);
+  ShowAppList();
+
+  ASSERT_EQ(4, GetRecentAppsView()->GetItemViewCount());
+  ASSERT_EQ(0u, GetContinueSectionView()->GetTasksSuggestionsCount());
+
+  EXPECT_TRUE(GetAppsPageSeparator()->GetVisible());
+}
+
+TEST_F(AppListBubbleViewTest, SeparatorShowsWithContinueFiles) {
+  AddAppItems(5);
+  AddContinueSuggestionResult(4);
+  ShowAppList();
+
+  ASSERT_EQ(0, GetRecentAppsView()->GetItemViewCount());
+  ASSERT_EQ(4u, GetContinueSectionView()->GetTasksSuggestionsCount());
+
+  EXPECT_TRUE(GetAppsPageSeparator()->GetVisible());
 }
 
 }  // namespace

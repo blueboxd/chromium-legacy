@@ -158,6 +158,7 @@ NSString* const kLearnMoreUrl = @"internal://learn-more";
     _learnMoreTextView.adjustsFontForContentSizeCategory = YES;
     _learnMoreTextView.accessibilityIdentifier =
         kLearnMoreTextViewAccessibilityIdentifier;
+    _learnMoreTextView.backgroundColor = UIColor.clearColor;
 
     _learnMoreTextView.linkTextAttributes =
         @{NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor]};
@@ -179,7 +180,7 @@ NSString* const kLearnMoreUrl = @"internal://learn-more";
 
     NSAttributedString* learnMoreTextAttributedString =
         AttributedStringFromStringWithLink(
-            l10n_util::GetNSString(IDS_IOS_ENTERPRISE_MANAGED_SYNC_DETAILS),
+            l10n_util::GetNSString(IDS_IOS_ENTERPRISE_MANAGED_SIGNIN_DETAILS),
             textAttributes, linkAttributes);
 
     _learnMoreTextView.attributedText = learnMoreTextAttributedString;
@@ -320,9 +321,8 @@ NSString* const kLearnMoreUrl = @"internal://learn-more";
   // Open signin popover.
   EnterpriseInfoPopoverViewController* bubbleViewController =
       [[EnterpriseInfoPopoverViewController alloc]
-                 initWithMessage:
-                     l10n_util::GetNSString(
-                         IDS_IOS_ENTERPRISE_MANAGED_SYNC_DETAILS_POPOVER)
+                 initWithMessage:l10n_util::GetNSString(
+                                     IDS_IOS_ENTERPRISE_MANAGED_SYNC)
                   enterpriseName:nil  // TODO(crbug.com/1251986): Remove this
                                       // variable.
           isPresentingFromButton:NO

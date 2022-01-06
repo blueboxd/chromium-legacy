@@ -1678,6 +1678,9 @@ bool Widget::ShouldDescendIntoChildForEventHandling(
     return true;
 
   for (View* view : base::Reversed(views_with_layers)) {
+    // Skip views that don't process events.
+    if (!view->GetCanProcessEventsWithinSubtree())
+      continue;
     ui::Layer* layer = view->layer();
     DCHECK(layer);
     if (layer->visible() && layer->bounds().Contains(location)) {
@@ -1688,6 +1691,10 @@ bool Widget::ShouldDescendIntoChildForEventHandling(
         return true;
       }
 
+      // TODO(pbos): Does this need to be made more robust through hit testing
+      // or using ViewTargeter? This for instance does not take into account
+      // whether the view is enabled/drawn/etc.
+      //
       // Event targeting uses the visible bounds of the View, which may differ
       // from the bounds of the layer. Verify the view hosting the layer
       // actually contains |location|. Use GetVisibleBounds(), which is
@@ -1747,23 +1754,7 @@ void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
 const ui::ColorProvider* Widget::GetColorProvider() const {
   return ui::ColorProviderManager::Get().GetColorProviderFor(
-      GetColorProviderKey());
-}
-
-ui::ColorProviderManager::Key Widget::GetColorProviderKey() const {
-  const auto* native_theme = GetNativeTheme();
-  const auto color_scheme = native_theme->GetDefaultSystemColorScheme();
-  return ui::ColorProviderManager::Key(
-      (color_scheme == ui::NativeTheme::ColorScheme::kDark)
-          ? ui::ColorProviderManager::ColorMode::kDark
-          : ui::ColorProviderManager::ColorMode::kLight,
-      (color_scheme == ui::NativeTheme::ColorScheme::kPlatformHighContrast)
-          ? ui::ColorProviderManager::ContrastMode::kHigh
-          : ui::ColorProviderManager::ContrastMode::kNormal,
-      native_theme->is_custom_system_theme()
-          ? ui::ColorProviderManager::SystemTheme::kCustom
-          : ui::ColorProviderManager::SystemTheme::kDefault,
-      GetCustomTheme());
+      GetNativeTheme()->GetColorProviderKey(GetCustomTheme()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

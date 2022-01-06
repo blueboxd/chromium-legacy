@@ -252,10 +252,9 @@ SearchEnginesHandler::CreateDictionaryForEngine(int index, bool is_default) {
 void SearchEnginesHandler::HandleGetSearchEnginesList(
     const base::ListValue* args) {
   CHECK_EQ(1U, args->GetList().size());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
   AllowJavascript();
-  ResolveJavascriptCallback(*callback_id, *GetSearchEnginesList());
+  ResolveJavascriptCallback(callback_id, *GetSearchEnginesList());
 }
 
 void SearchEnginesHandler::HandleSetDefaultSearchEngine(
@@ -268,7 +267,6 @@ void SearchEnginesHandler::HandleSetDefaultSearchEngine(
   if (index < 0 || index >= list_controller_.table_model()->RowCount())
     return;
 
-  list_controller_.SetIsActiveTemplateURL(index, true);
   list_controller_.MakeDefaultTemplateURL(index);
 
   base::RecordAction(base::UserMetricsAction("Options_SearchEngineSetDefault"));
@@ -339,14 +337,11 @@ void SearchEnginesHandler::HandleValidateSearchEngineInput(
     const base::ListValue* args) {
   CHECK_EQ(3U, args->GetList().size());
 
-  const base::Value* callback_id;
-  std::string field_name;
-  std::string field_value;
-  CHECK(args->Get(0, &callback_id));
-  CHECK(args->GetString(1, &field_name));
-  CHECK(args->GetString(2, &field_value));
+  const base::Value& callback_id = args->GetList()[0];
+  const std::string& field_name = args->GetList()[1].GetString();
+  const std::string& field_value = args->GetList()[2].GetString();
   ResolveJavascriptCallback(
-      *callback_id, base::Value(CheckFieldValidity(field_name, field_value)));
+      callback_id, base::Value(CheckFieldValidity(field_name, field_value)));
 }
 
 bool SearchEnginesHandler::CheckFieldValidity(const std::string& field_name,
@@ -379,12 +374,9 @@ void SearchEnginesHandler::HandleSearchEngineEditCompleted(
     const base::ListValue* args) {
   if (!edit_controller_.get())
     return;
-  std::string search_engine;
-  std::string keyword;
-  std::string query_url;
-  CHECK(args->GetString(0, &search_engine));
-  CHECK(args->GetString(1, &keyword));
-  CHECK(args->GetString(2, &query_url));
+  const std::string& search_engine = args->GetList()[0].GetString();
+  const std::string& keyword = args->GetList()[1].GetString();
+  const std::string& query_url = args->GetList()[2].GetString();
 
   // Recheck validity. It's possible to get here with invalid input if e.g. the
   // user calls the right JS functions directly from the web inspector.

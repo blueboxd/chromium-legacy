@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 
 #include "base/files/file_path.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/web_applications/test/fake_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -135,6 +137,12 @@ class PreinstalledWebAppManagerBrowserTest
     PreinstalledWebAppManager::SkipStartupForTesting();
   }
 
+  // InProcessBrowserTest:
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    web_app::test::WaitUntilReady(
+        web_app::WebAppProvider::GetForTest(browser()->profile()));
+  }
   void TearDownOnMainThread() override {
     ResetInterceptor();
     InProcessBrowserTest::TearDownOnMainThread();
@@ -219,10 +227,10 @@ class PreinstalledWebAppManagerBrowserTest
     base::FilePath test_icon_path =
         source_root_dir.Append(GetChromeTestDataDir())
             .AppendASCII("web_apps/blue-192.png");
-    TestFileUtils file_utils(
+    scoped_refptr<TestFileUtils> file_utils = TestFileUtils::Create(
         {{base::FilePath(FILE_PATH_LITERAL("test_dir/icon.png")),
           test_icon_path}});
-    PreinstalledWebAppManager::SetFileUtilsForTesting(&file_utils);
+    PreinstalledWebAppManager::SetFileUtilsForTesting(file_utils.get());
 
     std::vector<base::Value> app_configs;
     base::JSONReader::ValueWithError json_parse_result =
@@ -417,6 +425,11 @@ class PreinstalledWebAppManagerExtensionBrowserTest
   PreinstalledWebAppManagerExtensionBrowserTest() = default;
   ~PreinstalledWebAppManagerExtensionBrowserTest() override = default;
 
+  void SetUpOnMainThread() override {
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
+    web_app::test::WaitUntilReady(
+        web_app::WebAppProvider::GetForTest(browser()->profile()));
+  }
   void TearDownOnMainThread() override {
     ResetInterceptor();
     extensions::ExtensionBrowserTest::TearDownOnMainThread();
@@ -863,16 +876,15 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest, OemInstalled) {
   EXPECT_TRUE(registrar().WasInstalledByOem(app_id));
 
   // Wait for app service to see the newly installed app.
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->FlushMojoCallsForTesting();
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
+  proxy->FlushMojoCallsForTesting();
 
   apps::mojom::InstallReason install_reason =
       apps::mojom::InstallReason::kUnknown;
-  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
-      ->AppRegistryCache()
-      .ForOneApp(app_id, [&](const apps::AppUpdate& update) {
-        install_reason = update.InstallReason();
-      });
+  proxy->AppRegistryCache().ForOneApp(app_id,
+                                      [&](const apps::AppUpdate& update) {
+                                        install_reason = update.InstallReason();
+                                      });
 
   EXPECT_EQ(install_reason, apps::mojom::InstallReason::kOem);
 }
@@ -951,7 +963,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
   GURL preinstalled_app_start_url("https://example.org/");
   GURL user_app_start_url("https://test.org/");
 
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
   AppListClientImpl::GetInstance()->UpdateProfile();
   ash::AppListTestApi app_list_test_api;
@@ -1004,8 +1016,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
                            apps::mojom::UninstallSource::kUnknown);
 
   // Ensure the UI receives the app uninstall.
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->FlushMojoCallsForTesting();
+  proxy->FlushMojoCallsForTesting();
 
   // Default app should be removed from local app list but remain in sync list.
   EXPECT_FALSE(registrar().IsInstalled(preinstalled_app_id));

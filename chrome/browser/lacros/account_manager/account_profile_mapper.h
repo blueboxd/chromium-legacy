@@ -11,22 +11,21 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/scoped_observation.h"
 #include "components/account_manager_core/account_manager_facade.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace account_manager {
 struct Account;
 class AccountKey;
 }  // namespace account_manager
 
-namespace base {
-class FilePath;
-}
-
+class AddAccountHelper;
 class ProfileAttributesStorage;
 class ProfileAttributesEntry;
 
@@ -52,6 +51,17 @@ class ProfileAttributesEntry;
 class AccountProfileMapper
     : public account_manager::AccountManagerFacade::Observer {
  public:
+  // Result type for `ShowAddAccountDialog()`.
+  // If the account was added to the system, but could not be added to the
+  // profile, `profile_path` is empty.
+  struct AddAccountResult {
+    base::FilePath profile_path;
+    account_manager::Account account;
+  };
+
+  using AddAccountCallback =
+      base::OnceCallback<void(const absl::optional<AddAccountResult>&)>;
+
   class Observer : public base::CheckedObserver {
    public:
     // `profile_path` is empty if the account is not assigned to a profile.
@@ -87,20 +97,73 @@ class AccountProfileMapper
       const account_manager::AccountKey& account,
       const std::string& oauth_consumer_name,
       OAuth2AccessTokenConsumer* consumer);
-  // `callback` is called with nullopt if the operation failed.
+
+  // Profile creation methods and assignment of accounts to profiles:
+
+  // Adds an account to the specified profile. Some notes:
+  // - `callback` is called with nullopt if the operation failed;
+  // - fails if the user adds a non-Gaia account;
+  // - may return the empty path if the account was added but could not be
+  //   assigned to the profile.
   void ShowAddAccountDialog(
       const base::FilePath& profile_path,
       account_manager::AccountManagerFacade::AccountAdditionSource source,
-      base::OnceCallback<void(const absl::optional<account_manager::Account>&)>
-          callback);
+      AddAccountCallback callback);
+  // Similar to `ShowAddAccountDialog()` but uses an account that already exists
+  // in the `AccountManagerFacade` instead of creating a new one.
+  void AddAccount(const base::FilePath& profile_path,
+                  const account_manager::AccountKey& account,
+                  AddAccountCallback callback);
+  // Similar to `ShowAddAccountDialog()` but creates a new profile first. The
+  // new profile is omitted and ephemeral: it's the caller responsibility to
+  // clean these flags if needed.
+  void ShowAddAccountDialogAndCreateNewProfile(
+      account_manager::AccountManagerFacade::AccountAdditionSource source,
+      AddAccountCallback callback);
+  // Similar to `ShowAddAccountDialogAndCreateNewProfile()` but uses an account
+  // that already exists in the `AccountManagerFacade` instead of creating a new
+  // one.
+  void CreateNewProfileWithAccount(const account_manager::AccountKey& account,
+                                   AddAccountCallback callback);
 
   // account_manager::AccountManagerFacade::Observer:
   void OnAccountUpserted(const account_manager::Account& account) override;
   void OnAccountRemoved(const account_manager::Account& account) override;
 
+  // Adds or updates an account programmatically without user interaction
+  // Should only be used in tests.
+  void UpsertAccountForTesting(const base::FilePath& profile_path,
+                               const account_manager::Account& account,
+                               const std::string& token_value);
+
+  // Removes an account from the specified profile. Should only be used in
+  // tests.
+  // Note: this currently removes the account from the OS. A better
+  // implementation would remove it from the profile, but keep it in the OS.
+  void RemoveAccountForTesting(const base::FilePath& profile_path,
+                               const account_manager::AccountKey& account_key);
+
  private:
+  // Shared code for methods related to profile creation and adding accounts to
+  // profiles. Pass an empty path to request a new profile. If
+  // `source_or_accountkey` is an account, this account is used, otherwise a new
+  // account is added with the source.
+  void AddAccountInternal(
+      const base::FilePath& profile_path,
+      const absl::variant<
+          account_manager::AccountManagerFacade::AccountAdditionSource,
+          account_manager::AccountKey>& source_or_accountkey,
+      AddAccountCallback callback);
+
+  // Callback for `AddAccountHelper`, end of the flow starting with
+  // `AddAccounInternal()`.
+  void OnAddAccountCompleted(AddAccountHelper* helper,
+                             AddAccountCallback callback,
+                             const absl::optional<AddAccountResult>& result);
+
   // Computes the stale accounts (accounts that are in Lacros but no longer in
-  // the system) and removes them from the `ProfileAttributesStorage`.
+  // the system) and removes them from the `ProfileAttributesStorage`. Might
+  // also remove profiles that no longer have an associated primary account.
   std::vector<std::pair<base::FilePath, std::string>> RemoveStaleAccounts();
 
   // Computes the new accounts (accounts that are in the system but not in
@@ -113,13 +176,6 @@ class AccountProfileMapper
   // Update the `ProfileAttributesStorage` to match the system accounts.
   void OnGetAccountsCompleted(const std::vector<account_manager::Account>&);
 
-  // Assigns the newly added account to the specified profile.
-  void OnShowAddAccountDialogCompleted(
-      const base::FilePath& profile_path,
-      base::OnceCallback<void(const absl::optional<account_manager::Account>&)>
-          client_callback,
-      const account_manager::AccountAdditionResult& result);
-
   // Returns whether the profile at `profile_path` contains `account`.
   bool ProfileContainsAccount(const base::FilePath& profile_path,
                               const account_manager::AccountKey& account) const;
@@ -129,13 +185,15 @@ class AccountProfileMapper
   // accounts are not assigned and this returns nullptr.
   ProfileAttributesEntry* MaybeGetProfileForNewAccounts() const;
 
+  // Returns whether the profile corresponding to `entry` should be deleted
+  // after a system accounts update.
+  bool ShouldDeleteProfile(ProfileAttributesEntry* entry) const;
+
   // All requests are delayed until the first `GetAccounts()` call completes.
   bool initialized_ = false;
   std::vector<base::OnceClosure> initialization_callbacks_;
 
-  // Number of `ShowAddAccountDialog()` calls is in progress. Accounts are not
-  // auto-assigned to the main profile for this flow.
-  int account_addition_in_progress_ = 0;
+  std::vector<std::unique_ptr<AddAccountHelper>> add_account_helpers_;
 
   account_manager::AccountManagerFacade* const account_manager_facade_;
   ProfileAttributesStorage* const profile_attributes_storage_;

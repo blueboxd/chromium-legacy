@@ -2,12 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './strings.m.js';
+
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 import * as error_reporter from './error_reporter.js';
 import {assertCast, MessagePipe} from './message_pipe.m.js';
-import {DeleteFileMessage, FileContext, LoadFilesMessage, Message, NavigateMessage, OverwriteFileMessage, OverwriteViaFilePickerResponse, RenameFileMessage, RenameResult, RequestSaveFileMessage, RequestSaveFileResponse, SaveAsMessage, SaveAsResponse} from './message_types.m.js';
+import {DeleteFileMessage, FileContext, LoadFilesMessage, Message, NavigateMessage, NotifyCurrentFileMessage, OpenAllowedFileMessage, OpenAllowedFileResponse, OpenFilesWithPickerMessage, OverwriteFileMessage, OverwriteViaFilePickerResponse, RenameFileMessage, RenameResult, RequestSaveFileMessage, RequestSaveFileResponse, SaveAsMessage, SaveAsResponse} from './message_types.js';
 import {mediaAppPageHandler} from './mojo_api_bootstrap.js';
 
 const EMPTY_WRITE_ERROR_NAME = 'EmptyWriteError';
+
+// Open file picker configurations. Should be kept in sync with launch handler
+// configurations in media_web_app_info.cc.
+const AUDIO_EXTENSIONS =
+    ['.flac', '.m4a', '.mp3', '.oga', '.ogg', '.opus', '.wav', '.weba', '.m4a'];
+const IMAGE_EXTENSIONS = [
+  '.jpg',  '.png', '.webp', '.gif', '.avif', '.bmp',   '.ico', '.svg',
+  '.jpeg', '.jpe', '.jfif', '.jif', '.jfi',  '.pjpeg', '.pjp', '.arw',
+  '.cr2',  '.dng', '.nef',  '.nrw', '.orf',  '.raf',   '.rw2', '.svgz'
+];
+const VIDEO_EXTENSIONS = [
+  '.3gp', '.avi', '.m4v', '.mkv', '.mov', '.mp4', '.mpeg', '.mpeg4', '.mpg',
+  '.mpg4', '.ogv', '.ogx', '.ogm', '.webm'
+];
+const OPEN_ACCEPT_ARGS = {
+  'AUDIO': {
+    description: loadTimeData.getString('fileFilterAudio'),
+    accept: {'audio/*': AUDIO_EXTENSIONS}
+  },
+  'IMAGE': {
+    description: loadTimeData.getString('fileFilterImage'),
+    accept: {'image/*': IMAGE_EXTENSIONS}
+  },
+  'VIDEO': {
+    description: loadTimeData.getString('fileFilterVideo'),
+    accept: {'video/*': VIDEO_EXTENSIONS}
+  },
+  'PDF': {description: 'PDF', accept: {'application/pdf': '.pdf'}},
+};
 
 /**
  * Sort order for files in the navigation ring.
@@ -50,6 +83,13 @@ let FileDescriptor;
  * @type {!Array<!FileDescriptor>}
  */
 const currentFiles = [];
+
+/**
+ * A variable for storing the name of the app, taken from the <title>. We store
+ * it here since we mutate the title to show filename, but may want to restore
+ * it in some circumstances i.e. returning to zero state.
+ */
+let appTitle;
 
 /**
  * The current sort order.
@@ -110,6 +150,25 @@ const guestMessagePipe =
  */
 const iframeReady = new Promise(resolve => {
   guestMessagePipe.registerHandler(Message.IFRAME_READY, resolve);
+});
+
+guestMessagePipe.registerHandler(Message.NOTIFY_CURRENT_FILE, message => {
+  const notifyMsg = /** @type {!NotifyCurrentFileMessage} */ (message);
+
+  const title =
+      /** @type {!HTMLTitleElement} */ (document.querySelector('title'));
+  appTitle = appTitle || title.text;
+  title.text = notifyMsg.name || appTitle;
+
+  let genericType = notifyMsg.type ? notifyMsg.type.split('/')[0] : 'file';
+  if (title.text === appTitle) {
+    genericType = 'app';
+  } else if (!['audio', 'image', 'video', 'file'].includes(genericType)) {
+    genericType = 'file';
+  }
+  const icon = /** @type {!HTMLLinkElement} */ (
+      document.querySelector('link[rel=icon]'));
+  icon.href = `system_assets/${genericType}_icon.svg`;
 });
 
 guestMessagePipe.registerHandler(Message.OPEN_FEEDBACK_DIALOG, () => {
@@ -327,6 +386,53 @@ guestMessagePipe.registerHandler(Message.OPEN_FILE, async () => {
   };
   currentFiles.splice(entryIndex + 1, 0, fileDescriptor);
   advance(1);
+});
+
+guestMessagePipe.registerHandler(Message.OPEN_FILES_WITH_PICKER, async (m) => {
+  const {startInToken, accept} = /** @type {!OpenFilesWithPickerMessage} */ (m);
+  const acceptTypes = accept.map(k => OPEN_ACCEPT_ARGS[k]).filter(a => !!a);
+
+  /** @type {!FilePickerOptions|DraftFilePickerOptions} */
+  const options = {multiple: true};
+
+  if (startInToken) {
+    options.startIn = fileHandleForToken(startInToken);
+  }
+
+  if (acceptTypes.length > 0) {
+    options.excludeAcceptAllOption = true;
+    options.types = acceptTypes;
+  }
+
+  const handles = await window.showOpenFilePicker(options);
+  /** @type {!Array<!FileDescriptor>} */
+  const newDescriptors = [];
+  for (const handle of handles) {
+    newDescriptors.push({
+      token: generateToken(handle),
+      file: null,
+      handle: handle,
+      inCurrentDirectory: false
+    });
+  }
+  if (newDescriptors.length === 0) {
+    // Be defensive against the file picker returning an empty array rather than
+    // throwing an abort exception. Or any filtering we may introduce.
+    return;
+  }
+
+  // Perform a full "relaunch": replace everything and set focus to index 0.
+  currentFiles.splice(0, currentFiles.length, ...newDescriptors);
+  entryIndex = 0;
+  await sendSnapshotToGuest([...currentFiles], ++globalLaunchNumber);
+});
+
+guestMessagePipe.registerHandler(Message.OPEN_ALLOWED_FILE, async (message) => {
+  const {fileToken} = /** @type {!OpenAllowedFileMessage} */ (message);
+  const handle = fileHandleForToken(fileToken);
+  /** @type {!OpenAllowedFileResponse} */
+  const response = {file: (await getFileFromHandle(handle)).file};
+  return response;
 });
 
 /**
@@ -811,15 +917,6 @@ async function maybeGetFileFromFileHandle(handle) {
 }
 
 /**
- * Returns whether `fileName` has an extension indicating a possible RAW image.
- * @param {string} fileName
- * @return {boolean}
- */
-function isRawImageFile(fileName) {
-  return /\.(arw|cr2|dng|nef|nrw|orf|raf|rw2)$/.test(fileName.toLowerCase());
-}
-
-/**
  * Returns whether `fileName` is a file potentially containing subtitles.
  * @param {string} fileName
  * @return {boolean}
@@ -838,14 +935,33 @@ function isVideoFile(fileName) {
 }
 
 /**
+ * Returns whether `fileName` is a file likely to be an image.
+ * @param {string} fileName
+ * @return {boolean}
+ */
+function isImageFile(fileName) {
+  // Detect RAW images, which often don't have a mime type set.
+  return /\.(arw|cr2|dng|nef|nrw|orf|raf|rw2)$/.test(fileName.toLowerCase()) ||
+      /^image\//.test(getMimeTypeFromFilename(fileName));
+}
+
+/**
+ * Returns whether `fileName` is a file likely to be audio.
+ * @param {string} fileName
+ * @return {boolean}
+ */
+function isAudioFile(fileName) {
+  return /^audio\//.test(getMimeTypeFromFilename(fileName));
+}
+
+/**
  * Returns whether fileName is the filename for a video or image, or a related
  * file type (e.g. video subtitles).
  * @param {string} fileName
  * @return {boolean}
  */
 function isVideoOrImage(fileName) {
-  const fileType = getMimeTypeFromFilename(fileName);
-  return /^(image)|(video)\//.test(fileType) || isRawImageFile(fileName) ||
+  return isImageFile(fileName) || isVideoFile(fileName) ||
       isSubtitleFile(fileName);
 }
 
@@ -924,10 +1040,7 @@ async function processOtherFilesInDirectory(
       }
     }
   } catch (e) {
-    // Likely source of b/163639398 crashes. This can probably be turned into a
-    // "console.warn()". Attempting to re-open the directory is probably not
-    // worth the added complexity, given the crash rate.
-    console.error(e, '(failed to traverse directory)');
+    console.warn(e, '(failed to traverse directory)');
     // It's unlikely traversal can "resume", but try to continue with anything
     // obtained so far.
   }
@@ -944,10 +1057,34 @@ async function processOtherFilesInDirectory(
     return ProcessOtherFilesResult.ABORT;
   }
 
+  await sortFiles(relatedFiles);
+  const name = focusFile.name;
+  const focusIndex = relatedFiles.findIndex(i => i.handle.name === name);
+  entryIndex = 0;
+  if (focusIndex === -1) {
+    // The focus file is no longer there i.e. might have been deleted, should be
+    // missing from `currentFiles` as well.
+    currentFiles.push(...relatedFiles);
+    return ProcessOtherFilesResult.FOCUS_FILE_MISSING;
+  } else {
+    // Rotate the sorted files so focusIndex becomes index 0 such that we have
+    // [focus file, ...files larger, ...files smaller].
+    currentFiles.push(...relatedFiles.slice(focusIndex + 1));
+    currentFiles.push(...relatedFiles.slice(0, focusIndex));
+    return ProcessOtherFilesResult.FOCUS_FILE_RELEVANT;
+  }
+}
+
+/**
+ * Sorts the given `files` by `sortOrder`.
+ * @param {!Array<!FileDescriptor>} files
+ * @private
+ */
+async function sortFiles(files) {
   if (sortOrder === SortOrder.NEWEST_FIRST) {
     // If we are sorting by modification time we need to have the actual File
     // object available.
-    for (const descriptor of relatedFiles) {
+    for (const descriptor of files) {
       // TODO(b/166210455): Remove this call to getFile as it may be slow for
       // android files see b/172529567. Leaving it in at the moment since sort
       // order is not set to NEWEST_FIRST in any production release and there is
@@ -965,7 +1102,7 @@ async function processOtherFilesInDirectory(
   // order. More recent (i.e. higher timestamp) files should appear first. In
   // the case where timestamps are equal, the files will be sorted
   // lexicographically according to their names.
-  relatedFiles.sort((a, b) => {
+  files.sort((a, b) => {
     if (sortOrder === SortOrder.NEWEST_FIRST) {
       // Sort null files last if they racily appear.
       if (!a.file && !b.file) {
@@ -988,21 +1125,6 @@ async function processOtherFilesInDirectory(
             b.handle.name, [],
             {usage: 'sort', numeric: true, sensitivity: 'base'});
   });
-  const name = focusFile.name;
-  const focusIndex = relatedFiles.findIndex(i => i.handle.name === name);
-  entryIndex = 0;
-  if (focusIndex === -1) {
-    // The focus file is no longer there i.e. might have been deleted, should be
-    // missing form `currentFiles` as well.
-    currentFiles.push(...relatedFiles);
-    return ProcessOtherFilesResult.FOCUS_FILE_MISSING;
-  } else {
-    // Rotate the sorted files so focusIndex becomes index 0 such that we have
-    // [focus file, ...files larger, ...files smaller].
-    currentFiles.push(...relatedFiles.slice(focusIndex + 1));
-    currentFiles.push(...relatedFiles.slice(0, focusIndex));
-    return ProcessOtherFilesResult.FOCUS_FILE_RELEVANT;
-  }
 }
 
 /**
@@ -1162,6 +1284,7 @@ async function launchWithMultipleSelection(directory, handles) {
       });
     }
   }
+  await sortFiles(currentFiles);
   entryIndex = currentFiles.length > 0 ? 0 : -1;
   currentDirectoryHandle = directory;
   await sendFilesToGuest();
@@ -1216,14 +1339,17 @@ async function launchConsumer(params) {
   }
   const directory =
       /** @type {!FileSystemDirectoryHandle} */ (params.files[0]);
+  // With a single file selected, that file is the focus file. Otherwise, there
+  // is no inherent focus file.
+  const maybeFocusEntry = assertCast(params.files[1]);
 
   // With a single file selected, launch with all files in the directory as
   // navigation candidates. Otherwise, launch with all selected files (except
-  // the launch directory itself) as navigation candidates.
-  if (params.files.length === 2) {
-    const focusEntry = assertCast(params.files[1]);
+  // the launch directory itself) as navigation candidates. The only exception
+  // to this is audio files, which we explicitly don't load the directory for.
+  if (params.files.length === 2 && !isAudioFile(maybeFocusEntry.name)) {
     try {
-      await launchWithDirectory(directory, focusEntry);
+      await launchWithDirectory(directory, maybeFocusEntry);
     } catch (e) {
       console.error(e, '(launchWithDirectory aborted)');
     }

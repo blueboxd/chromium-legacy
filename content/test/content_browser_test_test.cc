@@ -12,8 +12,8 @@
 #include "base/location.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/test_launcher_test_utils.h"
 #include "base/test/scoped_feature_list.h"
@@ -56,27 +56,17 @@ namespace content {
 
 namespace {
 
-const char* kSwitchesToCopy[] = {
-#if defined(USE_OZONE)
-    // Keep the kOzonePlatform switch that the Ozone must use.
-    switches::kOzonePlatform,
-#endif
-    // Some tests use custom cmdline that doesn't hold switches from previous
-    // cmdline. Only a couple of switches are copied. That can result in
-    // incorrect initialization of a process. For example, the work that we do
-    // to have use_x11 && use_ozone, requires UseOzonePlatform feature flag to
-    // be passed to all the process to ensure correct path is chosen.
-    // TODO(https://crbug.com/1096425): update this comment once USE_X11 goes
-    // away.
-    switches::kEnableFeatures,
-    switches::kDisableFeatures,
-};
-
 base::CommandLine CreateCommandLine() {
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
   base::CommandLine command_line = base::CommandLine(cmdline.GetProgram());
+#if defined(USE_OZONE)
+  const char* kSwitchesToCopy[] = {
+      // Keep the kOzonePlatform switch that the Ozone must use.
+      switches::kOzonePlatform,
+  };
   command_line.CopySwitchesFrom(cmdline, kSwitchesToCopy,
                                 base::size(kSwitchesToCopy));
+#endif
   return command_line;
 }
 

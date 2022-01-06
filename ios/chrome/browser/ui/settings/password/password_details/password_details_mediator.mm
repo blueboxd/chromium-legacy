@@ -90,14 +90,16 @@ using InsecureCredentialsView =
 
 - (void)passwordDetailsViewController:
             (PasswordDetailsTableViewController*)viewController
-        didAddPasswordDetailsWithSite:(NSString*)website
-                             username:(NSString*)username
+                didAddPasswordDetails:(NSString*)username
                              password:(NSString*)password {
   NOTREACHED();
 }
 
-- (void)checkForDuplicatesWithSite:(NSString*)website
-                          username:(NSString*)username {
+- (void)checkForDuplicates:(NSString*)username {
+  NOTREACHED();
+}
+
+- (void)showExistingCredential:(NSString*)username {
   NOTREACHED();
 }
 
@@ -105,8 +107,16 @@ using InsecureCredentialsView =
   NOTREACHED();
 }
 
-- (void)didConfirmReplaceExistingCredential {
+- (void)setWebsiteURL:(NSString*)website {
   NOTREACHED();
+}
+
+- (BOOL)isURLValid {
+  return YES;
+}
+
+- (BOOL)isTLDMissing {
+  return NO;
 }
 
 - (BOOL)isUsernameReused:(NSString*)newUsername {

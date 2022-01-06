@@ -74,6 +74,7 @@ import org.chromium.components.policy.AbstractAppRestrictionsProvider;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.ChildAccountStatus.Status;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -605,12 +606,12 @@ public class FirstRunIntegrationTest {
         waitForActivity(ChromeTabbedActivity.class);
 
         checkRecordedProgressSteps(BitSet.valueOf(new long[] {
-                FirstRunActivity.MobileFreProgress.STARTED,
-                FirstRunActivity.MobileFreProgress.WELCOME_SHOWN,
-                FirstRunActivity.MobileFreProgress.DATA_SAVER_SHOWN,
-                FirstRunActivity.MobileFreProgress.SYNC_CONSENT_SHOWN,
-                FirstRunActivity.MobileFreProgress.COMPLETED_SYNC,
-                FirstRunActivity.MobileFreProgress.DEFAULT_SEARCH_ENGINE_SHOWN,
+                MobileFreProgress.STARTED,
+                MobileFreProgress.WELCOME_SHOWN,
+                MobileFreProgress.DATA_SAVER_SHOWN,
+                MobileFreProgress.SYNC_CONSENT_SHOWN,
+                MobileFreProgress.SYNC_CONSENT_ACCEPTED,
+                MobileFreProgress.DEFAULT_SEARCH_ENGINE_SHOWN,
         }));
     }
 
@@ -628,15 +629,14 @@ public class FirstRunIntegrationTest {
         waitForActivity(ChromeTabbedActivity.class);
 
         checkRecordedProgressSteps(BitSet.valueOf(new long[] {
-                FirstRunActivity.MobileFreProgress.STARTED,
-                FirstRunActivity.MobileFreProgress.WELCOME_SHOWN,
-                FirstRunActivity.MobileFreProgress.COMPLETED_NOT_SYNC,
+                MobileFreProgress.STARTED,
+                MobileFreProgress.WELCOME_SHOWN,
+                MobileFreProgress.SYNC_CONSENT_DISMISSED,
         }));
     }
 
     private void checkRecordedProgressSteps(BitSet bucketsRecorded) {
-        for (int bucket = FirstRunActivity.MobileFreProgress.STARTED;
-                bucket < FirstRunActivity.MobileFreProgress.MAX; ++bucket) {
+        for (int bucket = MobileFreProgress.STARTED; bucket < MobileFreProgress.MAX; ++bucket) {
             int recordedValue = RecordHistogram.getHistogramValueCountForTesting(
                     FRE_PROGRESS_MAIN_INTENT_HISTOGRAM, bucket);
             if (bucketsRecorded.get(bucket)) {
@@ -1481,7 +1481,8 @@ public class FirstRunIntegrationTest {
         }
 
         @Override
-        public boolean shouldShowSyncConsentPage(Activity activity, List<Account> accounts) {
+        public boolean shouldShowSyncConsentPage(
+                Activity activity, List<Account> accounts, @Status int childAccountStatus) {
             return mTestCase.showSigninPromo();
         }
 

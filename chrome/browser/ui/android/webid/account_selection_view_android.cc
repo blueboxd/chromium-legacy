@@ -15,7 +15,9 @@
 #include "chrome/browser/ui/android/webid/jni_headers/AccountSelectionBridge_jni.h"
 #include "chrome/browser/ui/android/webid/jni_headers/Account_jni.h"
 #include "chrome/browser/ui/android/webid/jni_headers/ClientIdMetadata_jni.h"
+#include "chrome/browser/ui/android/webid/jni_headers/IdentityProviderMetadata_jni.h"
 #include "chrome/browser/ui/webid/account_selection_view.h"
+#include "ui/android/color_utils_android.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "url/android/gurl_android.h"
@@ -31,16 +33,22 @@ using base::android::ScopedJavaLocalRef;
 namespace {
 
 ScopedJavaLocalRef<jobject> ConvertToJavaAccount(JNIEnv* env,
-                                                 const Account& account,
-                                                 const GURL& idp_url) {
+                                                 const Account& account) {
   return Java_Account_Constructor(
       env, ConvertUTF8ToJavaString(env, account.sub),
       ConvertUTF8ToJavaString(env, account.email),
       ConvertUTF8ToJavaString(env, account.name),
       ConvertUTF8ToJavaString(env, account.given_name),
       url::GURLAndroid::FromNativeGURL(env, account.picture),
-      url::GURLAndroid::FromNativeGURL(env, idp_url),
       account.login_state == Account::LoginState::kSignIn);
+}
+
+ScopedJavaLocalRef<jobject> ConvertToJavaIdentityProviderMetadata(
+    JNIEnv* env,
+    const content::IdentityProviderMetadata& metadata) {
+  return Java_IdentityProviderMetadata_Constructor(
+      env, ui::OptionalSkColorToJavaColor(metadata.brand_text_color),
+      ui::OptionalSkColorToJavaColor(metadata.brand_background_color));
 }
 
 ScopedJavaLocalRef<jobject> ConvertToJavaClientIdMetadata(
@@ -53,8 +61,7 @@ ScopedJavaLocalRef<jobject> ConvertToJavaClientIdMetadata(
 
 ScopedJavaLocalRef<jobjectArray> ConvertToJavaAccounts(
     JNIEnv* env,
-    base::span<const Account> accounts,
-    const GURL& idp_url) {
+    base::span<const Account> accounts) {
   ScopedJavaLocalRef<jclass> account_clazz = base::android::GetClass(
       env, "org/chromium/chrome/browser/ui/android/webid/data/Account");
   ScopedJavaLocalRef<jobjectArray> array(
@@ -63,8 +70,7 @@ ScopedJavaLocalRef<jobjectArray> ConvertToJavaAccounts(
   base::android::CheckException(env);
 
   for (size_t i = 0; i < accounts.size(); ++i) {
-    ScopedJavaLocalRef<jobject> item =
-        ConvertToJavaAccount(env, accounts[i], idp_url);
+    ScopedJavaLocalRef<jobject> item = ConvertToJavaAccount(env, accounts[i]);
     env->SetObjectArrayElement(array.obj(), i, item.obj());
   }
   return array;
@@ -103,11 +109,13 @@ AccountSelectionViewAndroid::~AccountSelectionViewAndroid() {
   }
 }
 
-void AccountSelectionViewAndroid::Show(const GURL& rp_url,
-                                       const GURL& idp_url,
-                                       base::span<const Account> accounts,
-                                       const content::ClientIdData& client_data,
-                                       Account::SignInMode sign_in_mode) {
+void AccountSelectionViewAndroid::Show(
+    const GURL& rp_url,
+    const GURL& idp_url,
+    base::span<const Account> accounts,
+    const content::IdentityProviderMetadata& idp_metadata,
+    const content::ClientIdData& client_data,
+    Account::SignInMode sign_in_mode) {
   if (!RecreateJavaObject()) {
     // It's possible that the constructor cannot access the bottom sheet clank
     // component. That case may be temporary but we can't let users in a
@@ -120,12 +128,15 @@ void AccountSelectionViewAndroid::Show(const GURL& rp_url,
   // to show it together with |url| to the user.
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> accounts_obj =
-      ConvertToJavaAccounts(env, accounts, idp_url);
+      ConvertToJavaAccounts(env, accounts);
+  ScopedJavaLocalRef<jobject> idp_metadata_obj =
+      ConvertToJavaIdentityProviderMetadata(env, idp_metadata);
   ScopedJavaLocalRef<jobject> client_id_metadata_obj =
       ConvertToJavaClientIdMetadata(env, client_data);
   Java_AccountSelectionBridge_showAccounts(
-      env, java_object_internal_, ConvertUTF8ToJavaString(env, rp_url.spec()),
-      accounts_obj, client_id_metadata_obj,
+      env, java_object_internal_, url::GURLAndroid::FromNativeGURL(env, rp_url),
+      url::GURLAndroid::FromNativeGURL(env, idp_url), accounts_obj,
+      idp_metadata_obj, client_id_metadata_obj,
       sign_in_mode == Account::SignInMode::kAuto);
 }
 

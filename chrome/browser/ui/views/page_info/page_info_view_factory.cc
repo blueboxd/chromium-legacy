@@ -10,12 +10,13 @@
 #include "chrome/browser/ui/page_info/chrome_page_info_ui_delegate.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/page_info/page_info_about_this_site_content_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_main_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_navigation_handler.h"
 #include "chrome/browser/ui/views/page_info/page_info_permission_content_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_security_content_view.h"
-#include "components/page_info/features.h"
 #include "components/page_info/page_info.h"
+#include "components/page_info/proto/about_this_site_metadata.pb.h"
 #include "components/permissions/permission_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -107,9 +108,11 @@ PageInfoViewFactory::PageInfoViewFactory(
       ui_delegate_(ui_delegate),
       navigation_handler_(navigation_handler) {}
 
-std::unique_ptr<views::View> PageInfoViewFactory::CreateMainPageView() {
+std::unique_ptr<views::View> PageInfoViewFactory::CreateMainPageView(
+    base::OnceClosure initialized_callback) {
   return std::make_unique<PageInfoMainView>(presenter_, ui_delegate_,
-                                            navigation_handler_);
+                                            navigation_handler_,
+                                            std::move(initialized_callback));
 }
 
 std::unique_ptr<views::View> PageInfoViewFactory::CreateSecurityPageView() {
@@ -126,6 +129,15 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreatePermissionPageView(
       CreateSubpageHeader(PageInfoUI::PermissionTypeToUIString(type)),
       std::make_unique<PageInfoPermissionContentView>(presenter_, ui_delegate_,
                                                       type));
+}
+
+std::unique_ptr<views::View> PageInfoViewFactory::CreateAboutThisSitePageView(
+    const page_info::proto::SiteInfo& info) {
+  return std::make_unique<PageInfoSubpageView>(
+      CreateSubpageHeader(
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_SITE_HEADER)),
+      std::make_unique<PageInfoAboutThisSiteContentView>(presenter_,
+                                                         ui_delegate_, info));
 }
 
 std::unique_ptr<views::View> PageInfoViewFactory::CreateSubpageHeader(
@@ -155,7 +167,8 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateSubpageHeader(
 
   auto back_button = views::CreateVectorImageButtonWithNativeTheme(
       base::BindRepeating(&PageInfoNavigationHandler::OpenMainPage,
-                          base::Unretained(navigation_handler_)),
+                          base::Unretained(navigation_handler_),
+                          base::DoNothing()),
       vector_icons::kArrowBackIcon);
   views::InstallCircleHighlightPathGenerator(back_button.get());
   back_button->SetID(VIEW_ID_BACK_BUTTON);
@@ -292,8 +305,7 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
                                ? info.default_setting
                                : info.setting;
   const bool show_blocked_badge =
-      base::FeatureList::IsEnabled(page_info::kPageInfoV2Desktop) &&
-              !permissions::PermissionUtil::IsGuardContentSetting(info.type)
+      !permissions::PermissionUtil::IsGuardContentSetting(info.type)
           ? setting == CONTENT_SETTING_BLOCK || setting == CONTENT_SETTING_ASK
           : setting == CONTENT_SETTING_BLOCK;
   return ui::ImageModel::FromVectorIcon(
@@ -386,8 +398,8 @@ const ui::ImageModel PageInfoViewFactory::GetOpenSubpageIcon() {
 
 // static
 const ui::ImageModel PageInfoViewFactory::GetAboutThisSiteIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      views::kInfoIcon, ui::NativeTheme::kColorId_DefaultIconColor);
+  return ui::ImageModel::FromVectorIcon(views::kInfoIcon, ui::kColorIcon,
+                                        GetIconSize());
 }
 
 // static

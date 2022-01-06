@@ -45,6 +45,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.chromium.base.Callback;
+import org.chromium.base.FeatureList;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -64,7 +65,6 @@ import org.chromium.chrome.browser.tab.state.PersistedTabDataConfiguration;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.DummyUiChromeActivityTestCase;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.commerce.PriceTracking.BuyableProduct;
 import org.chromium.components.commerce.PriceTracking.PriceTrackingData;
@@ -80,6 +80,7 @@ import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.ui.widget.ChipView;
 import org.chromium.ui.widget.ChromeImageView;
@@ -97,7 +98,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=" + ChromeFeatureList.COMMERCE_PRICE_TRACKING + "<Study",
         "force-fieldtrials=Study/Group"})
-public class TabListViewHolderTest extends DummyUiChromeActivityTestCase {
+public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Rule
     public JniMocker mMocker = new JniMocker();
 
@@ -780,7 +781,7 @@ public class TabListViewHolderTest extends DummyUiChromeActivityTestCase {
 
     private void testPriceString(Tab tab, MockShoppingPersistedTabDataFetcher fetcher,
             int expectedVisibility, String expectedCurrentPrice, String expectedPreviousPrice) {
-        PriceTrackingUtilities.ENABLE_PRICE_TRACKING.setForTesting(true);
+        setPriceTrackingEnabledForTesting(true);
         testGridSelected(mTabGridView, mGridModel);
         PriceCardView priceCardView = mTabGridView.findViewById(R.id.price_info_box_outer);
         TextView currentPrice = mTabGridView.findViewById(R.id.current_price);
@@ -880,7 +881,7 @@ public class TabListViewHolderTest extends DummyUiChromeActivityTestCase {
     public void testPriceDropEndToEnd() {
         ShoppingPersistedTabData.enablePriceTrackingWithOptimizationGuideForTesting();
         PersistedTabDataConfiguration.setUseTestConfig(true);
-        PriceTrackingUtilities.ENABLE_PRICE_TRACKING.setForTesting(true);
+        setPriceTrackingEnabledForTesting(true);
         mockCurrencyFormatter();
         mockUrlUtilities();
         mockOptimizationGuideResponse(OptimizationGuideDecision.TRUE, ANY_PRICE_TRACKING_DATA);
@@ -949,5 +950,16 @@ public class TabListViewHolderTest extends DummyUiChromeActivityTestCase {
             mSelectableMCP.destroy();
         });
         super.tearDownTest();
+    }
+
+    private void setPriceTrackingEnabledForTesting(boolean value) {
+        FeatureList.TestValues testValues = new FeatureList.TestValues();
+
+        // Required by MockTab.
+        testValues.addFeatureFlagOverride(ChromeFeatureList.CONTINUOUS_SEARCH, true);
+        testValues.addFeatureFlagOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING, true);
+        testValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING,
+                PriceTrackingUtilities.PRICE_TRACKING_PARAM, String.valueOf(value));
+        FeatureList.setTestValues(testValues);
     }
 }

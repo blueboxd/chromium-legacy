@@ -40,10 +40,10 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/strings/grit/components_strings.h"
@@ -144,8 +144,8 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
 void ParseConfigurationArguments(const base::ListValue* args,
                                  SyncConfigInfo* config,
                                  const base::Value** callback_id) {
-  std::string json;
-  if (args->Get(0, callback_id) && args->GetString(1, &json) && !json.empty())
+  const std::string& json = args->GetList()[1].GetString();
+  if ((*callback_id = &args->GetList()[0]) && !json.empty())
     CHECK(GetConfiguration(json, config));
   else
     NOTREACHED();
@@ -414,10 +414,9 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
 void PeopleHandler::HandleGetStoredAccounts(const base::ListValue* args) {
   AllowJavascript();
   CHECK_EQ(1U, args->GetList().size());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
 
-  ResolveJavascriptCallback(*callback_id, GetStoredAccountsList());
+  ResolveJavascriptCallback(callback_id, GetStoredAccountsList());
 }
 
 void PeopleHandler::OnExtendedAccountInfoUpdated(const AccountInfo& info) {
@@ -457,22 +456,20 @@ base::Value PeopleHandler::GetStoredAccountsList() {
 void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_));
-  const base::Value* email;
-  const base::Value* is_default_promo_account;
-  CHECK(args->Get(0, &email));
-  CHECK(args->Get(1, &is_default_promo_account));
+  const base::Value& email = args->GetList()[0];
+  const base::Value& is_default_promo_account = args->GetList()[1];
 
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
 
   AccountInfo maybe_account =
       IdentityManagerFactory::GetForProfile(profile_)
-          ->FindExtendedAccountInfoByEmailAddress(email->GetString());
+          ->FindExtendedAccountInfoByEmailAddress(email.GetString());
 
   signin_ui_util::EnableSyncFromMultiAccountPromo(
       browser, maybe_account,
       signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
-      is_default_promo_account->GetBool());
+      is_default_promo_account.GetBool());
 #else
   // TODO(jamescook): Enable sync on non-DICE platforms (e.g. Chrome OS).
   NOTIMPLEMENTED();
@@ -615,7 +612,8 @@ void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
 
 void PeopleHandler::HandleSignout(const base::ListValue* args) {
   bool delete_profile = false;
-  args->GetBoolean(0, &delete_profile);
+  if (args->GetList()[0].is_bool())
+    delete_profile = args->GetList()[0].GetBool();
   base::FilePath profile_path = profile_->GetPath();
 
   if (!signin_util::IsUserSignoutAllowedForProfile(profile_)) {
@@ -685,10 +683,9 @@ void PeopleHandler::HandleGetSyncStatus(const base::ListValue* args) {
   AllowJavascript();
 
   CHECK_EQ(1U, args->GetList().size());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
 
-  ResolveJavascriptCallback(*callback_id, *GetSyncStatusDictionary());
+  ResolveJavascriptCallback(callback_id, *GetSyncStatusDictionary());
 }
 
 void PeopleHandler::HandleSyncPrefsDispatch(const base::ListValue* args) {

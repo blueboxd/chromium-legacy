@@ -214,6 +214,11 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
     return true;
   }
 
+  void ToggleLockedFullscreen(ash::WindowState*) override {
+    // No special handling for locked ARC windows.
+    return;
+  }
+
   void OnDragStarted(int component) override {
     shell_surface_->OnDragStarted(component);
   }
@@ -457,17 +462,6 @@ void ClientControlledShellSurface::SetAlwaysOnTop(bool always_on_top) {
   pending_always_on_top_ = always_on_top;
 }
 
-void ClientControlledShellSurface::SetImeBlocked(bool ime_blocked) {
-  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetImeBlocked",
-               "ime_blocked", ime_blocked);
-
-  if (!widget_)
-    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
-
-  WMHelper::GetInstance()->SetImeBlocked(widget_->GetNativeWindow(),
-                                         ime_blocked);
-}
-
 void ClientControlledShellSurface::SetOrientation(Orientation orientation) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetOrientation",
                "orientation",
@@ -613,21 +607,6 @@ void ClientControlledShellSurface::SetExtraTitle(
   }
 }
 
-void ClientControlledShellSurface::SetOrientationLock(
-    chromeos::OrientationType orientation_lock) {
-  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetOrientationLock",
-               "orientation_lock", static_cast<int>(orientation_lock));
-
-  if (!widget_) {
-    initial_orientation_lock_ = orientation_lock;
-    return;
-  }
-
-  ash::Shell* shell = ash::Shell::Get();
-  shell->screen_orientation_controller()->LockOrientationForWindow(
-      widget_->GetNativeWindow(), orientation_lock);
-}
-
 void ClientControlledShellSurface::SetClientAccessibilityId(
     int32_t accessibility_id) {
   if (accessibility_id >= 0)
@@ -736,29 +715,40 @@ float ClientControlledShellSurface::GetClientToDpScale() const {
   return 1.f / scale_;
 }
 
-void ClientControlledShellSurface::SetResizeLock(bool resize_lock) {
-  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetResizeLock",
-               "resize_lock", resize_lock);
-  pending_resize_lock_ = resize_lock;
+void ClientControlledShellSurface::SetResizeLockType(
+    ash::ArcResizeLockType resize_lock_type) {
+  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetResizeLockType",
+               "resize_lock_type", resize_lock_type);
+  pending_resize_lock_type_ = resize_lock_type;
 }
 
 void ClientControlledShellSurface::UpdateResizability() {
   TRACE_EVENT0("exo", "ClientControlledShellSurface::updateCanResize");
-  ash::ArcResizeLockType resizeLockType = ash::ArcResizeLockType::RESIZABLE;
-  if (pending_resize_lock_) {
-    // CalculateCanResize() returns the "raw" resizability of the window,
-    // in which the influence of the resize lock state is excluded.
-    if (CalculateCanResize()) {
-      resizeLockType = ash::ArcResizeLockType::RESIZE_LIMITED;
-    } else {
-      resizeLockType = ash::ArcResizeLockType::FULLY_LOCKED;
+  ash::ArcResizeLockType resize_lock_type = pending_resize_lock_type_;
+  // TODO(b/200230343): Remove this once the client's switched to the
+  // new protocol.
+  if (resize_lock_type == ash::ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE &&
+      !CalculateCanResize()) {
+    resize_lock_type = ash::ArcResizeLockType::RESIZE_DISABLED_NONTOGGLABLE;
+  } else if (resize_lock_type == ash::ArcResizeLockType::NONE) {
+    const auto current_resize_lock_type =
+        widget_->GetNativeWindow()->GetProperty(ash::kArcResizeLockTypeKey);
+    if (current_resize_lock_type ==
+        ash::ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE) {
+      resize_lock_type = ash::ArcResizeLockType::RESIZE_ENABLED_TOGGLABLE;
+    } else if (current_resize_lock_type ==
+               ash::ArcResizeLockType::RESIZE_ENABLED_TOGGLABLE) {
+      resize_lock_type = ash::ArcResizeLockType::RESIZE_ENABLED_TOGGLABLE;
     }
   }
   widget_->GetNativeWindow()->SetProperty(ash::kArcResizeLockTypeKey,
-                                          resizeLockType);
+                                          resize_lock_type);
   // If resize lock is enabled, the window is explicitly marded as unresizable.
   // Otherwise, the decision is deferred to the parent class.
-  if (ash::features::IsArcResizeLockEnabled() && pending_resize_lock_) {
+  if (pending_resize_lock_type_ ==
+           ash::ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE ||
+       pending_resize_lock_type_ ==
+           ash::ArcResizeLockType::RESIZE_DISABLED_NONTOGGLABLE) {
     SetCanResize(false);
     return;
   }
@@ -1124,6 +1114,7 @@ void ClientControlledShellSurface::InitializeWindowState(
 
   auto* window = widget_->GetNativeWindow();
   SetShellClientAccessibilityId(window, client_accessibility_id_);
+  GrantPermissionToActivateIndefinitely(window);
 }
 
 float ClientControlledShellSurface::GetScale() const {

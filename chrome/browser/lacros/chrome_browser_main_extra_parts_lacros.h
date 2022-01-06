@@ -13,6 +13,7 @@ class AutomationManagerLacros;
 class BrowserServiceLacros;
 class DriveFsCache;
 class DownloadControllerClientLacros;
+class ForceInstalledTrackerLacros;
 class LacrosButterBar;
 class LacrosExtensionAppsController;
 class LacrosExtensionAppsPublisher;
@@ -23,6 +24,10 @@ namespace crosapi {
 class TaskManagerLacros;
 class WebPageInfoProviderLacros;
 }  // namespace crosapi
+
+namespace content {
+class ScreenOrientationDelegate;
+}  // namespace content
 
 // Browser initialization for Lacros.
 class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
@@ -52,6 +57,9 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
   // Sends lacros download information to ash.
   std::unique_ptr<DownloadControllerClientLacros> download_controller_client_;
 
+  // Sends lacros installation status of force-installed extensions to ash.
+  std::unique_ptr<ForceInstalledTrackerLacros> force_installed_tracker_;
+
   // Manages the resources used in the web Kiosk session, and sends window
   // status changes of lacros-chrome to ash when necessary.
   std::unique_ptr<KioskSessionServiceLacros> kiosk_session_service_;
@@ -70,6 +78,10 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
 
   // Shows a butter bar on the first window.
   std::unique_ptr<LacrosButterBar> butter_bar_;
+
+  // Receives orientation lock data.
+  std::unique_ptr<content::ScreenOrientationDelegate>
+      screen_orientation_delegate_;
 };
 
 #endif  // CHROME_BROWSER_LACROS_CHROME_BROWSER_MAIN_EXTRA_PARTS_LACROS_H_

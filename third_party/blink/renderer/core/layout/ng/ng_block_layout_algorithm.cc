@@ -252,7 +252,7 @@ void NGBlockLayoutAlgorithm::SetBoxType(NGPhysicalFragment::NGBoxType type) {
 }
 
 MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesFloatInput& float_input) const {
+    const MinMaxSizesFloatInput& float_input) {
   if (auto result =
           CalculateMinMaxSizesIgnoringChildren(node_, BorderScrollbarPadding()))
     return *result;
@@ -770,9 +770,9 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   // <div contenteditable></div>, <input type="button" value="">
   if (container_builder_.HasSeenAllChildren() &&
       HasLineEvenIfEmpty(Node().GetLayoutBox())) {
-    intrinsic_block_size_ =
-        std::max(intrinsic_block_size_, BorderScrollbarPadding().block_start +
-                                            Node().EmptyLineBlockSize());
+    intrinsic_block_size_ = std::max(
+        intrinsic_block_size_, BorderScrollbarPadding().block_start +
+                                   Node().EmptyLineBlockSize(BreakToken()));
     if (container_builder_.IsInitialColumnBalancingPass()) {
       container_builder_.PropagateTallestUnbreakableBlockSize(
           intrinsic_block_size_);
@@ -2018,7 +2018,8 @@ NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
 
   margin_strut.Append(margins.block_start,
                       child.Style().HasMarginBeforeQuirk());
-  SetSubtreeModifiedMarginStrutIfNeeded(&child.Style().MarginBefore());
+  if (child.IsBlock())
+    SetSubtreeModifiedMarginStrutIfNeeded(&child.Style().MarginBefore());
 
   NGBfcOffset child_bfc_offset = {
       ConstraintSpace().BfcOffset().line_offset +
@@ -2123,7 +2124,8 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
       (is_self_collapsing && child.Style().HasMarginBeforeQuirk()) ||
       child.Style().HasMarginAfterQuirk();
   margin_strut.Append(child_data.margins.block_end, is_quirky);
-  SetSubtreeModifiedMarginStrutIfNeeded(&child.Style().MarginAfter());
+  if (child.IsBlock())
+    SetSubtreeModifiedMarginStrutIfNeeded(&child.Style().MarginAfter());
 
   if (UNLIKELY(ConstraintSpace().HasBlockFragmentation())) {
     // If the child broke inside, don't apply any trailing margin, since it's
@@ -2337,7 +2339,8 @@ NGBreakStatus NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
   DCHECK(container_builder_.BfcBlockOffset());
 
   LayoutUnit fragmentainer_block_offset =
-      ConstraintSpace().FragmentainerOffsetAtBfc() + bfc_block_offset;
+      ConstraintSpace().FragmentainerOffsetAtBfc() + bfc_block_offset -
+      layout_result.AnnotationBlockOffsetAdjustment();
 
   if (has_container_separation) {
     EBreakBetween break_between =

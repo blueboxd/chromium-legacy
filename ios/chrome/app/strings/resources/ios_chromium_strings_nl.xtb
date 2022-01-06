@@ -5,7 +5,6 @@
 <translation id="1185134272377778587">Over Chromium</translation>
 <translation id="1257458525759135959">Als je afbeeldingen wilt opslaan, tik je op Instellingen om ze door Chromium aan je foto's te laten toevoegen</translation>
 <translation id="1289216811211435351">Overschakelen naar Chromium</translation>
-<translation id="1354592789402432496">Je beheerder vereist dat je inlogt met een organisatorisch account. Accounts die door je beheerder worden beperkt, zijn verborgen.</translation>
 <translation id="1361748954329991663">Chromium is verouderd. Als er geen update beschikbaar is in de <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, ondersteunt je apparaat nieuwe versies van Chromium mogelijk niet.</translation>
 <translation id="1370204544543370355">Log in bij Chromium met je Google-account om het maximale uit Chromium te halen</translation>
 <translation id="1431818719585918472">Laat Chromium je incognitotabbladen vergrendelen.</translation>
@@ -23,6 +22,7 @@
 <translation id="2168108852149185974">Sommige add-ons kunnen ervoor zorgen dat Chromium crasht. Verwijder de volgende add-ons:</translation>
 <translation id="2178608107313874732">Chromium kan je camera momenteel niet gebruiken</translation>
 <translation id="2195025571279539885">Wil je dat Chromium de volgende keer aanbiedt om pagina's in het <ph name="LANGUAGE_NAME" /> op deze site te vertalen?</translation>
+<translation id="2218146227246548550">Je organisatie vereist dat je inlogt om Chromium te gebruiken. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="2426113998523353159">Je organisatie vereist dat je inlogt om Chromium te gebruiken.</translation>
 <translation id="2450140762465183767">Je kunt Chromium nu gebruiken als je op links in berichten, documenten en andere apps tikt.</translation>
 <translation id="2478931088402984578">Selecteer <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />.</translation>
@@ -40,6 +40,7 @@
 <translation id="3472200483164753384">Niet ondersteund in Chromium Canary</translation>
 <translation id="3639997914391704523">Chromium kan je wachtwoorden checken als je inlogt met je Google-account.</translation>
 <translation id="3805899903892079518">Chromium heeft geen toegang tot je foto's of video's. Geef in iOS toegang via Instellingen &gt; Privacy &gt; Foto's.</translation>
+<translation id="3946918322491238254">Je bookmarks, geschiedenis, wachtwoorden en andere instellingen blijven zichtbaar op dit apparaat. Als je wijzigingen aanbrengt, worden deze niet gesynchroniseerd met je account.</translation>
 <translation id="4099085513035183040">Niet ondersteund in Chromium (bèta)</translation>
 <translation id="4555020257205549924">Als deze functie aanstaat, biedt Chromium aan pagina's die zijn geschreven in andere talen te vertalen met Google Translate. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">Je kunt Chromium nu gebruiken als je op links in berichten, documenten en andere apps tikt.</translation>
@@ -52,7 +53,6 @@
 <translation id="5171868502429358653">Inloggen bij Chromium</translation>
 <translation id="5224391634244552924">Geen opgeslagen wachtwoorden. Chromium kan je wachtwoorden checken als je deze hebt opgeslagen.</translation>
 <translation id="5308226104666789935">Chromium kan niet checken op updates</translation>
-<translation id="5324242752415821224">Je organisatie vereist dat je inlogt om Chromium te gebruiken. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="5396916991083608703">Chromium instellen als standaard?</translation>
 <translation id="5521125884468363740">Log in en zet de synchronisatie aan om je tabbladen te bekijken vanaf elk apparaat waarop je Chromium gebruikt</translation>
 <translation id="5573014823074921752">Chromium-tip. Voor meer tabbladopties tik je in de werkbalk onder- of bovenaan het scherm op de knop Tabbladen bekijken en houd je deze vast.</translation>
@@ -73,7 +73,6 @@
 <translation id="6424492062988593837">Chromium is nu nog beter! Er is een nieuwe versie beschikbaar.</translation>
 <translation id="6752854822223394465">Je organisatie stelt Chromium in…</translation>
 <translation id="6820823224820483452">Chromium kan niet alle wachtwoorden checken. Probeer het morgen opnieuw.</translation>
-<translation id="6827294685447036764">Als je Chromium toestaat je locatie te gebruiken, stuurt Chromium deze naar sites waarvoor je toestemming geeft. Sites kunnen om je locatie vragen als ze je lokale informatie willen laten zien, zoals winkels in de buurt of lokaal nieuws.</translation>
 <translation id="7018284295775193585">Chromium kan niet updaten</translation>
 <translation id="7045244423563602563">Chromium personaliseren</translation>
 <translation id="7099326575020694068">Chromium kan je camera niet gebruiken in de modus 'Gesplitste weergave'</translation>

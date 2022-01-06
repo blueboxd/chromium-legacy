@@ -248,15 +248,11 @@ class TestingProfile : public Profile {
 
   // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
   // This bypasses the BrowserContextDependencyManager, and in particular, it
-  // destroys any previously-created HistoryService. That means any other
-  // KeyedServices that depend on HistoryService may be left with dangling
+  // destroys any previously-created WebDataService. That means any other
+  // KeyedServices that depend on WebDataService may be left with dangling
   // pointers.
   // Instead, use Builder::AddTestingFactory to inject your own factories.
   // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
-  // Creates the history service. Returns true on success.
-  // TODO(crbug.com/1106699): Remove this API and adopt the Builder instead.
-  bool CreateHistoryService() WARN_UNUSED_RESULT;
-
   // Creates a WebDataService. If not invoked, the web data service is NULL.
   // TODO(crbug.com/1106699): Remove this API and adopt the Builder instead.
   void CreateWebDataService();
@@ -290,6 +286,7 @@ class TestingProfile : public Profile {
   bool IsOffTheRecord() const final;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   bool IsMainProfile() const override;
+  void SetIsMainProfile(bool is_main_profile);
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   const OTRProfileID& GetOTRProfileID() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
@@ -441,6 +438,10 @@ class TestingProfile : public Profile {
   bool allows_browser_windows_ = true;
 
   bool is_new_profile_ = false;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  bool is_main_profile_ = false;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   std::string supervised_user_id_;
 

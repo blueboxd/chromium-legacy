@@ -8,8 +8,9 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/attestation_service.h"
-#include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/signing_key_pair.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/key_persistence_delegate.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/key_persistence_delegate_factory.h"
 #include "chrome/browser/enterprise/connectors/device_trust/signals/signals_service.h"
 #include "chrome/browser/enterprise/connectors/device_trust/signals/signals_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,9 +18,11 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/content/policy_blocklist_service.h"
 #include "content/public/browser/browser_context.h"
+
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/desktop_attestation_service.h"
 #endif  // defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/ash/ash_attestation_service.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -55,7 +58,9 @@ KeyedService* DeviceTrustServiceFactory::BuildServiceInstanceFor(
       std::make_unique<AshAttestationService>(profile);
 #else
   std::unique_ptr<AttestationService> attestation_service =
-      std::make_unique<DesktopAttestationService>(SigningKeyPair::Create());
+      std::make_unique<DesktopAttestationService>(
+          KeyPersistenceDelegateFactory::GetInstance()
+              ->CreateKeyPersistenceDelegate());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return new DeviceTrustService(

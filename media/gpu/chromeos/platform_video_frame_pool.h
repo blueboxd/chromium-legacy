@@ -13,8 +13,8 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
@@ -52,12 +52,12 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   static gfx::GpuMemoryBufferId GetGpuMemoryBufferId(const VideoFrame& frame);
 
   // DmabufVideoFramePool implementation.
-  StatusOr<GpuBufferLayout> Initialize(const Fourcc& fourcc,
-                                       const gfx::Size& coded_size,
-                                       const gfx::Rect& visible_rect,
-                                       const gfx::Size& natural_size,
-                                       size_t max_num_frames,
-                                       bool use_protected) override;
+  CroStatus::Or<GpuBufferLayout> Initialize(const Fourcc& fourcc,
+                                            const gfx::Size& coded_size,
+                                            const gfx::Rect& visible_rect,
+                                            const gfx::Size& natural_size,
+                                            size_t max_num_frames,
+                                            bool use_protected) override;
   scoped_refptr<VideoFrame> GetFrame() override;
   bool IsExhausted() override;
   void NotifyWhenFrameAvailable(base::OnceClosure cb) override;

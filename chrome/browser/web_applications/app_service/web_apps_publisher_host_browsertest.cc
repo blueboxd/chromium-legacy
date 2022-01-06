@@ -13,12 +13,12 @@
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/values.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -34,6 +34,7 @@
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -216,9 +217,8 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, ManifestUpdate) {
     web_app_info->description = updated_description;
 
     base::RunLoop run_loop;
-    provider().install_manager().UpdateWebAppFromInfo(
-        app_id, std::move(web_app_info),
-        /*redownload_app_icons=*/false,
+    provider().install_finalizer().FinalizeUpdate(
+        *web_app_info,
         base::BindLambdaForTesting(
             [&run_loop](const AppId& app_id, InstallResultCode code) {
               run_loop.Quit();
@@ -339,10 +339,9 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, ContentSettings) {
                             apps::mojom::PermissionType::kCamera;
                    });
   ASSERT_TRUE(camera_permission != permissions.end());
-  EXPECT_EQ((*camera_permission)->value_type,
-            apps::mojom::PermissionValueType::kTriState);
-  EXPECT_EQ((*camera_permission)->value,
-            static_cast<uint32_t>(apps::mojom::TriState::kAllow));
+  EXPECT_TRUE((*camera_permission)->value->is_tristate_value());
+  EXPECT_EQ((*camera_permission)->value->get_tristate_value(),
+            apps::mojom::TriState::kAllow);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, MediaRequest) {
@@ -406,8 +405,10 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, Launch) {
 
   content::TestNavigationObserver navigation_observer(app_url);
   navigation_observer.StartWatchingNewWebContents();
-  web_apps_publisher_host.Launch(app_id, 0,
-                                 apps::mojom::LaunchSource::kFromTest, nullptr);
+  auto launch_params = crosapi::mojom::LaunchParams::New();
+  launch_params->app_id = app_id;
+  launch_params->launch_source = apps::mojom::LaunchSource::kFromTest;
+  web_apps_publisher_host.Launch(std::move(launch_params), base::DoNothing());
   navigation_observer.Wait();
 }
 
@@ -597,7 +598,7 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, Notification) {
   EXPECT_EQ(mock_app_publisher.get_deltas().back()->has_badge,
             apps::mojom::OptionalBool::kFalse);
 
-  const GURL origin = app_url.GetOrigin();
+  const GURL origin = app_url.DeprecatedGetOriginAsURL();
   const std::string notification_id = "notification-id";
   auto notification = std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,

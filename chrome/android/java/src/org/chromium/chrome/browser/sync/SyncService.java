@@ -123,9 +123,9 @@ public abstract class SyncService {
 
     public abstract boolean getDecoupledFromAndroidMasterSync();
 
-    public abstract @Nullable CoreAccountInfo getAuthenticatedAccountInfo();
+    public abstract @Nullable CoreAccountInfo getAccountInfo();
 
-    public abstract boolean isAuthenticatedAccountPrimary();
+    public abstract boolean hasSyncConsent();
 
     /**
      * Gets the set of data types that are currently syncing.

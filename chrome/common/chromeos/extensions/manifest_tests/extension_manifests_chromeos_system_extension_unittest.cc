@@ -13,21 +13,23 @@ using ExtensionManifestChromeOSSystemExtensionTest = ChromeManifestTest;
 
 TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
        InvalidChromeOSSystemExtension) {
-  LoadAndExpectError("chromeos_system_extension_invalid.json",
-                     chromeos::kInvalidChromeOSSystemExtensionId);
+  LoadAndExpectWarning(
+      "chromeos_system_extension_invalid.json",
+      "'chromeos_system_extension' is not allowed for specified extension ID.");
 }
 
 TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
-       InvalidSerialNumberPermissionInRequiredPermissions) {
-  LoadAndExpectError(
-      "chromeos_system_extension_invalid_serial_number_permission.json",
-      chromeos::kSerialNumberPermissionMustBeOptional);
-}
-
-TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
-       ValidChromeOSSystemExtension) {
+       ValidChromeOSSystemExtension_Allowlisted_1) {
   scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("chromeos_system_extension.json"));
+  EXPECT_TRUE(extension->is_chromeos_system_extension());
+  EXPECT_TRUE(extension->install_warnings().empty());
+}
+
+TEST_F(ExtensionManifestChromeOSSystemExtensionTest,
+       ValidChromeOSSystemExtension_Allowlisted_2) {
+  scoped_refptr<extensions::Extension> extension(
+      LoadAndExpectSuccess("chromeos_system_extension_2.json"));
   EXPECT_TRUE(extension->is_chromeos_system_extension());
   EXPECT_TRUE(extension->install_warnings().empty());
 }

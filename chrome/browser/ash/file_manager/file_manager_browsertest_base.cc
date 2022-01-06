@@ -90,9 +90,9 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/mount_point.h"
 #include "components/arc/arc_features.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
@@ -1719,6 +1719,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   // Make sure to run the ARC storage UI toast tests.
   enabled_features.push_back(arc::kUsbStorageUIFeature);
 
+  // FileManager tests exist for the deprecated audio player app, which will be
+  // removed, along with the kMediaAppHandlesAudio flag at ~M100.
+  disabled_features.push_back(ash::features::kMediaAppHandlesAudio);
+
   if (options.files_swa) {
     enabled_features.push_back(chromeos::features::kFilesSWA);
   } else {
@@ -2086,10 +2090,16 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "launchFileManagerSwa") {
     std::string launchDir;
-    std::string search;
+    std::string type;
+    base::DictionaryValue arg_value;
     if (value.GetString("launchDir", &launchDir)) {
-      base::DictionaryValue arg_value;
       arg_value.SetString("currentDirectoryURL", launchDir);
+    }
+    if (value.GetString("type", &type)) {
+      arg_value.SetString("type", type);
+    }
+    std::string search;
+    if (arg_value.HasKey("currentDirectoryURL") || arg_value.HasKey("type")) {
       std::string json_args;
       base::JSONWriter::Write(arg_value, &json_args);
       search = base::StrCat(
@@ -2203,6 +2213,32 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "executeScriptInChromeUntrusted") {
+    for (auto* web_contents : GetAllWebContents()) {
+      bool found = false;
+      web_contents->GetMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
+          [](const base::DictionaryValue& value, bool& found,
+             std::string* output, content::RenderFrameHost* frame) {
+            const url::Origin origin = frame->GetLastCommittedOrigin();
+            if (origin.GetURL() ==
+                ash::file_manager::kChromeUIFileManagerUntrustedURL) {
+              std::string script;
+              EXPECT_TRUE(value.GetString("data", &script));
+              CHECK(ExecuteScriptAndExtractString(frame, script, output));
+              found = true;
+              return content::RenderFrameHost::FrameIterationAction::kStop;
+            }
+            return content::RenderFrameHost::FrameIterationAction::kContinue;
+          },
+          std::ref(value), std::ref(found), output));
+      if (found)
+        return;
+    }
+    // Fail the test if the chrome-untrusted:// frame wasn't found.
+    NOTREACHED();
+    return;
+  }
+
   if (name == "isDevtoolsCoverageActive") {
     bool devtools_coverage_active = !devtools_code_coverage_dir_.empty();
     LOG(INFO) << "isDevtoolsCoverageActive: " << devtools_coverage_active;
@@ -2220,11 +2256,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     platform_util::OpenItem(profile(), mount_path, platform_util::OPEN_FOLDER,
                             platform_util::OpenOperationCallback());
 
-    return;
-  }
-
-  // TODO(crbug.com/1240426) Remove that.
-  if (name == "zipArchiverLoaded") {
     return;
   }
 
@@ -2265,7 +2296,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     // Obtain the mock CWS widget container URL and URL.origin.
     const GURL url = embedded_test_server()->GetURL(
         "/chromeos/file_manager/cws_container_mock/index.html");
-    std::string origin = url.GetOrigin().spec();
+    std::string origin = url.DeprecatedGetOriginAsURL().spec();
     if (*origin.rbegin() == '/')  // Strip origin trailing '/'.
       origin.resize(origin.length() - 1);
 

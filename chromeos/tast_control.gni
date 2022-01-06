@@ -9,14 +9,14 @@
 # To disable a specific test in chrome_all_tast_tests, add it the following
 # list and cite a bug.
 tast_disabled_tests_from_chrome_all = [
-  # crbug.com/1167243
-  "login.Chrome",
-
   # crbug.com/1184931
   "health.ProbeBatteryMetrics",
 
   # b/196705842
   "apps.LaunchGalleryLanguage",
+
+  # b/204943503
+  "apps.LaunchGallery.stable",
 
   # crbug.com/1242415
   "hwsec.AttestationEnrollOnly",
@@ -45,8 +45,29 @@ tast_disabled_tests_from_chrome_all = [
   "quicksettings.SignInScreen.noaudio_nobattery",
   "quicksettings.SignInScreen.audio",
 
+  # crbug.com/1263234
+  "quicksettings.ManagedDeviceInfo",
+
   # b/201197372
   "crostini.AppEmacs",
+
+  # crbug.com/1259127
+  "ui.TabletOperations",
+
+  # crbug.com/1257474
+  "shelf.OpenCloseSwitchApps",
+
+  # crbug.com/1239838
+  "graphics.FPS",
+
+  # crbug.com/1186991
+  "launcher.SearchBuiltInApps",
+
+  # crbug.com/1263561
+  "camera.CCAUILauncher",
+
+  # crbug.com/1263233
+  "security.SharedFilesystemState",
 ]
 
 # To disable a specific test in lacros_all_tast_tests, add it the following

@@ -190,7 +190,7 @@ void V4UpdateProtocolManager::ScheduleNextUpdateWithBackoff(bool back_off) {
 // back off after a certain number of errors.
 base::TimeDelta V4UpdateProtocolManager::GetNextUpdateInterval(bool back_off) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(next_update_interval_ > base::TimeDelta());
+  DCHECK(next_update_interval_.is_positive());
 
   base::TimeDelta next = next_update_interval_;
   if (back_off) {
@@ -348,8 +348,7 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
   GetUpdateUrlAndHeaders(req_base64, &resource_request->url,
                          &resource_request->headers);
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies))
-    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        traffic_annotation);

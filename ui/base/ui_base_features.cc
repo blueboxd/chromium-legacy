@@ -16,9 +16,18 @@
 #include "base/android/build_info.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ui/base/shortcut_mapping_pref_delegate.h"
+#endif
+
 namespace features {
 
 #if defined(OS_WIN)
+// If enabled, the occluded region of the HWND is supplied to WindowTracker.
+const base::Feature kApplyNativeOccludedRegionToWindowTracker{
+    "ApplyNativeOccludedRegionToWindowTracker",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Once enabled, the exact behavior is dictated by the field trial param
 // name `kApplyNativeOcclusionToCompositorType`.
 const base::Feature kApplyNativeOcclusionToCompositor{
@@ -54,10 +63,6 @@ const base::Feature kWin11StyleMenus{"Win11StyleMenus",
 const char kWin11StyleMenuAllWindowsVersionsName[] = "All Windows Versions";
 
 #endif  // defined(OS_WIN)
-
-// Whether or not to delegate color queries to the color provider.
-const base::Feature kColorProviderRedirection = {
-    "ColorProviderRedirection", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Integrate input method specific settings to Chrome OS settings page.
@@ -204,6 +209,18 @@ const base::Feature kImprovedKeyboardShortcuts = {
     "ImprovedKeyboardShortcuts", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsImprovedKeyboardShortcutsEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(crbug/1264581): Remove this once kDeviceI18nShortcutsEnabled policy is
+  // deprecated.
+  if (::ui::ShortcutMappingPrefDelegate::IsInitialized()) {
+    ::ui::ShortcutMappingPrefDelegate* instance =
+        ::ui::ShortcutMappingPrefDelegate::GetInstance();
+    if (instance && instance->IsDeviceEnterpriseManaged()) {
+      return instance->IsI18nShortcutPrefEnabled();
+    }
+  }
+#endif  // defined(IS_CHROMEOS_ASH)
+
   return base::FeatureList::IsEnabled(kImprovedKeyboardShortcuts);
 }
 

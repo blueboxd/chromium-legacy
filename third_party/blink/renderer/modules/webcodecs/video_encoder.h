@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/webcodecs/encoder_base.h"
 #include "third_party/blink/renderer/modules/webcodecs/hardware_preference.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "ui/gfx/color_space.h"
 
 namespace media {
 class GpuVideoAcceleratorFactories;
@@ -36,7 +37,6 @@ class MODULES_EXPORT VideoEncoderTraits {
     media::VideoCodec codec;
     media::VideoCodecProfile profile;
     uint8_t level;
-    media::VideoColorSpace color_space;
 
     HardwarePreference hw_pref;
 
@@ -105,10 +105,6 @@ class MODULES_EXPORT VideoEncoder final
   void ContinueConfigureWithGpuFactories(
       Request* request,
       media::GpuVideoAcceleratorFactories* gpu_factories);
-  std::unique_ptr<media::VideoEncoder> CreateAcceleratedVideoEncoder(
-      media::VideoCodecProfile profile,
-      const media::VideoEncoder::Options& options,
-      media::GpuVideoAcceleratorFactories* gpu_factories);
   std::unique_ptr<media::VideoEncoder> CreateMediaVideoEncoder(
       const ParsedConfig& config,
       media::GpuVideoAcceleratorFactories* gpu_factories);
@@ -123,6 +119,10 @@ class MODULES_EXPORT VideoEncoder final
   // The number of encoding requests currently handled by |media_encoder_|
   // Should not exceed |kMaxActiveEncodes|.
   int active_encodes_ = 0;
+
+  // The color space corresponding to the last emitted output. Used to update
+  // emitted VideoDecoderConfig when necessary.
+  gfx::ColorSpace last_output_color_space_;
 };
 
 }  // namespace blink

@@ -69,7 +69,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -255,7 +255,7 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
       const std::vector<base::FilePath> launch_files,
       bool wait_for_load = true) {
     apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
-    params.source = apps::mojom::AppLaunchSource::kSourceChromeInternal;
+    params.launch_source = apps::mojom::LaunchSource::kFromChromeInternal;
     params.launch_files = launch_files;
 
     return SystemWebAppBrowserTestBase::LaunchApp(std::move(params));
@@ -264,7 +264,7 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
   content::WebContents* LaunchAppWithoutWaiting(
       const std::vector<base::FilePath> launch_files) {
     apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
-    params.source = apps::mojom::AppLaunchSource::kSourceChromeInternal;
+    params.launch_source = apps::mojom::LaunchSource::kFromChromeInternal;
     params.launch_files = launch_files;
 
     return SystemWebAppBrowserTestBase::LaunchAppWithoutWaiting(
@@ -851,7 +851,7 @@ class SystemWebAppManagerFileHandlingOriginTrialsBrowserTest
 
     // Launch the App.
     apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
-    params.source = apps::mojom::AppLaunchSource::kSourceChromeInternal;
+    params.launch_source = apps::mojom::LaunchSource::kFromChromeInternal;
     params.launch_files = {temp_file_path};
 
     return SystemWebAppBrowserTestBase::LaunchApp(std::move(params));
@@ -1079,6 +1079,20 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUninstallBrowserTest, PRE_Uninstall) {
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUninstallBrowserTest, Uninstall) {
   WaitForTestSystemAppInstall();
   EXPECT_TRUE(GetManager().GetAppIds().empty());
+
+  auto* app_service_proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  app_service_proxy->FlushMojoCallsForTesting();
+
+  bool swa_found = false;
+  app_service_proxy->AppRegistryCache().ForEachApp(
+      [&](const apps::AppUpdate& app) {
+        if (app.AppType() == apps::mojom::AppType::kSystemWeb ||
+            app.AppType() == apps::mojom::AppType::kWeb) {
+          swa_found = true;
+        }
+      });
+  EXPECT_FALSE(swa_found);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -1613,7 +1627,7 @@ class SystemWebAppManagerContextMenuBrowserTest
     params.page_url = web_contents->GetVisibleURL();
     params.source_type = ui::MENU_SOURCE_NONE;
     auto menu = std::make_unique<TestRenderViewContextMenu>(
-        web_contents->GetMainFrame(), params);
+        *web_contents->GetMainFrame(), params);
     menu->Init();
     return menu;
   }

@@ -129,7 +129,7 @@ bool IsAllowedToOverrideURL(const extensions::Extension* extension,
   if (extension->web_extent().MatchesURL(override_url))
     return true;
 
-  if (override_url.GetOrigin() == extension->url())
+  if (override_url.DeprecatedGetOriginAsURL() == extension->url())
     return true;
 
   return false;
@@ -199,7 +199,11 @@ WebContents* OpenApplicationTab(Profile* profile,
   WebContents* contents = NULL;
   if (!browser) {
     // No browser for this profile, need to open a new one.
-    //
+    if (Browser::GetCreationStatusForProfile(profile) !=
+        Browser::CreationStatus::kOk) {
+      return contents;
+    }
+
     // TODO(erg): AppLaunchParams should pass user_gesture from the extension
     // system to here.
     browser = Browser::Create(
@@ -297,8 +301,9 @@ WebContents* OpenEnabledApplication(Profile* profile,
 
     apps::LaunchPlatformAppWithCommandLineAndLaunchId(
         profile, extension, params.launch_id, params.command_line,
-        params.current_directory, params.source);
-    return NULL;
+        params.current_directory,
+        apps::GetAppLaunchSource(params.launch_source));
+    return nullptr;
   }
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.HostedAppLaunchContainer",
@@ -454,7 +459,7 @@ WebContents* OpenAppShortcutWindow(Profile* profile, const GURL& url) {
       std::string(),  // this is a URL app. No app id.
       extensions::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_WINDOW,
-      extensions::AppLaunchSource::kSourceCommandLine);
+      apps::mojom::LaunchSource::kFromCommandLine);
   launch_params.override_url = url;
 
   WebContents* tab = OpenApplicationWindow(profile, launch_params, url);

@@ -8,6 +8,7 @@
 #include "chrome/browser/apps/app_service/browser_app_instance.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_observer.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -434,6 +435,48 @@ IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, InsertAndCloseTabs) {
         {"removed", 3, kAppTab, kAppId_B, window, kTitle_B, kActive, kInactive},
         {"removed", 2, kAppTab, kAppId_A, window, kTitle_A, kActive, kInactive},
         {"removed", 1, kChromeWindow, "", window, "", kActive, false},
+    });
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, DevtoolsWindow) {
+  Browser* browser = CreateBrowser();
+  InsertForegroundTab(browser, "https://c.example.org");
+  aura::Window* window1 = browser->window()->GetNativeWindow();
+
+  {
+    SCOPED_TRACE("docked dev tools window");
+    Recorder recorder(*tracker_);
+
+    DevToolsWindow* dev_tools_window =
+        DevToolsWindowTesting::OpenDevToolsWindowSync(browser,
+                                                      /*is_docked=*/true);
+    DevToolsWindowTesting::CloseDevToolsWindowSync(dev_tools_window);
+    recorder.Verify({});
+  }
+
+  {
+    SCOPED_TRACE("undocked dev tools window");
+    Recorder recorder(*tracker_);
+
+    DevToolsWindow* dev_tools_window =
+        DevToolsWindowTesting::OpenDevToolsWindowSync(browser,
+                                                      /*is_docked=*/false);
+    aura::Window* window2 = DevToolsWindowTesting::Get(dev_tools_window)
+                                ->browser()
+                                ->window()
+                                ->GetNativeWindow();
+    DevToolsWindowTesting::CloseDevToolsWindowSync(dev_tools_window);
+
+    recorder.Verify({
+        // dev tools window opened
+        {"added", 2, kChromeWindow, "", window2, "", kInactive, false},
+        {"updated", 1, kChromeWindow, "", window1, "", kInactive, false},
+        {"updated", 2, kChromeWindow, "", window2, "", kActive, false},
+        // dev tools window closed
+        {"updated", 2, kChromeWindow, "", window2, "", kInactive, false},
+        {"updated", 1, kChromeWindow, "", window1, "", kActive, false},
+        {"removed", 2, kChromeWindow, "", window2, "", kInactive, false},
     });
   }
 }
@@ -876,46 +919,6 @@ IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, Accessors) {
   EXPECT_EQ(TestInstance::Create(b3_tab1_app),
             (TestInstance{"snapshot", 6, kAppWindow, kAppId_B, window3,
                           kTitle_B, kActive, kActive}));
-
-  EXPECT_EQ(tracker_->GetAppInstancesByAppId(kAppId_A),
-            std::set<const apps::BrowserAppInstance*>{b1_tab1_app});
-  EXPECT_EQ(tracker_->GetAppInstancesByAppId(kAppId_B),
-            (std::set<const apps::BrowserAppInstance*>{b1_tab3_app, b2_tab2_app,
-                                                       b3_tab1_app}));
-  EXPECT_EQ(tracker_->GetBrowserWindowInstances(),
-            (std::set<const apps::BrowserWindowInstance*>{b1_app, b2_app}));
-
-  EXPECT_TRUE(tracker_->IsAppRunning(kAppId_A));
-  EXPECT_TRUE(tracker_->IsAppRunning(kAppId_B));
-  EXPECT_TRUE(tracker_->IsBrowserRunning());
-  EXPECT_FALSE(tracker_->IsAppRunning("non-existent-app"));
-
-  EXPECT_EQ(TestInstance::Create(tracker_->GetAppInstanceById(TestId(2))),
-            (TestInstance{"snapshot", 2, kAppTab, kAppId_A, window1, kTitle_A,
-                          kInactive, kInactive}));
-  EXPECT_EQ(TestInstance::Create(tracker_->GetAppInstanceById(TestId(10))),
-            TestInstance{});
-
-  // App A is closed, B and Chrome are still running.
-  browser1->tab_strip_model()->CloseAllTabs();
-
-  EXPECT_FALSE(tracker_->IsAppRunning(kAppId_A));
-  EXPECT_TRUE(tracker_->IsAppRunning(kAppId_B));
-  EXPECT_TRUE(tracker_->IsBrowserRunning());
-
-  // App A and Chrome are closed, B is still running.
-  browser2->tab_strip_model()->CloseAllTabs();
-
-  EXPECT_FALSE(tracker_->IsAppRunning(kAppId_A));
-  EXPECT_TRUE(tracker_->IsAppRunning(kAppId_B));
-  EXPECT_FALSE(tracker_->IsBrowserRunning());
-
-  // Everything is closed.
-  browser3->tab_strip_model()->CloseAllTabs();
-
-  EXPECT_FALSE(tracker_->IsAppRunning(kAppId_A));
-  EXPECT_FALSE(tracker_->IsAppRunning(kAppId_B));
-  EXPECT_FALSE(tracker_->IsBrowserRunning());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, AppInstall) {
@@ -973,14 +976,12 @@ IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, AppInstall) {
 IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, ActivateTabInstance) {
   // Setup: a browser with 2 tabs (app A and a non-app tab).
   Browser* browser = nullptr;
-  aura::Window* window = nullptr;
 
   content::WebContents* web_contents_a;
   content::WebContents* web_contents_c;
 
   // Open app A in a tab.
   browser = CreateBrowser();
-  window = browser->window()->GetNativeWindow();
   web_contents_a = InsertForegroundTab(browser, "https://a.example.org");
 
   // Open a second tab with no app.

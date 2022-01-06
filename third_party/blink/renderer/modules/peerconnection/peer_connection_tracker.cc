@@ -362,17 +362,17 @@ const char* GetSignalingStateString(
   const char* result = "";
   switch (state) {
     case webrtc::PeerConnectionInterface::SignalingState::kStable:
-      return "SignalingStateStable";
+      return "stable";
     case webrtc::PeerConnectionInterface::SignalingState::kHaveLocalOffer:
-      return "SignalingStateHaveLocalOffer";
+      return "have-local-offer";
     case webrtc::PeerConnectionInterface::SignalingState::kHaveRemoteOffer:
-      return "SignalingStateHaveRemoteOffer";
+      return "have-remote-offer";
     case webrtc::PeerConnectionInterface::SignalingState::kHaveLocalPrAnswer:
-      return "SignalingStateHaveLocalPrAnswer";
+      return "have-local-pranswer";
     case webrtc::PeerConnectionInterface::SignalingState::kHaveRemotePrAnswer:
-      return "SignalingStateHaveRemotePrAnswer";
+      return "have-remote-pranswer";
     case webrtc::PeerConnectionInterface::SignalingState::kClosed:
-      return "SignalingStateClosed";
+      return "closed";
     default:
       NOTREACHED();
       break;
@@ -779,6 +779,14 @@ void PeerConnectionTracker::OnThermalStateChange(
   }
 }
 
+void PeerConnectionTracker::OnSpeedLimitChange(int32_t speed_limit) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
+  current_speed_limit_ = speed_limit;
+  for (auto& entry : peer_connection_local_id_map_) {
+    entry.key->OnSpeedLimitChange(speed_limit);
+  }
+}
+
 void PeerConnectionTracker::StartEventLog(int peer_connection_local_id,
                                           int output_period_ms) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
@@ -1100,12 +1108,12 @@ void PeerConnectionTracker::TrackCreateDataChannel(
       value);
 }
 
-void PeerConnectionTracker::TrackStop(RTCPeerConnectionHandler* pc_handler) {
+void PeerConnectionTracker::TrackClose(RTCPeerConnectionHandler* pc_handler) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
-  SendPeerConnectionUpdate(id, "stop", String(""));
+  SendPeerConnectionUpdate(id, "close", String(""));
 }
 
 void PeerConnectionTracker::TrackSignalingStateChange(

@@ -50,6 +50,7 @@ class
     V8UnionCanvasRenderingContext2DOrGPUCanvasContextOrImageBitmapRenderingContextOrWebGL2RenderingContextOrWebGLRenderingContext;
 class
     V8UnionGPUCanvasContextOrImageBitmapRenderingContextOrOffscreenCanvasRenderingContext2DOrWebGL2RenderingContextOrWebGLRenderingContext;
+class WebGraphicsContext3DVideoFramePool;
 
 class CORE_EXPORT CanvasRenderingContext
     : public ScriptWrappable,
@@ -117,12 +118,7 @@ class CORE_EXPORT CanvasRenderingContext
       const ExecutionContext* execution_context);
 
   CanvasRenderingContextHost* Host() const { return host_; }
-
-  // TODO(https://crbug.com/1208480): This function applies only to 2D rendering
-  // contexts, and should be removed.
-  virtual CanvasColorParams CanvasRenderingContextColorParams() const {
-    return CanvasColorParams();
-  }
+  SkColorInfo CanvasRenderingContextSkColorInfo() const;
 
   virtual scoped_refptr<StaticBitmapImage> GetImage() = 0;
   virtual bool IsComposited() const = 0;
@@ -174,6 +170,19 @@ class CORE_EXPORT CanvasRenderingContext
                                                      SourceDrawingBuffer) {
     return false;
   }
+
+  // Copy the contents of the rendering context to a media::VideoFrame created
+  // using `frame_pool`, with color space specified by `dst_color_space`. If
+  // successful, take (using std::move) `callback` and issue it with the
+  // resulting frame, once the copy is completed. On failure, do not take
+  // `callback`.
+  using VideoFrameCopyCompletedCallback =
+      base::OnceCallback<void(scoped_refptr<media::VideoFrame>)>;
+  virtual void CopyRenderingResultsToVideoFrame(
+      WebGraphicsContext3DVideoFramePool* frame_pool,
+      SourceDrawingBuffer,
+      const gfx::ColorSpace& dst_color_space,
+      VideoFrameCopyCompletedCallback& callback) {}
 
   virtual cc::Layer* CcLayer() const { return nullptr; }
 
@@ -267,6 +276,12 @@ class CORE_EXPORT CanvasRenderingContext
   CanvasRenderingContext(CanvasRenderingContextHost*,
                          const CanvasContextCreationAttributesCore&,
                          CanvasRenderingAPI);
+
+  // TODO(https://crbug.com/1208480): This function applies only to 2D rendering
+  // contexts, and should be removed.
+  virtual CanvasColorParams CanvasRenderingContextColorParams() const {
+    return CanvasColorParams();
+  }
 
  private:
   void Dispose();

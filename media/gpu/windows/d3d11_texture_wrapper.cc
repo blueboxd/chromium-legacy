@@ -12,6 +12,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_image_backing_d3d.h"
 #include "media/base/bind_to_current_loop.h"
@@ -64,7 +65,7 @@ DefaultTexture2DWrapper::DefaultTexture2DWrapper(const gfx::Size& size,
 
 DefaultTexture2DWrapper::~DefaultTexture2DWrapper() = default;
 
-Status DefaultTexture2DWrapper::AcquireKeyedMutexIfNeeded() {
+D3D11Status DefaultTexture2DWrapper::AcquireKeyedMutexIfNeeded() {
   // keyed_mutex_acquired_ should be false when calling this API.
   // For non-shareable resource, the keyed_mutex_acquired_ should
   // never be reset.
@@ -74,7 +75,7 @@ Status DefaultTexture2DWrapper::AcquireKeyedMutexIfNeeded() {
 
   // No need to acquire key mutex for non-shared resource.
   if (!keyed_mutex_) {
-    return OkStatus();
+    return D3D11Status::Codes::kOk;
   }
 
   // Handled shared resource with no key mutex acquired.
@@ -84,17 +85,17 @@ Status DefaultTexture2DWrapper::AcquireKeyedMutexIfNeeded() {
   if (FAILED(hr)) {
     keyed_mutex_acquired_ = false;
     DPLOG(ERROR) << "Unable to acquire the key mutex, error: " << hr;
-    return Status(StatusCode::kAcquireKeyedMutexFailed)
+    return D3D11Status(D3D11Status::Codes::kAcquireKeyedMutexFailed)
         .AddCause(HresultToStatus(hr));
   }
 
   // Key mutex has been acquired for shared resource.
   keyed_mutex_acquired_ = true;
 
-  return OkStatus();
+  return D3D11Status::Codes::kOk;
 }
 
-Status DefaultTexture2DWrapper::ProcessTexture(
+D3D11Status DefaultTexture2DWrapper::ProcessTexture(
     const gfx::ColorSpace& input_color_space,
     MailboxHolderArray* mailbox_dest,
     gfx::ColorSpace* output_color_space) {
@@ -104,7 +105,7 @@ Status DefaultTexture2DWrapper::ProcessTexture(
     HRESULT hr = keyed_mutex_->ReleaseSync(gpu::kDXGIKeyedMutexAcquireKey);
     if (FAILED(hr)) {
       DPLOG(ERROR) << "Unable to release the keyed mutex, error: " << hr;
-      return Status(StatusCode::kReleaseKeyedMutexFailed)
+      return D3D11Status(D3D11Status::Codes::kReleaseKeyedMutexFailed)
           .AddCause(HresultToStatus(hr));
     }
 
@@ -115,7 +116,7 @@ Status DefaultTexture2DWrapper::ProcessTexture(
   // from some previous operation.
   // TODO(liberato): Return the error.
   if (received_error_)
-    return Status(StatusCode::kProcessTextureFailed);
+    return D3D11Status::Codes::kProcessTextureFailed;
 
   // TODO(liberato): make sure that |mailbox_holders_| is zero-initialized in
   // case we don't use all the planes.
@@ -125,16 +126,16 @@ Status DefaultTexture2DWrapper::ProcessTexture(
   // We're just binding, so the output and output color spaces are the same.
   *output_color_space = input_color_space;
 
-  return OkStatus();
+  return D3D11Status::Codes::kOk;
 }
 
-Status DefaultTexture2DWrapper::Init(
+D3D11Status DefaultTexture2DWrapper::Init(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     GetCommandBufferHelperCB get_helper_cb,
     ComD3D11Texture2D texture,
     size_t array_slice) {
   if (!SupportsFormat(dxgi_format_))
-    return Status(StatusCode::kUnsupportedTextureFormatForBind);
+    return D3D11Status::Codes::kUnsupportedTextureFormatForBind;
 
   // Init IDXGIKeyedMutex when using shared handle.
   if (texture) {
@@ -147,7 +148,7 @@ Status DefaultTexture2DWrapper::Init(
       if (FAILED(hr)) {
         DPLOG(ERROR) << "Failed to get key_mutex from output resource, error "
                      << std::hex << hr;
-        return Status(StatusCode::kGetKeyedMutexFailed)
+        return D3D11Status(D3D11Status::Codes::kGetKeyedMutexFailed)
             .AddCause(HresultToStatus(hr));
       }
     }
@@ -174,10 +175,10 @@ Status DefaultTexture2DWrapper::Init(
       std::move(gpu_task_runner), std::move(on_error_cb),
       std::move(get_helper_cb), std::move(mailboxes), size_, dxgi_format_,
       texture, array_slice);
-  return OkStatus();
+  return D3D11Status::Codes::kOk;
 }
 
-void DefaultTexture2DWrapper::OnError(Status status) {
+void DefaultTexture2DWrapper::OnError(D3D11Status status) {
   if (!received_error_)
     received_error_ = status;
 }
@@ -200,7 +201,7 @@ DefaultTexture2DWrapper::GpuResources::GpuResources(
 
   if (!helper_ || !helper_->MakeContextCurrent()) {
     std::move(on_error_cb)
-        .Run(std::move(StatusCode::kMakeContextCurrentFailed));
+        .Run(std::move(D3D11Status::Codes::kMakeContextCurrentFailed));
     return;
   }
 
@@ -211,7 +212,7 @@ DefaultTexture2DWrapper::GpuResources::GpuResources(
       gpu::SHARED_IMAGE_USAGE_RASTER | gpu::SHARED_IMAGE_USAGE_DISPLAY |
       gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
-  base::win::ScopedHandle shared_handle;
+  scoped_refptr<gpu::DXGISharedHandleState> dxgi_shared_handle_state;
   if (texture) {
     D3D11_TEXTURE2D_DESC desc = {};
     texture->GetDesc(&desc);
@@ -223,32 +224,36 @@ DefaultTexture2DWrapper::GpuResources::GpuResources(
         DLOG(ERROR) << "QueryInterface for IDXGIResource failed with error "
                     << std::hex << hr;
         std::move(on_error_cb)
-            .Run(std::move(StatusCode::kCreateSharedHandleFailed));
+            .Run(std::move(D3D11Status::Codes::kCreateSharedHandleFailed));
         return;
       }
 
-      HANDLE handle = nullptr;
+      HANDLE shared_handle = nullptr;
       hr = dxgi_resource->CreateSharedHandle(
           nullptr, DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE,
-          nullptr, &handle);
+          nullptr, &shared_handle);
       if (FAILED(hr)) {
         DLOG(ERROR) << "CreateSharedHandle failed with error " << std::hex
                     << hr;
         std::move(on_error_cb)
-            .Run(std::move(StatusCode::kCreateSharedHandleFailed));
+            .Run(std::move(D3D11Status::Codes::kCreateSharedHandleFailed));
         return;
       }
 
-      shared_handle.Set(handle);
+      dxgi_shared_handle_state =
+          helper_->GetDXGISharedHandleManager()
+              ->CreateAnonymousSharedHandleState(
+                  base::win::ScopedHandle(shared_handle), texture);
     }
   }
 
   auto shared_image_backings =
       gpu::SharedImageBackingD3D::CreateFromVideoTexture(
           mailboxes, dxgi_format, size, usage, texture, array_slice,
-          std::move(shared_handle));
+          std::move(dxgi_shared_handle_state));
   if (shared_image_backings.empty()) {
-    std::move(on_error_cb).Run(std::move(StatusCode::kCreateSharedImageFailed));
+    std::move(on_error_cb)
+        .Run(std::move(D3D11Status::Codes::kCreateSharedImageFailed));
     return;
   }
   DCHECK_EQ(shared_image_backings.size(), NumPlanes(dxgi_format));

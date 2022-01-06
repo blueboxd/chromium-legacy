@@ -418,6 +418,8 @@
         'RemoteAccessHostEnableUserInterface',
         'RemoteAccessHostAllowRemoteAccessConnections',
         'RemoteAccessHostMaximumSessionDurationMinutes',
+        'RemoteAccessHostClipboardSizeBytes',
+        'RemoteAccessHostAllowRemoteSupportConnections',
       ],
     },
     {
@@ -976,6 +978,8 @@
         'HeartbeatFrequency',
         'LogUploadEnabled',
         'DeviceMetricsReportingEnabled',
+        'ReportDeviceNetworkTelemetryCollectionRateMs',
+        'ReportDeviceNetworkTelemetryEventCheckingRateMs',
       ],
     },
     {
@@ -1213,6 +1217,18 @@
         'VoiceInteractionHotwordEnabled',
         'AssistantVoiceMatchEnabledDuringOobe',
         'VoiceInteractionQuickAnswersEnabled',
+      ]
+    },
+    {
+      'name': 'QuickAnswers',
+      'type': 'group',
+      'caption': '''Quick Answers''',
+      'desc': '''Controls settings for Quick Answers.''',
+      'policies': [
+        'QuickAnswersEnabled',
+        'QuickAnswersDefinitionEnabled',
+        'QuickAnswersTranslationEnabled',
+        'QuickAnswersUnitConverstionEnabled',
       ]
     },
     {
@@ -2048,6 +2064,45 @@
       Setting the policy to Disabled means browser history and download history can't be deleted. Even with this policy off, the browsing and download history are not guaranteed to be retained. Users may be able to edit or delete the history database files directly, and the browser itself may expire or archive any or all history items at any time.''',
     },
     {
+      'name': 'HistoryClustersVisible',
+      'owners': ['file://components/history_clusters/OWNERS', 'mahmadi@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:97-', 'chrome_os:97-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'History clusters will be visible at chrome://history/journeys.',
+        },
+        {
+          'value': False,
+          'caption': 'History clusters will not be visible at chrome://history/journeys.',
+        },
+        {
+          'value': None,
+          'caption': 'History clusters will be visible at chrome://history/journeys by default and users can change the visibility of history clusters.',
+        },
+      ],
+      'example_value': False,
+      'default': None,
+      'id': 926,
+      'caption': '''Show history clusters on the Chrome history page''',
+      'tags': [],
+      'desc':
+      '''This policy controls the visibility of history clusters on the Chrome history page.
+
+      If the policy is set to Enabled, history clusters will be visible at chrome://history/journeys.
+
+      If the policy is set to Disabled, history clusters will not be visible at chrome://history/journeys.
+
+      If the policy is left unset, history clusters will be visible at chrome://history/journeys by default and users can change the visibility of history clusters.
+      ''',
+    },
+    {
       'name': 'AllowDinosaurEasterEgg',
       'owners': ['file://components/policy/resources/OWNERS', 'poromov@chromium.org'],
       'type': 'main',
@@ -2689,6 +2744,68 @@
           This policy has no effect if it is not set. In this case, remote access connections will have no maximum duration on this machine.''',
     },
     {
+      'name': 'RemoteAccessHostClipboardSizeBytes',
+      'owners': ['file://remoting/OWNERS', 'jamiewalch@chromium.org', 'joedow@chromium.org'],
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': 0, 'maximum': 2147483647 },
+      'supported_on': ['chrome.*:97-', 'chrome_os:97-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
+      },
+      'example_value': 1048576,  # 1MiB
+      'default': None,
+      'id': 922,
+      'caption': '''The maximum size, in bytes, that can be transferred between client and host via clipboard synchronization''',
+      'tags': [],
+      'desc': '''If this policy is set, clipboard data sent to and from the host will be truncated to the limit set by this policy.
+
+          If a value of 0 is set, then clipboard sync is disabled.
+
+          This policy affects both remote access and remote support scenarios.
+
+          This policy has no effect if it is not set.
+
+          Setting the policy to a value that is not within the min/max range may prevent the host from starting.
+
+          Please note that the actual upper bound for the clipboard size is based on the maximum WebRTC data channel message size which this policy does not control.''',
+    },
+    {
+      'name': 'RemoteAccessHostAllowRemoteSupportConnections',
+      'owners': ['file://remoting/OWNERS', 'jamiewalch@chromium.org', 'joedow@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:97-', 'chrome_os:97-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow remote support connections to this machine',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent remote support connections to this machine',
+        },
+      ],
+      'default': True,
+      'example_value': False,
+      'id': 923,
+      'caption': '''Allow remote support connections to this machine''',
+      'tags': [],
+      'desc': '''If this policy is disabled, the remote support host cannot be started or configured to accept incoming connections.
+
+          This policy does not affect remote access scenarios.
+
+          This policy does not prevent enterprise admins from connecting to managed Chrome OS devices.
+
+          This policy has no effect if enabled, left empty, or is not set.''',
+    },
+    {
       'name': 'DeviceAllowMGSToStoreDisplayProperties',
       'owners' : ['file://chrome/browser/ash/app_mode/OWNERS', 'apotapchuk@chromium.org'],
       'type' : 'main',
@@ -3327,11 +3444,12 @@
       'owners': ['enne@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:84-', 'chrome_os:84-', 'android:84-', 'webview_android:84-'],
+      'supported_on': ['chrome.*:84-95', 'chrome_os:84-95', 'android:84-95', 'webview_android:84-95'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'deprecated': True,
       'items': [
         {
           'value': True,
@@ -4319,27 +4437,27 @@
         {
           'name': 'DefaultDownloadSecurity',
           'value': 0,
-          'caption': '''No special restrictions''',
+          'caption': '''No special restrictions. Default.''',
         },
         {
           'name': 'BlockDangerousDownloads',
           'value': 1,
-          'caption': '''Block dangerous downloads''',
+          'caption': '''Block malicious downloads and dangerous file types.''',
         },
         {
           'name': 'BlockPotentiallyDangerousDownloads',
           'value': 2,
-          'caption': '''Block potentially dangerous downloads''',
+          'caption': '''Block malicious downloads, uncommon or unwanted downloads and dangerous file types.''',
         },
         {
           'name': 'BlockAllDownloads',
           'value': 3,
-          'caption': '''Block all downloads''',
+          'caption': '''Block all downloads.''',
         },
         {
           'name': 'BlockMaliciousDownloads',
           'value': 4,
-          'caption': '''Block malicious downloads (recommended)''',
+          'caption': '''Block malicious downloads. Recommended.''',
         },
       ],
       'supported_on': ['chrome.*:61-', 'chrome_os:61-'],
@@ -4354,17 +4472,23 @@
       'tags': ['local-data-access'],
       'desc': '''Setting the policy means users can't bypass download security decisions.
 
-       Setting the policy to:
+      There are many types of download warnings within Chrome, which roughly break down into these categories (learn more about Safe Browsing verdicts https://support.google.com/chrome/?p=ib_download_blocked):
 
-      * Block dangerous downloads means all downloads are allowed, except for those that carry safety warnings.
+      * Malicious, as flagged by the Safe Browsing server
+      * Uncommon or unwanted, as flagged by the Safe Browsing server
+      * A dangerous file type (e.g. all SWF downloads and many EXE downloads)
 
-      * Block potentially dangerous downloads means all downloads allowed, except for those that carry safety warnings of potentially dangerous downloads.
+      Setting the policy blocks different subsets of these, depending on it's value:
 
-      * Block all downloads means all downloads are blocked.
+      0: No special restrictions. Default.
 
-      * Block malicious downloads means all downloads are allowed, except for those assessed to be malware with high confidence. Unlike with dangerous downloads, this does not take into account file type, but does take into account the host.
+      1: Blocks malicious files flagged by the Safe Browsing server AND Blocks all dangerous file types. Only recommended for OUs/browsers/users that have a high tolerance for False Positives.
 
-      * No special restrictions means the downloads go through the usual security restrictions based on safety analysis results.
+      2: Blocks malicious files flagged by the Safe Browsing server AND Blocks uncommon or unwanted files flagged by the Safe Browsing server AND Blocks all dangerous file types. Only recommended for OUs/browsers/users that have a high tolerance for False Positives.
+
+      3: Blocks all downloads. Not recommended, except for special use cases.
+
+      4: Blocks malicious files flagged by the Safe Browsing server, does not block dangerous file types. Recommended.
 
       Note: These restrictions apply to downloads triggered from webpage content, as well as the Download link... menu option. They don't apply to the download of the currently displayed page or to saving as PDF from the printing options. Read more about Safe Browsing ( https://developers.google.com/safe-browsing ).''',
       'label': '''Download restrictions''',
@@ -5789,7 +5913,7 @@
           'caption': '''Do not allow use of the Headless Mode''',
         },
       ],
-      'supported_on': ['chrome.*:91-', 'chrome_os:91-'],
+      'supported_on': ['chrome.*:91-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -7111,7 +7235,8 @@
           'caption': '''Allow web apps to ask the user to grant access to file types via the File Handling API''',
         },
       ],
-      'supported_on': ['chrome_os:91-', 'chrome.*:91-'],
+      'supported_on': ['chrome_os:91-96', 'chrome.*:91-96'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -7133,7 +7258,8 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome_os:91-', 'chrome.*:91-'],
+      'supported_on': ['chrome_os:91-96', 'chrome.*:91-96'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -7160,7 +7286,8 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome_os:91-', 'chrome.*:91-'],
+      'supported_on': ['chrome_os:91-96', 'chrome.*:91-96'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -8611,7 +8738,8 @@
       'features': {
         # The case where a user is already signed into an unmanaged account cannot be handled right now and hence this is not dynamic.
         'dynamic_refresh': False,
-        'per_profile': True,
+        # This policy applies at the OS level and affects all browser Profiles.
+        'per_profile': False,
       },
       'items': [
         {
@@ -9397,8 +9525,11 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:75-', 'chrome_os:75-'],
-      'future_on': ['android'],
+      'supported_on': [
+        'chrome.*:75-',
+        'chrome_os:75-',
+        'android:97-',
+      ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -9493,7 +9624,7 @@
       'owners': ['igorruvinov@google.com', 'pastarmovj@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:92-'],
+      'supported_on': ['chrome.*:92-', 'android:97-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -10439,6 +10570,48 @@
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
+      'name': 'ReportDeviceNetworkTelemetryCollectionRateMs',
+      'owners': ['anasr@google.com', 'cros-reporting-team@google.com'],
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': 60000 },
+      'future_on': ['chrome_os'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 600000,
+      'default': 600000,
+      'id': 914,
+      'caption': '''Network telemetry collection rate in milliseconds.''',
+      'tags': ['admin-sharing'],
+      'desc': '''Rate at which network data is sampled and collected. The minimum allowed is 1 minute.
+
+      If not set, the default rate of 10 minutes applies.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'ReportDeviceNetworkTelemetryEventCheckingRateMs',
+      'owners': ['anasr@google.com', 'cros-reporting-team@google.com'],
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': 60000 },
+      'future_on': ['chrome_os'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 60000,
+      'default': 60000,
+      'id': 915,
+      'caption': '''Network events checking rate in milliseconds.''',
+      'tags': ['admin-sharing'],
+      'desc': '''Rate at which network data is polled and checked for events. The minimum allowed is 1 minute.
+
+      If not set, the default rate of 1 minute applies.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
       'name': 'ReportDeviceUsers',
       'owners': ['stepco@chromium.org', 'cros-reporting-team@google.com', 'lbaraz@chromium.org'],
       'type': 'main',
@@ -11096,9 +11269,11 @@
       'id': 123,
       'caption': '''Allow creation of new user accounts''',
       'tags': [],
-      'desc': '''Controls whether <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> allows new user accounts to be created. If this policy is set to false, users that do not have an account already will not be able to login.
+      'desc': '''Controls whether <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> allows new user accounts to be created.
 
-      If this policy is set to true or not configured, new user accounts will be allowed to be created provided that <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME">DeviceUserAllowlist</ph> does not prevent the user from logging in.''',
+      If this policy is set to false, only users present in <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME">DeviceUserAllowlist</ph> will be able to login.
+
+      If this policy is set to true or not configured, all users will be able to login.''',
       'arc_support': 'This policy controls whether new users can be added to <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph>. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME">accountTypesWithManagementDisabled</ph> policy as part of <ph name="ARC_POLICY_POLICY_NAME">ArcPolicy</ph>.',
     },
     {
@@ -11680,6 +11855,37 @@
       'desc': '''Setting the policy specifies the list of device-local accounts to display on the sign-in screen. Identifiers tell the different device-local accounts apart.
 
       If the policy is unset or an empty list, there are no device-local accounts.''',
+    },
+    {
+      'name': 'KioskCRXManifestUpdateURLIgnored',
+      'owners': ['file://chrome/browser/extensions/forced_extensions/OWNERS', 'burunduk@chromium.org'],
+      'type': 'main',
+      'schema': {
+        'type': 'boolean',
+      },
+      'future_on': ['chrome_os'],
+      'device_only': True,
+      'features': {
+        'cloud_only': True,
+        'dynamic_refresh': True,
+        'unlisted': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'New behaviour: Kiosk Chrome Apps will be only updated using update URL from the policy',
+        },
+        {
+          'value': False,
+          'caption': 'Legacy behavior: Kiosk Chrome Apps will be updated by the extension system using update URL from the extension manifest, as well as by caching manager using update URL from the policy',
+        },
+      ],
+      'example_value': True,
+      'default': False,
+      'id': 916,
+      'caption': '''Use only policy-provided update URL when downloading and updating Kiosk Chrome apps''',
+      'tags': [],
+      'desc': '''Setting the policy will disable in-session Kiosk Chrome apps update (which uses update URL from the extension manifest) and leaves only CRX pre-fetching as the update mechanism.''',
     },
     {
       'name': 'DeviceLocalAccountAutoLoginId',
@@ -13725,8 +13931,8 @@
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
-        'per_profile': True,
       },
+      'device_only': True,
       'example_value': True,
       'id': 646,
       'caption': '''Show accessibility options in system tray menu in the login screen''',
@@ -14403,8 +14609,8 @@
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
-        'per_profile': True,
       },
+      'device_only': True,
       'example_value': True,
       'id': 657,
       'caption': '''Switch the primary mouse button to the right button on the login screen''',
@@ -14724,8 +14930,8 @@
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
-        'per_profile': True,
       },
+      'device_only': True,
       'example_value': True,
       'id': 619,
       'caption': '''Enable the keyboard focus highlighting accessibility feature''',
@@ -18866,6 +19072,7 @@
       'supported_on': [
         'chrome.*:75-',
         'ios:88-',
+        'android:97-'
       ],
       'features': {
         'dynamic_refresh': True,
@@ -18887,7 +19094,7 @@
       'owners': ['igorruvinov@chromium.org', 'zmin@chromium.org', 'pastarmovj@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:96-'],
+      'supported_on': ['chrome.*:96-', 'android:97-'],
       'items': [
         {
           'value': True,
@@ -19171,20 +19378,17 @@
           'caption': 'Prevent sites from using SharedArrayBuffers',
         },
       ],
-      'example_value': True,
+      'example_value': False,
       'default': False,
       'id': 852,
       'caption': '''Specifies whether SharedArrayBuffers can be used in a non cross-origin-isolated context''',
       'tags': ['system-security'],
       'desc': '''
-      Specifies whether SharedArrayBuffers can be used in a non cross-origin-
-      isolated context. Chrome will require cross-origin isolation when using
-      SharedArrayBuffers from Chrome 91 onward (2021-05-25) for Web Compatibility
-      reasons. Additional details can be found on:
-      https://developer.chrome.com/blog/enabling-shared-array-buffer/.
-      When set to True, sites can use SharedArrayBuffer with no restrictions.
-      When set to False or not set, sites can only use SharedArrayBuffers when
-      cross-origin isolated.''',
+      Specifies whether SharedArrayBuffers can be used in a non cross-origin-isolated context. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will require cross-origin isolation when using SharedArrayBuffers from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 91 onward (2021-05-25) for Web Compatibility reasons. Additional details can be found on: https://developer.chrome.com/blog/enabling-shared-array-buffer/.
+
+      When set to Enabled, sites can use SharedArrayBuffer with no restrictions.
+
+      When set to Disabled or not set, sites can only use SharedArrayBuffers when cross-origin isolated.''',
     },
     {
       'name': 'SandboxExternalProtocolBlocked',
@@ -19221,8 +19425,7 @@
 
       This defaults to True: security feature enabled.
 
-      This can be used by Enterprise affected by these restrictions to
-      temporarily lift it.
+      This can be used by administrators who need more time to update their internal website affected by this new restriction. This Enterprise policy is temporary; it's intended to be removed after <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 104.
       ''',
     },
     {
@@ -19252,18 +19455,11 @@
       'caption': '''Specifies whether WebAssembly modules can be sent cross-origin''',
       'tags': ['system-security'],
       'desc': '''
-      Specifies whether WebAssembly modules can be sent to another window or
-      worker cross-origin. Cross-origin WebAssembly module sharing will be
-      deprecated as part of the efforts to deprecate document.domain, see
-      https://github.com/mikewest/deprecating-document-domain. This policy
-      allows to re-enable cross-origin WebAssembly module sharing to offer a
-      longer transition period in the deprecation process.
+      Specifies whether WebAssembly modules can be sent to another window or worker cross-origin. Cross-origin WebAssembly module sharing will be deprecated as part of the efforts to deprecate document.domain, see https://github.com/mikewest/deprecating-document-domain. This policy allows to re-enable cross-origin WebAssembly module sharing to offer a longer transition period in the deprecation process.
 
-      When set to True, sites can send WebAssembly modules also cross-origin
-      without restrictions.
+      When set to True, sites can send WebAssembly modules also cross-origin without restrictions.
 
-      When set to False or not set, sites can only send WebAssembly modules to
-      windows and workers in the same origin.''',
+      When set to False or not set, sites can only send WebAssembly modules to windows and workers in the same origin.''',
     },
     {
       'name': 'DisplayCapturePermissionsPolicyEnabled',
@@ -19296,22 +19492,11 @@
       'caption': 'Specifies whether the display-capture permissions-policy is checked or skipped.',
       'tags': ['system-security'],
       'desc': '''
-      The display-capture permissions-policy gates access to getDisplayMedia(),
-      as per this spec:
-      https://www.w3.org/TR/screen-capture/#feature-policy-integration
-      However, if this policy is Disabled, this requirement is not enforced,
-      and getDisplayMedia() is allowed from contexts that would otherwise be
-      forbidden. This Enterprise policy is temporary; it's intended to be
-      removed after <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 100.
-      It is intended to unblock Enterprise users whose application is non-spec compliant,
-      but needs time to be fixed.
+      The display-capture permissions-policy gates access to getDisplayMedia(), as per this spec: https://www.w3.org/TR/screen-capture/#feature-policy-integration. However, if this policy is Disabled, this requirement is not enforced, and getDisplayMedia() is allowed from contexts that would otherwise be forbidden. This Enterprise policy is temporary; it's intended to be removed after <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 100. It is intended to unblock Enterprise users whose application is non-spec compliant, but needs time to be fixed.
 
-      When enabled or not set, sites can only call getDisplayMedia() from
-      contexts which are allowlisted by the display-capture permissions-policy.
+      When enabled or not set, sites can only call getDisplayMedia() from contexts which are allowlisted by the display-capture permissions-policy.
 
-      When disabled, sites can call getDisplayMedia() even from contexts
-      which are not allowlisted by the display-capture permissions policy.
-      Note that other restrictions may still apply.''',
+      When disabled, sites can call getDisplayMedia() even from contexts which are not allowlisted by the display-capture permissions policy. Note that other restrictions may still apply.''',
     },
     {
       'name': 'WebDriverOverridesIncompatiblePolicies',
@@ -19333,15 +19518,13 @@
       This policy was removed in M80, because it is not necessary anymore as
       WebDriver is now compatible with all existing policies.
 
-      This policy allows users of the WebDriver feature to override
-      policies which can interfere with its operation.
+      This policy allows users of the WebDriver feature to override policies which can interfere with its operation.
 
       Currently this policy disables SitePerProcess and IsolateOrigins policies.
 
-      If the policy is enabled, WebDriver will be able to override incomaptible
-      policies.
-      If the policy is disabled or not configured, WebDriver will not be allowed
-      to override incompatible policies.''',
+      If the policy is enabled, WebDriver will be able to override incomaptible policies.
+
+      If the policy is disabled or not configured, WebDriver will not be allowed to override incompatible policies.''',
     },
     {
       'name': 'UnsafelyTreatInsecureOriginAsSecure',
@@ -19365,29 +19548,15 @@
       'desc': '''Deprecated in M69. Use
       OverrideSecurityRestrictionsOnInsecureOrigin instead.
 
-      The policy specifies a list of origins (URLs) or hostname patterns (such
-      as "*.example.com") for which security restrictions on insecure origins
-      will not apply.
+      The policy specifies a list of origins (URLs) or hostname patterns (such as "*.example.com") for which security restrictions on insecure origins will not apply.
 
-      The intent is to allow organizations to allow origins for legacy
-      applications that cannot deploy TLS, or to set up a staging server for
-      internal web development so that their developers can test out features
-      requiring secure contexts without having to deploy TLS on the staging
-      server. This policy will also prevent the origin from being labeled
-      "Not Secure" in the omnibox.
+      The intent is to allow organizations to allow origins for legacy applications that cannot deploy TLS, or to set up a staging server for internal web development so that their developers can test out features requiring secure contexts without having to deploy TLS on the staging server. This policy will also prevent the origin from being labeled "Not Secure" in the omnibox.
 
-      Setting a list of URLs in this policy has the same effect as setting the
-      command-line flag '--unsafely-treat-insecure-origin-as-secure' to a
-      comma-separated list of the same URLs. If the policy is set, it will
-      override the command-line flag.
+      Setting a list of URLs in this policy has the same effect as setting the command-line flag '--unsafely-treat-insecure-origin-as-secure' to a comma-separated list of the same URLs. If the policy is set, it will override the command-line flag.
 
-      This policy is deprecated in M69 in favor of
-      OverrideSecurityRestrictionsOnInsecureOrigin. If both policies are
-      present, OverrideSecurityRestrictionsOnInsecureOrigin will override this
-      policy.
+      This policy is deprecated in M69 in favor of OverrideSecurityRestrictionsOnInsecureOrigin. If both policies are present, OverrideSecurityRestrictionsOnInsecureOrigin will override this policy.
 
-      For more information on secure contexts, see
-      https://www.w3.org/TR/secure-contexts/
+      For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
       '''
     },
     {
@@ -20265,8 +20434,8 @@
       'supported_on': [
         'chrome.*:72-',
         'ios:88-',
+        'android:97-',
       ],
-      'future_on': ['android'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -20383,7 +20552,7 @@
       'tags': [],
       'desc': '''Deprecated in M68. Use DefaultPopupsSetting instead.
 
-      For a full explanation, see https://www.chromestatus.com/features/5675755719622656.
+      For a full explanation, see https://www.chromestatus.com/feature/5675755719622656.
       If this policy is enabled, sites will be allowed to simultaneously navigate and open new windows/tabs.
       If this policy is disabled or not set, sites will be disallowed from simultaneously navigating and opening a new window/tab.''',
     },
@@ -21348,14 +21517,16 @@
       - <ph name="OVERRIDE_APP_NAME_LABEL">custom_name</ph>
       (Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
       version 96, allows you to permanently override the app name for all web
-      apps and PWAs.)
+      apps and PWAs. Currently only supported on
+      <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.)
 
       - <ph name="CUSTOM_ICON_LABEL">custom_icon</ph>
       (Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
       version 96, allows you to override the app icon of installed apps. The
       icons have to be square, maximal 1 MB in size, and in one of the following
       formats: jpeg, png, gif, webp, ico. The hash value has to be the SHA256
-      hash of the icon file.)
+      hash of the icon file. Currently only supported on
+      <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.)
 
       See <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME">PinnedLauncherApps</ph> for pinning apps to the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shelf.''',
       'label': '''URLs for Web Apps to be silently installed.''',
@@ -21552,8 +21723,8 @@
         'chrome.*:72-',
         'chrome_os:81-',
         'ios:88-',
+        'android:97-',
       ],
-      'future_on': ['android'],
       'caption': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud reporting''',
       'example_value': True,
       'desc': '''This policy controls <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud reporting which uploads information about the browser operation to Google Admin console.
@@ -22516,6 +22687,127 @@
       If the policy is enabled, Quick Answers will be allowed to access selected content.
       If the policy is disabled, Quick Answers will not be allowed to access selected content.
       If the policy is not set, users can decide whether to allow Quick Answers to access selected content.''',
+    },
+    {
+      'name': 'QuickAnswersEnabled',
+      'owners': ['updowndota@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:97-'],
+      'tags' : ['google-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Quick Answers',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Quick Answers',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 917,
+      'caption': '''Enable Quick Answers''',
+      'desc': '''This policy gives Quick Answers permission to access selected content and send the info to the server.
+
+      If the policy is enabled, Quick Answers will be enabled.
+      If the policy is disabled, Quick Answers will be disabled.
+      If the policy is not set, users can decide whether to enable or disable Quick Answers.''',
+    },
+    {
+      'name': 'QuickAnswersDefinitionEnabled',
+      'owners': ['updowndota@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:97-'],
+      'tags' : ['google-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Quick Answers Definition',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Quick Answers Definition',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 918,
+      'caption': '''Enable Quick Answers Definition''',
+      'desc': '''This policy gives Quick Answers permission to access selected content and send the info to the server to get definition results.
+
+      If the policy is enabled or not set, Quick Answers Definition will be enabled.
+      If the policy is disabled, Quick Answers Definition will be disabled.''',
+    },
+    {
+      'name': 'QuickAnswersTranslationEnabled',
+      'owners': ['updowndota@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:97-'],
+      'tags' : ['google-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Quick Answers Translation',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Quick Answers Translation',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 919,
+      'caption': '''Enable Quick Answers Translation''',
+      'desc': '''This policy gives Quick Answers permission to access selected content and send the info to the server to get translation results.
+
+      If the policy is enabled or not set, Quick Answers translation will be enabled.
+      If the policy is disabled, Quick Answers translation will be disabled.''',
+    },
+    {
+      'name': 'QuickAnswersUnitConverstionEnabled',
+      'owners': ['updowndota@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:97-'],
+      'tags' : ['google-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Quick Answers Unit Conversion',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Quick Answers Unit Conversion',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 920,
+      'caption': '''Enable Quick Answers Unit Conversion''',
+      'desc': '''This policy gives Quick Answers permission to access selected content and send the info to the server to get unit conversion results.
+
+      If the policy is enabled or not set, Quick Answers unit conversion will be enabled.
+      If the policy is disabled, Quick Answers unit conversion will be disabled.''',
     },
     {
       'name': 'DeviceWilcoDtcAllowed',
@@ -25997,6 +26289,35 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       If this policy is enabled or not set the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature is enabled. If the policy is disabled the feature is unavailable.''',
     },
     {
+      'name': 'UserAgentClientHintsGREASEUpdateEnabled',
+      'owners': ['miketaylr@google.com', 'mreichhoff@chromium.org', 'file://components/client_hints/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os', 'chrome.*', 'android'],
+      'features': {
+        'per_profile': False,
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow the updated User-Agent GREASE algorithm to be run.',
+        },
+        {
+          'value': False,
+          'caption': 'Force the prior User-Agent GREASE algorithm to be used.',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 924,
+      'caption': '''Control the User-Agent Client Hints GREASE Update feature.''',
+      'tags': [],
+      'desc': '''When enabled the User-Agent Client Hints GREASE Update feature aligns the User-Agent GREASE algorithm with the latest spec.
+      The updated spec may break some websites that restrict the characters that requests may contain. See the spec for more information: https://wicg.github.io/ua-client-hints/#grease
+      If this policy is enabled or not set the User-Agent Client Hints GREASE Update feature is enabled. If the policy is disabled the prior User-Agent GREASE algorithm is used.''',
+    },
+    {
       'name': 'SuggestedContentEnabled',
       'owners': ['wrong@chromium.org', 'chrome-knowledge-eng@google.com'],
       'type': 'main',
@@ -27618,9 +27939,9 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
         'type': 'boolean',
       },
       'supported_on': [
-        'chrome.*:92-',
-        'chrome_os:92-',
-        'android:92-',
+        'chrome.*:92-96',
+        'chrome_os:92-96',
+        'android:92-96',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -27640,6 +27961,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
           'caption': 'Use the default setting for 3DES cipher suites in TLS',
         },
       ],
+      'deprecated': True,
       'default': None,
       'example_value': False,
       'id': 858,
@@ -28291,19 +28613,19 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'items': [
         {
           'value': True,
-          'caption': 'Allow users to use predefined desk templates',
+          'caption': 'Allow users to use desk templates',
         },
         {
           'value': False,
-          'caption': 'Do not allow users to use predefined desk templates',
+          'caption': 'Do not allow users to use desk templates',
         },
       ],
       'default': False,
       'example_value': True,
       'id': 910,
-      'caption': '''Allow users to select a preconfigured desktop layout to load''',
+      'caption': '''Allow users to select a desk template layout to load''',
       'tags': [],
-      'desc': '''Setting the policy to Enabled allows users to use preconfigured desktop layout templates.  Setting the policy to Disabled or unset means these templates will be unavailable.'''
+      'desc': '''Setting the policy to Enabled allows users to use desktop layout templates.  Setting the policy to Disabled or unset means these templates will be unavailable.'''
     },
     {
       'name': 'PreconfiguredDeskTemplates',
@@ -28366,6 +28688,76 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       This allows other Chrome OS (and Android) devices signed in with the same GAIA account to pair automatically.
       If unset, Fast Pair will follow Chrome OS's default, which is enabled.''',
     },
+    {
+      'name': 'CORSNonWildcardRequestHeadersSupport',
+      'owners': ['yhirano@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'default': True,
+      'supported_on': ['chrome.*:97-103', 'chrome_os:97-103', 'android:97-103'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Support CORS non-wildcard request headers.',
+        },
+        {
+          'value': False,
+          'caption': 'Do not support CORS non-wildcard request headers.',
+        },
+      ],
+      'example_value': True,
+      'id': 921,
+      'caption': 'CORS non-wildcard request headers support',
+      'tags': [],
+      'desc': '''Configures support of CORS non-wildcard request headers.
+
+      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 97 introduces support for CORS non-wildcard request headers. When scripts make a cross-origin network request via fetch() and XMLHttpRequest with a script-added Authorization header, the header must be explicitly allowed by the Access-Control-Allow-Headers header in the CORS preflight response. "Explicitly" here means that the wild card symbol "*" doesn't cover the Authorization header. See <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL">https://www.chromest atus.com/feature/5768642492891136</ph> for more detail.
+
+      If this policy is not set, or set to True, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will support the CORS non-wildcard request headers and behave as described above.
+
+      When this policy is set to False, chrome will allow the wildcard symbol ("*") in the Access-Control-Allow-Headers header in the CORS preflight response to cover the Authorization header.
+
+      This Enterprise policy is temporary; it's intended to be removed after <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 103.''',
+    },
+    {
+      'name': 'DeviceI18nShortcutsEnabled',
+      'owners': ['jimmyxgong@chromium.org', 'zentaro@chromium.org', 'cros-peripheral@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:97-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'International keyboard shortcuts are mapped to the location of the keys in the keyboard instead of the glyph of the key.',
+        },
+        {
+          'value': False,
+          'caption': 'International keyboard shortcuts are mapped to the glyph of the keys instead of key location on the keyboard.',
+        },
+      ],
+      'example_value': True,
+      'id': 925,
+      'default': True,
+      'default_for_managed_devices_doc_only': True,
+      'caption': ''' Allows enabling/disabling international shortcut keys remaps''',
+      'tags': [],
+      'desc': ''' This policy controls whether the improved international keyboard shortcut mapping is enabled.
+      This feature ensures keyboard shortcuts work consistently with international keyboard layouts and deprecate legacy shortcuts.
+
+      If this policy is disabled, improved international keyboards shortcuts are disabled.
+      If this policy is enabled, improved international keyboards shortcuts are enabled.
+      If unset, this policy is enabled for managed devices and enabled for consumer-owned devices.
+      Note this is only a temporarily policy to allow managed users to still be able to use deprecated legacy shortcuts. This policy will deprecate after customized keyboard shortcuts are available.''',
+    }
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -28757,6 +29149,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceSystemInfo': 'device_reporting.report_system_info',
     'ReportDevicePrintJobs': 'device_reporting.report_print_jobs',
     'ReportDeviceLoginLogout': 'device_reporting.report_login_logout',
+    'ReportDeviceNetworkTelemetryCollectionRateMs': 'device_reporting.report_network_telemetry_collection_rate_ms',
+    'ReportDeviceNetworkTelemetryEventCheckingRateMs': 'device_reporting.report_network_telemetry_event_checking_rate_ms',
     'ReportUploadFrequency': 'device_reporting.device_status_frequency',
     'DeviceLoginScreenPowerManagement': 'login_screen_power_management.login_screen_power_management',
     'DeviceChromeVariations': 'device_chrome_variations_type.value',
@@ -28824,6 +29218,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DevicePciPeripheralDataAccessEnabled': 'device_pci_peripheral_data_access_enabled_v2.enabled',
     'DeviceRestrictedManagedGuestSessionEnabled': 'device_restricted_managed_guest_session_enabled.enabled',
     'DeviceLoginScreenPromptOnMultipleMatchingCertificates': 'login_screen_prompt_on_multiple_matching_certificates.value',
+    'KioskCRXManifestUpdateURLIgnored': 'kiosk_crx_manifest_update_url_ignored',
+    'DeviceI18nShortcutsEnabled': 'device_i18n_shortcuts_enabled.enabled',
   },
   'policy_atomic_group_definitions': [
     {
@@ -28865,6 +29261,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'RemoteAccessHostEnableUserInterface',
         'RemoteAccessHostAllowRemoteAccessConnections',
         'RemoteAccessHostMaximumSessionDurationMinutes',
+        'RemoteAccessHostClipboardSizeBytes',
+        'RemoteAccessHostAllowRemoteSupportConnections',
       ],
     },
     {
@@ -29330,6 +29728,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 913,
+  'highest_id_currently_used': 926,
   'highest_atomic_group_id_currently_used': 41
 }

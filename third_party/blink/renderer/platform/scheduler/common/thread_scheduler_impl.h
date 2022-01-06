@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/common/single_thread_idle_task_runner.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -53,6 +53,11 @@ class PLATFORM_EXPORT ThreadSchedulerImpl : public ThreadScheduler,
 
   virtual const base::TickClock* GetTickClock() = 0;
 
+  // Allow places in the scheduler to do some work after the current task.
+  // The primary use case here is batching – to allow updates to be processed
+  // only once per task.
+  void ExecuteAfterCurrentTask(base::OnceClosure on_completion_task);
+
   void SetV8Isolate(v8::Isolate* isolate) override { isolate_ = isolate; }
   v8::Isolate* isolate() const { return isolate_; }
 
@@ -60,6 +65,14 @@ class PLATFORM_EXPORT ThreadSchedulerImpl : public ThreadScheduler,
   ThreadSchedulerImpl() {}
   ~ThreadSchedulerImpl() override = default;
 
+  // Returns the list of callbacks to execute after the current task.
+  virtual WTF::Vector<base::OnceClosure>& GetOnTaskCompletionCallbacks() = 0;
+
+  // Dispatch the callbacks which requested to be executed after the current
+  // task.
+  void DispatchOnTaskCompletionCallbacks();
+
+ private:
   v8::Isolate* isolate_ = nullptr;
 };
 

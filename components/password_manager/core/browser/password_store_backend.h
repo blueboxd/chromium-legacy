@@ -16,6 +16,8 @@ namespace syncer {
 class ProxyModelTypeControllerDelegate;
 }  // namespace syncer
 
+class PrefService;
+
 namespace password_manager {
 
 class LoginDatabase;
@@ -111,12 +113,17 @@ class PasswordStoreBackend {
   // For sync codebase only: instantiates a proxy controller delegate to
   // react to sync events.
   virtual std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
-  CreateSyncControllerDelegateFactory() = 0;
+  CreateSyncControllerDelegate() = 0;
+
+  // Tells whether backend is actively syncing data. Callback is called on a
+  // main sequence.
+  virtual void GetSyncStatus(base::OnceCallback<void(bool)> callback) = 0;
 
   // Factory function for creating the backend. The Local backend requires the
   // provided `login_db` for storage and Android backend for migration purposes.
   static std::unique_ptr<PasswordStoreBackend> Create(
-      std::unique_ptr<LoginDatabase> login_db);
+      std::unique_ptr<LoginDatabase> login_db,
+      PrefService* prefs);
 };
 
 }  // namespace password_manager

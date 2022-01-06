@@ -11,9 +11,9 @@
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/find_bar/find_bar_host_unittest_util.h"
+#include "chrome/browser/ui/frame/window_frame_util.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -125,6 +126,14 @@ class BrowserFocusTest : public InProcessBrowserTest {
                                                     reverse, false, false));
       }
 
+      // From the location icon we must traverse backwards one more time to
+      // traverse past the tab search caption button if present.
+      if (WindowFrameUtil::IsWin10TabSearchCaptionButtonEnabled(browser()) &&
+          reverse) {
+        ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), key, false, true,
+                                                    false, false));
+      }
+
       for (size_t j = 0; j < base::size(kExpectedIDs); ++j) {
         SCOPED_TRACE(base::StringPrintf("focus inner loop %" PRIuS, j));
         const size_t index = reverse ? base::size(kExpectedIDs) - 1 - j : j;
@@ -160,6 +169,13 @@ class BrowserFocusTest : public InProcessBrowserTest {
         }
       }
 #endif
+
+      // Traverse over the tab search frame caption button if present.
+      if (WindowFrameUtil::IsWin10TabSearchCaptionButtonEnabled(browser()) &&
+          !reverse) {
+        ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), key, false,
+                                                    false, false, false));
+      }
 
       ui_test_utils::WaitForViewFocus(
           browser(), reverse ? VIEW_ID_OMNIBOX : VIEW_ID_LOCATION_ICON, true);
@@ -390,14 +406,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
 }
 
 // Test forward and reverse focus traversal on a typical page.
-// Disabled for Mac because it is flaky on "Mac10.9 Tests (dbg)",
-// see https://crbug.com/60973.
-#if defined(OS_MAC)
-#define MAYBE_FocusTraversal DISABLED_FocusTraversal
-#else
-#define MAYBE_FocusTraversal FocusTraversal
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
+// Flaky everywhere: https://crbug.com/1259721
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusTraversal) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   const GURL url = embedded_test_server()->GetURL(kTypicalPage);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));

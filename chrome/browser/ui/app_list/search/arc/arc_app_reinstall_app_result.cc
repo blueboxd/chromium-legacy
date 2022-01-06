@@ -10,7 +10,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -52,6 +52,7 @@ ArcAppReinstallAppResult::ArcAppReinstallAppResult(
     : observer_(observer), package_name_(mojom_data->package_name) {
   DCHECK(observer_);
   set_id(kPlayStoreAppUrlPrefix + mojom_data->package_name);
+  SetCategory(Category::kPlayStore);
   SetResultType(ash::AppListSearchResultType::kPlayStoreReinstallApp);
   SetTitle(base::UTF8ToUTF16(mojom_data->title));
   SetDisplayType(ash::SearchResultDisplayType::kTile);

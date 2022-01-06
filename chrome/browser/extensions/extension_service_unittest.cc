@@ -28,12 +28,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/one_shot_event.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -726,11 +726,7 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     if (!pref) {
       return false;
     }
-    int val;
-    if (!pref->GetInteger(pref_path, &val)) {
-      return false;
-    }
-    return true;
+    return pref->FindIntPath(pref_path).has_value();
   }
 
   void SetPref(const std::string& extension_id,
@@ -1261,8 +1257,6 @@ TEST_F(ExtensionServiceTest, InstallObserverNotified) {
 // Tests that flags passed to OnExternalExtensionFileFound() make it to the
 // extension object.
 TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
-  const char kPrefFromBookmark[] = "from_bookmark";
-
   InitializeEmptyExtensionService();
 
   base::FilePath path = data_dir().AppendASCII("good.crx");
@@ -1281,12 +1275,10 @@ TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
       registry()->enabled_extensions().GetByID(good_crx);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(extension->from_bookmark());
-  ASSERT_TRUE(ValidateBooleanPref(good_crx, kPrefFromBookmark, true));
 
   // Upgrade to version 2.0, the flag should be preserved.
   path = data_dir().AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, ENABLED);
-  ASSERT_TRUE(ValidateBooleanPref(good_crx, kPrefFromBookmark, true));
   extension = registry()->enabled_extensions().GetByID(good_crx);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(extension->from_bookmark());
@@ -2801,7 +2793,8 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
       APIPermissionID::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
       AppLaunchInfo::GetFullLaunchURL(extension)));
-  const GURL origin1(AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
+  const GURL origin1(
+      AppLaunchInfo::GetFullLaunchURL(extension).DeprecatedGetOriginAsURL());
   EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
       origin1));
 
@@ -2814,7 +2807,8 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
       APIPermissionID::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
       AppLaunchInfo::GetFullLaunchURL(extension)));
-  const GURL origin2(AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
+  const GURL origin2(
+      AppLaunchInfo::GetFullLaunchURL(extension).DeprecatedGetOriginAsURL());
   EXPECT_EQ(origin1, origin2);
   EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
       origin2));
@@ -2846,7 +2840,8 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(extension->is_app());
   const std::string id1 = extension->id();
-  const GURL origin1(AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
+  const GURL origin1(
+      AppLaunchInfo::GetFullLaunchURL(extension).DeprecatedGetOriginAsURL());
   EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageProtected(
       origin1));
 
@@ -2855,7 +2850,8 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(2u, registry()->enabled_extensions().size());
   const std::string id2 = extension->id();
-  const GURL origin2(AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
+  const GURL origin2(
+      AppLaunchInfo::GetFullLaunchURL(extension).DeprecatedGetOriginAsURL());
   ASSERT_NE(origin1, origin2);
   EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageProtected(
       origin2));
@@ -3529,23 +3525,23 @@ TEST_F(ExtensionServiceTest, NoUnsetBlocklistInPrefs) {
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   service()->PerformActionBasedOnOmahaAttributes(good0, attributes);
-  EXPECT_EQ(disable_reason::DISABLE_REMOTELY_FOR_MALWARE,
-            prefs->GetDisableReasons(good0));
-  EXPECT_TRUE(DoesIntegerPrefExist(good0, kPrefBlocklistState));
+  EXPECT_TRUE(blocklist_prefs::HasOmahaBlocklistState(
+      good0, BitMapBlocklistState::BLOCKLISTED_MALWARE, prefs));
   EXPECT_FALSE(registry()->enabled_extensions().Contains(good0));
   EXPECT_TRUE(registry()->blocklisted_extensions().Contains(good0));
 
-  // Un-blocklist all extensions.
+  // Un-blocklist all extensions from the Safe Browsing blocklist.
   test_blocklist.Clear(false);
   task_environment()->RunUntilIdle();
 
-  // If the extension has a DISABLE_REMOTELY_FOR_MALWARE disable reason,
-  // the extension should still not be enabled even if it's no on the
-  // SB blocklist. This disable reason needs to be removed prior to
+  // If the extension has a BLOCKLISTED_MALWARE state in the Omaha blocklist
+  // pref, the extension should still not be enabled even if it's not on the SB
+  // blocklist. This state needs to be removed prior to
   // unblocklisting/re-enabling.
   EXPECT_FALSE(registry()->enabled_extensions().Contains(good0));
   EXPECT_TRUE(registry()->blocklisted_extensions().Contains(good0));
-  ValidateIntegerPref(good0, kPrefBlocklistState, kBlocklistedMalwareInteger);
+  EXPECT_TRUE(blocklist_prefs::HasOmahaBlocklistState(
+      good0, BitMapBlocklistState::BLOCKLISTED_MALWARE, prefs));
   EXPECT_FALSE(DoesIntegerPrefExist(good1, kPrefBlocklistState));
 }
 #endif  // defined(ENABLE_BLOCKLIST_TESTS)
@@ -4102,11 +4098,6 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
   EXPECT_TRUE(service()->UninstallExtension(
       extension->id(), UNINSTALL_REASON_FOR_TESTING, nullptr));
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
-
-  // Ensure that the quota storage system has finished RegisterClient calls
-  // before test shuts down, triggering LazyInitialize().
-  // TODO(http://crbug.com/1182630): Remove this when 1182630 is fixed.
-  task_environment()->RunUntilIdle();
 
   // Ensure we cannot load it if management policy prohibits installation.
   TestManagementPolicyProvider provider_(
@@ -4685,8 +4676,6 @@ TEST_F(ExtensionServiceTest, PreinstalledAppsInstall) {
 
 TEST_F(ExtensionServiceTest, MAYBE_UpdatingPendingExternalExtensionWithFlags) {
   // Regression test for crbug.com/627522
-  const char kPrefFromBookmark[] = "from_bookmark";
-
   InitializeEmptyExtensionService();
 
   base::FilePath path = data_dir().AppendASCII("good.crx");
@@ -4706,7 +4695,6 @@ TEST_F(ExtensionServiceTest, MAYBE_UpdatingPendingExternalExtensionWithFlags) {
   // Upgrade to version 2.0, the flag should be preserved.
   path = data_dir().AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, ENABLED);
-  ASSERT_TRUE(ValidateBooleanPref(good_crx, kPrefFromBookmark, true));
   const Extension* extension =
       registry()->enabled_extensions().GetByID(good_crx);
   ASSERT_TRUE(extension);
@@ -4750,8 +4738,8 @@ TEST_F(ExtensionServiceTest, DisableRemotelyForMalware) {
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   service()->PerformActionBasedOnOmahaAttributes(good_crx, attributes);
-  EXPECT_EQ(disable_reason::DISABLE_REMOTELY_FOR_MALWARE,
-            prefs->GetDisableReasons(good_crx));
+  EXPECT_TRUE(blocklist_prefs::HasOmahaBlocklistState(
+      good_crx, BitMapBlocklistState::BLOCKLISTED_MALWARE, prefs));
   EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(good_crx, prefs));
 
   attributes.SetKey("_malware", base::Value(false));
@@ -4769,19 +4757,19 @@ TEST_F(ExtensionServiceTest, NoEnableRemotelyDisabledExtension) {
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 
+  base::Value attributes(base::Value::Type::DICTIONARY);
+  attributes.SetKey("_malware", base::Value(true));
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-  service()->DisableExtension(good_crx,
-                              disable_reason::DISABLE_REMOTELY_FOR_MALWARE |
-                                  disable_reason::DISABLE_USER_ACTION);
+  service()->DisableExtension(good_crx, disable_reason::DISABLE_USER_ACTION);
   EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
-  service()->BlocklistExtensionForTest(good_crx);
+  service()->PerformActionBasedOnOmahaAttributes(good_crx, attributes);
   EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(good_crx, prefs));
 
-  base::Value empty_attr(base::Value::Type::DICTIONARY);
-  service()->PerformActionBasedOnOmahaAttributes(good_crx, empty_attr);
+  attributes.SetKey("_malware", base::Value(false));
+  service()->PerformActionBasedOnOmahaAttributes(good_crx, attributes);
   EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
-  EXPECT_FALSE(prefs->GetDisableReasons(good_crx) &
-               disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
+  EXPECT_FALSE(blocklist_prefs::HasOmahaBlocklistState(
+      good_crx, BitMapBlocklistState::BLOCKLISTED_MALWARE, prefs));
   EXPECT_FALSE(blocklist_prefs::IsExtensionBlocklisted(good_crx, prefs));
 }
 
@@ -4798,11 +4786,6 @@ TEST_F(ExtensionServiceTest, CanAddDisableReasonToBlocklistedExtension) {
   task_environment()->RunUntilIdle();
   EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(good0, prefs));
   EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(good1, prefs));
-
-  // Test that a disable reason can be added to a blocklisted extension.
-  prefs->AddDisableReason(good0, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
-  EXPECT_TRUE(prefs->HasDisableReason(
-      good0, disable_reason::DISABLE_REMOTELY_FOR_MALWARE));
 
   // Test that a blocklisted extension can be disabled.
   service()->DisableExtension(good1, disable_reason::DISABLE_BLOCKED_BY_POLICY);
@@ -5291,7 +5274,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   const std::string id1 = extension->id();
   EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
       APIPermissionID::kUnlimitedStorage));
-  const GURL origin1(AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
+  const GURL origin1(
+      AppLaunchInfo::GetFullLaunchURL(extension).DeprecatedGetOriginAsURL());
   EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
       origin1));
   std::string origin_id = storage::GetIdentifierFromOrigin(origin1);
@@ -5305,7 +5289,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       APIPermissionID::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
       AppLaunchInfo::GetFullLaunchURL(extension)));
-  const GURL origin2(AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
+  const GURL origin2(
+      AppLaunchInfo::GetFullLaunchURL(extension).DeprecatedGetOriginAsURL());
   EXPECT_EQ(origin1, origin2);
   EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
       origin2));

@@ -55,10 +55,14 @@ component("app_update") {
     "app_registry_cache.h",
     "app_registry_cache_wrapper.cc",
     "app_registry_cache_wrapper.h",
+    "app_types.cc",
+    "app_types.h",
     "app_update.cc",
     "app_update.h",
     "capability_access_update.cc",
     "capability_access_update.h",
+    "icon_types.cc",
+    "icon_types.h",
   ]
 
   defines = [ "IS_APP_UPDATE_IMPL" ]
@@ -68,7 +72,10 @@ component("app_update") {
     "//components/services/app_service/public/mojom",
   ]
 
-  deps = [ ":intents" ]
+  deps = [
+    ":intents",
+    "//ui/gfx",
+  ]
 }
 
 source_set("app_url_handling") {
@@ -167,6 +174,8 @@ source_set("preferred_apps") {
     "preferred_apps_converter.h",
     "preferred_apps_list.cc",
     "preferred_apps_list.h",
+    "preferred_apps_list_handle.cc",
+    "preferred_apps_list_handle.h",
   ]
 
   deps = [
@@ -215,12 +224,22 @@ source_set("crosapi_utils") {
   deps = [ "//components/services/app_service/public/mojom" ]
 }
 
+source_set("permission_utils") {
+  sources = [
+    "permission_utils.cc",
+    "permission_utils.h",
+  ]
+  deps = [ "//components/services/app_service/public/mojom" ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
   sources = [
     "app_capability_access_cache_unittest.cc",
+    "app_registry_cache_mojom_unittest.cc",
     "app_registry_cache_unittest.cc",
+    "app_update_mojom_unittest.cc",
     "app_update_unittest.cc",
     "capability_access_update_unittest.cc",
     "icon_cache_unittest.cc",

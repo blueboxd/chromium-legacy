@@ -22,23 +22,41 @@ public class TraceEventAdder extends ByteCodeRewriter {
     private ArrayList<MethodDescription> mMethodsToTrace;
 
     public static void main(String[] args) throws IOException {
-        // Invoke this script using //build/android/gyp/bytecode_rewriter.py
+        // Invoke this script using //build/android/gyp/trace_event_bytecode_rewriter.py
+
         if (args.length < 2) {
-            System.err.println(
-                    "Expected arguments: <input.jar> <output.jar> <input classpath jars>");
+            System.err.println("Expected arguments: <':' separated list with N input jar paths> "
+                    + "<':' separated list with N output jar paths>");
             System.exit(1);
         }
 
-        String input = args[0];
-        String output = args[1];
+        String[] inputJars = args[0].split(":");
+        String[] outputJars = args[1].split(":");
+
+        assert inputJars.length
+                == outputJars.length : "Input and output lists are not the same length. Inputs: "
+                        + inputJars.length + " Outputs: " + outputJars.length;
+
+        // outputJars[n] must be the same as inputJars[n] but with a suffix, validate this.
+        for (int i = 0; i < inputJars.length; i++) {
+            File inputJarPath = new File(inputJars[i]);
+            String inputJarFilename = inputJarPath.getName();
+            File outputJarPath = new File(outputJars[i]);
+
+            String inputFilenameNoExtension =
+                    inputJarFilename.substring(0, inputJarFilename.lastIndexOf(".jar"));
+
+            assert outputJarPath.getName().startsWith(inputFilenameNoExtension);
+        }
 
         ArrayList<String> classPathJarsPaths = new ArrayList<>();
-        classPathJarsPaths.add(input);
-        classPathJarsPaths.addAll(Arrays.asList(Arrays.copyOfRange(args, 2, args.length)));
+        classPathJarsPaths.addAll(Arrays.asList(inputJars));
         ClassLoader classPathJarsClassLoader = ByteCodeProcessor.loadJars(classPathJarsPaths);
 
         TraceEventAdder adder = new TraceEventAdder(classPathJarsClassLoader);
-        adder.rewrite(new File(input), new File(output));
+        for (int i = 0; i < inputJars.length; i++) {
+            adder.rewrite(new File(inputJars[i]), new File(outputJars[i]));
+        }
     }
 
     public TraceEventAdder(ClassLoader classPathJarsClassLoader) {
@@ -47,16 +65,7 @@ public class TraceEventAdder extends ByteCodeRewriter {
 
     @Override
     protected boolean shouldRewriteClass(String classPath) {
-        try {
-            // If this jar's dependencies can't find Chromium's TraceEvent class then skip this
-            // class. Conceptually this could be fixed by adding a dependency on //base:base_java
-            // but that would cause circular dependencies and any changes to base_java would cause
-            // all android_library targets to require rebuilding.
-            mClassPathJarsClassLoader.loadClass("org.chromium.base.TraceEvent");
-            return true;
-        } catch (ClassNotFoundException ex) {
-            return false;
-        }
+        return true;
     }
 
     @Override

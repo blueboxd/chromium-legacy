@@ -15,25 +15,78 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/common/channel_info.h"
 
+const char kFREDefaultPromoTestingDefaultDelayParam[] =
+    "variant_default_delay_enabled";
+const char kFREDefaultPromoTestingOnlyParam[] = "variant_fre_only_enabled";
+const char kFREDefaultPromoTestingShortDelayParam[] =
+    "variant_short_delay_enabled";
+
 namespace {
 // String local state preference with the name of the assigned trial group.
 // Empty if no group has been assigned yet.
 const char kTrialGroupPrefName[] = "fre_refactoring.trial_group";
 
+// Group names for the default browser promo trial.
+const char kFREDefaultBrowserAndSmallDelayBeforeOtherPromosGroup[] =
+    "FREDefaultBrowserAndSmallDelayBeforeOtherPromos";
+const char kFREDefaultBrowserAndDefaultDelayBeforeOtherPromosGroup[] =
+    "FREDefaultBrowserAndDefaultDelayBeforeOtherPromos";
+const char kDefaultBrowserPromoAtFirstRunOnlyGroup[] =
+    "DefaultBrowserPromoAtFirstRunOnly";
 // Group names for the FRE redesign permissions trial.
-const char kEnabledGroup[] = "Enabled";
-const char kDisabledGroup[] = "Disabled";
 const char kDefaultGroup[] = "Default";
 // Experiment IDs defined for the above field trial groups.
 const variations::VariationID kDefaultTrialID = 3330131;
-const variations::VariationID kEnabledTrialID = 3330132;
-const variations::VariationID kDisabledTrialID = 3330133;
+const variations::VariationID kDefaultBrowserPromoAtFirstRunOnlyID = 3342136;
+const variations::VariationID
+    kFREDefaultBrowserAndDefaultDelayBeforeOtherPromosID = 3342137;
+const variations::VariationID
+    kFREDefaultBrowserAndSmallDelayBeforeOtherPromosID = 3342138;
 
 // Default local state pref value.
 const int kDefaultPrefValue = -1;
 }  // namespace
 
 namespace fre_field_trial {
+
+bool IsInFirstRunDefaultBrowserAndSmallDelayBeforeOtherPromosGroup() {
+  if (base::FeatureList::IsEnabled(kEnableFREDefaultBrowserScreenTesting)) {
+    return base::GetFieldTrialParamByFeatureAsBool(
+        kEnableFREDefaultBrowserScreenTesting,
+        kFREDefaultPromoTestingShortDelayParam, false);
+  }
+  return base::FeatureList::IsEnabled(kEnableFREUIModuleIOS) &&
+         base::FieldTrialList::FindFullName(kEnableFREUIModuleIOS.name) ==
+             kFREDefaultBrowserAndSmallDelayBeforeOtherPromosGroup;
+}
+
+bool IsInFirstRunDefaultBrowserAndDefaultDelayBeforeOtherPromosGroup() {
+  if (base::FeatureList::IsEnabled(kEnableFREDefaultBrowserScreenTesting)) {
+    return base::GetFieldTrialParamByFeatureAsBool(
+        kEnableFREDefaultBrowserScreenTesting,
+        kFREDefaultPromoTestingDefaultDelayParam, false);
+  }
+  return base::FeatureList::IsEnabled(kEnableFREUIModuleIOS) &&
+         base::FieldTrialList::FindFullName(kEnableFREUIModuleIOS.name) ==
+             kFREDefaultBrowserAndDefaultDelayBeforeOtherPromosGroup;
+}
+
+bool IsInDefaultBrowserPromoAtFirstRunOnlyGroup() {
+  if (base::FeatureList::IsEnabled(kEnableFREDefaultBrowserScreenTesting)) {
+    return base::GetFieldTrialParamByFeatureAsBool(
+        kEnableFREDefaultBrowserScreenTesting, kFREDefaultPromoTestingOnlyParam,
+        false);
+  }
+  return base::FeatureList::IsEnabled(kEnableFREUIModuleIOS) &&
+         base::FieldTrialList::FindFullName(kEnableFREUIModuleIOS.name) ==
+             kDefaultBrowserPromoAtFirstRunOnlyGroup;
+}
+
+bool IsFREDefaultBrowserScreenEnabled() {
+  return IsInFirstRunDefaultBrowserAndSmallDelayBeforeOtherPromosGroup() ||
+         IsInFirstRunDefaultBrowserAndDefaultDelayBeforeOtherPromosGroup() ||
+         IsInDefaultBrowserPromoAtFirstRunOnlyGroup();
+}
 
 // Creates a trial for the first run (when there is no variations seed) if
 // necessary and enables the feature based on the randomly selected trial group.
@@ -42,32 +95,47 @@ int CreateFirstRunTrial(
     base::FieldTrial::EntropyProvider const& low_entropy_provider,
     base::FeatureList* feature_list) {
   // New FRE enabled/disabled.
-  int new_fre_enabled_percent = 0;
-  int new_fre_control_percent = 0;
   int new_fre_default_percent = 0;
+
+  // FRE's default browser screen experiment
+  int new_fre_with_default_screen_and_short_cooldown_percent = 0;
+  int new_fre_with_default_screen_and_default_cooldown_percent = 0;
+  int new_fre_with_default_screen_only_percent = 0;
 
   switch (GetChannel()) {
     case version_info::Channel::UNKNOWN:
     case version_info::Channel::CANARY:
     case version_info::Channel::DEV:
     case version_info::Channel::BETA:
-      new_fre_enabled_percent = 50;
-      new_fre_control_percent = 50;
-      new_fre_default_percent = 0;
+      new_fre_with_default_screen_and_short_cooldown_percent = 0;
+      new_fre_with_default_screen_and_default_cooldown_percent = 0;
+      new_fre_with_default_screen_only_percent = 0;
+      new_fre_default_percent = 100;
       break;
     case version_info::Channel::STABLE:
-      new_fre_enabled_percent = 15;
-      new_fre_control_percent = 15;
-      new_fre_default_percent = 70;
+      new_fre_with_default_screen_and_short_cooldown_percent = 0;
+      new_fre_with_default_screen_and_default_cooldown_percent = 0;
+      new_fre_with_default_screen_only_percent = 0;
+      new_fre_default_percent = 100;
       break;
   }
 
   // Set up the trial and groups.
   FirstRunFieldTrialConfig config(kEnableFREUIModuleIOS.name);
+  // Default browser promo experiment groups
+  config.AddGroup(kFREDefaultBrowserAndSmallDelayBeforeOtherPromosGroup,
+                  kFREDefaultBrowserAndSmallDelayBeforeOtherPromosID,
+                  new_fre_with_default_screen_and_short_cooldown_percent);
+  config.AddGroup(kFREDefaultBrowserAndDefaultDelayBeforeOtherPromosGroup,
+                  kFREDefaultBrowserAndDefaultDelayBeforeOtherPromosID,
+                  new_fre_with_default_screen_and_default_cooldown_percent);
+  config.AddGroup(kDefaultBrowserPromoAtFirstRunOnlyGroup,
+                  kDefaultBrowserPromoAtFirstRunOnlyID,
+                  new_fre_with_default_screen_only_percent);
 
+  // New FRE groups
   config.AddGroup(kDefaultGroup, kDefaultTrialID, new_fre_default_percent);
-  config.AddGroup(kEnabledGroup, kEnabledTrialID, new_fre_enabled_percent);
-  config.AddGroup(kDisabledGroup, kDisabledTrialID, new_fre_control_percent);
+
   DCHECK_EQ(100, config.GetTotalProbability());
 
   scoped_refptr<base::FieldTrial> trial =
@@ -79,46 +147,13 @@ int CreateFirstRunTrial(
   // beyond the low-entropy source.
   int group = trial->group();
   const std::string& group_name = trial->group_name();
-  if (group_name == kEnabledGroup) {
+  if (group_name == kFREDefaultBrowserAndSmallDelayBeforeOtherPromosGroup ||
+      group_name == kFREDefaultBrowserAndDefaultDelayBeforeOtherPromosGroup ||
+      group_name == kDefaultBrowserPromoAtFirstRunOnlyGroup) {
     feature_list->RegisterFieldTrialOverride(
         kEnableFREUIModuleIOS.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
         trial.get());
-
-    // Experiment for strings.
-    int existing_string_percent = 50;
-    int new_string_percent = 50;
-
-    // Set up the trial and groups for the strings.
-    FirstRunFieldTrialConfig string_config(kOldSyncStringFRE.name);
-
-    // Use kEnabledTrialID as variation everywhere as it is the "enabled" group
-    // of the new FRE.
-    string_config.AddGroup(kEnabledGroup, kEnabledTrialID, new_string_percent);
-    string_config.AddGroup(kDisabledGroup, kEnabledTrialID,
-                           existing_string_percent);
-    DCHECK_EQ(100, string_config.GetTotalProbability());
-
-    scoped_refptr<base::FieldTrial> string_trial =
-        string_config.CreateOneTimeRandomizedTrial(kDefaultGroup,
-                                                   low_entropy_provider);
-
-    const std::string& string_group_name = string_trial->group_name();
-    if (string_group_name == kEnabledGroup) {
-      feature_list->RegisterFieldTrialOverride(
-          kOldSyncStringFRE.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-          trial.get());
-    } else if (string_group_name == kDisabledGroup) {
-      feature_list->RegisterFieldTrialOverride(
-          kOldSyncStringFRE.name, base::FeatureList::OVERRIDE_DISABLE_FEATURE,
-          trial.get());
-    }
-
-  } else if (group_name == kDisabledGroup) {
-    feature_list->RegisterFieldTrialOverride(
-        kEnableFREUIModuleIOS.name, base::FeatureList::OVERRIDE_DISABLE_FEATURE,
-        trial.get());
   }
-
   return group;
 }
 

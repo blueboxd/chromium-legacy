@@ -12,6 +12,7 @@ import 'chrome://resources/cr_elements/cr_lottie/cr_lottie.m.js';
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
+import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import './shared/nearby_device.m.js';
 import './mojo/nearby_share_target_types.mojom-lite.js';
@@ -44,6 +45,17 @@ function tokenToString(token) {
 function tokensEqual(a, b) {
   return a.high === b.high && a.low === b.low;
 }
+
+/**
+ * The pulse animation asset URL for light mode.
+ * @type {string}
+ */
+const PULSE_ANIMATION_URL_LIGHT = 'nearby_share_pulse_animation_light.json';
+
+/**
+ * The pulse animation asset URL for dark mode.
+ */
+const PULSE_ANIMATION_URL_DARK = 'nearby_share_pulse_animation_dark.json';
 
 Polymer({
   is: 'nearby-discovery-page',
@@ -119,6 +131,15 @@ Polymer({
     errorDescription_: {
       type: String,
       value: null,
+    },
+
+    /**
+     * Whether the discovery page is being rendered in dark mode.
+     * @private {boolean}
+     */
+    isDarkModeActive_: {
+      type: Boolean,
+      value: false,
     },
   },
 
@@ -540,4 +561,13 @@ Polymer({
 
     return tempEl.innerHTML;
   },
+
+  /**
+   * Returns the URL for the asset that defines the discovery page's
+   * pulsing background animation
+   */
+  getAnimationUrl_() {
+    return this.isDarkModeActive_ ? PULSE_ANIMATION_URL_DARK :
+                                    PULSE_ANIMATION_URL_LIGHT;
+  }
 });

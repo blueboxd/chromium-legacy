@@ -15,7 +15,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
@@ -212,7 +212,7 @@ void QuotaManagerProxy::NotifyStorageAccessed(const StorageKey& storage_key,
     quota_manager_impl_->NotifyStorageAccessed(storage_key, type, access_time);
 }
 
-void QuotaManagerProxy::NotifyBucketAccessed(const BucketId bucket_id,
+void QuotaManagerProxy::NotifyBucketAccessed(BucketId bucket_id,
                                              base::Time access_time) {
   if (!quota_manager_impl_task_runner_->RunsTasksInCurrentSequence()) {
     quota_manager_impl_task_runner_->PostTask(
@@ -267,7 +267,7 @@ void QuotaManagerProxy::NotifyStorageModified(
 
 void QuotaManagerProxy::NotifyBucketModified(
     QuotaClientType client_id,
-    const BucketId bucket_id,
+    BucketId bucket_id,
     int64_t delta,
     base::Time modification_time,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,

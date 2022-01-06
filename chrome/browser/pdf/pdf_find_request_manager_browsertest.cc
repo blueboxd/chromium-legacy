@@ -180,14 +180,9 @@ void SendRangeResponse(net::test_server::ControllableHttpResponse* response,
 // Tests searching in a PDF received in chunks via range-requests.  See also
 // https://crbug.com/1027173.
 
-// Flaky on Mac: https://crbug.com/1247167.
-#if defined(OS_MAC)
-#define MAYBE_FindInChunkedPDF DISABLED_FindInChunkedPDF
-#else
-#define MAYBE_FindInChunkedPDF FindInChunkedPDF
-#endif
+// TODO(crbug.com/1247167): Flaky.
 IN_PROC_BROWSER_TEST_P(PdfFindRequestManagerTestWithPdfPartialLoading,
-                       MAYBE_FindInChunkedPDF) {
+                       DISABLED_FindInChunkedPDF) {
   constexpr uint32_t kStalledResponseSize =
       chrome_pdf::DocumentLoaderImpl::kDefaultRequestSize + 123;
 
@@ -349,6 +344,25 @@ IN_PROC_BROWSER_TEST_P(PdfFindRequestManagerTest,
   EXPECT_EQ(last_request_id(), results.request_id);
   EXPECT_EQ(5, results.number_of_matches);
   EXPECT_EQ(1, results.active_match_ordinal);
+}
+
+// Tests that find-in-page results only come for the PDF contents, and not from
+// the PDF Viewer's UI.
+IN_PROC_BROWSER_TEST_P(PdfFindRequestManagerTest, DoesNotSearchPdfViewerUi) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  LoadAndWait("/find_in_pdf_page.pdf");
+  ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
+
+  auto options = blink::mojom::FindOptions::New();
+  Find("pdf", options.Clone());
+  delegate()->WaitForFinalReply();
+
+  // The UI contains "find_in_pdf_page.pdf", but that should not generate any
+  // results.
+  // The contents contains one instance of "pdf", which should show up.
+  FindResults results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(1, results.number_of_matches);
 }
 
 }  // namespace content

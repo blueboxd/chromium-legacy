@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/back_forward_cache.h"
@@ -35,29 +36,6 @@
 namespace content {
 
 namespace {
-void CollectAllChildren(RenderFrameHostImpl& rfh,
-                        std::vector<RenderFrameHostImpl*>* result) {
-  result->push_back(&rfh);
-  for (size_t i = 0; i < rfh.child_count(); ++i) {
-    if (RenderFrameHostImpl* speculative_frame_host =
-            rfh.child_at(i)->render_manager()->speculative_frame_host()) {
-      result->push_back(speculative_frame_host);
-    }
-    CollectAllChildren(*(rfh.child_at(i)->current_frame_host()), result);
-  }
-}
-
-// Iterate over RenderFrameHostImpl::children_ rather than FrameTree::Nodes()
-// because the |rfh| root node will not have a current_frame_host value. The
-// root node is set to null in MPArch prerender activation when generating a
-// StoredPage.
-// TODO(mcnee): Implement in terms of RenderFrameHost::ForEachRenderFrameHost.
-std::vector<RenderFrameHostImpl*> AllDescendantActiveRenderFrameHosts(
-    RenderFrameHostImpl& rfh) {
-  std::vector<RenderFrameHostImpl*> result;
-  CollectAllChildren(rfh, &result);
-  return result;
-}
 
 struct ActivateResult {
   ActivateResult(PrerenderHost::FinalStatus status,
@@ -119,8 +97,9 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     // prerendering page.
     frame_tree_->controller().SetSessionStorageNamespace(
         site_info.GetStoragePartitionId(site_instance->GetBrowserContext()),
-        web_contents_.GetFrameTree()->controller().GetSessionStorageNamespace(
-            site_info));
+        web_contents_.GetPrimaryFrameTree()
+            .controller()
+            .GetSessionStorageNamespace(site_info));
 
     // TODO(https://crbug.com/1199679): This should be moved to FrameTree::Init
     web_contents_.NotifySwappedFromRenderManager(
@@ -189,13 +168,21 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
 
   WebContents* GetWebContents() { return &web_contents_; }
 
-  FrameTree* GetPrimaryFrameTree() { return web_contents_.GetFrameTree(); }
+  FrameTree& GetPrimaryFrameTree() {
+    return web_contents_.GetPrimaryFrameTree();
+  }
 
   ActivateResult Activate(NavigationRequest& navigation_request) {
     // There should be no ongoing main-frame navigation during activation.
     // TODO(https://crbug.com/1190644): Make sure sub-frame navigations are
     // fine.
     DCHECK(!frame_tree_->root()->HasNavigation());
+
+    // Before the root's current_frame_host is cleared, collect the subframes of
+    // `frame_tree_` whose FrameTree will need to be updated.
+    FrameTree::NodeRange node_range = frame_tree_->Nodes();
+    std::vector<FrameTreeNode*> subframe_nodes(std::next(node_range.begin()),
+                                               node_range.end());
 
     // NOTE: TakePrerenderedPage() clears the current_frame_host value of
     // frame_tree_->root(). Do not add any code between here and
@@ -217,11 +204,15 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     navigation_request.SetPrerenderActivationNavigationState(
         std::move(nav_entry), frame_tree_->root()->current_replication_state());
 
-    FrameTree* target_frame_tree = GetPrimaryFrameTree();
-    DCHECK_EQ(target_frame_tree,
+    FrameTree& target_frame_tree = GetPrimaryFrameTree();
+    DCHECK_EQ(&target_frame_tree,
               navigation_request.frame_tree_node()->frame_tree());
 
-    page->render_frame_host->SetFrameTreeNode(*(target_frame_tree->root()));
+    // We support activating the prerenderd page only to the topmost
+    // RenderFrameHost.
+    CHECK(!page->render_frame_host->GetParentOrOuterDocumentOrEmbedder());
+
+    page->render_frame_host->SetFrameTreeNode(*(target_frame_tree.root()));
     // Copy frame name into the replication state of the primary main frame to
     // ensure that the replication state of the primary main frame after
     // activation matches the replication state stored in the renderer.
@@ -233,12 +224,12 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     page->render_frame_host->frame_tree_node()->set_frame_name_for_activation(
         frame_tree_->root()->unique_name(), frame_tree_->root()->frame_name());
     for (auto& it : page->proxy_hosts) {
-      it.second->set_frame_tree_node(*(target_frame_tree->root()));
+      it.second->set_frame_tree_node(*(target_frame_tree.root()));
     }
 
-    // Iterate over root RenderFrameHost and all of its descendant frames and
-    // updates the associated frame tree. Note that subframe proxies don't need
-    // their FrameTrees independently updated, since their FrameTreeNodes don't
+    // Iterate over the root RenderFrameHost's subframes and update the
+    // associated frame tree. Note that subframe proxies don't need their
+    // FrameTrees independently updated, since their FrameTreeNodes don't
     // change, and FrameTree references in those FrameTreeNodes will be updated
     // through RenderFrameHosts.
     //
@@ -248,20 +239,22 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     // This is because pending delete RenderFrameHosts can still receive and
     // process some messages while the RenderFrameHost FrameTree and
     // FrameTreeNode are stale.
-    for (auto* rfh : AllDescendantActiveRenderFrameHosts(
-             *(page->render_frame_host.get()))) {
-      rfh->frame_tree_node()->SetFrameTree(*target_frame_tree);
-      rfh->SetFrameTree(*target_frame_tree);
-      rfh->render_view_host()->SetFrameTree(*target_frame_tree);
-      // The visibility state of the prerendering page has not been updated by
-      // WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(). So updates
-      // the visibility state using the PageVisibilityState of |web_contents_|.
-      rfh->render_view_host()->SetFrameTreeVisibility(
-          web_contents_.GetPageVisibilityState());
-      if (rfh->GetRenderWidgetHost()) {
-        rfh->GetRenderWidgetHost()->SetFrameTree(*target_frame_tree);
-      }
+    for (FrameTreeNode* subframe_node : subframe_nodes) {
+      subframe_node->SetFrameTree(target_frame_tree);
     }
+
+    page->render_frame_host->ForEachRenderFrameHostIncludingSpeculative(
+        base::BindRepeating(
+            [](const WebContentsImpl& web_contents, RenderFrameHostImpl* rfh) {
+              // The visibility state of the prerendering page has not been
+              // updated by
+              // WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(). So
+              // updates the visibility state using the PageVisibilityState of
+              // |web_contents|.
+              rfh->render_view_host()->SetFrameTreeVisibility(
+                  web_contents.GetPageVisibilityState());
+            },
+            std::cref(web_contents_)));
 
     frame_tree_->Shutdown();
     frame_tree_.reset();
@@ -310,15 +303,9 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
 };
 
 PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
-                             RenderFrameHostImpl& initiator_render_frame_host)
-    : attributes_(attributes),
-      initiator_origin_(initiator_render_frame_host.GetLastCommittedOrigin()),
-      initiator_url_(initiator_render_frame_host.GetLastCommittedURL()),
-      initiator_process_id_(initiator_render_frame_host.GetProcess()->GetID()),
-      initiator_frame_token_(initiator_render_frame_host.GetFrameToken()) {
+                             WebContents* web_contents)
+    : attributes_(attributes) {
   DCHECK(blink::features::IsPrerender2Enabled());
-  auto* web_contents =
-      WebContents::FromRenderFrameHost(&initiator_render_frame_host);
   DCHECK(web_contents);
   CreatePageHolder(*static_cast<WebContentsImpl*>(web_contents));
 }
@@ -345,10 +332,11 @@ bool PrerenderHost::StartPrerendering() {
   Observe(page_holder_->GetWebContents());
 
   // Start prerendering navigation.
-  NavigationController::LoadURLParams load_url_params(attributes_.url);
-  load_url_params.initiator_origin = initiator_origin_;
-  load_url_params.initiator_process_id = initiator_process_id_;
-  load_url_params.initiator_frame_token = initiator_frame_token_;
+  NavigationController::LoadURLParams load_url_params(
+      attributes_.prerendering_url);
+  load_url_params.initiator_origin = attributes_.initiator_origin;
+  load_url_params.initiator_process_id = attributes_.initiator_process_id;
+  load_url_params.initiator_frame_token = attributes_.initiator_frame_token;
 
   // Just use the referrer from attributes, as NoStatePrefetch does.
   // TODO(crbug.com/1176054): For cross-origin prerender, follow the spec steps
@@ -496,7 +484,7 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
 // parent document sets a policy on the child iframe.
 bool PrerenderHost::IsFramePolicyCompatibleWithPrimaryFrameTree() {
   FrameTreeNode* prerender_root_ftn = page_holder_->frame_tree()->root();
-  FrameTreeNode* primary_root_ftn = page_holder_->GetPrimaryFrameTree()->root();
+  FrameTreeNode* primary_root_ftn = page_holder_->GetPrimaryFrameTree().root();
 
   // Ensure that the pending frame policy is not set on the main frames, as it
   // is usually set on frames by their parent frames.
@@ -632,11 +620,6 @@ bool PrerenderHost::AreBeginNavigationParamsCompatibleWithNavigation(
       return false;
   }
 
-  if (potential_activation.request_destination !=
-      begin_params_->request_destination) {
-    return false;
-  }
-
   // Since impression should not be set, no need to compare contents.
   DCHECK(!begin_params_->impression);
   if (potential_activation.impression.has_value()) {
@@ -754,9 +737,14 @@ bool PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
   // The spec mandates matching the referrer policy, and not the referrer URL
   // itself, so we only compare the referrer policy here. Referrer policy is a
   // more predictable value to match than referrer URL.
-  // https://jeremyroman.github.io/alternate-loading-modes/#navigate-activation
+  // https://wicg.github.io/nav-speculation/prerendering.html#navigate-activation
   if (potential_activation.referrer->policy !=
       common_params_->referrer->policy) {
+    return false;
+  }
+
+  if (potential_activation.request_destination !=
+      common_params_->request_destination) {
     return false;
   }
 
@@ -767,6 +755,11 @@ RenderFrameHostImpl* PrerenderHost::GetPrerenderedMainFrameHost() {
   DCHECK(page_holder_->frame_tree());
   DCHECK(page_holder_->frame_tree()->root()->current_frame_host());
   return page_holder_->frame_tree()->root()->current_frame_host();
+}
+
+FrameTree& PrerenderHost::GetPrerenderFrameTree() {
+  DCHECK(page_holder_->frame_tree());
+  return *page_holder_->frame_tree();
 }
 
 void PrerenderHost::RecordFinalStatus(base::PassKey<PrerenderHostRegistry>,
@@ -792,7 +785,7 @@ void PrerenderHost::RecordFinalStatus(FinalStatus status) {
 }
 
 const GURL& PrerenderHost::GetInitialUrl() const {
-  return attributes_.url;
+  return attributes_.prerendering_url;
 }
 
 void PrerenderHost::AddObserver(Observer* observer) {

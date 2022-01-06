@@ -19,8 +19,8 @@
 #include "base/memory/discardable_memory.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/test_switches.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -149,6 +149,10 @@ class RenderThreadImplBrowserTest : public testing::Test,
                                     public ChildProcessHostDelegate {
  public:
   RenderThreadImplBrowserTest() {}
+
+  RenderThreadImplBrowserTest(const RenderThreadImplBrowserTest&) = delete;
+  RenderThreadImplBrowserTest& operator=(const RenderThreadImplBrowserTest&) =
+      delete;
 
   void SetUp() override {
     content_renderer_client_ = std::make_unique<ContentRendererClient>();
@@ -279,9 +283,6 @@ class RenderThreadImplBrowserTest : public testing::Test,
   RenderThreadImpl* thread_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RenderThreadImplBrowserTest);
 };
 
 // Disabled under LeakSanitizer due to memory leaks.

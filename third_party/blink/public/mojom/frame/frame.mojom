@@ -300,13 +300,6 @@ interface LocalFrameHost {
   // Elements of |set| are hashes of hosts to upgrade.
   EnforceInsecureNavigationsSet(array<uint32> set);
 
-  // Sent by the blink's FrameScheduler when a list of active features
-  // the scheduler tracks changes.
-  // See blink::scheduler::SchedulingPolicy::Feature for the meaning
-  // of the individual bits.
-  // TODO(altimin): Move into a separate scheduling interface.
-  DidChangeActiveSchedulerTrackedFeatures(uint64 features_mask);
-
   // Sent when a new sudden termination disabler condition is either introduced
   // or removed.
   SuddenTerminationDisablerChanged(bool present,
@@ -325,11 +318,6 @@ interface LocalFrameHost {
   // process.
   BubbleLogicalScrollInParentFrame(ScrollDirection direction,
                                    ui.mojom.ScrollGranularity granularity);
-
-  // Indicates that another page has accessed the DOM of the initial empty
-  // document of a main frame. After this, it is no longer safe to show a
-  // pending navigation's URL, because a URL spoof is possible.
-  DidAccessInitialDocument();
 
   // Indicates an attempt by the associated frame to navigate from the
   // |initiator_url| to the |blocked_url|, but the navigation was
@@ -1150,11 +1138,6 @@ interface LocalMainFrame {
   // onunload event handler.
   ClosePage() => ();
 
-  // Instructs the renderer to perform the given action on the plugin located at
-  // the given point.
-  PluginActionAt(gfx.mojom.Point location,
-                 blink.mojom.PluginActionType action);
-
   // Tells the renderer to focus the first (last if reverse is true) focusable
   // node.
   SetInitialFocus(bool reverse);
@@ -1251,7 +1234,7 @@ interface LocalMainFrameHost {
   // Frame unload handlers should have already been called before this method is called.
   RequestClose();
 
-  // Causes a window previously opened via RenderMessageFilter::CreateNewWindow
+  // Causes a window previously opened via content.mojom.FrameHost::CreateNewWindow
   // to be shown on the screen. This message contains the opener_frame_token
   // which is always set. This is called on the main frame of the window to be shown.
   ShowCreatedWindow(blink.mojom.LocalFrameToken opener_frame_token,
@@ -1266,6 +1249,11 @@ interface LocalMainFrameHost {
   // Sent once a paint happens after the first non empty layout. In other words,
   // after the frame has painted something.
   DidFirstVisuallyNonEmptyPaint();
+
+  // Indicates that another page has accessed the DOM of the initial empty
+  // document of a main frame. After this, it is no longer safe to show a
+  // pending navigation's URL, because a URL spoof is possible.
+  DidAccessInitialMainDocument();
 };
 
 // Implemented in Browser, this interface defines remote-main-frame-specific

@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -27,7 +28,6 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   When changing this variant changes need to verified against histograms there.
 -->
 
-  <variant name="" summary="Any scenario."/>
   <variant name=".AllTabsHidden" summary="Chrome had tabs, but none visible"/>
   <variant name=".Audio"
       summary="Chrome had at least 1 visible tab and was audible, but there
@@ -129,14 +129,25 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryDischargeMode{UsageScenario}"
-    enum="BatteryDischargeMode" expires_after="2021-11-26">
+<histogram name="Power.BatteryDischargeMode" enum="BatteryDischargeMode"
+    expires_after="2022-04-10">
   <owner>etiennep@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
     Battery discharge mode describing whether BatteryDischargeRate2 could be
     reported or not, and why. Reported every time the battery charge level is
     sampled. This is reported on Mac and Windows. See
+    go/chrome_power_use_per_scenario for more details.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryDischargeMode{UsageScenario}"
+    enum="BatteryDischargeMode" expires_after="2021-11-26">
+  <owner>etiennep@chromium.org</owner>
+  <owner>olivierli@chromium.org</owner>
+  <summary>
+    See definition of Power.BatteryDischargeMode. This histogram is reported
+    when the browser is under the {UsageScenario} usage scenario. See
     go/chrome_power_use_per_scenario for more details.
   </summary>
   <token key="UsageScenario" variants="UsageScenario"/>
@@ -152,8 +163,8 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryDischargeRate2{UsageScenario}"
-    units="hundredth of percent" expires_after="2021-11-26">
+<histogram name="Power.BatteryDischargeRate2" units="hundredth of percent"
+    expires_after="2022-04-10">
   <owner>etiennep@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
@@ -164,6 +175,18 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
     mAh; - Discharge proportion: (3900-3700) / 4000 = 0.05 - Reported value:
     500. This metric is only recorded when on battery power. This is reported on
     Mac and Windows. See go/chrome_power_use_per_scenario for more details.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryDischargeRate2{UsageScenario}"
+    units="hundredth of percent" expires_after="2021-11-26">
+  <owner>etiennep@chromium.org</owner>
+  <owner>olivierli@chromium.org</owner>
+  <owner>lgrey@chromium.org</owner>
+  <summary>
+    See definition of Power.BatteryDischargeRate2. This histogram is reported
+    when the browser is under the {UsageScenario} usage scenario. See
+    go/chrome_power_use_per_scenario for more details.
   </summary>
   <token key="UsageScenario" variants="UsageScenario"/>
 </histogram>
@@ -254,7 +277,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.BatterySamplingDelay" units="microseconds"
-    expires_after="2021-11-26">
+    expires_after="2022-04-10">
   <owner>etiennep@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
   <summary>
@@ -1099,7 +1122,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.NumberOfAlsAdjustmentsPerSession" units="units"
-    expires_after="M100">
+    expires_after="2022-05-01">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -1442,7 +1465,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCanceledDuration" units="ms"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>

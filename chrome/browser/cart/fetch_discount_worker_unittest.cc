@@ -689,9 +689,9 @@ TEST_F(FetchDiscountWorkerTest, TestUpdateFreeListingCouponsWithCode) {
   CreateCartDiscountFetcherFactory(std::move(fake_result), false);
 
   CouponService::CouponsMap expected_map;
-  expected_map[GURL(kMockMerchantACartUrl).GetOrigin()]
+  expected_map[GURL(kMockMerchantACartUrl).DeprecatedGetOriginAsURL()]
       .emplace_back(BuildCouponsMapValueEntry(
-          GURL(kMockMerchantACartUrl).GetOrigin(),
+          GURL(kMockMerchantACartUrl).DeprecatedGetOriginAsURL(),
           coupon_info_proto));
   fake_cart_service_delegate_->SetExpectedCouponMap(std::move(expected_map));
 

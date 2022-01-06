@@ -49,7 +49,7 @@ source_set("google_services") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/main",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
@@ -98,7 +98,6 @@ source_set("constants") {
 }
 
 source_set("eg_app_support+eg2") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
@@ -117,17 +116,19 @@ source_set("eg_app_support+eg2") {
   ]
 }
 source_set("eg_test_support+eg2") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [ "google_services_settings_app_interface.h" ]
+  sources = [
+    "google_services_settings_app_interface.h",
+    "google_services_settings_app_interface_stub.mm",
+  ]
+  deps = [ "//ios/third_party/earl_grey2:test_lib" ]
 }
 
 source_set("eg2_tests") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
@@ -136,6 +137,7 @@ source_set("eg2_tests") {
   sources = [
     "accounts_table_egtest.mm",
     "google_services_settings_egtest.mm",
+    "manage_sync_settings_egtest.mm",
   ]
   deps = [
     ":eg_test_support+eg2",
@@ -146,7 +148,6 @@ source_set("eg2_tests") {
     "//components/policy/core/common:common_constants",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
-    "//components/signin/ios/browser:features",
     "//components/signin/public/base",
     "//components/strings",
     "//ios/chrome/app/strings",

@@ -41,6 +41,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/ssl/client_cert_identity.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/connection_tracker.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -172,7 +173,7 @@ class WorkerTest : public ContentBrowserTest,
   }
 
   static void QuitUIMessageLoop(base::OnceClosure callback,
-                                bool is_main_frame /* unused */) {
+                                bool is_primary_main_frame /* unused */) {
     GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
   }
 
@@ -257,7 +258,14 @@ class WorkerTest : public ContentBrowserTest,
   net::test_server::EmbeddedTestServer* ssl_server() { return &ssl_server_; }
 
  private:
-  void OnSelectClientCertificate() { select_certificate_count_++; }
+  base::OnceClosure OnSelectClientCertificate(
+      content::WebContents* web_contents,
+      net::SSLCertRequestInfo* cert_request_info,
+      net::ClientCertIdentityList client_certs,
+      std::unique_ptr<content::ClientCertificateDelegate> delegate) {
+    select_certificate_count_++;
+    return base::OnceClosure();
+  }
 
   std::unique_ptr<net::test_server::HttpResponse> MonitorRequestCookies(
       const net::test_server::HttpRequest& request) {
@@ -689,7 +697,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest,
 
   std::set<GURL> expected_request_urls = {worker_url, script_url, resource_url};
   const url::Origin expected_origin =
-      url::Origin::Create(worker_url.GetOrigin());
+      url::Origin::Create(worker_url.DeprecatedGetOriginAsURL());
 
   base::RunLoop waiter;
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
@@ -707,8 +715,8 @@ IN_PROC_BROWSER_TEST_P(WorkerTest,
       }));
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), test_url));
   waiter.Run();
 
@@ -951,7 +959,7 @@ IN_PROC_BROWSER_TEST_P(WorkerFromAnonymousIframeNikBrowserTest,
         ->GetBrowserContext()
         ->GetDefaultStoragePartition()
         ->GetNetworkContext()
-        ->PreconnectSockets(1, worker_url.GetOrigin(), true,
+        ->PreconnectSockets(1, worker_url.DeprecatedGetOriginAsURL(), true,
                             main_rfh->GetNetworkIsolationKey());
 
     connection_tracker_->WaitForAcceptedConnections(1);

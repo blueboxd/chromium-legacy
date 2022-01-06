@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/test_app_list_client.h"
 
 namespace ash {
@@ -22,6 +23,7 @@ class AppListView;
 class AppsContainerView;
 class ContinueSectionView;
 class PagedAppsGridView;
+class ProductivityLauncherSearchView;
 class RecentAppsView;
 class ScrollableAppsGridView;
 class SearchBoxView;
@@ -83,6 +85,9 @@ class AppListTestHelper {
   // Adds a page break item to the app list model.
   void AddPageBreakItem();
 
+  // Adds `num_apps` recent apps to the recent apps view.
+  void AddRecentApps(int num_apps);
+
   // Whether the app list is showing a folder.
   bool IsInFolderView();
 
@@ -91,6 +96,7 @@ class AppListTestHelper {
   AppsContainerView* GetAppsContainerView();
   AppListFolderView* GetFullscreenFolderView();
   RecentAppsView* GetFullscreenRecentAppsView();
+  ProductivityLauncherSearchView* GetProductivityLauncherSearchView();
 
   // Paged launcher helpers.
   PagedAppsGridView* GetRootPagedAppsGridView();
@@ -105,6 +111,7 @@ class AppListTestHelper {
   ScrollableAppsGridView* GetScrollableAppsGridView();
   AppListBubbleSearchPage* GetBubbleSearchPage();
   AppListBubbleAssistantPage* GetBubbleAssistantPage();
+  SearchModel::SearchResults* GetSearchResults();
 
   TestAppListClient* app_list_client() { return app_list_client_.get(); }
 

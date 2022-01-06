@@ -95,13 +95,24 @@ enum class VAImplementation {
 // This class handles VA-API calls and ensures proper locking of VA-API calls
 // to libva, the userspace shim to the HW codec driver. libva is not
 // thread-safe, so we have to perform locking ourselves. This class is fully
-// synchronous and its methods can be called from any thread and may wait on
-// the va_lock_ while other, concurrent calls run.
+// synchronous and its constructor, all of its methods, and its destructor must
+// be called on the same sequence. These methods may wait on the |va_lock_|
+// which guards libva calls across all VaapiWrapper instances and other libva
+// call sites.
 //
 // This class is responsible for managing VAAPI connection, contexts and state.
 // It is also responsible for managing and freeing VABuffers (not VASurfaces),
 // which are used to queue parameters and slice data to the HW codec,
 // as well as underlying memory for VASurfaces themselves.
+//
+// Historical note: the sequence affinity characteristic was introduced as a
+// pre-requisite to remove the global *|va_lock_|. However, the legacy
+// VaapiVideoDecodeAccelerator is known to use its VaapiWrapper from multiple
+// threads. Therefore, to avoid doing a large refactoring of a legacy class, we
+// allow it to call VaapiWrapper::Create() or
+// VaapiWrapper::CreateForVideoCodec() with |enforce_sequence_affinity| == false
+// so that sequence affinity is not enforced. This also indicates that the
+// global lock will still be in effect for the VaapiVideoDecodeAccelerator.
 class MEDIA_GPU_EXPORT VaapiWrapper
     : public base::RefCountedThreadSafe<VaapiWrapper> {
  public:
@@ -150,7 +161,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       CodecMode mode,
       VAProfile va_profile,
       EncryptionScheme encryption_scheme,
-      const ReportErrorToUMACB& report_error_to_uma_cb);
+      const ReportErrorToUMACB& report_error_to_uma_cb,
+      bool enforce_sequence_affinity = true);
 
   // Create VaapiWrapper for VideoCodecProfile. It maps VideoCodecProfile
   // |profile| to VAProfile.
@@ -160,7 +172,11 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       CodecMode mode,
       VideoCodecProfile profile,
       EncryptionScheme encryption_scheme,
-      const ReportErrorToUMACB& report_error_to_uma_cb);
+      const ReportErrorToUMACB& report_error_to_uma_cb,
+      bool enforce_sequence_affinity = true);
+
+  VaapiWrapper(const VaapiWrapper&) = delete;
+  VaapiWrapper& operator=(const VaapiWrapper&) = delete;
 
   // Returns the supported SVC scalability modes for specified profile.
   static std::vector<SVCScalabilityMode> GetSupportedScalabilityModes(
@@ -244,12 +260,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   static VAEntrypoint GetDefaultVaEntryPoint(CodecMode mode, VAProfile profile);
 
   static uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt);
-
-  // Returns the current instance identifier for the protected content system.
-  // This can be used to detect when protected context loss has occurred, so any
-  // protected surfaces associated with a specific instance ID can be
-  // invalidated when the ID changes.
-  static uint32_t GetProtectedInstanceID();
 
   // Creates |num_surfaces| VASurfaceIDs of |va_format|, |size| and
   // |surface_usage_hints| and, if successful, creates a |va_context_id_| of the
@@ -398,6 +408,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   template <typename T>
   bool WARN_UNUSED_RESULT SubmitBuffer(VABufferType va_buffer_type,
                                        const T* data) {
+    CHECK(!enforce_sequence_affinity_ ||
+          sequence_checker_.CalledOnValidSequence());
     return SubmitBuffer(va_buffer_type, sizeof(T), data);
   }
   // Batch-version of SubmitBuffer(), where the lock for accessing libva is
@@ -523,12 +535,13 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   virtual void DestroySurface(VASurfaceID va_surface_id);
 
  protected:
-  VaapiWrapper(CodecMode mode);
+  explicit VaapiWrapper(CodecMode mode, bool enforce_sequence_affinity = true);
   virtual ~VaapiWrapper();
 
  private:
   friend class base::RefCountedThreadSafe<VaapiWrapper>;
   friend class VaapiWrapperTest;
+  friend class VaapiVideoEncodeAcceleratorTest;
 
   FRIEND_TEST_ALL_PREFIXES(VaapiTest, LowQualityEncodingSetting);
   FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, ScopedVAImage);
@@ -581,6 +594,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       EXCLUSIVE_LOCKS_REQUIRED(va_lock_) WARN_UNUSED_RESULT;
 
   const CodecMode mode_;
+  const bool enforce_sequence_affinity_;
+  base::SequenceCheckerImpl sequence_checker_;
 
   // Pointer to VADisplayState's member |va_lock_|. Guaranteed to be valid for
   // the lifetime of VaapiWrapper.
@@ -615,8 +630,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Called to report codec errors to UMA. Errors to clients are reported via
   // return values from public methods.
   ReportErrorToUMACB report_error_to_uma_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(VaapiWrapper);
 };
 
 }  // namespace media

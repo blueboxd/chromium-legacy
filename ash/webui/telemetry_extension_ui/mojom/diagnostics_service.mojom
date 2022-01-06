@@ -283,6 +283,7 @@ enum DiagnosticRoutineEnum {
 // Enumeration of each of the possible statuses for a diagnostics routine.
 [Extensible]
 enum DiagnosticRoutineStatusEnum {
+  kUnknown = 12,
   kReady = 0,  // Routine is ready to start.
   kRunning = 1,  // Routine is currently running.
   kWaiting = 2,  // Routine needs user input to continue.
@@ -303,6 +304,7 @@ enum DiagnosticRoutineStatusEnum {
 // These messages prompt interaction from the user of the routine.
 [Extensible]
 enum DiagnosticRoutineUserMessageEnum {
+  kUnknown = 2,
   kUnplugACPower = 0,  // The user needs to unplug the AC power cord.
   kPlugInACPower = 1,  // The user needs to plug in the AC power cord.
 };

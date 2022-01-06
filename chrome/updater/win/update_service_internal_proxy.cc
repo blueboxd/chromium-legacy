@@ -11,13 +11,15 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/win/win_constants.h"
+#include "chrome/updater/win/wrl_module_initializer.h"
 
 namespace updater {
 namespace {
@@ -111,10 +113,17 @@ void UpdaterInternalCallback::RunOnSTA() {
 
 }  // namespace
 
+scoped_refptr<UpdateServiceInternal> CreateUpdateServiceInternalProxy(
+    UpdaterScope updater_scope) {
+  return base::MakeRefCounted<UpdateServiceInternalProxy>(updater_scope);
+}
+
 UpdateServiceInternalProxy::UpdateServiceInternalProxy(UpdaterScope scope)
     : scope_(scope),
       STA_task_runner_(
-          base::ThreadPool::CreateCOMSTATaskRunner(kComClientTraits)) {}
+          base::ThreadPool::CreateCOMSTATaskRunner(kComClientTraits)) {
+  WRLModuleInitializer::Get();
+}
 
 UpdateServiceInternalProxy::~UpdateServiceInternalProxy() = default;
 
@@ -149,6 +158,7 @@ CLSID UpdateServiceInternalProxy::GetInternalClass() const {
 void UpdateServiceInternalProxy::RunOnSTA(base::OnceClosure callback) {
   DCHECK(STA_task_runner_->BelongsToCurrentThread());
 
+  ::Sleep(kCreateUpdaterInstanceDelayMs);
   Microsoft::WRL::ComPtr<IUnknown> server;
   HRESULT hr = ::CoCreateInstance(GetInternalClass(), nullptr,
                                   CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&server));
@@ -212,6 +222,7 @@ void UpdateServiceInternalProxy::InitializeUpdateServiceOnSTA(
     base::OnceClosure callback) {
   DCHECK(STA_task_runner_->BelongsToCurrentThread());
 
+  ::Sleep(kCreateUpdaterInstanceDelayMs);
   Microsoft::WRL::ComPtr<IUnknown> server;
   HRESULT hr = ::CoCreateInstance(GetInternalClass(), nullptr,
                                   CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&server));

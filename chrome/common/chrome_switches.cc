@@ -318,9 +318,6 @@ const char kForceAppMode[]                  = "force-app-mode";
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
 
-// Forces Chrome to use a stacked tab strip layout.
-const char kForceStackedTabStripLayout[]    = "force-stacked-tab-strip-layout";
-
 // Does not show the crash restore bubble when the browser is started during the
 // system startup phase in ChromeOS, if the ChromeOS full restore feature is
 // enabled, because the ChromeOS full restore notification is shown for the user
@@ -692,9 +689,6 @@ const char kWmClass[]                       = "class";
 #if defined(OS_MAC)
 // Prevents Chrome from quitting when Chrome Apps are open.
 const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
-
-// Disables app shim creation for hosted apps on Mac.
-const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
 
 // Enable user metrics from within the installer.
 const char kEnableUserMetrics[] = "enable-user-metrics";

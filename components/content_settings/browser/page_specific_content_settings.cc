@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "components/browsing_data/content/appcache_helper.h"
 #include "components/browsing_data/content/cache_storage_helper.h"
 #include "components/browsing_data/content/cookie_helper.h"
 #include "components/browsing_data/content/database_helper.h"
@@ -119,7 +118,7 @@ PageSpecificContentSettings::WebContentsHandler::WebContentsHandler(
       map_(delegate_->GetSettingsMap()) {
   DCHECK(!PageSpecificContentSettings::GetForCurrentDocument(
       web_contents->GetMainFrame()));
-  content::RenderDocumentHostUserData<PageSpecificContentSettings>::
+  content::DocumentUserData<PageSpecificContentSettings>::
       CreateForCurrentDocument(web_contents->GetMainFrame(), *this,
                                delegate_.get());
 }
@@ -222,7 +221,7 @@ void PageSpecificContentSettings::WebContentsHandler::DidFinishNavigation(
 
   if (WillNavigationCreateNewPageSpecificContentSettingsOnCommit(
           navigation_handle)) {
-    content::RenderDocumentHostUserData<PageSpecificContentSettings>::
+    content::DocumentUserData<PageSpecificContentSettings>::
         CreateForCurrentDocument(navigation_handle->GetRenderFrameHost(), *this,
                                  delegate_.get());
     InflightNavigationContentSettings* inflight_settings =
@@ -244,15 +243,6 @@ void PageSpecificContentSettings::WebContentsHandler::DidFinishNavigation(
 
   if (navigation_handle->IsInPrimaryMainFrame())
     delegate_->UpdateLocationBar();
-}
-
-void PageSpecificContentSettings::WebContentsHandler::AppCacheAccessed(
-    const GURL& manifest_url,
-    bool blocked_by_policy) {
-  auto* pscs = PageSpecificContentSettings::GetForCurrentDocument(
-      web_contents()->GetMainFrame());
-  if (pscs)
-    pscs->AppCacheAccessed(manifest_url, blocked_by_policy);
 }
 
 void PageSpecificContentSettings::WebContentsHandler::AddSiteDataObserver(
@@ -291,17 +281,18 @@ PageSpecificContentSettings::PageSpecificContentSettings(
     content::RenderFrameHost* main_frame,
     PageSpecificContentSettings::WebContentsHandler& handler,
     Delegate* delegate)
-    : content::RenderDocumentHostUserData<PageSpecificContentSettings>(
-          main_frame),
+    : content::DocumentUserData<PageSpecificContentSettings>(main_frame),
       handler_(handler),
       delegate_(delegate),
       map_(delegate_->GetSettingsMap()),
       allowed_local_shared_objects_(
           handler_.web_contents()->GetBrowserContext(),
+          /*ignore_empty_localstorage=*/true,
           delegate_->GetAdditionalFileSystemTypes(),
           delegate_->GetIsDeletionDisabledCallback()),
       blocked_local_shared_objects_(
           handler_.web_contents()->GetBrowserContext(),
+          /*ignore_empty_localstorage=*/false,
           delegate_->GetAdditionalFileSystemTypes(),
           delegate_->GetIsDeletionDisabledCallback()),
       microphone_camera_state_(MICROPHONE_CAMERA_NOT_ACCESSED) {
@@ -873,19 +864,6 @@ void PageSpecificContentSettings::OnContentSettingChanged(
   MaybeSendRendererContentSettingsRules(&render_frame_host(), map_, delegate_);
 }
 
-void PageSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
-                                                   bool blocked_by_policy) {
-  if (blocked_by_policy) {
-    blocked_local_shared_objects_.appcaches()->Add(
-        url::Origin::Create(manifest_url));
-    OnContentBlocked(ContentSettingsType::COOKIES);
-  } else {
-    allowed_local_shared_objects_.appcaches()->Add(
-        url::Origin::Create(manifest_url));
-    OnContentAllowed(ContentSettingsType::COOKIES);
-  }
-}
-
 void PageSpecificContentSettings::ClearContentSettingsChangedViaPageInfo() {
   content_settings_changed_via_page_info_.clear();
 }
@@ -963,6 +941,6 @@ void PageSpecificContentSettings::MaybeUpdateLocationBar() {
   delegate_->UpdateLocationBar();
 }
 
-RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(PageSpecificContentSettings);
+DOCUMENT_USER_DATA_KEY_IMPL(PageSpecificContentSettings);
 
 }  // namespace content_settings

@@ -16,11 +16,11 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task_runner_util.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/watchdog.h"
@@ -302,7 +302,6 @@ class WebrtcTransport::PeerConnectionWrapper
         webrtc::CreateModularPeerConnectionFactory(std::move(pcf_deps));
 
     webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
-    rtc_config.enable_dtls_srtp = true;
 
     // Set bundle_policy and rtcp_mux_policy to ensure that all channels are
     // multiplexed over a single channel.

@@ -20,7 +20,6 @@
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/ios/browser/features.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -54,7 +53,7 @@ const char* kGaiaDomain = "accounts.google.com";
 // Returns the registered, organization-identifying host, but no subdomains,
 // from the given GURL. Returns an empty string if the GURL is invalid.
 static std::string GetDomainFromUrl(const GURL& url) {
-  if (gaia::IsGaiaSignonRealm(url.GetOrigin())) {
+  if (gaia::IsGaiaSignonRealm(url.DeprecatedGetOriginAsURL())) {
     return kGaiaDomain;
   }
   return net::registry_controlled_domains::GetDomainAndRegistry(
@@ -169,8 +168,7 @@ void AccountConsistencyService::AccountConsistencyHandler::ShouldAllowRequest(
     web::WebStatePolicyDecider::RequestInfo request_info,
     web::WebStatePolicyDecider::PolicyDecisionCallback callback) {
   GURL url = net::GURLWithNSURL(request.URL);
-  if (base::FeatureList::IsEnabled(signin::kRestoreGaiaCookiesOnUserAction) &&
-      signin::IsUrlEligibleForMirrorCookie(url) &&
+  if (signin::IsUrlEligibleForMirrorCookie(url) &&
       identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
     // CHROME_CONNECTED cookies are added asynchronously on google.com and
     // youtube.com domains when Chrome detects that the user is signed-in. By
@@ -207,7 +205,7 @@ void AccountConsistencyService::AccountConsistencyHandler::ShouldAllowResponse(
   // WKWebView is cancelling previous navigations.
   show_consistency_promo_ = false;
 
-  if (!gaia::IsGaiaSignonRealm(url.GetOrigin())) {
+  if (!gaia::IsGaiaSignonRealm(url.DeprecatedGetOriginAsURL())) {
     std::move(callback).Run(PolicyDecision::Allow());
     return;
   }
@@ -220,7 +218,7 @@ void AccountConsistencyService::AccountConsistencyHandler::ShouldAllowResponse(
     // credentials on a Gaia sign-on page.
     NSString* x_autologin_header = [[http_response allHeaderFields]
         objectForKey:[NSString stringWithUTF8String:signin::kAutoLoginHeader]];
-    if (signin::IsMICEWebSignInEnabled() && x_autologin_header) {
+    if (x_autologin_header) {
       show_consistency_promo_ = true;
     }
     std::move(callback).Run(PolicyDecision::Allow());
@@ -247,22 +245,17 @@ void AccountConsistencyService::AccountConsistencyHandler::ShouldAllowResponse(
       if (identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
         LogIOSGaiaCookiesState(GaiaCookieStateOnSignedInNavigation::
                                    kGaiaCookieAbsentOnAddSessionNavigation);
-        if (base::FeatureList::IsEnabled(
-                signin::kRestoreGaiaCookiesOnUserAction)) {
-          GURL continue_url = GURL(params.continue_url);
-          DLOG_IF(ERROR,
-                  !params.continue_url.empty() && !continue_url.is_valid())
-              << "Invalid continuation URL: \"" << continue_url << "\"";
-          if (account_consistency_service_->RestoreGaiaCookies(base::BindOnce(
-                  &AccountConsistencyHandler::HandleAddAccountRequest,
-                  weak_ptr_factory_.GetWeakPtr(), continue_url))) {
-            // Continue URL will be processed in a callback once Gaia cookies
-            // have been restored.
-            return;
-          }
+        GURL continue_url = GURL(params.continue_url);
+        DLOG_IF(ERROR, !params.continue_url.empty() && !continue_url.is_valid())
+            << "Invalid continuation URL: \"" << continue_url << "\"";
+        if (account_consistency_service_->RestoreGaiaCookies(base::BindOnce(
+                &AccountConsistencyHandler::HandleAddAccountRequest,
+                weak_ptr_factory_.GetWeakPtr(), continue_url))) {
+          // Continue URL will be processed in a callback once Gaia cookies
+          // have been restored.
+          return;
         }
-      } else if (!identity_manager_->GetAccountsWithRefreshTokens().empty() &&
-                 signin::IsMICEWebSignInEnabled()) {
+      } else if (!identity_manager_->GetAccountsWithRefreshTokens().empty()) {
         show_consistency_promo_ = true;
         // Allows the URL response to load before showing the consistency promo.
         // The promo should always be displayed in the foreground of Gaia
@@ -320,7 +313,8 @@ void AccountConsistencyService::AccountConsistencyHandler::PageLoaded(
     return;
   }
 
-  if (show_consistency_promo_ && gaia::IsGaiaSignonRealm(url.GetOrigin())) {
+  if (show_consistency_promo_ &&
+      gaia::IsGaiaSignonRealm(url.DeprecatedGetOriginAsURL())) {
     [delegate_ onShowConsistencyPromo:url webState:web_state];
     show_consistency_promo_ = false;
   }

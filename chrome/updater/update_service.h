@@ -18,6 +18,8 @@ namespace updater {
 struct RegistrationRequest;
 struct RegistrationResponse;
 
+enum class UpdaterScope;
+
 // The UpdateService is the cross-platform core of the updater.
 // All functions and callbacks must be called on the same sequence.
 class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
@@ -242,9 +244,6 @@ inline std::ostream& operator<<(std::ostream& os,
 
 std::ostream& operator<<(std::ostream& os,
                          const UpdateService::UpdateState& update_state);
-
-// A factory method to create an UpdateService class instance.
-scoped_refptr<UpdateService> CreateUpdateService();
 
 }  // namespace updater
 

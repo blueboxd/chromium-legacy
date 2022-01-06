@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/views/continue_section_view.h"
@@ -17,11 +18,20 @@
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/bubble/bubble_utils.h"
 #include "ash/controls/rounded_scroll_bar.h"
+#include "ash/controls/scroll_view_gradient_helper.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "base/check.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/animation_throughput_reporter.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
@@ -65,6 +75,8 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   DCHECK(a11y_announcer);
   DCHECK(folder_controller);
 
+  AppListModelProvider::Get()->AddObserver(this);
+
   SetUseDefaultFillLayout(true);
 
   // The entire page scrolls.
@@ -76,6 +88,10 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   scroll_view_->SetBackgroundColor(absl::nullopt);
   // Arrow keys are used to select app icons.
   scroll_view_->SetAllowKeyboardScrolling(false);
+
+  // Set up fade in/fade out gradients at top/bottom of scroll view.
+  scroll_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+  gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(scroll_view_);
 
   // Set up scroll bars.
   scroll_view_->SetHorizontalScrollBarMode(
@@ -95,20 +111,21 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   // Continue section row.
   continue_section_ =
       scroll_contents->AddChildView(std::make_unique<ContinueSectionView>(
-          view_delegate, kContinueColumnCount));
+          view_delegate, kContinueColumnCount, /*tablet_mode=*/false));
 
   // Recent apps row.
+  SearchModel* const search_model = AppListModelProvider::Get()->search_model();
+  AppListModel* const model = AppListModelProvider::Get()->model();
   recent_apps_ = scroll_contents->AddChildView(
       std::make_unique<RecentAppsView>(this, view_delegate));
   recent_apps_->UpdateAppListConfig(app_list_config);
-  recent_apps_->ShowResults(view_delegate->GetSearchModel(),
-                            view_delegate->GetModel());
+  recent_apps_->ShowResults(search_model, model);
 
   // Horizontal separator.
-  auto* separator =
+  separator_ =
       scroll_contents->AddChildView(std::make_unique<views::Separator>());
-  separator->SetBorder(views::CreateEmptyBorder(kSeparatorInsets));
-  separator->SetColor(ColorProvider::Get()->GetContentLayerColor(
+  separator_->SetBorder(views::CreateEmptyBorder(kSeparatorInsets));
+  separator_->SetColor(ColorProvider::Get()->GetContentLayerColor(
       ColorProvider::ContentLayerType::kSeparatorColor));
 
   // All apps section.
@@ -122,21 +139,135 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   scrollable_apps_grid_view_->Init();
   scrollable_apps_grid_view_->UpdateAppListConfig(app_list_config);
   scrollable_apps_grid_view_->SetMaxColumns(5);
-  AppListModel* model = view_delegate->GetModel();
   scrollable_apps_grid_view_->SetModel(model);
   scrollable_apps_grid_view_->SetItemList(model->top_level_item_list());
   scrollable_apps_grid_view_->ResetForShowApps();
+  // Ensure the grid fills the remaining space in the bubble so that icons can
+  // be dropped beneath the last row.
+  layout->SetFlexForView(scrollable_apps_grid_view_, 1);
 
   scroll_view_->SetContents(std::move(scroll_contents));
+
   continue_section_->UpdateSuggestionTasks();
+  UpdateSeparatorVisibility();
 }
 
-AppListBubbleAppsPage::~AppListBubbleAppsPage() = default;
+AppListBubbleAppsPage::~AppListBubbleAppsPage() {
+  AppListModelProvider::Get()->RemoveObserver(this);
+}
+
+void AppListBubbleAppsPage::StartShowAnimation() {
+  // The animation relies on the correct positions of views, so force layout.
+  if (needs_layout())
+    Layout();
+  DCHECK(!needs_layout());
+
+  // This part of the animation has a longer duration than the bubble part
+  // handled in AppListBubbleView, so track overall smoothness here.
+  ui::AnimationThroughputReporter reporter(
+      scrollable_apps_grid_view_->layer()->GetAnimator(),
+      metrics_util::ForSmoothness(base::BindRepeating([](int value) {
+        base::UmaHistogramPercentage(
+            "Apps.ClamshellLauncher.AnimationSmoothness.OpenAppsPage", value);
+      })));
+
+  // TODO(https://crbug.com/1264178): Disable the gradient mask on the scroll
+  // view to improve performance.
+
+  // Animate the views. Each section is initially offset down, then slides up
+  // into its final position. If a section isn't visible, skip it. The further
+  // down the section, the greater its initial offset. This code uses multiple
+  // animations because views::AnimationBuilder doesn't have a good way to
+  // build a single animation with conditional parts. https://crbug.com/1266020
+  constexpr int kSectionOffset = 20;
+  int vertical_offset = 0;
+  if (continue_section_->GetTasksSuggestionsCount() > 0) {
+    vertical_offset += kSectionOffset;
+    SlideViewIntoPosition(continue_section_, vertical_offset);
+  }
+  if (recent_apps_->GetItemViewCount() > 0) {
+    vertical_offset += kSectionOffset;
+    SlideViewIntoPosition(recent_apps_, vertical_offset);
+  }
+  if (separator_->GetVisible()) {
+    // The separator is not offset; it animates next to the view above it.
+    SlideViewIntoPosition(separator_, vertical_offset);
+  }
+
+  // The apps grid is always visible.
+  vertical_offset += kSectionOffset;
+  SlideViewIntoPosition(scrollable_apps_grid_view_, vertical_offset);
+}
+
+void AppListBubbleAppsPage::SlideViewIntoPosition(views::View* view,
+                                                  int vertical_offset) {
+  // Abort any in-progress layer animation. Views might have temporary layers
+  // during animations that are cleaned up at the end. The code below needs to
+  // know the final desired layer state.
+  if (view->layer()) {
+    DCHECK(view->layer()->GetAnimator());
+    view->layer()->GetAnimator()->AbortAllAnimations();
+  }
+
+  // Add a layer for the view if it doesn't have one at baseline.
+  const bool create_layer = !view->layer();
+  if (create_layer) {
+    view->SetPaintToLayer();
+    view->layer()->SetFillsBoundsOpaquely(false);
+  }
+
+  // Set the initial offset via a layer transform.
+  gfx::Transform translate_down;
+  translate_down.Translate(0, vertical_offset);
+  view->layer()->SetTransform(translate_down);
+
+  // If we created a layer for the view, undo that when the animation ends.
+  // The underlying views don't expose weak pointers directly, so use a weak
+  // pointer to this view, which owns its children.
+  auto cleanup = create_layer ? base::BindRepeating(
+                                    &AppListBubbleAppsPage::DestroyLayerForView,
+                                    weak_factory_.GetWeakPtr(), view)
+                              : base::DoNothing();
+
+  // Animation spec:
+  //
+  // Y Position: Down (offset) → End position
+  // Duration: 250ms
+  // Ease: (0.00, 0.00, 0.20, 1.00)
+
+  // Animate the transform back to the identity transform.
+  constexpr gfx::Transform kIdentity;
+  views::AnimationBuilder()
+      .OnEnded(cleanup)
+      .OnAborted(cleanup)
+      .Once()
+      .SetDuration(base::Milliseconds(250))
+      .SetTransform(view, kIdentity, gfx::Tween::LINEAR_OUT_SLOW_IN);
+}
 
 void AppListBubbleAppsPage::DisableFocusForShowingActiveFolder(bool disabled) {
   continue_section_->DisableFocusForShowingActiveFolder(disabled);
   recent_apps_->DisableFocusForShowingActiveFolder(disabled);
   scrollable_apps_grid_view_->DisableFocusForShowingActiveFolder(disabled);
+}
+
+void AppListBubbleAppsPage::Layout() {
+  views::View::Layout();
+  gradient_helper_->UpdateGradientZone();
+}
+
+void AppListBubbleAppsPage::OnActiveAppListModelsChanged(
+    AppListModel* model,
+    SearchModel* search_model) {
+  scrollable_apps_grid_view_->SetModel(model);
+  scrollable_apps_grid_view_->SetItemList(model->top_level_item_list());
+
+  recent_apps_->ShowResults(search_model, model);
+}
+
+void AppListBubbleAppsPage::ChildVisibilityChanged(views::View* child) {
+  if (child == continue_section_ || child == recent_apps_)
+    UpdateSeparatorVisibility();
 }
 
 void AppListBubbleAppsPage::MoveFocusUpFromRecents() {
@@ -177,6 +308,16 @@ bool AppListBubbleAppsPage::MoveFocusUpFromAppsGrid(int column) {
   DCHECK(item);
   item->RequestFocus();
   return true;
+}
+
+void AppListBubbleAppsPage::UpdateSeparatorVisibility() {
+  separator_->SetVisible(recent_apps_->GetItemViewCount() > 0 ||
+                         continue_section_->GetTasksSuggestionsCount() > 0);
+}
+
+void AppListBubbleAppsPage::DestroyLayerForView(views::View* view) {
+  // This function is not static so it can be bound with a weak pointer.
+  view->DestroyLayer();
 }
 
 BEGIN_METADATA(AppListBubbleAppsPage, views::View)

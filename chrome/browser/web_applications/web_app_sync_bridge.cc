@@ -453,8 +453,7 @@ std::vector<std::unique_ptr<WebApp>> WebAppSyncBridge::UpdateRegistrar(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // We do not install non-system web apps in Ash when Lacros web apps are
     // enabled.
-    DCHECK(web_app->IsSystemApp() ||
-           !base::FeatureList::IsEnabled(features::kWebAppsCrosapi));
+    DCHECK(web_app->IsSystemApp() || !IsWebAppsCrosapiEnabled());
 #endif
     registrar_->registry().emplace(std::move(app_id), std::move(web_app));
   }
@@ -539,6 +538,7 @@ void WebAppSyncBridge::OnDatabaseOpened(
   registrar_->InitRegistry(std::move(registry));
   std::move(callback).Run();
 
+  MaybeUninstallAppsPendingUninstall();
   MaybeInstallAppsFromSyncAndPendingInstallation();
 }
 
@@ -565,15 +565,8 @@ void WebAppSyncBridge::ReportErrorToChangeProcessor(
 void WebAppSyncBridge::MergeLocalAppsToSync(
     const syncer::EntityChangeList& entity_data,
     syncer::MetadataChangeList* metadata_change_list) {
-  // Build a helper set of the sync server apps to speed up lookups. The
-  // flat_set will reuse the underlying memory of this vector. app_id is storage
-  // key.
-  std::vector<AppId> storage_keys;
-  storage_keys.reserve(entity_data.size());
-  for (const auto& change : entity_data)
-    storage_keys.push_back(change->storage_key());
-  // Sort only once.
-  base::flat_set<AppId> sync_server_apps(std::move(storage_keys));
+  auto sync_server_apps = base::MakeFlatSet<AppId>(
+      entity_data, {}, &syncer::EntityChange::storage_key);
 
   for (const WebApp& app : registrar_->GetAppsIncludingStubs()) {
     if (!app.IsSynced())
@@ -668,18 +661,27 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
     registrar_->NotifyWebAppsWillBeUpdatedFromSync(new_apps_state);
   }
 
-  // Initiate any uninstall actions that need to happen before the app is
-  // removed from the registry. This includes starting ot uninstall os hooks,
-  // and notify observers WebAppWillBeUninstalled.
-  if (!update_local_data->apps_to_delete.empty()) {
-    install_delegate_->UninstallFromSyncBeforeRegistryUpdate(
-        update_local_data->apps_to_delete);
+  // Initiate any uninstall actions to clean up os integration, disk data, etc.
+  // This starts before the registry is updated as some of these functions
+  // require the web app data to still exist in the registry. This includes
+  // eventually notifying observers of `WebAppWillBeUninstalled` and
+  // `WebAppUninstalled`.
+  const std::vector<AppId>& apps_to_delete = update_local_data->apps_to_delete;
+  if (!apps_to_delete.empty()) {
+    apps_in_sync_uninstall_.insert(apps_to_delete.begin(),
+                                   apps_to_delete.end());
+    install_delegate_->UninstallWithoutRegistryUpdateFromSync(
+        apps_to_delete,
+        base::BindRepeating(&WebAppSyncBridge::WebAppUninstalled,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   std::vector<WebApp*> apps_to_install;
   for (const auto& web_app : update_local_data->apps_to_create)
     apps_to_install.push_back(web_app.get());
 
+  // TODO(dmurph): Determine if we these are needed anymore, and if not,
+  // simplify the code to just delete them earlier.
   std::vector<std::unique_ptr<WebApp>> apps_unregistered =
       UpdateRegistrar(std::move(update_local_data));
 
@@ -688,20 +690,6 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
   if (!apps_to_install.empty()) {
     install_delegate_->InstallWebAppsAfterSync(std::move(apps_to_install),
                                                base::DoNothing());
-  }
-
-  // Do a full follow up uninstall for all deleted remote entities that exist
-  // locally and not needed by other sources. We need to clean up disk data
-  // (icons).
-  if (!apps_unregistered.empty()) {
-    for (const auto& web_app : apps_unregistered) {
-      apps_in_sync_uninstall_.insert(web_app->app_id());
-    }
-
-    install_delegate_->UninstallFromSyncAfterRegistryUpdate(
-        std::move(apps_unregistered),
-        base::BindRepeating(&WebAppSyncBridge::WebAppUninstalled,
-                            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -799,6 +787,21 @@ std::string WebAppSyncBridge::GetStorageKey(
 
 const std::set<AppId>& WebAppSyncBridge::GetAppsInSyncUninstallForTest() {
   return apps_in_sync_uninstall_;
+}
+
+void WebAppSyncBridge::MaybeUninstallAppsPendingUninstall() {
+  std::vector<AppId> apps_uninstalling;
+
+  for (WebApp& app : registrar_->GetAppsIncludingStubsMutable()) {
+    if (app.is_uninstalling())
+      apps_uninstalling.push_back(app.app_id());
+  }
+
+  base::UmaHistogramCounts100("WebApp.Uninstall.NonSyncIncompleteCount",
+                              apps_uninstalling.size());
+
+  if (!apps_uninstalling.empty())
+    install_delegate_->RetryIncompleteUninstalls(apps_uninstalling);
 }
 
 void WebAppSyncBridge::MaybeInstallAppsFromSyncAndPendingInstallation() {

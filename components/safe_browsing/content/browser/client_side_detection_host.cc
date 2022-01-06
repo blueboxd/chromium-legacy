@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner_helpers.h"
+#include "base/task/sequenced_task_runner_helpers.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
@@ -653,10 +653,8 @@ bool ClientSideDetectionHost::CanGetAccessToken() {
   if (is_off_the_record_)
     return false;
 
-  // Return true if the finch feature is enabled for an ESB user, and if the
-  // primary user account is signed in.
-  return base::FeatureList::IsEnabled(kClientSideDetectionWithToken) &&
-         IsEnhancedProtectionEnabled(*pref_service_) &&
+  // Return true if the primary user account of an ESB user is signed in.
+  return IsEnhancedProtectionEnabled(*pref_service_) &&
          !account_signed_in_callback_.is_null() &&
          account_signed_in_callback_.Run();
 }

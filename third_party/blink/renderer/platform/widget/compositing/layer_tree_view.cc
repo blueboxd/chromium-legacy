@@ -15,8 +15,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -130,6 +130,7 @@ void LayerTreeView::Disconnect() {
   DCHECK(delegate_);
   // Drop compositor resources immediately, while keeping the compositor alive
   // until after this class is destroyed.
+  layer_tree_host_->WaitForCommitCompletion();
   layer_tree_host_->SetVisible(false);
   layer_tree_host_->ReleaseLayerTreeFrameSink();
   delegate_ = nullptr;
@@ -278,7 +279,7 @@ void LayerTreeView::DidFailToInitializeLayerTreeFrameSink() {
                                 weak_factory_.GetWeakPtr()));
 }
 
-void LayerTreeView::WillCommit() {
+void LayerTreeView::WillCommit(cc::CommitState*) {
   if (!delegate_)
     return;
   delegate_->WillCommitCompositorFrame();

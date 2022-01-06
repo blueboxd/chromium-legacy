@@ -16,7 +16,6 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-#include "media/gpu/vaapi/vp9_rate_control.h"
 #include "media/gpu/vaapi/vp9_svc_layers.h"
 #include "third_party/libvpx/source/libvpx/vp9/ratectrl_rtc.h"
 
@@ -175,21 +174,18 @@ libvpx::VP9RateControlRtcConfig CreateRateControlConfig(
   return rc_cfg;
 }
 
-static scoped_refptr<base::RefCountedBytes> MakeRefCountedBytes(void* ptr,
-                                                                size_t size) {
-  return base::MakeRefCounted<base::RefCountedBytes>(
-      reinterpret_cast<uint8_t*>(ptr), size);
+scoped_refptr<VP9Picture> GetVP9Picture(
+    const VaapiVideoEncoderDelegate::EncodeJob& job) {
+  return base::WrapRefCounted(
+      reinterpret_cast<VP9Picture*>(job.picture().get()));
 }
-
 }  // namespace
 
 VP9VaapiVideoEncoderDelegate::EncodeParams::EncodeParams()
     : kf_period_frames(kKFPeriod),
       framerate(0),
-      initial_qp(kDefaultQP),
       min_qp(kMinQP),
-      max_qp(kMaxQP),
-      error_resilient_mode(false) {}
+      max_qp(kMaxQP) {}
 
 void VP9VaapiVideoEncoderDelegate::set_rate_ctrl_for_testing(
     std::unique_ptr<VP9RateControl> rate_ctrl) {
@@ -227,6 +223,8 @@ bool VP9VaapiVideoEncoderDelegate::Initialize(
     DVLOGF(1) << "Only CQ bitrate control is supported";
     return false;
   }
+
+  native_input_mode_ = ave_config.native_input_mode;
 
   visible_size_ = config.input_visible_size;
   coded_size_ = gfx::Size(base::bits::AlignUp(visible_size_.width(), 16),
@@ -315,29 +313,29 @@ size_t VP9VaapiVideoEncoderDelegate::GetMaxNumOfRefFrames() const {
   return kVp9NumRefFrames;
 }
 
-bool VP9VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob* encode_job) {
+bool VP9VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (svc_layers_) {
-    if (svc_layers_->UpdateEncodeJob(encode_job->IsKeyframeRequested(),
+    if (svc_layers_->UpdateEncodeJob(encode_job.IsKeyframeRequested(),
                                      current_params_.kf_period_frames)) {
-      encode_job->ProduceKeyframe();
+      encode_job.ProduceKeyframe();
     }
   } else {
-    if (encode_job->IsKeyframeRequested())
+    if (encode_job.IsKeyframeRequested())
       frame_num_ = 0;
 
     if (frame_num_ == 0)
-      encode_job->ProduceKeyframe();
+      encode_job.ProduceKeyframe();
 
     frame_num_++;
     frame_num_ %= current_params_.kf_period_frames;
   }
 
-  scoped_refptr<VP9Picture> picture = GetPicture(encode_job);
+  scoped_refptr<VP9Picture> picture = GetVP9Picture(encode_job);
   DCHECK(picture);
 
   std::array<bool, kVp9NumRefsPerFrame> ref_frames_used = {false, false, false};
-  SetFrameHeader(encode_job->IsKeyframeRequested(), picture.get(),
+  SetFrameHeader(encode_job.IsKeyframeRequested(), picture.get(),
                  &ref_frames_used);
   if (!SubmitFrameParameters(encode_job, current_params_, picture,
                              reference_frames_, ref_frames_used)) {
@@ -350,13 +348,13 @@ bool VP9VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob* encode_job) {
 }
 
 BitstreamBufferMetadata VP9VaapiVideoEncoderDelegate::GetMetadata(
-    EncodeJob* encode_job,
+    const EncodeJob& encode_job,
     size_t payload_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto metadata =
       VaapiVideoEncoderDelegate::GetMetadata(encode_job, payload_size);
-  auto picture = GetPicture(encode_job);
+  auto picture = GetVP9Picture(encode_job);
   DCHECK(picture);
   metadata.vp9 = picture->metadata_for_encoding;
   return metadata;
@@ -517,28 +515,8 @@ void VP9VaapiVideoEncoderDelegate::UpdateReferenceFrames(
   reference_frames_.Refresh(picture);
 }
 
-void VP9VaapiVideoEncoderDelegate::NotifyEncodedChunkSize(
-    VABufferID buffer_id,
-    VASurfaceID sync_surface_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const uint64_t encoded_chunk_size =
-      vaapi_wrapper_->GetEncodedChunkSize(buffer_id, sync_surface_id);
-  if (encoded_chunk_size == 0)
-    error_cb_.Run();
-
-  BitrateControlUpdate(encoded_chunk_size);
-}
-
-scoped_refptr<VP9Picture> VP9VaapiVideoEncoderDelegate::GetPicture(
-    EncodeJob* job) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  return base::WrapRefCounted(
-      reinterpret_cast<VP9Picture*>(job->picture().get()));
-}
-
 bool VP9VaapiVideoEncoderDelegate::SubmitFrameParameters(
-    EncodeJob* job,
+    EncodeJob& job,
     const EncodeParams& encode_params,
     scoped_refptr<VP9Picture> pic,
     const Vp9ReferenceFrameVector& ref_frames,
@@ -574,7 +552,7 @@ bool VP9VaapiVideoEncoderDelegate::SubmitFrameParameters(
                 : VA_INVALID_ID;
   }
 
-  pic_param.coded_buf = job->coded_buffer_id();
+  pic_param.coded_buf = job.coded_buffer_id();
   DCHECK_NE(pic_param.coded_buf, VA_INVALID_ID);
 
   if (frame_header->IsKeyframe()) {
@@ -628,21 +606,10 @@ bool VP9VaapiVideoEncoderDelegate::SubmitFrameParameters(
   pic_param.log2_tile_rows = frame_header->tile_rows_log2;
   pic_param.log2_tile_columns = frame_header->tile_cols_log2;
 
-  job->AddSetupCallback(
-      base::BindOnce(&VaapiVideoEncoderDelegate::SubmitBuffer,
-                     base::Unretained(this), VAEncSequenceParameterBufferType,
-                     MakeRefCountedBytes(&seq_param, sizeof(seq_param))));
-
-  job->AddSetupCallback(
-      base::BindOnce(&VaapiVideoEncoderDelegate::SubmitBuffer,
-                     base::Unretained(this), VAEncPictureParameterBufferType,
-                     MakeRefCountedBytes(&pic_param, sizeof(pic_param))));
-
-  job->AddPostExecuteCallback(
-      base::BindOnce(&VP9VaapiVideoEncoderDelegate::NotifyEncodedChunkSize,
-                     base::Unretained(this), job->coded_buffer_id(),
-                     job->input_surface()->id()));
-  return true;
+  return vaapi_wrapper_->SubmitBuffer(VAEncSequenceParameterBufferType,
+                                      &seq_param) &&
+         vaapi_wrapper_->SubmitBuffer(VAEncPictureParameterBufferType,
+                                      &pic_param);
 }
 
 }  // namespace media

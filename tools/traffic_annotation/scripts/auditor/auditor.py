@@ -101,8 +101,8 @@ def get_current_platform(build_path: Optional[Path] = None) -> str:
       pattern = re.compile(r"^\s*target_os\s*=\s*\"android\"\s*$", re.MULTILINE)
       if pattern.search(gn_args):
         current_platform = "android"
-    except (ValueError, OSError):
-      logger.info(e.value)
+    except (ValueError, OSError) as e:
+      logger.info(e)
       # Maybe the file's absent, or it can't be decoded as UTF-8, or something.
       # It's probably not Android in that case.
       pass
@@ -1558,6 +1558,9 @@ class Auditor:
 
   SAFE_LIST_PATH = (SRC_DIR / "tools" / "traffic_annotation" / "auditor" /
                     "safe_list.txt")
+  # TODO(b/203773498): Remove ChromeOS safelist after cleanup.
+  CHROME_OS_SAFE_LIST_PATH = (SRC_DIR / "tools" / "traffic_annotation" /
+                              "auditor" / "chromeos" / "safe_list.txt")
 
   def __init__(self, current_platform: str, no_filtering: bool = False):
     self.no_filtering = no_filtering
@@ -1592,6 +1595,10 @@ class Auditor:
         Auditor.SAFE_LIST_PATH.relative_to(SRC_DIR)))
 
     lines = Auditor.SAFE_LIST_PATH.read_text(encoding="utf-8").splitlines()
+    if self.exporter._current_platform == "chromeos":
+      lines += Auditor.CHROME_OS_SAFE_LIST_PATH.read_text(
+          encoding="utf-8").splitlines()
+
     for line in lines:
       # Ignore comments and empty lines.
       line = line.rstrip()
@@ -1833,6 +1840,11 @@ class Auditor:
     return grouping_xml_ids
 
   def check_grouping_xml(self) -> List[AuditorError]:
+    #TODO(b/203822700): Add grouping.xml for chromeos.
+    if self.exporter._current_platform == "chromeos":
+      logger.info("Skipping grouping.xml check for chromeos")
+      return []
+
     grouping_xml_ids = self._get_grouping_xml_ids()
 
     logger.info("Computing required updates for {}.".format(

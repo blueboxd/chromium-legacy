@@ -48,9 +48,6 @@ rmad::RmadState* CreateState(rmad::RmadState::StateCase state_case) {
       state->set_allocated_wp_disable_complete(
           new rmad::WriteProtectDisableCompleteState());
       break;
-    case rmad::RmadState::kVerifyRsu:
-      state->set_allocated_verify_rsu(new rmad::VerifyRsuState());
-      break;
     case rmad::RmadState::kUpdateRoFirmware:
       state->set_allocated_update_ro_firmware(
           new rmad::UpdateRoFirmwareState());
@@ -131,7 +128,6 @@ void FakeRmadClient::CreateWithState() {
                        rmad::RMAD_ERROR_OK),
       CreateStateReply(rmad::RmadState::kWpDisableMethod, rmad::RMAD_ERROR_OK),
       wp_disable_rsu_state,
-      CreateStateReply(rmad::RmadState::kVerifyRsu, rmad::RMAD_ERROR_OK),
       CreateStateReply(rmad::RmadState::kWpDisablePhysical,
                        rmad::RMAD_ERROR_OK),
       CreateStateReply(rmad::RmadState::kWpDisableComplete,
@@ -167,6 +163,7 @@ void FakeRmadClient::GetCurrentState(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(reply)));
   }
+  TriggerHardwareVerificationResultObservation(true, "");
 }
 
 void FakeRmadClient::TransitionNextState(
@@ -295,10 +292,13 @@ void FakeRmadClient::TriggerCalibrationOverallProgressObservation(
 }
 
 void FakeRmadClient::TriggerProvisioningProgressObservation(
-    rmad::ProvisionDeviceState::ProvisioningStep step,
+    rmad::ProvisionStatus::Status status,
     double progress) {
+  rmad::ProvisionStatus status_proto;
+  status_proto.set_status(status);
+  status_proto.set_progress(progress);
   for (auto& observer : observers_)
-    observer.ProvisioningProgress(step, progress);
+    observer.ProvisioningProgress(status_proto);
 }
 
 void FakeRmadClient::TriggerHardwareWriteProtectionStateObservation(
@@ -320,6 +320,16 @@ void FakeRmadClient::TriggerHardwareVerificationResultObservation(
   verificationStatus.set_error_str(error_str);
   for (auto& observer : observers_)
     observer.HardwareVerificationResult(verificationStatus);
+}
+
+void FakeRmadClient::TriggerFinalizationProgressObservation(
+    rmad::FinalizeStatus::Status status,
+    double progress) {
+  rmad::FinalizeStatus finalizationStatus;
+  finalizationStatus.set_status(status);
+  finalizationStatus.set_progress(progress);
+  for (auto& observer : observers_)
+    observer.FinalizationProgress(finalizationStatus);
 }
 
 const rmad::GetStateReply& FakeRmadClient::GetStateReply() const {

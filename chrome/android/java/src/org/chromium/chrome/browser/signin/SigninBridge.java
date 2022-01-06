@@ -18,13 +18,13 @@ import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
 import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
 import org.chromium.chrome.browser.signin.services.WebSigninBridge;
-import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerBottomSheetCoordinator;
-import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerDelegateImpl;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorSupplier;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetCoordinator;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerDelegateImpl;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -91,7 +91,7 @@ final class SigninBridge {
                     AccountConsistencyPromoAction.SUPPRESSED_NO_ACCOUNTS);
             return;
         }
-        if (SigninPreferencesManager.getInstance().getAccountPickerBottomSheetActiveDismissalCount()
+        if (SigninPreferencesManager.getInstance().getWebSigninAccountPickerActiveDismissalCount()
                 >= ACCOUNT_PICKER_BOTTOM_SHEET_DISMISS_LIMIT) {
             SigninMetricsUtils.logAccountConsistencyPromoAction(
                     AccountConsistencyPromoAction.SUPPRESSED_CONSECUTIVE_DISMISSALS);
@@ -112,11 +112,9 @@ final class SigninBridge {
         assert tabModelSelectorSupplier.hasValue() : "No TabModelSelector available.";
         final TabModel regularTabModel =
                 tabModelSelectorSupplier.get().getModel(/*incognito=*/false);
-        new AccountPickerBottomSheetCoordinator(windowAndroid.getActivity().get(),
-                bottomSheetController,
-                new AccountPickerDelegateImpl(windowAndroid,
-                        TabModelUtils.getCurrentTab(regularTabModel), new WebSigninBridge.Factory(),
-                        continueUrl));
+        new AccountPickerBottomSheetCoordinator(windowAndroid, bottomSheetController,
+                new AccountPickerDelegateImpl(TabModelUtils.getCurrentTab(regularTabModel),
+                        new WebSigninBridge.Factory(), continueUrl));
     }
 
     private SigninBridge() {}

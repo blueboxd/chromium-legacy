@@ -200,6 +200,8 @@ class StartupBrowserCreator {
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorChromeAppShortcutTest,
                            OpenPolicyForcedAppShortcut);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, OpenAppUrlShortcut);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
+                           OpenAppUrlIncognitoShortcut);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserWithRealWebAppTest,
                            LastUsedProfilesWithRealWebApp);
   FRIEND_TEST_ALL_PREFIXES(web_app::WebAppEngagementBrowserTest,
@@ -245,15 +247,6 @@ class StartupBrowserCreator {
       const base::FilePath& cur_dir,
       Profile* profile,
       Profile::CreateStatus status);
-
-  // TODO(crbug/1213171): Move web-app functionality to its own file.
-  bool ContinueProcessingCommandLineAfterEarlyWebAppCheck(
-      const base::CommandLine& command_line,
-      const base::FilePath& cur_dir,
-      Profile* privacy_safe_profile,
-      bool process_startup,
-      Profile* last_used_profile,
-      const Profiles& last_opened_profiles);
 
   // Returns true once a profile was activated. Used by the
   // StartupBrowserCreatorTest.LastUsedProfileActivated test.

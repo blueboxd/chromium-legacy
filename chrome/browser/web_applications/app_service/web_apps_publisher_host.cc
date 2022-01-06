@@ -10,7 +10,7 @@
 #include "base/feature_list.h"
 #include "base/one_shot_event.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
@@ -47,8 +47,10 @@ void ReturnLaunchResult(Profile* profile,
           ->BrowserAppInstanceTracker();
   auto launch_result = crosapi::mojom::LaunchResult::New();
   if (app_instance_tracker) {
+    const apps::BrowserAppInstance* app_instance =
+        app_instance_tracker->GetAppInstance(web_contents);
     launch_result->instance_id =
-        app_instance_tracker->GetAppInstance(web_contents)->id;
+        app_instance ? app_instance->id : base::UnguessableToken::Create();
   } else {
     // TODO(crbug.com/1144877): This part of code should not be reached
     // after the instance tracker flag is turn on. Replaced with DCHECK when
@@ -164,44 +166,8 @@ void WebAppsPublisherHost::LoadIcon(const std::string& app_id,
                                     apps::mojom::IconType icon_type,
                                     int32_t size_hint_in_dip,
                                     LoadIconCallback callback) {
-  publisher_helper().LoadIcon(
-      app_id, std::move(icon_key), std::move(icon_type), size_hint_in_dip,
-      /*allow_placeholder_icon=*/false, std::move(callback));
-}
-
-content::WebContents* WebAppsPublisherHost::Launch(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info) {
-  return publisher_helper().Launch(
-      app_id, event_flags, std::move(launch_source), std::move(window_info));
-}
-
-content::WebContents* WebAppsPublisherHost::LaunchAppWithFiles(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::FilePathsPtr file_paths) {
-  return publisher_helper().LaunchAppWithFiles(
-      app_id, event_flags, std::move(launch_source), std::move(file_paths));
-}
-
-content::WebContents* WebAppsPublisherHost::LaunchAppWithIntent(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info) {
-  return publisher_helper().LaunchAppWithIntent(
-      app_id, event_flags, std::move(intent), std::move(launch_source),
-      std::move(window_info));
-}
-
-void WebAppsPublisherHost::SetPermission(
-    const std::string& app_id,
-    apps::mojom::PermissionPtr permission) {
-  publisher_helper().SetPermission(app_id, std::move(permission));
+  publisher_helper().LoadIcon(app_id, std::move(icon_key), std::move(icon_type),
+                              size_hint_in_dip, std::move(callback));
 }
 
 void WebAppsPublisherHost::OpenNativeSettings(const std::string& app_id) {
@@ -247,6 +213,12 @@ void WebAppsPublisherHost::StopApp(const std::string& app_id) {
   publisher_helper().StopApp(app_id);
 }
 
+void WebAppsPublisherHost::SetPermission(
+    const std::string& app_id,
+    apps::mojom::PermissionPtr permission) {
+  publisher_helper().SetPermission(app_id, std::move(permission));
+}
+
 // TODO(crbug.com/1144877): Clean up the multiple launch interfaces and remove
 // duplicated code.
 void WebAppsPublisherHost::Launch(crosapi::mojom::LaunchParamsPtr launch_params,
@@ -265,16 +237,23 @@ void WebAppsPublisherHost::Launch(crosapi::mojom::LaunchParamsPtr launch_params,
       return;
     }
     auto params = apps::CreateAppLaunchParamsForIntent(
-        launch_params->app_id, ui::EF_NONE,
-        apps::GetAppLaunchSource(launch_params->launch_source),
+        launch_params->app_id, ui::EF_NONE, launch_params->launch_source,
         display::kDefaultDisplayId,
         ConvertDisplayModeToAppLaunchContainer(
             registrar().GetAppEffectiveDisplayMode(launch_params->app_id)),
         apps_util::ConvertCrosapiToAppServiceIntent(launch_params->intent,
-                                                    profile_));
+                                                    profile_),
+        profile_);
     if (launch_params->intent->files.has_value()) {
-      for (const auto& file : launch_params->intent->files.value()) {
-        params.launch_files.push_back(file->file_path);
+      if (base::FeatureList::IsEnabled(
+              features::kDesktopPWAsFileHandlingSettingsGated)) {
+        // File handling may create the WebContents asynchronously.
+        // TODO(crbug/1261263): implement.
+        NOTIMPLEMENTED();
+      } else {
+        for (const auto& file : launch_params->intent->files.value()) {
+          params.launch_files.push_back(file->file_path);
+        }
       }
     }
     web_contents = publisher_helper().LaunchAppWithParams(std::move(params));

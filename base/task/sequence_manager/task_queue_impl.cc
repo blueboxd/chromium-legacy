@@ -8,7 +8,9 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
+#include "base/check.h"
 #include "base/containers/stack_container.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
@@ -139,8 +141,8 @@ TaskQueueImpl::~TaskQueueImpl() {
 #endif
 }
 
-TaskQueueImpl::AnyThread::AnyThread(TimeDomain* time_domain)
-    : time_domain(time_domain) {}
+TaskQueueImpl::AnyThread::AnyThread(const TickClock* tick_clock)
+    : tick_clock(tick_clock) {}
 
 TaskQueueImpl::AnyThread::~AnyThread() = default;
 
@@ -177,7 +179,7 @@ void TaskQueueImpl::UnregisterTaskQueue() {
   {
     base::internal::CheckedAutoLock lock(any_thread_lock_);
     any_thread_.unregistered = true;
-    any_thread_.time_domain = nullptr;
+    any_thread_.tick_clock = nullptr;
     immediate_incoming_queue.swap(any_thread_.immediate_incoming_queue);
   }
 
@@ -220,8 +222,8 @@ void TaskQueueImpl::PostTask(PostedTask task) {
           : TaskQueueImpl::CurrentThread::kNotMainThread;
 
 #if DCHECK_IS_ON()
-  MaybeLogPostTask(&task);
-  MaybeAdjustTaskDelay(&task, current_thread);
+  MaybeLogPostTask(task);
+  task.delay += GetTaskDelayAdjustment(current_thread);
 #endif  // DCHECK_IS_ON()
 
   if (task.delay.is_zero()) {
@@ -231,31 +233,31 @@ void TaskQueueImpl::PostTask(PostedTask task) {
   }
 }
 
-void TaskQueueImpl::MaybeLogPostTask(PostedTask* task) {
+void TaskQueueImpl::MaybeLogPostTask(const PostedTask& task) {
 #if DCHECK_IS_ON()
   if (!sequence_manager_->settings().log_post_task)
     return;
 
-  LOG(INFO) << name_ << " PostTask " << task->location.ToString() << " delay "
-            << task->delay;
+  LOG(INFO) << name_ << " PostTask " << task.location.ToString() << " delay "
+            << task.delay;
 #endif  // DCHECK_IS_ON()
 }
 
-void TaskQueueImpl::MaybeAdjustTaskDelay(PostedTask* task,
-                                         CurrentThread current_thread) {
+TimeDelta TaskQueueImpl::GetTaskDelayAdjustment(CurrentThread current_thread) {
 #if DCHECK_IS_ON()
   if (current_thread == TaskQueueImpl::CurrentThread::kNotMainThread) {
     base::internal::CheckedAutoLock lock(any_thread_lock_);
     // Add a per-priority delay to cross thread tasks. This can help diagnose
     // scheduler induced flakiness by making things flake most of the time.
-    task->delay +=
-        sequence_manager_->settings()
-            .per_priority_cross_thread_task_delay[any_thread_.queue_set_index];
+    return sequence_manager_->settings()
+        .per_priority_cross_thread_task_delay[any_thread_.queue_set_index];
   } else {
-    task->delay +=
-        sequence_manager_->settings().per_priority_same_thread_task_delay
-            [main_thread_only().immediate_work_queue->work_queue_set_index()];
+    return sequence_manager_->settings().per_priority_same_thread_task_delay
+        [main_thread_only().immediate_work_queue->work_queue_set_index()];
   }
+#else
+  // No delay adjustment.
+  return TimeDelta();
 #endif  // DCHECK_IS_ON()
 }
 
@@ -270,7 +272,7 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     // TODO(alexclarke): Maybe add a main thread only immediate_incoming_queue
     // See https://crbug.com/901800
     base::internal::CheckedAutoLock lock(any_thread_lock_);
-    LazyNow lazy_now = any_thread_.time_domain->CreateLazyNow();
+    LazyNow lazy_now(any_thread_.tick_clock);
     bool add_queue_time_to_tasks = sequence_manager_->GetAddQueueTimeToTasks();
     if (add_queue_time_to_tasks || delayed_fence_allowed_)
       task.queue_time = lazy_now.Now();
@@ -295,7 +297,7 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     sequence_manager_->WillQueueTask(
         &any_thread_.immediate_incoming_queue.back(), name_);
     MaybeReportIpcTaskQueuedFromAnyThreadLocked(
-        &any_thread_.immediate_incoming_queue.back(), name_);
+        any_thread_.immediate_incoming_queue.back(), name_);
     if (!any_thread_.on_task_posted_handler.is_null()) {
       any_thread_.on_task_posted_handler.Run(
           any_thread_.immediate_incoming_queue.back());
@@ -352,15 +354,16 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask posted_task,
     // Lock-free fast path for delayed tasks posted from the main thread.
     EnqueueOrder sequence_number = sequence_manager_->GetNextSequenceNumber();
 
-    TimeTicks time_domain_now = main_thread_only().time_domain->Now();
+    TimeTicks time_domain_now = main_thread_only().time_domain->NowTicks();
     TimeTicks time_domain_delayed_run_time =
         time_domain_now + posted_task.delay;
     if (sequence_manager_->GetAddQueueTimeToTasks())
       posted_task.queue_time = time_domain_now;
 
     PushOntoDelayedIncomingQueueFromMainThread(
-        Task(std::move(posted_task), time_domain_delayed_run_time,
-             sequence_number, EnqueueOrder(), resolution),
+        std::make_unique<Task>(std::move(posted_task),
+                               time_domain_delayed_run_time, sequence_number,
+                               EnqueueOrder(), resolution),
         time_domain_now, /* notify_task_annotator */ true);
   } else {
     // NOTE posting a delayed task from a different thread is not expected to
@@ -372,30 +375,31 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask posted_task,
     TimeTicks time_domain_now;
     {
       base::internal::CheckedAutoLock lock(any_thread_lock_);
-      time_domain_now = any_thread_.time_domain->Now();
+      time_domain_now = any_thread_.tick_clock->NowTicks();
     }
     TimeTicks time_domain_delayed_run_time =
         time_domain_now + posted_task.delay;
     if (sequence_manager_->GetAddQueueTimeToTasks())
       posted_task.queue_time = time_domain_now;
 
-    PushOntoDelayedIncomingQueue(
-        Task(std::move(posted_task), time_domain_delayed_run_time,
-             sequence_number, EnqueueOrder(), resolution));
+    PushOntoDelayedIncomingQueue(std::make_unique<Task>(
+        std::move(posted_task), time_domain_delayed_run_time, sequence_number,
+        EnqueueOrder(), resolution));
   }
 }
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
-    Task pending_task,
+    std::unique_ptr<Task> pending_task,
     TimeTicks now,
     bool notify_task_annotator) {
 #if DCHECK_IS_ON()
-  pending_task.cross_thread_ = false;
+  DCHECK(pending_task);
+  pending_task->cross_thread_ = false;
 #endif
 
   if (notify_task_annotator) {
-    sequence_manager_->WillQueueTask(&pending_task, name_);
-    MaybeReportIpcTaskQueuedFromMainThread(&pending_task, name_);
+    sequence_manager_->WillQueueTask(pending_task.get(), name_);
+    MaybeReportIpcTaskQueuedFromMainThread(*pending_task, name_);
   }
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
 
@@ -405,17 +409,19 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
   TraceQueueSize();
 }
 
-void TaskQueueImpl::PushOntoDelayedIncomingQueue(Task pending_task) {
-  sequence_manager_->WillQueueTask(&pending_task, name_);
-  MaybeReportIpcTaskQueuedFromAnyThreadUnlocked(&pending_task, name_);
+void TaskQueueImpl::PushOntoDelayedIncomingQueue(
+    std::unique_ptr<Task> pending_task) {
+  DCHECK(pending_task);
+  sequence_manager_->WillQueueTask(pending_task.get(), name_);
+  MaybeReportIpcTaskQueuedFromAnyThreadUnlocked(*pending_task, name_);
 
 #if DCHECK_IS_ON()
-  pending_task.cross_thread_ = true;
+  pending_task->cross_thread_ = true;
 #endif
 
   // TODO(altimin): Add a copy method to Task to capture metadata here.
-  auto task_runner = pending_task.task_runner;
-  const auto task_type = pending_task.task_type;
+  auto task_runner = pending_task->task_runner;
+  const auto task_type = pending_task->task_type;
   PostImmediateTaskImpl(
       PostedTask(std::move(task_runner),
                  BindOnce(&TaskQueueImpl::ScheduleDelayedWorkTask,
@@ -424,18 +430,21 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueue(Task pending_task) {
       CurrentThread::kNotMainThread);
 }
 
-void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {
+void TaskQueueImpl::ScheduleDelayedWorkTask(
+    std::unique_ptr<Task> pending_task) {
+  DCHECK(pending_task);
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  TimeTicks delayed_run_time = pending_task.delayed_run_time;
-  TimeTicks time_domain_now = main_thread_only().time_domain->Now();
+  TimeTicks delayed_run_time = pending_task->delayed_run_time;
+  TimeTicks time_domain_now = main_thread_only().time_domain->NowTicks();
   if (delayed_run_time <= time_domain_now) {
     // If |delayed_run_time| is in the past then push it onto the work queue
     // immediately. To ensure the right task ordering we need to temporarily
     // push it onto the |delayed_incoming_queue|.
-    pending_task.delayed_run_time = time_domain_now;
+    pending_task->delayed_run_time = time_domain_now;
     main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
     LazyNow lazy_now(time_domain_now);
     MoveReadyDelayedTasksToWorkQueue(&lazy_now);
+    UpdateDelayedWakeUp(&lazy_now);
   } else {
     // If |delayed_run_time| is in the future we can queue it as normal.
     PushOntoDelayedIncomingQueueFromMainThread(std::move(pending_task),
@@ -522,7 +531,7 @@ bool TaskQueueImpl::HasTaskToRunImmediatelyOrReadyDelayedTask() const {
   // immediate work.
   if (!main_thread_only().delayed_incoming_queue.empty() &&
       main_thread_only().delayed_incoming_queue.top().delayed_run_time <=
-          main_thread_only().time_domain->CreateLazyNow().Now()) {
+          main_thread_only().time_domain->NowTicks()) {
     return true;
   }
 
@@ -549,11 +558,40 @@ absl::optional<DelayedWakeUp> TaskQueueImpl::GetNextDesiredWakeUp() {
   return DelayedWakeUp{top_task.delayed_run_time, resolution};
 }
 
-void TaskQueueImpl::OnWakeUp(LazyNow* lazy_now) {
-  MoveReadyDelayedTasksToWorkQueue(lazy_now);
+TaskQueueImpl::WakeUpHandle TaskQueueImpl::OnStartWakeUp(LazyNow& lazy_now) {
+  SetNextDelayedWakeUp(&lazy_now, absl::nullopt);
+  return WakeUpHandle(this, &lazy_now);
+}
+
+void TaskQueueImpl::OnFinishWakeUp(LazyNow& lazy_now) {
+  UpdateDelayedWakeUp(&lazy_now);
   if (main_thread_only().throttler) {
-    main_thread_only().throttler->OnWakeUp(lazy_now);
+    main_thread_only().throttler->OnWakeUp(&lazy_now);
   }
+}
+
+bool TaskQueueImpl::RemoveAllCanceledDelayedTasksFromFront(LazyNow* lazy_now) {
+  // Because task destructors could have a side-effect of posting new tasks, we
+  // move all the cancelled tasks into a temporary container before deleting
+  // them. This is to avoid the queue from changing while iterating over it.
+  StackVector<std::unique_ptr<Task>, 8> tasks_to_delete;
+
+  while (!main_thread_only().delayed_incoming_queue.empty()) {
+    Task* task =
+        const_cast<Task*>(&main_thread_only().delayed_incoming_queue.top());
+    CHECK(task->task);
+    if (!task->task.IsCancelled())
+      break;
+
+    tasks_to_delete->push_back(main_thread_only().delayed_incoming_queue.pop());
+  }
+
+  if (!tasks_to_delete->empty()) {
+    UpdateDelayedWakeUp(lazy_now);
+    return true;
+  }
+
+  return false;
 }
 
 void TaskQueueImpl::MoveReadyDelayedTasksToWorkQueue(LazyNow* lazy_now) {
@@ -562,29 +600,77 @@ void TaskQueueImpl::MoveReadyDelayedTasksToWorkQueue(LazyNow* lazy_now) {
   WorkQueue::TaskPusher delayed_work_queue_task_pusher(
       main_thread_only().delayed_work_queue->CreateTaskPusher());
 
+  // TODO(crbug.com/1264069): Try to remove the duplication between this and
+  // TaskReadyDelayedTasks.
+
+  // Because task destructors could have a side-effect of posting new tasks, we
+  // move all the cancelled tasks into a temporary container before deleting
+  // them. This is to avoid the queue from changing while iterating over it.
+  StackVector<std::unique_ptr<Task>, 8> tasks_to_delete;
+
   while (!main_thread_only().delayed_incoming_queue.empty()) {
-    Task* task =
-        const_cast<Task*>(&main_thread_only().delayed_incoming_queue.top());
-    if (!task->task || task->task.IsCancelled()) {
-      main_thread_only().delayed_incoming_queue.pop();
+    Task& task =
+        const_cast<Task&>(main_thread_only().delayed_incoming_queue.top());
+    CHECK(task.task);
+    if (task.task.IsCancelled()) {
+      tasks_to_delete->push_back(
+          main_thread_only().delayed_incoming_queue.pop());
       continue;
     }
-    if (task->delayed_run_time > lazy_now->Now())
+    if (task.delayed_run_time > lazy_now->Now())
       break;
-#if DCHECK_IS_ON()
-    if (sequence_manager_->settings().log_task_delay_expiry)
-      VLOG(0) << name_ << " Delay expired for " << task->posted_from.ToString();
-#endif  // DCHECK_IS_ON()
-    DCHECK(!task->delayed_run_time.is_null());
-    ActivateDelayedFenceIfNeeded(task->delayed_run_time);
-    DCHECK(!task->enqueue_order_set());
-    task->set_enqueue_order(sequence_manager_->GetNextSequenceNumber());
 
-    delayed_work_queue_task_pusher.Push(task);
-    main_thread_only().delayed_incoming_queue.pop();
+    UpdateTaskOnDelayExpired(task);
+    delayed_work_queue_task_pusher.Push(
+        main_thread_only().delayed_incoming_queue.pop());
   }
 
-  UpdateDelayedWakeUp(lazy_now);
+  // Explicitly delete tasks last.
+  tasks_to_delete->clear();
+}
+
+void TaskQueueImpl::TakeReadyDelayedTasks(
+    LazyNow& lazy_now,
+    std::vector<ReadyDelayedTask>& tasks) {
+  // Because task destructors could have a side-effect of posting new tasks, we
+  // move all the cancelled tasks into a temporary container before deleting
+  // them. This is to avoid the queue from changing while iterating over it.
+  StackVector<std::unique_ptr<Task>, 8> tasks_to_delete;
+
+  while (!main_thread_only().delayed_incoming_queue.empty()) {
+    Task& task =
+        const_cast<Task&>(main_thread_only().delayed_incoming_queue.top());
+    if (!task.task || task.task.IsCancelled()) {
+      tasks_to_delete->push_back(
+          main_thread_only().delayed_incoming_queue.pop());
+      continue;
+    }
+    if (task.delayed_run_time > lazy_now.Now())
+      break;
+
+    tasks.emplace_back(this, main_thread_only().delayed_incoming_queue.pop());
+  }
+
+  // Explicitly delete tasks last.
+  tasks_to_delete->clear();
+}
+
+void TaskQueueImpl::MoveReadyDelayedTaskToWorkQueue(
+    std::unique_ptr<Task> task) {
+  DCHECK(task);
+  UpdateTaskOnDelayExpired(*task);
+  main_thread_only().delayed_work_queue->Push(std::move(task));
+}
+
+void TaskQueueImpl::UpdateTaskOnDelayExpired(Task& task) {
+#if DCHECK_IS_ON()
+  if (sequence_manager_->settings().log_task_delay_expiry)
+    VLOG(0) << name_ << " Delay expired for " << task.posted_from.ToString();
+#endif  // DCHECK_IS_ON()
+  DCHECK(!task.delayed_run_time.is_null());
+  ActivateDelayedFenceIfNeeded(task.delayed_run_time);
+  DCHECK(!task.enqueue_order_set());
+  task.set_enqueue_order(sequence_manager_->GetNextSequenceNumber());
 }
 
 void TaskQueueImpl::TraceQueueSize() const {
@@ -620,7 +706,7 @@ void TaskQueueImpl::SetQueuePriority(TaskQueue::QueuePriority priority) {
 
 #if defined(OS_WIN)
   // Updating queue priority can change whether high resolution timer is needed.
-  LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
+  LazyNow lazy_now(main_thread_only().time_domain);
   UpdateDelayedWakeUp(&lazy_now);
 #endif
 
@@ -689,7 +775,7 @@ Value TaskQueueImpl::AsValue(TimeTicks now, bool force_verbose) const {
   if (!main_thread_only().delayed_incoming_queue.empty()) {
     TimeDelta delay_to_next_task =
         (main_thread_only().delayed_incoming_queue.top().delayed_run_time -
-         main_thread_only().time_domain->CreateLazyNow().Now());
+         main_thread_only().time_domain->NowTicks());
     state.SetDoubleKey("delay_to_next_task_ms",
                        delay_to_next_task.InMillisecondsF());
   }
@@ -759,13 +845,13 @@ void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
     if (time_domain == main_thread_only().time_domain)
       return;
 
-    any_thread_.time_domain = time_domain;
+    any_thread_.tick_clock = time_domain;
   }
 
   main_thread_only().time_domain->UnregisterQueue(this);
   main_thread_only().time_domain = time_domain;
 
-  LazyNow lazy_now = time_domain->CreateLazyNow();
+  LazyNow lazy_now(time_domain);
   // Clear scheduled wake up to ensure that new notifications are issued
   // correctly.
   // TODO(altimin): Remove this when we won't have to support changing time
@@ -880,7 +966,7 @@ bool TaskQueueImpl::BlockedByFence() const {
 
 bool TaskQueueImpl::HasActiveFence() {
   if (main_thread_only().delayed_fence &&
-      main_thread_only().time_domain->Now() >
+      main_thread_only().time_domain->NowTicks() >
           main_thread_only().delayed_fence.value()) {
     return true;
   }
@@ -939,6 +1025,8 @@ void TaskQueueImpl::SetQueueEnabled(bool enabled) {
   if (main_thread_only().is_enabled == enabled)
     return;
 
+  LazyNow lazy_now(main_thread_only().time_domain);
+
   // Update the |main_thread_only_| struct.
   main_thread_only().is_enabled = enabled;
   main_thread_only().disabled_time = absl::nullopt;
@@ -946,23 +1034,19 @@ void TaskQueueImpl::SetQueueEnabled(bool enabled) {
     bool tracing_enabled = false;
     TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("lifecycles"),
                                        &tracing_enabled);
-    main_thread_only().disabled_time = main_thread_only().time_domain->Now();
+    main_thread_only().disabled_time = lazy_now.Now();
   } else {
     // Override reporting if the queue is becoming enabled again.
     main_thread_only().should_report_posted_tasks_when_disabled = false;
   }
 
-  LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
   // If there is a throttler, it will be notified of pending delayed and
   // immediate tasks inside UpdateDelayedWakeUp().
   UpdateDelayedWakeUp(&lazy_now);
 
-  bool has_pending_immediate_work = false;
-
   {
     base::internal::CheckedAutoLock lock(any_thread_lock_);
     UpdateCrossThreadQueueStateLocked();
-    has_pending_immediate_work = HasTaskToRunImmediatelyLocked();
 
     // Copy over the task-reporting related state.
     any_thread_.tracing_only.is_enabled = enabled;
@@ -1059,7 +1143,7 @@ void TaskQueueImpl::ReclaimMemory(TimeTicks now) {
   UpdateDelayedWakeUp(&lazy_now);
 }
 
-void TaskQueueImpl::PushImmediateIncomingTaskForTest(Task&& task) {
+void TaskQueueImpl::PushImmediateIncomingTaskForTest(Task task) {
   base::internal::CheckedAutoLock lock(any_thread_lock_);
   any_thread_.immediate_incoming_queue.push_back(std::move(task));
 }
@@ -1106,7 +1190,7 @@ void TaskQueueImpl::SetThrottler(TaskQueue::Throttler* throttler) {
 
 void TaskQueueImpl::ResetThrottler() {
   main_thread_only().throttler = nullptr;
-  LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
+  LazyNow lazy_now(main_thread_only().time_domain);
   // The current delayed wake up may have been determined by the Throttler.
   // Update it now that there is no Throttler.
   UpdateDelayedWakeUp(&lazy_now);
@@ -1189,6 +1273,12 @@ void TaskQueueImpl::SetOnTaskPostedHandler(OnTaskPostedHandler handler) {
   any_thread_.on_task_posted_handler = std::move(handler);
 }
 
+void TaskQueueImpl::SetTaskExecutionTraceLogger(
+    TaskExecutionTraceLogger logger) {
+  DCHECK(should_notify_observers_ || logger.is_null());
+  main_thread_only().task_execution_trace_logger = std::move(logger);
+}
+
 bool TaskQueueImpl::IsUnregistered() const {
   base::internal::CheckedAutoLock lock(any_thread_lock_);
   return any_thread_.unregistered;
@@ -1208,9 +1298,9 @@ void TaskQueueImpl::ActivateDelayedFenceIfNeeded(TimeTicks now) {
 }
 
 void TaskQueueImpl::MaybeReportIpcTaskQueuedFromMainThread(
-    Task* pending_task,
+    const Task& pending_task,
     const char* task_queue_name) {
-  if (!pending_task->ipc_hash)
+  if (!pending_task.ipc_hash)
     return;
 
   // It's possible that tracing was just enabled and no disabled time has been
@@ -1230,7 +1320,7 @@ void TaskQueueImpl::MaybeReportIpcTaskQueuedFromMainThread(
   }
 
   base::TimeDelta time_since_disabled =
-      main_thread_only().time_domain->Now() -
+      main_thread_only().time_domain->NowTicks() -
       main_thread_only().disabled_time.value();
 
   ReportIpcTaskQueued(pending_task, task_queue_name, time_since_disabled);
@@ -1248,15 +1338,15 @@ bool TaskQueueImpl::ShouldReportIpcTaskQueuedFromAnyThreadLocked(
     return false;
   }
 
-  *time_since_disabled = any_thread_.time_domain->Now() -
+  *time_since_disabled = any_thread_.tick_clock->NowTicks() -
                          any_thread_.tracing_only.disabled_time.value();
   return true;
 }
 
 void TaskQueueImpl::MaybeReportIpcTaskQueuedFromAnyThreadLocked(
-    Task* pending_task,
+    const Task& pending_task,
     const char* task_queue_name) {
-  if (!pending_task->ipc_hash)
+  if (!pending_task.ipc_hash)
     return;
 
   bool tracing_enabled = false;
@@ -1271,9 +1361,9 @@ void TaskQueueImpl::MaybeReportIpcTaskQueuedFromAnyThreadLocked(
 }
 
 void TaskQueueImpl::MaybeReportIpcTaskQueuedFromAnyThreadUnlocked(
-    Task* pending_task,
+    const Task& pending_task,
     const char* task_queue_name) {
-  if (!pending_task->ipc_hash)
+  if (!pending_task.ipc_hash)
     return;
 
   bool tracing_enabled = false;
@@ -1295,7 +1385,7 @@ void TaskQueueImpl::MaybeReportIpcTaskQueuedFromAnyThreadUnlocked(
 }
 
 void TaskQueueImpl::ReportIpcTaskQueued(
-    Task* pending_task,
+    const Task& pending_task,
     const char* task_queue_name,
     const base::TimeDelta& time_since_disabled) {
   TRACE_EVENT_INSTANT(
@@ -1305,11 +1395,11 @@ void TaskQueueImpl::ReportIpcTaskQueued(
                           ->set_chrome_task_posted_to_disabled_queue();
         proto->set_task_queue_name(task_queue_name);
         proto->set_time_since_disabled_ms(time_since_disabled.InMilliseconds());
-        proto->set_ipc_hash(pending_task->ipc_hash);
+        proto->set_ipc_hash(pending_task.ipc_hash);
         proto->set_source_location_iid(
             base::trace_event::InternedSourceLocation::Get(
                 &ctx, base::trace_event::TraceSourceLocation(
-                          pending_task->posted_from)));
+                          pending_task.posted_from)));
       });
 }
 
@@ -1335,19 +1425,27 @@ void TaskQueueImpl::OnQueueUnblocked() {
 TaskQueueImpl::DelayedIncomingQueue::DelayedIncomingQueue() = default;
 TaskQueueImpl::DelayedIncomingQueue::~DelayedIncomingQueue() = default;
 
-void TaskQueueImpl::DelayedIncomingQueue::push(Task&& task) {
-  if (task.is_high_res)
+void TaskQueueImpl::DelayedIncomingQueue::push(std::unique_ptr<Task> task) {
+  DCHECK(task);
+  // TODO(crbug.com/1247285): Remove this once the cause of corrupted tasks in
+  // the queue is understood.
+  CHECK(task->task);
+  if (task->is_high_res)
     pending_high_res_tasks_++;
   queue_.push(std::move(task));
 }
 
-void TaskQueueImpl::DelayedIncomingQueue::pop() {
+std::unique_ptr<Task> TaskQueueImpl::DelayedIncomingQueue::pop() {
   DCHECK(!empty());
+  DCHECK(queue_.top());
   if (top().is_high_res) {
     pending_high_res_tasks_--;
     DCHECK_GE(pending_high_res_tasks_, 0);
   }
+  std::unique_ptr<Task> task =
+      std::move(const_cast<std::unique_ptr<Task>&>(queue_.top()));
   queue_.pop();
+  return task;
 }
 
 void TaskQueueImpl::DelayedIncomingQueue::swap(DelayedIncomingQueue* rhs) {
@@ -1366,19 +1464,20 @@ size_t TaskQueueImpl::DelayedIncomingQueue::PQueue::SweepCancelledTasks(
   // std::vector. We poke at that vector directly here to filter out canceled
   // tasks in place.
   size_t num_high_res_tasks_swept = 0u;
-  auto keep_task = [&num_high_res_tasks_swept](const Task& task) {
-    if (!task.task.IsCancelled())
-      return true;
-    if (task.is_high_res)
-      num_high_res_tasks_swept++;
-    return false;
-  };
+  auto keep_task =
+      [&num_high_res_tasks_swept](const std::unique_ptr<Task>& task) {
+        if (!task->task.IsCancelled())
+          return true;
+        if (task->is_high_res)
+          num_high_res_tasks_swept++;
+        return false;
+      };
 
   // Because task destructors could have a side-effect of posting new tasks, we
   // move all the cancelled tasks into a temporary container before deleting
   // them. This is to avoid |c| from changing while c.erase() is running.
   auto delete_start = std::stable_partition(c.begin(), c.end(), keep_task);
-  StackVector<Task, 8> tasks_to_delete;
+  StackVector<std::unique_ptr<Task>, 8> tasks_to_delete;
   std::move(delete_start, c.end(),
             std::back_inserter(tasks_to_delete.container()));
   c.erase(delete_start, c.end());
@@ -1399,9 +1498,40 @@ Value TaskQueueImpl::DelayedIncomingQueue::AsValue(TimeTicks now) const {
 Value TaskQueueImpl::DelayedIncomingQueue::PQueue::AsValue(
     TimeTicks now) const {
   Value state(Value::Type::LIST);
-  for (const Task& task : c)
-    state.Append(TaskAsValue(task, now));
+  for (const std::unique_ptr<Task>& task : c)
+    state.Append(TaskAsValue(*task, now));
   return state;
+}
+
+TaskQueueImpl::ReadyDelayedTask::ReadyDelayedTask(TaskQueueImpl* queue,
+                                                  std::unique_ptr<Task> task)
+    : task_queue(queue), task(std::move(task)) {}
+
+TaskQueueImpl::ReadyDelayedTask::~ReadyDelayedTask() = default;
+
+TaskQueueImpl::ReadyDelayedTask::ReadyDelayedTask(ReadyDelayedTask&& other) =
+    default;
+
+TaskQueueImpl::ReadyDelayedTask& TaskQueueImpl::ReadyDelayedTask::operator=(
+    TaskQueueImpl::ReadyDelayedTask&& other) = default;
+
+bool TaskQueueImpl::ReadyDelayedTask::operator<(
+    const TaskQueueImpl::ReadyDelayedTask& other) const {
+  return *task < *other.task;
+}
+
+TaskQueueImpl::WakeUpHandle::WakeUpHandle(TaskQueueImpl* queue,
+                                          LazyNow* lazy_now)
+    : task_queue_(queue), lazy_now_(lazy_now) {}
+
+TaskQueueImpl::WakeUpHandle::WakeUpHandle(WakeUpHandle&& other)
+    : task_queue_(other.task_queue_), lazy_now_(other.lazy_now_) {
+  other.task_queue_ = nullptr;
+}
+
+TaskQueueImpl::WakeUpHandle::~WakeUpHandle() {
+  if (task_queue_)
+    task_queue_->OnFinishWakeUp(*lazy_now_);
 }
 
 }  // namespace internal

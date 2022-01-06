@@ -4,6 +4,9 @@
 
 #include "base/task/sequence_manager/time_domain.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
@@ -29,6 +32,20 @@ void TimeDomain::OnRegisterWithSequenceManager(
   associated_thread_ = sequence_manager_->associated_thread();
 }
 
+void TimeDomain::RemoveAllCanceledDelayedTasksFromFront(LazyNow* lazy_now) {
+  // Repeatedly trim the front of the top queue until it stabilizes. This is
+  // needed because a different queue can become the top one once you remove the
+  // canceled tasks.
+  while (!delayed_wake_up_queue_.empty()) {
+    auto* top_queue = delayed_wake_up_queue_.top().queue;
+
+    // If no tasks are removed from the top queue, then it means the top queue
+    // cannot change anymore.
+    if (!top_queue->RemoveAllCanceledDelayedTasksFromFront(lazy_now))
+      break;
+  }
+}
+
 SequenceManager* TimeDomain::sequence_manager() const {
   DCHECK(sequence_manager_);
   return sequence_manager_;
@@ -49,7 +66,7 @@ void TimeDomain::RequestDoWork() {
 void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK_EQ(queue->GetTimeDomain(), this);
-  LazyNow lazy_now(CreateLazyNow());
+  LazyNow lazy_now(this);
   SetNextWakeUpForQueue(queue, absl::nullopt, &lazy_now);
 }
 
@@ -121,16 +138,46 @@ void TimeDomain::SetNextWakeUpForQueue(internal::TaskQueueImpl* queue,
 void TimeDomain::MoveReadyDelayedTasksToWorkQueues(LazyNow* lazy_now) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   // Wake up any queues with pending delayed work.
-  bool update_needed = false;
-  while (!delayed_wake_up_queue_.empty() &&
-         delayed_wake_up_queue_.top().wake_up.time <= lazy_now->Now()) {
-    internal::TaskQueueImpl* queue = delayed_wake_up_queue_.top().queue;
-    // OnWakeUp() is expected to update the next wake-up for this queue with
-    // SetNextWakeUpForQueue(), thus allowing us to make progress.
-    queue->OnWakeUp(lazy_now);
-    update_needed = true;
+  {
+    std::vector<internal::TaskQueueImpl::WakeUpHandle> wake_up_handles;
+
+    while (!delayed_wake_up_queue_.empty() &&
+           delayed_wake_up_queue_.top().wake_up.time <= lazy_now->Now()) {
+      internal::TaskQueueImpl* queue = delayed_wake_up_queue_.top().queue;
+      // OnStartWakeUp() is expected to clear the next wake-up for this queue,
+      // thus allowing us to make progress. We don't update any wake-ups yet as
+      // the computation for throttled queues relies tasks having been pushed to
+      // work queues.
+      wake_up_handles.push_back(queue->OnStartWakeUp(*lazy_now));
+    }
+
+    if (wake_up_handles.empty())
+      return;
+
+    if (wake_up_handles.size() == 1) {
+      // Fast path: push the tasks directly to the work queues and avoid the
+      // unnecessary copying.
+      wake_up_handles[0].GetTaskQueue()->MoveReadyDelayedTasksToWorkQueue(
+          lazy_now);
+    } else {
+      // Sort tasks across all queues and move them to their work queue in that
+      // order so that delayed tasks with the same priority to run in order of
+      // delayed run time.
+      std::vector<internal::TaskQueueImpl::ReadyDelayedTask>
+          ready_delayed_tasks;
+      for (auto& handle : wake_up_handles) {
+        handle.GetTaskQueue()->TakeReadyDelayedTasks(*lazy_now,
+                                                     ready_delayed_tasks);
+      }
+      std::sort(ready_delayed_tasks.begin(), ready_delayed_tasks.end());
+      for (auto& task_state : ready_delayed_tasks) {
+        task_state.task_queue->MoveReadyDelayedTaskToWorkQueue(
+            std::move(task_state.task));
+      }
+    }
   }
-  if (!update_needed || delayed_wake_up_queue_.empty())
+
+  if (delayed_wake_up_queue_.empty())
     return;
   // If any queue was notified, possibly update following queues. This ensures
   // the wake up is up to date, which is necessary because calling OnWakeUp() on
@@ -162,7 +209,7 @@ Value TimeDomain::AsValue() const {
   state.SetStringKey("name", GetName());
   state.SetIntKey("registered_delay_count", delayed_wake_up_queue_.size());
   if (!delayed_wake_up_queue_.empty()) {
-    TimeDelta delay = delayed_wake_up_queue_.top().wake_up.time - Now();
+    TimeDelta delay = delayed_wake_up_queue_.top().wake_up.time - NowTicks();
     state.SetDoubleKey("next_delay_ms", delay.InMillisecondsF());
   }
   return state;

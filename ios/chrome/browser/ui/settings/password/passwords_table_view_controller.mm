@@ -369,6 +369,7 @@ void RemoveFormsToBeDeleted(
               password_manager::prefs::kCredentialsEnableService) &&
           ![_passwordManagerEnabled value])) {
       self.shouldShowAddButtonInToolbar = YES;
+      self.addButtonInToolbar.enabled = YES;
     }
   }
 
@@ -580,7 +581,6 @@ void RemoveFormsToBeDeleted(
   [super updateUIForEditState];
   if (base::FeatureList::IsEnabled(
           password_manager::features::kSupportForAddPasswordsInSettings)) {
-    self.addButtonInToolbar.enabled = [_passwordManagerEnabled value];
     [self updatedToolbarForEditState];
   }
 }
@@ -624,7 +624,13 @@ void RemoveFormsToBeDeleted(
 - (SettingsSwitchItem*)savePasswordsItem {
   SettingsSwitchItem* savePasswordsItem =
       [[SettingsSwitchItem alloc] initWithType:ItemTypeSavePasswordsSwitch];
-  savePasswordsItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kSupportForAddPasswordsInSettings)) {
+    savePasswordsItem.text =
+        l10n_util::GetNSString(IDS_IOS_OFFER_TO_SAVE_PASSWORDS);
+  } else {
+    savePasswordsItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
+  }
   savePasswordsItem.on = [_passwordManagerEnabled value];
   savePasswordsItem.accessibilityIdentifier = kSavePasswordSwitchTableViewId;
   return savePasswordsItem;
@@ -656,7 +662,14 @@ void RemoveFormsToBeDeleted(
   TableViewInfoButtonItem* managedSavePasswordItem =
       [[TableViewInfoButtonItem alloc]
           initWithType:ItemTypeManagedSavePasswords];
-  managedSavePasswordItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kSupportForAddPasswordsInSettings)) {
+    managedSavePasswordItem.text =
+        l10n_util::GetNSString(IDS_IOS_OFFER_TO_SAVE_PASSWORDS);
+  } else {
+    managedSavePasswordItem.text =
+        l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
+  }
   managedSavePasswordItem.statusText =
       [_passwordManagerEnabled value]
           ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
@@ -780,12 +793,6 @@ void RemoveFormsToBeDeleted(
 
   // Update the item.
   _savePasswordsItem.on = [_passwordManagerEnabled value];
-
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kSupportForAddPasswordsInSettings)) {
-    // Disable the "Add" button if the password manager is not enabled.
-    self.addButtonInToolbar.enabled = [_passwordManagerEnabled value];
-  }
 }
 
 // Called when the user clicks on the information button of the managed

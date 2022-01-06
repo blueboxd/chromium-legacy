@@ -42,7 +42,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -53,7 +52,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <type_traits>
 
 #include <stddef.h>
 
@@ -74,14 +72,14 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/safe_strerror.h"
 #include "base/rand_util.h"
-#include "base/sequenced_task_runner_helpers.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner_helpers.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -109,28 +107,6 @@
 using content::BrowserThread;
 
 namespace {
-
-#if defined(OS_MAC)
-// In order to allow longer paths for the singleton socket's filesystem node,
-// provide an "oversized" sockaddr_un-equivalent with a larger sun_path member.
-// sockaddr_un in the SDK has sun_path[104], which is too confined for the
-// singleton socket's path. The kernel will accept a sockaddr structure up to
-// SOCK_MAXADDRLEN (255) bytes long. This structure makes all of that space
-// available, effectively allowing sun_path[253]. Although shorter than
-// PATH_MAX (1024), this will hopefully be long enough. Many systems support an
-// extension like this, but it's not entirely portable. In this case, the OS
-// vendor has said that the behavior is stable. Learn more at SetupSockAddr.
-struct SockaddrUn {
-  decltype(sockaddr_un::sun_len) sun_len;
-  decltype(sockaddr_un::sun_family) sun_family;
-  std::remove_extent_t<decltype(sockaddr_un::sun_path)>
-      sun_path[SOCK_MAXADDRLEN - offsetof(sockaddr_un, sun_path)];
-};
-#else
-// On other platforms without a demonstrated need for paths longer than
-// sockaddr_un::sun_path, just do the portable thing.
-using SockaddrUn = sockaddr_un;
-#endif
 
 // Timeout for the current browser process to respond. 20 seconds should be
 // enough.
@@ -217,7 +193,7 @@ ssize_t ReadFromSocket(int fd,
                        char* buf,
                        size_t bufsize,
                        const base::TimeDelta& timeout) {
-  if (timeout > base::TimeDelta()) {
+  if (timeout.is_positive()) {
     int rv = WaitSocketForRead(fd, timeout);
     if (rv <= 0)
       return rv;
@@ -246,43 +222,11 @@ ssize_t ReadFromSocket(int fd,
 }
 
 // Set up a sockaddr appropriate for messaging.
-bool SetupSockAddr(const std::string& path,
-                   SockaddrUn* addr,
-                   socklen_t* socklen) {
+bool SetupSockAddr(const std::string& path, struct sockaddr_un* addr) {
   addr->sun_family = AF_UNIX;
-#if defined(OS_MAC)
-  // Allow the use of the entire length of sun_path, without reservation for a
-  // NUL terminator. The socklen parameter to bind and connect encodes the
-  // length of the sockaddr structure, and xnu does not require sun_path to be
-  // NUL-terminated. This is not portable, but it’s OK on macOS, and allows
-  // maximally-sized paths on a platform where the singleton socket path is
-  // already long. 11.5 xnu-7195.141.2/bsd/kern/uipc_usrreq.c unp_bind,
-  // unp_connect.
-  if (path.length() > base::size(addr->sun_path))
-    return false;
-
-  // On input to the kernel, sun_len is ignored and overwritten by the value of
-  // the passed-in socklen parameter. 11.5
-  // xnu-7195.141.2/bsd/kern/uipc_syscalls.c getsockaddr[_s]; note that the
-  // field is sa_len and not sun_len there because it occurs in generic code
-  // referring to sockaddr before being specialized into sockaddr_un or any
-  // other address family's sockaddr structure.
-  //
-  // Since the length needs to be computed for socklen anyway, just populate
-  // sun_len correctly.
-  addr->sun_len =
-      offsetof(std::remove_pointer_t<decltype(addr)>, sun_path) + path.length();
-
-  *socklen = addr->sun_len;
-  memcpy(addr->sun_path, path.c_str(), path.length());
-#else
-  // The portable version: NUL-terminate sun_path and don’t touch sun_len (which
-  // may not even exist).
   if (path.length() >= base::size(addr->sun_path))
     return false;
-  *socklen = sizeof(*addr);
   base::strlcpy(addr->sun_path, path.c_str(), base::size(addr->sun_path));
-#endif
   return true;
 }
 
@@ -299,12 +243,9 @@ int SetupSocketOnly() {
 }
 
 // Set up a socket and sockaddr appropriate for messaging.
-void SetupSocket(const std::string& path,
-                 int* sock,
-                 SockaddrUn* addr,
-                 socklen_t* socklen) {
+void SetupSocket(const std::string& path, int* sock, struct sockaddr_un* addr) {
   *sock = SetupSocketOnly();
-  CHECK(SetupSockAddr(path, addr, socklen)) << "Socket path too long: " << path;
+  CHECK(SetupSockAddr(path, addr)) << "Socket path too long: " << path;
 }
 
 // Read a symbolic link, return empty string if given path is not a symbol link.
@@ -423,16 +364,16 @@ bool ConnectSocket(ScopedSocket* socket,
       return false;
     // Now we know the directory was (at that point) created by the profile
     // owner. Try to connect.
-    SockaddrUn addr;
-    socklen_t socklen;
-    if (!SetupSockAddr(socket_target.value(), &addr, &socklen)) {
+    sockaddr_un addr;
+    if (!SetupSockAddr(socket_target.value(), &addr)) {
       // If a sockaddr couldn't be initialized due to too long of a socket
       // path, we can be sure there isn't already a Chrome running with this
       // socket path, since it would have hit the CHECK() on the path length.
       return false;
     }
-    int ret = HANDLE_EINTR(
-        connect(socket->fd(), reinterpret_cast<sockaddr*>(&addr), socklen));
+    int ret = HANDLE_EINTR(connect(socket->fd(),
+                                   reinterpret_cast<sockaddr*>(&addr),
+                                   sizeof(addr)));
     if (ret != 0)
       return false;
     // Check the cookie again. We only link in /tmp, which is sticky, so, if the
@@ -447,16 +388,16 @@ bool ConnectSocket(ScopedSocket* socket,
   } else if (errno == EINVAL) {
     // It exists, but is not a symlink (or some other error we detect
     // later). Just connect to it directly; this is an older version of Chrome.
-    SockaddrUn addr;
-    socklen_t socklen;
-    if (!SetupSockAddr(socket_path.value(), &addr, &socklen)) {
+    sockaddr_un addr;
+    if (!SetupSockAddr(socket_path.value(), &addr)) {
       // If a sockaddr couldn't be initialized due to too long of a socket
       // path, we can be sure there isn't already a Chrome running with this
       // socket path, since it would have hit the CHECK() on the path length.
       return false;
     }
-    int ret = HANDLE_EINTR(
-        connect(socket->fd(), reinterpret_cast<sockaddr*>(&addr), socklen));
+    int ret = HANDLE_EINTR(connect(socket->fd(),
+                                   reinterpret_cast<sockaddr*>(&addr),
+                                   sizeof(addr)));
     return (ret == 0);
   } else {
     // File is missing, or other error.
@@ -635,7 +576,7 @@ void ProcessSingleton::LinuxWatcher::OnSocketCanReadWithoutBlocking(
     int socket) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Accepting incoming client.
-  SockaddrUn from;
+  sockaddr_un from;
   socklen_t from_len = sizeof(from);
   int connection_socket = HANDLE_EINTR(
       accept(socket, reinterpret_cast<sockaddr*>(&from), &from_len));
@@ -1029,6 +970,9 @@ void ProcessSingleton::SetUserOptedUnlockInUseProfileForTesting(
 }
 
 bool ProcessSingleton::Create() {
+  int sock;
+  sockaddr_un addr;
+
   // The symlink lock is pointed to the hostname and process id, so other
   // processes can find it out.
   base::FilePath symlink_content(
@@ -1074,10 +1018,7 @@ bool ProcessSingleton::Create() {
   // leaving a dangling symlink.
   base::FilePath socket_target_path =
       socket_dir_.GetPath().Append(chrome::kSingletonSocketFilename);
-  int sock;
-  SockaddrUn addr;
-  socklen_t socklen;
-  SetupSocket(socket_target_path.value(), &sock, &addr, &socklen);
+  SetupSocket(socket_target_path.value(), &sock, &addr);
 
   // Setup the socket symlink and the two cookies.
   base::FilePath cookie(GenerateCookie());
@@ -1096,7 +1037,7 @@ bool ProcessSingleton::Create() {
     return false;
   }
 
-  if (bind(sock, reinterpret_cast<sockaddr*>(&addr), socklen) < 0) {
+  if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
     PLOG(ERROR) << "Failed to bind() " << socket_target_path.value();
     CloseSocket(sock);
     return false;

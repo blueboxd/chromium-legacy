@@ -14,7 +14,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
@@ -359,7 +359,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   DispatchRequestHeadersCallback(headers);
 
   bool will_send_data =
-      HasUploadData() | spdy_session_->EndStreamWithDataFrame();
+      HasUploadData() || spdy_session_->EndStreamWithDataFrame();
   result = stream_->SendRequestHeaders(
       std::move(headers),
       will_send_data ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);

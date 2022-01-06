@@ -1298,7 +1298,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
   };
 
   // Current size of the media controls.
-  gfx::Size controls_size(size_);
+  gfx::Size controls_size = ToGfxSize(size_);
 
   // The video controls are more than one row so we need to allocate vertical
   // room and hide the overlay play button if there is not enough room.
@@ -1433,12 +1433,12 @@ void MediaControlsImpl::UpdateOverflowMenuItemCSSClass() const {
 
 void MediaControlsImpl::UpdateScrubbingMessageFits() const {
   if (scrubbing_message_)
-    scrubbing_message_->SetDoesFit(size_.Width() >= kMinScrubbingMessageWidth);
+    scrubbing_message_->SetDoesFit(size_.width() >= kMinScrubbingMessageWidth);
 }
 
 void MediaControlsImpl::UpdateSizingCSSClass() {
   MediaControlsSizingClass sizing_class =
-      MediaControls::GetSizingClass(size_.Width());
+      MediaControls::GetSizingClass(size_.width());
 
   SetClass(kMediaControlsSizingSmallCSSClass,
            ShouldShowVideoControls() &&
@@ -1970,8 +1970,8 @@ void MediaControlsImpl::NotifyElementSizeChanged(DOMRectReadOnly* new_size) {
   // JS and fix it there.
 
   IntSize old_size = size_;
-  size_.SetWidth(new_size->width());
-  size_.SetHeight(new_size->height());
+  size_.set_width(new_size->width());
+  size_.set_height(new_size->height());
 
   // Don't bother to do any work if this matches the most recent size.
   if (old_size != size_) {

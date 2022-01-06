@@ -15,6 +15,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -100,7 +102,7 @@ AppServiceAppWindowShelfController::~AppServiceAppWindowShelfController() {
 
   // We need to remove all Registry observers for added users.
   for (auto* profile : profile_list_) {
-    apps::AppServiceProxyChromeOs* proxy =
+    apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile);
     proxy->InstanceRegistry().RemoveObserver(this);
   }
@@ -168,7 +170,7 @@ void AppServiceAppWindowShelfController::OnWindowInitialized(
   if (!widget || !widget->is_top_level())
     return;
 
-  if (base::FeatureList::IsEnabled(features::kWebAppsCrosapi) &&
+  if (web_app::IsWebAppsCrosapiEnabled() &&
       crosapi::browser_util::IsLacrosWindow(window)) {
     // Ignore all Lacros windows, handled by BrowserAppShelfController.
     return;
@@ -345,13 +347,16 @@ void AppServiceAppWindowShelfController::OnWindowActivated(
 void AppServiceAppWindowShelfController::OnInstanceUpdate(
     const apps::InstanceUpdate& update) {
   const apps::Instance::InstanceKey& instance_key = update.InstanceKey();
+  if (instance_key.IsForWebBasedApp()) {
+    // Only deal with window based app instances past here.
+    return;
+  }
+
   if (update.IsDestruction()) {
     // For Chrome apps edge case, it could be added for the inactive users, and
     // then removed. Since it is not registered we don't need to do anything
     // anyways. As such, all which is left to do here is to get rid of our own
     // reference.
-    if (instance_key.IsForWebBasedApp())
-      return;
     WindowList::iterator it =
         std::find(window_list_.begin(), window_list_.end(),
                   instance_key.GetEnclosingAppWindow());
@@ -361,9 +366,7 @@ void AppServiceAppWindowShelfController::OnInstanceUpdate(
   }
 
   aura::Window* window = instance_key.GetEnclosingAppWindow();
-  // Only deal with window based app instances past here.
-  if (instance_key.IsForWebBasedApp() ||
-      !observed_windows_.IsObservingSource(window)) {
+  if (!observed_windows_.IsObservingSource(window)) {
     return;
   }
 
@@ -556,10 +559,8 @@ void AppServiceAppWindowShelfController::RegisterWindow(
         ->SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_LOGO_PLUGIN_VM_DEFAULT_192));
     // Set fullscreen properties.
-    if (base::FeatureList::IsEnabled(ash::features::kPluginVmFullscreen)) {
-      exo::SetShellUseImmersiveForFullscreen(window, false);
-      window->SetProperty(chromeos::kEscHoldToExitFullscreen, true);
-    }
+    exo::SetShellUseImmersiveForFullscreen(window, false);
+    window->SetProperty(chromeos::kEscHoldToExitFullscreen, true);
   } else if (borealis::BorealisWindowManager::IsBorealisWindow(window)) {
     // Set fullscreen properties for Borealis.
     window->SetProperty(chromeos::kEscHoldToExitFullscreen, true);
@@ -728,7 +729,7 @@ void AppServiceAppWindowShelfController::UserHasAppOnActiveDesktop(
       MultiUserWindowManagerHelper::GetInstance();
   aura::Window* other_window = nullptr;
   for (auto* it : profile_list_) {
-    apps::AppServiceProxyChromeOs* proxy =
+    apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(it);
     if (proxy == proxy_)
       continue;

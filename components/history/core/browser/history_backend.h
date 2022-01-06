@@ -18,15 +18,15 @@
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_set.h"
-#include "base/containers/mru_cache.h"
+#include "base/containers/lru_cache.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/observer_list.h"
-#include "base/single_thread_task_runner.h"
 #include "base/supports_user_data.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/favicon/core/favicon_backend_delegate.h"
 #include "components/favicon/core/favicon_database.h"
@@ -443,7 +443,15 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       VisitID visit_id,
       const VisitContextAnnotations& visit_context_annotations);
 
-  std::vector<AnnotatedVisit> GetAnnotatedVisits(const QueryOptions& options);
+  // Gets a vector of reverse-chronological `AnnotatedVisit` instances based on
+  // `options`. Uses the same de-duplication and visibility logic as
+  // `HistoryService::QueryHistory()`.
+  //
+  // If `limited_by_max_count` is non-nullptr, it will be set to true if the
+  // number of results was limited by `options.max_count`.
+  std::vector<AnnotatedVisit> GetAnnotatedVisits(
+      const QueryOptions& options,
+      bool* limited_by_max_count = nullptr);
 
   ClusterIdsAndAnnotatedVisitsResult GetRecentClusterIdsAndAnnotatedVisits(
       base::Time minimum_time,
@@ -820,7 +828,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   //
   // As with AddPage, the last item in the redirect chain will be the
   // destination of the redirect (i.e., the key into recent_redirects_);
-  typedef base::MRUCache<GURL, RedirectList> RedirectCache;
+  typedef base::LRUCache<GURL, RedirectList> RedirectCache;
   RedirectCache recent_redirects_;
 
   // Timestamp of the first entry in our database.

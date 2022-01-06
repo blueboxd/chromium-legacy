@@ -601,6 +601,17 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
   }
+
+  if (policy.has_kiosk_crx_manifest_update_url_ignored()) {
+    const em::BooleanPolicyProto& container(
+        policy.kiosk_crx_manifest_update_url_ignored());
+    if (container.has_value()) {
+      policies->Set(key::kKioskCRXManifestUpdateURLIgnored,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, base::Value(container.value()),
+                    nullptr);
+    }
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -691,6 +702,16 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
         POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
         base::Value(policy.device_debug_packet_capture_allowed().allowed()),
         nullptr);
+  }
+}
+
+void DecodeIntegerReportingPolicy(PolicyMap* policies,
+                                  const std::string& policy_path,
+                                  google::protobuf::int64 int_value) {
+  std::unique_ptr<base::Value> value = DecodeIntegerValue(int_value);
+  if (value) {
+    policies->Set(policy_path, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                  POLICY_SOURCE_CLOUD, std::move(*value), nullptr);
   }
 }
 
@@ -794,13 +815,8 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                     base::Value(container.report_board_status()), nullptr);
     }
     if (container.has_device_status_frequency()) {
-      std::unique_ptr<base::Value> value(
-          DecodeIntegerValue(container.device_status_frequency()));
-      if (value) {
-        policies->Set(key::kReportUploadFrequency, POLICY_LEVEL_MANDATORY,
-                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                      std::move(*value), nullptr);
-      }
+      DecodeIntegerReportingPolicy(policies, key::kReportUploadFrequency,
+                                   container.device_status_frequency());
     }
     if (container.has_report_cpu_info()) {
       policies->Set(key::kReportDeviceCpuInfo, POLICY_LEVEL_MANDATORY,
@@ -862,6 +878,16 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                     base::Value(container.report_login_logout()), nullptr);
     }
+    if (container.has_report_network_telemetry_collection_rate_ms()) {
+      DecodeIntegerReportingPolicy(
+          policies, key::kReportDeviceNetworkTelemetryCollectionRateMs,
+          container.report_network_telemetry_collection_rate_ms());
+    }
+    if (container.has_report_network_telemetry_event_checking_rate_ms()) {
+      DecodeIntegerReportingPolicy(
+          policies, key::kReportDeviceNetworkTelemetryEventCheckingRateMs,
+          container.report_network_telemetry_event_checking_rate_ms());
+    }
   }
 
   if (policy.has_device_heartbeat_settings()) {
@@ -873,13 +899,8 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                     base::Value(container.heartbeat_enabled()), nullptr);
     }
     if (container.has_heartbeat_frequency()) {
-      std::unique_ptr<base::Value> value(
-          DecodeIntegerValue(container.heartbeat_frequency()));
-      if (value) {
-        policies->Set(key::kHeartbeatFrequency, POLICY_LEVEL_MANDATORY,
-                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                      std::move(*value), nullptr);
-      }
+      DecodeIntegerReportingPolicy(policies, key::kHeartbeatFrequency,
+                                   container.heartbeat_frequency());
     }
   }
 
@@ -1976,6 +1997,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                     POLICY_SOURCE_CLOUD, base::Value(container.enabled()),
                     nullptr);
+    }
+  }
+
+  if (policy.has_device_i18n_shortcuts_enabled()) {
+    const em::DeviceI18nShortcutsEnabledProto& container(
+        policy.device_i18n_shortcuts_enabled());
+    if (container.has_enabled()) {
+      policies->Set(key::kDeviceI18nShortcutsEnabled, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    base::Value(container.enabled()), nullptr);
     }
   }
 

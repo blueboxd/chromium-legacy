@@ -105,8 +105,10 @@ OobeSpokenFeedbackTest.*
 OobeTest.*
 OobeTestApiRemoraRequisitionTest.*
 OobeTestApiTest.*
+OobeTestApiWizardControllerTest.*
 OobeZeroTouchInteractiveUITest.*
 OsInstallScreenTest.*
+OsTrialScreenTest.*
 PackagedLicenseScreenTest.*
 ParentalHandoffScreenBrowserTest.*
 ParentalHandoffScreenChildBrowserTest.*

@@ -31,9 +31,13 @@ enum MessageTypes : int {
 
 }  // namespace
 
-OutputStreamConnection::OutputStreamConnection(Delegate* delegate,
-                                               CmaBackendParams params)
-    : delegate_(delegate), params_(std::move(params)) {
+OutputStreamConnection::OutputStreamConnection(
+    Delegate* delegate,
+    CmaBackendParams params,
+    mojo::PendingRemote<mojom::AudioSocketBroker> pending_socket_broker)
+    : OutputConnection(std::move(pending_socket_broker)),
+      delegate_(delegate),
+      params_(std::move(params)) {
   DCHECK(delegate_);
 }
 
@@ -124,6 +128,10 @@ void OutputStreamConnection::UpdateAudioConfig(const CmaBackendParams& params) {
 }
 
 void OutputStreamConnection::Connect() {
+  if (socket_) {
+    // Don't reconnect if the connection is already established.
+    return;
+  }
   OutputConnection::Connect();
 }
 
@@ -144,6 +152,12 @@ void OutputStreamConnection::OnConnected(std::unique_ptr<OutputSocket> socket) {
   socket_->SendProto(kInitial, message);
   heartbeat_timer_.Start(FROM_HERE, kHeartbeatTimeout, this,
                          &OutputStreamConnection::SendHeartbeat);
+}
+
+void OutputStreamConnection::OnConnectionFailed() {
+  BackendInitializationStatus status;
+  status.set_status(BackendInitializationStatus::ERROR);
+  delegate_->OnBackendInitialized(status);
 }
 
 void OutputStreamConnection::OnConnectionError() {
@@ -171,9 +185,11 @@ bool OutputStreamConnection::HandleMetadata(const Generic& message) {
   }
 
   if (message.has_current_media_timestamp()) {
-    delegate_->UpdateMediaTime(
+    delegate_->OnNextBuffer(
         message.current_media_timestamp().media_timestamp_microseconds(),
-        message.current_media_timestamp().reference_timestamp_microseconds());
+        message.current_media_timestamp().reference_timestamp_microseconds(),
+        message.current_media_timestamp().delay_microseconds(),
+        message.current_media_timestamp().delay_timestamp_microseconds());
   }
   return true;
 }

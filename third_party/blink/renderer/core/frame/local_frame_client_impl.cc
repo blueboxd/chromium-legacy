@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/dev_tools_emulator.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -385,7 +386,8 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
     WebHistoryCommitType commit_type,
     bool is_synchronously_committed,
     mojom::blink::SameDocumentNavigationType same_document_navigation_type,
-    bool is_client_redirect) {
+    bool is_client_redirect,
+    bool is_browser_initiated) {
   bool should_create_history_entry = commit_type == kWebStandardCommit;
   // TODO(dglazkov): Does this need to be called for subframes?
   web_frame_->ViewImpl()->DidCommitLoad(should_create_history_entry, true);
@@ -393,6 +395,17 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
     web_frame_->Client()->DidFinishSameDocumentNavigation(
         commit_type, is_synchronously_committed, same_document_navigation_type,
         is_client_redirect);
+  }
+
+  // Set the layout shift exclusion window for the browser initiated same
+  // document navigation.
+  if (is_browser_initiated) {
+    LocalFrame* frame = web_frame_->GetFrame();
+    if (frame) {
+      frame->View()
+          ->GetLayoutShiftTracker()
+          .NotifyBrowserInitiatedSameDocumentNavigation();
+    }
   }
 }
 
@@ -896,8 +909,8 @@ std::unique_ptr<WebMediaPlayer> LocalFrameClientImpl::CreateWebMediaPlayer(
     HTMLMediaElement& html_media_element,
     const WebMediaPlayerSource& source,
     WebMediaPlayerClient* client) {
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(html_media_element.GetDocument().GetFrame());
+  LocalFrame* local_frame = html_media_element.LocalFrameForPlayer();
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(local_frame);
 
   if (!web_frame || !web_frame->Client())
     return nullptr;
@@ -1033,7 +1046,8 @@ void LocalFrameClientImpl::FocusedElementChanged(Element* element) {
 void LocalFrameClientImpl::OnMainFrameIntersectionChanged(
     const IntRect& intersection_rect) {
   DCHECK(web_frame_->Client());
-  web_frame_->Client()->OnMainFrameIntersectionChanged(intersection_rect);
+  web_frame_->Client()->OnMainFrameIntersectionChanged(
+      ToGfxRect(intersection_rect));
 }
 
 void LocalFrameClientImpl::OnOverlayPopupAdDetected() {

@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/views/app_list_a11y_announcer.h"
@@ -17,10 +18,12 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/assistant/app_list_bubble_assistant_page.h"
 #include "ash/app_list/views/folder_background_view.h"
+#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config_provider.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/search_box/search_box_constants.h"
@@ -30,13 +33,17 @@
 #include "base/check_op.h"
 #include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
@@ -53,7 +60,7 @@ constexpr int kFolderViewInset = 16;
 
 AppListConfig* GetAppListConfig() {
   return AppListConfigProvider::Get().GetConfigForType(
-      AppListConfigType::kMedium, /*can_create=*/true);
+      AppListConfigType::kDense, /*can_create=*/true);
 }
 
 // A simplified horizontal separator that uses a solid color layer for painting.
@@ -148,6 +155,9 @@ void AppListBubbleView::InitContentsView(
       view_delegate_, drag_and_drop_host, GetAppListConfig(),
       a11y_announcer_.get(),
       /*folder_controller=*/this));
+  // The apps page must fill the bubble so that the apps grid view can flex to
+  // include empty space below the visible icons.
+  layout->SetFlexForView(apps_page_, 1);
 
   search_page_ =
       contents->AddChildView(std::make_unique<AppListBubbleSearchPage>(
@@ -163,7 +173,7 @@ void AppListBubbleView::InitContentsView(
 void AppListBubbleView::InitFolderView(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   auto folder_view = std::make_unique<AppListFolderView>(
-      this, apps_page_->scrollable_apps_grid_view(), view_delegate_->GetModel(),
+      this, apps_page_->scrollable_apps_grid_view(),
       /*contents_view=*/nullptr, a11y_announcer_.get(), view_delegate_);
   folder_view->items_grid_view()->SetDragAndDropHostOfCurrentAppList(
       drag_and_drop_host);
@@ -175,6 +185,51 @@ void AppListBubbleView::InitFolderView(
   folder_view_ = AddChildView(std::move(folder_view));
   // Folder view will be set visible by its show animation.
   folder_view_->SetVisible(false);
+}
+
+void AppListBubbleView::StartShowAnimation() {
+  // Ensure layout is up-to-date before animating views.
+  if (needs_layout())
+    Layout();
+  DCHECK(!needs_layout());
+
+  // Bubble animation specification:
+  //
+  // Y Position: Down 8px → End position
+  // Duration: 150ms
+  // Ease: (0.00, 0.00, 0.20, 1.00)
+  //
+  // Height: 75% → 100%
+  // Duration: 150ms
+  // Ease: (0.00, 0.00, 0.20, 1.00)
+  //
+  // Opacity: 0% → 100%
+  // Duration: 150ms
+  // Ease: Linear
+
+  // Start by making the layer shorter, pushed down, and transparent.
+  const gfx::Rect target_bounds = layer()->GetTargetBounds();
+  const int delta_height = target_bounds.height() / 4;  // 25% of height
+  const int y_offset = 8;
+  layer()->SetBounds(
+      gfx::Rect(target_bounds.x(), target_bounds.y() + delta_height + y_offset,
+                target_bounds.width(), target_bounds.height() - delta_height));
+  layer()->SetOpacity(0.f);
+
+  // Animate the layer to fully opaque at its target bounds.
+  views::AnimationBuilder()
+      .Once()
+      .SetDuration(base::Milliseconds(150))
+      .SetBounds(layer(), target_bounds, gfx::Tween::LINEAR_OUT_SLOW_IN)
+      .SetOpacity(layer(), 1.f, gfx::Tween::LINEAR);
+
+  // AppListBubbleAppsPage handles moving the individual views. It also handles
+  // smoothness reporting, because the view movement animation has a longer
+  // duration.
+  if (apps_page_->GetVisible())
+    apps_page_->StartShowAnimation();
+
+  // Note: The assistant page handles its own show animation internally.
 }
 
 bool AppListBubbleView::Back() {
@@ -269,7 +324,8 @@ void AppListBubbleView::QueryChanged(SearchBoxViewBase* sender) {
   assistant_page_->SetVisible(false);
 
   // Ask the controller to start the search.
-  std::u16string query = view_delegate_->GetSearchModel()->search_box()->text();
+  std::u16string query =
+      AppListModelProvider::Get()->search_model()->search_box()->text();
   view_delegate_->StartSearch(query);
   SchedulePaint();
 }
@@ -290,7 +346,8 @@ void AppListBubbleView::OnSearchBoxKeyEvent(ui::KeyEvent* event) {
 }
 
 bool AppListBubbleView::CanSelectSearchResults() {
-  return search_page_->GetVisible() && search_page_->CanSelectSearchResults();
+  return search_page_->GetVisible() &&
+         search_page_->search_view()->CanSelectSearchResults();
 }
 
 void AppListBubbleView::ShowFolderForItemView(

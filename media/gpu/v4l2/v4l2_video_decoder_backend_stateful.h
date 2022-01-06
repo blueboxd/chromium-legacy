@@ -10,7 +10,7 @@
 
 #include "base/containers/queue.h"
 #include "base/macros.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "media/base/video_codecs.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/gpu/v4l2/v4l2_framerate_control.h"
@@ -49,7 +49,7 @@ class V4L2StatefulVideoDecoderBackend : public V4L2VideoDecoderBackend {
   bool ApplyResolution(const gfx::Size& pic_size,
                        const gfx::Rect& visible_rect,
                        const size_t num_output_frames) override;
-  void OnChangeResolutionDone(bool success) override;
+  void OnChangeResolutionDone(CroStatus status) override;
   void ClearPendingRequests(DecodeStatus status) override;
   bool StopInputQueueOnResChange() const override;
 
@@ -71,6 +71,9 @@ class V4L2StatefulVideoDecoderBackend : public V4L2VideoDecoderBackend {
                   VideoDecoder::DecodeCB cb,
                   int32_t id);
 
+    DecodeRequest(const DecodeRequest&) = delete;
+    DecodeRequest& operator=(const DecodeRequest&) = delete;
+
     // Allow move, but not copy
     DecodeRequest(DecodeRequest&&);
     DecodeRequest& operator=(DecodeRequest&&);
@@ -78,8 +81,6 @@ class V4L2StatefulVideoDecoderBackend : public V4L2VideoDecoderBackend {
     ~DecodeRequest();
 
     bool IsCompleted() const;
-
-    DISALLOW_COPY_AND_ASSIGN(DecodeRequest);
   };
 
   bool IsSupportedProfile(VideoCodecProfile profile);

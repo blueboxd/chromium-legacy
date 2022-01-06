@@ -34,7 +34,6 @@ source_set("authentication") {
     "//components/consent_auditor",
     "//components/infobars/core",
     "//components/prefs",
-    "//components/signin/ios/browser",
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager/objc",
     "//components/strings",
@@ -50,6 +49,7 @@ source_set("authentication") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication/cells",
+    "//ios/chrome/browser/ui/authentication/enterprise:enterprise_utils",
     "//ios/chrome/browser/ui/authentication/signin:signin_headers",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
@@ -157,7 +157,6 @@ source_set("unit_tests") {
 }
 
 source_set("eg_app_support+eg2") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
@@ -198,7 +197,6 @@ source_set("eg_app_support+eg2") {
 }
 
 source_set("eg_test_support+eg2") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
@@ -209,8 +207,8 @@ source_set("eg_test_support+eg2") {
     "signin_earl_grey.mm",
     "signin_earl_grey_app_interface.h",
     "signin_earl_grey_app_interface_stub.mm",
-    "signin_earl_grey_ui.h",
-    "signin_earl_grey_ui.mm",
+    "signin_earl_grey_ui_test_util.h",
+    "signin_earl_grey_ui_test_util.mm",
     "signin_matchers.h",
     "signin_matchers.mm",
   ]

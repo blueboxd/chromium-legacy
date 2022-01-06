@@ -24,10 +24,10 @@ enum class StructuredMetricsError {
   kKeyParseError = 6,
   kKeyWriteError = 7,
   kKeySerializationError = 8,
-  kEventReadError = 5,
-  kEventParseError = 6,
-  kEventWriteError = 7,
-  kEventSerializationError = 8,
+  kEventReadError = 9,
+  kEventParseError = 10,
+  kEventWriteError = 11,
+  kEventSerializationError = 12,
   kUninitializedClient = 13,
   kInvalidEventParsed = 14,
   kMaxValue = kInvalidEventParsed,
@@ -57,11 +57,6 @@ enum class KeyValidationState {
 };
 
 void LogInternalError(StructuredMetricsError error);
-
-// Log an error on reading the JSONPrefStore from disk. A
-// PREF_READ_ERROR_NO_FILE is expected when a profile first logs in on a
-// particular device.
-void LogPrefReadError(PersistentPrefStore::PrefReadError error);
 
 void LogEventRecordingState(EventRecordingState state);
 

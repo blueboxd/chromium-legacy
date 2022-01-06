@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/check_op.h"
-#include "base/containers/contains.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
@@ -20,11 +19,8 @@ namespace chromeos {
 namespace {
 
 // The amount of time elapsed from print job creation before a timeout is
-// acknowledged.
-constexpr base::TimeDelta kMinElaspedPrintJobTimeout = base::Milliseconds(5000);
-
-// job state reason values
-const char kJobCompletedWithErrors[] = "job-completed-with-errors";
+// acknowledged. CUPS has a timeout of ~25s.
+constexpr base::TimeDelta kMinElaspedPrintJobTimeout = base::Seconds(30);
 
 // Returns the equivalient CupsPrintJob#State from a CupsJob#JobState.
 CupsPrintJob::State ConvertState(::printing::CupsJob::JobState state) {
@@ -50,12 +46,6 @@ CupsPrintJob::State ConvertState(::printing::CupsJob::JobState state) {
   NOTREACHED();
 
   return CupsPrintJob::State::STATE_NONE;
-}
-
-// Returns true if |job|.state_reasons contains |reason|
-bool JobContainsReason(const ::printing::CupsJob& job,
-                       base::StringPiece reason) {
-  return base::Contains(job.state_reasons, reason);
 }
 
 // Update the current printed page.  Returns true of the page has been updated.
@@ -109,8 +99,21 @@ void UpdateCompletedJob(const ::printing::CupsJob& job,
 
 void UpdateStoppedJob(const ::printing::CupsJob& job, CupsPrintJob* print_job) {
   // If cups job STOPPED but with filter failure, treat as ERROR
-  if (JobContainsReason(job, kJobCompletedWithErrors)) {
+  if (job.ContainsStateReason(
+          ::printing::CupsJob::JobStateReason::kJobCompletedWithErrors)) {
     print_job->set_error_code(PrinterErrorCode::FILTER_FAILED);
+    print_job->set_state(CupsPrintJob::State::STATE_FAILED);
+  } else {
+    print_job->set_error_code(PrinterErrorCode::NO_ERROR);
+    print_job->set_state(ConvertState(job.state));
+  }
+}
+
+void UpdateHeldJob(const ::printing::CupsJob& job, CupsPrintJob* print_job) {
+  // If cups job STOPPED but with cups held for authentication, treat as ERROR
+  if (job.ContainsStateReason(
+          ::printing::CupsJob::JobStateReason::kCupsHeldForAuthentication)) {
+    print_job->set_error_code(PrinterErrorCode::CLIENT_UNAUTHORIZED);
     print_job->set_state(CupsPrintJob::State::STATE_FAILED);
   } else {
     print_job->set_error_code(PrinterErrorCode::NO_ERROR);
@@ -137,6 +140,9 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
       break;
     case ::printing::CupsJob::STOPPED:
       UpdateStoppedJob(job, print_job);
+      break;
+    case ::printing::CupsJob::HELD:
+      UpdateHeldJob(job, print_job);
       break;
     case ::printing::CupsJob::ABORTED:
     case ::printing::CupsJob::CANCELED:

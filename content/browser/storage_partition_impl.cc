@@ -23,15 +23,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
-#include "components/services/storage/public/cpp/buckets/bucket_info.h"
+#include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_impl.h"
 #include "components/services/storage/public/mojom/filesystem/directory.mojom.h"
@@ -39,12 +39,12 @@
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
 #include "components/services/storage/storage_service_impl.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "content/browser/attribution_reporting/conversion_manager_impl.h"
+#include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
-#include "content/browser/broadcast_channel/broadcast_channel_provider.h"
+#include "content/browser/broadcast_channel/broadcast_channel_service.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
 #include "content/browser/buckets/bucket_context.h"
@@ -74,6 +74,7 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/shared_storage/shared_storage_worklet_host_manager.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl_private_key_impl.h"
@@ -257,7 +258,7 @@ void CheckQuotaManagedDataDeletionStatus(size_t* deletion_task_count,
   }
 }
 
-void OnQuotaManagedBucketDeleted(const storage::BucketInfo& bucket,
+void OnQuotaManagedBucketDeleted(const storage::BucketLocator& bucket,
                                  size_t* deletion_task_count,
                                  base::OnceClosure callback,
                                  blink::mojom::QuotaStatusCode status) {
@@ -265,9 +266,10 @@ void OnQuotaManagedBucketDeleted(const storage::BucketInfo& bucket,
   DCHECK_GT(*deletion_task_count, 0u);
   if (status != blink::mojom::QuotaStatusCode::kOk) {
     DLOG(ERROR) << "Couldn't remove data type " << static_cast<int>(bucket.type)
-                << " for bucket " << bucket.name << " with storage key "
-                << bucket.storage_key.GetDebugString() << " and bucket id "
-                << bucket.id << ". Status: " << static_cast<int>(status);
+                << " for bucket with storage key "
+                << bucket.storage_key.GetDebugString() << " is_default "
+                << bucket.is_default << " and bucket id " << bucket.id
+                << ". Status: " << static_cast<int>(status);
   }
 
   (*deletion_task_count)--;
@@ -430,7 +432,7 @@ class LoginHandlerDelegate {
           auth_challenge_responder,
       WebContents::Getter web_contents_getter,
       const net::AuthChallengeInfo& auth_info,
-      bool is_request_for_main_frame,
+      bool is_request_for_primary_main_frame,
       uint32_t process_id,
       uint32_t request_id,
       const GURL& url,
@@ -439,7 +441,7 @@ class LoginHandlerDelegate {
       : auth_challenge_responder_(std::move(auth_challenge_responder)),
         auth_info_(auth_info),
         request_id_(process_id, request_id),
-        is_request_for_main_frame_(is_request_for_main_frame),
+        is_request_for_primary_main_frame_(is_request_for_primary_main_frame),
         creating_login_delegate_(false),
         url_(url),
         response_headers_(std::move(response_headers)),
@@ -482,8 +484,9 @@ class LoginHandlerDelegate {
     // WeakPtr is not strictly necessary here due to OnRequestCancelled.
     creating_login_delegate_ = true;
     login_delegate_ = GetContentClient()->browser()->CreateLoginDelegate(
-        auth_info_, web_contents, request_id_, is_request_for_main_frame_, url_,
-        response_headers_, first_auth_attempt_,
+        auth_info_, web_contents, request_id_,
+        is_request_for_primary_main_frame_, url_, response_headers_,
+        first_auth_attempt_,
         base::BindOnce(&LoginHandlerDelegate::OnAuthCredentials,
                        weak_factory_.GetWeakPtr()));
     creating_login_delegate_ = false;
@@ -507,7 +510,7 @@ class LoginHandlerDelegate {
       auth_challenge_responder_;
   net::AuthChallengeInfo auth_info_;
   const content::GlobalRequestID request_id_;
-  bool is_request_for_main_frame_;
+  bool is_request_for_primary_main_frame_;
   bool creating_login_delegate_;
   GURL url_;
   const scoped_refptr<net::HttpResponseHeaders> response_headers_;
@@ -521,7 +524,7 @@ void OnAuthRequiredContinuation(
     int32_t process_id,
     uint32_t request_id,
     const GURL& url,
-    bool is_request_for_main_frame,
+    bool is_request_for_primary_main_frame,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
     const scoped_refptr<net::HttpResponseHeaders>& head_headers,
@@ -536,7 +539,7 @@ void OnAuthRequiredContinuation(
   }
   new LoginHandlerDelegate(
       std::move(auth_challenge_responder), std::move(web_contents_getter),
-      auth_info, is_request_for_main_frame, process_id, request_id, url,
+      auth_info, is_request_for_primary_main_frame, process_id, request_id, url,
       head_headers, first_auth_attempt);  // deletes self
 }
 
@@ -763,6 +766,11 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
       bool corb_enabled)
       : storage_partition_(storage_partition), corb_enabled_(corb_enabled) {}
 
+  URLLoaderFactoryForBrowserProcess(const URLLoaderFactoryForBrowserProcess&) =
+      delete;
+  URLLoaderFactoryForBrowserProcess& operator=(
+      const URLLoaderFactoryForBrowserProcess&) = delete;
+
   // mojom::URLLoaderFactory implementation:
 
   void CreateLoaderAndStart(
@@ -807,8 +815,6 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
 
   StoragePartitionImpl* storage_partition_;
   const bool corb_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForBrowserProcess);
 };
 
 // Static.
@@ -874,6 +880,11 @@ class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
            !storage_origin_->GetURL().is_empty());
   }
 
+  QuotaManagedDataDeletionHelper(const QuotaManagedDataDeletionHelper&) =
+      delete;
+  QuotaManagedDataDeletionHelper& operator=(
+      const QuotaManagedDataDeletionHelper&) = delete;
+
   void IncrementTaskCountOnIO();
   void DecrementTaskCountOnIO();
 
@@ -893,7 +904,7 @@ class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
       StoragePartition::OriginMatcherFunction origin_matcher,
       bool perform_storage_cleanup,
       base::OnceClosure callback,
-      const std::set<storage::BucketInfo>& buckets,
+      const std::set<storage::BucketLocator>& buckets,
       blink::mojom::StorageType quota_storage_type);
 
  private:
@@ -903,8 +914,6 @@ class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
   absl::optional<url::Origin> storage_origin_;
   base::OnceClosure callback_;
   int task_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuotaManagedDataDeletionHelper);
 };
 
 // Helper for deleting all sorts of data from a partition, keeps track of
@@ -942,7 +951,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       storage::FileSystemContext* filesystem_context,
       network::mojom::CookieManager* cookie_manager,
       InterestGroupManager* interest_group_manager,
-      ConversionManagerImpl* conversion_manager,
+      AttributionManagerImpl* attribution_manager,
       bool perform_storage_cleanup,
       const base::Time begin,
       const base::Time end);
@@ -1111,9 +1120,6 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   if (GetContentIndexContext())
     GetContentIndexContext()->Shutdown();
 
-  if (GetAppCacheService())
-    GetAppCacheService()->Shutdown();
-
   if (GetGeneratedCodeCacheContext())
     GetGeneratedCodeCacheContext()->Shutdown();
 }
@@ -1194,6 +1200,9 @@ void StoragePartitionImpl::Initialize(
 
   lock_manager_ = std::make_unique<LockManager>();
 
+  shared_storage_worklet_host_manager_ =
+      std::make_unique<SharedStorageWorkletHostManager>();
+
   scoped_refptr<ChromeBlobStorageContext> blob_context =
       ChromeBlobStorageContext::GetFor(browser_context_);
 
@@ -1223,19 +1232,14 @@ void StoragePartitionImpl::Initialize(
   service_worker_context_ = new ServiceWorkerContextWrapper(browser_context_);
   service_worker_context_->set_storage_partition(this);
 
-  if (StoragePartition::IsAppCacheEnabled()) {
-    appcache_service_ = base::MakeRefCounted<ChromeAppCacheService>(
-        quota_manager_proxy, weak_factory_.GetWeakPtr());
-  }
-
   dedicated_worker_service_ = std::make_unique<DedicatedWorkerServiceImpl>();
 
   native_io_context_ = base::MakeRefCounted<NativeIOContextImpl>();
   native_io_context_->Initialize(
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
 
-  shared_worker_service_ = std::make_unique<SharedWorkerServiceImpl>(
-      this, service_worker_context_, appcache_service_);
+  shared_worker_service_ =
+      std::make_unique<SharedWorkerServiceImpl>(this, service_worker_context_);
 
   push_messaging_context_ = std::make_unique<PushMessagingContext>(
       browser_context_, service_worker_context_);
@@ -1266,8 +1270,6 @@ void StoragePartitionImpl::Initialize(
   payment_app_context_->Init(service_worker_context_);
 
   broadcast_channel_service_ = std::make_unique<BroadcastChannelService>();
-  broadcast_channel_provider_ =
-      std::make_unique<BroadcastChannelProvider>(weak_factory_.GetWeakPtr());
 
   bluetooth_allowed_devices_map_ =
       std::make_unique<BluetoothAllowedDevicesMap>();
@@ -1302,7 +1304,7 @@ void StoragePartitionImpl::Initialize(
   // The Conversion Measurement API is not available in Incognito mode.
   if (!is_in_memory() &&
       base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
-    conversion_manager_ = std::make_unique<ConversionManagerImpl>(
+    attribution_manager_ = std::make_unique<AttributionManagerImpl>(
         this, path, special_storage_policy_);
   }
 
@@ -1444,11 +1446,6 @@ storage::QuotaManager* StoragePartitionImpl::GetQuotaManager() {
   return quota_manager_.get();
 }
 
-ChromeAppCacheService* StoragePartitionImpl::GetAppCacheService() {
-  DCHECK(initialized_);
-  return appcache_service_.get();
-}
-
 BackgroundSyncContextImpl* StoragePartitionImpl::GetBackgroundSyncContext() {
   DCHECK(initialized_);
   return background_sync_context_.get();
@@ -1483,6 +1480,12 @@ StoragePartitionImpl::GetLocalStorageControl() {
 LockManager* StoragePartitionImpl::GetLockManager() {
   DCHECK(initialized_);
   return lock_manager_.get();
+}
+
+SharedStorageWorkletHostManager*
+StoragePartitionImpl::GetSharedStorageWorkletHostManager() {
+  DCHECK(initialized_);
+  return shared_storage_worklet_host_manager_.get();
 }
 
 storage::mojom::IndexedDBControl& StoragePartitionImpl::GetIndexedDBControl() {
@@ -1560,11 +1563,6 @@ BroadcastChannelService* StoragePartitionImpl::GetBroadcastChannelService() {
   return broadcast_channel_service_.get();
 }
 
-BroadcastChannelProvider* StoragePartitionImpl::GetBroadcastChannelProvider() {
-  DCHECK(initialized_);
-  return broadcast_channel_provider_.get();
-}
-
 BluetoothAllowedDevicesMap*
 StoragePartitionImpl::GetBluetoothAllowedDevicesMap() {
   DCHECK(initialized_);
@@ -1609,9 +1607,9 @@ StoragePartitionImpl::GetFileSystemAccessManager() {
   return file_system_access_manager_.get();
 }
 
-ConversionManagerImpl* StoragePartitionImpl::GetConversionManager() {
+AttributionManagerImpl* StoragePartitionImpl::GetAttributionManager() {
   DCHECK(initialized_);
-  return conversion_manager_.get();
+  return attribution_manager_.get();
 }
 
 FontAccessManagerImpl* StoragePartitionImpl::GetFontAccessManager() {
@@ -2119,7 +2117,7 @@ void StoragePartitionImpl::ClearDataImpl(
       std::move(cookie_deletion_filter), GetPath(), dom_storage_context_.get(),
       quota_manager_.get(), special_storage_policy_.get(),
       filesystem_context_.get(), GetCookieManagerForBrowserProcess(),
-      interest_group_manager_.get(), conversion_manager_.get(),
+      interest_group_manager_.get(), attribution_manager_.get(),
       perform_storage_cleanup, begin, end);
 }
 
@@ -2208,7 +2206,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
         StoragePartition::OriginMatcherFunction origin_matcher,
         bool perform_storage_cleanup,
         base::OnceClosure callback,
-        const std::set<storage::BucketInfo>& buckets,
+        const std::set<storage::BucketLocator>& buckets,
         blink::mojom::StorageType quota_storage_type) {
   // The QuotaManager manages all storage other than cookies, LocalStorage,
   // and SessionStorage. This loop wipes out most HTML5 storage for the given
@@ -2320,7 +2318,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     storage::FileSystemContext* filesystem_context,
     network::mojom::CookieManager* cookie_manager,
     InterestGroupManager* interest_group_manager,
-    ConversionManagerImpl* conversion_manager,
+    AttributionManagerImpl* attribution_manager,
     bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end) {
@@ -2426,8 +2424,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
 
   auto filter = CreateGenericOriginMatcher(storage_origin, origin_matcher,
                                            storage_policy_ref);
-  if (conversion_manager && (remove_mask_ & REMOVE_DATA_MASK_CONVERSIONS)) {
-    conversion_manager->ClearData(
+  if (attribution_manager && (remove_mask_ & REMOVE_DATA_MASK_CONVERSIONS)) {
+    attribution_manager->ClearData(
         begin, end, std::move(filter),
         CreateTaskCompletionClosure(TracingDataType::kConversions));
   }
@@ -2663,6 +2661,14 @@ void StoragePartitionImpl::OverrideSharedWorkerServiceForTesting(
   shared_worker_service_ = std::move(shared_worker_service);
 }
 
+void StoragePartitionImpl::OverrideSharedStorageWorkletHostManagerForTesting(
+    std::unique_ptr<SharedStorageWorkletHostManager>
+        shared_storage_worklet_host_manager) {
+  DCHECK(initialized_);
+  shared_storage_worklet_host_manager_ =
+      std::move(shared_storage_worklet_host_manager);
+}
+
 void StoragePartitionImpl::GetQuotaSettings(
     storage::OptionalQuotaSettingsCallback callback) {
   if (g_test_quota_settings) {
@@ -2794,10 +2800,6 @@ void StoragePartitionImpl::
 void StoragePartition::SetDefaultQuotaSettingsForTesting(
     const storage::QuotaSettings* settings) {
   g_test_quota_settings = settings;
-}
-
-bool StoragePartition::IsAppCacheEnabled() {
-  return base::FeatureList::IsEnabled(blink::features::kAppCache);
 }
 
 mojo::PendingRemote<network::mojom::CookieAccessObserver>

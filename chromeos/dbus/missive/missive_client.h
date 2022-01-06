@@ -9,10 +9,10 @@
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/reporting/proto/interface.pb.h"
-#include "components/reporting/proto/record.pb.h"
-#include "components/reporting/proto/record_constants.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/util/status.h"
 
 namespace dbus {
@@ -61,7 +61,7 @@ class COMPONENT_EXPORT(MISSIVE) MissiveClient {
   virtual void UpdateEncryptionKey(
       const reporting::SignedEncryptionInfo& encryption_info) = 0;
   virtual void ReportSuccess(
-      const reporting::SequencingInformation& sequencing_information,
+      const reporting::SequenceInformation& sequence_information,
       bool force_confirm) = 0;
   virtual base::WeakPtr<MissiveClient> GetWeakPtr() = 0;
 

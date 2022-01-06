@@ -29,6 +29,7 @@
 <translation id="1743802530341753419">Iulize kabla ya kuruhusu tovuti ziunganishe kwenye kifaa (inapendekezwa)</translation>
 <translation id="1779089405699405702">Kisimbuaji cha picha</translation>
 <translation id="1818308510395330587">Ili uruhusu <ph name="APP_NAME" /> itumie Uhalisia Ulioboreshwa, washa pia kamera katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
+<translation id="1864927262126810325">Kutoka <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Kipengele cha mahali kimezimwa kwenye kifaa hiki. Kiwashe katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Matangazo</translation>
 <translation id="1919950603503897840">Chagua anwani</translation>
@@ -116,7 +117,6 @@
 <translation id="4008040567710660924">Ruhusu vidakuzi katika tovuti maalum.</translation>
 <translation id="4046123991198612571">Wimbo unaofuata</translation>
 <translation id="4165986682804962316">Mipangilio ya tovuti</translation>
-<translation id="4176463684765177261">Imezimwa</translation>
 <translation id="4200726100658658164">Fungua Mipangilio ya Mahali</translation>
 <translation id="4226663524361240545">Arifa huenda zitatetemesha kifaa</translation>
 <translation id="4259722352634471385">Kudurusu kumezuiwa: <ph name="URL" /></translation>
@@ -185,7 +185,6 @@
 <translation id="5876056640971328065">Sitisha video</translation>
 <translation id="5887687176710214216">Ilitembelewa mara ya mwisho jana</translation>
 <translation id="5916664084637901428">Imewashwa</translation>
-<translation id="59174027418879706">Imewezeshwa</translation>
 <translation id="5922853908706496913">Inashiriki skrini yako</translation>
 <translation id="5939518447894949180">Weka upya</translation>
 <translation id="5975083100439434680">Fifiza</translation>
@@ -238,6 +237,7 @@
 <translation id="7016516562562142042">Imeruhusiwa kwa mtambo wa sasa wa kutafuta</translation>
 <translation id="7053983685419859001">Zuia</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Umechagua 1}other{Umechagua #}}</translation>
+<translation id="7070090581017165256">Kuhusu tovuti hii</translation>
 <translation id="7087918508125750058">Imechagua <ph name="ITEM_COUNT" />. Chaguo zinapatikana karibu na sehemu ya juu ya skrini</translation>
 <translation id="7141896414559753902">Zuia tovuti zisionyeshe madirisha ibukizi na kuelekeza kwingine (inapendekezwa)</translation>
 <translation id="7176368934862295254">KB <ph name="KILOBYTES" /></translation>

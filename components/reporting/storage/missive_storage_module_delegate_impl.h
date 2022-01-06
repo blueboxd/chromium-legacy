@@ -6,8 +6,8 @@
 #define COMPONENTS_REPORTING_STORAGE_MISSIVE_STORAGE_MODULE_DELEGATE_IMPL_H_
 
 #include "base/callback.h"
-#include "components/reporting/proto/record.pb.h"
-#include "components/reporting/proto/record_constants.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/storage/missive_storage_module.h"
 #include "components/reporting/util/status.h"
 
@@ -33,7 +33,7 @@ class MissiveStorageModuleDelegateImpl
   void Flush(Priority priority,
              base::OnceCallback<void(Status)> callback) override;
 
-  void ReportSuccess(const SequencingInformation& sequencing_information,
+  void ReportSuccess(const SequenceInformation& sequence_information,
                      bool force) override;
 
   void UpdateEncryptionKey(

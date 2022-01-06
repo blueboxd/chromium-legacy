@@ -96,6 +96,15 @@ class CSSAnimationsTest : public RenderingTest, public PaintTestConfigurations {
     keyframe_effect->Model()->InvalidateCompositorKeyframesSnapshot();
   }
 
+  bool IsUseCounted(mojom::WebFeature feature) {
+    return GetDocument().IsUseCounted(feature);
+  }
+
+  void ClearUseCounter(mojom::WebFeature feature) {
+    GetDocument().ClearUseCounterForTesting(feature);
+    DCHECK(!IsUseCounted(feature));
+  }
+
  private:
   void SetUpAnimationClockForTesting() {
     GetPage().Animator().Clock().ResetTimeForTesting();
@@ -162,8 +171,8 @@ TEST_P(CSSAnimationsTest, IncompatibleRetargetedTransition) {
   AdvanceClockSeconds(0.003);
 
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_DOUBLE_EQ(1.0 * (1 - 0.003) + 0.2 * 0.003,
-                   GetSaturateFilterAmount(element));
+  EXPECT_FLOAT_EQ(1.0 * (1 - 0.003) + 0.2 * 0.003,
+                  GetSaturateFilterAmount(element));
 
   // Now we start a contrast filter. Since it will try to combine with
   // the in progress saturate filter, and be incompatible, there should
@@ -205,7 +214,7 @@ TEST_P(CSSAnimationsTest, CompositedBackgroundColorSnapshot) {
   CSSAnimations::CalculateCompositorAnimationUpdate(
       update, *element, *element, element->ComputedStyleRef(),
       element->parentNode()->GetComputedStyle(),
-      /* was_window_resized */ false);
+      /* was_window_resized */ false, /* force update */ false);
 
   ASSERT_EQ(1u, update.UpdatedCompositorKeyframes().size());
   EXPECT_EQ(animation, update.UpdatedCompositorKeyframes()[0].Get());
@@ -658,6 +667,60 @@ TEST_P(CSSAnimationsTest, UpdateAnimationFlags_AnimatingElement) {
 
   // ... but the pseudo-element should not.
   EXPECT_FALSE(before->ComputedStyleRef().HasCurrentTransformAnimation());
+}
+
+TEST_P(CSSAnimationsTest, CSSTransitionBlockedByAnimationUseCounter) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @keyframes anim {
+        from { z-index: 10; }
+        to { z-index: 20; }
+      }
+      #test {
+        z-index: 0;
+        transition: z-index 100s steps(2, start);
+      }
+      #test.animate {
+        animation: anim 100s steps(2, start);
+      }
+      #test.change {
+        z-index: 100;
+      }
+    </style>
+    <div id=test class=animate>Test</div>
+  )HTML");
+
+  Element* element = GetDocument().getElementById("test");
+  ASSERT_TRUE(element);
+
+  // Verify that we see animation effects.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(15, element->ComputedStyleRef().ZIndex());
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSTransitionBlockedByAnimation));
+
+  // Attempt to trigger transition. This should not work, because there's a
+  // current animation on the same property.
+  element->classList().Add("change");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(15, element->ComputedStyleRef().ZIndex());
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSTransitionBlockedByAnimation));
+
+  // Remove animation and attempt to trigger transition at the same time.
+  // Transition should still not trigger because of
+  // |previous_active_interpolations_for_animations_|.
+  ClearUseCounter(WebFeature::kCSSTransitionBlockedByAnimation);
+  element->classList().Remove("animate");
+  element->classList().Remove("change");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(0, element->ComputedStyleRef().ZIndex());
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSTransitionBlockedByAnimation));
+
+  // Finally trigger the transition.
+  ClearUseCounter(WebFeature::kCSSTransitionBlockedByAnimation);
+  element->classList().Add("change");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(50, element->ComputedStyleRef().ZIndex());
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSTransitionBlockedByAnimation));
 }
 
 // The following group of tests verify that composited CSS animations are

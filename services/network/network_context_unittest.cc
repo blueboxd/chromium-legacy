@@ -122,8 +122,6 @@
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/public/mojom/p2p.mojom.h"
-#include "services/network/public/mojom/p2p_trusted.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
@@ -158,6 +156,11 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "services/network/mock_mojo_dhcp_wpad_url_client.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_P2P_ENABLED)
+#include "services/network/public/mojom/p2p.mojom.h"
+#include "services/network/public/mojom/p2p_trusted.mojom.h"
+#endif  // BUILDFLAG(IS_P2P_ENABLED)
 
 namespace network {
 
@@ -373,6 +376,7 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
   base::RunLoop run_loop_;
 };
 
+#if BUILDFLAG(IS_P2P_ENABLED)
 class MockP2PTrustedSocketManagerClient
     : public mojom::P2PTrustedSocketManagerClient {
  public:
@@ -385,6 +389,7 @@ class MockP2PTrustedSocketManagerClient
                   uint64_t packet_length,
                   bool incoming) override {}
 };
+#endif  // BUILDFLAG(IS_P2P_ENABLED)
 
 class NetworkContextTest : public testing::Test {
  public:
@@ -1347,6 +1352,7 @@ TEST_F(NetworkContextTest, HostResolutionFailure) {
             client.completion_status().resolve_error_info.error);
 }
 
+#if BUILDFLAG(IS_P2P_ENABLED)
 // Test the P2PSocketManager::GetHostAddress() works and uses the correct
 // NetworkIsolationKey.
 TEST_F(NetworkContextTest, P2PHostResolution) {
@@ -1425,6 +1431,7 @@ TEST_F(NetworkContextTest, P2PHostResolution) {
     EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, callback2.GetResult(result));
   }
 }
+#endif  // BUILDFLAG(IS_P2P_ENABLED)
 
 // Test that valid referrers are allowed, while invalid ones result in errors.
 TEST_F(NetworkContextTest, Referrers) {
@@ -2872,6 +2879,9 @@ class MockMojoProxyResolver : public proxy_resolver::mojom::ProxyResolver {
  public:
   MockMojoProxyResolver() {}
 
+  MockMojoProxyResolver(const MockMojoProxyResolver&) = delete;
+  MockMojoProxyResolver& operator=(const MockMojoProxyResolver&) = delete;
+
  private:
   // Overridden from proxy_resolver::mojom::ProxyResolver:
   void GetProxyForUrl(
@@ -2890,8 +2900,6 @@ class MockMojoProxyResolver : public proxy_resolver::mojom::ProxyResolver {
 
     client->ReportResult(net::OK, result);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(MockMojoProxyResolver);
 };
 
 // Test mojom::ProxyResolverFactory implementation that successfully completes
@@ -2901,6 +2909,10 @@ class MockMojoProxyResolverFactory
     : public proxy_resolver::mojom::ProxyResolverFactory {
  public:
   MockMojoProxyResolverFactory() {}
+
+  MockMojoProxyResolverFactory(const MockMojoProxyResolverFactory&) = delete;
+  MockMojoProxyResolverFactory& operator=(const MockMojoProxyResolverFactory&) =
+      delete;
 
   // Binds and returns a mock ProxyResolverFactory whose lifetime is bound to
   // the message pipe.
@@ -2928,8 +2940,6 @@ class MockMojoProxyResolverFactory
         client(std::move(pending_client));
     client->ReportResult(net::OK);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(MockMojoProxyResolverFactory);
 };
 
 TEST_F(NetworkContextTest, PacQuickCheck) {
@@ -3296,6 +3306,7 @@ class TestResolveHostClient : public ResolveHostClientBase {
 
 TEST_F(NetworkContextTest, ResolveHost_Sync) {
   auto resolver = std::make_unique<net::MockHostResolver>();
+  resolver->rules()->AddRule("sync.test", "1.2.3.4");
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateNetworkContextParamsForTesting());
 
@@ -3312,7 +3323,7 @@ TEST_F(NetworkContextTest, ResolveHost_Sync) {
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
   network_context->ResolveHost(
-      net::HostPortPair("localhost", 160), net::NetworkIsolationKey(),
+      net::HostPortPair("sync.test", 160), net::NetworkIsolationKey(),
       std::move(optional_parameters), std::move(pending_response_client));
   run_loop.Run();
 
@@ -3320,13 +3331,14 @@ TEST_F(NetworkContextTest, ResolveHost_Sync) {
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(
       response_client.result_addresses().value().endpoints(),
-      testing::UnorderedElementsAre(CreateExpectedEndPoint("127.0.0.1", 160)));
+      testing::UnorderedElementsAre(CreateExpectedEndPoint("1.2.3.4", 160)));
   EXPECT_EQ(0u,
             network_context->GetNumOutstandingResolveHostRequestsForTesting());
 }
 
 TEST_F(NetworkContextTest, ResolveHost_Async) {
   auto resolver = std::make_unique<net::MockHostResolver>();
+  resolver->rules()->AddRule("async.test", "1.2.3.4");
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateNetworkContextParamsForTesting());
 
@@ -3343,7 +3355,7 @@ TEST_F(NetworkContextTest, ResolveHost_Async) {
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
   network_context->ResolveHost(
-      net::HostPortPair("localhost", 160), net::NetworkIsolationKey(),
+      net::HostPortPair("async.test", 160), net::NetworkIsolationKey(),
       std::move(optional_parameters), std::move(pending_response_client));
 
   bool control_handle_closed = false;
@@ -3356,7 +3368,7 @@ TEST_F(NetworkContextTest, ResolveHost_Async) {
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(
       response_client.result_addresses().value().endpoints(),
-      testing::UnorderedElementsAre(CreateExpectedEndPoint("127.0.0.1", 160)));
+      testing::UnorderedElementsAre(CreateExpectedEndPoint("1.2.3.4", 160)));
   EXPECT_TRUE(control_handle_closed);
   EXPECT_EQ(0u,
             network_context->GetNumOutstandingResolveHostRequestsForTesting());
@@ -3435,6 +3447,7 @@ TEST_F(NetworkContextTest, ResolveHost_NetworkIsolationKey) {
   const net::NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
 
   net::MockHostResolver resolver;
+  resolver.rules()->AddRule("nik.test", "1.2.3.4");
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateNetworkContextParamsForTesting());
 
@@ -3450,14 +3463,14 @@ TEST_F(NetworkContextTest, ResolveHost_NetworkIsolationKey) {
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
   network_context->ResolveHost(
-      net::HostPortPair("localhost", 160), kNetworkIsolationKey,
+      net::HostPortPair("nik.test", 160), kNetworkIsolationKey,
       std::move(optional_parameters), std::move(pending_response_client));
   run_loop.Run();
 
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(
       response_client.result_addresses().value().endpoints(),
-      testing::UnorderedElementsAre(CreateExpectedEndPoint("127.0.0.1", 160)));
+      testing::UnorderedElementsAre(CreateExpectedEndPoint("1.2.3.4", 160)));
   EXPECT_EQ(0u,
             network_context->GetNumOutstandingResolveHostRequestsForTesting());
   EXPECT_EQ(kNetworkIsolationKey,
@@ -4602,8 +4615,14 @@ TEST_F(NetworkContextTest, TrustedParams) {
 // Test that the disable_secure_dns trusted param is passed through to the
 // host resolver.
 TEST_F(NetworkContextTest, TrustedParams_DisableSecureDns) {
+  net::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
   std::unique_ptr<net::MockHostResolver> resolver =
       std::make_unique<net::MockHostResolver>();
+  resolver->rules()->AddRule("example.test", test_server.GetIPLiteralString());
   std::unique_ptr<net::TestURLRequestContext> url_request_context =
       std::make_unique<net::TestURLRequestContext>(
           true /* delay_initialization */);
@@ -4629,7 +4648,7 @@ TEST_F(NetworkContextTest, TrustedParams_DisableSecureDns) {
 
   for (bool disable_secure_dns : {false, true}) {
     ResourceRequest request;
-    request.url = GURL("http://example.test");
+    request.url = GURL("http://example.test/echo");
     request.load_flags = net::LOAD_BYPASS_CACHE;
     request.trusted_params = ResourceRequest::TrustedParams();
     request.trusted_params->disable_secure_dns = disable_secure_dns;
@@ -4654,7 +4673,13 @@ TEST_F(NetworkContextTest, TrustedParams_DisableSecureDns) {
 // Test that the disable_secure_dns factory param is passed through to the
 // host resolver.
 TEST_F(NetworkContextTest, FactoryParams_DisableSecureDns) {
+  net::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
   net::MockHostResolver resolver;
+  resolver.rules()->AddRule("example.test", test_server.GetIPLiteralString());
   net::TestURLRequestContext url_request_context(
       true /* delay_initialization */);
   url_request_context.set_host_resolver(&resolver);
@@ -4678,7 +4703,7 @@ TEST_F(NetworkContextTest, FactoryParams_DisableSecureDns) {
         loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
     ResourceRequest request;
-    request.url = GURL("http://example.test");
+    request.url = GURL("http://example.test/echo");
     request.load_flags = net::LOAD_BYPASS_CACHE;
     auto client = std::make_unique<TestURLLoaderClient>();
     mojo::Remote<mojom::URLLoader> loader;
@@ -5365,6 +5390,9 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
    public:
     TestHeaderClient() {}
 
+    TestHeaderClient(const TestHeaderClient&) = delete;
+    TestHeaderClient& operator=(const TestHeaderClient&) = delete;
+
     // network::mojom::TrustedHeaderClient:
     void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
                              OnBeforeSendHeadersCallback callback) override {
@@ -5401,13 +5429,15 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
     int on_before_send_headers_result_ = net::OK;
     int on_headers_received_result_ = net::OK;
     mojo::Receiver<mojom::TrustedHeaderClient> receiver_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(TestHeaderClient);
   };
 
   explicit TestURLLoaderHeaderClient(
       mojo::PendingReceiver<mojom::TrustedURLLoaderHeaderClient> receiver)
       : receiver_(this, std::move(receiver)) {}
+
+  TestURLLoaderHeaderClient(const TestURLLoaderHeaderClient&) = delete;
+  TestURLLoaderHeaderClient& operator=(const TestURLLoaderHeaderClient&) =
+      delete;
 
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
@@ -5433,8 +5463,6 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
  private:
   TestHeaderClient header_client_;
   mojo::Receiver<mojom::TrustedURLLoaderHeaderClient> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLLoaderHeaderClient);
 };
 
 TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
@@ -5561,6 +5589,9 @@ class HangingTestURLLoaderHeaderClient
    public:
     TestHeaderClient() {}
 
+    TestHeaderClient(const TestHeaderClient&) = delete;
+    TestHeaderClient& operator=(const TestHeaderClient&) = delete;
+
     // network::mojom::TrustedHeaderClient:
     void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
                              OnBeforeSendHeadersCallback callback) override {
@@ -5610,13 +5641,16 @@ class HangingTestURLLoaderHeaderClient
     std::string saved_received_headers_;
     OnHeadersReceivedCallback saved_on_headers_received_callback_;
     mojo::Receiver<mojom::TrustedHeaderClient> receiver_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(TestHeaderClient);
   };
 
   explicit HangingTestURLLoaderHeaderClient(
       mojo::PendingReceiver<mojom::TrustedURLLoaderHeaderClient> receiver)
       : receiver_(this, std::move(receiver)) {}
+
+  HangingTestURLLoaderHeaderClient(const HangingTestURLLoaderHeaderClient&) =
+      delete;
+  HangingTestURLLoaderHeaderClient& operator=(
+      const HangingTestURLLoaderHeaderClient&) = delete;
 
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
@@ -5648,8 +5682,6 @@ class HangingTestURLLoaderHeaderClient
  private:
   TestHeaderClient header_client_;
   mojo::Receiver<mojom::TrustedURLLoaderHeaderClient> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(HangingTestURLLoaderHeaderClient);
 };
 
 // Test waiting on the OnHeadersReceived event, then proceeding to call the
@@ -5799,9 +5831,8 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnHeadersReceived) {
 class NetworkContextMockHostTest : public NetworkContextTest {
  public:
   NetworkContextMockHostTest() {
-    scoped_refptr<net::RuleBasedHostResolverProc> rules =
-        net::CreateCatchAllHostResolverProc();
-    rules->AddRule(kMockHost, "127.0.0.1");
+    net::MockHostResolverBase::RuleResolver rules;
+    rules.AddRule(kMockHost, "127.0.0.1");
 
     network_service_->set_host_resolver_factory_for_testing(
         std::make_unique<net::MockHostResolverFactory>(std::move(rules)));
@@ -5854,8 +5885,10 @@ TEST_F(NetworkContextMockHostTest, MAYBE_CustomProxyUsesSpecifiedProxyList) {
   config->rules.ParseFromString(
       "http=" +
       net::ProxyServerToProxyUri(ConvertToProxyServer(proxy_test_server)));
-  proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
-  task_environment_.RunUntilIdle();
+  base::RunLoop loop;
+  proxy_config_client->OnCustomProxyConfigUpdated(std::move(config),
+                                                  loop.QuitClosure());
+  loop.Run();
 
   ResourceRequest request;
   request.url = GURL("http://does.not.resolve/echo");

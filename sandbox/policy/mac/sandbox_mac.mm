@@ -40,6 +40,7 @@
 #include "sandbox/mac/sandbox_compiler.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "printing/buildflags/buildflags.h"
 #include "sandbox/policy/mac/audio.sb.h"
 #include "sandbox/policy/mac/cdm.sb.h"
 #include "sandbox/policy/mac/common.sb.h"
@@ -55,6 +56,7 @@
 #include "sandbox/policy/mac/utility.sb.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
 
 namespace sandbox {
 namespace policy {
@@ -68,8 +70,8 @@ namespace policy {
 //     10.5.6, 10.6.0
 
 // static
-void SandboxMac::Warmup(SandboxType sandbox_type) {
-  DCHECK_EQ(sandbox_type, SandboxType::kGpu);
+void SandboxMac::Warmup(sandbox::mojom::Sandbox sandbox_type) {
+  DCHECK_EQ(sandbox_type, sandbox::mojom::Sandbox::kGpu);
 
   @autoreleasepool {
     {  // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
@@ -127,16 +129,16 @@ void SandboxMac::Warmup(SandboxType sandbox_type) {
 
 // Load the appropriate template for the given sandbox type.
 // Returns the template as a string or an empty string on error.
-std::string LoadSandboxTemplate(SandboxType sandbox_type) {
-  DCHECK_EQ(sandbox_type, SandboxType::kGpu);
+std::string LoadSandboxTemplate(sandbox::mojom::Sandbox sandbox_type) {
+  DCHECK_EQ(sandbox_type, sandbox::mojom::Sandbox::kGpu);
   return kSeatbeltPolicyString_gpu;
 }
 
 // Turns on the OS X sandbox for this process.
 
 // static
-bool SandboxMac::Enable(SandboxType sandbox_type) {
-  DCHECK_EQ(sandbox_type, SandboxType::kGpu);
+bool SandboxMac::Enable(sandbox::mojom::Sandbox sandbox_type) {
+  DCHECK_EQ(sandbox_type, sandbox::mojom::Sandbox::kGpu);
 
   std::string sandbox_data = LoadSandboxTemplate(sandbox_type);
   if (sandbox_data.empty())
@@ -157,7 +159,7 @@ bool SandboxMac::Enable(SandboxType sandbox_type) {
   base::FilePath home_dir_canonical =
       GetCanonicalPath(base::FilePath(home_dir));
 
-  if (sandbox_type == SandboxType::kGpu) {
+  if (sandbox_type == sandbox::mojom::Sandbox::kGpu) {
     base::FilePath bundle_path =
         GetCanonicalPath(base::mac::FrameworkBundlePath());
   }
@@ -185,49 +187,51 @@ base::FilePath GetCanonicalPath(const base::FilePath& path) {
   return base::FilePath(canonical_path);
 }
 
-std::string GetSandboxProfile(SandboxType sandbox_type) {
+std::string GetSandboxProfile(sandbox::mojom::Sandbox sandbox_type) {
   std::string profile = std::string(kSeatbeltPolicyString_common);
 
   switch (sandbox_type) {
-    case SandboxType::kAudio:
+    case sandbox::mojom::Sandbox::kAudio:
       profile += kSeatbeltPolicyString_audio;
       break;
-    case SandboxType::kCdm:
+    case sandbox::mojom::Sandbox::kCdm:
       profile += kSeatbeltPolicyString_cdm;
       break;
-    case SandboxType::kGpu:
+    case sandbox::mojom::Sandbox::kGpu:
       profile += kSeatbeltPolicyString_gpu;
       break;
-    case SandboxType::kMirroring:
+    case sandbox::mojom::Sandbox::kMirroring:
       profile += kSeatbeltPolicyString_mirroring;
       break;
-    case SandboxType::kNaClLoader:
+    case sandbox::mojom::Sandbox::kNaClLoader:
       profile += kSeatbeltPolicyString_nacl_loader;
       break;
-    case SandboxType::kNetwork:
+    case sandbox::mojom::Sandbox::kNetwork:
       profile += kSeatbeltPolicyString_network;
       break;
-    case SandboxType::kPpapi:
+    case sandbox::mojom::Sandbox::kPpapi:
       profile += kSeatbeltPolicyString_ppapi;
       break;
 #if BUILDFLAG(ENABLE_PRINTING)
-    case SandboxType::kPrintBackend:
+    case sandbox::mojom::Sandbox::kPrintBackend:
       profile += kSeatbeltPolicyString_print_backend;
       break;
 #endif
-    case SandboxType::kPrintCompositor:
+    case sandbox::mojom::Sandbox::kPrintCompositor:
       profile += kSeatbeltPolicyString_print_compositor;
       break;
-    case SandboxType::kSpeechRecognition:
+    case sandbox::mojom::Sandbox::kSpeechRecognition:
       profile += kSeatbeltPolicyString_speech_recognition;
       break;
-    case SandboxType::kUtility:
+    // kService and kUtility are the same on OS_MAC, so fallthrough.
+    case sandbox::mojom::Sandbox::kService:
+    case sandbox::mojom::Sandbox::kUtility:
       profile += kSeatbeltPolicyString_utility;
       break;
-    case SandboxType::kRenderer:
+    case sandbox::mojom::Sandbox::kRenderer:
       profile += kSeatbeltPolicyString_renderer;
       break;
-    case SandboxType::kNoSandbox:
+    case sandbox::mojom::Sandbox::kNoSandbox:
       CHECK(false);
       break;
   }

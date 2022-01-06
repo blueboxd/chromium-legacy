@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "components/reporting/proto/record_constants.pb.h"
+#include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/statusor.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -87,6 +87,30 @@ TEST_F(ReportQueueConfigurationTest,
        ValidateConfigurationWithNoDMTokenInvalidDestinationInvalidCallback) {
   EXPECT_FALSE(ReportQueueConfiguration::Create(
                    /*dm_token*=*/"", kInvalidDestination, kInvalidCallback)
+                   .ok());
+}
+
+TEST_F(ReportQueueConfigurationTest, ValidateConfigurationWithDeviceEventType) {
+  EXPECT_OK(ReportQueueConfiguration::Create(
+      EventType::kDevice, kValidDestination, kValidCallback));
+}
+
+TEST_F(ReportQueueConfigurationTest, ValidateConfigurationWithUserEventType) {
+  EXPECT_OK(ReportQueueConfiguration::Create(
+      EventType::kUser, kValidDestination, kValidCallback));
+}
+
+TEST_F(ReportQueueConfigurationTest,
+       ValidateConfigurationWithEventTypeInvalidDestination) {
+  EXPECT_FALSE(ReportQueueConfiguration::Create(
+                   EventType::kDevice, kInvalidDestination, kValidCallback)
+                   .ok());
+}
+
+TEST_F(ReportQueueConfigurationTest,
+       ValidateConfigurationWithEventTypeInvalidCallback) {
+  EXPECT_FALSE(ReportQueueConfiguration::Create(
+                   EventType::kDevice, kValidDestination, kInvalidCallback)
                    .ok());
 }
 

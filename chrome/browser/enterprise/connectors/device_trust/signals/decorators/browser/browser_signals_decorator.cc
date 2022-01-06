@@ -6,8 +6,8 @@
 
 #include <functional>
 
-#include "base/bind_post_task.h"
 #include "base/check.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/enterprise/signals/device_info_fetcher.h"
@@ -42,8 +42,11 @@ void BrowserSignalsDecorator::Decorate(DeviceTrustSignals& signals,
   signals.set_device_id(dm_token_storage_->RetrieveClientId());
 
   if (cloud_policy_store_->has_policy()) {
-    signals.set_obfuscated_customer_id(
-        cloud_policy_store_->policy()->obfuscated_customer_id());
+    const auto* policy = cloud_policy_store_->policy();
+    signals.set_obfuscated_customer_id(policy->obfuscated_customer_id());
+    signals.set_enrollment_domain(policy->has_managed_by()
+                                      ? policy->managed_by()
+                                      : policy->display_domain());
   }
 
   // Wrap the done closure to ensure it gets invoked on the calling sequence.

@@ -100,6 +100,15 @@ mediaApp.AbstractFile.prototype.saveAs;
  * @type {function(!Array<string>): !Promise<!mediaApp.AbstractFile>|undefined}
  */
 mediaApp.AbstractFile.prototype.getExportFile;
+/**
+ * If defined, resolves a placeholder `blob` to a DOM File object using IPC with
+ * the trusted context. Propagates exceptions. Does not modify `this`, and
+ * always performs IPC to handle cases where the previously obtained File is no
+ * longer accessible. E.g. if a file changes on disk (i.e. its mtime changes),
+ * security checks may invalidate an old `File`, requiring it to be "reopened".
+ * @type {undefined|function(): !Promise<!File>}
+ */
+mediaApp.AbstractFile.prototype.openFile;
 
 /**
  * Wraps an HTML FileList object.
@@ -143,11 +152,21 @@ mediaApp.AbstractFileList.prototype.addObserver = function(observer) {};
  * A function that requests for the user to be prompted with an open file
  * picker. Once the user selects a file, the file is inserted into the
  * navigation order after the current file and then navigated to.
- * TODO(b/165720635): Remove the undefined here once we can ensure all file
+ * TODO(b/203466987): Remove the undefined here once we can ensure all file
  * lists implement a openFile function.
  * @type {function(): !Promise<undefined>|undefined}
  */
 mediaApp.AbstractFileList.prototype.openFile = function() {};
+/**
+ * Request for the user to be prompted with an open file dialog. Files chosen
+ * will be added to the last received file list.
+ * TODO(b/203466987): Remove the undefined here once we can ensure all file
+ * lists implement a openFilesWithFilePicker function.
+ * @type {function(!Array<string>, ?mediaApp.AbstractFile):
+ *     !Promise<undefined>|undefined}
+ */
+mediaApp.AbstractFileList.prototype.openFilesWithFilePicker = function(
+    acceptTypeKeys, startInFolder) {};
 
 /**
  * The delegate which exposes open source privileged WebUi functions to
@@ -176,6 +195,13 @@ mediaApp.ClientApiDelegate.prototype.openFeedbackDialog = function() {};
  */
 mediaApp.ClientApiDelegate.prototype.requestSaveFile = function(
     suggestedName, mimeType, acceptTypeKeys) {};
+/**
+ * Notify MediaApp that the current file has been updated.
+ * @param {string|undefined} name
+ * @param {string|undefined} type
+ */
+mediaApp.ClientApiDelegate.prototype.notifyCurrentFile = function(
+    name, type) {};
 /**
  * Attempts to extract a JPEG "preview" from a RAW image file. Throws on any
  * failure. Note this is typically a full-sized preview, not a thumbnail.

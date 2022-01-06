@@ -5457,16 +5457,6 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="ContentSuggestions.Feed.Engaged">
-  <owner>adamta@google.org</owner>
-  <owner>sczs@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <description>
-    The user has engaged with the feed or scrolled at least 1 inch into it
-    within a 5-minute session.
-  </description>
-</action>
-
 <action name="ContentSuggestions.Feed.HeaderAction.ManageActivity">
   <owner>adamta@google.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -5491,16 +5481,6 @@ should be able to be added at any place in this file.
   <owner>feed@chromium.org</owner>
   <description>
     The user has scrolled down enough to trigger the infinite feed pagination.
-  </description>
-</action>
-
-<action name="ContentSuggestions.Feed.WillRefresh">
-  <owner>adamta@google.org</owner>
-  <owner>sczs@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <description>
-    The feed will trigger a refresh, either manually by the user or because of
-    the cache expiring.
   </description>
 </action>
 
@@ -7366,22 +7346,48 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="FileBrowser.ClickBreadcrumbs">
-  <owner>sashab@chromium.org</owner>
-  <owner>joelhockey@chromium.org</owner>
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
   <description>
     User clicked the breadcrumbs in order to return to a parent directory.
   </description>
 </action>
 
 <action name="FileBrowser.CreateNewFolder">
-  <owner>sashab@chromium.org</owner>
-  <owner>slangley@chromium.org</owner>
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
   <description>User created a new folder in the file manager app.</description>
 </action>
 
+<action name="FileBrowser.FolderShortcut.Add">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <description>
+    User pinned a folder to the top of the directory tree on Files app
+  </description>
+</action>
+
+<action name="FileBrowser.FolderShortcut.Navigate">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <description>
+    User navigated to a folder pinned to the top of the directory tree on Files
+    app.
+  </description>
+</action>
+
+<action name="FileBrowser.FolderShortcut.Remove">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <description>
+    User removed a folder pinned to the top of the directory tree on Files app.
+  </description>
+</action>
+
 <action name="FileBrowser.PhotoEditor.Edit">
-  <owner>sashab@chromium.org</owner>
-  <owner>slangley@chromium.org</owner>
+  <obsolete>Removed in M92.</obsolete>
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
   <description>
     User saved a photo over itself for the first time (i.e. edited the photo) in
     the gallery app.
@@ -7389,16 +7395,17 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="FileBrowser.PhotoEditor.View">
-  <owner>sashab@chromium.org</owner>
-  <owner>slangley@chromium.org</owner>
+  <obsolete>Removed in M92.</obsolete>
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
   <description>
     User loaded an image into an editing session in the gallery app.
   </description>
 </action>
 
 <action name="FileBrowser.SelectSearch">
-  <owner>sashab@chromium.org</owner>
-  <owner>slangley@chromium.org</owner>
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
   <description>
     User focused the search field at the top of the file manager app.
   </description>
@@ -7409,6 +7416,7 @@ should be able to be added at any place in this file.
     Removed in M90. Files.app no longer displays CWS widget dialog.
   </obsolete>
   <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
   <description>
     The embedded Chrome Web Store dialog was shown with suggested apps to open
     the file in the file manager app.
@@ -7489,6 +7497,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="FocusHelpBubble">
+  <obsolete>Never used. Merged with F6 or equivalent for navigation.</obsolete>
   <owner>collinbaker@chromium.org</owner>
   <owner>dfried@chromium.org</owner>
   <description>
@@ -14650,6 +14659,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileFre.SignInShown">
+  <obsolete>
+    Deprecated 10/2021 since this is already recorded as part of the histogram
+    MobileFre.Progress.*.
+  </obsolete>
   <owner>aruslan@chromium.org</owner>
   <description>
     User was presented with the sign-in dialog during the First Run Experience.
@@ -14851,6 +14864,13 @@ should be able to be added at any place in this file.
   <description>User opened the data saver item in the app menu.</description>
 </action>
 
+<action name="MobileMenuDeleteFromReadingList">
+  <owner>wylieb@chromium.org</owner>
+  <description>
+    User deleted from their reading list in the app menu.
+  </description>
+</action>
+
 <action name="MobileMenuDirectShare">
   <owner>aurimas@chromium.org</owner>
   <description>
@@ -14965,6 +14985,11 @@ should be able to be added at any place in this file.
   <description>
     User successfully opened a WebAPK by pressing 'Open WebAPK' in the app menu.
   </description>
+</action>
+
+<action name="MobileMenuPasswords">
+  <owner>rkgibson@chromium.org</owner>
+  <description>User pressed 'Passwords' in the app menu.</description>
 </action>
 
 <action name="MobileMenuPasteAndGo">
@@ -17595,7 +17620,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="NewTabPage.Promo.EnhancedProtectionPromo.Accepted">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <description>
     The Safe Browsing Enhanced Protection promo is accepted.
@@ -17603,7 +17628,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="NewTabPage.Promo.EnhancedProtectionPromo.Dismissed">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <description>
     The Safe Browsing Enhanced Protection promo is dismissed.
@@ -17634,16 +17659,6 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="NewTabPage.ViewHierarchyFixed">
-  <owner>adamta@google.org</owner>
-  <owner>sczs@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <description>
-    Recorded when the NTP detects a broken view hierarchy and repairs itself.
-    TODO(crbug.com/1262536): Remove this when issue is fixed.
-  </description>
-</action>
-
 <action name="NewTabPage_ContentSuggestions_ArticlesUsage"
     not_user_triggered="true">
   <owner>markusheintz@chromium.org</owner>
@@ -17655,7 +17670,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="NewTabPage_Promos_EnhancedProtection">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-core@google.com</owner>
   <description>
     Recorded when the user clicks a Enhanced Protection promotion on the New Tab
@@ -20817,7 +20832,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordProtection.Interstitial.ResetPassword">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <description>
     Reported when the user clicks on the reset password button on the
@@ -20826,7 +20841,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordProtection.ModalWarning.ChangePasswordButtonClicked">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <description>
     Reported when the user clicked on the change password button on the password
@@ -20835,7 +20850,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordProtection.ModalWarning.CloseWarning">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <description>
     Reported when the user closed the password protection modal warning.
@@ -20843,7 +20858,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordProtection.ModalWarning.IgnoreButtonClicked">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <description>
     Reported when the user clicked on the ignore button on the password
@@ -20852,7 +20867,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordProtection.PageInfo.ChangePasswordButtonClicked">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <description>
     Reported when the user clicks on the change password button on the page info
@@ -20861,7 +20876,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordProtection.PageInfo.MarkSiteAsLegitimate">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <description>
     Reported when the user clicks on the mark site as legitimate button on the
@@ -22047,7 +22062,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SafeBrowsing.Settings.ShowedFromSurfaceExplorerPromoSlinger">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <description>
     The Safe Browsing setting page is shown to the user. The user reaches the
@@ -24498,6 +24513,22 @@ should be able to be added at any place in this file.
   <owner>bzanotti@chromium.org</owner>
   <description>
     Recorded when the More button is shown on the sign in confirmation screen.
+  </description>
+</action>
+
+<action name="Signin_MyGoogleUI_AccountDetails">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the user opens MyGoogleUI account details.
+  </description>
+</action>
+
+<action name="Signin_MyGoogleUI_ActivityControls">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the user opens MyGoogleUI activity controls.
   </description>
 </action>
 

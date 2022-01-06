@@ -9,7 +9,7 @@
 
 // #import {flush, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {assertTrue, assertEquals} from '../../../chai_assert.js';
-// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// #import {eventToPromise} from 'chrome://test/test_util.js';
 // #import {createDefaultBluetoothDevice} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
 // #import {Router, Route, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 // clang-format on
@@ -47,7 +47,8 @@ suite('OsPairedBluetoothListItemTest', function() {
         const publicName = 'BeatsX';
         const device = createDefaultBluetoothDevice(
             /*id=*/ '123456789', /*publicName=*/ publicName,
-            /*connected=*/ true);
+            /*connectionState=*/
+            chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected);
         pairedBluetoothListItem.device = device;
 
         const itemIndex = 3;
@@ -119,7 +120,9 @@ suite('OsPairedBluetoothListItemTest', function() {
 
   test('Battery percentage out of bounds', async function() {
     const device = createDefaultBluetoothDevice(
-        /*id=*/ '123456789', /*publicName=*/ 'BeatsX', /*connected=*/ true);
+        /*id=*/ '123456789', /*publicName=*/ 'BeatsX',
+        /*connectionState=*/
+        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected);
     pairedBluetoothListItem.device = device;
 
     const getBatteryInfo = () => {
@@ -137,7 +140,9 @@ suite('OsPairedBluetoothListItemTest', function() {
   test('Selecting item routes to detail subpage', async function() {
     const id = '123456789';
     const device = createDefaultBluetoothDevice(
-        id, /*publicName=*/ 'BeatsX', /*connected=*/ true);
+        id, /*publicName=*/ 'BeatsX',
+        /*connectionState=*/
+        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected);
     pairedBluetoothListItem.device = device;
     await flushAsync();
 

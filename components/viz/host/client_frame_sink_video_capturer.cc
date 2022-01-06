@@ -73,12 +73,14 @@ void ClientFrameSinkVideoCapturer::SetAutoThrottlingEnabled(bool enabled) {
 
 void ClientFrameSinkVideoCapturer::ChangeTarget(
     const absl::optional<FrameSinkId>& frame_sink_id,
-    SubtreeCaptureId subtree_capture_id) {
+    mojom::SubTargetPtr sub_target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   target_ = frame_sink_id;
-  subtree_capture_id_ = subtree_capture_id;
-  capturer_remote_->ChangeTarget(frame_sink_id, subtree_capture_id);
+  sub_target_ = std::move(sub_target);
+
+  capturer_remote_->ChangeTarget(frame_sink_id,
+                                 sub_target_ ? sub_target_.Clone() : nullptr);
 }
 
 void ClientFrameSinkVideoCapturer::Start(
@@ -193,8 +195,10 @@ void ClientFrameSinkVideoCapturer::EstablishConnection() {
   }
   if (auto_throttling_enabled_)
     capturer_remote_->SetAutoThrottlingEnabled(*auto_throttling_enabled_);
-  if (target_)
-    capturer_remote_->ChangeTarget(target_, subtree_capture_id_);
+  if (target_) {
+    capturer_remote_->ChangeTarget(
+        target_, sub_target_ ? sub_target_->Clone() : nullptr);
+  }
   for (Overlay* overlay : overlays_)
     overlay->EstablishConnection(capturer_remote_.get());
   if (is_started_)

@@ -973,7 +973,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      r'/DISALLOW_(COPY|ASSIGN|COPY_AND_ASSIGN|IMPLICIT_CONSTRUCTORS)\(',
+      r'/DISALLOW_(COPY|ASSIGN|COPY_AND_ASSIGN)\(',
       (
         'DISALLOW_xxx macros are deprecated. See base/macros.h for details.',
       ),
@@ -4269,13 +4269,17 @@ def ChecksCommon(input_api, output_api):
             input_api, output_api, full_path,
             files_to_check=[r'^PRESUBMIT_test\.py$'],
             run_on_python2=not use_python3,
-            run_on_python3=use_python3))
+            run_on_python3=use_python3,
+            skip_shebang_check=True))
   return results
 
 
 def CheckPatchFiles(input_api, output_api):
   problems = [f.LocalPath() for f in input_api.AffectedFiles()
       if f.LocalPath().endswith(('.orig', '.rej'))]
+  # Cargo.toml.orig files are part of third-party crates downloaded from
+  # crates.io and should be included.
+  problems = [f for f in problems if not f.endswith('Cargo.toml.orig')]
   if problems:
     return [output_api.PresubmitError(
         "Don't commit .rej and .orig files.", problems)]

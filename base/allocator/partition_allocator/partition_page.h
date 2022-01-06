@@ -24,7 +24,9 @@
 #include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
+#include "base/memory/tagging.h"
 #include "base/thread_annotations.h"
+#include "build/build_config.h"
 
 #if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
 #include "base/allocator/partition_allocator/partition_ref_count.h"
@@ -49,7 +51,7 @@ static_assert(
     sizeof(PartitionSuperPageExtentEntry<ThreadSafe>) <= kPageMetadataSize,
     "PartitionSuperPageExtentEntry must be able to fit in a metadata slot");
 static_assert(
-    kMaxSuperPages / kSuperPageSize <=
+    kMaxSuperPagesInPool / kSuperPageSize <=
         std::numeric_limits<
             decltype(PartitionSuperPageExtentEntry<
                      ThreadSafe>::number_of_consecutive_super_pages)>::max(),
@@ -127,6 +129,20 @@ struct __attribute__((packed)) SlotSpanMetadata {
   // Cannot use the full 64 bits in this bitfield, as this structure is embedded
   // in PartitionPage, which has other fields as well, and must fit in 32 bytes.
 
+  // CHECK()ed in AllocNewSlotSpan().
+#if defined(PA_HAS_64_BITS_POINTERS) && defined(OS_APPLE)
+  // System page size is not a constant on Apple OSes, but is either 4 or 16kiB
+  // (1 << 12 or 1 << 14), as checked in PartitionRoot::Init(). And
+  // PartitionPageSize() is 4 times the OS page size.
+  static constexpr int16_t kMaxSlotsPerSlotSpan =
+      4 * (1 << 14) / kSmallestBucket;
+#else
+  // A slot span can "span" multiple PartitionPages, but then its slot size is
+  // larger, so it doesn't have as many slots.
+  static constexpr int16_t kMaxSlotsPerSlotSpan =
+      PartitionPageSize() / kSmallestBucket;
+#endif  // defined(PA_HAS_64_BITS_POINTERS) && defined(OS_APPLE)
+
   explicit SlotSpanMetadata(PartitionBucket<thread_safe>* bucket);
 
   // Public API
@@ -136,6 +152,9 @@ struct __attribute__((packed)) SlotSpanMetadata {
 
   void Decommit(PartitionRoot<thread_safe>* root);
   void DecommitIfPossible(PartitionRoot<thread_safe>* root);
+
+  // Sorts the freelist in ascending addresses order.
+  void SortFreelist();
 
   // Pointer manipulation functions. These must be static as the input
   // |slot_span| pointer may be the result of an offset calculation and
@@ -174,7 +193,7 @@ struct __attribute__((packed)) SlotSpanMetadata {
 
   // This includes padding due to rounding done at allocation; we don't know the
   // requested size at deallocation, so we use this in both places.
-  ALWAYS_INLINE size_t GetSizeForBookkeeping() const {
+  ALWAYS_INLINE size_t GetSlotSizeForBookkeeping() const {
     // This could be more precise for allocations where CanStoreRawSize()
     // returns true (large allocations). However this is called for *every*
     // allocation, so we don't want an extra branch there.
@@ -411,6 +430,7 @@ ALWAYS_INLINE void PartitionSuperPageExtentEntry<
 // a valid slot span. It merely ensures it doesn't fall in a meta-data region
 // that would surely never contain user data.
 ALWAYS_INLINE bool IsWithinSuperPagePayload(void* ptr, bool with_quarantine) {
+  ptr = memory::UnmaskPtr(ptr);
   PA_DCHECK(IsManagedByNormalBuckets(ptr));
   char* super_page_base = reinterpret_cast<char*>(
       reinterpret_cast<uintptr_t>(ptr) & kSuperPageBaseMask);
@@ -511,6 +531,7 @@ ALWAYS_INLINE void* SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(
 template <bool thread_safe>
 ALWAYS_INLINE SlotSpanMetadata<thread_safe>*
 SlotSpanMetadata<thread_safe>::FromSlotInnerPtr(void* ptr) {
+  ptr = memory::UnmaskPtr(ptr);
   auto* page = PartitionPage<thread_safe>::FromPtr(ptr);
   PA_DCHECK(page->is_valid);
   // Partition pages in the same slot span share the same slot span metadata
@@ -544,9 +565,10 @@ SlotSpanMetadata<thread_safe>::FromSlotStartPtr(void* slot_start) {
   auto* slot_span = FromSlotInnerPtr(slot_start);
   // Checks that the pointer is a multiple of slot size.
   auto* slot_span_start = ToSlotSpanStartPtr(slot_span);
-  PA_DCHECK(!((reinterpret_cast<uintptr_t>(slot_start) -
-               reinterpret_cast<uintptr_t>(slot_span_start)) %
-              slot_span->bucket->slot_size));
+  PA_DCHECK(
+      !((reinterpret_cast<uintptr_t>(memory::UnmaskPtr(slot_start)) -
+         reinterpret_cast<uintptr_t>(memory::UnmaskPtr(slot_span_start))) %
+        slot_span->bucket->slot_size));
   return slot_span;
 }
 

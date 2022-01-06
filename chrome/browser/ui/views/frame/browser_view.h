@@ -203,6 +203,10 @@ class BrowserView : public BrowserWindow,
   lens::LensSidePanelController* lens_side_panel_controller() {
     return lens_side_panel_controller_.get();
   }
+  // Creates the Lens side panel controller.
+  void CreateLensSidePanelController();
+  // Deletes the Lens side panel controller.
+  void DeleteLensSidePanelController();
 #endif
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
@@ -458,7 +462,6 @@ class BrowserView : public BrowserWindow,
   void FocusAppMenu() override;
   void FocusBookmarksToolbar() override;
   void FocusInactivePopupForAccessibility() override;
-  void FocusHelpBubble() override;
   void RotatePaneFocus(bool forwards) override;
   void FocusWebContentsPane() override;
   void DestroyBrowser() override;
@@ -703,6 +706,7 @@ class BrowserView : public BrowserWindow,
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, BrowserView);
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, AccessibleWindowTitle);
   class AccessibilityModeObserver;
+  class SidePanelButtonHighlighter;
 
   // If the browser is in immersive full screen mode, it will reveal the
   // tabstrip for a short duration. This is useful for shortcuts that perform
@@ -960,6 +964,13 @@ class BrowserView : public BrowserWindow,
 
   // The Lens side panel.
   SidePanel* lens_side_panel_ = nullptr;
+
+  // TODO(pbos): Move this functionality into SidePanel when multiple "panels"
+  // are managed within the same object.
+  // Observer object managing the button highlight of the side-panel button
+  // inside ToolbarView. Must outlive the button whose highlight it's managing
+  // as well as the side panels it's observing.
+  std::unique_ptr<SidePanelButtonHighlighter> side_panel_button_highlighter_;
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // A controller that handles content hosted in the Lens side panel.

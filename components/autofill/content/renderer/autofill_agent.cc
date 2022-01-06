@@ -17,11 +17,11 @@
 #include "base/i18n/case_conversion.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -116,7 +116,7 @@ ExtractMask GetExtractDatalistMask() {
 // need to set up the mojo connection as before (i.e., we can't defer binding
 // the interface). Instead, we enqueue our messages here as post-activation
 // tasks. See post-prerendering activation steps here:
-// https://jeremyroman.github.io/alternate-loading-modes/#prerendering-bcs-subsection
+// https://wicg.github.io/nav-speculation/prerendering.html#prerendering-bcs-subsection
 class AutofillAgent::DeferringAutofillDriver : public mojom::AutofillDriver {
  public:
   explicit DeferringAutofillDriver(AutofillAgent* agent) : agent_(agent) {}
@@ -125,8 +125,10 @@ class AutofillAgent::DeferringAutofillDriver : public mojom::AutofillDriver {
  private:
   template <typename F, typename... Args>
   void SendMsg(F fn, Args&&... args) {
-    DCHECK(agent_->autofill_driver_);
-    (agent_->autofill_driver_.get()->*fn)(std::forward<Args>(args)...);
+    DCHECK(!agent_->IsPrerendering());
+    mojom::AutofillDriver& autofill_driver = agent_->GetAutofillDriver();
+    DCHECK_NE(&autofill_driver, this);
+    (autofill_driver.*fn)(std::forward<Args>(args)...);
   }
   template <typename F, typename... Args>
   void DeferMsg(F fn, Args... args) {
@@ -963,7 +965,7 @@ void AutofillAgent::ProcessForms() {
       form_cache_.ExtractNewForms(field_data_manager_.get());
 
   // Always communicate to browser process for topmost frame.
-  if (!cache.updated_forms.empty() ||
+  if (!cache.updated_forms.empty() || !cache.removed_forms.empty() ||
       !render_frame()->GetWebFrame()->Parent()) {
     GetAutofillDriver().FormsSeen(cache.updated_forms,
                                   std::move(cache.removed_forms).extract());
@@ -1443,17 +1445,18 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
 }
 
 mojom::AutofillDriver& AutofillAgent::GetAutofillDriver() {
-  if (!autofill_driver_) {
-    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
-        &autofill_driver_);
-  }
-
   if (IsPrerendering()) {
     if (!deferring_autofill_driver_) {
       deferring_autofill_driver_ =
           std::make_unique<DeferringAutofillDriver>(this);
     }
     return *deferring_autofill_driver_;
+  }
+
+  // Lazily bind this interface.
+  if (!autofill_driver_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &autofill_driver_);
   }
 
   return *autofill_driver_;

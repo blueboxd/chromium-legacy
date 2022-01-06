@@ -77,7 +77,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
 
     // Similar to additional_offset_to_layout_shift_root_delta but for scroll
     // offsets.
-    FloatSize scroll_offset_to_layout_shift_root_delta;
+    gfx::Vector2dF scroll_offset_to_layout_shift_root_delta;
 
     // For paint invalidation optimization for subpixel movement under
     // composited layer. It's reset to zero if subpixel can't be propagated
@@ -87,11 +87,6 @@ struct PaintPropertyTreeBuilderFragmentContext {
 
     // The PaintLayer corresponding to the origin of |paint_offset|.
     Member<const LayoutObject> paint_offset_root;
-    // Whether newly created children should flatten their inherited transform
-    // (equivalently, draw into the plane of their parent). Should generally
-    // be updated whenever |transform| is; flattening only needs to happen
-    // to immediate children.
-    bool should_flatten_inherited_transform = false;
 
     // True if any fixed-position children within this context are fixed to the
     // root of the FrameView (and hence above its scroll).
@@ -104,9 +99,6 @@ struct PaintPropertyTreeBuilderFragmentContext {
 
     bool is_in_block_fragmentation = false;
 
-    // Rendering context for 3D sorting. See
-    // TransformPaintPropertyNode::renderingContextId.
-    unsigned rendering_context_id = 0;
     // The clip node describes the accumulated raster clip for the current
     // subtree.  Note that the computed raster region in canvas space for a clip
     // node is independent from the transform and paint offset above. Also the
@@ -119,7 +111,12 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // the transform tree changes.
     const ScrollPaintPropertyNode* scroll = nullptr;
 
-    FloatSize pending_scroll_anchor_adjustment;
+    gfx::Vector2dF pending_scroll_anchor_adjustment;
+
+    // Paint offset of the innermost fragmentainer minus accumulated offsets
+    // that are baked in PaintOffsetTranslations since we entered the
+    // fragmentainer.
+    PhysicalOffset paint_offset_for_oof_in_fragmentainer;
   };
 
   ContainingBlockContext current;
@@ -147,6 +144,15 @@ struct PaintPropertyTreeBuilderFragmentContext {
   const EffectPaintPropertyNodeOrAlias* current_effect;
   bool this_or_ancestor_opacity_is_zero = false;
 
+  // Whether newly created children should flatten their inherited transform
+  // (equivalently, draw into the plane of their parent). Should generally
+  // be updated whenever |transform| is; flattening only needs to happen
+  // to immediate children.
+  bool should_flatten_inherited_transform = false;
+  // Rendering context for 3D sorting. See
+  // TransformPaintPropertyNode::renderingContextId.
+  unsigned rendering_context_id = 0;
+
   // If the object is a flow thread, this records the clip rect for this
   // fragment.
   absl::optional<PhysicalRect> fragment_clip;
@@ -162,13 +168,6 @@ struct PaintPropertyTreeBuilderFragmentContext {
 
   PhysicalOffset old_paint_offset;
 
-  // Paint offset at the current innermost fragmentainer.
-  PhysicalOffset fragmentainer_paint_offset;
-
-  // Amount of adjustment done by UpdateForPaintOffsetTranslation() since we
-  // entered the innermost fragmentainer.
-  PhysicalOffset adjustment_for_oof_in_fragmentainer;
-
   // An additional offset that applies to the current fragment, but is detected
   // *before* the ContainingBlockContext is updated for it. Once the
   // ContainingBlockContext is set, this value should be added to
@@ -177,7 +176,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
 
   // The delta between the old and new accumulated offsets of 2d translation
   // transforms to the layout shift root.
-  FloatSize translation_2d_to_layout_shift_root_delta;
+  gfx::Vector2dF translation_2d_to_layout_shift_root_delta;
 };
 
 struct PaintPropertyTreeBuilderContext final {
@@ -339,9 +338,6 @@ class PaintPropertyTreeBuilder {
   // scroll offset transform) and ensure the context is up to date.
   // Returns whether any paint property of the object has changed.
   PaintPropertyChangeType UpdateForChildren();
-
-  static bool NeedsTransform(const LayoutObject& object,
-                             CompositingReasons direct_compositing_reasons);
 
  private:
   ALWAYS_INLINE void InitFragmentPaintProperties(

@@ -85,6 +85,10 @@ bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
+AppListModel* GetAppListModel() {
+  return AppListModelProvider::Get()->model();
+}
+
 AppListView* GetAppListView() {
   return Shell::Get()->app_list_controller()->presenter()->GetView();
 }
@@ -170,11 +174,12 @@ class AppListControllerImplTest : public AshTestBase {
   }
 
   void PopulateItem(int num) {
+    AppListModel* const model = GetAppListModel();
     for (int i = 0; i < num; i++) {
       std::unique_ptr<AppListItem> item(new AppListItem(
           "app_id" +
           base::UTF16ToUTF8(base::FormatNumber(populated_item_count_))));
-      Shell::Get()->app_list_controller()->GetModel()->AddItem(std::move(item));
+      model->AddItem(std::move(item));
       ++populated_item_count_;
     }
   }
@@ -695,8 +700,11 @@ TEST_F(AppListControllerImplTest,
 TEST_F(AppListControllerImplTest, SimulateProfileSwapNoCrashOnDestruct) {
   // Add a folder, whose AppListItemList the AppListModel will observe.
   const std::string folder_id("folder_1");
-  auto folder = std::make_unique<AppListFolderItem>(folder_id);
-  AppListModel* model = Shell::Get()->app_list_controller()->GetModel();
+  AppListModel* model = GetAppListModel();
+  AppListControllerImpl* app_list_controller =
+      Shell::Get()->app_list_controller();
+  auto folder =
+      std::make_unique<AppListFolderItem>(folder_id, app_list_controller);
   model->AddItem(std::move(folder));
 
   for (int i = 0; i < 2; ++i) {
@@ -774,10 +782,11 @@ TEST_F(AppListControllerImplTest, DragItemFromAppsGridView) {
   // Add icons with the same app id to Shelf and AppsGridView respectively.
   ShelfViewTestAPI shelf_view_test_api(shelf->GetShelfViewForTesting());
   std::string app_id = shelf_view_test_api.AddItem(TYPE_PINNED_APP).app_id;
-  Shell::Get()->app_list_controller()->GetModel()->AddItem(
-      std::make_unique<AppListItem>(app_id));
+  GetAppListModel()->AddItem(std::make_unique<AppListItem>(app_id));
 
   AppsGridView* apps_grid_view = GetAppsGridView();
+  apps_grid_view->Layout();
+
   AppListItemView* app_list_item_view =
       test::AppsGridViewTestApi(apps_grid_view).GetViewAtIndex(GridIndex(0, 0));
   views::View* shelf_icon_view =
@@ -809,11 +818,15 @@ TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
   // Populate app list model with 25 items, of which items at indices in
   // |folders| are folders containing a single item.
   const std::set<int> folders = {5, 23};
-  AppListModel* model = Shell::Get()->app_list_controller()->GetModel();
+  AppListControllerImpl* app_list_controller =
+      Shell::Get()->app_list_controller();
+  AppListModel* model = GetAppListModel();
+
   for (int i = 0; i < 25; ++i) {
     if (folders.count(i)) {
       const std::string folder_id = base::StringPrintf("fake_folder_%d", i);
-      auto folder = std::make_unique<AppListFolderItem>(folder_id);
+      auto folder =
+          std::make_unique<AppListFolderItem>(folder_id, app_list_controller);
       model->AddItem(std::move(folder));
       auto item = std::make_unique<AppListItem>(
           base::StringPrintf("fake_id_in_folder_%d", i));
@@ -857,8 +870,6 @@ TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
   std::unique_ptr<views::Widget> widget_without_app_id =
       TestWidgetBuilder().SetBounds(init_bounds).BuildOwnsNativeWidget();
 
-  AppListControllerImpl* app_list_controller =
-      Shell::Get()->app_list_controller();
   // NOTE: Calculate the apps grid bounds after test window is shown, as showing
   // the window can change the app list layout (due to the change in the shelf
   // height).
@@ -1480,8 +1491,7 @@ class AppListSortTest : public AppListControllerImplTest {
   }
 
   int CountPageBreakItems() {
-    auto* top_list =
-        Shell::Get()->app_list_controller()->GetModel()->top_level_item_list();
+    auto* top_list = GetAppListModel()->top_level_item_list();
     int count = 0;
     for (size_t index = 0; index < top_list->item_count(); ++index) {
       if (top_list->item_at(index)->is_page_break())

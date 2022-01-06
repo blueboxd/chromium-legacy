@@ -275,7 +275,6 @@
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state_callback.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
-#include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_handler.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
@@ -751,7 +750,7 @@ Document::Document(const DocumentInit& initializer,
                          : initializer.UkmSourceId()),
       viewport_data_(MakeGarbageCollected<ViewportData>(*this)),
       is_for_external_handler_(initializer.IsForExternalHandler()),
-      fragment_directive_(MakeGarbageCollected<FragmentDirective>()),
+      fragment_directive_(MakeGarbageCollected<FragmentDirective>(*this)),
       display_lock_document_state_(
           MakeGarbageCollected<DisplayLockDocumentState>(this)),
       font_preload_manager_(MakeGarbageCollected<FontPreloadManager>(*this)),
@@ -1850,8 +1849,6 @@ bool Document::NeedsLayoutTreeUpdateForThisDocument() const {
     return true;
   if (style_engine_->NeedsStyleInvalidation())
     return true;
-  if (GetLayoutView() && GetLayoutView()->WasNotifiedOfSubtreeChange())
-    return true;
   if (style_engine_->NeedsLayoutTreeRebuild()) {
     // TODO(futhark): there a couple of places where call back into the top
     // frame while recursively doing a lifecycle update. One of them are for the
@@ -1946,8 +1943,7 @@ static void AssertNodeClean(const Node& node) {
   DCHECK(!node.NeedsStyleInvalidation());
   DCHECK(!node.ChildNeedsStyleInvalidation());
   DCHECK(!node.GetForceReattachLayoutTree());
-  DCHECK(!node.GetLayoutObject() ||
-         !node.GetLayoutObject()->WhitespaceChildrenMayChange());
+  DCHECK(!node.NeedsLayoutSubtreeUpdate());
 }
 
 static void AssertLayoutTreeUpdatedForPseudoElements(const Element& element) {
@@ -1965,8 +1961,7 @@ static void AssertLayoutTreeUpdated(Node& root,
   Node* node = &root;
   while (node) {
     if (auto* element = DynamicTo<Element>(node)) {
-      if ((RuntimeEnabledFeatures::CSSContentVisibilityEnabled() &&
-           element->ChildStyleRecalcBlockedByDisplayLock()) ||
+      if (element->ChildStyleRecalcBlockedByDisplayLock() ||
           (allow_dirty_container_subtrees && element->GetLayoutObject() &&
            element->GetLayoutObject()
                ->StyleRef()
@@ -2123,8 +2118,6 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
     View()->MarkOrthogonalWritingModeRootsForLayout();
   }
 
-  NotifyLayoutTreeOfSubtreeChanges();
-
   if (focused_element_ && !focused_element_->IsFocusable())
     ClearFocusedElementSoon();
   GetLayoutView()->ClearHitTestCache();
@@ -2192,18 +2185,6 @@ void Document::UpdateStyle() {
   }
 }
 
-void Document::NotifyLayoutTreeOfSubtreeChanges() {
-  if (!GetLayoutView()->WasNotifiedOfSubtreeChange())
-    return;
-
-  lifecycle_.AdvanceTo(DocumentLifecycle::kInLayoutSubtreeChange);
-
-  GetLayoutView()->HandleSubtreeModifications();
-  DCHECK(!GetLayoutView()->WasNotifiedOfSubtreeChange());
-
-  lifecycle_.AdvanceTo(DocumentLifecycle::kLayoutSubtreeChangeClean);
-}
-
 bool Document::NeedsLayoutTreeUpdateForNode(const Node& node,
                                             bool ignore_adjacent_style) const {
   // TODO(rakina): Switch some callers that may need to call
@@ -2219,28 +2200,38 @@ bool Document::NeedsLayoutTreeUpdateForNode(const Node& node,
 bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
     const Node& node,
     bool ignore_adjacent_style) const {
-  if (node.IsShadowRoot())
-    return false;
-  if (GetDisplayLockDocumentState().LockedDisplayLockCount() == 0 &&
-      !NeedsLayoutTreeUpdate())
-    return false;
   if (!node.isConnected())
     return false;
-
-  if (NeedsFullLayoutTreeUpdate() || node.NeedsStyleRecalc() ||
-      node.NeedsStyleInvalidation())
+  if (node.IsShadowRoot())
+    return false;
+  if (NeedsFullLayoutTreeUpdate())
     return true;
+  if (DisplayLockUtilities::IsUnlockedQuickCheck(node) &&
+      !NeedsLayoutTreeUpdate())
+    return false;
+
+  bool is_dirty = false;
+  if (node.NeedsStyleRecalc() || node.NeedsStyleInvalidation()) {
+    if (auto* style = node.GetComputedStyle())
+      return !style->IsEnsuredOutsideFlatTree();
+    is_dirty = true;
+  }
+
   for (const ContainerNode* ancestor = LayoutTreeBuilderTraversal::Parent(node);
        ancestor; ancestor = LayoutTreeBuilderTraversal::Parent(*ancestor)) {
     if (ShadowRoot* root = ancestor->GetShadowRoot()) {
       if (root->NeedsStyleRecalc() || root->NeedsStyleInvalidation() ||
           root->NeedsAdjacentStyleRecalc()) {
-        return true;
+        is_dirty = true;
       }
     }
     if (ancestor->NeedsStyleRecalc() || ancestor->NeedsStyleInvalidation() ||
         (ancestor->NeedsAdjacentStyleRecalc() && !ignore_adjacent_style)) {
-      return true;
+      is_dirty = true;
+    }
+    if (is_dirty) {
+      if (auto* style = ancestor->GetComputedStyle())
+        return !style->IsEnsuredOutsideFlatTree();
     }
     auto* element = DynamicTo<Element>(ancestor);
     if (!element)
@@ -2248,13 +2239,11 @@ bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
     if (auto* context = element->GetDisplayLockContext()) {
       // Even if the ancestor is style-clean, we might've previously
       // blocked a style traversal going to the ancestor or its descendants.
-      if (context->StyleTraversalWasBlocked()) {
-        DCHECK(context->IsLocked());
+      if (context->StyleTraversalWasBlocked())
         return true;
-      }
     }
   }
-  return false;
+  return is_dirty;
 }
 
 void Document::UpdateStyleAndLayoutTreeForNode(const Node* node) {
@@ -2579,8 +2568,8 @@ void Document::GetPageDescription(uint32_t page_index,
       break;
     case PageSizeType::kFixed: {
       FloatSize size = style->PageSize();
-      width = size.Width();
-      height = size.Height();
+      width = size.width();
+      height = size.height();
       break;
     }
     default:
@@ -3626,9 +3615,6 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   if (ProcessingBeforeUnload())
     return false;
 
-  if (auto* mf_checker = View()->GetMobileFriendlinessChecker())
-    mf_checker->EvaluateNow();
-
   PageDismissalScope in_page_dismissal;
   auto& before_unload_event = *MakeGarbageCollected<BeforeUnloadEvent>();
   before_unload_event.initEvent(event_type_names::kBeforeunload, false, true);
@@ -4026,34 +4012,9 @@ void Document::SetURL(const KURL& url) {
   TRACE_EVENT1("navigation", "Document::SetURL", "url",
                new_url.GetString().Utf8());
 
-  // Count non-targetText occurrences of :~: in the url fragment to make sure
-  // the delimiter is web-compatible. This can be removed once the feature
-  // ships.
-  wtf_size_t delim_pos = new_url.FragmentIdentifier().Find(":~:");
-  if (delim_pos != kNotFound) {
-    const wtf_size_t one_past_delim = delim_pos + 3;
-    if (new_url.FragmentIdentifier().Find(kTextFragmentIdentifierPrefix,
-                                          one_past_delim) != one_past_delim) {
-      // We can't use count here because the DocumentLoader hasn't yet been
-      // created. It'll be use counted with other delimiters in
-      // FragmentAnchor::TryCreate.
-      use_count_fragment_directive_ = true;
-    }
-  }
-
   // Strip the fragment directive from the URL fragment. E.g. "#id:~:text=a"
   // --> "#id". See https://github.com/WICG/scroll-to-text-fragment.
-  String fragment = new_url.FragmentIdentifier();
-  wtf_size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
-  if (start_pos != kNotFound) {
-    fragment_directive_string_ =
-        fragment.Substring(start_pos + kFragmentDirectivePrefixStringLength);
-
-    if (start_pos == 0)
-      new_url.RemoveFragmentIdentifier();
-    else
-      new_url.SetFragmentIdentifier(fragment.Substring(0, start_pos));
-  }
+  new_url = fragment_directive_->ConsumeFragmentDirective(new_url);
 
   url_ = new_url;
   access_entry_from_url_ = nullptr;
@@ -4292,6 +4253,12 @@ void Document::MaybeHandleHttpRefresh(const String& content,
         mojom::ConsoleMessageLevel::kError, message));
     return;
   }
+
+  // Monitor blocking refresh usage when scripting is disabled.
+  // See https://crbug.com/63107
+  if (!dom_window_->CanExecuteScripts(kNotAboutToExecuteScript))
+    UseCounter::Count(this, WebFeature::kHttpRefreshWhenScriptingDisabled);
+
   if (http_refresh_type == kHttpRefreshFromHeader) {
     UseCounter::Count(this, WebFeature::kRefreshHeader);
   }
@@ -4866,15 +4833,15 @@ void Document::SendFocusNotification(Element* new_focused_element,
           new_focused_element->OutlineRectsInVisualViewport(
               DocumentUpdateReason::kFocus);
       for (auto& outline_rect : outline_rects)
-        bounds_in_viewport.Unite(outline_rect);
+        bounds_in_viewport.Union(outline_rect);
     }
 
     if (GetFrame()->GetWidgetForLocalRoot()) {
       element_bounds_in_dips =
           GetFrame()->GetWidgetForLocalRoot()->BlinkSpaceToEnclosedDIPs(
-              bounds_in_viewport);
+              ToGfxRect(bounds_in_viewport));
     } else {
-      element_bounds_in_dips = bounds_in_viewport;
+      element_bounds_in_dips = ToGfxRect(bounds_in_viewport);
     }
   }
 
@@ -4924,11 +4891,10 @@ void Document::NotifyFocusedElementChanged(Element* old_focused_element,
 void Document::SetSequentialFocusNavigationStartingPoint(Node* node) {
   if (!dom_window_)
     return;
-  if (!node) {
+  if (!node || node->GetDocument() != this) {
     sequential_focus_navigation_starting_point_ = nullptr;
     return;
   }
-  DCHECK_EQ(node->GetDocument(), this);
   if (!sequential_focus_navigation_starting_point_)
     sequential_focus_navigation_starting_point_ = Range::Create(*this);
   sequential_focus_navigation_starting_point_->selectNodeContents(
@@ -5069,7 +5035,7 @@ void Document::NodeChildrenWillBeRemoved(ContainerNode& container) {
         observer->NodeChildrenWillBeRemoved(container);
       });
 
-  if (ContainsShadowTree()) {
+  if (MayContainShadowRoots()) {
     for (Node& n : NodeTraversal::ChildrenOf(container))
       n.CheckSlotChangeBeforeRemoved();
   }
@@ -5090,7 +5056,7 @@ void Document::NodeWillBeRemoved(Node& n) {
         observer->NodeWillBeRemoved(n);
       });
 
-  if (ContainsShadowTree())
+  if (MayContainShadowRoots())
     n.CheckSlotChangeBeforeRemoved();
 
   if (n.InActiveDocument())
@@ -5420,7 +5386,9 @@ String Document::cookie(ExceptionState& exception_state) const {
           "Cookies are disabled inside 'data:' URLs.");
     } else {
       exception_state.ThrowSecurityError("Access is denied for this document.");
-      if (Url().ProtocolIs("urn")) {
+      // Count cookie accesses in opaque-origin documents from WebBundles.
+      // TODO(https://crbug.com/1257045): Remove urn: scheme support.
+      if (Url().ProtocolIs("urn") || Url().ProtocolIs("uuid-in-package")) {
         CountUse(WebFeature::kUrnDocumentAccessedCookies);
       }
     }
@@ -5448,7 +5416,9 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
           "Cookies are disabled inside 'data:' URLs.");
     } else {
       exception_state.ThrowSecurityError("Access is denied for this document.");
-      if (Url().ProtocolIs("urn")) {
+      // Count cookie accesses in opaque-origin documents from WebBundles.
+      // TODO(https://crbug.com/1257045): Remove urn: scheme support.
+      if (Url().ProtocolIs("urn") || Url().ProtocolIs("uuid-in-package")) {
         CountUse(WebFeature::kUrnDocumentAccessedCookies);
       }
     }
@@ -6998,6 +6968,9 @@ void Document::AddToTopLayer(Element* element, const Element* before) {
   DCHECK(!top_layer_elements_.Contains(element));
   DCHECK(!before || top_layer_elements_.Contains(before));
   if (before) {
+    DCHECK(element->IsBackdropPseudoElement())
+        << "If this invariant changes, we might need to revisit Container "
+           "Queries for top layer elements.";
     wtf_size_t before_position = top_layer_elements_.Find(before);
     top_layer_elements_.insert(before_position, element);
   } else {
@@ -7042,6 +7015,15 @@ void Document::HideAllPopupsUntil(const HTMLPopupElement* endpoint) {
          popup_element_stack_.back() != endpoint) {
     popup_element_stack_.back()->hide();
   }
+}
+void Document::HidePopupIfShowing(const HTMLPopupElement* popup) {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
+  if (!popup_element_stack_.Contains(popup))
+    return;
+  HideAllPopupsUntil(popup);
+  DCHECK(!popup_element_stack_.IsEmpty() &&
+         popup_element_stack_.back() == popup);
+  HideTopmostPopupElement();
 }
 
 void Document::exitPointerLock() {
@@ -7715,15 +7697,6 @@ void Document::PlatformColorsChanged() {
   GetStyleEngine().PlatformColorsChanged();
 }
 
-void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
-  DCHECK_NE(order, ShadowCascadeOrder::kShadowCascadeNone);
-  if (order == shadow_cascade_order_)
-    return;
-
-  if (order > shadow_cascade_order_)
-    shadow_cascade_order_ = order;
-}
-
 PropertyRegistry& Document::EnsurePropertyRegistry() {
   if (!property_registry_)
     property_registry_ = MakeGarbageCollected<PropertyRegistry>();
@@ -8128,9 +8101,10 @@ void Document::ActivateForPrerendering(base::TimeTicks activation_start) {
     std::move(callback).Run();
   }
 
-  // https://jeremyroman.github.io/alternate-loading-modes/#prerendering-browsing-context-activate
+  // https://wicg.github.io/nav-speculation/prerendering.html#prerendering-browsing-context-activate
   // Step 8.3.4 "Fire an event named prerenderingchange at doc."
-  if (RuntimeEnabledFeatures::Prerender2Enabled(GetExecutionContext())) {
+  if (RuntimeEnabledFeatures::Prerender2RelatedFeaturesEnabled(
+          GetExecutionContext())) {
     DispatchEvent(*Event::Create(event_type_names::kPrerenderingchange));
   } else {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(

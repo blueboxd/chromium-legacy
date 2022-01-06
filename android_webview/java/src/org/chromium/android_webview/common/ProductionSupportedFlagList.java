@@ -181,13 +181,33 @@ public final class ProductionSupportedFlagList {
                     "Enables use selective image inversion to automatically darken page, it will be"
                             + " used when WebView is in dark mode, but website doesn't provide dark"
                             + " style."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_DARK_MODE_MATCH_THEME,
+                    "Set prefers-color-theme according to the app's theme unless the app specifies"
+                            + " FORCE_DARK_OFF or DARK_STRATEGY_USER_AGENT_DARKENING_ONLY."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_FORCE_DARK_MODE_MATCH_THEME,
+                    "Automatically darken page if"
+                            + " WebView is set to FORCE_DARK_AUTO and the app has dark theme"),
             Flag.baseFeature(ContentFeatures.VERIFY_DID_COMMIT_PARAMS,
                     "Enables reporting of browser and renderer navigation inconsistencies on"
                             + "navigations"),
             Flag.baseFeature(ContentFeatures.USER_MEDIA_CAPTURE_ON_FOCUS,
                     "Enables GetUserMedia API will only resolve when the document calling it has"
                             + "focus"),
+            Flag.baseFeature(ContentFeatures.COMPOSITE_BG_COLOR_ANIMATION,
+                    "When enabled, the background-color animation runs on the compositor thread."),
             Flag.baseFeature(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE,
-                    "Upload UMA metrics logs through MetricsUploadService not via GMS-core."),
+                    "Upload UMA metrics logs through MetricsUploadService not via GMS-core"
+                            + " directly."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_LOG_FIRST_PARTY_PAGE_TIME_SPENT,
+                    "Enables logging whether it was a first party page when logging"
+                            + " PageTimeSpent."),
+            Flag.baseFeature(BlinkFeatures.FORCE_MAJOR_VERSION100_IN_USER_AGENT,
+                    "Force the Chrome major version number to 100 in the User-Agent string."),
+            Flag.baseFeature(NetworkServiceFeatures.URL_LOADER_SYNC_CLIENT,
+                    "Optimizes communication between URLLoader and CorsURLLoader."),
+            Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
+                    "Enables faster setTimeout(,0) by removing the 1 ms clamping."),
+            Flag.baseFeature(BlinkFeatures.PAINT_HOLDING_CROSS_ORIGIN,
+                    "Defers the first commit until FCP or timeout for cross-origin navigations."),
     };
 }

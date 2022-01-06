@@ -21,13 +21,13 @@
 #include "base/memory/free_deleter.h"
 #include "base/memory/ptr_util.h"
 #include "base/scoped_generic.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -673,9 +673,10 @@ void UsbServiceWin::CreateDeviceObject(
   auto device = base::MakeRefCounted<UsbDeviceWin>(
       device_path, hub_path, functions, bus_number, port_number, driver_type);
   devices_by_path_[device->device_path()] = device;
-  device->ReadDescriptors(base::BindOnce(&UsbServiceWin::DeviceReady,
-                                         weak_factory_.GetWeakPtr(), device,
-                                         driver_name));
+  device->ReadDescriptors(
+      blocking_task_runner_,
+      base::BindOnce(&UsbServiceWin::DeviceReady, weak_factory_.GetWeakPtr(),
+                     device, driver_name));
 }
 
 void UsbServiceWin::UpdateFunction(

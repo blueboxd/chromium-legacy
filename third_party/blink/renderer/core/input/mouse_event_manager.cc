@@ -83,11 +83,11 @@ void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
     initializer->setMovementX(
         base::saturated_cast<int>(mouse_event.PositionInScreen().x() *
                                   device_scale_factor) -
-        base::saturated_cast<int>(last_position->X() * device_scale_factor));
+        base::saturated_cast<int>(last_position->x() * device_scale_factor));
     initializer->setMovementY(
         base::saturated_cast<int>(mouse_event.PositionInScreen().y() *
                                   device_scale_factor) -
-        base::saturated_cast<int>(last_position->Y() * device_scale_factor));
+        base::saturated_cast<int>(last_position->y() * device_scale_factor));
   }
 }
 
@@ -162,7 +162,7 @@ void MouseEventManager::Clear() {
   click_count_ = 0;
   click_element_ = nullptr;
   mouse_down_element_ = nullptr;
-  mouse_down_pos_ = IntPoint();
+  mouse_down_pos_ = gfx::Point();
   mouse_down_timestamp_ = base::TimeTicks();
   mouse_down_ = WebMouseEvent();
   svg_pan_ = false;
@@ -438,10 +438,10 @@ void MouseEventManager::RecomputeMouseHoverState() {
     button = WebPointerProperties::Button::kLeft;
     modifiers |= WebInputEvent::kLeftButtonDown;
   }
-  WebMouseEvent fake_mouse_move_event(WebInputEvent::Type::kMouseMove,
-                                      last_known_mouse_position_,
-                                      last_known_mouse_screen_position_, button,
-                                      0, modifiers, base::TimeTicks::Now());
+  WebMouseEvent fake_mouse_move_event(
+      WebInputEvent::Type::kMouseMove, ToGfxPointF(last_known_mouse_position_),
+      ToGfxPointF(last_known_mouse_screen_position_), button, 0, modifiers,
+      base::TimeTicks::Now());
   Vector<WebMouseEvent> coalesced_events, predicted_events;
   frame_->GetEventHandler().HandleMouseMoveEvent(
       TransformWebMouseEvent(view, fake_mouse_move_event), coalesced_events,
@@ -1137,20 +1137,19 @@ void MouseEventManager::ResetDragSource() {
 }
 
 bool MouseEventManager::DragThresholdExceeded(
-    const IntPoint& drag_location_in_root_frame) const {
+    const gfx::Point& drag_location_in_root_frame) const {
   LocalFrameView* view = frame_->View();
   if (!view)
     return false;
-  IntPoint drag_location =
+  gfx::Point drag_location =
       view->ConvertFromRootFrame(drag_location_in_root_frame);
-  IntSize delta = drag_location - mouse_down_pos_;
+  gfx::Vector2d delta = drag_location - mouse_down_pos_;
 
   // WebKit's drag thresholds depend on the type of object being dragged. If we
   // want to revive that behavior, we can multiply the threshold constants with
   // a number based on dragState().m_dragType.
 
-  return abs(delta.Width()) >= kDragThresholdX ||
-         abs(delta.Height()) >= kDragThresholdY;
+  return abs(delta.x()) >= kDragThresholdX || abs(delta.y()) >= kDragThresholdY;
 }
 
 void MouseEventManager::ClearDragHeuristicState() {

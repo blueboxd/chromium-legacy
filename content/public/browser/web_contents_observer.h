@@ -69,7 +69,7 @@ struct Referrer;
 // helpers will suffice:
 //
 // - Classes that have a 1:1 relationship with one RenderFrameHost can often
-//   use `RenderDocumentHostUserData` instead.
+//   use `DocumentUserData` instead.
 // - Mojo interface implementations that have a 1 RenderFrameHost to many
 //   instances relationship can often use `DocumentService` instead.
 //
@@ -95,6 +95,9 @@ struct Referrer;
 // from the WebContentsObserver API. http://crbug.com/173325
 class CONTENT_EXPORT WebContentsObserver {
  public:
+  WebContentsObserver(const WebContentsObserver&) = delete;
+  WebContentsObserver& operator=(const WebContentsObserver&) = delete;
+
   // Frames and Views ----------------------------------------------------------
 
   // Called when a RenderFrame for |render_frame_host| is created in the
@@ -225,7 +228,8 @@ class CONTENT_EXPORT WebContentsObserver {
   // RenderProcessHostObserver::RenderProcessExited(); for code that doesn't
   // otherwise need to be a WebContentsObserver, that API is probably a better
   // choice.
-  virtual void RenderProcessGone(base::TerminationStatus status) {}
+  virtual void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) {}
 
   // This method is invoked when a WebContents swaps its visible RenderViewHost
   // with another one, possibly changing processes. The RenderViewHost that has
@@ -321,10 +325,10 @@ class CONTENT_EXPORT WebContentsObserver {
   // HasCommitted.
   //
   // The per-document / per-page data should be stored in
-  // RenderDocumentHostUserData / PageUserData instead of resetting it in
+  // DocumentUserData / PageUserData instead of resetting it in
   // DidFinishNavigation. (In particular, the page might be stored in the
   // back-forward cache instead of being deleted. See comments in PageUserData /
-  // RenderDocumentHostUserData for more details).
+  // DocumentUserData for more details).
   virtual void DidFinishNavigation(NavigationHandle* navigation_handle) {}
 
   // Called after the contents replaces the |predecessor_contents| in its
@@ -341,7 +345,6 @@ class CONTENT_EXPORT WebContentsObserver {
   // loading for the first time (initiates outgoing requests), when incoming
   // data subsequently starts arriving, and when it finishes loading.
   virtual void DidStartLoading() {}
-  virtual void DidReceiveResponse() {}
   virtual void DidStopLoading() {}
 
   // The page has made some progress loading. |progress| is a value between 0.0
@@ -484,8 +487,8 @@ class CONTENT_EXPORT WebContentsObserver {
   // Invoked every time the WebContents changes visibility.
   virtual void OnVisibilityChanged(Visibility visibility) {}
 
-  // Invoked when the main frame changes size.
-  virtual void MainFrameWasResized(bool width_changed) {}
+  // Invoked when the primary main frame changes size.
+  virtual void PrimaryMainFrameWasResized(bool width_changed) {}
 
   // Invoked when the given frame changes its window.name property.
   virtual void FrameNameChanged(RenderFrameHost* render_frame_host,
@@ -777,8 +780,6 @@ class CONTENT_EXPORT WebContentsObserver {
   void ResetWebContents();
 
   WebContents* web_contents_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsObserver);
 };
 
 }  // namespace content

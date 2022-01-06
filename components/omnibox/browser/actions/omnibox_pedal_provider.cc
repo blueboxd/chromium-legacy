@@ -18,7 +18,6 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/actions/omnibox_pedal_concepts.h"
-#include "components/omnibox/browser/actions/omnibox_pedal_implementations.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -49,10 +48,11 @@ size_t EstimateMemoryUsage(scoped_refptr<OmniboxPedal> pedal) {
   return pedal->EstimateMemoryUsage();
 }
 
-OmniboxPedalProvider::OmniboxPedalProvider(AutocompleteProviderClient& client,
-                                           bool with_branding)
+OmniboxPedalProvider::OmniboxPedalProvider(
+    AutocompleteProviderClient& client,
+    std::unordered_map<OmniboxPedalId, scoped_refptr<OmniboxPedal>> pedals)
     : client_(client),
-      pedals_(GetPedalImplementations(with_branding, client_.IsOffTheRecord())),
+      pedals_(std::move(pedals)),
       ignore_group_(false, false, 0),
       match_tokens_(kMaximumMaxTokens) {
   LoadPedalConcepts();
@@ -310,6 +310,15 @@ void OmniboxPedalProvider::LoadPedalConcepts() {
     ignore_group_ = LoadSynonymGroupString(
         false, false,
         l10n_util::GetStringUTF16(IDS_OMNIBOX_PEDALS_IGNORE_GROUP));
+    if (tokenize_characters_.empty()) {
+      // Translation console sourced data has lots of spaces, but in practice
+      // the ignore group doesn't include a single space sequence. Rather than
+      // burden l10n with getting this nuance in the data precisely specified,
+      // we simply hardcode to ignore spaces. This applies for all languages
+      // that don't tokenize on spaces (see `tokenize_characters_` above).
+      ignore_group_.AddSynonym(
+          OmniboxPedal::TokenSequence(std::vector<int>({dictionary_[u" "]})));
+    }
   } else {
     const base::Value* ignore_group_value =
         concept_data->FindKey("ignore_group");

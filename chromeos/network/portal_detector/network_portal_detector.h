@@ -50,6 +50,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
     virtual ~Observer() {}
   };
 
+  NetworkPortalDetector(const NetworkPortalDetector&) = delete;
+  NetworkPortalDetector& operator=(const NetworkPortalDetector&) = delete;
+
   virtual ~NetworkPortalDetector() {}
 
   // Adds |observer| to the observers list.
@@ -97,9 +100,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
 
  protected:
   NetworkPortalDetector() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetector);
 };
 
 // Manages a global NetworkPortalDetector instance that can be accessed across
@@ -140,6 +140,7 @@ namespace network_portal_detector {
 using ::chromeos::network_portal_detector::GetInstance;
 using ::chromeos::network_portal_detector::InitializeForTesting;
 using ::chromeos::network_portal_detector::IsInitialized;
+using ::chromeos::network_portal_detector::SetForTesting;
 using ::chromeos::network_portal_detector::SetNetworkPortalDetector;
 using ::chromeos::network_portal_detector::Shutdown;
 }  // namespace network_portal_detector

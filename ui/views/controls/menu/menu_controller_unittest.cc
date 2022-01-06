@@ -10,10 +10,10 @@
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -78,11 +78,12 @@ using ::ui::mojom::DragOperation;
 
 bool ShouldIgnoreScreenBoundsForMenus() {
 #if defined(USE_OZONE)
-  // Wayland requires placing menus is screen coordinates. See comment in
-  // ozone_platform_wayland.cc.
-  return ui::OzonePlatform::GetInstance()
-      ->GetPlatformProperties()
-      .ignore_screen_bounds_for_menus;
+  // Some platforms, such as Wayland, disallow client applications to manipulate
+  // global screen coordinates, requiring menus to be positioned relative to
+  // their parent windows. See comment in ozone_platform_wayland.cc.
+  return !ui::OzonePlatform::GetInstance()
+              ->GetPlatformProperties()
+              .supports_global_screen_coordinates;
 #else
   return false;
 #endif

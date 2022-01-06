@@ -9,8 +9,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/sequenced_task_runner.h"
-#include "base/sequenced_task_runner_helpers.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner_helpers.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "media/gpu/media_gpu_export.h"
@@ -18,6 +19,7 @@
 
 namespace gpu {
 class CommandBufferStub;
+class DXGISharedHandleManager;
 class SharedImageBacking;
 class SharedImageRepresentationFactoryRef;
 class SharedImageStub;
@@ -47,6 +49,9 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   static scoped_refptr<CommandBufferHelper> Create(
       gpu::CommandBufferStub* stub);
 
+  CommandBufferHelper(const CommandBufferHelper&) = delete;
+  CommandBufferHelper& operator=(const CommandBufferHelper&) = delete;
+
   // Gets the associated GLContext.
   //
   // Used by DXVAVDA to test for D3D11 support, and by V4L2VDA to create
@@ -55,6 +60,10 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
 
   // Retrieve the interface through which to create shared images.
   virtual gpu::SharedImageStub* GetSharedImageStub() = 0;
+
+#if defined(OS_WIN)
+  virtual gpu::DXGISharedHandleManager* GetDXGISharedHandleManager() = 0;
+#endif
 
   // Checks whether the stub has been destroyed.
   virtual bool HasStub() = 0;
@@ -152,8 +161,6 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
  private:
   friend class base::DeleteHelper<CommandBufferHelper>;
   friend class base::RefCountedDeleteOnSequence<CommandBufferHelper>;
-
-  DISALLOW_COPY_AND_ASSIGN(CommandBufferHelper);
 };
 
 }  // namespace media

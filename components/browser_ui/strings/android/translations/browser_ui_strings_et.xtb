@@ -29,6 +29,7 @@
 <translation id="1743802530341753419">Küsi luba, kui saidid üritavad seadmega ühendust luua (soovitatav)</translation>
 <translation id="1779089405699405702">Pildi dekooder</translation>
 <translation id="1818308510395330587">Selleks et rakendus <ph name="APP_NAME" /> saaks AR-i kasutada, lülitage sisse kaamera ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
+<translation id="1864927262126810325">Allikast <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Juurdepääs asukohale on selle seadme puhul välja lülitatud. Lülitage see sisse <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Reklaamid</translation>
 <translation id="1919950603503897840">Kontaktide valimine</translation>
@@ -116,7 +117,6 @@
 <translation id="4008040567710660924">Lubage konkreetse saidi küpsisefailid.</translation>
 <translation id="4046123991198612571">Järgmine lugu</translation>
 <translation id="4165986682804962316">Saidi seaded</translation>
-<translation id="4176463684765177261">Keelatud</translation>
 <translation id="4200726100658658164">Ava asukohaseaded</translation>
 <translation id="4226663524361240545">Seade võib märguannete korral vibreerida</translation>
 <translation id="4259722352634471385">Navigeerimine on blokeeritud: <ph name="URL" /></translation>
@@ -185,7 +185,6 @@
 <translation id="5876056640971328065">Video peatamine</translation>
 <translation id="5887687176710214216">Viimati külastati eile</translation>
 <translation id="5916664084637901428">Sees</translation>
-<translation id="59174027418879706">Lubatud</translation>
 <translation id="5922853908706496913">Ekraanikuva jagamine</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
 <translation id="5975083100439434680">Suumib välja</translation>
@@ -238,6 +237,7 @@
 <translation id="7016516562562142042">Praeguse otsingumootori puhul lubatud</translation>
 <translation id="7053983685419859001">Blokeeri</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 on valitud}other{# on valitud}}</translation>
+<translation id="7070090581017165256">Teave selle saidi kohta</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> on valitud.  Valikud on saadaval ekraanikuva ülaosas</translation>
 <translation id="7141896414559753902">Blokeeri saitidel hüpikakende ja ümbersuunamiste kuvamine (soovitatav)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>

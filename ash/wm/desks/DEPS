@@ -1,3 +1,8 @@
+include_rules = [
+  "+components/favicon_base/favicon_types.h",
+  "+components/favicon_base/favicon_util.h",
+]
+
 specific_include_rules = {
   # TODO(crbug/1251346): Remove.
   "desks_controller.cc": [

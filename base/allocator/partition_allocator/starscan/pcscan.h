@@ -16,6 +16,9 @@
 #include "base/compiler_specific.h"
 
 namespace base {
+
+class StatsReporter;
+
 namespace internal {
 
 [[noreturn]] BASE_EXPORT NOINLINE NOT_TAIL_CALLED void DoubleFreeAttempt();
@@ -133,6 +136,9 @@ class BASE_EXPORT PCScan final {
 
   inline static PCScanScheduler& scheduler();
 
+  // Registers reporting class.
+  static void RegisterStatsReporter(StatsReporter* reporter);
+
  private:
   class PCScanThread;
   friend class PCScanTask;
@@ -224,6 +230,7 @@ ALWAYS_INLINE void PCScan::JoinScanIfNeeded() {
 ALWAYS_INLINE void PCScan::MoveToQuarantine(void* ptr,
                                             size_t usable_size,
                                             size_t slot_size) {
+  PA_DCHECK(ptr == memory::UnmaskPtr(ptr));
   PCScan& instance = Instance();
   if (instance.clear_type_ == ClearType::kEager) {
     // We need to distinguish between usable_size and slot_size in this context:

@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -96,6 +97,58 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Note that a given Animation may have more than one reason, so this histogram
     cannot be used to determine the overall rate of 'composited' vs
     'noncomposited' animations.
+  </summary>
+</histogram>
+
+<histogram name="Blink.AutomaticLazyLoadFrame"
+    enum="AutomaticLazyLoadFrameState" expires_after="2022-04-09">
+  <owner>sisidovski@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
+  <summary>
+    Records if the automatic lazy-load for selected performance problematic
+    iframes is applied or not. This is recorded when each frame having a url in
+    the page is created. See HTMLFrameOwnerElement::LazyLoadIfPossible() for
+    more details.
+
+    Note: There are two groups that lazy-load isn't applied. One group is simply
+    the feature itself is disabled, another groupd is that feature is enabled,
+    but there are no targeted frames on the page.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Binding.CreateV8ContextForMainFrame"
+    units="microseconds" expires_after="2022-04-24">
+  <owner>sky@chromium.org</owner>
+  <owner>yukishiino@chromium.org</owner>
+  <summary>
+    Warning: this histogram was expired from ~4/2019 to ~10/2021.
+
+    Time (in microseconds) spent to create a v8::Context instance during a page
+    loading in the main-frame window.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Binding.CreateV8ContextForNonMainFrame"
+    units="microseconds" expires_after="2022-04-24">
+  <owner>sky@chromium.org</owner>
+  <owner>yukishiino@chromium.org</owner>
+  <summary>
+    Warning: this histogram was expired from ~4/2019 to ~10/2021.
+
+    Time spent (in microseconds) to create a v8::Context instance during a page
+    loading in a non-main-frame window, e.g. iframe.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
   </summary>
 </histogram>
 
@@ -292,7 +345,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.Canvas.MaximumInflightResources"
-    units="canvas resources" expires_after="2022-01-31">
+    units="canvas resources" expires_after="2022-04-24">
   <owner>aaronhk@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -760,11 +813,31 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
         Base histogram. Use suffixes of this histogram instead.
       </obsolete>
     </variant>
-    <variant name=".ActiveAnimation" summary=""/>
-    <variant name=".AssumedOverlap" summary=""/>
-    <variant name=".IndirectComposited" summary=""/>
-    <variant name=".Overlap" summary=""/>
-    <variant name=".TotalComposited" summary=""/>
+    <variant name=".ActiveAnimation" summary="">
+      <obsolete>
+        Deprecated as of 2021-10.
+      </obsolete>
+    </variant>
+    <variant name=".AssumedOverlap" summary="">
+      <obsolete>
+        Deprecated as of 2021-10.
+      </obsolete>
+    </variant>
+    <variant name=".IndirectComposited" summary="">
+      <obsolete>
+        Deprecated as of 2021-10.
+      </obsolete>
+    </variant>
+    <variant name=".Overlap" summary="">
+      <obsolete>
+        Deprecated as of 2021-10.
+      </obsolete>
+    </variant>
+    <variant name=".TotalComposited" summary="">
+      <obsolete>
+        Deprecated as of 2021-10.
+      </obsolete>
+    </variant>
   </token>
 </histogram>
 
@@ -945,9 +1018,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.CSSPaintValue.PaintOffThread"
-    enum="BooleanCompositorCSSPaint" expires_after="2021-09-08">
+    enum="BooleanCompositorCSSPaint" expires_after="2022-03-08">
   <owner>xidachen@chromium.org</owner>
-  <owner>smcgruer@chromium.org</owner>
+  <owner>kevers@chromium.org</owner>
   <summary>
     Records if a CSS Paint is painted on the compositor thread or has fallen
     back to the main thread.
@@ -2599,6 +2672,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Blink.Render.DisplayLockActivationReason"
     enum="DisplayLockActivationReason" expires_after="2021-12-12">
+  <obsolete>
+    Removed 11/2021.
+  </obsolete>
   <owner>vmpstr@chromium.org</owner>
   <owner>chrishtr@chromium.org</owner>
   <summary>This indicates the reason for display-locking activation</summary>
@@ -2911,7 +2987,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeCancelOnKeyboardDismissal" units="ms"
-    expires_after="2022-02-20">
+    expires_after="2022-05-01">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>web-identity@google.com</owner>
@@ -2922,7 +2998,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeCancelOnSuccess" units="ms"
-    expires_after="2022-02-20">
+    expires_after="2022-05-01">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>web-identity@google.com</owner>
@@ -3374,6 +3450,31 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Blink.V8.InitPerIsolateData" units="microseconds"
+    expires_after="2022-01-30">
+  <owner>sky@chromium.org</owner>
+  <owner>yukishiino@chromium.org</owner>
+  <summary>
+    The number of microseconds it takes to call V8PerIsolateData::Initialize().
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
+<histogram name="Blink.V8.NumberContextsCreatedOfWindow" units="count"
+    expires_after="2022-01-30">
+  <owner>sky@chromium.org</owner>
+  <owner>yukishiino@chromium.org</owner>
+  <summary>
+    The number of V8 contexts blink created for windows. Logged when the
+    renderer shuts down.
+  </summary>
+</histogram>
+
 <histogram name="Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold"
     enum="NQEEffectiveConnectionType" expires_after="2021-02-21">
   <owner>sclittle@chromium.org</owner>
@@ -3704,6 +3805,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.CollectionRate" units="%" expires_after="M84">
+  <obsolete>
+    Replaced by V8.GC.Cycle.CollectionRate.Full.Cpp since M94.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <summary>
     The percentage of objects that have been collected by a Blink GC. 0 is
@@ -3712,12 +3816,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.GCReason" enum="GCReason" expires_after="M84">
+  <obsolete>
+    Replaced by V8.GC.Cycle.Reason.Full since M94.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <summary>A type of Blink GC.</summary>
 </histogram>
 
 <histogram name="BlinkGC.LowMemoryPageNavigationGC.Reduction" units="MB"
     expires_after="M77">
+  <obsolete>
+    Dropped due to move to Oilpan library in M94.
+  </obsolete>
   <owner>keishi@chromium.org</owner>
   <summary>
     Amount of memory reduced with the GC triggered on page navigation while the
@@ -3730,6 +3840,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BlinkGC.MainThreadMarkingThroughput" units="MB/s"
     expires_after="M95">
+  <obsolete>
+    Dropped due to move to Oilpan library in M94.
+  </obsolete>
   <owner>mlippautz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3742,6 +3855,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.ObjectSizeAfterGC" units="KB" expires_after="M95">
+  <obsolete>
+    Replaced by V8.GC.Cycle.Objects.After.Full since M94.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <owner>mlippautz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
@@ -3752,6 +3868,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.ObjectSizeBeforeGC" units="KB" expires_after="M95">
+  <obsolete>
+    Replaced by V8.GC.Cycle.Objects.Before.Full since M94.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <owner>mlippautz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
@@ -3763,6 +3882,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BlinkGC.ObjectSizeFreedByHeapCompaction" units="KB"
     expires_after="M81">
+  <obsolete>
+    Replaced by V8.GC.Cycle.Memory.Freed.Full since M94.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <summary>
     The total size of objects freed by BlinkGC's heap compaction. This is
@@ -3771,6 +3893,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.TimeForAtomicPhase" units="ms" expires_after="M95">
+  <obsolete>
+    Replaced by V8.GC.Cycle.MainThread.Full.Atomic.Cpp since M94.
+  </obsolete>
   <owner>mlippautz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3783,6 +3908,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BlinkGC.TimeForAtomicPhaseMarking" units="ms"
     expires_after="M95">
+  <obsolete>
+    Replaced by V8.GC.Cycle.MainThread.Full.Atomic.Mark.Cpp since M94.
+  </obsolete>
   <owner>mlippautz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3793,6 +3921,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.TimeForCompleteSweep" units="ms" expires_after="M95">
+  <obsolete>
+    Covered by V8.GC.Event.MainThread.Full.Incremental.Sweep since M94.
+  </obsolete>
   <owner>bikineev@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3802,6 +3933,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.TimeForGCCycle" units="ms" expires_after="M95">
+  <obsolete>
+    Replaced by V8.GC.Cycle.MainThread.Full.Cpp since M94.
+  </obsolete>
   <owner>mlippautz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3812,6 +3946,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BlinkGC.TimeForGlobalWeakProcessing" units="ms"
     expires_after="M95">
+  <obsolete>
+    Replaced by V8.GC.Cycle.MainThread.Full.Atomic.Weak.Cpp since M94.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <owner>mlippautz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
@@ -3822,6 +3959,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.TimeForHeapCompaction" units="ms" expires_after="M95">
+  <obsolete>
+    Replaced by V8.GC.Event.MainThread.Full.Compact.Cpp since M94.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <owner>mlippautz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
@@ -3833,6 +3973,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BlinkGC.TimeForIncrementalMarking" units="ms"
     expires_after="2022-02-13">
+  <obsolete>
+    Covered by V8.GC.Cycle.MainThread.Full.Mark.Cpp and
+    V8.GC.Cycle.MainThread.Full.Atomic.Mark.Cpp since M94.
+  </obsolete>
   <owner>mlippautz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3843,6 +3987,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BlinkGC.TimeForInvokingPreFinalizers" units="ms"
     expires_after="M95">
+  <obsolete>
+    Dropped due to move to Oilpan library in M94.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <owner>mlippautz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
@@ -3853,6 +4000,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.TimeForMarkingRoots" units="ms" expires_after="M98">
+  <obsolete>
+    Dropped due to move to Oilpan library in M94.
+  </obsolete>
   <owner>omerkatz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3863,6 +4013,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BlinkGC.TimeForMarking{BlinkGCTimingTypes}" units="ms"
     expires_after="M98">
+  <obsolete>
+    Covered by V8.GC.Cycle.Full.Mark.Cpp and
+    V8.GC.Cycle.MainThread.Full.Mark.Cpp since M94.
+  </obsolete>
   <owner>omerkatz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3879,6 +4033,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.TimeForNestedInV8" units="ms" expires_after="M95">
+  <obsolete>
+    Dropped due to move to Oilpan library in M94.
+  </obsolete>
   <owner>mlippautz@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3889,6 +4046,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BlinkGC.TimeForSweepingBackground" units="ms"
     expires_after="M95">
+  <obsolete>
+    Covered by V8.GC.Cycle.Full.Sweep.Cpp and
+    V8.GC.Cycle.MainThread.Full.Sweep.Cpp since M94.
+  </obsolete>
   <owner>bikineev@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3900,6 +4061,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BlinkGC.TimeForSweepingForeground" units="ms"
     expires_after="2022-01-09">
+  <obsolete>
+    Replaced by V8.GC.Cycle.MainThread.Full.Mark.Cpp since M94.
+  </obsolete>
   <owner>bikineev@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3910,6 +4074,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.TimeForSweepingSum" units="ms" expires_after="M95">
+  <obsolete>
+    Replaced by V8.GC.Cycle.Full.Mark.Cpp since M94.
+  </obsolete>
   <owner>bikineev@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3921,6 +4088,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="BlinkGC.TimeForTotalCollectGarbage" units="ms"
     expires_after="M84">
+  <obsolete>
+    Replaced by V8.GC.Cycle.MainThread.Full since M94.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
   <summary>
@@ -3933,6 +4103,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.TotalAllocatedSpace" units="KB" expires_after="M95">
+  <obsolete>
+    Dropped due to move to Oilpan library in M94.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>
@@ -3941,6 +4114,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BlinkGC.TotalObjectSpace" units="KB" expires_after="M95">
+  <obsolete>
+    Dropped due to move to Oilpan library in M94.
+  </obsolete>
   <owner>haraken@chromium.org</owner>
   <owner>oilpan-reviews@chromium.org</owner>
   <summary>

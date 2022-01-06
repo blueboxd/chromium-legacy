@@ -119,11 +119,13 @@ class RmadClientTest : public testing::Test {
       double progress) {
     dbus::Signal signal(rmad::kRmadInterfaceName,
                         rmad::kCalibrationProgressSignal);
-    rmad::CalibrationComponentStatus status_proto;
-    status_proto.set_component(component);
-    status_proto.set_status(status);
-    status_proto.set_progress(progress);
-    dbus::MessageWriter(&signal).AppendProtoAsArrayOfBytes(status_proto);
+    dbus::MessageWriter writer(&signal);
+    dbus::MessageWriter struct_writer(nullptr);
+    writer.OpenStruct(&struct_writer);
+    struct_writer.AppendInt32(static_cast<int32_t>(component));
+    struct_writer.AppendInt32(static_cast<int32_t>(status));
+    struct_writer.AppendDouble(progress);
+    writer.CloseContainer(&struct_writer);
     EmitSignal(&signal);
   }
 
@@ -152,13 +154,16 @@ class RmadClientTest : public testing::Test {
   }
 
   // Passes a provisioning progress signal to |client_|.
-  void EmitProvisioningProgressSignal(
-      rmad::ProvisionDeviceState::ProvisioningStep step,
-      double progress) {
+  void EmitProvisioningProgressSignal(rmad::ProvisionStatus::Status status,
+                                      double progress) {
     dbus::Signal signal(rmad::kRmadInterfaceName,
                         rmad::kProvisioningProgressSignal);
-    dbus::MessageWriter(&signal).AppendUint32(static_cast<uint32_t>(step));
-    dbus::MessageWriter(&signal).AppendDouble(progress);
+    dbus::MessageWriter writer(&signal);
+    dbus::MessageWriter struct_writer(nullptr);
+    writer.OpenStruct(&struct_writer);
+    struct_writer.AppendInt32(static_cast<int32_t>(status));
+    struct_writer.AppendDouble(progress);
+    writer.CloseContainer(&struct_writer);
     EmitSignal(&signal);
   }
 
@@ -167,10 +172,26 @@ class RmadClientTest : public testing::Test {
                                             std::string error_message) {
     dbus::Signal signal(rmad::kRmadInterfaceName,
                         rmad::kHardwareVerificationResultSignal);
-    rmad::HardwareVerificationResult result_proto;
-    result_proto.set_is_compliant(is_compliant);
-    result_proto.set_error_str(error_message);
-    dbus::MessageWriter(&signal).AppendProtoAsArrayOfBytes(result_proto);
+    dbus::MessageWriter writer(&signal);
+    dbus::MessageWriter struct_writer(nullptr);
+    writer.OpenStruct(&struct_writer);
+    struct_writer.AppendBool(is_compliant);
+    struct_writer.AppendString(error_message);
+    writer.CloseContainer(&struct_writer);
+    EmitSignal(&signal);
+  }
+
+  // Passes a finalization status signal to |client_|.
+  void EmitFinalizationProgressSignal(rmad::FinalizeStatus::Status status,
+                                      double progress) {
+    dbus::Signal signal(rmad::kRmadInterfaceName,
+                        rmad::kFinalizeProgressSignal);
+    dbus::MessageWriter writer(&signal);
+    dbus::MessageWriter struct_writer(nullptr);
+    writer.OpenStruct(&struct_writer);
+    struct_writer.AppendInt32(static_cast<int32_t>(status));
+    struct_writer.AppendDouble(progress);
+    writer.CloseContainer(&struct_writer);
     EmitSignal(&signal);
   }
 
@@ -229,11 +250,8 @@ class TestObserver : public RmadClient::Observer {
     return last_calibration_overall_status_;
   }
   int num_provisioning_progress() const { return num_provisioning_progress_; }
-  rmad::ProvisionDeviceState::ProvisioningStep last_provisioning_step() const {
-    return last_provisioning_step_;
-  }
-  float last_provisioning_progress() const {
-    return last_provisioning_progress_;
+  rmad::ProvisionStatus last_provisioning_status() const {
+    return last_provisioning_status_;
   }
   int num_hardware_write_protection_state() const {
     return num_hardware_write_protection_state_;
@@ -249,6 +267,10 @@ class TestObserver : public RmadClient::Observer {
   const rmad::HardwareVerificationResult& last_hardware_verification_result()
       const {
     return last_hardware_verification_result_;
+  }
+  int num_finalization_progress() const { return num_finalization_progress_; }
+  const rmad::FinalizeStatus& last_finalization_progress() const {
+    return last_finalization_progress_;
   }
 
   // Called when an error occurs outside of state transitions.
@@ -272,11 +294,9 @@ class TestObserver : public RmadClient::Observer {
   }
 
   // Called when provisioning progress is updated.
-  void ProvisioningProgress(rmad::ProvisionDeviceState::ProvisioningStep step,
-                            double progress) override {
+  void ProvisioningProgress(const rmad::ProvisionStatus& status) override {
     num_provisioning_progress_++;
-    last_provisioning_step_ = step;
-    last_provisioning_progress_ = progress;
+    last_provisioning_status_ = status;
   }
 
   // Called when hardware write protection state changes.
@@ -293,10 +313,15 @@ class TestObserver : public RmadClient::Observer {
 
   // Called when hardware verification completes.
   void HardwareVerificationResult(
-      const rmad::HardwareVerificationResult& last_hardware_verification_result)
-      override {
+      const rmad::HardwareVerificationResult& result) override {
     num_hardware_verification_result_++;
-    last_hardware_verification_result_ = last_hardware_verification_result;
+    last_hardware_verification_result_ = result;
+  }
+
+  // Called when hardware verification completes.
+  void FinalizationProgress(const rmad::FinalizeStatus& status) override {
+    num_finalization_progress_++;
+    last_finalization_progress_ = status;
   }
 
  private:
@@ -309,15 +334,15 @@ class TestObserver : public RmadClient::Observer {
   rmad::CalibrationOverallStatus last_calibration_overall_status_ =
       rmad::CalibrationOverallStatus::RMAD_CALIBRATION_OVERALL_UNKNOWN;
   int num_provisioning_progress_ = 0;
-  rmad::ProvisionDeviceState::ProvisioningStep last_provisioning_step_ =
-      rmad::ProvisionDeviceState::RMAD_PROVISIONING_STEP_UNKNOWN;
-  float last_provisioning_progress_ = 0.0f;
+  rmad::ProvisionStatus last_provisioning_status_;
   int num_hardware_write_protection_state_ = 0;
   bool last_hardware_write_protection_state_ = true;
   int num_power_cable_state_ = 0;
   bool last_power_cable_state_ = true;
   int num_hardware_verification_result_ = 0;
   rmad::HardwareVerificationResult last_hardware_verification_result_;
+  int num_finalization_progress_ = 0;
+  rmad::FinalizeStatus last_finalization_progress_;
 };  // namespace chromeos
 
 TEST_F(RmadClientTest, GetCurrentState) {
@@ -678,11 +703,11 @@ TEST_F(RmadClientTest, ProvisioningProgress) {
   TestObserver observer_1(client_);
 
   EmitProvisioningProgressSignal(
-      rmad::ProvisionDeviceState::RMAD_PROVISIONING_STEP_IN_PROGRESS, 0.25);
+      rmad::ProvisionStatus::RMAD_PROVISION_STATUS_IN_PROGRESS, 0.25);
   EXPECT_EQ(1, observer_1.num_provisioning_progress());
-  EXPECT_EQ(rmad::ProvisionDeviceState::RMAD_PROVISIONING_STEP_IN_PROGRESS,
-            observer_1.last_provisioning_step());
-  EXPECT_EQ(0.25, observer_1.last_provisioning_progress());
+  EXPECT_EQ(rmad::ProvisionStatus::RMAD_PROVISION_STATUS_IN_PROGRESS,
+            observer_1.last_provisioning_status().status());
+  EXPECT_EQ(0.25, observer_1.last_provisioning_status().progress());
 }
 
 // Tests that synchronous observers are notified about provisioning progress.
@@ -728,6 +753,26 @@ TEST_F(RmadClientTest, HardwareVerificationResult) {
   EXPECT_EQ(true,
             observer_1.last_hardware_verification_result().is_compliant());
   EXPECT_EQ("ok", observer_1.last_hardware_verification_result().error_str());
+}
+
+// Tests that synchronous observers are notified about hardware verification
+// status.
+TEST_F(RmadClientTest, FinalizationProgress) {
+  TestObserver observer_1(client_);
+
+  EmitFinalizationProgressSignal(
+      rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_IN_PROGRESS, 0.5);
+  EXPECT_EQ(1, observer_1.num_finalization_progress());
+  EXPECT_EQ(rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_IN_PROGRESS,
+            observer_1.last_finalization_progress().status());
+  EXPECT_EQ(0.5, observer_1.last_finalization_progress().progress());
+
+  EmitFinalizationProgressSignal(
+      rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_COMPLETE, 1.0);
+  EXPECT_EQ(2, observer_1.num_finalization_progress());
+  EXPECT_EQ(rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_COMPLETE,
+            observer_1.last_finalization_progress().status());
+  EXPECT_EQ(1.0, observer_1.last_finalization_progress().progress());
 }
 
 }  // namespace chromeos

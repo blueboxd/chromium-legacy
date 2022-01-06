@@ -26,13 +26,13 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -79,6 +79,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
@@ -255,7 +256,7 @@ ChromeShelfController::ChromeShelfController(Profile* profile,
   app_window_controllers_.emplace_back(std::move(app_service_controller));
   // Create the browser monitor which will inform the shelf of status changes.
   browser_status_monitor_ = std::make_unique<BrowserStatusMonitor>(this);
-  if (base::FeatureList::IsEnabled(features::kWebAppsCrosapi)) {
+  if (web_app::IsWebAppsCrosapiEnabled()) {
     browser_app_shelf_controller_ = std::make_unique<BrowserAppShelfController>(
         profile, *model_, *shelf_item_factory_, *shelf_spinner_controller_);
   }
@@ -385,16 +386,7 @@ bool ChromeShelfController::ShouldSyncItemWithReentrancy(
 }
 
 bool ChromeShelfController::ShouldSyncItem(const ash::ShelfItem& item) {
-  // Syncing is only enabled for pinned items.
-  if (!ItemTypeIsPinned(item))
-    return false;
-
-  // Syncing is disabled for standalone-browser based chrome apps for now.
-  // See https://crbug.com/1250480.
-  apps::AppServiceProxyChromeOs* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile());
-  auto app_type = proxy->AppRegistryCache().GetAppType(item.id.app_id);
-  return app_type != apps::mojom::AppType::kStandaloneBrowserExtension;
+  return ItemTypeIsPinned(item);
 }
 
 bool ChromeShelfController::IsPinned(const ash::ShelfID& id) {
@@ -835,7 +827,7 @@ bool ChromeShelfController::CanDoShowAppInfoFlow(
 
 void ChromeShelfController::DoShowAppInfoFlow(Profile* profile,
                                               const std::string& app_id) {
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
   auto app_type = proxy->AppRegistryCache().GetAppType(app_id);
@@ -955,7 +947,7 @@ void ChromeShelfController::OnAppUninstalledPrepared(
   if (IsAppPinned(app_id) && profile == this->profile()) {
     bool show_in_shelf_changed = false;
     bool is_app_disabled = false;
-    apps::AppServiceProxyChromeOs* proxy =
+    apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(this->profile());
     proxy->AppRegistryCache().ForOneApp(
         app_id, [&show_in_shelf_changed,
@@ -1162,7 +1154,7 @@ void ChromeShelfController::UpdatePinnedAppsFromSync() {
   // cyclically trigger sync changes (eg. ShelfItemAdded calls SyncPinPosition).
   ScopedPinSyncDisabler scoped_pin_sync_disabler = GetScopedPinSyncDisabler();
 
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
 
   const std::vector<ash::ShelfID> pinned_apps =
@@ -1272,9 +1264,13 @@ ash::ShelfID ChromeShelfController::InsertAppItem(
     const std::u16string& title) {
   CHECK(item_delegate);
   if (GetItem(item_delegate->shelf_id())) {
+    static bool once = true;
     // TODO(crbug.com/1090134): try and identify why this would be called when
     // there is an already existing shelf item for this ID.
-    base::debug::DumpWithoutCrashing();
+    if (once) {
+      base::debug::DumpWithoutCrashing();
+      once = false;
+    }
     return item_delegate->shelf_id();
   }
 

@@ -319,15 +319,18 @@ void NGOutOfFlowLayoutPart::HandleFragmentation() {
 const NGOutOfFlowLayoutPart::ContainingBlockInfo
 NGOutOfFlowLayoutPart::GetContainingBlockInfo(
     const NGLogicalOutOfFlowPositionedNode& candidate) {
-  if (container_builder_->GetLayoutObject()->IsLayoutNGGrid()) {
+  const auto* container_object = container_builder_->GetLayoutObject();
+
+  if (container_object->IsLayoutNGGrid()) {
     absl::optional<LogicalRect> containing_block_rect =
         NGGridLayoutAlgorithm::ComputeContainingBlockRect(
-            candidate.Node(), container_builder_->GetNGGridData(),
-            container_builder_->Style(),
-            default_writing_direction_.GetWritingMode(),
-            container_builder_->Borders(),
+            candidate.Node(), container_builder_->Style(),
+            To<LayoutNGGrid>(container_object)->CachedPlacementData(),
+            container_builder_->GridLayoutData(), container_builder_->Borders(),
             container_builder_->InitialBorderBoxSize(),
+            default_writing_direction_.GetWritingMode(),
             container_builder_->FragmentsTotalBlockSize());
+
     if (containing_block_rect.has_value())
       return {default_writing_direction_, *containing_block_rect};
   }
@@ -671,9 +674,10 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
                                        CalculateOffset(node_info, only_layout)};
         scoped_refptr<const NGLayoutResult> result =
             LayoutOOFNode(node_to_layout, only_layout);
-        container_builder_->AddChild(result->PhysicalFragment(),
-                                     result->OutOfFlowPositionedOffset(),
-                                     &candidate.inline_container);
+        container_builder_->AddResult(
+            *result, result->OutOfFlowPositionedOffset(),
+            /* relative_offset */ absl::nullopt, &candidate.inline_container);
+        container_builder_->SetHasOutOfFlowFragmentChild(true);
         if (container_builder_->IsInitialColumnBalancingPass()) {
           container_builder_->PropagateTallestUnbreakableBlockSize(
               result->TallestUnbreakableBlockSize());
@@ -739,6 +743,8 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInMulticol(
   // the remaining OOFs.
   limited_multicol_container_builder.SetFragmentsTotalBlockSize(LayoutUnit());
 
+  limited_multicol_container_builder.SetDisableOOFDescendantsPropagation();
+
   WritingDirectionMode writing_direction =
       multicol.Style().GetWritingDirection();
   const NGPhysicalBoxFragment* last_fragment_with_fragmentainer = nullptr;
@@ -782,9 +788,9 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInMulticol(
       }
 
       limited_multicol_container_builder.AddChild(
-          *fragment, offset, /* inline_container */ nullptr,
-          /* margin_strut */ nullptr, /* is_self_collapsing */ false,
-          /* relative_offset */ absl::nullopt,
+          *fragment, offset, /* margin_strut */ nullptr,
+          /* is_self_collapsing */ false, /* relative_offset */ absl::nullopt,
+          /* inline_container */ nullptr,
           /* adjustment_for_oof_propagation */ absl::nullopt);
       multicol_children.emplace_back(MulticolChildInfo(&child));
     }
@@ -1644,9 +1650,10 @@ void NGOutOfFlowLayoutPart::ReplaceFragmentainer(
     scoped_refptr<const NGLayoutResult> new_result = algorithm->Layout();
     node.AddColumnResult(new_result);
     container_builder_->AddChild(
-        new_result->PhysicalFragment(), offset, /* inline_container */ nullptr,
+        new_result->PhysicalFragment(), offset,
         /* margin_strut */ nullptr, /* is_self_collapsing */ false,
         /* relative_offset */ absl::nullopt,
+        /* inline_container */ nullptr,
         /* adjustment_for_oof_propagation */ absl::nullopt);
   } else {
     scoped_refptr<const NGLayoutResult> new_result = algorithm->Layout();

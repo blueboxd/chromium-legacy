@@ -16,6 +16,9 @@ const base::Feature kEnableDiscoverFeedPreview{
 const base::Feature kEnableDiscoverFeedAppFlows{
     "EnableDiscoverFeedAppFlows", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableDiscoverFeedShorterCache{
+    "EnableDiscoverFeedShorterCache", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableNTPMemoryEnhancement{
     "EnableNTPMemoryEnhancement", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -32,6 +35,9 @@ const char kDiscoverFeedSRSReconstructedTemplatesEnabled[] =
 const char kDiscoverFeedSRSPreloadTemplatesEnabled[] =
     "DiscoverFeedSRSPreloadTemplatesEnabled";
 
+const base::Feature kFollowingFeedInNTP{"FollowingFeedInNTP",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNTPViewHierarchyRepair{"NTPViewHierarchyRepair",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -41,6 +47,14 @@ bool IsDiscoverFeedPreviewEnabled() {
 
 bool IsDiscoverFeedAppFlowsEnabled() {
   return base::FeatureList::IsEnabled(kEnableDiscoverFeedAppFlows);
+}
+
+bool IsDiscoverFeedShorterCacheEnabled() {
+  return base::FeatureList::IsEnabled(kEnableDiscoverFeedShorterCache);
+}
+
+bool IsFollowingFeedEnabled() {
+  return base::FeatureList::IsEnabled(kFollowingFeedInNTP);
 }
 
 bool IsNTPViewHierarchyRepairEnabled() {

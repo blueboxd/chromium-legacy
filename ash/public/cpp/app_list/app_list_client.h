@@ -62,11 +62,9 @@ class ASH_PUBLIC_EXPORT AppListClient {
                                 AppListLaunchType launch_type,
                                 int suggestion_index,
                                 bool launch_as_default) = 0;
-  // Invokes a custom action on a result with |result_id|.
-  // |action_index| corresponds to the index of an action on the search result,
-  // for example, installing. They are stored in SearchResult::actions_.
+  // Invokes a custom action |action| on a result with |result_id|.
   virtual void InvokeSearchResultAction(const std::string& result_id,
-                                        int action_index) = 0;
+                                        SearchResultActionType action) = 0;
   // Returns the context menu model for the search result with |result_id|, or
   // an empty array if there is currently no menu for the result.
   using GetSearchResultContextMenuModelCallback =
@@ -140,6 +138,23 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // Invoked when app list sort is requested.
   virtual void OnAppListSortRequested(int profile_id,
                                       AppListSortOrder order) = 0;
+
+  // Invoked when the ash side requests to revert the app list temporary sort
+  // order (i.e. the order that has not been committed yet).
+  virtual void OnAppListSortRevertRequested(int profile_id) = 0;
+
+  // Methods called from Ash to update app list items:
+  virtual void OnSetPositionRequested(int profile_id,
+                                      std::string id,
+                                      const syncer::StringOrdinal& new_position,
+                                      RequestPositionUpdateReason reason) = 0;
+  virtual void OnMoveItemToFolderRequested(int profile_id,
+                                           std::string id,
+                                           const std::string& folder_id) = 0;
+  virtual void OnMoveItemToRootRequested(
+      int profile_id,
+      std::string id,
+      syncer::StringOrdinal target_position) = 0;
 
  protected:
   virtual ~AppListClient() = default;

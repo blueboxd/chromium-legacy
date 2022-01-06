@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/capture_mode/test_capture_mode_delegate.h"
+#include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/test/test_nearby_share_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/gestures/back_gesture/test_back_gesture_contextual_nudge_delegate.h"
@@ -97,5 +98,20 @@ std::unique_ptr<app_restore::AppLaunchInfo>
 TestShellDelegate::GetAppLaunchDataForDeskTemplate(aura::Window* window) const {
   return nullptr;
 }
+
+void TestShellDelegate::GetFaviconForUrl(
+    const std::string& page_url,
+    int desired_icon_size,
+    favicon_base::FaviconRawBitmapCallback callback,
+    base::CancelableTaskTracker* tracker) const {}
+
+void TestShellDelegate::GetIconForAppId(
+    const std::string& app_id,
+    int desired_icon_size,
+    base::OnceCallback<void(apps::mojom::IconValuePtr icon_value)> callback)
+    const {}
+
+void TestShellDelegate::LaunchAppsFromTemplate(
+    std::unique_ptr<DeskTemplate> desk_template) {}
 
 }  // namespace ash

@@ -48,8 +48,7 @@ void HTMLPopupElement::hide() {
     return;
   open_ = false;
   invoker_ = nullptr;
-  if (!isConnected())
-    return;
+  DCHECK(isConnected());
   GetDocument().HideAllPopupsUntil(this);
   PopPopupElement(this);
   PseudoStateChanged(CSSSelector::kPseudoPopupOpen);
@@ -163,19 +162,38 @@ void HTMLPopupElement::SetFocus() {
   doc.TopDocument().FinalizeAutofocus();
 }
 
+namespace {
+void ShowInitiallyOpenPopup(HTMLPopupElement* popup) {
+  // If a <popup> has the initiallyopen attribute upon page
+  // load, and it is the first such popup, show it.
+  if (popup && popup->isConnected() && !popup->GetDocument().PopupShowing()) {
+    popup->show();
+  }
+}
+}  // namespace
+
 Node::InsertionNotificationRequest HTMLPopupElement::InsertedInto(
     ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
 
   if (had_initiallyopen_when_parsed_) {
-    DCHECK(isConnected()) << "This should be being inserted by the parser";
-    // If a <popup> has the initiallyopen attribute upon page
-    // load, and it is the first such popup, show it.
-    if (!GetDocument().PopupShowing())
-      show();
+    DCHECK(isConnected());
     had_initiallyopen_when_parsed_ = false;
+    GetDocument()
+        .GetTaskRunner(TaskType::kDOMManipulation)
+        ->PostTask(FROM_HERE, WTF::Bind(&ShowInitiallyOpenPopup,
+                                        WrapWeakPersistent(this)));
   }
   return kInsertionDone;
+}
+
+void HTMLPopupElement::RemovedFrom(ContainerNode& insertion_point) {
+  // If a popup is removed from the document, make sure it gets
+  // removed from the popup element stack and the top layer.
+  if (insertion_point.isConnected()) {
+    insertion_point.GetDocument().HidePopupIfShowing(this);
+  }
+  HTMLElement::RemovedFrom(insertion_point);
 }
 
 void HTMLPopupElement::ParserDidSetAttributes() {
@@ -341,39 +359,39 @@ void HTMLPopupElement::AdjustPopupPositionForSelectMenu(ComputedStyle& style) {
   // Don't use the LocalDOMWindow innerHeight/innerWidth getters, as those can
   // trigger a re-entrant style and layout update.
   int zoomAdjustedWidth =
-      AdjustForAbsoluteZoom::AdjustInt(GetDocument().View()->Size().Width(),
+      AdjustForAbsoluteZoom::AdjustInt(GetDocument().View()->Size().width(),
                                        window->GetFrame()->PageZoomFactor());
   int zoomAdjustedHeight =
-      AdjustForAbsoluteZoom::AdjustInt(GetDocument().View()->Size().Height(),
+      AdjustForAbsoluteZoom::AdjustInt(GetDocument().View()->Size().height(),
                                        window->GetFrame()->PageZoomFactor());
   IntRect avail_rect = IntRect(0, 0, zoomAdjustedWidth, zoomAdjustedHeight);
 
   // Position the listbox part where is more space available.
-  const int available_space_above = anchor_rect_in_screen.Y() - avail_rect.Y();
+  const int available_space_above = anchor_rect_in_screen.y() - avail_rect.y();
   const int available_space_below =
-      avail_rect.MaxY() - anchor_rect_in_screen.MaxY();
+      avail_rect.bottom() - anchor_rect_in_screen.bottom();
   if (available_space_below < available_space_above) {
     style.SetMaxHeight(Length::Fixed(available_space_above));
     style.SetBottom(
-        Length::Fixed(avail_rect.MaxY() - anchor_rect_in_screen.Y()));
+        Length::Fixed(avail_rect.bottom() - anchor_rect_in_screen.y()));
     style.SetTop(Length::Auto());
   } else {
     style.SetMaxHeight(Length::Fixed(available_space_below));
-    style.SetTop(Length::Fixed(anchor_rect_in_screen.MaxY()));
+    style.SetTop(Length::Fixed(anchor_rect_in_screen.bottom()));
   }
 
   const int available_space_if_left_anchored =
-      avail_rect.MaxX() - anchor_rect_in_screen.X();
+      avail_rect.right() - anchor_rect_in_screen.x();
   const int available_space_if_right_anchored =
-      anchor_rect_in_screen.MaxX() - avail_rect.X();
-  style.SetMinWidth(Length::Fixed(anchor_rect_in_screen.Width()));
-  if (available_space_if_left_anchored > anchor_rect_in_screen.Width() ||
+      anchor_rect_in_screen.right() - avail_rect.x();
+  style.SetMinWidth(Length::Fixed(anchor_rect_in_screen.width()));
+  if (available_space_if_left_anchored > anchor_rect_in_screen.width() ||
       available_space_if_left_anchored > available_space_if_right_anchored) {
-    style.SetLeft(Length::Fixed(anchor_rect_in_screen.X()));
+    style.SetLeft(Length::Fixed(anchor_rect_in_screen.x()));
     style.SetMaxWidth(Length::Fixed(available_space_if_left_anchored));
   } else {
     style.SetRight(
-        Length::Fixed(avail_rect.MaxX() - anchor_rect_in_screen.MaxX()));
+        Length::Fixed(avail_rect.right() - anchor_rect_in_screen.right()));
     style.SetLeft(Length::Auto());
     style.SetMaxWidth(Length::Fixed(available_space_if_right_anchored));
   }

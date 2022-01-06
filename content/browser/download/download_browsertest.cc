@@ -164,6 +164,11 @@ class DownloadTestContentBrowserClient : public TestContentBrowserClient {
         /* network_accessed */ true, net::OK);
   }
 
+  DownloadTestContentBrowserClient(const DownloadTestContentBrowserClient&) =
+      delete;
+  DownloadTestContentBrowserClient& operator=(
+      const DownloadTestContentBrowserClient&) = delete;
+
   bool AllowRenderingMhtmlOverHttp(NavigationUIData* navigation_data) override {
     return allowed_rendering_mhtml_over_http_;
   }
@@ -207,8 +212,6 @@ class DownloadTestContentBrowserClient : public TestContentBrowserClient {
 
   std::unique_ptr<FakeNetworkURLLoaderFactory> content_url_loader_factory_;
   std::unique_ptr<FakeNetworkURLLoaderFactory> file_url_loader_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadTestContentBrowserClient);
 };
 
 class MockDownloadItemObserver : public download::DownloadItem::Observer {
@@ -1277,6 +1280,10 @@ class DownloadContentTestWithoutStrongValidators : public DownloadContentTest {
 
 // Test fixture for parallel downloading.
 class ParallelDownloadTest : public DownloadContentTest {
+ public:
+  ParallelDownloadTest(const ParallelDownloadTest&) = delete;
+  ParallelDownloadTest& operator=(const ParallelDownloadTest&) = delete;
+
  protected:
   ParallelDownloadTest() {
     std::map<std::string, std::string> params = {
@@ -1446,8 +1453,6 @@ class ParallelDownloadTest : public DownloadContentTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ParallelDownloadTest);
 };
 
 class DownloadPrerenderTest : public DownloadContentTest {
@@ -3604,7 +3609,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ReferrerForPartialResumption) {
   ASSERT_TRUE(
       base::Contains(last_request.headers, net::HttpRequestHeaders::kReferer));
   EXPECT_EQ(last_request.headers.at(net::HttpRequestHeaders::kReferer),
-            document_url.GetOrigin().spec());
+            document_url.DeprecatedGetOriginAsURL().spec());
 }
 
 // Test that the referrer header is dropped for HTTP downloads from HTTPS.
@@ -4616,7 +4621,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadIgnoresXFO) {
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
-  NavigateFrameToURL(web_contents->GetFrameTree()->root()->child_at(0),
+  NavigateFrameToURL(web_contents->GetPrimaryFrameTree().root()->child_at(0),
                      download_url);
   observer->WaitForFinished();
   EXPECT_EQ(

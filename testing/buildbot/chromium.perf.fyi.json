@@ -236,7 +236,6 @@
   "fuchsia-builder-perf-fyi": {
     "additional_compile_targets": [
       "web_engine_shell_pkg",
-      "http_pkg",
       "cast_runner_pkg",
       "web_runner_pkg",
       "chromedriver",
@@ -253,8 +252,9 @@
           "--test-shard-map-filename=fuchsia-perf-fyi_map.json",
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
-          "--device=custom",
-          "--custom-device-target=internal.astro_target"
+          "-d",
+          "--system-image-dir=../../third_party/fuchsia-sdk/images-internal/astro-release/smart_display_eng_arrested",
+          "--os-check=update"
         ],
         "isolate_name": "performance_web_engine_test_suite",
         "merge": {

@@ -14,8 +14,8 @@
 #include "base/compiler_specific.h"
 #include "base/containers/id_map.h"
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -215,8 +215,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebSecurityOrigin& script_origin) override;
   blink::ProtocolHandlerSecurityLevel GetProtocolHandlerSecurityLevel()
       override;
-  bool IsExcludedHeaderForServiceWorkerFetchEvent(
-      const blink::WebString& header_name) override;
   bool OriginCanAccessServiceWorkers(const blink::WebURL& url) override;
   std::tuple<blink::CrossVariantMojoRemote<
                  blink::mojom::ServiceWorkerContainerHostInterfaceBase>,

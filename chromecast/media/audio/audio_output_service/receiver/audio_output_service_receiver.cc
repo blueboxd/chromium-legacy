@@ -9,13 +9,14 @@
 #include "base/check.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromecast/external_mojo/external_service_support/external_connector.h"
+#include "chromecast/media/api/cma_backend_factory.h"
 #include "chromecast/media/audio/audio_output_service/constants.h"
 #include "chromecast/media/audio/audio_output_service/output_socket.h"
 #include "chromecast/media/audio/audio_output_service/receiver/cma_backend_shim.h"
-#include "chromecast/media/common/media_pipeline_backend_manager.h"
 
 namespace chromecast {
 namespace media {
@@ -71,8 +72,8 @@ class AudioOutputServiceReceiver::Stream
       pushed_eos_ = false;
       cma_audio_.reset(new audio_output_service::CmaBackendShim(
           weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get(),
-          message.backend_params(), receiver_->backend_manager(),
-          receiver_->connector()));
+          receiver_->media_task_runner(), message.backend_params(),
+          receiver_->cma_backend_factory(), receiver_->connector()));
     }
 
     if (message.has_set_start_timestamp()) {
@@ -170,12 +171,17 @@ class AudioOutputServiceReceiver::Stream
     socket_->ReceiveMoreMessages();
   }
 
-  void UpdateMediaTime(int64_t media_timestamp_microseconds,
-                       int64_t reference_timestamp_microseconds) override {
+  void UpdateMediaTimeAndRenderingDelay(
+      int64_t media_timestamp_microseconds,
+      int64_t reference_timestamp_microseconds,
+      int64_t delay_microseconds,
+      int64_t delay_timestamp_microseconds) override {
     audio_output_service::CurrentMediaTimestamp message;
     message.set_media_timestamp_microseconds(media_timestamp_microseconds);
     message.set_reference_timestamp_microseconds(
         reference_timestamp_microseconds);
+    message.set_delay_microseconds(delay_microseconds);
+    message.set_delay_timestamp_microseconds(delay_timestamp_microseconds);
     audio_output_service::Generic generic;
     *(generic.mutable_current_media_timestamp()) = message;
     socket_->SendProto(kUpdateMediaTime, generic);
@@ -212,14 +218,17 @@ class AudioOutputServiceReceiver::Stream
 };
 
 AudioOutputServiceReceiver::AudioOutputServiceReceiver(
-    MediaPipelineBackendManager* backend_manager,
+    CmaBackendFactory* cma_backend_factory,
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     std::unique_ptr<external_service_support::ExternalConnector> connector)
     : Receiver(
           audio_output_service::kDefaultAudioOutputServiceUnixDomainSocketPath,
           audio_output_service::kDefaultAudioOutputServiceTcpPort),
-      backend_manager_(backend_manager),
+      cma_backend_factory_(cma_backend_factory),
+      media_task_runner_(std::move(media_task_runner)),
       connector_(std::move(connector)) {
-  DCHECK(backend_manager_);
+  DCHECK(cma_backend_factory_);
+  DCHECK(media_task_runner_);
   DCHECK(connector_);
 }
 

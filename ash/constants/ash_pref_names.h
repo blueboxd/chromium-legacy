@@ -212,6 +212,9 @@ extern const char kCanCellularSetupNotificationBeShown[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kManagedGuestSessionPrivacyWarningsEnabled[];
 
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kSnoopingProtectionEnabled[];
+
 // Lock screen notification settings.
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kMessageCenterLockScreenMode[];
@@ -376,6 +379,9 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kNextImeShortcutReminderDismissed[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kDeviceI18nShortcutsEnabled[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kImprovedShortcutsNotificationShownCount[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -386,6 +392,9 @@ extern const char kFastPairEnabled[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDeskTemplatesEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPreconfiguredDeskTemplates[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kProjectorCreationFlowEnabled[];
 
 }  // namespace prefs
 }  // namespace ash

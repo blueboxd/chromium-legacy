@@ -362,6 +362,7 @@ class AX_EXPORT AXNode final {
   bool GetString16Attribute(ax::mojom::StringAttribute attribute,
                             std::u16string* value) const;
 
+  bool HasInheritedStringAttribute(ax::mojom::StringAttribute attribute) const;
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
   std::u16string GetInheritedString16Attribute(
@@ -424,6 +425,10 @@ class AX_EXPORT AXNode final {
   }
 
   ax::mojom::NameFrom GetNameFrom() const { return data().GetNameFrom(); }
+
+  ax::mojom::InvalidState GetInvalidState() const {
+    return data().GetInvalidState();
+  }
 
   // Return the hierarchical level if supported.
   absl::optional<int> GetHierarchicalLevel() const;
@@ -606,7 +611,8 @@ class AX_EXPORT AXNode final {
   // element.
   bool IsEmbeddedGroup() const;
 
-  // Returns true if node has ignored state or ignored role.
+  // Returns true if this node has the ignored state or a presentational ARIA
+  // role. Focused nodes are, by design, not ignored.
   bool IsIgnored() const;
 
   // Some nodes are not ignored but should be skipped during text navigation.
@@ -614,11 +620,9 @@ class AX_EXPORT AXNode final {
   // encountering a splitter during character and word navigation.
   bool IsIgnoredForTextNavigation() const;
 
-  // Returns true if node is invisible or ignored.
+  // Returns true if node is invisible, or if it is ignored as determined by
+  // `AXNode::IsIgnored()`.
   bool IsInvisibleOrIgnored() const;
-
-  // Returns true if node is focused within this tree.
-  bool IsFocusedWithinThisTree() const;
 
   // Returns true if an ancestor of this node (not including itself) is a
   // leaf node, meaning that this node is not actually exposed to any
@@ -737,6 +741,13 @@ class AX_EXPORT AXNode final {
   // Stores information about this node that is immutable and which has been
   // computed by the tree's source, such as `content::BlinkAXTreeSource`.
   AXNodeData data_;
+
+  // Used to track when this object's data_ is valid. If either of these are
+  // true, and data is accessed, there will be a crash.
+  // TODO(crbug.com/1237353): Wrap this inside of an `#if DCHECK_IS_ON()` after
+  // removing `DumpWithoutCrashing`.
+  bool is_data_still_uninitialized_ = true;
+  bool has_data_been_taken_ = false;
 
   // See the class comment in "ax_hypertext.h" for an explanation of this
   // member.

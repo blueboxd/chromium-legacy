@@ -108,6 +108,7 @@ if (is_win || is_mac) {
       "prefs_impl.h",
       "registration_data.cc",
       "registration_data.h",
+      "service_proxy_factory.h",
       "setup.h",
       "splash_screen.h",
       "tag.cc",
@@ -198,7 +199,6 @@ if (is_win || is_mac) {
         "policy/mac/managed_preference_policy_manager_impl.h",
         "policy/mac/managed_preference_policy_manager_impl.mm",
         "prefs_mac.mm",
-        "service_factory_mac.mm",
         "setup_mac.mm",
         "update_block_check_mac.cc",
         "util_mac.mm",
@@ -220,10 +220,6 @@ if (is_win || is_mac) {
     }
 
     if (is_win) {
-      allow_circular_includes_from = [
-        "//chrome/updater/win:app_install_controller",
-        "//chrome/updater/win/ui",
-      ]
       sources += [
         "activity_impl_win.cc",
         "app/app_install_win.cc",
@@ -235,16 +231,17 @@ if (is_win || is_mac) {
         "app/server/win/server.h",
         "app/server/win/service_main.cc",
         "app/server/win/service_main.h",
+        "app/server/win/wrl_classes.cc",
         "device_management/dm_storage_win.cc",
         "lib_util_win.cc",
         "policy/win/group_policy_manager.cc",
         "policy/win/group_policy_manager.h",
         "prefs_win.cc",
-        "service_factory_win.cc",
         "setup_win.cc",
         "update_block_check_win.cc",
         "util_win.cc",
         "win/action_handler.cc",
+        "win/app_install_controller.cc",
         "win/install_progress_observer.cc",
         "win/install_progress_observer.h",
         "win/installer_api.cc",
@@ -263,6 +260,25 @@ if (is_win || is_mac) {
         "win/setup/uninstall.h",
         "win/task_scheduler.cc",
         "win/task_scheduler.h",
+        "win/ui/complete_wnd.cc",
+        "win/ui/complete_wnd.h",
+        "win/ui/owner_draw_controls.cc",
+        "win/ui/owner_draw_controls.h",
+        "win/ui/progress_wnd.cc",
+        "win/ui/progress_wnd.h",
+        "win/ui/splash_screen.cc",
+        "win/ui/splash_screen.h",
+        "win/ui/ui.cc",
+        "win/ui/ui.h",
+        "win/ui/ui_constants.cc",
+        "win/ui/ui_constants.h",
+        "win/ui/ui_ctls.h",
+        "win/ui/ui_displayed_event.cc",
+        "win/ui/ui_displayed_event.h",
+        "win/ui/ui_util.cc",
+        "win/ui/ui_util.h",
+        "win/ui/yes_no_dialog.cc",
+        "win/ui/yes_no_dialog.h",
         "win/update_service_internal_proxy.cc",
         "win/update_service_internal_proxy.h",
         "win/update_service_proxy.cc",
@@ -273,16 +289,16 @@ if (is_win || is_mac) {
         "win/win_constants.h",
         "win/win_util.cc",
         "win/win_util.h",
-        "win/wrl_module.h",
+        "win/wrl_module_initializer.h",
       ]
       deps += [
         "//chrome/installer/util:with_no_strings",
         "//chrome/updater/app/server/win:updater_idl_idl",
         "//chrome/updater/app/server/win:updater_internal_idl_idl",
         "//chrome/updater/app/server/win:updater_legacy_idl_idl",
-        "//chrome/updater/win:app_install_controller",
-        "//chrome/updater/win/ui",
+        "//chrome/updater/win/ui/resources",
         "//components/winhttp",
+        "//third_party/wtl",
       ]
 
       configs -= [ "//build/config/win:winver" ]
@@ -368,6 +384,8 @@ if (is_win || is_mac) {
       "CRASH_STAGING_UPLOAD_URL=\"$crash_staging_upload_url\"",
       "-e",
       "DEVICE_MANAGEMENT_SERVER_URL=\"$device_management_server_url\"",
+      "-e",
+      "PRIVILEGED_HELPER_NAME=\"$privileged_helper_name\"",
     ]
 
     template_file = "updater_branding.h.in"
@@ -432,11 +450,13 @@ if (is_win || is_mac) {
         "//chrome/updater/app/server/mac/service_protocol.mm",
         "//chrome/updater/app/server/mac/update_service_wrappers.h",
         "//chrome/updater/app/server/mac/update_service_wrappers.mm",
+        "//chrome/updater/constants_prod.cc",
         "//chrome/updater/lib_util_mac.mm",
         "//chrome/updater/mac/mac_util.h",
         "//chrome/updater/mac/mac_util.mm",
         "//chrome/updater/mac/xpc_service_names.h",
         "//chrome/updater/mac/xpc_service_names.mm",
+        "//chrome/updater/util_mac.mm",
       ]
 
       deps += [ "//chrome/common/mac:launchd" ]
@@ -480,6 +500,7 @@ if (is_win || is_mac) {
       "test/integration_tests_impl.h",
       "test/server.cc",
       "test/server.h",
+      "test_scope.h",
       "unittest_util_unittest.cc",
       "update_service_unittest.cc",
       "updater_scope_unittest.cc",
@@ -546,6 +567,9 @@ if (is_win || is_mac) {
 
     if (is_mac) {
       sources += [
+        "mac/keystone/ks_tickets.h",
+        "mac/keystone/ks_tickets.mm",
+        "mac/keystone/ks_tickets_unittest.mm",
         "mac/keystone/ksadmin_unittest.cc",
         "mac/net/network_unittest.cc",
         "mac/scoped_xpc_service_mock.h",
@@ -556,6 +580,7 @@ if (is_win || is_mac) {
         "policy/mac/managed_preference_policy_manager_impl_unittest.mm",
         "policy/mac/managed_preference_policy_manager_unittest.cc",
         "test/integration_tests_mac.mm",
+        "util_mac_unittest.mm",
       ]
 
       deps += [
@@ -570,7 +595,22 @@ if (is_win || is_mac) {
       ]
 
       data = [
+        "//chrome/test/data/updater/Keystone.ticketstore",
         "//chrome/test/data/updater/updater_setup_test_dmg.dmg",
+        "//chrome/test/data/updater/setup_test_preinstallfailure/.preinstall",
+        "//chrome/test/data/updater/setup_test_preinstallfailure/.install",
+        "//chrome/test/data/updater/setup_test_preinstallfailure/.postinstall",
+        "//chrome/test/data/updater/setup_test_preinstallfailure/marker.app",
+        "//chrome/test/data/updater/setup_test_postinstallfailure/.preinstall",
+        "//chrome/test/data/updater/setup_test_postinstallfailure/.install",
+        "//chrome/test/data/updater/setup_test_postinstallfailure/.postinstall",
+        "//chrome/test/data/updater/setup_test_postinstallfailure/marker.app",
+        "//chrome/test/data/updater/setup_test_installfailure/.preinstall",
+        "//chrome/test/data/updater/setup_test_installfailure/.install",
+        "//chrome/test/data/updater/setup_test_installfailure/.postinstall",
+        "//chrome/test/data/updater/setup_test_installfailure/marker.app",
+        "//chrome/test/data/updater/setup_test_envcheck/.install",
+        "//chrome/test/data/updater/setup_test_envcheck/marker.app",
         "//chrome/test/data/updater/updater_qualification_app_dmg.crx",
       ]
 
@@ -591,6 +631,7 @@ if (is_win || is_mac) {
         "test/service/win/rpc_client.py",
         "test/service/win/rpc_handler.py",
         "test/service/win/run_command_as_standard_user.py",
+        "test/service/win/service_client.py",
         "test/service/win/uac.py",
         "test/service/win/ui.py",
         "test/service/win/updater_test_service.py",
@@ -607,17 +648,16 @@ if (is_win || is_mac) {
     sources = [
       "run_all_unittests.cc",
       "test/integration_test_commands_factory_user.cc",
+      "test_scope_user.cc",
     ]
 
     deps = [
+      ":base",
       ":updater_test_sources",
       "//base/test:test_support",
       "//chrome/common:constants",
       "//testing/gtest",
     ]
-    if (is_win) {
-      deps += [ ":base" ]
-    }
 
     if (is_mac) {
       data_deps = [ "//chrome/updater/mac:updater_bundle_test" ]
@@ -633,17 +673,16 @@ if (is_win || is_mac) {
     sources = [
       "run_all_unittests.cc",
       "test/integration_test_commands_factory_system.cc",
+      "test_scope_system.cc",
     ]
 
     deps = [
+      ":base",
       ":updater_test_sources",
       "//base/test:test_support",
       "//chrome/common:constants",
       "//testing/gtest",
     ]
-    if (is_win) {
-      deps += [ ":base" ]
-    }
 
     data_deps = [ ":updater_integration_tests_helper" ]
     if (is_mac) {
@@ -672,6 +711,7 @@ if (is_win || is_mac) {
     sources = [
       "test/integration_test_commands_factory_system.cc",
       "test/integration_tests_helper.cc",
+      "test_scope_system.cc",
     ]
 
     deps = [

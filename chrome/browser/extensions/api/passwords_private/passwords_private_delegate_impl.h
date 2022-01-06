@@ -29,6 +29,7 @@
 #include "components/password_manager/core/browser/ui/export_progress_status.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "extensions/browser/extension_function.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -53,6 +54,13 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // PasswordsPrivateDelegate implementation.
   void GetSavedPasswordsList(UiEntriesCallback callback) override;
   void GetPasswordExceptionsList(ExceptionEntriesCallback callback) override;
+  absl::optional<api::passwords_private::UrlCollection> GetUrlCollection(
+      const std::string& url) override;
+  bool IsAccountStoreDefault(content::WebContents* web_contents) override;
+  bool AddPassword(const std::string& url,
+                   const std::u16string& username,
+                   const std::u16string& password,
+                   bool use_account_store) override;
   bool ChangeSavedPassword(const std::vector<int>& ids,
                            const std::u16string& new_username,
                            const std::u16string& new_password) override;
@@ -178,7 +186,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // Used to communicate with the password store.
   std::unique_ptr<PasswordManagerPresenter> password_manager_presenter_;
 
-  // Used to edit passwords and to create |password_check_delegate_|.
+  // Used to add/edit passwords and to create |password_check_delegate_|.
   password_manager::SavedPasswordsPresenter saved_passwords_presenter_;
 
   // Used to control the export and import flows.

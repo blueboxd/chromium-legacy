@@ -13,7 +13,7 @@
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/devtools_instrumentation.h"
@@ -380,8 +380,7 @@ bool Scheduler::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
   // zero then let |client_| know about the new interval for animations. In
   // theory the interval should always be bigger than zero but the value is
   // provided by APIs outside our control.
-  if (args.interval != last_frame_interval_ &&
-      args.interval > base::TimeDelta()) {
+  if (args.interval != last_frame_interval_ && args.interval.is_positive()) {
     last_frame_interval_ = args.interval;
     client_->FrameIntervalUpdated(last_frame_interval_);
   }
@@ -839,7 +838,7 @@ void Scheduler::DrawIfPossible() {
   DrawResult result = client_->ScheduledActionDrawIfPossible();
   state_machine_.DidDraw(result);
   compositor_timing_history_->DidDraw(drawing_with_new_active_tree,
-                                      client_->HasCustomPropertyAnimations());
+                                      client_->HasInvalidationAnimation());
 }
 
 void Scheduler::DrawForced() {
@@ -853,7 +852,7 @@ void Scheduler::DrawForced() {
   DrawResult result = client_->ScheduledActionDrawForced();
   state_machine_.DidDraw(result);
   compositor_timing_history_->DidDraw(drawing_with_new_active_tree,
-                                      client_->HasCustomPropertyAnimations());
+                                      client_->HasInvalidationAnimation());
 }
 
 void Scheduler::SetDeferBeginMainFrame(bool defer_begin_main_frame) {

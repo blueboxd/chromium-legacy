@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -157,7 +158,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Arc.AdbSideloadingEnablingScreen"
     enum="AdbSideloadingPromptEvent" expires_after="2022-05-01">
-  <owner>victorhsieh@chromium.org</owner>
+  <owner>vraheja@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <summary>
     Record user's choice or error during ADB sideloading opt-in UI after reboot.
@@ -201,32 +202,39 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Arc.AppInstalledReason" enum="InstallationCounterReasonEnum"
     expires_after="2022-04-24">
-  <owner>robsc@chromium.org</owner>
-  <owner>napper@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
   <summary>
     Record a reason when an arc application completes installation successfully,
     including policy based applications, default applications and user prompted
-    installations.
+    installations. Warning: this histogram was expired from 09/01/2021 to
+    10/01/2021; data may be missing.
   </summary>
 </histogram>
 
 <histogram name="Arc.AppListRecommendedImp.AllImpression" units="count"
-    expires_after="2021-08-09">
-  <owner>robsc@chromium.org</owner>
-  <owner>napper@chromium.org</owner>
+    expires_after="2022-01-09">
+  <owner>thanhdng@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
   <summary>
     Record a count of an impression of FAR result. This is a count _any_ time
-    it's shown, even for a millisecond.
+    it's shown, even for a millisecond. Warning: this histogram was expired from
+    09/01/2021 to 10/01/2021; data may be missing.
   </summary>
 </histogram>
 
 <histogram name="Arc.AppListRecommendedImp.CountedImpression" units="count"
-    expires_after="2020-10-04">
-  <owner>robsc@chromium.org</owner>
-  <owner>napper@chromium.org</owner>
+    expires_after="2022-01-09">
+  <owner>thanhdng@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
   <summary>
     Record a count of an impression of FAR result. This is a count of heuristic
     real impressions: a new showing after a while, a longer showing, etc.
+    Warning: this histogram was expired from 09/01/2021 to 10/01/2021; data may
+    be missing.
   </summary>
 </histogram>
 
@@ -242,7 +250,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.AppShortcutSearchResult.ShortcutStatus"
-    enum="ArcAppShortcutStatus" expires_after="M98">
+    enum="ArcAppShortcutStatus" expires_after="2022-04-24">
   <owner>batoon@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -253,7 +261,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.AppShortcutsRequest.ShortcutStatus"
-    enum="ArcAppShortcutStatus" expires_after="M98">
+    enum="ArcAppShortcutStatus" expires_after="2022-04-24">
   <owner>batoon@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -278,12 +286,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.AppUninstallReason" enum="UninstallCounterReasonEnum"
-    expires_after="2022-01-23">
-  <owner>robsc@chromium.org</owner>
-  <owner>napper@chromium.org</owner>
+    expires_after="2022-04-24">
+  <owner>thanhdng@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
   <summary>
     Record a reason why an application was uninstalled when uninstall is
-    completed.
+    completed. Warning: this histogram was expired from 09/01/2021 to
+    10/01/2021; data may be missing.
   </summary>
 </histogram>
 
@@ -394,7 +404,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Auth.MainAccountHashMigration.Status"
-    enum="ArcMainAccountHashMigrationStatus" expires_after="2021-12-31">
+    enum="ArcMainAccountHashMigrationStatus" expires_after="2022-05-01">
   <owner>vsomani@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -913,6 +923,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Arc.ImageCopyPasteCompatOperationType"
+    enum="ArcImageCopyPasteCompatOperationType" expires_after="2022-04-01">
+  <owner>tetsui@chromium.org</owner>
+  <owner>yhanada@chromium.org</owner>
+  <summary>
+    The operation type (copy-paste or drag-drop) and the source of the image
+    (from browser or Files app), counted when image copy-paste app compat is
+    triggered. Image copy-paste app compat is a feature that allows insertion of
+    images to Android apps through commitContent IME API or Android intent, when
+    the app don't support images in the clipboard. For example, when a user
+    pastes an image from Files app to an Android app and the app compat logic
+    succeeds to insert the image, then that is one histogram count. If it fails
+    (for example the app does not implement commitContent API) or the app
+    already supports image pasting from the clipboard and the app compat logic
+    is not used, that will not be counted.
+  </summary>
+</histogram>
+
 <histogram name="Arc.ImeCount" units="units" expires_after="2022-04-01">
   <owner>yhanada@chromium.org</owner>
   <owner>tetsui@chromium.org</owner>
@@ -1032,6 +1060,44 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Arc.NearbyShare.ArcBridgeFailure"
+    enum="NearbyShareArcBridgeFailResult" expires_after="2022-03-27">
+  <owner>ttefera@google.com</owner>
+  <owner>arc-app-dev@google.com</owner>
+  <summary>
+    Records any ARC Bridge connection / communication failures using
+    NearbyShare.
+  </summary>
+</histogram>
+
+<histogram name="Arc.NearbyShare.DataHandlingFailure"
+    enum="ArcNearbyShareDataHandlingResult" expires_after="2022-03-27">
+  <owner>ttefera@google.com</owner>
+  <owner>arc-app-dev@google.com</owner>
+  <summary>
+    Records any data handling errors with sharing text or files using
+    NearbyShare.
+  </summary>
+</histogram>
+
+<histogram name="Arc.NearbyShare.FileStreamFailure" enum="PlatformFileError"
+    expires_after="2022-03-23">
+  <owner>ttefera@google.com</owner>
+  <owner>arc-app-dev@google.com</owner>
+  <summary>
+    Records the reason for failing to stream a file using NearbyShare. ARC
+    NearbyShare shares a file after finding a window, and once &quot;share&quot;
+    is clicked, it attempts to send the file.
+  </summary>
+</histogram>
+
+<histogram name="Arc.NearbyShare.IOFailure" enum="ArcNearbyShareIOErrorResult"
+    expires_after="2022-03-27">
+  <owner>ttefera@google.com</owner>
+  <owner>arc-app-dev@google.com</owner>
+  <summary>Records any IO errors while using NearbyShare.</summary>
+</histogram>
+
 <histogram name="Arc.NearbyShare.WindowFound" units="units"
     expires_after="2022-03-09">
   <owner>ttefera@google.com</owner>
@@ -1042,6 +1108,26 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     clicked in an app. If NearbyShare successfully finds a window,
     &quot;true&quot; is recorded onto the histogram. &quot;false&quot; is
     recorded in the case a window is not found.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Net.ArcNetworkError" enum="ArcNetworkError"
+    expires_after="2022-04-01">
+  <owner>hugobenichi@google.com</owner>
+  <owner>cros-networking@google.com</owner>
+  <summary>
+    Records errors that happened inside the ARC networking and WiFi Java stack.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Net.ArcNetworkEvent" enum="ArcNetworkEvent"
+    expires_after="2022-04-01">
+  <owner>hugobenichi@google.com</owner>
+  <owner>cros-networking@google.com</owner>
+  <summary>
+    Records events triggered inside ARC networking and WiFi Java stack related
+    to Android API usage by Android Apps, mojom API usage by the host, and other
+    events such as VPN connections
   </summary>
 </histogram>
 
@@ -1283,7 +1369,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PrintPreview.RendererError" enum="PrintPreviewFailureType"
-    expires_after="2021-12-26">
+    expires_after="2022-05-01">
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -1303,7 +1389,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Provisioning.CheckInError{ArcUserTypes}"
-    enum="ArcProvisioningCheckInError" expires_after="2021-12-01">
+    enum="ArcProvisioningCheckInError" expires_after="2022-05-01">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1320,7 +1406,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Provisioning.CloudFlowError{ArcUserTypes}"
-    enum="ArcProvisioningCloudFlowError" expires_after="2021-12-01">
+    enum="ArcProvisioningCloudFlowError" expires_after="2022-05-01">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1358,7 +1444,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Provisioning.SignInError{ArcUserTypes}"
-    enum="ArcProvisioningSignInError" expires_after="2021-12-01">
+    enum="ArcProvisioningSignInError" expires_after="2022-05-01">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1375,7 +1461,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Provisioning.Status{ArcUserTypes}"
-    enum="ArcProvisioningStatus" expires_after="2021-12-01">
+    enum="ArcProvisioningStatus" expires_after="2022-05-01">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1567,7 +1653,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Secondary.Signin.Result" enum="ArcProvisioningStatus"
-    expires_after="2021-11-21">
+    expires_after="2022-11-21">
   <owner>sinhak@google.com</owner>
   <owner>jhorwich@google.com</owner>
   <owner>khmel@google.com</owner>
@@ -1593,7 +1679,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Session.StopReason{ArcUserTypes}" enum="ArcStopReason"
-    expires_after="2021-12-19">
+    expires_after="2022-05-01">
   <owner>shaochuan@google.com</owner>
   <owner>khmel@google.com</owner>
   <owner>mmatena@google.com</owner>

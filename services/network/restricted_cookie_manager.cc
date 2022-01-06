@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"  // for FALLTHROUGH;
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -161,7 +161,7 @@ CookieAccesses* RestrictedCookieManager::GetCookieAccessesForURLAndSite(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies) {
   std::unique_ptr<CookieAccesses>& entry =
-      recent_cookie_accesses_[std::tie(url, site_for_cookies)];
+      recent_cookie_accesses_[std::make_pair(url, site_for_cookies)];
   if (!entry) {
     entry = std::make_unique<CookieAccesses>();
   }
@@ -534,12 +534,48 @@ void RestrictedCookieManager::SetCanonicalCookie(
       GURL::SchemeIsCryptographic(origin_.scheme())
           ? net::CookieSourceScheme::kSecure
           : net::CookieSourceScheme::kNonSecure;
+
+  // If the renderer's cookie has a partition key that was not created using
+  // CookiePartitionKey::FromScript, then the cookie's partition key should be
+  // equal to RestrictedCookieManager's partition key.
+  absl::optional<net::CookiePartitionKey> cookie_partition_key =
+      cookie.PartitionKey();
+  if (cookie_partition_key) {
+    // RestrictedCookieManager having a null partition key strictly implies the
+    // feature is disabled. If that is the case, we treat the cookie as
+    // unpartitioned.
+    if (!cookie_partition_key_) {
+      cookie_partition_key = absl::nullopt;
+    } else {
+      bool cookie_partition_key_ok =
+          cookie.PartitionKey()->from_script() ||
+          cookie.PartitionKey().value() == cookie_partition_key_.value();
+      UMA_HISTOGRAM_BOOLEAN("Net.RestrictedCookieManager.CookiePartitionKeyOK",
+                            cookie_partition_key_ok);
+      if (!cookie_partition_key_ok) {
+        mojo::ReportBadMessage(
+            "RestrictedCookieManager: unexpected cookie partition key");
+        std::move(callback).Run(false);
+        return;
+      }
+      if (cookie.PartitionKey()->from_script()) {
+        cookie_partition_key = cookie_partition_key_;
+      }
+    }
+  }
+
   auto sanitized_cookie = net::CanonicalCookie::FromStorage(
       cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(), now,
       cookie.ExpiryDate(), now, cookie.IsSecure(), cookie.IsHttpOnly(),
       cookie.SameSite(), cookie.Priority(), cookie.IsSameParty(),
-      cookie.PartitionKey(), source_scheme, origin_.port());
+      cookie_partition_key, source_scheme, origin_.port());
   DCHECK(sanitized_cookie);
+  // FromStorage() uses a less strict version of IsCanonical(), we need to check
+  // the stricter version as well here.
+  if (!sanitized_cookie->IsCanonical()) {
+    std::move(callback).Run(false);
+    return;
+  }
   net::CanonicalCookie cookie_copy = *sanitized_cookie;
 
   net::CookieOptions options = MakeOptionsForSet(

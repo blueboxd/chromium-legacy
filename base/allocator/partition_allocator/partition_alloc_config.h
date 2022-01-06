@@ -39,8 +39,10 @@ static_assert(sizeof(void*) != 8, "");
 #endif
 
 #if defined(PA_HAS_64_BITS_POINTERS)
-// Disable currently the card table to check the memory improvement.
-#define PA_STARSCAN_USE_CARD_TABLE 0
+// Use card table to avoid races for PCScan configuration without safepoints.
+// The card table provides the guaranteee that for a marked card the underling
+// super-page is fully initialized.
+#define PA_STARSCAN_USE_CARD_TABLE 1
 #else
 // The card table is permanently disabled for 32-bit.
 #define PA_STARSCAN_USE_CARD_TABLE 0
@@ -63,16 +65,16 @@ static_assert(sizeof(void*) != 8, "");
 // - On Linux, futex(2)
 // - On Windows, a fast userspace "try" operation which is available
 //   with SRWLock
-// - On macOS 10.14+, pthread.
+// - Otherwise, a fast userspace pthread_mutex_trylock().
 //
 // On macOS, pthread_mutex_trylock() is fast by default starting with macOS
 // 10.14. Chromium targets an earlier version, so it cannot be known at
-// compile-time. However, ARM64 macOS devices shipped *after* this release, so
-// they necessarily have a fast implementation.
+// compile-time. So we use something different. On other POSIX systems, we
+// assume that pthread_mutex_trylock() is suitable.
 //
 // Otherwise, a userspace spinlock implementation is used.
 #if defined(PA_HAS_LINUX_KERNEL) || defined(OS_WIN) || \
-    (defined(OS_MAC) && defined(ARCH_CPU_ARM64)) || defined(OS_FUCHSIA)
+    (defined(OS_POSIX) && !defined(OS_APPLE)) || defined(OS_FUCHSIA)
 #define PA_HAS_FAST_MUTEX
 #endif
 
@@ -125,5 +127,47 @@ static_assert(sizeof(void*) != 8, "");
 // Not enabled by default, as it has a runtime cost, and causes issues with some
 // builds (e.g. Windows).
 // #define PA_COUNT_SYSCALL_TIME
+
+// On Windows, |thread_local| variables cannot be marked "dllexport", see
+// compiler error C2492 at
+// https://docs.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/compiler-error-c2492?view=msvc-160.
+// Don't use it there.
+//
+// On macOS and iOS with PartitionAlloc-Everywhere enabled, thread_local
+// allocates memory and it causes an infinite loop of ThreadCache::Get() ->
+// malloc_zone_malloc -> ShimMalloc -> ThreadCache::Get() -> ...
+// Exact stack trace is:
+//   libsystem_malloc.dylib`_malloc_zone_malloc
+//   libdyld.dylib`tlv_allocate_and_initialize_for_key
+//   libdyld.dylib`tlv_get_addr
+//   libbase.dylib`thread-local wrapper routine for
+//       base::internal::g_thread_cache
+//   libbase.dylib`base::internal::ThreadCache::Get()
+// where tlv_allocate_and_initialize_for_key performs memory allocation.
+//
+// Finally, we have crashes with component builds on macOS,
+// see crbug.com/1243375.
+#if !(defined(OS_WIN) && defined(COMPONENT_BUILD)) && \
+    !(defined(OS_APPLE) &&                            \
+      (BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) || defined(COMPONENT_BUILD)))
+#define PA_THREAD_LOCAL_TLS
+#endif
+
+// When PartitionAlloc is malloc(), detect malloc() becoming re-entrant by
+// calling malloc() again.
+//
+// Limitations:
+// - DCHECK_IS_ON() due to runtime cost
+// - thread_local TLS to simplify the implementation
+// - Not on Android due to bot failures
+#if DCHECK_IS_ON() && BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+    defined(PA_THREAD_LOCAL_TLS) && !defined(OS_ANDROID)
+#define PA_HAS_ALLOCATION_GUARD
+#endif
+
+// Defined on platforms where the total amount of committed memory is limited.
+#if defined(OS_WIN)
+#define PA_COMMIT_CHARGE_IS_LIMITED
+#endif
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONFIG_H_

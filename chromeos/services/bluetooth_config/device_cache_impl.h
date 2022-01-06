@@ -9,6 +9,7 @@
 #include "base/scoped_observation.h"
 #include "chromeos/services/bluetooth_config/adapter_state_controller.h"
 #include "chromeos/services/bluetooth_config/device_cache.h"
+#include "chromeos/services/bluetooth_config/device_name_manager.h"
 #include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
@@ -24,10 +25,12 @@ namespace bluetooth_config {
 // returned unless Bluetooth is enabled or enabling.
 class DeviceCacheImpl : public DeviceCache,
                         public AdapterStateController::Observer,
-                        public device::BluetoothAdapter::Observer {
+                        public device::BluetoothAdapter::Observer,
+                        public DeviceNameManager::Observer {
  public:
   DeviceCacheImpl(AdapterStateController* adapter_state_controller,
-                  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
+                  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
+                  DeviceNameManager* device_name_manager);
   ~DeviceCacheImpl() override;
 
  private:
@@ -67,14 +70,32 @@ class DeviceCacheImpl : public DeviceCache,
   void DeviceConnectedStateChanged(device::BluetoothAdapter* adapter,
                                    device::BluetoothDevice* device,
                                    bool is_now_connected) override;
-  void DeviceBatteryChanged(
-      device::BluetoothAdapter* adapter,
-      device::BluetoothDevice* device,
-      absl::optional<uint8_t> new_battery_percentage) override;
+  void DeviceBatteryChanged(device::BluetoothAdapter* adapter,
+                            device::BluetoothDevice* device,
+                            device::BluetoothDevice::BatteryType type) override;
+
+  // DeviceNameManager::Observer:
+  void OnDeviceNicknameChanged(const std::string& device_id,
+                               const std::string& nickname) override;
 
   // Fetches all known devices from BluetoothAdapter and populates them into
   // |paired_devices_| and |unpaired_devices_|.
   void FetchInitialDeviceLists();
+
+  // Adds |device| to |paired_devices_|, but only if |device| is paired. If the
+  // device was already present in the list, this function updates its metadata
+  // to reflect up-to-date values. This function sorts the list after a new
+  // element is inserted. Returns true if the device was added or updated in the
+  // list.
+  bool AttemptSetDeviceInPairedDeviceList(device::BluetoothDevice* device);
+
+  // Removes |device| from |paired_devices_| if it exists in the list. Returns
+  // true if the device was removed from the list.
+  bool RemoveFromPairedDeviceList(device::BluetoothDevice* device);
+
+  // Attempts to add updated metadata about |device| to |paired_devices_|.
+  // Returns true if the device was updated in the list.
+  bool AttemptUpdatePairedDeviceMetadata(device::BluetoothDevice* device);
 
   // Sorts |paired_devices_| based on connection state. This function is called
   // each time a device is added to the list. This is not particularly
@@ -82,17 +103,20 @@ class DeviceCacheImpl : public DeviceCache,
   // contents change.
   void SortPairedDeviceList();
 
-  // Adds |device| to |paired_devices_|, but only if |device| is paired. If the
-  // device was already present in the list, this function updates its metadata
-  // to reflect up-to-date values. This function sorts the list after a new
-  // element is inserted.
-  void AttemptSetDeviceInPairedDeviceList(device::BluetoothDevice* device);
+  // Adds |device| to |unpaired_devices_|, but only if |device| is unpaired. If
+  // the device was already present in the list, this function updates its
+  // metadata to reflect up-to-date values. This function sorts the list after a
+  // new element is inserted. Returns true if the device was added or updated in
+  // the list.
+  bool AttemptSetDeviceInUnpairedDeviceList(device::BluetoothDevice* device);
 
-  // Removes |device| from |paired_devices_| if it exists in the list.
-  void RemoveFromPairedDeviceList(device::BluetoothDevice* device);
+  // Removes |device| from |unpaired_devices_| if it exists in the list. Returns
+  // true if the device was removed from the list.
+  bool RemoveFromUnpairedDeviceList(device::BluetoothDevice* device);
 
-  // Attempts to add updated metadata about |device| to |paired_devices_|.
-  void AttemptUpdatePairedDeviceMetadata(device::BluetoothDevice* device);
+  // Attempts to add updated metadata about |device| to |unpaired_devices_|.
+  // Returns true if the device was updated in the list.
+  bool AttemptUpdateUnpairedDeviceMetadata(device::BluetoothDevice* device);
 
   // Sorts |unpaired_devices_| based on signal strength. This function is called
   // each time a device is added to the list. This is not particularly
@@ -100,19 +124,12 @@ class DeviceCacheImpl : public DeviceCache,
   // contents change.
   void SortUnpairedDeviceList();
 
-  // Adds |device| to |unpaired_devices_|, but only if |device| is unpaired. If
-  // the device was already present in the list, this function updates its
-  // metadata to reflect up-to-date values. This function sorts the list after a
-  // new element is inserted.
-  void AttemptSetDeviceInUnpairedDeviceList(device::BluetoothDevice* device);
-
-  // Removes |device| from |unpaired_devices_| if it exists in the list.
-  void RemoveFromUnpairedDeviceList(device::BluetoothDevice* device);
-
-  // Attempts to add updated metadata about |device| to |unpaired_devices_|.
-  void AttemptUpdateUnpairedDeviceMetadata(device::BluetoothDevice* device);
+  mojom::PairedBluetoothDevicePropertiesPtr
+  GeneratePairedBluetoothDeviceProperties(
+      const device::BluetoothDevice* device);
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
+  DeviceNameManager* device_name_manager_;
 
   // Sorted by connection status.
   std::vector<mojom::PairedBluetoothDevicePropertiesPtr> paired_devices_;
@@ -126,6 +143,8 @@ class DeviceCacheImpl : public DeviceCache,
   base::ScopedObservation<device::BluetoothAdapter,
                           device::BluetoothAdapter::Observer>
       adapter_observation_{this};
+  base::ScopedObservation<DeviceNameManager, DeviceNameManager::Observer>
+      device_name_manager_observation_{this};
 };
 
 }  // namespace bluetooth_config

@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FRAME_WIDGET_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "cc/input/event_listener_properties.h"
@@ -181,6 +181,14 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   HitTestResult CoreHitTestResultAt(const gfx::PointF&);
 
+  // Registers callbacks for the corresponding renderer frame: `swap_callback`
+  // is fired with the submission (aka swap) timestamp when the frame is
+  // submitted to Viz; `presentation_callback` is fired with the presentation
+  // timestamp after the frame is presented to the user.
+  void NotifySwapAndPresentationTimeForTesting(
+      base::OnceCallback<void(base::TimeTicks)> swap_callback,
+      base::OnceCallback<void(base::TimeTicks)> presentation_callback);
+
   // FrameWidget overrides.
   cc::AnimationHost* AnimationHost() const final;
   void SetOverscrollBehavior(
@@ -191,7 +199,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void RequestDecode(const cc::PaintImage&,
                      base::OnceCallback<void(bool)>) override;
   void NotifyPresentationTimeInBlink(
-      WebReportTimeCallback presentation_callback) final;
+      base::OnceCallback<void(base::TimeTicks)> presentation_callback) final;
   void RequestBeginMainFrameNotExpected(bool request) final;
   int GetLayerTreeId() final;
   const cc::LayerTreeSettings& GetLayerTreeSettings() final;
@@ -299,9 +307,8 @@ class CORE_EXPORT WebFrameWidgetImpl
       const ApplyViewportChangesArgs& args) override;
   void ApplyViewportIntersectionForTesting(
       mojom::blink::ViewportIntersectionStatePtr intersection_state);
-  void NotifySwapAndPresentationTime(
-      WebReportTimeCallback swap_callback,
-      WebReportTimeCallback presentation_callback) override;
+  void NotifyPresentationTime(
+      base::OnceCallback<void(base::TimeTicks)> callback) override;
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
       override;
   void WaitForDebuggerWhenShown() override;
@@ -621,6 +628,10 @@ class CORE_EXPORT WebFrameWidgetImpl
   friend class WebViewImpl;
   friend class ReportTimeSwapPromise;
 
+  void NotifySwapAndPresentationTime(
+      base::OnceCallback<void(base::TimeTicks)> swap_callback,
+      base::OnceCallback<void(base::TimeTicks)> presentation_callback);
+
   // WidgetBaseClient overrides.
   void BeginCommitCompositorFrame() override;
   void EndCommitCompositorFrame(base::TimeTicks commit_start_time,
@@ -778,8 +789,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   WebInputEventResult HandleCapturedMouseEvent(const WebCoalescedInputEvent&);
   void MouseContextMenu(const WebMouseEvent&);
   void CancelDrag();
-  void PresentationCallbackForMeaningfulLayout(blink::WebSwapResult,
-                                               base::TimeTicks);
+  void PresentationCallbackForMeaningfulLayout(base::TimeTicks);
 
   void ForEachRemoteFrameControlledByWidget(
       const base::RepeatingCallback<void(RemoteFrame*)>& callback);

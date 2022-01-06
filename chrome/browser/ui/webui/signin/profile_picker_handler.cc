@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/json/values_util.h"
@@ -49,12 +50,15 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/url_data_source.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/ui/webui/signin/profile_picker_lacros_sign_in_provider.h"
+#endif
 
 namespace {
 const size_t kProfileCardAvatarSize = 74;
@@ -410,9 +414,10 @@ void ProfilePickerHandler::HandleLaunchGuestProfile(
 
 void ProfilePickerHandler::HandleAskOnStartupChanged(
     const base::ListValue* args) {
-  bool show_on_startup;
-  if (!args->GetBoolean(0, &show_on_startup))
+  const auto& list = args->GetList();
+  if (list.empty() || !list[0].is_bool())
     return;
+  const bool show_on_startup = list[0].GetBool();
 
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kBrowserShowProfilePickerOnStartup, show_on_startup);
@@ -684,7 +689,7 @@ void ProfilePickerHandler::GatherProfileStatistics(Profile* profile) {
 }
 
 void ProfilePickerHandler::OnProfileStatisticsReceived(
-    base::FilePath profile_path,
+    const base::FilePath& profile_path,
     profiles::ProfileCategoryStats result) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey("profilePath", base::FilePathToValue(profile_path));
@@ -700,23 +705,32 @@ void ProfilePickerHandler::OnProfileStatisticsReceived(
 
 void ProfilePickerHandler::HandleLoadSignInProfileCreationFlow(
     const base::ListValue* args) {
+  AllowJavascript();
   CHECK_EQ(2U, args->GetList().size());
+  absl::optional<SkColor> profile_color = args->GetList()[0].GetIfInt();
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   if (base::FeatureList::IsEnabled(kMultiProfileAccountConsistency)) {
-    // TODO(https://crbug.com/1226054): Implement the signin flow on Lacros: if
-    // the `gaiaId` parameter is non-empty, this the a unassigned account that
-    // should be used. If `gaiaId` is empty, an account should be added to the
-    // system and then used for the new profile.
-    NOTIMPLEMENTED();
-    FireWebUIListener("load-signin-finished", base::Value(/*success=*/false));
+    DCHECK(!lacros_sign_in_provider_);
+    lacros_sign_in_provider_ =
+        std::make_unique<ProfilePickerLacrosSignInProvider>();
+    ProfilePickerLacrosSignInProvider::SignedInCallback callback =
+        base::BindOnce(&ProfilePickerHandler::OnLacrosSignedInProfileCreated,
+                       weak_factory_.GetWeakPtr(), profile_color);
+    const std::string& gaia_id = args->GetList()[1].GetString();
+    if (gaia_id.empty()) {
+      lacros_sign_in_provider_->ShowAddAccountDialogAndCreateSignedInProfile(
+          std::move(callback));
+    } else {
+      lacros_sign_in_provider_->CreateSignedInProfileWithExistingAccount(
+          gaia_id, std::move(callback));
+    }
     return;
   }
 #endif
 
   DCHECK(args->GetList()[1].GetString().empty())
       << "gaiaId is only supported on Lacros with account consistency";
-  absl::optional<SkColor> profile_color = args->GetList()[0].GetIfInt();
   if (signin_util::IsForceSigninEnabled()) {
     // Force sign-in policy uses a separate flow that doesn't initialize the
     // profile color. Generate a new profile color here.
@@ -728,7 +742,7 @@ void ProfilePickerHandler::HandleLoadSignInProfileCreationFlow(
       profile_color, base::BindOnce(&ProfilePickerHandler::OnLoadSigninFinished,
                                     weak_factory_.GetWeakPtr()));
 #else
-  NOTIMPLEMENTED() << "Lacros/mirror flow is not implemented yet";
+  NOTREACHED();
 #endif
 }
 
@@ -960,6 +974,22 @@ void ProfilePickerHandler::HandleGetUnassignedAccounts(
   // TODO(https://crbug/1226050): Add actual account info to the list, and
   // listen for account changes.
   FireWebUIListener("unassigned-accounts-changed", std::move(accounts_list));
+}
+
+void ProfilePickerHandler::OnLacrosSignedInProfileCreated(
+    absl::optional<SkColor> profile_color,
+    Profile* profile) {
+  DCHECK(base::FeatureList::IsEnabled(kMultiProfileAccountConsistency));
+  DCHECK(lacros_sign_in_provider_);
+  lacros_sign_in_provider_.reset();
+
+  if (!profile) {
+    FireWebUIListener("load-signin-finished", base::Value(/*success=*/false));
+    return;
+  }
+
+  FireWebUIListener("load-signin-finished", base::Value(/*success=*/true));
+  ProfilePicker::SwitchToSignedInFlow(profile_color, profile);
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)

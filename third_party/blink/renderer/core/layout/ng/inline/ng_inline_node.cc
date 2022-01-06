@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/layout/ng/svg/ng_svg_text_layout_attributes_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/svg/svg_inline_node_data.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/font_performance.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
@@ -401,8 +402,7 @@ inline bool ShouldBreakShapingBeforeText(const NGInlineItem& item,
 }
 
 // Returns whether the start of this box should break shaping.
-inline bool ShouldBreakShapingBeforeBox(const NGInlineItem& item,
-                                        const Font& start_font) {
+inline bool ShouldBreakShapingBeforeBox(const NGInlineItem& item) {
   DCHECK_EQ(item.Type(), NGInlineItem::kOpenTag);
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
@@ -419,8 +419,7 @@ inline bool ShouldBreakShapingBeforeBox(const NGInlineItem& item,
 }
 
 // Returns whether the end of this box should break shaping.
-inline bool ShouldBreakShapingAfterBox(const NGInlineItem& item,
-                                       const Font& start_font) {
+inline bool ShouldBreakShapingAfterBox(const NGInlineItem& item) {
   DCHECK_EQ(item.Type(), NGInlineItem::kCloseTag);
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
@@ -524,8 +523,17 @@ void NGInlineNode::PrepareLayout(NGInlineNodeData* previous_data) const {
   DCHECK(data);
   CollectInlines(data, previous_data);
   SegmentText(data);
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   ShapeText(data, previous_data ? &previous_data->text_content : nullptr);
   ShapeTextForFirstLineIfNeeded(data);
+#else
+  {
+    base::ElapsedTimer shaping_timer;
+    ShapeText(data, previous_data ? &previous_data->text_content : nullptr);
+    ShapeTextForFirstLineIfNeeded(data);
+    FontPerformance::AddShapingTime(shaping_timer.Elapsed());
+  }
+#endif
   AssociateItemsWithInlines(data);
   DCHECK_EQ(data, MutableData());
 
@@ -914,7 +922,7 @@ bool NGInlineNode::SetTextWithOffset(LayoutText* layout_text,
 
   // This function runs outside of the layout phase. Prevent purging font cache
   // while shaping.
-  FontCachePurgePreventer fontCachePurgePreventer;
+  FontCachePurgePreventer font_cache_purge_preventer;
 
   String new_text(std::move(new_text_in));
   layout_text->StyleRef().ApplyTextTransform(&new_text,
@@ -933,8 +941,17 @@ bool NGInlineNode::SetTextWithOffset(LayoutText* layout_text,
   // Relocates |ShapeResult| in |previous_data| after |offset|+|length|
   editor.Run();
   node.SegmentText(data);
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   node.ShapeText(data, &previous_data->text_content, &previous_data->items);
   node.ShapeTextForFirstLineIfNeeded(data);
+#else
+  {
+    base::ElapsedTimer shaping_timer;
+    node.ShapeText(data, &previous_data->text_content, &previous_data->items);
+    node.ShapeTextForFirstLineIfNeeded(data);
+    FontPerformance::AddShapingTime(shaping_timer.Elapsed());
+  }
+#endif
   node.AssociateItemsWithInlines(data);
   return true;
 }
@@ -1341,15 +1358,13 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
         end_offset = item.EndOffset();
         num_text_items++;
       } else if (item.Type() == NGInlineItem::kOpenTag) {
-        if (ShouldBreakShapingBeforeBox(item, font)) {
+        if (ShouldBreakShapingBeforeBox(item))
           break;
-        }
         // Should not have any characters to be opaque to shaping.
         DCHECK_EQ(0u, item.Length());
       } else if (item.Type() == NGInlineItem::kCloseTag) {
-        if (ShouldBreakShapingAfterBox(item, font)) {
+        if (ShouldBreakShapingAfterBox(item))
           break;
-        }
         // Should not have any characters to be opaque to shaping.
         DCHECK_EQ(0u, item.Length());
       } else {

@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -286,7 +286,7 @@ void FileSystemManagerImpl::Move(const GURL& src_path,
   }
 
   operation_runner()->Move(
-      src_url, dest_url, storage::FileSystemOperation::OPTION_NONE,
+      src_url, dest_url, storage::FileSystemOperation::CopyOrMoveOptionSet(),
       FileSystemOperation::ERROR_BEHAVIOR_ABORT,
       storage::FileSystemOperation::CopyOrMoveProgressCallback(),
       base::BindOnce(&FileSystemManagerImpl::DidFinish, GetWeakPtr(),
@@ -319,7 +319,7 @@ void FileSystemManagerImpl::Copy(const GURL& src_path,
   }
 
   operation_runner()->Copy(
-      src_url, dest_url, storage::FileSystemOperation::OPTION_NONE,
+      src_url, dest_url, storage::FileSystemOperation::CopyOrMoveOptionSet(),
       FileSystemOperation::ERROR_BEHAVIOR_ABORT,
       storage::FileSystemOperation::CopyOrMoveProgressCallback(),
       base::BindOnce(&FileSystemManagerImpl::DidFinish, GetWeakPtr(),
@@ -658,7 +658,8 @@ void FileSystemManagerImpl::GetPlatformPath(const GURL& path,
   context_->default_file_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&FileSystemManagerImpl::GetPlatformPathOnFileThread, path,
-                     process_id_, context_, GetWeakPtr(), std::move(callback)));
+                     process_id_, context_, GetWeakPtr(),
+                     receivers_.current_context(), std::move(callback)));
 }
 
 void FileSystemManagerImpl::Cancel(
@@ -874,11 +875,12 @@ void FileSystemManagerImpl::GetPlatformPathOnFileThread(
     int process_id,
     scoped_refptr<storage::FileSystemContext> context,
     base::WeakPtr<FileSystemManagerImpl> file_system_manager,
+    const blink::StorageKey& storage_key,
     GetPlatformPathCallback callback) {
   DCHECK(context->default_file_task_runner()->RunsTasksInCurrentSequence());
 
   SyncGetPlatformPath(
-      context.get(), process_id, path,
+      context.get(), process_id, path, storage_key,
       base::BindOnce(
           [](base::WeakPtr<FileSystemManagerImpl> file_system_manager,
              GetPlatformPathCallback callback,

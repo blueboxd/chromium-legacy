@@ -11,12 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "ash/webui/camera_app_ui/document_scanner_service_client.h"
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/elapsed_timer.h"
-#include "chromeos/components/camera_app_ui/document_scanner_service_client.h"
 #include "media/base/video_transformation.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/mojom/image_capture.mojom.h"
@@ -233,8 +233,7 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
 
   // Client to connect to document detection service. It should only be
   // used/destructed on the Mojo thread.
-  std::unique_ptr<chromeos::DocumentScannerServiceClient>
-      document_scanner_service_;
+  std::unique_ptr<ash::DocumentScannerServiceClient> document_scanner_service_;
 
   // The weak pointers should be dereferenced and invalidated on camera device
   // ipc thread.

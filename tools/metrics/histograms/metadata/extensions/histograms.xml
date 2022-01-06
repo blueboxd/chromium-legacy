@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -60,7 +61,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ActiveScriptController.DeniedExtensions"
-    units="Extension Count" expires_after="2022-02-06">
+    units="Extension Count" expires_after="2022-04-17">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -70,7 +71,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ActiveScriptController.PermittedExtensions"
-    units="Extension Count" expires_after="2022-02-06">
+    units="Extension Count" expires_after="2022-04-17">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -539,7 +540,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <!-- expires-never: Monitoring extension usage. -->
 
   <owner>rdevlin.cronin@chromium.org</owner>
-  <owner>karandeepb@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the action taken by the user from the extension icon context menu.
   </summary>
@@ -670,7 +671,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="DeclarativeAPIFunctionType" expires_after="never">
 <!-- expires-never: For monitoring usage of declarative APIs. -->
 
-  <owner>karandeepb@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Number of calls to the declarative API extension functions. This includes
     the declarativeContent and declarativeWebRequest APIs. Emitted when the
@@ -690,8 +692,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.CreateVerifiedMatcherTime"
     units="ms" expires_after="2022-04-17">
-  <owner>karandeepb@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
+  <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Measures the time taken to load a single indexed ruleset in the browser
     process for an extension. This includes reading the indexed ruleset file and
@@ -703,8 +705,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="Extensions.DeclarativeNetRequest.EvaluateBeforeRequestTime.SingleExtension2"
     units="microseconds" expires_after="2022-10-01">
-  <owner>karandeepb@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
+  <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Time taken to evaluate the before-request action for a network request for a
     single extension ruleset. Emitted for each network request that is visible
@@ -716,8 +718,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions3"
     units="microseconds" expires_after="2022-10-01">
-  <owner>karandeepb@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
+  <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Time taken to evaluate the action to take for the network request as per the
     Declarative Net Request API. This includes the time taken to evaluate all
@@ -729,8 +731,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime"
     units="ms" expires_after="2022-10-01">
-  <owner>karandeepb@chromium.org</owner>
   <owner>lazyboy@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Time taken to index and persist to disk, the deserialized json rules
     provided by an extension manifest for the Declarative Net Request API. This
@@ -741,8 +743,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.IsLargeRegexRule"
     enum="RegexRuleStatus" expires_after="2021-11-14">
-  <owner>karandeepb@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
+  <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Logs whether a regex rule wasn't indexed since it exceeded the per-rule
     memory limit. Emitted for every regex rule an extension adds.
@@ -751,8 +753,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.LoadRulesetResult"
     enum="LoadRulesetResult" expires_after="2022-04-24">
-  <owner>karandeepb@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
+  <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the result of loading an extension ruleset for the Declarative Net
     Request API. Emitted whenever a single extension ruleset is loaded.
@@ -761,8 +763,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.ManifestEnabledRulesCount2"
     units="rules" expires_after="2022-10-01">
-  <owner>karandeepb@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
+  <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     The number of enabled indexed declarative rules provided by an extension
     manifest for the Declarative Net Request API. This is emitted whenever a
@@ -787,8 +789,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.ReadDynamicRulesJSONStatus"
     enum="ReadDynamicRulesJSONStatus" expires_after="2022-06-01">
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Indicates the result of reading the dynamic JSON rules for an extension from
     the disk. Logged whenever an extension calls the getDynamicRules extension
@@ -799,9 +801,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.RequestHeaderAdded"
     enum="WebRequest.RequestHeader" expires_after="2022-05-01">
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the request header added by extensions using the
     DeclarativeNetRequest API. Recorded for each network request during the
@@ -811,9 +813,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.RequestHeaderChanged"
     enum="WebRequest.RequestHeader" expires_after="2022-05-01">
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the request header modified by extensions using the
     DeclarativeNetRequest API. Recorded for each network request during the
@@ -823,9 +825,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.RequestHeaderRemoved"
     enum="WebRequest.RequestHeader" expires_after="2022-06-01">
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the request header removed by extensions using the
     DeclarativeNetRequest API. Recorded for each network request during the
@@ -835,9 +837,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.ResponseHeaderAdded"
     enum="WebRequest.ResponseHeader" expires_after="2021-11-14">
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the response header added by extensions using the
     DeclarativeNetRequest API. Recorded for each network request during the
@@ -847,9 +849,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.ResponseHeaderChanged"
     enum="WebRequest.ResponseHeader" expires_after="2022-04-24">
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the response header modified by extensions using the
     DeclarativeNetRequest API. Recorded for each network request during the
@@ -859,9 +861,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.ResponseHeaderRemoved"
     enum="WebRequest.ResponseHeader" expires_after="2022-05-01">
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the response header removed by extensions using the
     DeclarativeNetRequest API. Recorded for each network request during the
@@ -871,8 +873,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.RulesetReindexSuccessful"
     enum="BooleanSuccess" expires_after="2022-06-01">
-  <owner>karandeepb@chromium.org</owner>
   <owner>lazyboy@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Indicates whether reindexing of a Declarative Net Request ruleset was
     successful. Called whenever a JSON ruleset for an extension is reindexed,
@@ -883,8 +885,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.DeclarativeNetRequest.UpdateDynamicRulesStatus"
     enum="UpdateDynamicRulesStatus" expires_after="2022-04-24">
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Indicates the result of an extension function call to add or remove dynamic
     rules. Logged every time an extension calls the addDynamicRules or
@@ -1265,7 +1267,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.ExtensionAddDisabledRemotelyReason2"
     enum="ExtensionUpdateCheckDataKey" expires_after="2022-10-10">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Recorded when a new violation is retrieved from Omaha for an extension. The
@@ -1314,7 +1316,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.ExtensionDisabledRemotely2"
     enum="ExtensionUpdateCheckDataKey" expires_after="2022-03-06">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Recorded when an extension that was previously enabled is disabled due to a
@@ -1349,7 +1351,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.ExtensionReenabledRemotely" units="count"
     expires_after="2022-04-10">
-  <owner>bdea@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Recorded when an extension that was previously only disabled remotely is
@@ -1844,7 +1846,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledTime{ExtensionInstallStages}"
-    units="ms" expires_after="2021-11-21">
+    units="ms" expires_after="2022-02-01">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -2033,7 +2035,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.Functions.FailedTotalExecutionTime" units="ms"
-    expires_after="2022-02-13">
+    expires_after="2022-04-17">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2091,7 +2093,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.Functions.SucceededTotalExecutionTime" units="ms"
-    expires_after="2022-02-13">
+    expires_after="2022-04-17">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2104,7 +2106,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.Functions.SynchronousExecutionTime" units="ms"
-    expires_after="2022-02-13">
+    expires_after="2022-04-17">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2875,7 +2877,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Extensions.Management_Refresh" units="ms" expires_after="M100">
+<histogram name="Extensions.Management_Refresh" units="ms"
+    expires_after="2022-04-24">
   <owner>jam@chromium.org</owner>
   <owner>cduvall@chromium.org</owner>
   <summary>
@@ -3136,16 +3139,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.NetworkDelay" units="ms" expires_after="2022-01-23">
   <owner>battre@chromium.org</owner>
-  <owner>karandeepb@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>Time that network requests were blocked due to extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.NetworkDelayPercentage" units="%"
     expires_after="2022-01-23">
   <owner>battre@chromium.org</owner>
-  <owner>karandeepb@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Percentage of total lifetime a network request was blocked due to an
     extension.
@@ -3507,7 +3508,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <!-- expires-never: Monitors core extension usage. -->
 
   <owner>rdevlin.cronin@chromium.org</owner>
-  <owner>karandeepb@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Whether an extension had host permissions withheld as a result of the
     RuntimeHostPermissions feature. Recorded once per extension at profile
@@ -3522,7 +3523,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <!-- expires-never: Monitors core extension usage. -->
 
   <owner>rdevlin.cronin@chromium.org</owner>
-  <owner>karandeepb@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     The number of hosts an extension has been granted explicit access to that it
     also requested (note that if the user granted unrequested hosts, those will
@@ -3887,8 +3888,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="WebRequestEventListenerFlag" expires_after="never">
 <!-- expires-never: For monitoring Web Request API usage statistics. -->
 
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records any flags that were registered in the extraInfoSpec of a webRequest
     listener, as well as the total number of listeners registered. Recorded each
@@ -3937,8 +3938,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="WebRequest.RequestHeader" expires_after="never">
 <!-- expires-never: For monitoring Web Request API usage. -->
 
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the request header added by extensions using the WebRequest API.
     Recorded for each network request during the OnBeforeSendHeaders stage.
@@ -3950,8 +3951,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="WebRequest.RequestHeader" expires_after="never">
 <!-- expires-never: For monitoring Web Request API usage. -->
 
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the request header modified by extensions using the WebRequest API.
     Recorded for each network request during the OnBeforeSendHeaders stage.
@@ -3963,8 +3964,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="WebRequest.RequestHeader" expires_after="never">
 <!-- expires-never: For monitoring Web Request API usage. -->
 
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the request header removed by extensions using the WebRequest API.
     Recorded for each network request during the OnBeforeSendHeaders stage.
@@ -3976,8 +3977,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="WebRequest.ResponseHeader" expires_after="never">
 <!-- expires-never: For monitoring Web Request API usage. -->
 
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the response header added by extensions using the WebRequest API.
     This is logged for the cumulative delta across all the web request
@@ -3990,8 +3991,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="WebRequest.ResponseHeader" expires_after="never">
 <!-- expires-never: For monitoring Web Request API usage. -->
 
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the response header modified by extensions using the WebRequest API.
     This is logged for the cumulative delta across all the web request
@@ -4004,8 +4005,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="WebRequest.ResponseHeader" expires_after="never">
 <!-- expires-never: For monitoring Web Request API usage. -->
 
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Records the response header removed by extensions using the WebRequest API.
     This is logged for the cumulative delta across all the web request
@@ -4018,8 +4019,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="never">
 <!-- expires-never: For monitoring Web Request API performance. -->
 
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     The total time a network request took when at least one Web Request listener
     was registered at the start of the request, and a listener was blocked on
@@ -4032,8 +4033,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="never">
 <!-- expires-never: For monitoring Web Request API performance. -->
 
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     The total time a network request took when at least one Web Request listener
     with 'extraHeaders' in the extraInfoSpec was registered at the start of the
@@ -4046,8 +4047,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="never">
 <!-- expires-never: For monitoring Web Request API performance. -->
 
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     The total time a network request took when at least one Web Request listener
     was registered at the start of the request. Measures from onBeforeRequest to
@@ -4060,7 +4061,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="never">
 <!-- expires-never: For monitoring Web request actions. -->
 
-  <owner>karandeepb@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Counts the number of times an action is requested by extensions as part of
     the Web Request API. For a given web request stage, multiple actions may be
@@ -4072,8 +4074,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="never">
 <!-- expires-never: For monitoring Web request API usage. -->
 
-  <owner>karandeepb@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Number of enabled extensions which have requested the
     &quot;webRequestBlocking&quot; permission. Includes all kinds of extensions,
@@ -4086,8 +4088,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="never">
 <!-- expires-never: For monitoring Web request API usage. -->
 
-  <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
   <summary>
     Number of enabled extensions which have requested the &quot;webRequest&quot;
     permission. Includes all kinds of extensions, including component and

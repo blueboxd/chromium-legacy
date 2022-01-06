@@ -21,7 +21,6 @@ void ChromeBrowserMainExtraPartsOzone::PreEarlyInitialization() {
 void ChromeBrowserMainExtraPartsOzone::PostCreateMainMessageLoop() {
   auto shutdown_cb = base::BindOnce([] {
     chrome::SessionEnding();
-    LOG(FATAL) << "Browser failed to shutdown.";
   });
   ui::OzonePlatform::GetInstance()->PostCreateMainMessageLoop(
       std::move(shutdown_cb));

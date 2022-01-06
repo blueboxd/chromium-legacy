@@ -369,12 +369,6 @@ static_library("extensions") {
     "api/storage/syncable_settings_storage.h",
     "api/streams_private/streams_private_api.cc",
     "api/streams_private/streams_private_api.h",
-    "api/system_indicator/system_indicator_api.cc",
-    "api/system_indicator/system_indicator_api.h",
-    "api/system_indicator/system_indicator_manager.cc",
-    "api/system_indicator/system_indicator_manager.h",
-    "api/system_indicator/system_indicator_manager_factory.cc",
-    "api/system_indicator/system_indicator_manager_factory.h",
     "api/system_private/system_private_api.cc",
     "api/system_private/system_private_api.h",
     "api/tab_capture/tab_capture_api.cc",
@@ -499,6 +493,8 @@ static_library("extensions") {
     "context_menu_matcher.h",
     "convert_user_script.cc",
     "convert_user_script.h",
+    "corrupted_extension_reinstaller.cc",
+    "corrupted_extension_reinstaller.h",
     "crx_installer.cc",
     "crx_installer.h",
     "data_deleter.cc",
@@ -662,8 +658,6 @@ static_library("extensions") {
     "permissions_based_management_policy_provider.h",
     "permissions_updater.cc",
     "permissions_updater.h",
-    "policy_extension_reinstaller.cc",
-    "policy_extension_reinstaller.h",
     "policy_handlers.cc",
     "policy_handlers.h",
     "proxy_overridden_bubble_delegate.cc",
@@ -952,6 +946,17 @@ static_library("extensions") {
     "//url",
   ]
 
+  if (is_linux || is_mac || is_win) {
+    sources += [
+      "api/system_indicator/system_indicator_api.cc",
+      "api/system_indicator/system_indicator_api.h",
+      "api/system_indicator/system_indicator_manager.cc",
+      "api/system_indicator/system_indicator_manager.h",
+      "api/system_indicator/system_indicator_manager_factory.cc",
+      "api/system_indicator/system_indicator_manager_factory.h",
+    ]
+  }
+
   if (is_chromeos_ash) {
     deps += [
       "//ash/webui/resources:media_app_bundle_resources_grit",
@@ -970,6 +975,8 @@ static_library("extensions") {
       "api/messaging/native_message_built_in_host.h",
       "api/messaging/native_message_echo_host.cc",
       "api/messaging/native_message_echo_host.h",
+      "api/passwords_private/passwords_private_utils_chromeos.cc",
+      "api/passwords_private/passwords_private_utils_chromeos.h",
       "api/platform_keys/platform_keys_api.cc",
       "api/platform_keys/platform_keys_api.h",
       "api/platform_keys/verify_trust_api.cc",
@@ -996,6 +1003,7 @@ static_library("extensions") {
       deps += [ "//printing/backend" ]
     }
     deps += [
+      "//chrome/browser/chromeos/extensions/login_screen",
       "//chromeos/crosapi/cpp",
       "//chromeos/crosapi/mojom",
       "//remoting/host/it2me:chrome_os_host",
@@ -1030,6 +1038,13 @@ static_library("extensions") {
     ]
   }
 
+  if (is_chromeos_lacros) {
+    sources += [
+      "api/quick_unlock_private/quick_unlock_private_api_lacros.cc",
+      "api/quick_unlock_private/quick_unlock_private_api_lacros.h",
+    ]
+  }
+
   if (is_chromeos_ash) {
     sources += [
       "api/certificate_provider/certificate_provider_api.cc",
@@ -1060,13 +1075,15 @@ static_library("extensions") {
       "api/networking_private/networking_private_ui_delegate_chromeos.h",
       "api/quick_unlock_private/quick_unlock_private_api.cc",
       "api/quick_unlock_private/quick_unlock_private_api.h",
+      "api/quick_unlock_private/quick_unlock_private_ash_utils.cc",
+      "api/quick_unlock_private/quick_unlock_private_ash_utils.h",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.cc",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.cc",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h",
       "api/settings_private/generated_time_zone_pref_base.cc",
       "api/settings_private/generated_time_zone_pref_base.h",
-      "api/tabs/tabs_util_chromeos.cc",
+      "api/tabs/tabs_util_ash.cc",
       "api/terminal/crostini_startup_status.cc",
       "api/terminal/crostini_startup_status.h",
       "api/terminal/terminal_private_api.cc",
@@ -1098,14 +1115,15 @@ static_library("extensions") {
       "//ash/constants",
       "//ash/keyboard/ui:resources_grit_grit",
       "//ash/public/cpp",
+      "//ash/webui/camera_app_ui",
+      "//ash/webui/camera_app_ui:mojo_bindings",
+      "//ash/webui/file_manager/untrusted_resources:file_manager_untrusted_resources",
       "//chrome/browser/ash/crostini:crostini_installer_types_mojom",
       "//chrome/browser/devtools",
       "//chrome/browser/nearby_sharing/common",
       "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
       "//chromeos",
       "//chromeos/attestation",
-      "//chromeos/components/camera_app_ui",
-      "//chromeos/components/camera_app_ui:mojo_bindings",
       "//chromeos/components/chromebox_for_meetings/buildflags",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/remote_apps/mojom",
@@ -1160,11 +1178,9 @@ static_library("extensions") {
     sources += [
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.cc",
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.h",
-      "api/enterprise_reporting_private/keychain_data_helper_mac.h",
-      "api/enterprise_reporting_private/keychain_data_helper_mac.mm",
       "api/image_writer_private/operation_nonchromeos.cc",
       "api/image_writer_private/removable_storage_provider_linux.cc",
-      "api/tabs/tabs_util_chromeos.cc",
+      "api/tabs/tabs_util_lacros.cc",
       "chrome_kiosk_delegate.cc",
       "preinstalled_apps.cc",
       "preinstalled_apps.h",
@@ -1181,8 +1197,6 @@ static_library("extensions") {
     sources += [
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.cc",
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.h",
-      "api/enterprise_reporting_private/keychain_data_helper_mac.h",
-      "api/enterprise_reporting_private/keychain_data_helper_mac.mm",
       "api/image_writer_private/operation_nonchromeos.cc",
       "api/tabs/tabs_util.cc",
       "chrome_kiosk_delegate.cc",
@@ -1197,6 +1211,12 @@ static_library("extensions") {
     if (is_linux) {
       sources +=
           [ "api/image_writer_private/removable_storage_provider_linux.cc" ]
+    }
+    if (is_mac) {
+      sources += [
+        "api/enterprise_reporting_private/keychain_data_helper_mac.h",
+        "api/enterprise_reporting_private/keychain_data_helper_mac.mm",
+      ]
     }
     if (is_posix) {
       sources += [ "api/messaging/native_process_launcher_posix.cc" ]

@@ -139,9 +139,11 @@ class NET_EXPORT SpdySessionPool
                   size_t session_max_recv_window_size,
                   int session_max_queued_capped_frames,
                   const spdy::SettingsMap& initial_settings,
+                  bool enable_http2_settings_grease,
                   const absl::optional<GreasedHttp2Frame>& greased_http2_frame,
                   bool http2_end_stream_with_data_frame,
                   bool enable_priority_update,
+                  bool go_away_on_ip_change,
                   SpdySessionPool::TimeFunc time_func,
                   NetworkQualityEstimator* network_quality_estimator);
 
@@ -453,6 +455,13 @@ class NET_EXPORT SpdySessionPool
   // and maximum HPACK dynamic table size.
   const spdy::SettingsMap initial_settings_;
 
+  // If true, a setting parameter with reserved identifier will be sent in every
+  // initial SETTINGS frame, see
+  // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
+  // The setting identifier and value will be drawn independently for each
+  // connection to prevent tracking of the client.
+  const bool enable_http2_settings_grease_;
+
   // If set, an HTTP/2 frame with a reserved frame type will be sent after
   // every HTTP/2 SETTINGS frame and before every HTTP/2 DATA frame. See
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
@@ -472,6 +481,10 @@ class NET_EXPORT SpdySessionPool
   // but continue and also stop sending HTTP/2-style priority information in
   // HEADERS frames and PRIORITY frames if it has value 1.
   const bool enable_priority_update_;
+
+  // If set, sessions will be marked as going away upon relevant network changes
+  // (instead of being closed).
+  const bool go_away_on_ip_change_;
 
   SpdySessionRequestMap spdy_session_request_map_;
 

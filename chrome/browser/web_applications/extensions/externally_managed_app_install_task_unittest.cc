@@ -175,18 +175,13 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
             }));
   }
 
-  void UninstallFromSyncBeforeRegistryUpdate(
-      std::vector<AppId> web_apps) override {
-    NOTREACHED();
-  }
-  void UninstallFromSyncAfterRegistryUpdate(
-      std::vector<std::unique_ptr<WebApp>> web_apps,
+  void UninstallWithoutRegistryUpdateFromSync(
+      const std::vector<AppId>& web_apps,
       RepeatingUninstallCallback callback) override {
     NOTREACHED();
   }
 
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
-                      content::WebContents* web_contents,
                       InstallFinalizedCallback callback) override {
     NOTREACHED();
   }
@@ -222,6 +217,11 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
                 UnregisterApp(app_id);
               std::move(callback).Run(uninstalled);
             }));
+  }
+
+  void RetryIncompleteUninstalls(
+      const std::vector<AppId>& apps_to_uninstall) override {
+    NOTREACHED();
   }
 
   bool CanUserUninstallWebApp(const AppId& app_id) const override {
@@ -716,6 +716,46 @@ TEST_F(ExternallyManagedAppInstallTaskTest, InstallPlaceholder) {
                       os_integration_manager()->num_create_shortcuts_calls());
             EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
             EXPECT_EQ(webapps::WebappInstallSource::EXTERNAL_POLICY,
+                      finalize_options().install_source);
+            const WebApplicationInfo& web_app_info =
+                finalizer()->web_app_info_list().at(0);
+
+            EXPECT_EQ(base::UTF8ToUTF16(kWebAppUrl.spec()), web_app_info.title);
+            EXPECT_EQ(kWebAppUrl, web_app_info.start_url);
+            EXPECT_EQ(web_app_info.user_display_mode, DisplayMode::kStandalone);
+            EXPECT_TRUE(web_app_info.manifest_icons.empty());
+            EXPECT_TRUE(web_app_info.icon_bitmaps.any.empty());
+
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+}
+
+TEST_F(ExternallyManagedAppInstallTaskTest, InstallPlaceholderDefaultSource) {
+  const GURL kWebAppUrl("https://foo.example");
+  ExternalInstallOptions options(kWebAppUrl, DisplayMode::kStandalone,
+                                 ExternalInstallSource::kExternalDefault);
+  options.install_placeholder = true;
+  auto task = GetInstallationTaskWithTestMocks(std::move(options));
+  url_loader().SetPrepareForLoadResultLoaded();
+  url_loader().SetNextLoadUrlResult(
+      kWebAppUrl, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
+
+  base::RunLoop run_loop;
+  task->Install(
+      web_contents(),
+      base::BindLambdaForTesting(
+          [&](absl::optional<AppId> app_id,
+              ExternallyManagedAppManager::InstallResult result) {
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+            EXPECT_TRUE(app_id.has_value());
+
+            EXPECT_TRUE(IsPlaceholderApp(profile(), kWebAppUrl));
+
+            EXPECT_EQ(1u,
+                      os_integration_manager()->num_create_shortcuts_calls());
+            EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
+            EXPECT_EQ(webapps::WebappInstallSource::EXTERNAL_DEFAULT,
                       finalize_options().install_source);
             const WebApplicationInfo& web_app_info =
                 finalizer()->web_app_info_list().at(0);

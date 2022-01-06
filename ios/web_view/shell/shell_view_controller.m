@@ -5,6 +5,7 @@
 #import "ios/web_view/shell/shell_view_controller.h"
 
 #import <MobileCoreServices/MobileCoreServices.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 #import "ios/web_view/shell/shell_auth_service.h"
 #import "ios/web_view/shell/shell_autofill_delegate.h"
@@ -360,7 +361,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
       UIAlertAction* action =
           [UIAlertAction actionWithTitle:title
                                    style:UIAlertActionStyleDefault
-                                 handler:^(UIAlertAction* action) {
+                                 handler:^(UIAlertAction* theAction) {
                                    [dataManager deleteProfile:profile];
                                  }];
       [alertController addAction:action];
@@ -430,7 +431,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
       UIAlertAction* action =
           [UIAlertAction actionWithTitle:title
                                    style:UIAlertActionStyleDefault
-                                 handler:^(UIAlertAction* action) {
+                                 handler:^(UIAlertAction* theAction) {
                                    [dataManager deletePassword:password];
                                  }];
       [alertController addAction:action];
@@ -833,12 +834,11 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
 - (void)webView:(CWVWebView*)webView
     contextMenuConfigurationForElement:(CWVHTMLElement*)element
                      completionHandler:(void (^)(UIContextMenuConfiguration*))
-                                           completionHandler
-    API_AVAILABLE(ios(13.0)) {
+                                           completionHandler {
   void (^copyHandler)(UIAction*) = ^(UIAction* action) {
     NSDictionary* item = @{
-      (NSString*)(kUTTypeURL) : element.hyperlink.absoluteString,
-      (NSString*)(kUTTypeUTF8PlainText) : [element.hyperlink.absoluteString
+      (NSString*)(UTTypeURL) : element.hyperlink.absoluteString,
+      (NSString*)(UTTypeUTF8PlainText) : [element.hyperlink.absoluteString
           dataUsingEncoding:NSUTF8StringEncoding],
     };
     [[UIPasteboard generalPasteboard] setItems:@[ item ]];
@@ -863,7 +863,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
           [UIAction actionWithTitle:@"Cancel"
                               image:nil
                          identifier:nil
-                            handler:^(id _){
+                            handler:^(id ignore){
                             }]
         ];
         NSString* menuTitle =
@@ -876,24 +876,9 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
 }
 
 - (void)webView:(CWVWebView*)webView
-    contextMenuWillPresentForLinkWithURL:(NSURL*)linkURL
-    API_AVAILABLE(ios(13.0)) {
-  NSLog(@"webView:contextMenuWillPresentForLinkWithURL: %@",
-        linkURL.absoluteString);
-}
-
-- (void)webView:(CWVWebView*)webView
-    contextMenuForLinkWithURL:(NSURL*)linkURL
-       willCommitWithAnimator:
-           (id<UIContextMenuInteractionCommitAnimating>)animator
-    API_AVAILABLE(ios(13.0)) {
-  NSLog(@"webView:contextMenuForLinkWithURL:willCommitWithAnimator: %@",
-        linkURL.absoluteString);
-}
-
-- (void)webView:(CWVWebView*)webView
-    contextMenuDidEndForLinkWithURL:(NSURL*)linkURL API_AVAILABLE(ios(13.0)) {
-  NSLog(@"webView:contextMenuDidEndForLinkWithURL: %@", linkURL.absoluteString);
+    contextMenuWillCommitWithAnimator:
+        (id<UIContextMenuInteractionCommitAnimating>)animator {
+  NSLog(@"webView:contextMenuWillCommitWithAnimator:");
 }
 
 - (void)webView:(CWVWebView*)webView

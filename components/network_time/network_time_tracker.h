@@ -16,6 +16,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
@@ -43,7 +44,7 @@ const int64_t kTicksResolutionMs = base::Time::kMinLowResolutionThresholdMs;
 const int64_t kTicksResolutionMs = 1;  // Assume 1ms for non-windows platforms.
 #endif
 
-// Variations Service feature that enables network time service querying.
+// Feature that enables network time service querying.
 extern const base::Feature kNetworkTimeServiceQuerying;
 
 // A class that receives network time updates and can provide the network time
@@ -144,9 +145,12 @@ class NetworkTimeTracker {
   bool AreTimeFetchesEnabled() const;
   FetchBehavior GetFetchBehavior() const;
 
+  // Blocks until the the next time query completes.
+  void WaitForFetch();
+
   void SetMaxResponseSizeForTesting(size_t limit);
 
-  void SetPublicKeyForTesting(const base::StringPiece& key);
+  void SetPublicKeyForTesting(base::StringPiece key);
 
   void SetTimeServerURLForTesting(const GURL& url);
 
@@ -168,6 +172,11 @@ class NetworkTimeTracker {
   // Updates network time from a time server response, returning true
   // if successful.
   bool UpdateTimeFromResponse(std::unique_ptr<std::string> response_body);
+
+  // Records histograms related to clock skew. All of these histograms are
+  // currently local-only. See https://crbug.com/1258624.
+  void RecordClockSkewHistograms(base::Time current_time,
+                                 base::TimeDelta fetch_latency) const;
 
   // Called to process responses from the secure time service.
   void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);

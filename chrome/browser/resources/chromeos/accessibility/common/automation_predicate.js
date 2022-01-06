@@ -14,6 +14,8 @@ goog.require('constants');
 
 goog.scope(function() {
 const AutomationNode = chrome.automation.AutomationNode;
+const InvalidState = chrome.automation.InvalidState;
+const MarkerType = chrome.automation.MarkerType;
 const Dir = constants.Dir;
 const Restriction = chrome.automation.Restriction;
 const Role = chrome.automation.RoleType;
@@ -149,7 +151,23 @@ AutomationPredicate = class {
    * @return {boolean}
    */
   static button(node) {
-    return /button/i.test(node.role);
+    return node.isButton;
+  }
+
+  /**
+   * @param {!AutomationNode} node
+   * @return {boolean}
+   */
+  static comboBox(node) {
+    return node.isComboBox;
+  }
+
+  /**
+   * @param {!AutomationNode} node
+   * @return {boolean}
+   */
+  static checkBox(node) {
+    return node.isCheckBox;
   }
 
   /**
@@ -167,7 +185,7 @@ AutomationPredicate = class {
    * @return {boolean}
    */
   static image(node) {
-    return node.role === Role.IMAGE && !!(node.name || node.url);
+    return node.isImage && !!(node.name || node.url);
   }
 
   /**
@@ -202,6 +220,46 @@ AutomationPredicate = class {
         (node.role === Role.MENU_ITEM && !hasActionableDescendant(node)) ||
         // Simple list items should be leaves.
         AutomationPredicate.simpleListItem(node);
+  }
+
+  /**
+   * Returns true if this node is marked as invalid.
+   * @param {!AutomationNode} node
+   * @return {boolean}
+   */
+  static isInvalid(node) {
+    return node.invalidState === InvalidState.TRUE;
+  }
+
+
+  /**
+   * Returns true if this node has an invalid grammar marker.
+   * @param {!AutomationNode} node
+   * @return {boolean}
+   */
+  static hasInvalidGrammarMarker(node) {
+    const markers = node.markers;
+    if (!markers) {
+      return false;
+    }
+    return markers.some(function(marker) {
+      return marker.flags[MarkerType.GRAMMAR];
+    });
+  }
+
+  /**
+   * Returns true if this node has an invalid spelling marker.
+   * @param {!AutomationNode} node
+   * @return {boolean}
+   */
+  static hasInvalidSpellingMarker(node) {
+    const markers = node.markers;
+    if (!markers) {
+      return false;
+    }
+    return markers.some(function(marker) {
+      return marker.flags[MarkerType.SPELLING];
+    });
   }
 
   /**
@@ -726,14 +784,6 @@ AutomationPredicate.Unary;
 AutomationPredicate.Binary;
 
 
-/** @type {AutomationPredicate.Unary} */
-AutomationPredicate.checkBox =
-    AutomationPredicate.roles([Role.CHECK_BOX, Role.SWITCH]);
-/** @type {AutomationPredicate.Unary} */
-AutomationPredicate.comboBox = AutomationPredicate.roles([
-  Role.COMBO_BOX_GROUPING, Role.COMBO_BOX_MENU_BUTTON,
-  Role.TEXT_FIELD_WITH_COMBO_BOX, Role.POP_UP_BUTTON, Role.MENU_LIST_POPUP
-]);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.heading = AutomationPredicate.roles([Role.HEADING]);
 /** @type {AutomationPredicate.Unary} */

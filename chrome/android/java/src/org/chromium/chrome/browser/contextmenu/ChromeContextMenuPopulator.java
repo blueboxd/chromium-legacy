@@ -455,8 +455,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     linkGroup.add(createListItem(Item.SAVE_LINK_AS));
                 }
                 if (!mParams.isImage() && ChromeFeatureList.isEnabled(ChromeFeatureList.READ_LATER)
-                        && ReadingListUtils.isReadingListSupported(
-                                mParams.getLinkUrl().getValidSpecOrEmpty())) {
+                        && ReadingListUtils.isReadingListSupported(mParams.getLinkUrl())) {
                     linkGroup.add(createListItem(Item.READ_LATER, shouldTriggerReadLaterHelpUi()));
                 }
                 linkGroup.add(createShareListItem(Item.SHARE_LINK, Item.DIRECT_SHARE_LINK));
@@ -808,10 +807,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             shareHighlighting();
         } else if (itemId == R.id.contextmenu_remove_highlight) {
             recordContextMenuSelection(ContextMenuUma.Action.REMOVE_HIGHLIGHT);
-            mItemDelegate.removeHighlighting(
-                    ChromeFeatureList.isEnabled(ChromeFeatureList.SHARED_HIGHLIGHTING_AMP)
-                            ? mNativeDelegate.getRenderFrameHost()
-                            : null);
+            mItemDelegate.removeHighlighting();
         } else if (itemId == R.id.contextmenu_learn_more) {
             recordContextMenuSelection(ContextMenuUma.Action.LEARN_MORE);
             mItemDelegate.onOpenInNewTab(
@@ -851,10 +847,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 new ChromeShareExtras.Builder()
                         .setSaveLastUsed(true)
                         .setIsReshareHighlightedText(true)
-                        .setRenderFrameHost(ChromeFeatureList.isEnabled(
-                                                    ChromeFeatureList.SHARED_HIGHLIGHTING_AMP)
-                                        ? mNativeDelegate.getRenderFrameHost()
-                                        : null)
+                        .setRenderFrameHost(mNativeDelegate.getRenderFrameHost())
                         .setDetailedContentType(
                                 ChromeShareExtras.DetailedContentType.HIGHLIGHTED_TEXT)
                         .build(),

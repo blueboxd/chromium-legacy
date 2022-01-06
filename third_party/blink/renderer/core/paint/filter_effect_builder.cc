@@ -288,7 +288,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         FloatPoint offset = shadow.Location().ScaledBy(shorthand_scale_);
         float radius = shadow.Blur() * shorthand_scale_;
         effect = MakeGarbageCollected<FEDropShadow>(
-            parent_filter, radius, radius, offset.X(), offset.Y(),
+            parent_filter, radius, radius, offset.x(), offset.y(),
             shadow.GetColor().GetColor(), 1);
         break;
       }
@@ -306,7 +306,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
             parent_filter, convolve_matrix_operation->KernelSize(),
             convolve_matrix_operation->Divisor(),
             convolve_matrix_operation->Bias(),
-            convolve_matrix_operation->TargetOffset(),
+            convolve_matrix_operation->TargetOffset().OffsetFromOrigin(),
             convolve_matrix_operation->EdgeMode(),
             convolve_matrix_operation->PreserveAlpha(),
             convolve_matrix_operation->KernelMatrix());
@@ -437,7 +437,7 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
       }
       case FilterOperation::DROP_SHADOW: {
         const ShadowData& shadow = To<DropShadowFilterOperation>(*op).Shadow();
-        IntPoint floored_offset =
+        gfx::Point floored_offset =
             FlooredIntPoint(shadow.Location().ScaledBy(shorthand_scale_));
         float radius = shadow.Blur() * shorthand_scale_;
         filters.AppendDropShadowFilter(floored_offset, radius,

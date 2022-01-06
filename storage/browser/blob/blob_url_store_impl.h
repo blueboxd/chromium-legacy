@@ -12,9 +12,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "storage/browser/blob/blob_url_registry.h"
+#include "storage/browser/blob/blob_registry_impl.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
-#include "url/origin.h"
 
 namespace storage {
 
@@ -23,8 +22,8 @@ class BlobUrlRegistry;
 class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
     : public blink::mojom::BlobURLStore {
  public:
-  BlobURLStoreImpl(const url::Origin& origin,
-                   base::WeakPtr<BlobUrlRegistry> registry);
+  BlobURLStoreImpl(base::WeakPtr<BlobUrlRegistry> registry,
+                   BlobRegistryImpl::Delegate* delegate);
 
   BlobURLStoreImpl(const BlobURLStoreImpl&) = delete;
   BlobURLStoreImpl& operator=(const BlobURLStoreImpl&) = delete;
@@ -49,12 +48,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
       ResolveForNavigationCallback callback) override;
 
  private:
-  // Checks if the passed in url is a valid blob url for this blob url store.
-  // Returns false and reports a bad mojo message if not.
-  bool BlobUrlIsValid(const GURL& url, const char* method) const;
-
-  const url::Origin origin_;
   base::WeakPtr<BlobUrlRegistry> registry_;
+  BlobRegistryImpl::Delegate* delegate_;
 
   std::set<GURL> urls_;
 

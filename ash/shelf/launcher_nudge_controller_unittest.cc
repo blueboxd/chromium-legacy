@@ -5,7 +5,6 @@
 #include "ash/shelf/launcher_nudge_controller.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/views/app_list_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
@@ -87,13 +86,6 @@ class LauncherNudgeControllerTest : public AshTestBase {
     nudge_controller_->SetClockForTesting(
         task_environment()->GetMockClock(),
         task_environment()->GetMockTickClock());
-
-    // After the app list is toggled and ExpandArrowView is shown, running the
-    // ExpandArrowView animation with the clock advanced will lead to msan
-    // crash. As a workaround, set the `short_animation_for_testing` in
-    // AppListView to true in order to disable the ExpandArrowView animation.
-    // See crbug.com/926038 for similar issue and fix.
-    AppListView::SetShortAnimationForTesting(true);
   }
 
   // Advances the mock clock in the task environment and wait until it is idle.
@@ -171,10 +163,14 @@ TEST_F(LauncherNudgeControllerTest, StopShowingNudgeAfterLauncherIsOpened) {
   AdvanceClock(nudge_controller_->GetNudgeInterval(/*is_first_time=*/true));
   EXPECT_EQ(1, GetNudgeShownCount());
 
-  // Toggle the app list to show.
+  // Toggle the app list to show. Open fullscreen to avoid showing the expand
+  // arrow button, because the animation for that button causes an MSAN
+  // use-of-uninitialized-value. This workaround can be removed when
+  // ProductivityLauncher is the default, since it does not have an expand
+  // button. See https://crbug.com/926038.
   Shell::Get()->app_list_controller()->ToggleAppList(
       display::Screen::GetScreen()->GetPrimaryDisplay().id(),
-      AppListShowSource::kShelfButton, base::TimeTicks());
+      AppListShowSource::kShelfButtonFullscreen, base::TimeTicks());
   ASSERT_TRUE(Shell::Get()->app_list_controller()->IsVisible());
   AdvanceClock(nudge_controller_->GetNudgeInterval(/*is_first_time=*/false));
 
@@ -197,9 +193,13 @@ TEST_F(LauncherNudgeControllerTest, DoNotShowNudgeInTabletMode) {
   AdvanceClock(nudge_controller_->GetNudgeInterval(/*is_first_time=*/true));
   EXPECT_EQ(0, GetNudgeShownCount());
 
-  // Return to the clamshell mode. If the time has passed long enough since the
-  // last nudge shown, show the nudge to the user immediately.
+  // Return to the clamshell mode.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_EQ(0, GetNudgeShownCount());
+
+  // The nudge has to wait for `kMinIntervalAfterHomeButtonAppears` after
+  // changing back to clamshell mode.
+  AdvanceClock(LauncherNudgeController::kMinIntervalAfterHomeButtonAppears);
   EXPECT_EQ(1, GetNudgeShownCount());
 }
 
@@ -246,6 +246,53 @@ TEST_F(LauncherNudgeControllerTest, ShowNudgeOnDisplayWhereCursorIsOn) {
   EXPECT_EQ(2, GetNudgeShownCount());
   EXPECT_EQ(1, waiter_primary.GetShownCount());
   EXPECT_EQ(1, waiter_secondary.GetShownCount());
+}
+
+TEST_F(LauncherNudgeControllerTest,
+       WaitUntilHomeButtonStaysLongEnoughToShowNudge) {
+  // Set the animation duration mode to non-zero for the launcher nudge
+  // animation to actually run in the tests.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // New user logs in.
+  SimulateNewUserFirstLogin("user@gmail.com");
+  EXPECT_EQ(0, GetNudgeShownCount());
+  base::TimeDelta small_delta = base::Seconds(10);
+
+  // Log out right before the nudge should be shown.
+  AdvanceClock(nudge_controller_->GetNudgeInterval(/*is_first_time=*/true) -
+               small_delta);
+  ClearLogin();
+
+  // Log in again.
+  SimulateUserLogin("user@gmail.com");
+  AdvanceClock(small_delta);
+
+  // Even if the nudge interval has passed since the first log in, the nudge has
+  // to wait `kMinIntervalAfterHomeButtonAppears` amount of time since the
+  // recent login to be shown.
+  EXPECT_EQ(0, GetNudgeShownCount());
+  AdvanceClock(LauncherNudgeController::kMinIntervalAfterHomeButtonAppears -
+               small_delta);
+  EXPECT_EQ(1, GetNudgeShownCount());
+
+  // Change to the tablet mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  AdvanceClock(nudge_controller_->GetNudgeInterval(/*is_first_time=*/true) -
+               small_delta);
+
+  // Return to the clamshell mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  AdvanceClock(small_delta);
+
+  // Even if the nudge interval has passed since the last nudge shown, the nudge
+  // has to wait `kMinIntervalAfterHomeButtonAppears` amount of time since the
+  // last change to clamshell mode to be shown.
+  EXPECT_EQ(1, GetNudgeShownCount());
+  AdvanceClock(LauncherNudgeController::kMinIntervalAfterHomeButtonAppears -
+               small_delta);
+  EXPECT_EQ(2, GetNudgeShownCount());
 }
 
 }  // namespace ash

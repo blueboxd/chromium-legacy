@@ -184,7 +184,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
       state_ == State::kExpectingReset) {
     LOG(ERROR)
         << "Don't call Initialize() while there are pending decode tasks";
-    std::move(init_cb).Run(StatusCode::kVaapiReinitializedDuringDecode);
+    std::move(init_cb).Run(StatusCode::kDecoderInitializationFailed);
     return;
   }
 
@@ -307,7 +307,8 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
   auto accel_status = CreateAcceleratedVideoDecoder();
   if (!accel_status.is_ok()) {
     SetErrorState("failed to create decoder delegate");
-    std::move(init_cb).Run(std::move(accel_status));
+    std::move(init_cb).Run(Status(Status::Codes::kDecoderInitializationFailed)
+                               .AddCause(std::move(accel_status)));
     return;
   }
 
@@ -576,16 +577,10 @@ void VaapiVideoDecoder::SurfaceReady(scoped_refptr<VASurface> va_surface,
     video_frame = std::move(wrapped_frame);
   }
 
-  if (cdm_context_ref_ && !transcryption_) {
-    // For protected content we also need to set the ID for validating protected
-    // surfaces in the VideoFrame metadata so we can check if the surface is
-    // still valid once we get to the compositor stage.
-    uint32_t protected_instance_id = vaapi_wrapper_->GetProtectedInstanceID();
-    video_frame->metadata().hw_protected_validation_id = protected_instance_id;
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    // Additionally, we store the VA-API protected session ID so that it can be
-    // re-used for scaling the decoded video frame later in the pipeline.
+  if (cdm_context_ref_ && !transcryption_) {
+    // Store the VA-API protected session ID so that it can be re-used for
+    // scaling the decoded video frame later in the pipeline.
     VAProtectedSessionID va_protected_session_id =
         vaapi_wrapper_->GetProtectedSessionID();
 
@@ -598,8 +593,8 @@ void VaapiVideoDecoder::SurfaceReady(scoped_refptr<VASurface> va_surface,
         "does not match the type exposed by VaapiWrapper");
     video_frame->metadata().hw_va_protected_session_id =
         va_protected_session_id;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   const auto gfx_color_space = color_space.ToGfxColorSpace();
   if (gfx_color_space.IsValid())
@@ -774,10 +769,11 @@ void VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes(
       /*use_protected=*/!!cdm_context_ref_,
       /*need_aux_frame_pool=*/true);
   if (status_or_layout.has_error()) {
-    if (std::move(status_or_layout).error().code() == StatusCode::kAborted) {
+    if (status_or_layout.code() == CroStatus::Codes::kResetRequired) {
       DVLOGF(2) << "The frame pool initialization is aborted.";
       SetState(State::kExpectingReset);
     } else {
+      // TODO(crbug/1103510): don't drop the error on the floor here.
       SetErrorState("failed Initialize()ing the frame pool");
     }
     return;
@@ -940,7 +936,7 @@ void VaapiVideoDecoder::Reset(base::OnceClosure reset_cb) {
                                 std::move(reset_cb)));
 }
 
-Status VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
+VaapiStatus VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
   DVLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_ == State::kUninitialized ||
@@ -996,10 +992,10 @@ Status VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
 
     decoder_.reset(new AV1Decoder(std::move(accelerator), profile_));
   } else {
-    return Status(StatusCode::kDecoderUnsupportedProfile)
+    return VaapiStatus(VaapiStatus::Codes::kUnsupportedProfile)
         .WithData("profile", profile_);
   }
-  return OkStatus();
+  return VaapiStatus::Codes::kOk;
 }
 
 void VaapiVideoDecoder::ResetDone(base::OnceClosure reset_cb) {

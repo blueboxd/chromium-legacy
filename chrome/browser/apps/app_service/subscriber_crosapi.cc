@@ -8,11 +8,11 @@
 
 #include "base/bind.h"
 #include "base/notreached.h"
-#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
@@ -74,26 +74,20 @@ void SubscriberCrosapi::Clone(
   receivers_.Add(this, std::move(receiver));
 }
 
-void SubscriberCrosapi::OnPreferredAppSet(
-    const std::string& app_id,
-    apps::mojom::IntentFilterPtr intent_filter) {
-  NOTIMPLEMENTED();
-}
-
-void SubscriberCrosapi::OnPreferredAppRemoved(
-    const std::string& app_id,
-    apps::mojom::IntentFilterPtr intent_filter) {
-  NOTIMPLEMENTED();
-}
-
 void SubscriberCrosapi::OnPreferredAppsChanged(
     apps::mojom::PreferredAppChangesPtr changes) {
-  NOTIMPLEMENTED();
+  if (!subscriber_.is_bound()) {
+    return;
+  }
+  subscriber_->OnPreferredAppsChanged(std::move(changes));
 }
 
 void SubscriberCrosapi::InitializePreferredApps(
     PreferredAppsList::PreferredApps preferred_apps) {
-  NOTIMPLEMENTED();
+  if (!subscriber_.is_bound()) {
+    return;
+  }
+  subscriber_->InitializePreferredApps(std::move(preferred_apps));
 }
 
 void SubscriberCrosapi::OnCrosapiDisconnected() {
@@ -145,6 +139,13 @@ void SubscriberCrosapi::LoadIcon(const std::string& app_id,
                              app_id, std::move(icon_key), icon_type,
                              size_hint_in_dip, /*allow_placeholder_icon=*/false,
                              std::move(callback));
+}
+
+void SubscriberCrosapi::AddPreferredApp(const std::string& app_id,
+                                        crosapi::mojom::IntentPtr intent) {
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
+  proxy->AddPreferredApp(
+      app_id, apps_util::ConvertCrosapiToAppServiceIntent(intent, profile_));
 }
 
 void SubscriberCrosapi::OnSubscriberDisconnected() {

@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/ozone/platform/flatland/flatland_window.h"
@@ -64,7 +64,10 @@ void FlatlandGpuHost::AttachSurfaceToWindow(
       flatland_window_manager_->GetWindow(window_id);
   if (!flatland_window)
     return;
-  // TODO(crbug.com/1230150): Create ContentLinkToken and AttachSurfaceContent.
+  fuchsia::ui::views::ViewportCreationToken surface_view_holder_token;
+  surface_view_holder_token.value =
+      zx::channel(surface_view_holder_token_mojo.TakeHandle());
+  flatland_window->AttachSurfaceContent(std::move(surface_view_holder_token));
 }
 
 void FlatlandGpuHost::OnChannelDestroyed(int host_id) {}

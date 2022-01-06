@@ -6,10 +6,6 @@
 
 namespace arc {
 
-// Enables users to keep ARC data, during ARC turn-off.
-const base::Feature kArcAllowDataRetention{"ArcAllowDataRetention",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
 // When disabled, third party apps will not receive this broadcast.
 const base::Feature kBootCompletedBroadcastFeature{
@@ -39,6 +35,8 @@ const base::Feature kEnableArcNearbyShare{"ArcNearbySharing",
 //    green (it should always be because arc.Boot is a critical test.)
 // 2) Change the default value of this feature to FEATURE_DISABLED_BY_DEFAULT.
 // 3) Monitor arc.Boot.vm at go/stainless after Chrome is rolled.
+// 4) Ask ARC team (//components/arc/OWNERS) to update arc.CPUSet.vm test so the
+//    Tast test uses the updated ArcEnablePerVmCoreScheduling setting.
 const base::Feature kEnablePerVmCoreScheduling{
     "ArcEnablePerVmCoreScheduling", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -101,32 +99,41 @@ const base::Feature kPictureInPictureFeature{"ArcPictureInPicture",
 const base::Feature kSaveRawFilesOnTracing{"ArcSaveRawFilesOnTracing",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls ARC touch mode mouse compatibility feature.
+const base::Feature kTouchModeMouse{"ArcTouchModeMouse",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls ARCVM real time vcpu feature on a device with 2 logical cores
 // online.
+// When you change the default, you also need to change the chromeExtraAgas
+// in tast-tests/src/chromiumos/tast/local/bundles/cros/arc/cpu_set.go to
+// match it to the new default.
 const base::Feature kRtVcpuDualCore{"ArcRtVcpuDualCore",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls ARCVM real time vcpu feature on a device with 3+ logical cores
 // online.
+// When you change the default, you also need to modify the chromeExtraAgas
+// in tast-tests/src/chromiumos/tast/local/bundles/cros/arc/cpu_set.go to
+// add ArcRtVcpuQuadCore there. Otherwise, the test will start failing.
 const base::Feature kRtVcpuQuadCore{"ArcRtVcpuQuadCore",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, unclaimed USB device will be attached to ARCVM by default.
 const base::Feature kUsbDeviceDefaultAttachToArcVm{
     "UsbDeviceDefaultAttachToArcVm", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls ARC high-memory dalvik profile in ARCVM.
-// When enabled, Android tries to use dalvik memory profile tuned for
-// high-memory devices like 8G and 16G. This is enabled without conditions
-// in ARC container.
-const base::Feature kUseHighMemoryDalvikProfile{
-    "ArcUseHighMemoryDalvikProfile", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls ARC USB Storage UI feature.
 // When enabled, chrome://settings and Files.app will ask if the user wants
 // to expose USB storage devices to ARC.
 const base::Feature kUsbStorageUIFeature{"ArcUsbStorageUI",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls ARC dalvik memory profile in ARCVM.
+// When enabled, Android tries to use dalvik memory profile tuned based on the
+// device memory size.
+const base::Feature kUseDalvikMemoryProfile{"ArcUseDalvikMemoryProfile",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether ARC uses VideoDecoder-backed video decoding.
 // When enabled, GpuArcVideoDecodeAccelerator will use VdVideoDecodeAccelerator
@@ -175,16 +182,16 @@ const base::FeatureParam<int> kVmBalloonPolicyModerateKiB{&kVmBalloonPolicy,
                                                           "moderate_kib", 0};
 
 // The maximum amount of kernel page cache ARCVM can have when ChromeOS is under
-// critical memory pressure. 0 for no limit. The default value of 184320KiB
+// critical memory pressure. 0 for no limit. The default value of 322560KiB
 // corresponds to the level LMKD will start to kill the lowest priority cached
 // app.
 const base::FeatureParam<int> kVmBalloonPolicyCriticalKiB{
-    &kVmBalloonPolicy, "critical_kib", 184320};
+    &kVmBalloonPolicy, "critical_kib", 322560};
 
 // The maximum amount of kernel page cache ARCVM can have when ChromeOS is
-// reclaiming. 0 for no limit. The default value of 184320KiB corresponds to the
+// reclaiming. 0 for no limit. The default value of 322560KiB corresponds to the
 // level LMKD will start to kill the lowest priority cached app.
 const base::FeatureParam<int> kVmBalloonPolicyReclaimKiB{&kVmBalloonPolicy,
-                                                         "reclaim_kib", 184320};
+                                                         "reclaim_kib", 322560};
 
 }  // namespace arc

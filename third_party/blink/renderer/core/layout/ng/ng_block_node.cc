@@ -304,9 +304,8 @@ bool CanUseCachedIntrinsicInlineSizes(const NGConstraintSpace& constraint_space,
                                  style.PaddingEnd().IsPercentOrCalc()))
     return false;
 
-  if (!style.AspectRatio().IsAuto() &&
-      (style.LogicalMinHeight().IsPercentOrCalc() ||
-       style.LogicalMaxHeight().IsPercentOrCalc()))
+  if (node.HasAspectRatio() && (style.LogicalMinHeight().IsPercentOrCalc() ||
+                                style.LogicalMaxHeight().IsPercentOrCalc()))
     return false;
 
   if (node.IsNGTableCell() && To<LayoutNGTableCell>(node.GetLayoutBox())
@@ -492,25 +491,16 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     layout_result = nullptr;
   }
 
-  // All these variables may change after layout due to scrollbars changing.
+  // Fragment geometry scrollbars are potentially size constrained, and cannot
+  // be used for comparison with their after layout size.
   NGBoxStrut scrollbars_before = ComputeScrollbars(constraint_space, *this);
-  const LayoutUnit inline_size_before =
-      fragment_geometry->border_box_size.inline_size;
-  const bool intrinsic_logical_widths_dirty_before =
+  bool intrinsic_logical_widths_dirty_before =
       box_->IntrinsicLogicalWidthsDirty();
 
   if (!layout_result)
     layout_result = LayoutWithAlgorithm(params);
 
   FinishLayout(block_flow, constraint_space, break_token, layout_result);
-
-  // We may be intrinsicly sized (shrink-to-fit), if our intrinsic logical
-  // widths are now dirty, re-calculate our inline-size for comparison.
-  if (!intrinsic_logical_widths_dirty_before &&
-      box_->IntrinsicLogicalWidthsDirty()) {
-    fragment_geometry =
-        CalculateInitialFragmentGeometry(constraint_space, *this);
-  }
 
   // We may need to relayout if:
   // - Our scrollbars have changed causing our size to change (shrink-to-fit)
@@ -521,7 +511,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   // ClearLayoutResults() when in this state is forbidden.
   NGBoxStrut scrollbars_after = ComputeScrollbars(constraint_space, *this);
   if ((scrollbars_before != scrollbars_after ||
-       inline_size_before != fragment_geometry->border_box_size.inline_size) &&
+       (!intrinsic_logical_widths_dirty_before &&
+        box_->IntrinsicLogicalWidthsDirty())) &&
       !NGDisableSideEffectsScope::IsDisabled()) {
     bool freeze_horizontal = false, freeze_vertical = false;
     // If we're in a measure pass, freeze both scrollbars right away, to avoid
@@ -1082,6 +1073,14 @@ bool NGBlockNode::CanUseNewLayout(const LayoutBox& box) {
 
 bool NGBlockNode::CanUseNewLayout() const {
   return CanUseNewLayout(*box_);
+}
+
+LayoutUnit NGBlockNode::EmptyLineBlockSize(
+    const NGBlockBreakToken* incoming_break_token) const {
+  // Only return a line-height for the first fragment.
+  if (IsResumingLayout(incoming_break_token))
+    return LayoutUnit();
+  return box_->LogicalHeightForEmptyLine();
 }
 
 String NGBlockNode::ToString() const {

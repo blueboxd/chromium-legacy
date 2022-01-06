@@ -10,7 +10,6 @@
 #include "base/test/task_environment.h"
 #include "remoting/base/session_options.h"
 #include "remoting/protocol/frame_stats.h"
-#include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "remoting/protocol/webrtc_frame_scheduler_simple.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -46,10 +45,9 @@ class WebrtcFrameSchedulerTest : public ::testing::Test {
 
     if (simulate_capture_) {
       // Simulate a completed capture and encode.
-      WebrtcVideoEncoder::FrameParams out_params;
-      scheduler_->OnFrameCaptured(&frame_, &out_params);
+      scheduler_->OnFrameCaptured(&frame_);
       WebrtcVideoEncoder::EncodedFrame encoded;
-      encoded.key_frame = out_params.key_frame;
+      encoded.key_frame = false;
       encoded.data = 'X';
       scheduler_->OnFrameEncoded(WebrtcVideoEncoder::EncodeResult::SUCCEEDED,
                                  &encoded);

@@ -160,6 +160,7 @@ bool OverlayCandidate::FromDrawQuad(
     return false;
   }
   candidate->opacity = sqs->opacity;
+  candidate->rounded_corners = sqs->mask_filter_info.rounded_corner_bounds();
 
   // We support only kSrc (no blending) and kSrcOver (blending with premul).
   if (!(sqs->blend_mode == SkBlendMode::kSrc ||
@@ -338,6 +339,8 @@ bool OverlayCandidate::FromDrawQuadResource(
   if (resource_id != kInvalidResourceId) {
     candidate->format = resource_provider->GetBufferFormat(resource_id);
     candidate->color_space = resource_provider->GetColorSpace(resource_id);
+    candidate->hdr_metadata = resource_provider->GetHDRMetadata(resource_id);
+
     if (!base::Contains(kOverlayFormats, candidate->format))
       return false;
   }
@@ -501,10 +504,8 @@ bool OverlayCandidate::FromTextureQuad(
     candidate->uv_rect = uv_rect;
   }
 
-  if (candidate->requires_overlay) {
+  if (candidate->requires_overlay)
     HandleClipAndSubsampling(candidate, primary_rect);
-    candidate->hw_protected_validation_id = quad->hw_protected_validation_id;
-  }
 
   candidate->priority_hint = gfx::OverlayPriorityHint::kRegular;
   return true;

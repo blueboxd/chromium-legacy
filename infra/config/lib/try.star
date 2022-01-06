@@ -19,7 +19,8 @@ to set the default value. Can also be accessed through `try_.defaults`.
 
 load("./args.star", "args")
 load("./branches.star", "branches")
-load("./builders.star", "builders", "os", "os_category")
+load("./builders.star", "builder_url", "builders", "compilator_watcher_git_revision", "os", "os_category")
+load("//project.star", "settings")
 
 DEFAULT_EXCLUDE_REGEXPS = [
     # Contains documentation that doesn't affect the outputs
@@ -30,6 +31,7 @@ DEFAULT_EXCLUDE_REGEXPS = [
 
 defaults = args.defaults(
     extends = builders.defaults,
+    check_for_flakiness = False,
     cq_group = None,
     main_list_view = None,
     subproject_list_view = None,
@@ -72,6 +74,7 @@ def try_builder(
         *,
         name,
         branch_selector = branches.MAIN,
+        check_for_flakiness = args.DEFAULT,
         cq_group = args.DEFAULT,
         list_view = args.DEFAULT,
         main_list_view = args.DEFAULT,
@@ -87,6 +90,9 @@ def try_builder(
       branch_selector - A branch selector value controlling whether the
         builder definition is executed. See branches.star for more
         information.
+      check_for_flakiness - If True, it checks for new tests in a given try
+        build and reruns them multiple times to ensure that they are not
+        flaky.
       cq_group - The CQ group to add the builder to. If tryjob is None, it will
         be added as includable_only.
       list_view - A string or list of strings identifying the ID(s) of the list
@@ -113,9 +119,6 @@ def try_builder(
         return
 
     experiments = experiments or {}
-
-    # TODO(crbug.com/1135718): Promote out of experiment for all builders.
-    experiments.setdefault("chromium.chromium_tests.use_rdb_results", 100)
 
     merged_resultdb_bigquery_exports = [
         resultdb.export_test_results(
@@ -170,6 +173,17 @@ def try_builder(
         if kwargs["goma_enable_ats"] != False:
             fail("Try Windows builder {} must disable ATS".format(name))
 
+    properties = kwargs.pop("properties", {})
+    properties = dict(properties)
+    check_for_flakiness = defaults.get_value(
+        "check_for_flakiness",
+        check_for_flakiness,
+    )
+    if check_for_flakiness:
+        properties["$build/flakiness"] = {
+            "check_for_flakiness": True,
+        }
+
     # Define the builder first so that any validation of luci.builder arguments
     # (e.g. bucket) occurs before we try to use it
     builders.builder(
@@ -179,6 +193,7 @@ def try_builder(
         resultdb_bigquery_exports = merged_resultdb_bigquery_exports,
         experiments = experiments,
         resultdb_index_by_timestamp = True,
+        properties = properties,
         **kwargs
     )
 
@@ -336,6 +351,7 @@ def chromium_mac_builder(
         cores = None,
         goma_backend = builders.goma.backend.RBE_PROD,
         os = builders.os.MAC_ANY,
+        ssd = True,
         **kwargs):
     return try_builder(
         name = name,
@@ -344,7 +360,7 @@ def chromium_mac_builder(
         goma_backend = goma_backend,
         os = os,
         builderless = builderless,
-        ssd = True,
+        ssd = ssd,
         **kwargs
     )
 
@@ -542,6 +558,112 @@ def infra_builder(
         **kwargs
     )
 
+def orchestrator_pair_builders(
+        *,
+        name,
+        builder_group_func,
+        orchestrator_builder_group,
+        orchestrator_cores,
+        orchestrator_tryjob,
+        compilator_cores,
+        compilator_goma_jobs,
+        compilator_name,
+        compilator_os,
+        compilator_builderless = not settings.is_main,
+        orchestrator_builderless = not settings.is_main,
+        **common_kwargs):
+    common_description = common_kwargs.pop("description_html", "")
+    if common_description:
+        common_description += "<br>"
+    orchestrator_url = builder_url("try", name)
+    compilator_url = builder_url("try", compilator_name)
+    orchestrator_description = common_description + (
+        "This is the orchestrator half of an orchestrator + compilator pair of " +
+        "builders. The compilator is <a href=\"{}\">{}</a>.".format(
+            compilator_url,
+            compilator_name,
+        )
+    )
+    compilator_description = common_description + (
+        "This is the compilator half of an orchestrator + compilator pair of " +
+        "builders. The orchestrator is <a href=\"{}\">{}</a>.".format(
+            orchestrator_url,
+            name,
+        )
+    )
+
+    orchestrator_builder = builder_group_func(
+        name = name,
+        executable = "recipe:chromium/orchestrator",
+        cores = orchestrator_cores,
+        builderless = orchestrator_builderless,
+        properties = {
+            "$build/chromium_orchestrator": {
+                "compilator": compilator_name,
+                "compilator_watcher_git_revision": compilator_watcher_git_revision,
+            },
+        },
+        tryjob = orchestrator_tryjob,
+        service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
+        os = os.LINUX_BIONIC,
+        description_html = orchestrator_description,
+        **common_kwargs
+    )
+    compilator_builder = builder_group_func(
+        name = compilator_name,
+        executable = "recipe:chromium/compilator",
+        cores = compilator_cores,
+        builderless = compilator_builderless,
+        goma_jobs = compilator_goma_jobs,
+        ssd = True,
+        properties = {
+            "orchestrator": {
+                "builder_name": name,
+                "builder_group": orchestrator_builder_group,
+            },
+        },
+        os = compilator_os,
+        description_html = compilator_description,
+        **common_kwargs
+    )
+    return orchestrator_builder, compilator_builder
+
+def chromium_chromiumos_orchestrator_pair(
+        **kwargs):
+    return orchestrator_pair_builders(
+        builder_group_func = chromium_chromiumos_builder,
+        orchestrator_builder_group = "tryserver.chromium.chromiumos",
+        compilator_os = os.LINUX_BIONIC,
+        **kwargs
+    )
+
+def chromium_linux_orchestrator_pair(
+        **kwargs):
+    return orchestrator_pair_builders(
+        builder_group_func = chromium_linux_builder,
+        orchestrator_builder_group = "tryserver.chromium.linux",
+        compilator_os = os.LINUX_BIONIC,
+        **kwargs
+    )
+
+def chromium_win_orchestrator_pair(
+        **kwargs):
+    return orchestrator_pair_builders(
+        builder_group_func = chromium_win_builder,
+        orchestrator_builder_group = "tryserver.chromium.win",
+        compilator_os = os.WINDOWS_10,
+        **kwargs
+    )
+
+def chromium_android_orchestrator_pair(
+        **kwargs):
+    return orchestrator_pair_builders(
+        builder_group_func = chromium_android_builder,
+        orchestrator_builder_group = "tryserver.chromium.android",
+        compilator_os = os.LINUX_BIONIC,
+        **kwargs
+    )
+
 def presubmit_builder(*, name, tryjob, os = builders.os.LINUX_BIONIC_SWITCH_TO_DEFAULT, **kwargs):
     """Define a presubmit builder.
 
@@ -582,14 +704,17 @@ try_ = struct(
     blink_mac_builder = blink_mac_builder,
     chromium_builder = chromium_builder,
     chromium_android_builder = chromium_android_builder,
+    chromium_android_orchestrator_pair = chromium_android_orchestrator_pair,
     chromium_angle_builder = chromium_angle_builder,
     chromium_angle_ios_builder = chromium_angle_ios_builder,
     chromium_angle_mac_builder = chromium_angle_mac_builder,
     chromium_angle_pinned_builder = chromium_angle_pinned_builder,
     chromium_chromiumos_builder = chromium_chromiumos_builder,
+    chromium_chromiumos_orchestrator_pair = chromium_chromiumos_orchestrator_pair,
     chromium_dawn_builder = chromium_dawn_builder,
     chromium_dawn_builderless_builder = chromium_dawn_builderless_builder,
     chromium_linux_builder = chromium_linux_builder,
+    chromium_linux_orchestrator_pair = chromium_linux_orchestrator_pair,
     chromium_mac_builder = chromium_mac_builder,
     chromium_mac_ios_builder = chromium_mac_ios_builder,
     chromium_rust_builder = chromium_rust_builder,
@@ -599,6 +724,7 @@ try_ = struct(
     chromium_updater_mac_builder = chromium_updater_mac_builder,
     chromium_updater_win_builder = chromium_updater_win_builder,
     chromium_win_builder = chromium_win_builder,
+    chromium_win_orchestrator_pair = chromium_win_orchestrator_pair,
     cipd_3pp_builder = cipd_3pp_builder,
     cipd_builder = cipd_builder,
     gpu_chromium_android_builder = gpu_chromium_android_builder,

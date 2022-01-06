@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <cctype>
+#include <cstddef>
 #include <memory>
 
 #include "base/base_switches.h"
@@ -10,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/metrics/field_trial_param_associator.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -17,15 +19,20 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
+#include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/client_hints/common/switches.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -34,6 +41,9 @@
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_hints.h"
@@ -79,7 +89,7 @@ using ::testing::Key;
 using ::testing::Not;
 using ::testing::Optional;
 
-constexpr unsigned expected_client_hints_number = 13u;
+constexpr unsigned expected_client_hints_number = 16u;
 constexpr int32_t uma_histogram_max_value = 1471228928;
 
 // An interceptor that records count of fetches and client hint headers for
@@ -168,9 +178,16 @@ bool IsSimilarToIntABNF(const std::string& header_value) {
   return true;
 }
 
+void OnUnblockOnProfileCreation(base::RunLoop* run_loop,
+                                Profile* profile,
+                                Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED)
+    run_loop->Quit();
+}
+
 }  // namespace
 
-class ClientHintsBrowserTest : public InProcessBrowserTest,
+class ClientHintsBrowserTest : public policy::PolicyTest,
                                public testing::WithParamInterface<bool> {
  public:
   ClientHintsBrowserTest()
@@ -293,6 +310,10 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     accept_ch_empty_ = https_server_.GetURL("/accept_ch_empty.html");
     http_equiv_accept_ch_merge_ =
         https_server_.GetURL("/http_equiv_accept_ch_merge.html");
+
+    without_accept_ch_without_lifetime_cross_origin_ =
+        https_cross_origin_server_.GetURL(
+            "/without_accept_ch_without_lifetime.html");
   }
 
   ClientHintsBrowserTest(const ClientHintsBrowserTest&) = delete;
@@ -368,6 +389,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   }
 
   void TestProfilesIndependent(Browser* browser_a, Browser* browser_b);
+  void TestSwitchWithNewProfile(const std::string& switch_value,
+                                size_t origins_stored);
 
   const GURL& accept_ch_with_lifetime_http_local_url() const {
     return accept_ch_with_lifetime_http_local_url_;
@@ -476,6 +499,10 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     return http_equiv_accept_ch_merge_;
   }
 
+  const GURL& without_accept_ch_without_lifetime_cross_origin() {
+    return without_accept_ch_without_lifetime_cross_origin_;
+  }
+
   GURL GetHttp2Url(const std::string& relative_url) const {
     return http2_server_.GetURL(relative_url);
   }
@@ -529,6 +556,21 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   std::string intercept_iframe_resource_;
   bool intercept_to_http_equiv_iframe_ = false;
   mutable base::Lock count_headers_lock_;
+
+  Profile* GenerateNewProfile() {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    base::FilePath current_profile_path = browser()->profile()->GetPath();
+
+    // Create an additional profile.
+    base::FilePath new_path =
+        profile_manager->GenerateNextProfileDirectoryPath();
+    base::RunLoop run_loop;
+    profile_manager->CreateProfileAsync(
+        new_path, base::BindRepeating(&OnUnblockOnProfileCreation, &run_loop));
+    run_loop.Run();
+
+    return profile_manager->GetProfile(new_path);
+  }
 
  private:
   // Intercepts only the main frame requests that contain
@@ -624,17 +666,32 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
       VerifyClientHintsReceived(expect_client_hints_on_main_frame_, request);
       if (expect_client_hints_on_main_frame_) {
         double value = 0.0;
+
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("device-memory")->second, &value));
         EXPECT_LT(0.0, value);
         EXPECT_TRUE(IsSimilarToDoubleABNF(
             request.headers.find("device-memory")->second));
+        main_frame_device_memory_observed_deprecated_ = value;
+
+        EXPECT_TRUE(base::StringToDouble(
+            request.headers.find("sec-ch-device-memory")->second, &value));
+        EXPECT_LT(0.0, value);
+        EXPECT_TRUE(IsSimilarToDoubleABNF(
+            request.headers.find("sec-ch-device-memory")->second));
         main_frame_device_memory_observed_ = value;
 
         EXPECT_TRUE(
             base::StringToDouble(request.headers.find("dpr")->second, &value));
         EXPECT_LT(0.0, value);
         EXPECT_TRUE(IsSimilarToDoubleABNF(request.headers.find("dpr")->second));
+        main_frame_dpr_observed_deprecated_ = value;
+
+        EXPECT_TRUE(base::StringToDouble(
+            request.headers.find("sec-ch-dpr")->second, &value));
+        EXPECT_LT(0.0, value);
+        EXPECT_TRUE(
+            IsSimilarToDoubleABNF(request.headers.find("sec-ch-dpr")->second));
         main_frame_dpr_observed_ = value;
 
         EXPECT_TRUE(base::StringToDouble(
@@ -646,13 +703,18 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
 #else
         EXPECT_EQ(980, value);
 #endif
-        main_frame_viewport_width_observed_ = value;
+        main_frame_viewport_width_observed_deprecated_ = value;
 
         EXPECT_TRUE(base::StringToDouble(
-            request.headers.find("sec-ch-viewport-height")->second, &value));
+            request.headers.find("sec-ch-viewport-width")->second, &value));
         EXPECT_TRUE(IsSimilarToIntABNF(
-            request.headers.find("sec-ch-viewport-height")->second));
+            request.headers.find("sec-ch-viewport-width")->second));
+#if !defined(OS_ANDROID)
         EXPECT_LT(0.0, value);
+#else
+        EXPECT_EQ(980, value);
+#endif
+        main_frame_viewport_width_observed_ = value;
 
         VerifyNetworkQualityClientHints(request);
       }
@@ -663,11 +725,21 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
 
       if (expect_client_hints_on_subresources()) {
         double value = 0.0;
+
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("device-memory")->second, &value));
         EXPECT_LT(0.0, value);
         EXPECT_TRUE(IsSimilarToDoubleABNF(
             request.headers.find("device-memory")->second));
+        if (main_frame_device_memory_observed_deprecated_ > 0) {
+          EXPECT_EQ(main_frame_device_memory_observed_deprecated_, value);
+        }
+
+        EXPECT_TRUE(base::StringToDouble(
+            request.headers.find("sec-ch-device-memory")->second, &value));
+        EXPECT_LT(0.0, value);
+        EXPECT_TRUE(IsSimilarToDoubleABNF(
+            request.headers.find("sec-ch-device-memory")->second));
         if (main_frame_device_memory_observed_ > 0) {
           EXPECT_EQ(main_frame_device_memory_observed_, value);
         }
@@ -676,6 +748,15 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
             base::StringToDouble(request.headers.find("dpr")->second, &value));
         EXPECT_LT(0.0, value);
         EXPECT_TRUE(IsSimilarToDoubleABNF(request.headers.find("dpr")->second));
+        if (main_frame_dpr_observed_deprecated_ > 0) {
+          EXPECT_EQ(main_frame_dpr_observed_deprecated_, value);
+        }
+
+        EXPECT_TRUE(base::StringToDouble(
+            request.headers.find("sec-ch-dpr")->second, &value));
+        EXPECT_LT(0.0, value);
+        EXPECT_TRUE(
+            IsSimilarToDoubleABNF(request.headers.find("sec-ch-dpr")->second));
         if (main_frame_dpr_observed_ > 0) {
           EXPECT_EQ(main_frame_dpr_observed_, value);
         }
@@ -693,15 +774,28 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
         // TODO(tbansal): https://crbug.com/825892: Viewport width on main
         // frame requests may be incorrect when the Chrome window is not
         // maximized.
+        if (main_frame_viewport_width_observed_deprecated_ > 0) {
+          EXPECT_EQ(main_frame_viewport_width_observed_deprecated_, value);
+        }
+#endif
+
+        EXPECT_TRUE(base::StringToDouble(
+            request.headers.find("sec-ch-viewport-width")->second, &value));
+        EXPECT_TRUE(IsSimilarToIntABNF(
+            request.headers.find("sec-ch-viewport-width")->second));
+#if !defined(OS_ANDROID)
+        EXPECT_LT(0.0, value);
+#else
+        EXPECT_EQ(980, value);
+#endif
+#if defined(OS_ANDROID)
+        // TODO(tbansal): https://crbug.com/825892: Viewport width on main
+        // frame requests may be incorrect when the Chrome window is not
+        // maximized.
         if (main_frame_viewport_width_observed_ > 0) {
           EXPECT_EQ(main_frame_viewport_width_observed_, value);
         }
 #endif
-        EXPECT_TRUE(base::StringToDouble(
-            request.headers.find("sec-ch-viewport-height")->second, &value));
-        EXPECT_TRUE(IsSimilarToIntABNF(
-            request.headers.find("sec-ch-viewport-height")->second));
-        EXPECT_LT(0.0, value);
 
         VerifyNetworkQualityClientHints(request);
       }
@@ -732,7 +826,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
       SCOPED_TRACE(testing::Message() << header);
       SCOPED_TRACE(testing::Message() << request.GetURL().spec());
       // Resource width client hint is only attached on image subresources.
-      if (header == "width") {
+      if (header == "width" || header == "sec-ch-width") {
         continue;
       }
 
@@ -748,13 +842,6 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
       // `Sec-CH-UA-Reduced` is tested via UaReducedOriginTrialBrowserTest
       // below.
       if (header == "sec-ch-ua-reduced") {
-        continue;
-      }
-
-      // We aren't yet including the new sec-ch-device-memory, sec-ch-dpr,
-      // sec-ch-width, sec-ch-viewport-width
-      if (header == "sec-ch-device-memory" || header == "sec-ch-dpr" ||
-          header == "sec-ch-width" || header == "sec-ch-viewport-width") {
         continue;
       }
 
@@ -849,14 +936,18 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   GURL redirect_url_;
   GURL accept_ch_empty_;
   GURL http_equiv_accept_ch_merge_;
+  GURL without_accept_ch_without_lifetime_cross_origin_;
 
   std::string main_frame_ua_observed_;
   std::string main_frame_ua_full_version_observed_;
   std::string main_frame_ua_mobile_observed_;
   std::string main_frame_ua_platform_observed_;
 
+  double main_frame_dpr_observed_deprecated_ = -1;
   double main_frame_dpr_observed_ = -1;
+  double main_frame_viewport_width_observed_deprecated_ = -1;
   double main_frame_viewport_width_observed_ = -1;
+  double main_frame_device_memory_observed_deprecated_ = -1;
   double main_frame_device_memory_observed_ = -1;
 
   // Expect client hints on all the main frame request.
@@ -3151,7 +3242,8 @@ class ThirdPartyUaReducedOriginTrialBrowserTest
  private:
   // URLLoaderInterceptor callback
   bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
-    if (params->url_request.url.GetOrigin() != GURL(kFirstPartyOriginUrl)) {
+    if (params->url_request.url.DeprecatedGetOriginAsURL() !=
+        GURL(kFirstPartyOriginUrl)) {
       return false;
     }
     if (params->url_request.url.path() !=
@@ -3417,7 +3509,7 @@ class ThirdPartyAcceptChUaReducedOriginTrialBrowserTest
   // URLLoaderInterceptor callback.  Handles the third-party embeds and
   // subresource requests.
   bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
-    const GURL origin = params->url_request.url.GetOrigin();
+    const GURL origin = params->url_request.url.DeprecatedGetOriginAsURL();
     // The interceptor does not handle requests to the EmbeddedTestServer.
     // Requests also get sent to https://accounts.google.com/ (not sure from
     // where), so we ignore them as well.
@@ -3574,4 +3666,146 @@ IN_PROC_BROWSER_TEST_F(
                           /*ch_ua_reduced_expected=*/true);
   NavigateAndCheckHeaders(top_level_with_iframe_redirect_url(),
                           /*ch_ua_reduced_expected=*/true);
+}
+
+// CrOS multi-profiles implementation is too different for these tests.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+
+void ClientHintsBrowserTest::TestSwitchWithNewProfile(
+    const std::string& switch_value,
+    size_t origins_stored) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      client_hints::switches::kInitializeClientHintsStorage, switch_value);
+
+  Profile* profile = GenerateNewProfile();
+  Browser* browser = CreateBrowser(profile);
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser, without_accept_ch_without_lifetime_url()));
+
+  ContentSettingsForOneType host_settings;
+
+  // Clients hints preferences for one origin should be persisted.
+  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
+      ContentSettingsType::CLIENT_HINTS, &host_settings);
+  EXPECT_EQ(origins_stored, host_settings.size());
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, SwitchAppliesStorage) {
+  TestSwitchWithNewProfile(
+      "{\"https://a.test\":\"Sec-CH-UA-Full-Version\", "
+      "\"https://b.test\":\"Sec-CH-UA-Full-Version\"}",
+      2);
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, SwitchNotJson) {
+  TestSwitchWithNewProfile("foo", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, SwitchOriginNotSecure) {
+  TestSwitchWithNewProfile("{\"http://a.test\":\"Sec-CH-UA-Full-Version\"}", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, SwitchAcceptCHInvalid) {
+  TestSwitchWithNewProfile("{\"https://a.test\":\"Not Valid\"}", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, SwitchAppliesStorageOneOrigin) {
+  TestSwitchWithNewProfile(
+      "{\"https://a.test\":\"Sec-CH-UA-Full-Version\", "
+      "\"https://b.test\":\"Not Valid\"}",
+      1);
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+class ClientHintsCommandLineSwitchBrowserTest : public ClientHintsBrowserTest {
+ public:
+  ClientHintsCommandLineSwitchBrowserTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    ClientHintsBrowserTest::SetUpCommandLine(cmd);
+    std::string server_origin =
+        url::Origin::Create(accept_ch_with_lifetime_url()).Serialize();
+
+    std::vector<std::string> accept_ch_tokens;
+    for (const auto& pair : network::GetClientHintToNameMap())
+      accept_ch_tokens.push_back(pair.second);
+
+    cmd->AppendSwitchASCII(
+        client_hints::switches::kInitializeClientHintsStorage,
+        base::StringPrintf("{\"%s\":\"%s\"}", server_origin.c_str(),
+                           base::JoinString(accept_ch_tokens, ",").c_str()));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ClientHintsCommandLineSwitchBrowserTest,
+                       NavigationToDifferentOrigins) {
+  SetClientHintExpectationsOnMainFrame(true);
+  SetClientHintExpectationsOnSubresources(true);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), without_accept_ch_without_lifetime_url()));
+
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(false);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), without_accept_ch_without_lifetime_cross_origin()));
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsCommandLineSwitchBrowserTest,
+                       ClearHintsWithAcceptCH) {
+  SetClientHintExpectationsOnMainFrame(true);
+  SetClientHintExpectationsOnSubresources(true);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), without_accept_ch_without_lifetime_url()));
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), accept_ch_empty()));
+
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(false);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), without_accept_ch_without_lifetime_url()));
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsCommandLineSwitchBrowserTest,
+                       StorageNotPresentInOffTheRecordProfile) {
+  SetClientHintExpectationsOnMainFrame(true);
+  SetClientHintExpectationsOnSubresources(true);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), without_accept_ch_without_lifetime_url()));
+
+  // OTR profile should get neither.
+  Browser* otr_browser = CreateIncognitoBrowser(browser()->profile());
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(false);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      otr_browser, without_accept_ch_without_lifetime_url()));
+}
+
+class UpdatedGreaseFeatureParamTest : public ClientHintsBrowserTest {
+  std::unique_ptr<base::FeatureList> EnabledFeatures() override {
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine("GreaseUACH:updated_algorithm/true",
+                                            "");
+    return feature_list;
+  }
+};
+
+// Checks that the updated GREASE algorithm is used when explicitly enabled.
+IN_PROC_BROWSER_TEST_F(UpdatedGreaseFeatureParamTest,
+                       UpdatedGreaseFeatureParamTest) {
+  const GURL gurl = accept_ch_without_lifetime_url();
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
+  std::string ua_ch_result = main_frame_ua_observed();
+  // The updated GREASE algorithm should contain at least one of these
+  // characters. The equal sign, space, and semicolon are not present as they
+  // exist in the old algorithm.
+  std::vector<char> updated_grease_chars = {'(', ':', '-', '.',
+                                            '/', ')', '?', '_'};
+  bool saw_updated_grease = false;
+  for (auto i : updated_grease_chars) {
+    if (ua_ch_result.find(i) != std::string::npos) {
+      saw_updated_grease = true;
+    }
+  }
+  ASSERT_TRUE(saw_updated_grease);
 }

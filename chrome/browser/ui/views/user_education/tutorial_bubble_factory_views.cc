@@ -34,7 +34,9 @@ std::unique_ptr<TutorialBubble> TutorialBubbleFactoryViews::CreateBubble(
     absl::optional<std::u16string> title_text,
     absl::optional<std::u16string> body_text,
     TutorialDescription::Step::Arrow arrow,
-    absl::optional<std::pair<int, int>> progress) {
+    absl::optional<std::pair<int, int>> progress,
+    base::RepeatingClosure abort_callback,
+    bool is_last_step) {
   if (!element->IsA<views::TrackedElementViews>())
     return nullptr;
 
@@ -79,6 +81,16 @@ std::unique_ptr<TutorialBubble> TutorialBubbleFactoryViews::CreateBubble(
     case TutorialDescription::Step::Arrow::NONE:
       params.arrow = views::BubbleBorder::Arrow::NONE;
       break;
+  }
+
+  // Set bubbles other than the final one to not time out; final bubble uses
+  // default timeout.
+  if (!is_last_step)
+    params.timeout = base::TimeDelta();
+
+  if (abort_callback) {
+    params.has_close_button = true;
+    params.dismiss_callback = abort_callback;
   }
 
   return std::make_unique<TutorialBubbleViews>(

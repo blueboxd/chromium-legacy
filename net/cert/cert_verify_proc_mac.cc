@@ -1060,7 +1060,6 @@ int VerifyWithGivenFlags(X509Certificate* cert,
   // error was due to an unsupported key size.
   bool policy_failed = false;
   bool policy_fail_already_mapped = false;
-  bool weak_key_or_signature_algorithm = false;
 
   // As of macOS 10.13, if |trust_result| (from SecTrustGetResult) returns
   // kSecTrustResultInvalid, subsequent invocations of SecTrust APIs may
@@ -1132,7 +1131,6 @@ int VerifyWithGivenFlags(X509Certificate* cert,
           CertStatus mapped_status = 0;
           if (policy_failed && status_code == CSSMERR_TP_INVALID_CERTIFICATE) {
             mapped_status = CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
-            weak_key_or_signature_algorithm = true;
             policy_fail_already_mapped = true;
           } else if (base::mac::IsOS10_12() && policy_failed &&
                      (flags & CertVerifyProc::VERIFY_REV_CHECKING_ENABLED) &&
@@ -1148,7 +1146,6 @@ int VerifyWithGivenFlags(X509Certificate* cert,
           } else {
             mapped_status = CertStatusFromOSStatus(status_code);
             if (mapped_status == CERT_STATUS_WEAK_KEY) {
-              weak_key_or_signature_algorithm = true;
               policy_fail_already_mapped = true;
             }
           }

@@ -8,15 +8,19 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/tasks.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_observer.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing_forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace perfetto {
+class EventContext;
+}
 
 namespace base {
 
@@ -392,6 +396,8 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   using OnTaskCompletedHandler =
       RepeatingCallback<void(const Task&, TaskQueue::TaskTiming*, LazyNow*)>;
   using OnTaskPostedHandler = RepeatingCallback<void(const Task&)>;
+  using TaskExecutionTraceLogger =
+      RepeatingCallback<void(perfetto::EventContext&, const Task&)>;
 
   // Sets a handler to subscribe for notifications about started and completed
   // tasks.
@@ -410,6 +416,10 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // deadlocks. For example, PostTask should not be called directly and
   // ScopedDeferTaskPosting::PostOrDefer should be used instead.
   void SetOnTaskPostedHandler(OnTaskPostedHandler handler);
+
+  // Set a callback to fill trace event arguments associated with the task
+  // execution.
+  void SetTaskExecutionTraceLogger(TaskExecutionTraceLogger logger);
 
   base::WeakPtr<TaskQueue> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();

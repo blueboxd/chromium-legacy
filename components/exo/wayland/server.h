@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/exo/wayland/scoped_wl.h"
@@ -36,6 +37,7 @@ struct WaylandXdgShell;
 struct WaylandZxdgShell;
 struct WaylandRemoteShellData;
 struct WestonTestState;
+class WaylandWatcher;
 
 // This class is a thin wrapper around a Wayland display server. All Wayland
 // requests are dispatched into the given Exosphere display.
@@ -51,6 +53,10 @@ class Server : public display::DisplayObserver {
   // Creates a Wayland display server that clients can connect to using the
   // default socket name.
   static std::unique_ptr<Server> Create(Display* display);
+
+  // As above, but where the socket's name is |socket_path|.
+  static std::unique_ptr<Server> Create(Display* display,
+                                        const base::FilePath& socket_path);
 
   void Initialize();
 
@@ -92,6 +98,7 @@ class Server : public display::DisplayObserver {
   std::unique_ptr<WaylandDataDeviceManager> data_device_manager_data_;
   std::unique_ptr<WaylandSeat> seat_data_;
   display::ScopedDisplayObserver display_observer_{this};
+  std::unique_ptr<wayland::WaylandWatcher> wayland_watcher_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<WaylandKeyboardExtension> zcr_keyboard_extension_data_;

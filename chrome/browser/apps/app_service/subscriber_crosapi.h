@@ -47,11 +47,6 @@ class SubscriberCrosapi : public KeyedService,
   void OnCapabilityAccesses(
       std::vector<apps::mojom::CapabilityAccessPtr> deltas) override;
   void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
-  void OnPreferredAppSet(const std::string& app_id,
-                         apps::mojom::IntentFilterPtr intent_filter) override;
-  void OnPreferredAppRemoved(
-      const std::string& app_id,
-      apps::mojom::IntentFilterPtr intent_filter) override;
   void OnPreferredAppsChanged(
       apps::mojom::PreferredAppChangesPtr changes) override;
   void InitializePreferredApps(
@@ -68,6 +63,8 @@ class SubscriberCrosapi : public KeyedService,
                 apps::mojom::IconType icon_type,
                 int32_t size_hint_in_dip,
                 LoadIconCallback callback) override;
+  void AddPreferredApp(const std::string& app_id,
+                       crosapi::mojom::IntentPtr intent) override;
 
   void OnSubscriberDisconnected();
 

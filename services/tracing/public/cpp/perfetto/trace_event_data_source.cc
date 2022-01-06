@@ -819,14 +819,13 @@ void TraceEventDataSource::SetupStartupTracing(
   config_for_trace_log.SetTraceBufferSizeInKb(0);
   config_for_trace_log.SetTraceBufferSizeInEvents(0);
 
+  RegisterWithTraceLog(config_for_trace_log);
+
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
   if (!trace_config.event_filters().empty()) {
     modes |= base::trace_event::TraceLog::FILTERING_MODE;
   }
-
-  RegisterWithTraceLog(config_for_trace_log);
-
-#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   base::trace_event::TraceLog::GetInstance()->SetEnabled(trace_config, modes);
 #endif
 }
@@ -1489,8 +1488,11 @@ void TraceEventDataSource::EmitTrackDescriptor() {
   process->set_pid(process_id);
   process->set_start_timestamp_ns(
       process_creation_time_ticks_.since_origin().InNanoseconds());
-  if (!privacy_filtering_enabled && !process_name.empty()) {
+  if (!privacy_filtering_enabled) {
     process->set_process_name(process_name);
+    for (const auto& label : TraceLog::GetInstance()->process_labels()) {
+      process->add_process_labels(label.second);
+    }
   }
 
   ChromeProcessDescriptor* chrome_process =

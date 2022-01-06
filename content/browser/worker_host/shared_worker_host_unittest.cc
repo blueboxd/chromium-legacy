@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -73,8 +72,10 @@ class SharedWorkerHostTest : public testing::Test {
 
   SharedWorkerHostTest()
       : service_(nullptr /* storage_partition */,
-                 nullptr /* service_worker_context */,
-                 nullptr /* appcache_service */) {}
+                 nullptr /* service_worker_context */) {}
+
+  SharedWorkerHostTest(const SharedWorkerHostTest&) = delete;
+  SharedWorkerHostTest& operator=(const SharedWorkerHostTest&) = delete;
 
   base::WeakPtr<SharedWorkerHost> CreateHost() {
     SharedWorkerInstance instance(
@@ -113,8 +114,6 @@ class SharedWorkerHostTest : public testing::Test {
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         loader_factory_remote =
             network::NotImplementedURLLoaderFactory::Create();
-    subresource_loader_params->pending_appcache_loader_factory =
-        std::move(loader_factory_remote);
 
     // Set up for service worker.
     auto service_worker_handle =
@@ -172,8 +171,6 @@ class SharedWorkerHostTest : public testing::Test {
   scoped_refptr<SiteInstanceImpl> site_instance_;
 
   SharedWorkerServiceImpl service_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedWorkerHostTest);
 };
 
 TEST_F(SharedWorkerHostTest, Normal) {

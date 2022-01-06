@@ -21,7 +21,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/wm_role_names_linux.h"
 #include "ui/base/x/x11_cursor.h"
-#include "ui/base/x/x11_menu_registrar.h"
 #include "ui/base/x/x11_os_exchange_data_provider.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_topmost_window_finder.h"
@@ -1017,21 +1016,6 @@ void X11Window::SetOpacity(float opacity) {
 }
 
 bool X11Window::CanSetDecorationInsets() const {
-  // Xfwm handles _GTK_FRAME_EXTENTS a bit unexpected way.  That is a known bug
-  // that will be eventually fixed, but for now we have to disable the function
-  // for Xfce.  The block below should be removed when Xfwm is updated with the
-  // fix and is known to work properly.
-  // See https://crbug.com/1260821.
-  {
-    static WindowManagerName wm_name = WM_OTHER;
-    static bool checked_for_wm = false;
-    if (!checked_for_wm) {
-      wm_name = GuessWindowManager();
-      checked_for_wm = true;
-    }
-    if (wm_name == WM_XFWM4)
-      return false;
-  }
   return ui::WmSupportsHint(x11::GetAtom("_GTK_FRAME_EXTENTS"));
 }
 
@@ -1302,19 +1286,9 @@ void X11Window::DispatchUiEvent(ui::Event* event, const x11::Event& xev) {
   // Linux are checked with cmt-device path, and can include DT_CMT_SCROLL_
   // data. See more discussion in https://crrev.com/c/853953
   UpdateWMUserTime(event);
-  bool event_dispatched = false;
-#if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    event_dispatched = true;
-    DispatchEventFromNativeUiEvent(
-        event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
-                              base::Unretained(platform_window_delegate())));
-  }
-#endif
-#if defined(USE_X11)
-  if (!event_dispatched)
-    platform_window_delegate_->DispatchEvent(event);
-#endif
+  DispatchEventFromNativeUiEvent(
+      event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                            base::Unretained(platform_window_delegate())));
 }
 
 void X11Window::OnXWindowStateChanged() {
@@ -1635,10 +1609,6 @@ void X11Window::CreateXWindow(const PlatformWindowInitProperties& properties) {
 
   workspace_extension_delegate_ = properties.workspace_extension_delegate;
   x11_extension_delegate_ = properties.x11_extension_delegate;
-
-  // Ensure that the X11MenuRegistrar exists. The X11MenuRegistrar is
-  // necessary to properly track menu windows.
-  X11MenuRegistrar::Get();
 
   activatable_ = properties.activatable;
 
@@ -2273,6 +2243,11 @@ void X11Window::OnWMStateUpdated() {
 
 void X11Window::UpdateWindowProperties(
     const base::flat_set<x11::Atom>& new_window_properties) {
+  // If the window is hidden, ignore new properties.
+  // See https://crbug.com/1260832
+  if (!window_mapped_in_client_)
+    return;
+
   window_properties_ = new_window_properties;
 
   // Ignore requests by the window manager to enter or exit fullscreen (e.g. as

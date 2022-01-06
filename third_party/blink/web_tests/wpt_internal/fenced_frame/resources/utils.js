@@ -12,20 +12,46 @@ const STORE_URL = '/wpt_internal/fenced_frame/resources/key-value-store.py';
 // otherwise interfere with each other's server state.
 const KEYS = {
   // This key is only used to test that the server-side stash works properly.
-  "dummy"                        : "00000000-0000-0000-0000-000000000000",
+  "dummy"                                       : "00000000-0000-0000-0000-000000000000",
 
-  "document.referrer"            : "00000000-0000-0000-0000-000000000001",
-  "document.referrer ACK"        : "00000000-0000-0000-0000-000000000002",
+  "document.referrer"                           : "00000000-0000-0000-0000-000000000001",
+  "document.referrer ACK"                       : "00000000-0000-0000-0000-000000000002",
 
-  "window.top"                   : "00000000-0000-0000-0000-000000000003",
-  "window.top ACK"               : "00000000-0000-0000-0000-000000000004",
+  "window.top"                                  : "00000000-0000-0000-0000-000000000003",
+  "window.top ACK"                              : "00000000-0000-0000-0000-000000000004",
 
-  "window.parent"                : "00000000-0000-0000-0000-000000000005",
-  "window.parent ACK"            : "00000000-0000-0000-0000-000000000006",
+  "window.parent"                               : "00000000-0000-0000-0000-000000000005",
+  "window.parent ACK"                           : "00000000-0000-0000-0000-000000000006",
 
-  "location.ancestorOrigins"     : "00000000-0000-0000-0000-000000000007",
-  "location.ancestorOrigins ACK" : "00000000-0000-0000-0000-000000000008",
-  // Add keys below this list, incrementing the key UUID in hexadecimal:
+  "location.ancestorOrigins"                    : "00000000-0000-0000-0000-000000000007",
+  "location.ancestorOrigins ACK"                : "00000000-0000-0000-0000-000000000008",
+
+  "data: URL"                                   : "00000000-0000-0000-0000-000000000009",
+  "204 response"                                : "00000000-0000-0000-0000-00000000000A",
+
+  "keyboard.lock"                               : "00000000-0000-0000-0000-00000000000B",
+
+  "credentials.create"                          : "00000000-0000-0000-0000-00000000000C",
+  "credentials.create ACK"                      : "00000000-0000-0000-0000-00000000000D",
+
+  "keyboard.lock"                               : "00000000-0000-0000-0000-00000000000E",
+
+  "navigation_success"                          : "00000000-0000-0000-0000-00000000000F",
+  "ready_for_navigation"                        : "00000000-0000-0000-0000-000000000010",
+
+  "secFetchDest.value"                          : "00000000-0000-0000-0000-000000000011",
+
+  "window.prompt"                               : "00000000-0000-0000-0000-000000000012",
+
+  "fenced_navigation_complete"                  : "00000000-0000-0000-0000-000000000013",
+  "outer_page_ready_for_next_fenced_navigation" : "00000000-0000-0000-0000-000000000014",
+
+  "focus-changed"                               : "00000000-0000-0000-0000-000000000015",
+  "focus-ready"                                 : "00000000-0000-0000-0000-000000000016",
+
+  "navigate_ancestor"                           : "00000000-0000-0000-0000-000000000017",
+  "navigate_ancestor_from_nested"               : "00000000-0000-0000-0000-000000000018",
+  // Add keys above this list, incrementing the key UUID in hexadecimal
 }
 
 function attachFencedFrame(url) {
@@ -36,6 +62,7 @@ function attachFencedFrame(url) {
   const fenced_frame = document.createElement('fencedframe');
   fenced_frame.src = url;
   document.body.append(fenced_frame);
+  return fenced_frame;
 }
 
 // Reads the value specified by `key` from the key-value store on the server.
@@ -70,7 +97,7 @@ async function nextValueFromServer(key) {
 }
 
 // Writes `value` for `key` in the key-value store on the server.
-async function writeValueToServer(key, value) {
-  const serverUrl = `${STORE_URL}?key=${key}&value=${value}`;
-  await fetch(serverUrl);
+async function writeValueToServer(key, value, origin = '') {
+  const serverUrl = `${origin}${STORE_URL}?key=${key}&value=${value}`;
+  await fetch(serverUrl, {"mode": "no-cors"});
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './keyboard_key.js'
+import './keyboard_key.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -37,6 +37,9 @@ export class KeyboardDiagramElement extends PolymerElement {
        * @type {?MechanicalLayout}
        */
       mechanicalLayout: String,
+
+      /** Whether to show a Chrome OS-style number pad.  */
+      showNumberPad: Boolean,
     };
   }
 

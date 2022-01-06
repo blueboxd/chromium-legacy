@@ -22,6 +22,8 @@
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "ui/gfx/color_utils.h"
 
+namespace web_app {
+
 namespace {
 
 std::string ColorToString(absl::optional<SkColor> color) {
@@ -29,9 +31,18 @@ std::string ColorToString(absl::optional<SkColor> color) {
                            : "none";
 }
 
-}  // namespace
+std::string ApiApprovalStateToString(ApiApprovalState state) {
+  switch (state) {
+    case ApiApprovalState::kRequiresPrompt:
+      return "kRequiresPrompt";
+    case ApiApprovalState::kAllowed:
+      return "kAllowed";
+    case ApiApprovalState::kDisallowed:
+      return "kDisallowed";
+  }
+}
 
-namespace web_app {
+}  // namespace
 
 WebApp::WebApp(const AppId& app_id)
     : app_id_(app_id),
@@ -154,13 +165,18 @@ void WebApp::SetThemeColor(absl::optional<SkColor> theme_color) {
   theme_color_ = theme_color;
 }
 
+void WebApp::SetDarkModeThemeColor(
+    absl::optional<SkColor> dark_mode_theme_color) {
+  dark_mode_theme_color_ = dark_mode_theme_color;
+}
+
 void WebApp::SetBackgroundColor(absl::optional<SkColor> background_color) {
   background_color_ = background_color;
 }
 
-void WebApp::SetDarkModeThemeColor(
-    absl::optional<SkColor> dark_mode_theme_color) {
-  dark_mode_theme_color_ = dark_mode_theme_color;
+void WebApp::SetDarkModeBackgroundColor(
+    absl::optional<SkColor> dark_mode_background_color) {
+  dark_mode_background_color_ = dark_mode_background_color;
 }
 
 void WebApp::SetDisplayMode(DisplayMode display_mode) {
@@ -242,6 +258,10 @@ void WebApp::SetIsGeneratedIcon(bool is_generated_icon) {
 
 void WebApp::SetFileHandlers(apps::FileHandlers file_handlers) {
   file_handlers_ = std::move(file_handlers);
+}
+
+void WebApp::SetFileHandlerApprovalState(ApiApprovalState approval_state) {
+  file_handler_approval_state_ = approval_state;
 }
 
 void WebApp::SetShareTarget(absl::optional<apps::ShareTarget> share_target) {
@@ -346,6 +366,10 @@ void WebApp::SetLaunchHandler(absl::optional<LaunchHandler> launch_handler) {
   launch_handler_ = std::move(launch_handler);
 }
 
+void WebApp::SetParentAppId(const absl::optional<AppId>& parent_app_id) {
+  parent_app_id_ = parent_app_id;
+}
+
 WebApp::ClientData::ClientData() = default;
 
 WebApp::ClientData::~ClientData() = default;
@@ -396,8 +420,9 @@ bool WebApp::operator==(const WebApp& other) const {
         app.launch_query_params_,
         app.scope_,
         app.theme_color_,
-        app.background_color_,
         app.dark_mode_theme_color_,
+        app.background_color_,
+        app.dark_mode_background_color_,
         app.display_mode_,
         app.user_display_mode_,
         app.display_mode_override_,
@@ -433,9 +458,11 @@ bool WebApp::operator==(const WebApp& other) const {
         app.manifest_id_,
         app.client_data_.system_web_app_data,
         app.file_handler_permission_blocked_,
+        app.file_handler_approval_state_,
         app.window_controls_overlay_enabled_,
         app.is_storage_isolated_,
-        app.launch_handler_
+        app.launch_handler_,
+        app.parent_app_id_
         // clang-format on
     );
   };
@@ -494,6 +521,9 @@ base::Value WebApp::AsDebugValue() const {
   root.SetStringKey("dark_mode_theme_color",
                     ColorToString(dark_mode_theme_color_));
 
+  root.SetStringKey("dark_mode_background_color",
+                    ColorToString(dark_mode_background_color_));
+
   root.SetStringKey("capture_links", ConvertToString(capture_links_));
 
   root.SetKey("chromeos_data",
@@ -533,6 +563,9 @@ base::Value WebApp::AsDebugValue() const {
 
   root.SetBoolKey("file_handler_permission_blocked",
                   file_handler_permission_blocked_);
+
+  root.SetStringKey("file_handler_approval_state",
+                    ApiApprovalStateToString(file_handler_approval_state_));
 
   root.SetKey("file_handlers", ConvertDebugValueList(file_handlers_));
 
@@ -578,6 +611,9 @@ base::Value WebApp::AsDebugValue() const {
 
   root.SetStringKey("note_taking_new_note_url",
                     ConvertToString(note_taking_new_note_url_));
+
+  root.SetStringKey("parent_app_id",
+                    parent_app_id_ ? *parent_app_id_ : AppId());
 
   root.SetKey("protocol_handlers", ConvertDebugValueList(protocol_handlers_));
 

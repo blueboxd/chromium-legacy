@@ -16,7 +16,7 @@
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -48,8 +48,7 @@ const base::FilePath::StringType NaClIrtName() {
 #if defined(ARCH_CPU_X86_64)
   bool is64 = true;
 #elif defined(OS_WIN)
-  bool is64 = (base::win::OSInfo::GetInstance()->wow64_status() ==
-               base::win::OSInfo::WOW64_ENABLED);
+  bool is64 = base::win::OSInfo::GetInstance()->IsWowX86OnAMD64();
 #else
   bool is64 = false;
 #endif

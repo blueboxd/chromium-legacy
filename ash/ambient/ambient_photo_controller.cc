@@ -33,9 +33,9 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -69,6 +69,27 @@ constexpr net::BackoffEntry::Policy kResumeFetchImageBackoffPolicy = {
     true,           // Use initial delay.
 };
 
+constexpr net::NetworkTrafficAnnotationTag kAmbientPhotoControllerTag =
+    net::DefineNetworkTrafficAnnotation("ambient_photo_controller", R"(
+        semantics {
+          sender: "Ambient photo"
+          description:
+            "Download ambient image weather icon from Google."
+          trigger:
+            "Triggered periodically when the battery is charged and the user "
+            "is idle."
+          data: "None."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+         cookies_allowed: NO
+         setting:
+           "This feature is off by default and can be overridden by user."
+         policy_exception_justification:
+           "This feature is set by user settings.ambient_mode.enabled pref. "
+           "The user setting is per device and cannot be overriden by admin."
+        })");
+
 void DownloadImageFromUrl(
     const std::string& url,
     base::OnceCallback<void(const gfx::ImageSkia&)> callback) {
@@ -78,7 +99,7 @@ void DownloadImageFromUrl(
   if (!ImageDownloader::Get())
     return;
 
-  ImageDownloader::Get()->Download(GURL(url), NO_TRAFFIC_ANNOTATION_YET,
+  ImageDownloader::Get()->Download(GURL(url), kAmbientPhotoControllerTag,
                                    base::BindOnce(std::move(callback)));
 }
 

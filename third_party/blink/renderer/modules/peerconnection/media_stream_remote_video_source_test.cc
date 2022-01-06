@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "media/base/video_frame.h"
@@ -60,7 +60,8 @@ class MediaStreamRemoteVideoSourceUnderTest
       std::unique_ptr<blink::TrackObserver> observer)
       : MediaStreamRemoteVideoSource(
             scheduler::GetSingleThreadTaskRunnerForTesting(),
-            std::move(observer)) {}
+            std::move(observer),
+            /*metronome_provider=*/nullptr) {}
   using MediaStreamRemoteVideoSource::EncodedSinkInterfaceForTesting;
   using MediaStreamRemoteVideoSource::SinkInterfaceForTesting;
   using MediaStreamRemoteVideoSource::StartSourceImpl;

@@ -14,7 +14,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
-#include "content/browser/attribution_reporting/conversion_test_utils.h"
+#include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/test/test_helpers.h"
@@ -48,7 +48,7 @@ class AttributionStorageSqlMigrationsTest : public testing::Test {
 
     // We need to run an operation on storage to force the lazy initialization.
     ignore_result(
-        static_cast<AttributionStorage*>(&storage)->GetConversionsToReport(
+        static_cast<AttributionStorage*>(&storage)->GetAttributionsToReport(
             base::Time::Min()));
   }
 
@@ -112,8 +112,8 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateEmptyToCurrent) {
 
     // We need to perform an operation that is non-trivial on an empty database
     // to force initialization.
-    static_cast<AttributionStorage*>(&storage)->StoreImpression(
-        ImpressionBuilder(base::Time::Min()).Build());
+    static_cast<AttributionStorage*>(&storage)->StoreSource(
+        SourceBuilder(base::Time::Min()).Build());
   }
 
   // Verify schema is current.

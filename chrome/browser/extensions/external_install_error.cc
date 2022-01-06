@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_install_error_menu_item_id_provider.h"
@@ -430,10 +430,9 @@ void ExternalInstallError::OnWebstoreResponseParseSuccess(
   std::string localized_user_count;
   absl::optional<double> average_rating =
       webstore_data->FindDoubleKey(kAverageRatingKey);
-  int rating_count = 0;
+  absl::optional<int> rating_count = webstore_data->FindIntKey(kRatingCountKey);
   if (!webstore_data->GetString(kUsersKey, &localized_user_count) ||
-      !average_rating ||
-      !webstore_data->GetInteger(kRatingCountKey, &rating_count)) {
+      !average_rating || !rating_count) {
     // If we don't get a valid webstore response, short circuit, and continue
     // to show a prompt without webstore data.
     OnFetchComplete();
@@ -446,7 +445,7 @@ void ExternalInstallError::OnWebstoreResponseParseSuccess(
   webstore_data->GetBoolean(kShowUserCountKey, &show_user_count);
 
   prompt_->SetWebstoreData(localized_user_count, show_user_count,
-                           *average_rating, rating_count);
+                           *average_rating, *rating_count);
   OnFetchComplete();
 }
 

@@ -143,7 +143,7 @@ void DesktopNotificationHandler::DisplayFailureMessage(const GURL& url) {
       /*metadata=*/nullptr);
 }
 
-const Profile* DesktopNotificationHandler::profile() const {
+const Profile* DesktopNotificationHandler::GetProfile() const {
   return profile_;
 }
 

@@ -11,10 +11,10 @@
 #include "base/strings/strcat.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_service.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_service_factory.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_service.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_service_factory.h"
+#include "chrome/browser/ash/platform_keys/platform_keys_service.h"
+#include "chrome/browser/ash/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/platform_keys/extension_platform_keys_service.h"
 #include "chrome/browser/platform_keys/extension_platform_keys_service_factory.h"
 #include "chrome/browser/platform_keys/platform_keys.h"
@@ -29,14 +29,14 @@
 
 namespace crosapi {
 
-using ExtensionPlatformKeysService = chromeos::ExtensionPlatformKeysService;
-using PlatformKeysService = chromeos::platform_keys::PlatformKeysService;
-using TokenId = chromeos::platform_keys::TokenId;
+namespace {
+
 using SigningAlgorithmName = mojom::KeystoreSigningAlgorithmName;
 using SigningScheme = mojom::KeystoreSigningScheme;
-using KeyPermissionsService = chromeos::platform_keys::KeyPermissionsService;
-
-namespace {
+using ::ash::platform_keys::KeyPermissionsService;
+using ::ash::platform_keys::PlatformKeysService;
+using ::chromeos::ExtensionPlatformKeysService;
+using ::chromeos::platform_keys::TokenId;
 
 const char kEnterprisePlatformErrorInvalidX509Cert[] =
     "Certificate is not a valid X.509 certificate.";
@@ -141,10 +141,10 @@ bool UnpackSigningScheme(
 
 KeystoreServiceAsh::KeystoreServiceAsh(content::BrowserContext* fixed_context)
     : fixed_platform_keys_service_(
-          chromeos::platform_keys::PlatformKeysServiceFactory::
-              GetForBrowserContext(fixed_context)),
+          ash::platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(
+              fixed_context)),
       fixed_key_permissions_service_(
-          chromeos::platform_keys::KeyPermissionsServiceFactory::
+          ash::platform_keys::KeyPermissionsServiceFactory::
               GetForBrowserContext(fixed_context)) {
   CHECK(fixed_platform_keys_service_);
   CHECK(fixed_key_permissions_service_);
@@ -173,7 +173,7 @@ PlatformKeysService* KeystoreServiceAsh::GetPlatformKeys() {
   }
 
   PlatformKeysService* service =
-      chromeos::platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(
+      ash::platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(
           ProfileManager::GetPrimaryUserProfile());
   CHECK(service);
   return service;
@@ -185,8 +185,8 @@ KeyPermissionsService* KeystoreServiceAsh::GetKeyPermissions() {
   }
 
   KeyPermissionsService* service =
-      chromeos::platform_keys::KeyPermissionsServiceFactory::
-          GetForBrowserContext(ProfileManager::GetPrimaryUserProfile());
+      ash::platform_keys::KeyPermissionsServiceFactory::GetForBrowserContext(
+          ProfileManager::GetPrimaryUserProfile());
   CHECK(service);
   return service;
 }

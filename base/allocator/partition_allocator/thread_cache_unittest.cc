@@ -79,8 +79,11 @@ ThreadSafePartitionRoot* CreatePartitionRoot() {
         PartitionOptions::Quarantine::kAllowed,
         PartitionOptions::Cookie::kDisallowed,
         PartitionOptions::BackupRefPtr::kDisabled,
-        PartitionOptions::UseConfigurablePool::kNo
+        PartitionOptions::UseConfigurablePool::kNo,
+        PartitionOptions::LazyCommit::kEnabled
   });
+
+  root->UncapEmptySlotSpanMemoryForTesting();
 
   // We do this here instead of in SetUp()/TearDown() because we need this to
   // run before the task environment (which creates threads and hence is racy
@@ -190,7 +193,7 @@ TEST_F(PartitionAllocThreadCacheTest, Simple) {
   EXPECT_EQ(kFillCountForSmallBucket, tcache->bucket_count_for_testing(index));
 
   void* ptr2 = root_->Alloc(kSmallSize, "");
-  EXPECT_EQ(ptr, ptr2);
+  EXPECT_EQ(memory::UnmaskPtr(ptr), memory::UnmaskPtr(ptr2));
   // Allocated from the thread cache.
   EXPECT_EQ(kFillCountForSmallBucket - 1,
             tcache->bucket_count_for_testing(index));
@@ -217,7 +220,7 @@ TEST_F(PartitionAllocThreadCacheTest, InexactSizeMatch) {
   EXPECT_EQ(kFillCountForSmallBucket, tcache->bucket_count_for_testing(index));
 
   void* ptr2 = root_->Alloc(kSmallSize + 1, "");
-  EXPECT_EQ(ptr, ptr2);
+  EXPECT_EQ(memory::UnmaskPtr(ptr), memory::UnmaskPtr(ptr2));
   // Allocated from the thread cache.
   EXPECT_EQ(kFillCountForSmallBucket - 1,
             tcache->bucket_count_for_testing(index));
@@ -258,7 +261,8 @@ TEST_F(PartitionAllocThreadCacheTest, NoCrossPartitionCache) {
                                 PartitionOptions::Quarantine::kAllowed,
                                 PartitionOptions::Cookie::kDisallowed,
                                 PartitionOptions::BackupRefPtr::kDisabled,
-                                PartitionOptions::UseConfigurablePool::kNo}};
+                                PartitionOptions::UseConfigurablePool::kNo,
+                                PartitionOptions::LazyCommit::kEnabled}};
 
   size_t bucket_index = FillThreadCacheAndReturnIndex(kSmallSize);
   void* ptr = root.Alloc(kSmallSize, "");
@@ -343,7 +347,8 @@ TEST_F(PartitionAllocThreadCacheTest, ThreadCacheReclaimedWhenThreadExits) {
   void* this_thread_ptr = root_->Alloc(kMediumSize, "");
   // |other_thread_ptr| was returned to the central allocator, and is returned
   // here, as it comes from the freelist.
-  EXPECT_EQ(this_thread_ptr, other_thread_ptr);
+  EXPECT_EQ(memory::UnmaskPtr(this_thread_ptr),
+            memory::UnmaskPtr(other_thread_ptr));
   root_->Free(other_thread_ptr);
 
   for (void* ptr : tmp)

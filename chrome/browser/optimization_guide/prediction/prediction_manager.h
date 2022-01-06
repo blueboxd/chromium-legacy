@@ -11,7 +11,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/containers/mru_cache.h"
+#include "base/containers/lru_cache.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -22,10 +22,6 @@
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "url/origin.h"
-
-namespace content {
-class NavigationHandle;
-}  // namespace content
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -44,8 +40,8 @@ class PredictionModelDownloadManager;
 class PredictionModelFetcher;
 class ModelInfo;
 
-using HostModelFeaturesMRUCache =
-    base::HashingMRUCache<std::string, base::flat_map<std::string, float>>;
+using HostModelFeaturesLRUCache =
+    base::HashingLRUCache<std::string, base::flat_map<std::string, float>>;
 
 using OptimizationTargetDecisionCallback =
     base::OnceCallback<void(optimization_guide::OptimizationTargetDecision)>;
@@ -86,23 +82,6 @@ class PredictionManager : public PredictionModelDownloadObserver {
   void RemoveObserverForOptimizationTargetModel(
       proto::OptimizationTarget optimization_target,
       OptimizationTargetModelObserver* observer);
-
-  // Determine if the navigation matches the criteria for
-  // |optimization_target|. Return kUnknown if a PredictionModel for the
-  // optimization target is not registered and kModelNotAvailableOnClient if the
-  // model for the optimization target is not currently on the client.
-  // If the model for the optimization target requires a client model feature
-  // that is present in |override_client_model_feature_values|, the value from
-  // |override_client_model_feature_values| will be used. The client will
-  // calculate the value for any required client model features not present in
-  // |override_client_model_feature_values| and inject any host model features
-  // it received from the server and send that complete feature map for
-  // evaluation.
-  // TODO(crbug/1183507): Remove ShouldTargetNavigation, host model features,
-  // the relevant unittests, and the histograms.
-  OptimizationTargetDecision ShouldTargetNavigation(
-      content::NavigationHandle* navigation_handle,
-      proto::OptimizationTarget optimization_target);
 
   // Set the prediction model fetcher for testing.
   void SetPredictionModelFetcherForTesting(
@@ -154,7 +133,7 @@ class PredictionManager : public PredictionModelDownloadObserver {
 
   // Return the host model features for all hosts used by this
   // PredictionManager for testing.
-  const HostModelFeaturesMRUCache* GetHostModelFeaturesForTesting() const;
+  const HostModelFeaturesLRUCache* GetHostModelFeaturesForTesting() const;
 
   // Returns the host model features for a host if available.
   absl::optional<base::flat_map<std::string, float>>
@@ -188,20 +167,6 @@ class PredictionManager : public PredictionModelDownloadObserver {
   // Called on construction to initialize the prediction model and host model
   // features store, and register as an observer to the network quality tracker.
   void Initialize();
-
-  // Register the optimization targets for which the prediction models should be
-  // fetched and updated to the consumers of the Optimization Guide.
-  void RegisterOptimizationTargets(
-      const std::vector<
-          std::pair<proto::OptimizationTarget, absl::optional<proto::Any>>>&
-          optimization_targets_and_metadata);
-
-  // Construct and return a map containing the current feature values for the
-  // requested set of model features. The host model features cache is updated
-  // based on if host model features were used.
-  base::flat_map<std::string, float> BuildFeatureMap(
-      content::NavigationHandle* navigation_handle,
-      const base::flat_set<std::string>& model_features);
 
   // Called to make a request to fetch models from the remote Optimization Guide
   // Service. Used to fetch models for the registered optimization targets.
@@ -337,8 +302,8 @@ class PredictionManager : public PredictionModelDownloadObserver {
            base::ObserverList<OptimizationTargetModelObserver>>
       registered_observers_for_optimization_targets_;
 
-  // A MRU cache of host to host model features known to the prediction manager.
-  HostModelFeaturesMRUCache host_model_features_cache_;
+  // A LRU cache of host to host model features known to the prediction manager.
+  HostModelFeaturesLRUCache host_model_features_cache_;
 
   // The fetcher that handles making requests to update the models and host
   // model features from the remote Optimization Guide Service.

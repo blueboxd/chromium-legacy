@@ -192,7 +192,6 @@ settings_auto_imports = [
   "chrome/browser/resources/settings/i18n_setup.html|loadTimeData",
   "chrome/browser/resources/settings/chromeos/prefs_behavior.html|PrefsBehavior",
   "chrome/browser/resources/settings/prefs/prefs_types.html|CrSettingsPrefs",
-  "chrome/browser/resources/settings/router.html|Router,Route,RouteObserverBehavior",
 ]
 
 os_settings_auto_imports = settings_auto_imports +
@@ -236,15 +235,16 @@ os_settings_auto_imports = settings_auto_imports +
                              "chrome/browser/resources/settings/chromeos/personalization_page/wallpaper_browser_proxy.html|WallpaperBrowserProxy,WallpaperBrowserProxyImpl",
                              "chrome/browser/resources/settings/chromeos/parental_controls_page/parental_controls_browser_proxy.html|ParentalControlsBrowserProxy,ParentalControlsBrowserProxyImpl",
                              "chrome/browser/resources/settings/chromeos/route_origin_behavior.html|RouteOriginBehaviorImpl,RouteOriginBehavior",
+                             "chrome/browser/resources/settings/chromeos/route_observer_behavior.html|RouteObserverBehavior",
                              "chrome/browser/resources/settings/controls/settings_dropdown_menu.html|DropdownMenuOptionList",
                              "chrome/browser/resources/settings/chromeos/global_scroll_target_behavior.html|GlobalScrollTargetBehavior,setGlobalScrollTarget",
                              "chrome/browser/resources/settings/chromeos/os_languages_page/languages_browser_proxy.html|LanguagesBrowserProxy,LanguagesBrowserProxyImpl",
                              "chrome/browser/resources/settings/lifetime_browser_proxy.html|LifetimeBrowserProxyImpl",
-                             "chrome/browser/resources/settings/people_page/account_manager_browser_proxy.html|AccountManagerBrowserProxy,AccountManagerBrowserProxyImpl,Account",
-                             "chrome/browser/resources/settings/people_page/profile_info_browser_proxy.html|ProfileInfoBrowserProxyImpl,ProfileInfoBrowserProxy,ProfileInfo",
-                             "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxyImpl,SyncBrowserProxy,StatusAction,SyncStatus,SyncPrefs",
+                             "chrome/browser/resources/settings/chromeos/os_people_page/account_manager_browser_proxy.html|AccountManagerBrowserProxy,AccountManagerBrowserProxyImpl,Account",
+                             "chrome/browser/resources/settings/people_page/profile_info_browser_proxy.html|ProfileInfoBrowserProxyImpl",
+                             "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxyImpl,StatusAction",
                              "chrome/browser/resources/settings/route.html|routes",
-                             "chrome/browser/resources/settings/router.html|Router,Route,RouteObserverBehavior",
+                             "chrome/browser/resources/settings/router.html|Router,Route",
                              "chrome/browser/resources/settings/chromeos/os_search_page/search_engines_browser_proxy.html|SearchEngine,SearchEnginesBrowserProxy,SearchEnginesBrowserProxyImpl",
                              "chrome/browser/resources/settings/chromeos/os_printing_page/cups_printers_browser_proxy.html|CupsPrintersBrowserProxy,CupsPrintersBrowserProxyImpl,CupsPrinterInfo,PrinterSetupResult,CupsPrintersList,PrinterPpdMakeModel,ManufacturersInfo,ModelsInfo,PrintServerResult,PrinterMakeModel",
                              "chrome/browser/resources/settings/chromeos/os_printing_page/cups_printers_entry_list_behavior.html|CupsPrintersEntryListBehavior",
@@ -286,7 +286,14 @@ os_settings_auto_imports = settings_auto_imports +
                              "third_party/polymer/v1_0/components-chromium/iron-resizable-behavior/iron-resizable-behavior.html|IronResizableBehavior",
                            ]
 
-os_settings_closure_flags = settings_closure_flags
+# TODO(crbug.com/1121865): browser_resolver_prefix_replacements allows path
+# from ../../shared/* to resolve to ../../../nearby_share/shared/* for closure
+# purposes.
+os_settings_closure_flags = settings_closure_flags + [
+                              "js_module_root=../../chrome/browser/resources/nearby_share",
+                              "js_module_root=./gen/chrome/browser/resources/nearby_share",
+                              "browser_resolver_prefix_replacements=\"../../shared/=../../../nearby_share/shared/\"",
+                            ]
 
 os_settings_migrated_imports = cr_components_migrated_imports + [
                                  "chrome/browser/resources/settings/chromeos/ambient_mode_page/album_item.html",
@@ -469,10 +476,12 @@ os_settings_migrated_imports = cr_components_migrated_imports + [
                                  "chrome/browser/resources/settings/chromeos/os_settings_page/os_settings_page.html",
                                  "chrome/browser/resources/settings/chromeos/os_settings_page/settings_idle_load.html",
                                  "chrome/browser/resources/settings/chromeos/os_settings_search_box/os_settings_search_box.html",
-                                 "chrome/browser/resources/settings/chromeos/os_toolbar/os_toolbar.html",
                                  "chrome/browser/resources/settings/chromeos/os_settings_search_box/os_search_result_row.html",
+                                 "chrome/browser/resources/settings/chromeos/os_settings_ui/os_settings_ui.html",
+                                 "chrome/browser/resources/settings/chromeos/os_toolbar/os_toolbar.html",
                                  "chrome/browser/resources/settings/chromeos/personalization_page/change_picture_browser_proxy.html",
                                  "chrome/browser/resources/settings/chromeos/personalization_page/wallpaper_browser_proxy.html",
+                                 "chrome/browser/resources/settings/chromeos/route_observer_behavior.html",
                                  "chrome/browser/resources/settings/chromeos/settings_scheduler_slider/settings_scheduler_slider.html",
                                  "chrome/browser/resources/settings/chromeos/keyboard_shortcut_banner/keyboard_shortcut_banner.html",
                                  "chrome/browser/resources/settings/controls/controlled_button.html",
@@ -492,7 +501,7 @@ os_settings_migrated_imports = cr_components_migrated_imports + [
                                  "chrome/browser/resources/settings/i18n_setup.html",
                                  "chrome/browser/resources/settings/icons.html",
                                  "chrome/browser/resources/settings/lifetime_browser_proxy.html",
-                                 "chrome/browser/resources/settings/people_page/account_manager_browser_proxy.html",
+                                 "chrome/browser/resources/settings/chromeos/os_people_page/account_manager_browser_proxy.html",
                                  "chrome/browser/resources/settings/people_page/profile_info_browser_proxy.html",
                                  "chrome/browser/resources/settings/people_page/signout_dialog.html",
                                  "chrome/browser/resources/settings/people_page/sync_browser_proxy.html",
@@ -517,6 +526,12 @@ os_settings_migrated_imports = cr_components_migrated_imports + [
                                  "chrome/browser/resources/settings/settings_vars_css.html",
                                  "ui/webui/resources/cr_components/chromeos/localized_link/localized_link.html",
                                  "ui/webui/resources/cr_components/managed_footnote/managed_footnote.html",
+                                 "ui/webui/resources/cr_elements/chromeos/cr_picture/cr_camera.html",
+                                 "ui/webui/resources/cr_elements/chromeos/cr_picture/cr_picture_list.html",
+                                 "ui/webui/resources/cr_elements/chromeos/cr_picture/cr_picture_pane.html",
+                                 "ui/webui/resources/cr_elements/chromeos/cr_picture/cr_picture_types.html",
+                                 "ui/webui/resources/cr_elements/chromeos/cr_picture/icons.html",
+                                 "ui/webui/resources/cr_elements/chromeos/cr_picture/png.html",
                                  "ui/webui/resources/cr_elements/cr_action_menu/cr_action_menu.html",
                                  "ui/webui/resources/cr_elements/cr_drawer/cr_drawer.html",
                                  "ui/webui/resources/cr_elements/cr_link_row/cr_link_row.html",

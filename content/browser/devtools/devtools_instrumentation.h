@@ -22,6 +22,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-forward.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
@@ -196,10 +197,20 @@ std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
 //   installing service worker agent. It is expected to exist.
 // - `requesting_frame_id` is required, because the auto attacher is the one of
 //   the frame registering the worker.
-void ThrottleMainScriptFetch(
+void ThrottleServiceWorkerMainScriptFetch(
     ServiceWorkerContextWrapper* wrapper,
     int64_t version_id,
     const GlobalRenderFrameHostId& requesting_frame_id,
+    scoped_refptr<DevToolsThrottleHandle> throttle_handle);
+
+// For PlzDedicatedWorker. When creating a new DedicatedWorker with
+// PlzDedicatedWorker, the worker script fetch happens before starting the
+// worker. This function is called when DedicatedWorkerHost, which is the
+// representation of a worker in the browser process, is created.
+// `throttle_handle` controls when the script fetch resumes.
+void ThrottleWorkerMainScriptFetch(
+    const base::UnguessableToken& devtools_worker_token,
+    const GlobalRenderFrameHostId& ancestor_render_frame_host_id,
     scoped_refptr<DevToolsThrottleHandle> throttle_handle);
 
 bool ShouldWaitForDebuggerInWindowOpen();
@@ -275,8 +286,14 @@ void OnServiceWorkerMainScriptFetchingFailed(
     const GlobalRenderFrameHostId& requesting_frame_id,
     const std::string& error);
 
-// Adds a debug error message from a worklet to the devtools console.
-void LogWorkletError(RenderFrameHostImpl* frame_host, const std::string& error);
+// Adds a message from a worklet to the devtools console. This is specific to
+// FLEDGE auction worklet and shared storage worklet where the message may
+// contain sensitive cross-origin information, and therefore the devtools
+// logging needs to bypass the usual path through the renderer.
+void CONTENT_EXPORT
+LogWorkletMessage(RenderFrameHostImpl& frame_host,
+                  blink::mojom::ConsoleMessageLevel log_level,
+                  const std::string& message);
 
 void ApplyNetworkContextParamsOverrides(
     BrowserContext* browser_context,

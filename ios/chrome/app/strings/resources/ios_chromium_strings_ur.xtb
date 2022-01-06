@@ -5,7 +5,6 @@
 <translation id="1185134272377778587">‏Chromium کے بارے میں</translation>
 <translation id="1257458525759135959">‏تصاویر محفوظ کرنے کے لیے، Chromium کو آپ کی تصاویر میں شامل کرنے دینے کے لیے ترتیبات پر تھپتھپائیں</translation>
 <translation id="1289216811211435351">‏Chromium پر جائیں</translation>
-<translation id="1354592789402432496">آپ کا منتظم چاہتا ہے کہ آپ ایک تنظیمی اکاؤنٹ میں سائن ان کریں۔ آپ کے منتظم کے ذریعے ممنوع اکاؤنٹس چھپے ہوئے ہیں۔</translation>
 <translation id="1361748954329991663">‏Chromium پرانا ہے۔ اگر کوئی اپ ڈیٹ <ph name="BEGIN_LINK" />App اسٹور<ph name="END_LINK" /> میں دستیاب نہیں ہے تو یہ ممکن ہے کہ آپ کا آلہ مزید Chromium کے نئے ورژنز کو سپورٹ نہیں کرتا ہے۔</translation>
 <translation id="1370204544543370355">‏Chromium سے بھرپور فائدہ اٹھانے کے لیے اپنے Google اکاؤنٹ کے ساتھ Chromium میں سائن ان کریں</translation>
 <translation id="1431818719585918472">‏Chromium کو آپ کی پوشیدگی ٹیبز کو مقفل کرنے دیں۔</translation>
@@ -23,6 +22,7 @@
 <translation id="2168108852149185974">‏کچھ اضافے Chromium کے کریش ہونے کا سبب بنتے ہیں۔ براہ کرم اَن انسٹال کریں:</translation>
 <translation id="2178608107313874732">‏Chromium ابھی آپ کا کیمرا استعمال نہیں کر سکتا ہے</translation>
 <translation id="2195025571279539885">‏کیا آپ چاہیں گے کہ Chromium اگلی بار اس سائٹ سے <ph name="LANGUAGE_NAME" /> صفحات کا ترجمہ کرنے کی پیشکش کرے؟</translation>
+<translation id="2218146227246548550">‏آپ کی تنظیم چاہتی ہے کہ آپ Chromium استعمال کرنے کیلئے سائن ان کریں۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="2426113998523353159">‏آپ کی تنظیم چاہتی ہے کہ آپ Chromium استعمال کرنے کیلئے سائن ان کریں۔</translation>
 <translation id="2450140762465183767">‏اب جب بھی آپ پیغامات، دستاویزات اور دیگر ایپس میں لنکس کو تھپتھپائیں تو آپ Chromium استعمال کر سکتے ہیں۔</translation>
 <translation id="2478931088402984578">‏<ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> کو منتخب کریں</translation>
@@ -40,6 +40,7 @@
 <translation id="3472200483164753384">‏Chromium Canary پر تعاون یافتہ نہیں ہے</translation>
 <translation id="3639997914391704523">‏جب آپ اپنے Google اکاؤنٹ سے سائن ان کرتے ہیں تو Chromium آپ کے پاس ورڈز کو چیک کر سکتا ہے۔</translation>
 <translation id="3805899903892079518">‏Chromium کو آپ کی تصاویر یا ویڈیوز تک رسائی حاصل نہیں ہے۔ iOS ترتیبات &gt; رازداری &gt; تصاویر میں رسائی کو فعال کریں۔</translation>
+<translation id="3946918322491238254">آپ ابھی بھی اپنے تمام بک مارکس، سرگزشت، پاس ورڈز اور دیگر ترتیبات کو اس آلے پر دیکھ سکتے ہیں۔ اگر آپ تبدیلیاں کرتے ہیں تو وہ آپ کے اکاؤنٹ کے ساتھ سینک نہیں ہوں گی۔</translation>
 <translation id="4099085513035183040">‏Chromium بی ٹا پر تعاون یافتہ نہیں ہے</translation>
 <translation id="4555020257205549924">‏یہ خصوصیت آن کیے جانے پر، Chromium دوسری زبانوں میں لکھے ہوئے صفحات کا Google ترجمہ استعمال کر کے ترجمہ کرنے کی پیشکش کرے گا۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">‏اب جب بھی آپ پیغامات، دستاویزات اور دیگر ایپس میں لنکس پر تھپتھپائیں تو آپ Chromium استعمال کر سکتے ہیں۔</translation>
@@ -52,7 +53,6 @@
 <translation id="5171868502429358653">‏Chromium میں سائن ان کریں</translation>
 <translation id="5224391634244552924">‏کوئی محفوظ کردہ پاس ورڈ نہیں۔ جب آپ پاس ورڈز کو محفوظ کرتے ہیں تو Chromium انہیں چیک کر سکتا ہے۔</translation>
 <translation id="5308226104666789935">‏Chromium اپ ڈیٹس چیک نہیں کر سکتا ہے</translation>
-<translation id="5324242752415821224">‏آپ کی تنظیم چاہتی ہے کہ آپ Chromium استعمال کرنے کے لیے سائن ان کریں۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" />۔</translation>
 <translation id="5396916991083608703">‏Chromium کو ڈیفالٹ کے بطور سیٹ کریں؟</translation>
 <translation id="5521125884468363740">‏اپنے ٹیبز کو دیکھنے کے لئے جہاں کہیں بھی آپ Chromium استعمال کرتے ہیں، سائن ان کریں اور سِنک کو آن کریں</translation>
 <translation id="5573014823074921752">‏Chromium تجویز۔ ٹیب کے مزید اختیارات کیلئے، ٹول بار میں اس "ٹیبز دکھائيں" بٹن کو ٹچ کریں اور دبائے رکھیں جو آپ کی اسکرین کے نیچے یا اوپر ہوتا ہے۔</translation>
@@ -73,7 +73,6 @@
 <translation id="6424492062988593837">‏Chromium اور بھی بہتر ہوگیا ہے! ایک نیا ورژن دستیاب ہے۔</translation>
 <translation id="6752854822223394465">‏آپ کی تنظیم Chromium سیٹ اپ کر رہی ہے...</translation>
 <translation id="6820823224820483452">‏Chromium سبھی پاس ورڈز چیک نہیں کر سکا۔ کل دوبارہ کوشش کریں۔</translation>
-<translation id="6827294685447036764">‏اگر آپ Chromium کو اپنا مقام جاننے کی اجازت دیتے ہیں تو Chromium اسے آپ کی کسی بھی اس سائٹ کو بھیجتا ہے جسے آپ اجازت دیتے ہیں۔ سائٹس کے پاس آپ کو دکھانے کے لیے مقامی معلومات، جیسے قریبی دکانیں یا خبریں ہوں تو وہ آپ کے مقام کے بارے میں پوچھ سکتی ہیں۔</translation>
 <translation id="7018284295775193585">‏Chromium اپ ڈیٹ نہیں کیا جا سکتا</translation>
 <translation id="7045244423563602563">‏Chromium میں سائن ان کریں</translation>
 <translation id="7099326575020694068">‏Chromium تقسیم کے منظر کی وضع میں آپ کا کیمرا استعمال نہیں کر سکتا ہے</translation>

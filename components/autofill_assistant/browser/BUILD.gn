@@ -295,6 +295,7 @@ static_library("browser") {
     "//components/autofill/core/common",
     "//components/autofill_assistant/browser/devtools",
     "//components/autofill_assistant/browser/public:public",
+    "//components/autofill_assistant/content/browser",
     "//components/google/core/common:common",
     "//components/keyed_service/core",
     "//components/password_manager/content/browser:browser",
@@ -389,6 +390,7 @@ source_set("unit_tests") {
     "actions/set_touchable_area_action_unittest.cc",
     "actions/show_cast_action_unittest.cc",
     "actions/show_details_action_unittest.cc",
+    "actions/show_form_action_unittest.cc",
     "actions/show_generic_ui_action_unittest.cc",
     "actions/show_progress_bar_action_unittest.cc",
     "actions/stopwatch_unittest.cc",
@@ -540,6 +542,8 @@ if (is_android) {
   static_library("test_support") {
     testonly = true
     sources = [
+      "java_tts_controller.cc",
+      "java_tts_controller.h",
       "service/java_service.cc",
       "service/java_service.h",
       "service/java_service_request_sender.cc",

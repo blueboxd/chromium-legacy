@@ -21,6 +21,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/web_applications/extension_status_utils.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
+#include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/preinstalled_app_install_features.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_utils.h"
 #include "chrome/browser/web_applications/preinstalled_web_apps/preinstalled_web_apps.h"
@@ -42,6 +44,7 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -76,7 +79,7 @@ bool g_skip_startup_for_testing_ = false;
 bool g_bypass_offline_manifest_requirement_for_testing_ = false;
 const base::FilePath* g_config_dir_for_testing = nullptr;
 const std::vector<base::Value>* g_configs_for_testing = nullptr;
-const FileUtilsWrapper* g_file_utils_for_testing = nullptr;
+FileUtilsWrapper* g_file_utils_for_testing = nullptr;
 
 struct LoadedConfig {
   base::Value contents;
@@ -131,9 +134,9 @@ ParsedConfigs ParseConfigsBlocking(LoadedConfigs loaded_configs) {
   ParsedConfigs result;
   result.errors = std::move(loaded_configs.errors);
 
-  auto file_utils = g_file_utils_for_testing
-                        ? g_file_utils_for_testing->Clone()
-                        : std::make_unique<FileUtilsWrapper>();
+  scoped_refptr<FileUtilsWrapper> file_utils =
+      g_file_utils_for_testing ? base::WrapRefCounted(g_file_utils_for_testing)
+                               : base::MakeRefCounted<FileUtilsWrapper>();
 
   for (const LoadedConfig& loaded_config : loaded_configs.configs) {
     OptionsOrError parse_result =
@@ -362,7 +365,7 @@ void PreinstalledWebAppManager::SetConfigsForTesting(
 }
 
 void PreinstalledWebAppManager::SetFileUtilsForTesting(
-    const FileUtilsWrapper* file_utils) {
+    FileUtilsWrapper* file_utils) {
   g_file_utils_for_testing = file_utils;
 }
 
@@ -417,7 +420,7 @@ void PreinstalledWebAppManager::Load(ConsumeInstallOptions callback) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // With Lacros, web apps are not installed using the Ash browser.
-  if (base::FeatureList::IsEnabled(features::kWebAppsCrosapi))
+  if (IsWebAppsCrosapiEnabled())
     preinstalling_enabled = false;
 #endif
 
@@ -491,7 +494,12 @@ void PreinstalledWebAppManager::PostProcessConfigs(
 
     options.require_manifest = true;
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+    // On Chrome OS the "quick launch bar" is the shelf pinned apps.
+    // This is configured in `GetDefaultPinnedAppsForFormFactor()` instead of
+    // here to ensure a specific order is deployed.
+    options.add_to_quick_launch_bar = false;
+#else   // defined(OS_CHROMEOS)
     if (!g_bypass_offline_manifest_requirement_for_testing_) {
       // Non-Chrome OS platforms are not permitted to fetch the web app install
       // URLs during start up.
@@ -506,7 +514,7 @@ void PreinstalledWebAppManager::PostProcessConfigs(
     options.add_to_management = false;
     options.add_to_desktop = false;
     options.add_to_quick_launch_bar = false;
-#endif  // !defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
   }
 
   // TODO(crbug.com/1175196): Move this constant into some shared constants.h

@@ -18,9 +18,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -403,11 +403,7 @@ IncidentReportingService::IncidentReportingService(
                        this,
                        &IncidentReportingService::OnCollationTimeout),
       delayed_analysis_callbacks_(delayed_task_interval, delayed_task_runner) {
-  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies)) {
-    url_loader_factory_ = g_browser_process->shared_url_loader_factory();
-  } else if (safe_browsing_service) {
-    url_loader_factory_ = safe_browsing_service->GetURLLoaderFactory();
-  }
+  url_loader_factory_ = g_browser_process->shared_url_loader_factory();
   if (g_browser_process->profile_manager())
     g_browser_process->profile_manager()->AddObserver(this);
 }

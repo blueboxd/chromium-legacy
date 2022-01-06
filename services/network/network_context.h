@@ -402,6 +402,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const GURL& url,
       bool allow_credentials,
       const net::NetworkIsolationKey& network_isolation_key) override;
+#if BUILDFLAG(IS_P2P_ENABLED)
   void CreateP2PSocketManager(
       const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<mojom::P2PTrustedSocketManagerClient> client,
@@ -409,6 +410,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
           trusted_socket_manager,
       mojo::PendingReceiver<mojom::P2PSocketManager> socket_manager_receiver)
       override;
+#endif  // BUILDFLAG(IS_P2P_ENABLED)
   void CreateMdnsResponder(
       mojo::PendingReceiver<mojom::MdnsResponder> responder_receiver) override;
   void SetDocumentReportingEndpoints(
@@ -446,6 +448,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                          const net::NetworkIsolationKey& network_isolation_key,
                          const net::AuthCredentials& credentials,
                          AddAuthCacheEntryCallback callback) override;
+  void SetCorsNonWildcardRequestHeadersSupport(bool value) override;
   // TODO(mmenke): Rename this method and update Mojo docs to make it clear this
   // doesn't give proxy auth credentials.
   void LookupServerBasicAuthCredentials(
@@ -570,6 +573,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return require_network_isolation_key_;
   }
 
+  cors::NonWildcardRequestHeadersSupport
+  cors_non_wildcard_request_headers_support() const {
+    return cors_non_wildcard_request_headers_support_;
+  }
+
 #if BUILDFLAG(ENABLE_REPORTING)
   void AddReportingApiObserver(
       mojo::PendingRemote<network::mojom::ReportingApiObserver> observer)
@@ -605,7 +613,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   GURL GetHSTSRedirect(const GURL& original_url);
 
+#if BUILDFLAG(IS_P2P_ENABLED)
   void DestroySocketManager(P2PSocketManager* socket_manager);
+#endif  // BUILDFLAG(IS_P2P_ENABLED)
 
   void CanUploadDomainReliability(const GURL& origin,
                                   base::OnceCallback<void(bool)> callback);
@@ -703,8 +713,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   static constexpr uint32_t kMaxOutstandingRequestsPerProcess = 2700;
   uint32_t max_loaders_per_process_ = kMaxOutstandingRequestsPerProcess;
 
+#if BUILDFLAG(IS_P2P_ENABLED)
   base::flat_map<P2PSocketManager*, std::unique_ptr<P2PSocketManager>>
       socket_managers_;
+#endif  // BUILDFLAG(IS_P2P_ENABLED)
 
 #if BUILDFLAG(ENABLE_MDNS)
   std::unique_ptr<MdnsResponderManager> mdns_responder_manager_;
@@ -815,6 +827,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // NetworkIsolationKey with all requests. When set, enabled a variety of
   // DCHECKs on APIs used by external callers.
   bool require_network_isolation_key_ = false;
+
+  // Indicating whether
+  // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name is
+  // supported.
+  cors::NonWildcardRequestHeadersSupport
+      cors_non_wildcard_request_headers_support_;
 
   // CorsURLLoaderFactory assumes that fields owned by the NetworkContext always
   // live longer than the factory.  Therefore we want the factories to be

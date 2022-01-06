@@ -129,6 +129,7 @@ class NearbySharingServiceImpl
       base::OnceCallback<void()> callback) override;
   NearbyNotificationDelegate* GetNotificationDelegate(
       const std::string& notification_id) override;
+  void RecordFastInitiationNotificationUsage(bool success) override;
   NearbyShareSettings* GetSettings() override;
   NearbyShareHttpNotifier* GetHttpNotifier() override;
   NearbyShareLocalDeviceDataManager* GetLocalDeviceDataManager() override;
@@ -157,6 +158,7 @@ class NearbySharingServiceImpl
   void OnEnabledChanged(bool enabled) override;
   void OnFastInitiationNotificationStateChanged(
       nearby_share::mojom::FastInitiationNotificationState state) override;
+  void OnIsFastInitiationHardwareSupportedChanged(bool is_supported) override {}
   void OnDeviceNameChanged(const std::string& device_name) override;
   void OnDataUsageChanged(nearby_share::mojom::DataUsage data_usage) override;
   void OnVisibilityChanged(nearby_share::mojom::Visibility visibility) override;

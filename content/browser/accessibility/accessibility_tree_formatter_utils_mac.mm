@@ -10,12 +10,15 @@
 
 using ui::AXPropertyNode;
 
+#if !defined(MAC_OS_VERSION_12_0) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_VERSION_12_0
+using AXTextMarkerRangeRef = CFTypeRef;
+using AXTextMarkerRef = CFTypeRef;
 extern "C" {
-
-CFTypeRef AXTextMarkerRangeCopyStartMarker(CFTypeRef);
-
-CFTypeRef AXTextMarkerRangeCopyEndMarker(CFTypeRef);
+AXTextMarkerRef AXTextMarkerRangeCopyStartMarker(AXTextMarkerRangeRef);
+AXTextMarkerRef AXTextMarkerRangeCopyEndMarker(AXTextMarkerRangeRef);
 }  // extern "C"
+#endif
 
 namespace content {
 namespace a11y {
@@ -52,6 +55,8 @@ namespace {
 std::string OptionalNSObject::ToString() const {
   if (IsNotApplicable()) {
     return "<n/a>";
+  } else if (IsUnsupported()) {
+    return "<unsupported>";
   } else if (IsError()) {
     return "<error>";
   } else if (value == nil) {
@@ -102,11 +107,8 @@ OptionalNSObject AttributeInvoker::Invoke(const AXPropertyNode& property_node,
     auto storage_iterator = storage_->find(property_node.name_or_value);
     if (storage_iterator != storage_->end()) {
       target = storage_iterator->second;
-      if (!target) {
-        LOG(ERROR) << "Stored " << property_node.name_or_value
-                   << " target is null.";
-        return OptionalNSObject::Error();
-      }
+      if (!target)
+        return OptionalNSObject(target);
     }
   }
   // Case 2: try to get target from the tree indexer. The target may refer to
@@ -125,7 +127,7 @@ OptionalNSObject AttributeInvoker::Invoke(const AXPropertyNode& property_node,
     // where a scripting instruction with no target are used. For example,
     // `AXRole` property filter means it is applied to all nodes and `AXRole`
     // attribute should be called for all nodes in the tree.
-    if (node) {
+    if (IsDumpingTree()) {
       if (property_node.IsTarget()) {
         LOG(ERROR) << "Failed to parse '" << property_node.name_or_value
                    << "' target in '" << property_node.ToFlatString() << "'";
@@ -157,10 +159,10 @@ OptionalNSObject AttributeInvoker::Invoke(const AXPropertyNode& property_node,
   // Invoke the call chain.
   while (current_node) {
     auto target_optional = InvokeFor(target, *current_node);
-    // Result of the current step is either null or error. Don't go any further.
-    if (!target_optional.IsNotNil()) {
+    // Result of the current step is state. Don't go any further.
+    if (!target_optional.HasValue())
       return target_optional;
-    }
+
     target = *target_optional;
     current_node = current_node->next.get();
   }
@@ -185,6 +187,9 @@ OptionalNSObject AttributeInvoker::InvokeFor(
   if ([target isKindOfClass:[NSArray class]])
     return InvokeForArray(target, property_node);
 
+  if ([target isKindOfClass:[NSDictionary class]])
+    return InvokeForDictionary(target, property_node);
+
   LOG(ERROR) << "Unexpected target type for " << property_node.ToFlatString();
   return OptionalNSObject::Error();
 }
@@ -200,7 +205,7 @@ OptionalNSObject AttributeInvoker::InvokeForAXElement(
     OptionalNSObject param = ParamByPropertyNode(property_node);
     if (param.IsNotNil()) {
       PerformAction(target, *param);
-      return OptionalNSObject::NotApplicable();
+      return OptionalNSObject::Unsupported();
     }
     return OptionalNSObject::Error();
   }
@@ -217,9 +222,10 @@ OptionalNSObject AttributeInvoker::InvokeForAXElement(
         }
         return rvalue;
       }
-      // Getter
-      return OptionalNSObject::NotNullOrNotApplicable(
-          AttributeValueOf(target, attribute));
+      // Getter. Make sure to expose null values in ax scripts.
+      id value = AttributeValueOf(target, attribute);
+      return IsDumpingTree() ? OptionalNSObject::NotNullOrNotApplicable(value)
+                             : OptionalNSObject(value);
     }
   }
 
@@ -245,11 +251,17 @@ OptionalNSObject AttributeInvoker::InvokeForAXElement(
     }
   }
 
-  // Unmatched attribute. No error for a tree dump calls because the tree dump
-  // sets generic property filters not depending on a node, so we can be called
-  // for an attribute not supported by the node.
-  if (node)
+  // Unmatched attribute.
+  // * We choose not to return an error when dumping the accessibility tree,
+  // because during this process the same set of NSAccessibility attributes
+  // listed in property filters are queried on all nodes and, naturally, not all
+  // nodes support all attributes.
+  // * We also explicitly choose not to return an error if the NSAccessibility
+  // attribute is valid and is in the list of attributes that our tree formatter
+  // supports, but is not exposed on a given node.
+  if (IsDumpingTree() || IsValidAttribute(property_node.name_or_value)) {
     return OptionalNSObject::NotApplicable();
+  }
 
   LOG(ERROR) << "Unrecognized '" << property_node.name_or_value
              << "' attribute called on AXElement in '"
@@ -261,18 +273,19 @@ OptionalNSObject AttributeInvoker::InvokeForAXTextMarkerRange(
     const id target,
     const AXPropertyNode& property_node) const {
   if (property_node.name_or_value == "anchor")
-    return OptionalNSObject(static_cast<id>(
-        AXTextMarkerRangeCopyStartMarker(static_cast<CFTypeRef>(target))));
+    return OptionalNSObject(static_cast<id>(AXTextMarkerRangeCopyStartMarker(
+        static_cast<AXTextMarkerRangeRef>(target))));
 
   if (property_node.name_or_value == "focus")
-    return OptionalNSObject(static_cast<id>(
-        AXTextMarkerRangeCopyEndMarker(static_cast<CFTypeRef>(target))));
+    return OptionalNSObject(static_cast<id>(AXTextMarkerRangeCopyEndMarker(
+        static_cast<AXTextMarkerRangeRef>(target))));
 
-  // Unmatched attribute. No error for a tree dump calls because the tree dump
-  // sets generic property filters not depending on a node, so we can be called
-  // for an attribute not supported by the node.
-  if (node)
-    return OptionalNSObject::NotApplicable();
+  // Unmatched attribute. We choose not to return an error when dumping the
+  // accessibility tree, because during this process the same set of
+  // NSAccessibility attributes listed in property filters are queried on all
+  // nodes and, naturally, not all nodes support all attributes.
+  if (IsDumpingTree())
+    return OptionalNSObject::Unsupported();
 
   LOG(ERROR) << "Unrecognized '" << property_node.name_or_value
              << "' attribute called on AXTextMarkerRange in '"
@@ -283,6 +296,13 @@ OptionalNSObject AttributeInvoker::InvokeForAXTextMarkerRange(
 OptionalNSObject AttributeInvoker::InvokeForArray(
     const id target,
     const AXPropertyNode& property_node) const {
+  if (property_node.name_or_value == "count") {
+    if (property_node.arguments.size()) {
+      LOG(ERROR) << "count attribute is called as a method";
+      return OptionalNSObject::Error();
+    }
+    return OptionalNSObject([NSNumber numberWithInt:[target count]]);
+  }
   if (!property_node.IsArray() || property_node.arguments.size() != 1) {
     LOG(ERROR) << "Array operator[] is expected, got: "
                << property_node.ToString();
@@ -306,41 +326,18 @@ OptionalNSObject AttributeInvoker::InvokeForArray(
   return OptionalNSObject(target[*maybe_index]);
 }
 
-OptionalNSObject AttributeInvoker::GetValue(
-    const std::string& property_name,
-    const OptionalNSObject& param) const {
-  NSString* attribute = base::SysUTF8ToNSString(property_name);
-  NSArray* attributes = ParameterizedAttributeNamesOf(node);
-  if ([attributes containsObject:attribute]) {
-    if (param.IsNotNil()) {
-      return OptionalNSObject(
-          ParameterizedAttributeValueOf(node, attribute, *param));
-    } else {
-      return param;
-    }
+OptionalNSObject AttributeInvoker::InvokeForDictionary(
+    const id target,
+    const AXPropertyNode& property_node) const {
+  if (property_node.arguments.size() > 0) {
+    LOG(ERROR) << "dictionary key is expected, got: "
+               << property_node.ToString();
+    return OptionalNSObject::Error();
   }
-  return OptionalNSObject::NotApplicable();
-}
 
-OptionalNSObject AttributeInvoker::GetValue(
-    const std::string& property_name) const {
-  NSString* attribute = base::SysUTF8ToNSString(property_name);
-  NSArray* parameterized_attributes = AttributeNamesOf(node);
-  if ([parameterized_attributes containsObject:attribute]) {
-    return OptionalNSObject::NotNullOrNotApplicable(
-        AttributeValueOf(node, attribute));
-  }
-  return OptionalNSObject::NotApplicable();
-}
-
-void AttributeInvoker::SetValue(const std::string& property_name,
-                                const OptionalNSObject& value) const {
-  NSString* attribute = base::SysUTF8ToNSString(property_name);
-  NSArray* attributes = AttributeNamesOf(node);
-  if ([attributes containsObject:attribute] &&
-      IsAttributeSettable(node, attribute)) {
-    SetAttributeValueOf(node, attribute, *value);
-  }
+  NSString* key = PropertyNodeToString(property_node);
+  NSDictionary* dictionary = target;
+  return OptionalNSObject::NotNilOrError(dictionary[key]);
 }
 
 OptionalNSObject AttributeInvoker::ParamByPropertyNode(
@@ -620,53 +617,6 @@ id AttributeInvoker::PropertyNodeToTextMarkerRange(
   }
 
   return content::AXTextMarkerRangeFrom(anchor_textmarker, focus_textmarker);
-}
-
-OptionalNSObject TextMarkerRangeGetStartMarker(const OptionalNSObject& obj) {
-  if (!IsAXTextMarkerRange(*obj))
-    return OptionalNSObject::NotApplicable();
-
-  const BrowserAccessibility::AXRange range = AXTextMarkerRangeToAXRange(*obj);
-  if (range.IsNull())
-    return OptionalNSObject::Error();
-
-  auto* manager =
-      BrowserAccessibilityManager::FromID(range.anchor()->tree_id());
-  DCHECK(manager) << "A non-null range should have an associated AX tree.";
-  const BrowserAccessibility* node =
-      manager->GetFromID(range.anchor()->anchor_id());
-  DCHECK(node) << "A non-null range should have a non-null anchor node.";
-  const BrowserAccessibilityCocoa* cocoa_node =
-      ToBrowserAccessibilityCocoa(node);
-  return OptionalNSObject::NotNilOrError(content::AXTextMarkerFrom(
-      cocoa_node, range.anchor()->text_offset(), range.anchor()->affinity()));
-}
-
-OptionalNSObject TextMarkerRangeGetEndMarker(const OptionalNSObject& obj) {
-  if (!IsAXTextMarkerRange(*obj))
-    return OptionalNSObject::NotApplicable();
-
-  const BrowserAccessibility::AXRange range = AXTextMarkerRangeToAXRange(*obj);
-  if (range.IsNull())
-    return OptionalNSObject::Error();
-
-  auto* manager = BrowserAccessibilityManager::FromID(range.focus()->tree_id());
-  DCHECK(manager) << "A non-null range should have an associated AX tree.";
-  const BrowserAccessibility* node =
-      manager->GetFromID(range.focus()->anchor_id());
-  DCHECK(node) << "A non-null range should have a non-null focus node.";
-  const BrowserAccessibilityCocoa* cocoa_node =
-      ToBrowserAccessibilityCocoa(node);
-  return OptionalNSObject::NotNilOrError(content::AXTextMarkerFrom(
-      cocoa_node, range.focus()->text_offset(), range.focus()->affinity()));
-}
-
-OptionalNSObject MakePairArray(const OptionalNSObject& obj1,
-                               const OptionalNSObject& obj2) {
-  if (!obj1.IsNotNil() || !obj2.IsNotNil())
-    return OptionalNSObject::Error();
-  return OptionalNSObject::NotNilOrError(
-      [NSArray arrayWithObjects:*obj1, *obj2, nil]);
 }
 
 }  // namespace a11y

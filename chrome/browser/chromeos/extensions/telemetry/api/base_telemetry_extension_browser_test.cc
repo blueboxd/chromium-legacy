@@ -41,38 +41,20 @@ ExtensionInfoTestParams::ExtensionInfoTestParams(
 ExtensionInfoTestParams::~ExtensionInfoTestParams() = default;
 
 // static
-const std::vector<ExtensionInfoTestParams> BaseTelemetryExtensionBrowserTest::
-    kAllExtensionInfoTestParams{ExtensionInfoTestParams(
-        /*extension_id=*/"gogonhoemckpdpadfnjnpgbjpbjnodgc",
-        /*public_key=*/ "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt2CwI94nqAQzLTBHSIwtkMlkoRyhu27rmkDsBneMprscOzl4524Y0bEA+0RSjNZB+kZgP6M8QAZQJHCpAzULXa49MooDDIdzzmqQswswguAALm2FS7XP2N0p2UYQneQce4Wehq/C5Yr65mxasAgjXgDWlYBwV3mgiISDPXI/5WG94TM2Z3PDQePJ91msDAjN08jdBme3hAN976yH3Q44M7cP1r+OWRkZGwMA6TSQjeESEuBbkimaLgPIyzlJp2k6jwuorG5ujmbAGFiTQoSDFBFCjwPEtywUMLKcZjH4fD76pcIQIdkuuzRQCVyuImsGzm1cmGosJ/Z4iyb80c1ytwIDAQAB",
-        /*pwa_page_url=*/"http://www.google.com",
-        /*matches_origin=*/"*://www.google.com/*")};
-
-// static
-std::string BaseTelemetryExtensionBrowserTest::GetManifestFile(
-    const std::string& public_key,
-    const std::string& matches_origin) {
-  return base::StringPrintf(R"(
-      {
-        "key": "%s",
-        "name": "Test Telemetry Extension",
-        "version": "1",
-        "manifest_version": 3,
-        "chromeos_system_extension": {},
-        "background": {
-          "service_worker": "sw.js"
-        },
-        "permissions": [ "os.diagnostics", "os.telemetry" ],
-        "optional_permissions": [ "os.telemetry.serial_number" ],
-        "externally_connectable": {
-          "matches": [
-            "%s"
-          ]
-        },
-        "options_page": "options.html"
-      }
-    )", public_key.c_str(), matches_origin.c_str());
-}
+const std::vector<ExtensionInfoTestParams>
+    BaseTelemetryExtensionBrowserTest::kAllExtensionInfoTestParams{
+        ExtensionInfoTestParams(
+            /*extension_id=*/"gogonhoemckpdpadfnjnpgbjpbjnodgc",
+            /*public_key=*/
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt2CwI94nqAQzLTBHSIwtkMlkoRyhu27rmkDsBneMprscOzl4524Y0bEA+0RSjNZB+kZgP6M8QAZQJHCpAzULXa49MooDDIdzzmqQswswguAALm2FS7XP2N0p2UYQneQce4Wehq/C5Yr65mxasAgjXgDWlYBwV3mgiISDPXI/5WG94TM2Z3PDQePJ91msDAjN08jdBme3hAN976yH3Q44M7cP1r+OWRkZGwMA6TSQjeESEuBbkimaLgPIyzlJp2k6jwuorG5ujmbAGFiTQoSDFBFCjwPEtywUMLKcZjH4fD76pcIQIdkuuzRQCVyuImsGzm1cmGosJ/Z4iyb80c1ytwIDAQAB",
+            /*pwa_page_url=*/"http://www.google.com",
+            /*matches_origin=*/"*://www.google.com/*"),
+        ExtensionInfoTestParams(
+            /*extension_id=*/"alnedpmllcfpgldkagbfbjkloonjlfjb",
+            /*public_key=*/
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm6NnMxmC5iaSFAILkuIkGXllW1Tie3AW+7Ty3R3sbQ7EVNG3HtFIG7jbJIvSko+lrTa1U1VveOXZw1u3y1T49ihR2XFU0w6+3OAXzjuUimKUviGao6EN4KfCegtKyDQnMw0zATBisqBxrPLzGBXxP/AhxH2OGgyyioVOzoCF+rnBY7ed+Wh+mPI7s9lrECeisUHHM5xbHXXgr8bnvt3U27jnsctwJWKHfcbd3rpMJwBfOmPfuQ0MZvySVkTr/WYeemkwR8/4mek9/UIGMB8X+mXdU9OV/qhylqy6FzRw/FdV+RcmzAwEgNmhgXP7TwtFBsUdtTIe2Kio26ciK7PSKwIDAQAB",
+            /*pwa_page_url=*/"http://hpcs-appschr.hpcloud.hp.com",
+            /*matches_origin=*/"*://hpcs-appschr.hpcloud.hp.com/*")};
 
 BaseTelemetryExtensionBrowserTest::BaseTelemetryExtensionBrowserTest() =
     default;
@@ -121,9 +103,37 @@ void BaseTelemetryExtensionBrowserTest::CreateExtensionAndRunServiceWorker(
   EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
 }
 
+std::string BaseTelemetryExtensionBrowserTest::GetManifestFile(
+    const std::string& public_key,
+    const std::string& matches_origin) {
+  return base::StringPrintf(R"(
+      {
+        "key": "%s",
+        "name": "Test Telemetry Extension",
+        "version": "1",
+        "manifest_version": 3,
+        "chromeos_system_extension": {},
+        "background": {
+          "service_worker": "sw.js"
+        },
+        "permissions": [
+          "os.diagnostics",
+          "os.telemetry",
+          "os.telemetry.serial_number"
+        ],
+        "externally_connectable": {
+          "matches": [
+            "%s"
+          ]
+        },
+        "options_page": "options.html"
+      }
+    )", public_key.c_str(), matches_origin.c_str());
+}
+
 TEST(BaseTelemetryExtensionBrowserTest, VerifyAllExtensionInfoTestParams) {
-  ASSERT_EQ(1,
-    BaseTelemetryExtensionBrowserTest::kAllExtensionInfoTestParams.size());
+  ASSERT_EQ(
+      2, BaseTelemetryExtensionBrowserTest::kAllExtensionInfoTestParams.size());
 
   // Verifies that all allowlisted extension ids are covered with test params.
   ASSERT_EQ(GetChromeOSSystemExtensionInfosSize(),

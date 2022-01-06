@@ -15,6 +15,7 @@
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/services/shared_storage_worklet/public/mojom/shared_storage_worklet_service.mojom.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sync_channel.h"
@@ -234,7 +235,8 @@ void AgentSchedulingGroup::CreateFrame(mojom::CreateFrameParamsPtr params) {
       params->tree_scope_type, std::move(params->replication_state),
       std::move(params->widget_params),
       std::move(params->frame_owner_properties),
-      params->has_committed_real_load, std::move(params->policy_container));
+      params->is_on_initial_empty_document,
+      std::move(params->policy_container));
 }
 
 void AgentSchedulingGroup::CreateFrameProxy(
@@ -251,6 +253,13 @@ void AgentSchedulingGroup::CreateFrameProxy(
       *this, token, routing_id, opener_frame_token, view_routing_id,
       parent_routing_id, tree_scope_type, std::move(replicated_state),
       devtools_frame_token, std::move(remote_main_frame_interfaces));
+}
+
+void AgentSchedulingGroup::CreateSharedStorageWorkletService(
+    mojo::PendingReceiver<
+        shared_storage_worklet::mojom::SharedStorageWorkletService> receiver) {
+  RenderThreadImpl& renderer = ToImpl(render_thread_);
+  renderer.CreateSharedStorageWorkletService(std::move(receiver));
 }
 
 void AgentSchedulingGroup::BindAssociatedInterfaces(

@@ -19,7 +19,7 @@
 #include "components/cast/message_port/fuchsia/message_port_fuchsia.h"
 #include "components/cast/message_port/platform_message_port.h"
 #include "fuchsia/base/agent_manager.h"
-#include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
+#include "fuchsia/runners/cast/fidl/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 #include "fuchsia/runners/cast/cast_streaming.h"
 #include "fuchsia/runners/cast/create_web_message.h"
@@ -182,9 +182,6 @@ void CastComponent::StartComponent() {
                      kBindingsFailureExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR));
 
-  // Get the theme from the system service.
-  frame()->SetPreferredTheme(fuchsia::settings::ThemeType::DEFAULT);
-
   // Media loading has to be unblocked by the agent via the
   // ApplicationController.
   frame()->SetBlockMediaLoading(true);
@@ -202,7 +199,7 @@ void CastComponent::StartComponent() {
     // TODO(crbug.com/1136994): Replace this with the PermissionManager API
     // when available.
     const std::string origin =
-        GURL(application_config_.web_url()).GetOrigin().spec();
+        GURL(application_config_.web_url()).DeprecatedGetOriginAsURL().spec();
     for (auto& permission : application_config_.permissions()) {
       fuchsia::web::PermissionDescriptor permission_clone;
       zx_status_t status = permission.Clone(&permission_clone);
@@ -216,6 +213,13 @@ void CastComponent::StartComponent() {
                                   fuchsia::web::PermissionState::GRANTED);
     }
   }
+
+  fuchsia::web::ContentAreaSettings settings;
+  // Disable scrollbars on all Cast applications.
+  settings.set_hide_scrollbars(true);
+  // Get the theme from the system service.
+  settings.set_theme(fuchsia::settings::ThemeType::DEFAULT);
+  frame()->SetContentAreaSettings(std::move(settings));
 }
 
 void CastComponent::DestroyComponent(int64_t exit_code,
@@ -297,6 +301,15 @@ void CastComponent::CreateViewWithViewRef(
 
   WebComponent::CreateViewWithViewRef(
       std::move(view_token), std::move(control_ref), std::move(view_ref));
+}
+
+void CastComponent::CreateView2(fuchsia::ui::app::CreateView2Args view_args) {
+  if (is_headless_) {
+    frame()->EnableHeadlessRendering();
+    return;
+  }
+
+  WebComponent::CreateView2(std::move(view_args));
 }
 
 void CastComponent::OnZxHandleSignalled(zx_handle_t handle,

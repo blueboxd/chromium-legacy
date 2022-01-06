@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_RMAD_RMAD_CLIENT_H_
 
 #include "base/component_export.h"
+#include "base/observer_list_types.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/rmad/rmad.pb.h"
 
@@ -23,10 +24,8 @@ namespace chromeos {
 class COMPONENT_EXPORT(RMAD) RmadClient {
  public:
   // Interface for observing signals from rmad.
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
-    virtual ~Observer() {}
-
     // Called when an error occurs outside of state transitions.
     // e.g. while calibrating devices.
     virtual void Error(rmad::RmadErrorCode error) {}
@@ -40,9 +39,7 @@ class COMPONENT_EXPORT(RMAD) RmadClient {
         rmad::CalibrationOverallStatus status) {}
 
     // Called when provisioning progress is updated.
-    virtual void ProvisioningProgress(
-        rmad::ProvisionDeviceState::ProvisioningStep step,
-        double progress) {}
+    virtual void ProvisioningProgress(const rmad::ProvisionStatus& status) {}
 
     // Called when hardware write protection state changes.
     virtual void HardwareWriteProtectionState(bool enabled) {}
@@ -52,7 +49,10 @@ class COMPONENT_EXPORT(RMAD) RmadClient {
 
     // Called when hardware verification completes.
     virtual void HardwareVerificationResult(
-        const rmad::HardwareVerificationResult& hardware_verification_result) {}
+        const rmad::HardwareVerificationResult& result) {}
+
+    // Called when finalization progress is updated.
+    virtual void FinalizationProgress(const rmad::FinalizeStatus& status) {}
   };
 
   // Creates and initializes a global instance. |bus| must not be null.

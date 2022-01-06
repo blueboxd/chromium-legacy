@@ -8,7 +8,7 @@
     margin-top: 24px;
   }
 </style>
-<bluetooth-base-page  button-bar-state="[[buttonBarState_]]">
+<bluetooth-base-page show-scan-progress  button-bar-state="[[buttonBarState_]]">
   <div slot="page-body" id="pageBody">
     <localized-link
         localized-string="[[i18nAdvanced('bluetoothPairingLearnMoreLabel')]]">
@@ -20,7 +20,10 @@
           no-bottom-scroll-border>
         <iron-list items="[[devices]]" preserve-focus>
           <template>
-            <bluetooth-pairing-device-item device="[[item]]">
+            <bluetooth-pairing-device-item
+                device="[[item]]"
+                device-item-state="[[getDeviceItemState_(
+                    item, devicePendingPairing.*, failedPairingDeviceId)]]" >
             </bluetooth-pairing-device-item>
           </template>
         </iron-list>

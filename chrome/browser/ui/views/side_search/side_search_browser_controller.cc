@@ -32,8 +32,8 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/view_class_properties.h"
@@ -131,6 +131,17 @@ class HeaderView : public views::View {
 BEGIN_METADATA(HeaderView, views::View)
 END_METADATA
 
+// Used for finding the button from telemetry tests.
+// TODO(crbug.com/1201243): Support using View.GetID() to find elements in
+// telemetry tests instead of subclassing ToolbarButton.
+class SideSearchToolbarButton : public ToolbarButton {
+ public:
+  METADATA_HEADER(SideSearchToolbarButton);
+};
+
+BEGIN_METADATA(SideSearchToolbarButton, views::View)
+END_METADATA
+
 std::unique_ptr<views::Separator> CreateSeparator() {
   auto separator = std::make_unique<views::Separator>();
   separator->SetColor(kSeparatorColor);
@@ -144,22 +155,28 @@ views::WebView* ConfigureSidePanel(views::View* side_panel,
   // content area.
   side_panel->SetPreferredSize(gfx::Size(kSidePanelWidth, 1));
 
-  auto* layout =
-      side_panel->SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout->SetOrientation(views::LayoutOrientation::kVertical);
-  layout->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+  auto container = std::make_unique<views::FlexLayoutView>();
+  container->SetOrientation(views::LayoutOrientation::kVertical);
+  container->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
 
-  side_panel->AddChildView(std::make_unique<HeaderView>(std::move(callback)));
-  side_panel->AddChildView(CreateSeparator());
+  container->AddChildView(std::make_unique<HeaderView>(std::move(callback)));
+  container->AddChildView(CreateSeparator());
 
   // The WebView will fill the remaining space after the header view has been
   // laid out.
   auto* web_view =
-      side_panel->AddChildView(std::make_unique<views::WebView>(profile));
+      container->AddChildView(std::make_unique<views::WebView>(profile));
   web_view->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded));
+
+  side_panel->AddChildView(std::move(container));
+
+  // The side panel should not start visible to avoid having it participate in
+  // initial layout calculations. Its visibility state will be updated later on
+  // in UpdateSidePanel().
+  side_panel->SetVisible(false);
 
   return web_view;
 }
@@ -178,6 +195,11 @@ SideSearchBrowserController::SideSearchBrowserController(
               &SideSearchBrowserController::SidePanelCloseButtonPressed,
               base::Unretained(this)))),
       focus_tracker_(side_panel_, browser_view_->GetFocusManager()) {
+  web_view_visibility_subscription_ =
+      web_view_->AddVisibleChangedCallback(base::BindRepeating(
+          &SideSearchBrowserController::OnWebViewVisibilityChanged,
+          base::Unretained(this)));
+
   browser_view_observation_.Observe(browser_view_);
   UpdateSidePanelForContents(browser_view_->GetActiveWebContents(), nullptr);
 }
@@ -266,7 +288,7 @@ void SideSearchBrowserController::UpdateSidePanelForContents(
 
 std::unique_ptr<ToolbarButton>
 SideSearchBrowserController::CreateToolbarButton() {
-  auto toolbar_button = std::make_unique<ToolbarButton>();
+  auto toolbar_button = std::make_unique<SideSearchToolbarButton>();
   toolbar_button->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
   toolbar_button->SetTooltipText(
@@ -326,9 +348,9 @@ void SideSearchBrowserController::OpenSidePanel() {
   SetSidePanelToggledOpen(true);
   UpdateSidePanel();
 
-  // After showing the side panel have the side contents request focus.
-  DCHECK(side_panel_->GetVisible());
-  web_view_->web_contents()->Focus();
+  // After showing the side panel if the web_view_ is visible request focus.
+  if (web_view_->GetVisible())
+    web_view_->web_contents()->Focus();
 }
 
 void SideSearchBrowserController::CloseSidePanel(
@@ -428,4 +450,17 @@ void SideSearchBrowserController::UpdateSidePanel() {
             ? SideSearchAvailabilityChangeType::kBecomeAvailable
             : SideSearchAvailabilityChangeType::kBecomeUnavailable);
   }
+
+  browser_view_->InvalidateLayout();
+}
+
+void SideSearchBrowserController::OnWebViewVisibilityChanged() {
+  // After the web_view_ becomes visible have the side contents request focus.
+  // We need to do this in the web_view_'s visibility changed listener as the
+  // web_view_'s visibility state could be updated by the layout manager during
+  // layout and we should not do this until the web_view_ is visible. Layout is
+  // invalidated when we call UpdateSidePanel() but is scheduled asynchronously
+  // by the hosting Widget.
+  if (web_view_->GetVisible())
+    web_view_->web_contents()->Focus();
 }

@@ -33,6 +33,8 @@ struct InstallableData;
 
 namespace web_app {
 
+enum class IconsDownloadedResult;
+
 // Class used by WebAppInstallTask to retrieve the necessary information to
 // install an app. Should only be called from the UI thread.
 class WebAppDataRetriever : content::WebContentsObserver {
@@ -49,8 +51,8 @@ class WebAppDataRetriever : content::WebContentsObserver {
                               const GURL& manifest_url,
                               bool valid_manifest_for_web_app,
                               bool is_installable)>;
-  // Returns empty map if error.
-  using GetIconsCallback = base::OnceCallback<void(IconsMap)>;
+
+  using GetIconsCallback = WebAppIconDownloader::WebAppIconDownloaderCallback;
 
   WebAppDataRetriever();
   WebAppDataRetriever(const WebAppDataRetriever&) = delete;
@@ -73,12 +75,12 @@ class WebAppDataRetriever : content::WebContentsObserver {
   virtual void GetIcons(content::WebContents* web_contents,
                         const std::vector<GURL>& icon_urls,
                         bool skip_page_favicons,
-                        WebAppIconDownloader::Histogram histogram,
                         GetIconsCallback callback);
 
   // WebContentsObserver:
   void WebContentsDestroyed() override;
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
 
  private:
   void OnGetWebPageMetadata(
@@ -87,7 +89,9 @@ class WebAppDataRetriever : content::WebContentsObserver {
       int last_committed_nav_entry_unique_id,
       webapps::mojom::WebPageMetadataPtr web_page_metadata);
   void OnDidPerformInstallableCheck(const webapps::InstallableData& data);
-  void OnIconsDownloaded(bool success, IconsMap icons_map);
+  void OnIconsDownloaded(IconsDownloadedResult result,
+                         IconsMap icons_map,
+                         DownloadedIconsHttpResults icons_http_results);
 
   void CallCallbackOnError();
   bool ShouldStopRetrieval() const;

@@ -4,7 +4,6 @@
 
 #include "components/exo/client_controlled_shell_surface.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
@@ -46,6 +45,7 @@
 #include "components/app_restore/window_properties.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
+#include "components/exo/permission.h"
 #include "components/exo/pointer.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/sub_surface.h"
@@ -2742,47 +2742,6 @@ TEST_F(ClientControlledShellSurfaceTest,
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
   surface->Attach(buffer.get());
   surface->Commit();
-
-  // Test resizability with the feature flag on.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(ash::features::kArcResizeLock);
-    EXPECT_TRUE(shell_surface->CanResize());
-
-    shell_surface->SetResizeLock(true);
-    surface->Commit();
-    EXPECT_FALSE(shell_surface->CanResize());
-
-    // Test if the proper resize lock type is set depending on the resizability
-    // of the window.
-    aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
-    EXPECT_EQ(window->GetProperty(ash::kArcResizeLockTypeKey),
-              ash::ArcResizeLockType::RESIZE_LIMITED);
-    shell_surface->SetMinimumSize(gfx::Size(1, 1));
-    shell_surface->SetMaximumSize(gfx::Size(1, 1));
-    surface->Commit();
-    EXPECT_EQ(window->GetProperty(ash::kArcResizeLockTypeKey),
-              ash::ArcResizeLockType::FULLY_LOCKED);
-    shell_surface->SetMinimumSize(gfx::Size(0, 0));
-    shell_surface->SetMaximumSize(gfx::Size(0, 0));
-
-    shell_surface->SetResizeLock(false);
-    surface->Commit();
-    EXPECT_TRUE(shell_surface->CanResize());
-  }
-
-  // Test resizability with the feature flag off.
-  // TODO(180252634): Remove this once the feature is enabled by default and
-  // and the flag is removed.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(ash::features::kArcResizeLock);
-    EXPECT_TRUE(shell_surface->CanResize());
-
-    shell_surface->SetResizeLock(true);
-    surface->Commit();
-    EXPECT_TRUE(shell_surface->CanResize());
-  }
 }
 
 TEST_F(ClientControlledShellSurfaceTest, OverlayShadowBounds) {
@@ -2885,6 +2844,19 @@ TEST_F(ClientControlledShellSurfaceFullRestoreTest,
   EXPECT_TRUE(wide_frame);
   EXPECT_EQ(window->parent(),
             wide_frame->GetWidget()->GetNativeWindow()->parent());
+}
+
+TEST_F(ClientControlledShellSurfaceTest,
+       InitializeWindowStateGrantsPermissionToActivate) {
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  surface->Commit();
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  auto* permission = window->GetProperty(kPermissionKey);
+
+  EXPECT_TRUE(permission->Check(Permission::Capability::kActivate));
 }
 
 }  // namespace exo

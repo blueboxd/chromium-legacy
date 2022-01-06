@@ -130,8 +130,6 @@ namespace chrome {
 bool PathProvider(int key, base::FilePath* result) {
   // Some keys are just aliases...
   switch (key) {
-    case chrome::DIR_APP:
-      return base::PathService::Get(base::DIR_MODULE, result);
     case chrome::DIR_LOGS:
 #ifdef NDEBUG
       // Release builds write to the data dir
@@ -148,8 +146,6 @@ bool PathProvider(int key, base::FilePath* result) {
       return base::PathService::Get(base::DIR_EXE, result);
 #endif  // defined(OS_MAC)
 #endif  // NDEBUG
-    case chrome::FILE_RESOURCE_MODULE:
-      return base::PathService::Get(base::FILE_MODULE, result);
   }
 
   // Assume that we will not need to create the directory if it does not exist.
@@ -246,11 +242,8 @@ bool PathProvider(int key, base::FilePath* result) {
 #if defined(OS_MAC)
       cur = base::mac::FrameworkBundlePath();
       cur = cur.Append(FILE_PATH_LITERAL("Resources"));
-#elif defined(OS_FUCHSIA)
-      if (!base::PathService::Get(base::DIR_ASSETS, &cur))
-        return false;
 #else
-      if (!base::PathService::Get(chrome::DIR_APP, &cur))
+      if (!base::PathService::Get(base::DIR_ASSETS, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("resources"));
 #endif
@@ -395,15 +388,8 @@ bool PathProvider(int key, base::FilePath* result) {
     // will fail if executed from an installed executable (because the
     // generated path won't exist).
     case chrome::DIR_GEN_TEST_DATA:
-#if defined(OS_ANDROID)
-      // On Android, our tests don't have permission to write to DIR_MODULE.
-      // gtest/test_runner.py pushes data to external storage.
-      if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &cur))
+      if (!base::PathService::Get(base::DIR_GEN_TEST_DATA_ROOT, &cur))
         return false;
-#else
-      if (!base::PathService::Get(base::DIR_MODULE, &cur))
-        return false;
-#endif
       cur = cur.Append(FILE_PATH_LITERAL("test_data"));
       if (!base::PathExists(cur))  // We don't want to create this.
         return false;
@@ -487,7 +473,7 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = base::mac::FrameworkBundlePath();
       cur = cur.Append(FILE_PATH_LITERAL("Default Apps"));
 #else
-      if (!base::PathService::Get(chrome::DIR_APP, &cur))
+      if (!base::PathService::Get(base::DIR_MODULE, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("default_apps"));
 #endif

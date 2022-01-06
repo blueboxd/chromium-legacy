@@ -22,7 +22,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
@@ -63,13 +62,13 @@ class TestNotificationView : public NotificationViewBase {
     // memory leak.
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
-    AddChildView(CreateHeaderRow());
-    AddChildView(CreateControlButtonsView());
-    AddChildView(CreateContentRow());
-    AddChildView(CreateLeftContentView());
-    AddChildView(CreateRightContentView());
-    AddChildView(CreateImageContainerView());
-    AddChildView(CreateInlineSettingsView());
+    AddChildView(CreateHeaderRowBuilder().Build());
+    AddChildView(CreateControlButtonsBuilder().Build());
+    AddChildView(CreateContentRowBuilder().Build());
+    AddChildView(CreateLeftContentBuilder().Build());
+    AddChildView(CreateRightContentBuilder().Build());
+    AddChildView(CreateImageContainerBuilder().Build());
+    AddChildView(CreateInlineSettingsBuilder().Build());
     AddChildView(CreateActionsRow());
 
     CreateOrUpdateViews(notification);
@@ -83,6 +82,13 @@ class TestNotificationView : public NotificationViewBase {
   void CreateOrUpdateTitleView(const Notification& notification) override {}
   gfx::Size GetIconViewSize() const override { return gfx::Size(); }
   void CreateOrUpdateSmallIconView(const Notification& notification) override {}
+  void CreateOrUpdateInlineSettingsViews(
+      const Notification& notification) override {
+    set_inline_settings_enabled(
+        notification.rich_notification_data().settings_button_handler ==
+        message_center::SettingsButtonHandler::INLINE);
+  }
+  bool IsExpandable() const override { return true; }
   std::unique_ptr<views::LabelButton> GenerateNotificationLabelButton(
       views::Button::PressedCallback callback,
       const std::u16string& label) override {
@@ -150,10 +156,8 @@ class DummyEvent : public ui::Event {
 
 }  // namespace
 
-class NotificationViewBaseTest : public views::InkDropObserver,
-                                 public views::ViewsTestBase,
-                                 public views::ViewObserver,
-                                 public message_center::MessageCenterObserver {
+class NotificationViewBaseTest : public views::ViewsTestBase,
+                                 public views::ViewObserver {
  public:
   NotificationViewBaseTest();
   NotificationViewBaseTest(const NotificationViewBaseTest&) = delete;
@@ -169,24 +173,10 @@ class NotificationViewBaseTest : public views::InkDropObserver,
 
   NotificationViewBase* notification_view() const { return notification_view_; }
 
-  // Overridden from message_center::MessageCenterObserver:
-  void OnNotificationRemoved(const std::string& notification_id,
-                             bool by_user) override;
-
-  // Overridden from views::InkDropObserver:
-  void InkDropAnimationStarted() override;
-  void InkDropRippleAnimationEnded(views::InkDropState ink_drop_state) override;
-
   void set_delete_on_preferred_size_changed(
       bool delete_on_preferred_size_changed) {
     delete_on_preferred_size_changed_ = delete_on_preferred_size_changed;
   }
-
-  void set_delete_on_notification_removed(bool delete_on_notification_removed) {
-    delete_on_notification_removed_ = delete_on_notification_removed;
-  }
-
-  bool ink_drop_stopped() const { return ink_drop_stopped_; }
 
  protected:
   const gfx::Image CreateTestImage(int width, int height) const;
@@ -203,9 +193,7 @@ class NotificationViewBaseTest : public views::InkDropObserver,
   void ScrollBy(int dx);
   views::View* GetCloseButton();
 
-  bool ink_drop_stopped_ = false;
   bool delete_on_preferred_size_changed_ = false;
-  bool delete_on_notification_removed_ = false;
   std::set<std::string> removed_ids_;
   scoped_refptr<NotificationTestDelegate> delegate_;
   NotificationViewBase* notification_view_ = nullptr;
@@ -239,18 +227,11 @@ void NotificationViewBaseTest::SetUp() {
 
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   UpdateNotificationViews(*notification);
-
-  MessageCenter::Get()->AddObserver(this);
 }
 
 void NotificationViewBaseTest::TearDown() {
-  MessageCenter::Get()->RemoveObserver(this);
-
-  DCHECK(notification_view_ || delete_on_preferred_size_changed_ ||
-         delete_on_notification_removed_);
+  DCHECK(notification_view_ || delete_on_preferred_size_changed_);
   if (notification_view_) {
-    views::InkDrop::Get(notification_view_)
-        ->SetMode(views::InkDropHost::InkDropMode::OFF);
     static_cast<views::View*>(notification_view_)->RemoveObserver(this);
     notification_view_->GetWidget()->Close();
     notification_view_ = nullptr;
@@ -269,16 +250,6 @@ void NotificationViewBaseTest::OnViewPreferredSizeChanged(
   }
   notification_view_->GetWidget()->SetSize(
       notification_view()->GetPreferredSize());
-}
-
-void NotificationViewBaseTest::OnNotificationRemoved(
-    const std::string& notification_id,
-    bool by_user) {
-  if (delete_on_notification_removed_) {
-    notification_view_->GetWidget()->CloseNow();
-    notification_view_ = nullptr;
-    return;
-  }
 }
 
 const gfx::Image NotificationViewBaseTest::CreateTestImage(int width,
@@ -361,13 +332,6 @@ void NotificationViewBaseTest::ScrollBy(int dx) {
 
 views::View* NotificationViewBaseTest::GetCloseButton() {
   return notification_view()->GetControlButtonsView()->close_button();
-}
-
-void NotificationViewBaseTest::InkDropAnimationStarted() {}
-
-void NotificationViewBaseTest::InkDropRippleAnimationEnded(
-    views::InkDropState ink_drop_state) {
-  ink_drop_stopped_ = true;
 }
 
 /* Unit tests *****************************************************************/
@@ -865,39 +829,7 @@ TEST_F(NotificationViewBaseTest, SnoozeButton) {
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-TEST_F(NotificationViewBaseTest, ExpandLongMessage) {
-  std::unique_ptr<Notification> notification = CreateSimpleNotification();
-  notification->set_type(NotificationType::NOTIFICATION_TYPE_SIMPLE);
-  // Test in a case where left_content_ does not have views other than
-  // message_view_.
-  // Without doing this, inappropriate fix such as
-  // message_view_->GetPreferredSize() returning gfx::Size() can pass.
-  notification->set_title(std::u16string());
-  notification->set_message(
-      u"consectetur adipiscing elit, sed do eiusmod tempor incididunt ut "
-      u"labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
-      u"exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.");
-
-  UpdateNotificationViews(*notification);
-  EXPECT_FALSE(notification_view()->expanded_);
-  const int collapsed_height = notification_view()->message_view_->height();
-  const int collapsed_preferred_height =
-      notification_view()->GetPreferredSize().height();
-  EXPECT_LT(0, collapsed_height);
-  EXPECT_LT(0, collapsed_preferred_height);
-
-  notification_view()->ToggleExpanded();
-  EXPECT_TRUE(notification_view()->expanded_);
-  EXPECT_LT(collapsed_height, notification_view()->message_view_->height());
-  EXPECT_LT(collapsed_preferred_height,
-            notification_view()->GetPreferredSize().height());
-
-  notification_view()->ToggleExpanded();
-  EXPECT_FALSE(notification_view()->expanded_);
-  EXPECT_EQ(collapsed_height, notification_view()->message_view_->height());
-  EXPECT_EQ(collapsed_preferred_height,
-            notification_view()->GetPreferredSize().height());
-
+TEST_F(NotificationViewBaseTest, ManuallyExpandedOrCollapsed) {
   // Test |manually_expanded_or_collapsed| being set when the toggle is done by
   // user interaction.
   EXPECT_FALSE(notification_view()->IsManuallyExpandedOrCollapsed());
@@ -1043,56 +975,6 @@ TEST_F(NotificationViewBaseTest, InlineSettings) {
 #endif
 }
 
-TEST_F(NotificationViewBaseTest, InlineSettingsInkDropAnimation) {
-  ui::ScopedAnimationDurationScaleMode zero_duration_scope(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
-  std::unique_ptr<Notification> notification = CreateSimpleNotification();
-  notification->set_type(NOTIFICATION_TYPE_SIMPLE);
-  UpdateNotificationViews(*notification);
-
-  ui::test::EventGenerator generator(
-      GetRootWindow(notification_view()->GetWidget()));
-
-  // Inline settings will be shown by clicking settings button.
-  EXPECT_FALSE(notification_view()->settings_row_->GetVisible());
-  gfx::Point settings_cursor_location =
-      notification_view()
-          ->control_buttons_view_->settings_button()
-          ->GetBoundsInScreen()
-          .CenterPoint();
-  generator.MoveMouseTo(settings_cursor_location);
-  generator.ClickLeftButton();
-  EXPECT_TRUE(notification_view()->settings_row_->GetVisible());
-
-  views::InkDrop::Get(notification_view())->GetInkDrop()->AddObserver(this);
-
-  // Resize the widget by 1px to simulate the expand animation.
-  gfx::Rect size = notification_view()->GetWidget()->GetWindowBoundsInScreen();
-  size.Inset(0, 0, 0, 1);
-  notification_view()->GetWidget()->SetBounds(size);
-
-  views::InkDrop::Get(notification_view())->GetInkDrop()->RemoveObserver(this);
-
-  // The ink drop animation should still be running.
-  EXPECT_FALSE(ink_drop_stopped());
-}
-
-TEST_F(NotificationViewBaseTest, PreferredSize) {
-  std::unique_ptr<Notification> notification = CreateSimpleNotification();
-  notification->set_type(NotificationType::NOTIFICATION_TYPE_IMAGE);
-  UpdateNotificationViews(*notification);
-
-  // Collapsed preferred width is determined by the header view.
-  notification_view()->SetExpanded(false);
-  EXPECT_EQ(kNotificationWidth,
-            notification_view()->GetPreferredSize().width());
-
-  // Ensure expanded preferred width is not extended by the image view.
-  notification_view()->SetExpanded(true);
-  EXPECT_EQ(kNotificationWidth,
-            notification_view()->GetPreferredSize().width());
-}
-
 TEST_F(NotificationViewBaseTest, TestClick) {
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   delegate_->set_expecting_click(true);
@@ -1155,21 +1037,6 @@ TEST_F(NotificationViewBaseTest, TestDeleteOnToggleExpanded) {
   // The view can be deleted by PreferredSizeChanged(). https://crbug.com/918933
   set_delete_on_preferred_size_changed(true);
   views::test::ButtonTestApi(notification_view()->header_row_)
-      .NotifyClick(DummyEvent());
-}
-
-TEST_F(NotificationViewBaseTest, TestDeleteOnDisableNotification) {
-  std::unique_ptr<Notification> notification = CreateSimpleNotification();
-  notification->set_type(NOTIFICATION_TYPE_SIMPLE);
-  UpdateNotificationViews(*notification);
-
-  notification_view()->OnSettingsButtonPressed(DummyEvent());
-  notification_view()->block_all_button_->NotifyClick(DummyEvent());
-
-  // After DisableNotification() is called, |notification_view| can be deleted.
-  // https://crbug.com/924922
-  set_delete_on_notification_removed(true);
-  views::test::ButtonTestApi(notification_view()->settings_done_button_)
       .NotifyClick(DummyEvent());
 }
 
@@ -1285,25 +1152,6 @@ TEST_F(NotificationViewBaseTest, ShowTimestamp) {
   UpdateNotificationViews(*notification);
   EXPECT_FALSE(notification_view()
                    ->header_row_->timestamp_view_for_testing()
-                   ->GetVisible());
-}
-
-TEST_F(NotificationViewBaseTest, UpdateType) {
-  // Start with a progress notification.
-  std::unique_ptr<Notification> notification = CreateSimpleNotification();
-  notification->set_type(NOTIFICATION_TYPE_PROGRESS);
-  notification->set_progress(50);
-  UpdateNotificationViews(*notification);
-
-  EXPECT_TRUE(notification_view()
-                  ->header_row_->summary_text_for_testing()
-                  ->GetVisible());
-
-  // Update notification to be a simple notification.
-  notification->set_type(NOTIFICATION_TYPE_SIMPLE);
-  UpdateNotificationViews(*notification);
-  EXPECT_FALSE(notification_view()
-                   ->header_row_->summary_text_for_testing()
                    ->GetVisible());
 }
 

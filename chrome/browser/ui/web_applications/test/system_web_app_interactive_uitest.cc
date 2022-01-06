@@ -211,7 +211,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppLinkCaptureBrowserTest,
   observer.StartWatchingNewWebContents();
 
   TestRenderViewContextMenu menu(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      *browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
       context_menu_params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppLinkCaptureBrowserTest,
   observer.StartWatchingNewWebContents();
 
   TestRenderViewContextMenu menu(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      *browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
       context_menu_params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW, 0);
@@ -545,7 +545,7 @@ class SystemWebAppManagerMultiDesktopLaunchBrowserTest
     auto launch_params = apps::AppLaunchParams(
         app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
         WindowOpenDisposition::CURRENT_TAB,
-        apps::mojom::AppLaunchSource::kSourceAppLauncher);
+        apps::mojom::LaunchSource::kFromAppListGrid);
 
     content::TestNavigationObserver navigation_observer(
         installation_->GetAppUrl());
@@ -660,7 +660,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMultiDesktopLaunchBrowserTest,
         GetAppId(profile2),
         apps::mojom::LaunchContainer::kLaunchContainerWindow,
         WindowOpenDisposition::CURRENT_TAB,
-        apps::mojom::AppLaunchSource::kSourceAppLauncher);
+        apps::mojom::LaunchSource::kFromAppListGrid);
     content::WebContents* web_contents =
         apps::AppServiceProxyFactory::GetForProfile(profile2)
             ->BrowserAppLauncher()
@@ -673,7 +673,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMultiDesktopLaunchBrowserTest,
         GetAppId(profile1),
         apps::mojom::LaunchContainer::kLaunchContainerWindow,
         WindowOpenDisposition::CURRENT_TAB,
-        apps::mojom::AppLaunchSource::kSourceAppLauncher);
+        apps::mojom::LaunchSource::kFromAppListGrid);
     content::WebContents* web_contents =
         apps::AppServiceProxyFactory::GetForProfile(profile1)
             ->BrowserAppLauncher()

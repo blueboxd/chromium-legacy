@@ -23,10 +23,9 @@ TestStatsReportDictionary::~TestStatsReportDictionary() {
 
 void TestStatsReportDictionary::ForEach(
     std::function<void(const TestStatsDictionary&)> iteration) {
-  for (base::DictionaryValue::Iterator it(*report_); !it.IsAtEnd();
-       it.Advance()) {
+  for (auto it : report_->DictItems()) {
     const base::DictionaryValue* it_value;
-    CHECK(it.value().GetAsDictionary(&it_value));
+    CHECK(it.second.GetAsDictionary(&it_value));
     iteration(TestStatsDictionary(this, it_value));
   }
 }
@@ -168,11 +167,11 @@ bool TestStatsDictionary::GetSequenceBoolean(
   if (!stats_->GetList(key, &list))
     return false;
   std::vector<bool> sequence;
-  bool element;
-  for (size_t i = 0; i < list->GetList().size(); ++i) {
-    if (!list->GetBoolean(i, &element))
+  base::Value::ConstListView args_list = list->GetList();
+  for (const base::Value& arg : args_list) {
+    if (!arg.is_bool())
       return false;
-    sequence.push_back(element);
+    sequence.push_back(arg.GetBool());
   }
   *out = std::move(sequence);
   return true;

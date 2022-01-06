@@ -8,13 +8,13 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/simple_test_clock.h"
-#include "content/browser/attribution_reporting/conversion_manager.h"
-#include "content/browser/attribution_reporting/conversion_test_utils.h"
+#include "content/browser/attribution_reporting/attribution_manager.h"
+#include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/sent_report_info.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -37,8 +37,8 @@ AttributionReport GetReport(base::Time conversion_time,
                             AttributionReport::Id conversion_id) {
   // Construct impressions with a null impression time as it is not used for
   // reporting.
-  return AttributionReport(ImpressionBuilder(base::Time()).Build(),
-                           /*conversion_data=*/0, conversion_time, report_time,
+  return AttributionReport(SourceBuilder(base::Time()).Build(),
+                           /*trigger_data=*/0, conversion_time, report_time,
                            /*priority=*/0, conversion_id);
 }
 
@@ -178,17 +178,18 @@ TEST_F(AttributionReporterImplTest,
   EXPECT_EQ(1u, sender_->num_reports_sent());
 }
 
-TEST_F(AttributionReporterImplTest, DuplicateReportScheduled_Ignored) {
+TEST_F(AttributionReporterImplTest, DuplicateReportScheduled_Sent) {
   reporter_->AddReportsToQueue(
       {GetReport(clock().Now(), clock().Now() + base::Minutes(1),
                  AttributionReport::Id(1))});
 
-  // A duplicate report should not be scheduled.
+  // A duplicate report should be scheduled, as it is up to the manager to
+  // perform deduplication.
   reporter_->AddReportsToQueue(
       {GetReport(clock().Now(), clock().Now() + base::Minutes(1),
                  AttributionReport::Id(1))});
   task_environment_.FastForwardBy(base::Minutes(1));
-  EXPECT_EQ(1u, sender_->num_reports_sent());
+  EXPECT_EQ(2u, sender_->num_reports_sent());
 }
 
 TEST_F(AttributionReporterImplTest,
@@ -247,7 +248,7 @@ TEST_F(AttributionReporterImplTest, ManyReportsAddedSeparately_SentInOrder) {
 
 TEST_F(AttributionReporterImplTest,
        EmbedderDisallowsConversions_ReportNotSent) {
-  ConversionDisallowingContentBrowserClient disallowed_browser_client;
+  AttributionDisallowingContentBrowserClient disallowed_browser_client;
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&disallowed_browser_client);
   reporter_->AddReportsToQueue(
@@ -264,7 +265,7 @@ TEST_F(AttributionReporterImplTest,
 }
 
 TEST_F(AttributionReporterImplTest, EmbedderDisallowedContext_ReportNotSent) {
-  ConfigurableConversionTestBrowserClient browser_client;
+  ConfigurableAttributionTestBrowserClient browser_client;
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&browser_client);
 
@@ -292,7 +293,7 @@ TEST_F(AttributionReporterImplTest, EmbedderDisallowedContext_ReportNotSent) {
 
   for (const auto& test_case : kTestCases) {
     auto impression =
-        ImpressionBuilder(base::Time())
+        SourceBuilder(base::Time())
             .SetImpressionOrigin(
                 url::Origin::Create(test_case.impression_origin))
             .SetConversionOrigin(
@@ -301,7 +302,7 @@ TEST_F(AttributionReporterImplTest, EmbedderDisallowedContext_ReportNotSent) {
             .Build();
     std::vector<AttributionReport> reports{
         AttributionReport(std::move(impression),
-                          /*conversion_data=*/0, clock().Now(), clock().Now(),
+                          /*trigger_data=*/0, clock().Now(), clock().Now(),
                           /*priority=*/0, AttributionReport::Id(1))};
     reporter_->AddReportsToQueue(std::move(reports));
 

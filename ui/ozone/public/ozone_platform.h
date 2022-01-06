@@ -14,7 +14,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "ui/gfx/buffer_types.h"
@@ -133,10 +133,6 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // Linux only: determines if Skia can fall back to the X11 output device.
     bool skia_can_fall_back_to_x11 = false;
 
-    // Wayland only: determines if the client must ignore the screen bounds when
-    // calculating bounds of menu windows.
-    bool ignore_screen_bounds_for_menus = false;
-
     // Wayland only: determines whether BufferQueue needs a background image to
     // be stacked below an AcceleratedWidget to make a widget opaque.
     bool needs_background_image = false;
@@ -196,6 +192,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // must have the appropriate logic in its GetPlatformRuntimeProperties()
     // method.
     static SupportsSsdForTest override_supports_ssd_for_test;
+
+    // Wayland only: determines whether solid color overlays can be delegated
+    // without a backing image via a wayland protocol.
+    bool supports_non_backed_solid_color_buffers = false;
   };
 
   // Corresponds to chrome_browser_main_extra_parts.h.
@@ -298,7 +298,8 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   virtual const PlatformProperties& GetPlatformProperties();
 
   // Returns runtime properties of the current platform implementation available
-  // after InitializeForUI() runs.
+  // after either InitializeUI() or InitializeGPU() runs. Runtime properties for
+  // UI and GPU may be different depending on availability of platform objects.
   virtual const PlatformRuntimeProperties& GetPlatformRuntimeProperties();
 
   // Ozone platform implementations may also choose to expose mojo interfaces to

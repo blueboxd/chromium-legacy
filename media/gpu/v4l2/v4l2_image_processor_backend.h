@@ -18,8 +18,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "media/gpu/chromeos/image_processor_backend.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
@@ -52,6 +52,10 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessorBackend
       VideoRotation relative_rotation,
       ErrorCB error_cb,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
+
+  V4L2ImageProcessorBackend(const V4L2ImageProcessorBackend&) = delete;
+  V4L2ImageProcessorBackend& operator=(const V4L2ImageProcessorBackend&) =
+      delete;
 
   // ImageProcessor implementation.
   void Process(scoped_refptr<VideoFrame> input_frame,
@@ -191,8 +195,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessorBackend
   base::WeakPtrFactory<V4L2ImageProcessorBackend> backend_weak_this_factory_{
       this};
   base::WeakPtrFactory<V4L2ImageProcessorBackend> poll_weak_this_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(V4L2ImageProcessorBackend);
 };
 
 }  // namespace media

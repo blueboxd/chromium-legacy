@@ -379,11 +379,6 @@ class ExtensionPrefs : public KeyedService {
   void ClearInapplicableDisableReasonsForComponentExtension(
       const std::string& component_extension_id);
 
-  // Gets the key of blocklist acknowledged pref.
-  // TODO(crbug.com/1193695): Remove this method once kPrefBlocklistAcknowledged
-  // is removed.
-  base::StringPiece GetPrefBlocklistAcknowledgedKey();
-
   // Returns the version string for the currently installed extension, or
   // the empty string if not found.
   std::string GetVersionString(const std::string& extension_id) const;
@@ -585,10 +580,6 @@ class ExtensionPrefs : public KeyedService {
 
   // Returns true if the extension was installed from the Chrome Web Store.
   bool IsFromWebStore(const std::string& extension_id) const;
-
-  // Returns true if the extension was installed from an App generated from a
-  // bookmark.
-  bool IsFromBookmark(const std::string& extension_id) const;
 
   // Returns true if the extension was installed as a default app.
   bool WasInstalledByDefault(const std::string& extension_id) const;

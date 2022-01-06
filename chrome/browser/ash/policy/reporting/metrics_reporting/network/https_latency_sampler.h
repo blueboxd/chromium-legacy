@@ -5,32 +5,28 @@
 #ifndef CHROME_BROWSER_ASH_POLICY_REPORTING_METRICS_REPORTING_NETWORK_HTTPS_LATENCY_SAMPLER_H_
 #define CHROME_BROWSER_ASH_POLICY_REPORTING_METRICS_REPORTING_NETWORK_HTTPS_LATENCY_SAMPLER_H_
 
+#include "ash/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "base/callback.h"
 #include "base/containers/queue.h"
-#include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "components/reporting/metrics/sampler.h"
 
-namespace chromeos {
+namespace ash {
 namespace network_diagnostics {
-
 class HttpsLatencyRoutine;
-
-}  // namespace network_diagnostics
-}  // namespace chromeos
+}
+}  // namespace ash
 
 namespace reporting {
 
 using HttpsLatencyRoutineGetter = base::RepeatingCallback<
-    std::unique_ptr<chromeos::network_diagnostics::HttpsLatencyRoutine>()>;
+    std::unique_ptr<ash::network_diagnostics::HttpsLatencyRoutine>()>;
 
 // `HttpsLatencySampler` collects a sample of the current network latency by
 // invoking the `HttpsLatencyRoutine` and parsing its results, no info is
 // collected by this sampler only telemetry is collected.
 class HttpsLatencySampler : public Sampler {
-  using HttpsLatencyRoutine =
-      chromeos::network_diagnostics::HttpsLatencyRoutine;
-  using RoutineResultPtr =
-      chromeos::network_diagnostics::mojom::RoutineResultPtr;
+  using HttpsLatencyRoutine = ::ash::network_diagnostics::HttpsLatencyRoutine;
+  using RoutineResultPtr = ::ash::network_diagnostics::mojom::RoutineResultPtr;
 
  public:
   HttpsLatencySampler();
@@ -40,7 +36,7 @@ class HttpsLatencySampler : public Sampler {
 
   ~HttpsLatencySampler() override;
 
-  void CollectTelemetry(TelemetryCallback callback) override;
+  void Collect(MetricCallback callback) override;
 
   void SetHttpsLatencyRoutineGetterForTest(
       HttpsLatencyRoutineGetter https_latency_routine_getter);
@@ -52,7 +48,7 @@ class HttpsLatencySampler : public Sampler {
 
   HttpsLatencyRoutineGetter https_latency_routine_getter_;
   std::unique_ptr<HttpsLatencyRoutine> https_latency_routine_;
-  base::queue<TelemetryCallback> telemetry_callbacks_;
+  base::queue<MetricCallback> metric_callbacks_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

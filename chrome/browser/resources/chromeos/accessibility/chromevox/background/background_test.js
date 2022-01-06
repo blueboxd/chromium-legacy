@@ -119,6 +119,19 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     `;
   }
 
+  get comboBoxDoc() {
+    return `
+      <div id="combo-box-label">Choose an item</div>
+      <div aria-labelledby="combo-box-label" role="combobox">
+        <input type="text" aria-controls="combo-box-list-box">
+        <ul role="listbox" id="combo-box-list-box" hidden>
+          <li role="option" tabindex="-1">Item 1</li>
+          <li role="option" tabindex="-1">Item 2</li>
+        </ul>
+      </div>
+    `;
+  }
+
   /**
    * Fires an onCustomSpokenFeedbackToggled event with enabled state of
    * |enabled|.
@@ -778,6 +791,14 @@ TEST_F('ChromeVoxBackgroundTest', 'EditText', function() {
   });
 });
 
+TEST_F('ChromeVoxBackgroundTest', 'ComboBox', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.comboBoxDoc, function() {
+    mockFeedback.expectSpeech('Edit text', 'Choose an item', 'Combo box')
+        .replay();
+  });
+});
+
 TEST_F('ChromeVoxBackgroundTest', 'BackwardForwardSync', function() {
   const mockFeedback = this.createMockFeedback();
   const site = `
@@ -1415,12 +1436,12 @@ TEST_F_WITH_PREAMBLE(
                 .expectSpeechWithQueueMode('go', QueueMode.CATEGORY_FLUSH)
 
                 .call(div.doDefault.bind(div))
-                .expectSpeechWithQueueMode('e', QueueMode.FLUSH)
                 .expectSpeechWithQueueMode('queued', QueueMode.QUEUE)
+                .expectSpeechWithQueueMode('e', QueueMode.CATEGORY_FLUSH)
 
                 .call(div.doDefault.bind(div))
-                .expectSpeechWithQueueMode('s', QueueMode.FLUSH)
                 .expectSpeechWithQueueMode('interrupted', QueueMode.QUEUE)
+                .expectSpeechWithQueueMode('s', QueueMode.CATEGORY_FLUSH)
 
                 .replay();
           });
@@ -2069,6 +2090,68 @@ TEST_F('ChromeVoxBackgroundTest', 'SimilarItemNavigation', function() {
   });
 });
 
+TEST_F('ChromeVoxBackgroundTest', 'InvalidItemNavigation', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <h3><a href="#a">inner</a></h3>
+    <p aria-invalid="spelling">some txet</p>
+    <button>button A</button>
+    <p aria-invalid="true">some other reason</p>
+    <p>no error text 1</P>
+    <p aria-invalid=false>no error text 2</P>
+    <p aria-invalid="grammar">this are a text</p>
+    <p aria-invalid="unknown">error is this</p>
+    <a href="#b">outer1</a>
+    <h3>outer2</h3>
+  `;
+
+  this.runWithLoadedTree(site, function(root) {
+    assertEquals(
+        RoleType.LINK, ChromeVoxState.instance.currentRange.start.node.role);
+    assertEquals('inner', ChromeVoxState.instance.currentRange.start.node.name);
+    mockFeedback.call(doCmd('nextInvalidItem'))
+        .expectSpeech('some txet', 'misspelled')
+        .call(doCmd('nextInvalidItem'))
+        .expectSpeech('some other reason')
+        .call(doCmd('nextInvalidItem'))
+        .expectSpeech('this are a text', 'grammar error')
+        .call(doCmd('nextInvalidItem'))
+        .expectSpeech('error is this')
+        // Ensure wrap.
+        .call(doCmd('nextInvalidItem'))
+        .expectSpeech('some txet')
+        // Wrap backward.
+        .call(doCmd('previousInvalidItem'))
+        .expectSpeech('error is this')
+        .call(doCmd('previousInvalidItem'))
+        .expectSpeech('this are a text', 'grammar error');
+
+    mockFeedback.replay();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'InvalidItemNavigationNoItem', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <h3><a href="#a">inner</a></h3>
+    <p>some text</p>
+    <button>some other text</button>
+    <a href="#b">outer1</a>
+    <h3>outer2</h3>
+  `;
+  this.runWithLoadedTree(site, function(root) {
+    assertEquals(
+        RoleType.LINK, ChromeVoxState.instance.currentRange.start.node.role);
+    assertEquals('inner', ChromeVoxState.instance.currentRange.start.node.name);
+    mockFeedback.call(doCmd('nextInvalidItem'))
+        .expectSpeech('No invalid item')
+        .call(doCmd('previousInvalidItem'))
+        .expectSpeech('No invalid item');
+
+    mockFeedback.replay();
+  });
+});
+
 TEST_F('ChromeVoxBackgroundTest', 'TableWithAriaRowCol', function() {
   const mockFeedback = this.createMockFeedback();
   const site = `
@@ -2446,6 +2529,29 @@ TEST_F('ChromeVoxBackgroundTest', 'MenuItemRadio', function() {
         .replay();
   });
 });
+
+TEST_F(
+    'ChromeVoxBackgroundTest', 'ButtonNavigationIgnoresRadioButtons',
+    function() {
+      const mockFeedback = this.createMockFeedback();
+      const site = `
+        <button>Action 1</button>
+        <fieldset>
+          <p><label> <input type=radio>Radio 1</label></p>
+          <p><label> <input type=radio>Radio 2</label></p>
+        </fieldset>
+        <button>Action 2</button>
+      `;
+
+      this.runWithLoadedTree(site, function(root) {
+        mockFeedback.call(doCmd('nextButton'))
+            .expectSpeech('Action 1', 'Button')
+            .call(doCmd('nextButton'))
+            .expectSpeech('Action 2', 'Button');
+
+        mockFeedback.replay();
+      });
+    });
 
 TEST_F(
     'ChromeVoxBackgroundTest', 'FocusableNamedDivIsNotContainer', function() {
@@ -3088,6 +3194,7 @@ TEST_F('ChromeVoxBackgroundTest', 'AriaLeaves', function() {
 });
 
 TEST_F('ChromeVoxBackgroundTest', 'MarkedContent', function() {
+  this.resetContextualOutput();
   const mockFeedback = this.createMockFeedback();
   const site = `
     <p>Start</p>
@@ -3107,35 +3214,36 @@ TEST_F('ChromeVoxBackgroundTest', 'MarkedContent', function() {
         .call(doCmd('nextObject'))
         .expectSpeech('This is ')
         .call(doCmd('nextObject'))
-        .expectSpeech('my', 'Marked content')
-        .expectBraille('my Marked content')
+        .expectSpeech('Marked content', 'my', 'Marked content end')
+        .expectBraille('Marked content my Marked content end')
         .call(doCmd('nextObject'))
-        .expectSpeech(' text.', 'Exited Marked content.')
-        .expectBraille(' text. Exited Marked content.')
-        .call(doCmd('nextObject'))
-        .expectSpeech('This is ')
-        .call(doCmd('nextObject'))
-        .expectSpeech('your', 'Comment')
-        .expectBraille('your Comment')
-        .call(doCmd('nextObject'))
-        .expectSpeech(' text.', 'Exited Comment.')
-        .expectBraille(' text. Exited Comment.')
+        .expectSpeech(' text.')
+        .expectBraille(' text.')
         .call(doCmd('nextObject'))
         .expectSpeech('This is ')
         .call(doCmd('nextObject'))
-        .expectSpeech('their', 'Insert', 'Suggest')
-        .expectBraille('their Insert Suggest')
+        .expectSpeech('Comment', 'your', 'Comment end')
+        .expectBraille('Comment your Comment end')
         .call(doCmd('nextObject'))
-        .expectSpeech(' text.', 'Exited Suggest.', 'Exited Insert.')
-        .expectBraille(' text. Exited Suggest. Exited Insert.')
+        .expectSpeech(' text.')
+        .expectBraille(' text.')
         .call(doCmd('nextObject'))
         .expectSpeech('This is ')
         .call(doCmd('nextObject'))
-        .expectSpeech(`everyone's`, 'Delete', 'Suggest')
-        .expectBraille(`everyone's Delete Suggest`)
+        .expectSpeech('Suggest', 'Insert', 'their', 'Insert end', 'Suggest end')
+        .expectBraille('Suggest Insert their Insert end Suggest end')
         .call(doCmd('nextObject'))
-        .expectSpeech(' text.', 'Exited Suggest.', 'Exited Delete.')
-        .expectBraille(' text. Exited Suggest. Exited Delete.')
+        .expectSpeech(' text.')
+        .expectBraille(' text.')
+        .call(doCmd('nextObject'))
+        .expectSpeech('This is ')
+        .call(doCmd('nextObject'))
+        .expectSpeech(
+            'Suggest', 'Delete', `everyone's`, 'Delete end', 'Suggest end')
+        .expectBraille(`Suggest Delete everyone's Delete end Suggest end`)
+        .call(doCmd('nextObject'))
+        .expectSpeech(' text.')
+        .expectBraille(' text.')
         .replay();
   });
 });
@@ -3621,6 +3729,113 @@ TEST_F('ChromeVoxBackgroundTest', 'AllowIframeToBeFocused', function(root) {
     mockFeedback.expectSpeech('hello')
         .call(button.doDefault.bind(button))
         .expectSpeech('test title')
+        .replay();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'NewWindowWebSpeech', function() {
+  this.newCallback(async () => {
+    const speech = [];
+    let onSpeech;
+    ChromeVox.tts.speak = (textString) => {
+      speech.push(textString);
+      if (onSpeech) {
+        onSpeech(textString);
+      }
+    };
+
+    chrome.runtime.openOptionsPage();
+
+    await new Promise(resolve => {
+      onSpeech = (textString) => {
+        if (textString === 'ChromeVox Options') {
+          resolve();
+        }
+      };
+    });
+
+    press(KeyCode.TAB)();
+
+    await new Promise(resolve => {
+      onSpeech = resolve;
+    });
+
+    // Check to ensure there are no duplicate announcements.
+    assertEquals(
+        speech.indexOf('ChromeVox Options'),
+        speech.lastIndexOf('ChromeVox Options'));
+
+    // Ensure there are no announcements about the Tab role.
+    assertTrue(speech.every(text => {
+      return text.indexOf('Tab') !== 0;
+    }));
+  })();
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'MultipleListBoxes', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <div role="listbox" aria-expanded="false" aria-label="Configuration 1">
+      <div role="presentation">
+        <div role="presentation">
+          <div aria-selected="true" role="option" tabindex="0">
+            <span>Listbox item 1</span>
+          </div>
+          <div aria-selected="false" role="option" tabindex="-1">
+            <span>Listbox item 2</span>
+          </div>
+          <div aria-selected="false" role="option" tabindex="-2">
+            <span>Listbox item 3</span>
+          </div>
+        </div>
+        <div role="presentation"></div>
+      </div>
+    </div>
+
+    <div role="listbox" aria-expanded="false" aria-label="Configuration 2">
+      <div role="presentation">
+        <div role="presentation">
+          <div aria-selected="false" role="option" tabindex="-1">
+            <span>Listbox item 1</span>
+          </div>
+          <div aria-selected="true" role="option" tabindex="0">
+            <span>Listbox item 2</span>
+          </div>
+          <div aria-selected="false" role="option" tabindex="-2">
+            <span>Listbox item 3</span>
+          </div>
+        </div>
+        <div role="presentation"></div>
+      </div>
+    </div>
+
+    <div role="listbox" aria-expanded="false" aria-label="Configuration 3">
+      <div role="presentation">
+        <div role="presentation">
+          <div aria-selected="false" role="option" tabindex="-1">
+            <span>Listbox item 1</span>
+          </div>
+          <div aria-selected="false" role="option" tabindex="-2">
+            <span>Listbox item 2</span>
+          </div>
+          <div aria-selected="true" role="option" tabindex="0">
+            <span>Listbox item 3</span>
+          </div>
+        </div>
+        <div role="presentation"></div>
+      </div>
+    </div>
+  `;
+  this.runWithLoadedTree(site, function(root) {
+    mockFeedback
+        .expectSpeech(
+            'Listbox item 1', ' 1 of 3 ', 'Configuration 1', 'List box')
+        .call(press(KeyCode.TAB))
+        .expectSpeech(
+            'Listbox item 2', ' 2 of 3 ', 'Configuration 2', 'List box')
+        .call(press(KeyCode.TAB))
+        .expectSpeech(
+            'Listbox item 3', ' 3 of 3 ', 'Configuration 3', 'List box')
         .replay();
   });
 });

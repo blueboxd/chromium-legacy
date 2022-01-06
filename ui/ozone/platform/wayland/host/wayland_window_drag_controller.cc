@@ -102,7 +102,7 @@ bool WaylandWindowDragController::StartDragSession() {
   if (state_ != State::kIdle)
     return true;
 
-  origin_window_ = window_manager_->GetCurrentFocusedWindow();
+  origin_window_ = window_manager_->GetCurrentPointerOrTouchFocusedWindow();
   if (!origin_window_) {
     LOG(ERROR) << "Failed to get origin window.";
     return false;
@@ -175,7 +175,8 @@ void WaylandWindowDragController::StopDragging() {
   // snapped into a tab strip. So switch to |kAttached| state, store the focused
   // window as the pointer grabber and ask to quit the nested loop.
   state_ = State::kAttaching;
-  pointer_grab_owner_ = window_manager_->GetCurrentFocusedWindow();
+  pointer_grab_owner_ =
+      window_manager_->GetCurrentPointerOrTouchFocusedWindow();
   DCHECK(pointer_grab_owner_);
   QuitLoop();
 }
@@ -391,11 +392,6 @@ void WaylandWindowDragController::OnToplevelWindowCreated(
 void WaylandWindowDragController::OnWindowRemoved(WaylandWindow* window) {
   DCHECK_NE(state_, State::kIdle);
   DCHECK_NE(window, dragged_window_);
-  VLOG(1) << "Window being destroyed. widget=" << window->GetWidget();
-
-  if (window == pointer_grab_owner_)
-    pointer_grab_owner_ = nullptr;
-
   if (window == origin_window_)
     origin_surface_ = origin_window_->TakeWaylandSurface();
 }
@@ -430,19 +426,18 @@ void WaylandWindowDragController::HandleMotionEvent(LocatedEvent* event) {
 // about to finish.
 void WaylandWindowDragController::HandleDropAndResetState() {
   DCHECK_EQ(state_, State::kDropped);
-  DCHECK(drag_source_);
+  DCHECK(pointer_grab_owner_);
   VLOG(1) << "Notifying drop. window=" << pointer_grab_owner_;
 
   if (*drag_source_ == DragSource::kMouse) {
-    if (pointer_grab_owner_) {
-      pointer_delegate_->OnPointerButtonEvent(
-          ET_MOUSE_RELEASED, EF_LEFT_MOUSE_BUTTON, pointer_grab_owner_);
-    }
+    EventFlags pointer_button = EF_LEFT_MOUSE_BUTTON;
+    pointer_delegate_->OnPointerButtonEvent(ET_MOUSE_RELEASED, pointer_button,
+                                            pointer_grab_owner_);
   } else {
+    base::TimeTicks timestamp = base::TimeTicks::Now();
     auto touch_pointer_ids = touch_delegate_->GetActiveTouchPointIds();
     DCHECK_EQ(touch_pointer_ids.size(), 1u);
-    touch_delegate_->OnTouchReleaseEvent(base::TimeTicks::Now(),
-                                         touch_pointer_ids[0]);
+    touch_delegate_->OnTouchReleaseEvent(timestamp, touch_pointer_ids[0]);
   }
 
   pointer_grab_owner_ = nullptr;

@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -472,7 +473,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Atomic.Compact.Cpp" units="ms"
-    expires_after="M100">
+    expires_after="2022-04-24">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -543,7 +544,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Cpp" units="ms"
-    expires_after="M100">
+    expires_after="2022-04-24">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -691,7 +692,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="V8.GC.Event.MainThread.Full.Incremental.Cpp" units="ms"
-    expires_after="M100">
+    expires_after="2022-05-01">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -701,7 +702,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="V8.GC.Event.MainThread.Full.Incremental.Mark.Cpp" units="ms"
-    expires_after="M100">
+    expires_after="2022-05-01">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -836,7 +837,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="V8.GCFinalizeMC.Evacuate" units="ms"
-    expires_after="2021-12-05">
+    expires_after="2022-08-09">
   <owner>mlippautz@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
@@ -1209,6 +1210,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="V8.SnapshotDecompress" units="microseconds"
+    expires_after="2022-02-01">
+  <owner>sky@chromium.org</owner>
+  <owner>yukishiino@chromium.org</owner>
+  <summary>
+    Total time spent decompressing snapshots. This is emitted immediately after
+    decompressing the snapshots (from Snapshot::Initialize()).
+
+    This histogram only records metrics on machines with high-resolution clocks.
+  </summary>
+</histogram>
+
 <histogram name="V8.StopTheWorld" units="ms" expires_after="2021-10-01">
   <obsolete>
     Removed 02/2021. Renamed to V8.GC.TimeToSafepoint due to switch to
@@ -1392,6 +1405,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     on each regular optimization of a function.
 
     This histogram only records metrics on machines with high-resolution clocks.
+  </summary>
+</histogram>
+
+<histogram name="V8.VirtualMemoryCageMode" enum="V8VirtualMemoryCageMode"
+    expires_after="2022-09-30">
+  <owner>saelo@chromium.org</owner>
+  <owner>ishell@chromium.org</owner>
+  <summary>
+    Mode of operation of V8's virtual memory cage.
+
+    V8's virtual memory cage can operate in two different modes: the normal,
+    secure mode, and an insecure fallback mode, used if a normal cage can, for
+    whatever reason, not be created. The insecure mode does not have the desired
+    security properties but allows V8 to otherwise operate normally. The mode of
+    the cage is recorded as enum value during the initialization of V8, after
+    the virtual memory cage has been initialized.
   </summary>
 </histogram>
 
@@ -1787,7 +1816,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="V8.WasmTierUpModuleMicroSeconds" units="microseconds"
-    expires_after="2022-02-06">
+    expires_after="2022-04-17">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>

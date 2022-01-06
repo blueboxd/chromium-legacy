@@ -53,7 +53,7 @@ public class AppLanguagePromoDialog {
     private Activity mActivity;
     private ModalDialogManager mModalDialogManager;
     private PropertyModel mAppLanguageModal;
-    private PropertyModel mConfirmModal;
+    private PropertyModel mLoadingModal;
     private LanguageItemAdapter mAdapter;
     private RestartAction mRestartAction;
     private long mStartTime;
@@ -112,7 +112,7 @@ public class AppLanguagePromoDialog {
                                 ModalDialogProperties.ButtonStyles.PRIMARY_FILLED_NEGATIVE_OUTLINE)
                         .build();
 
-        mConfirmModal = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+        mLoadingModal = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                                 .with(ModalDialogProperties.CONTROLLER,
                                         new SimpleModalDialogController(
                                                 mModalDialogManager, this::onDismissConfirmModal))
@@ -443,17 +443,22 @@ public class AppLanguagePromoDialog {
     private void startAppLanguageInstall() {
         View customView = LayoutInflater.from(mActivity).inflate(
                 R.layout.app_language_confirm_content, null, false);
-
         LanguageItem selectedLanguage = mAdapter.getSelectedLanguage();
         CharSequence messageText = mActivity.getResources().getString(
                 R.string.languages_srp_loading_text, selectedLanguage.getDisplayName());
         TextView messageView = customView.findViewById(R.id.message);
         messageView.setText(messageText);
 
-        mConfirmModal.set(ModalDialogProperties.CUSTOM_VIEW, customView);
-        mModalDialogManager.showDialog(mConfirmModal, ModalDialogManager.ModalDialogType.APP);
+        mLoadingModal.set(ModalDialogProperties.CUSTOM_VIEW, customView);
 
-        if (!AppLocaleUtils.isAppLanguagePref(selectedLanguage.getCode())) {
+        // Only show the modal if the selected language is not installed.
+        if (!LanguageSplitInstaller.getInstance().isLanguageSplitInstalled(
+                    selectedLanguage.getCode())) {
+            mModalDialogManager.showDialog(mLoadingModal, ModalDialogManager.ModalDialogType.APP);
+        }
+
+        boolean isSelectedCurrentUI = AppLocaleUtils.isAppLanguagePref(selectedLanguage.getCode());
+        if (!isSelectedCurrentUI) {
             // Only record isTopLanguage if the app language has changed.
             recordIsTopLanguage(mAdapter.isTopLanguageSelected());
         }
@@ -463,12 +468,16 @@ public class AppLanguagePromoDialog {
         // Create call back for after language split install completes.
         AppLocaleUtils.setAppLanguagePref(selectedLanguage.getCode(), (success) -> {
             if (success) {
-                mRestartAction.restart();
+                if (!isSelectedCurrentUI) {
+                    // Only restart if the new language is different than the current UI.
+                    mRestartAction.restart();
+                }
             } else {
+                // The loading language modal will always already be shown if a download fails.
                 CharSequence failedText = mActivity.getResources().getString(
                         R.string.languages_split_failed, selectedLanguage.getDisplayName());
                 messageView.setText(failedText);
-                mConfirmModal.set(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                mLoadingModal.set(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
                         mActivity.getText(R.string.ok).toString());
             }
         });

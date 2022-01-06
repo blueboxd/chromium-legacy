@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "url/gurl.h"
 
 namespace {
@@ -92,8 +93,7 @@ void SavedPasswordsPresenter::RemovePassword(const PasswordForm& form) {
 }
 
 bool SavedPasswordsPresenter::AddPassword(const PasswordForm& form) {
-  // TODO(crbug.com/1236053): Clarify URL requirements.
-  if (!form.url.is_valid() || !form.url.SchemeIsHTTPOrHTTPS())
+  if (!password_manager_util::IsValidPasswordURL(form.url))
     return false;
   if (form.password_value.empty())
     return false;
@@ -104,6 +104,14 @@ bool SavedPasswordsPresenter::AddPassword(const PasswordForm& form) {
   };
   if (base::ranges::any_of(passwords_, have_equal_username_and_realm))
     return false;
+
+  // Try to unblocklist in both stores anyway because if credentials don't
+  // exist, the unblocklist operation is no-op.
+  auto form_digest = PasswordFormDigest(PasswordForm::Scheme::kHtml,
+                                        form.signon_realm, form.url);
+  profile_store_->Unblocklist(form_digest, /*completion=*/base::DoNothing());
+  if (account_store_)
+    account_store_->Unblocklist(form_digest, /*completion=*/base::DoNothing());
 
   GetStoreFor(form).AddLogin(form);
   return true;

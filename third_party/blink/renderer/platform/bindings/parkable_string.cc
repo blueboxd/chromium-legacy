@@ -17,7 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/memory.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/typed_macros.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -565,6 +565,7 @@ String ParkableStringImpl::UnparkInternal() {
   auto& manager = ParkableStringManager::Instance();
 
   if (is_on_disk()) {
+    TRACE_EVENT("blink", "ParkableStringImpl::ReadFromDisk");
     base::ElapsedTimer disk_read_timer;
     DCHECK(has_on_disk_data());
     metadata_->compressed_ = std::make_unique<Vector<uint8_t>>();
@@ -579,6 +580,7 @@ String ParkableStringImpl::UnparkInternal() {
     manager.RecordDiskReadTime(elapsed);
   }
 
+  TRACE_EVENT("blink", "ParkableStringImpl::Decompress");
   base::StringPiece compressed_string_piece(
       reinterpret_cast<const char*>(metadata_->compressed_->data()),
       metadata_->compressed_->size() * sizeof(uint8_t));

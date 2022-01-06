@@ -44,10 +44,9 @@ NSAttributedString* SecondaryMessage(NSString* enterpriseName,
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
   };
 
-  NSString* message;
   NSAttributedString* attributedString;
-
   if (addLearnMoreLink) {
+    NSString* message;
     if (enterpriseName) {
       message = l10n_util::GetNSStringF(
           IDS_IOS_ENTERPRISE_MANAGED_SETTING_DESC_WITH_COMPANY_NAME,
@@ -65,40 +64,16 @@ NSAttributedString* SecondaryMessage(NSString* enterpriseName,
           [NSString stringWithUTF8String:kChromeUIManagementURL],
     };
 
-    // Add a space to have a distance with the leading icon.
     attributedString = AttributedStringFromStringWithLink(
-        [@" " stringByAppendingString:message], textAttributes, linkAttributes);
+        message, textAttributes, linkAttributes);
   } else {
-    message =
-        l10n_util::GetNSString(IDS_IOS_ENTERPRISE_MANAGED_BY_YOUR_ORGANIZATION);
-
-    // Add a space to have a distance with the leading icon.
     attributedString = [[NSAttributedString alloc]
-        initWithString:[@" " stringByAppendingString:message]
+        initWithString:l10n_util::GetNSString(
+                           IDS_IOS_ENTERPRISE_MANAGED_BY_YOUR_ORGANIZATION)
             attributes:textAttributes];
   }
 
-  // Create the leading enterprise icon.
-  NSTextAttachment* attachment = [[NSTextAttachment alloc] init];
-  attachment.image = [UIImage imageNamed:kEnterpriseIconName];
-  NSAttributedString* attachmentString =
-      [NSAttributedString attributedStringWithAttachment:attachment];
-
-  // Making sure the image is well centered vertically relative to the text,
-  // and also that the image scales with the text size.
-  CGFloat height = attributedString.size.height;
-  CGFloat capHeight =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote].capHeight;
-  CGFloat verticalOffset = roundf(capHeight - height) / 2.f;
-  attachment.bounds = CGRectMake(0, verticalOffset, height, height);
-
-  // Combine the icon and the text, and set them to the secondary label.
-  NSMutableAttributedString* fullAtrributedString =
-      [[NSMutableAttributedString alloc] initWithString:@""];
-  [fullAtrributedString appendAttributedString:attachmentString];
-  [fullAtrributedString appendAttributedString:attributedString];
-
-  return fullAtrributedString;
+  return attributedString;
 }
 
 }  // namespace
@@ -133,7 +108,8 @@ NSAttributedString* SecondaryMessage(NSString* enterpriseName,
   self = [super
       initWithPrimaryAttributedString:PrimaryMessage(message)
             secondaryAttributedString:SecondaryMessage(enterpriseName,
-                                                       addLearnMoreLink)];
+                                                       addLearnMoreLink)
+                                 icon:[UIImage imageNamed:kEnterpriseIconName]];
   if (self) {
     _isPresentingFromButton = isPresentingFromButton;
   }

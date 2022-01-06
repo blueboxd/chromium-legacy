@@ -47,7 +47,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/stl_util.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -144,16 +143,6 @@ struct PaintLayerStackingNode::HighestLayers {
     }
   }
 
-  static LayerType GetLayerType(const PaintLayer& layer) {
-    DCHECK(layer.GetLayoutObject().IsStacked());
-    const auto& style = layer.GetLayoutObject().StyleRef();
-    if (style.GetPosition() == EPosition::kAbsolute)
-      return kAbsolutePosition;
-    if (style.GetPosition() == EPosition::kFixed)
-      return kFixedPosition;
-    return kInFlowStacked;
-  }
-
   void Update(const PaintLayer& layer) {
     const auto& style = layer.GetLayoutObject().StyleRef();
     // We only need to consider zero or positive z-index stacked child for
@@ -164,25 +153,17 @@ struct PaintLayerStackingNode::HighestLayers {
     if (!layer.GetLayoutObject().IsStacked() || style.EffectiveZIndex() < 0)
       return;
 
-    UpdateOrderForSubtreeHighestLayers(GetLayerType(layer), &layer);
+    if (style.GetPosition() == EPosition::kAbsolute)
+      UpdateOrderForSubtreeHighestLayers(kAbsolutePosition, &layer);
+    else if (style.GetPosition() == EPosition::kFixed)
+      UpdateOrderForSubtreeHighestLayers(kFixedPosition, &layer);
+    else
+      UpdateOrderForSubtreeHighestLayers(kInFlowStacked, &layer);
   }
 
-  void Merge(HighestLayers& child, const PaintLayer& current_layer) {
-    const auto& object = current_layer.GetLayoutObject();
+  void Merge(HighestLayers& child) {
     for (auto layer_type : child.highest_layers_order) {
-      auto layer_type_for_propagation = layer_type;
-      if (object.IsStacked()) {
-        if ((layer_type == kAbsolutePosition &&
-             object.CanContainAbsolutePositionObjects()) ||
-            (layer_type == kFixedPosition &&
-             object.CanContainFixedPositionObjects()) ||
-            layer_type == kInFlowStacked) {
-          // If the child is contained by the current layer, then use the
-          // current layer's type for propagation to ancestors.
-          layer_type_for_propagation = GetLayerType(current_layer);
-        }
-      }
-      UpdateOrderForSubtreeHighestLayers(layer_type_for_propagation,
+      UpdateOrderForSubtreeHighestLayers(layer_type,
                                          child.highest_layers[layer_type]);
     }
   }
@@ -255,16 +236,16 @@ void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer,
   bool has_overlay_overflow_controls =
       paint_layer.GetScrollableArea() &&
       paint_layer.GetScrollableArea()->HasOverlayOverflowControls();
-  if (has_overlay_overflow_controls || highest_layers)
+  if (has_overlay_overflow_controls)
     subtree_highest_layers.emplace();
 
   for (PaintLayer* child = paint_layer.FirstChild(); child;
        child = child->NextSibling()) {
-    CollectLayers(*child, base::OptionalOrNullptr(subtree_highest_layers));
+    CollectLayers(*child, subtree_highest_layers ? &*subtree_highest_layers
+                                                 : highest_layers);
   }
 
   if (has_overlay_overflow_controls) {
-    DCHECK(subtree_highest_layers);
     const PaintLayer* layer_to_paint_overlay_overflow_controls_after = nullptr;
     for (auto layer_type : subtree_highest_layers->highest_layers_order) {
       if (layer_type == HighestLayers::kFixedPosition &&
@@ -286,10 +267,10 @@ void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer,
     }
     paint_layer.SetNeedsReorderOverlayOverflowControls(
         !!layer_to_paint_overlay_overflow_controls_after);
-  }
 
-  if (highest_layers)
-    highest_layers->Merge(*subtree_highest_layers, paint_layer);
+    if (highest_layers)
+      highest_layers->Merge(*subtree_highest_layers);
+  }
 }
 
 bool PaintLayerStackingNode::StyleDidChange(PaintLayer& paint_layer,

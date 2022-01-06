@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
@@ -83,6 +83,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase,
             window->UserAgent(),
             window->GetFrame()->Loader().UserAgentMetadata(),
             nullptr /* web_worker_fetch_context */,
+            Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
             Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
             window->GetReferrerPolicy(), window->GetSecurityOrigin(),
             window->IsSecureContext(), window->GetHttpsState(),

@@ -11,6 +11,8 @@
 #include "third_party/blink/public/mojom/scroll/scroll_enums.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -172,8 +174,8 @@ TEST_F(TextFragmentAnchorMetricsTest, UMAMetricsCollectedSearchEngineReferrer) {
   // Set the referrer to a known search engine URL. This should cause metrics
   // to be reported for the SearchEngine variant of histograms.
   SimRequest::Params params;
-  params.referrer = "https://www.bing.com";
-
+  params.requestor_origin = WebSecurityOrigin::CreateFromString(
+      WebString::FromUTF8("https://www.bing.com"));
   SimRequest request("https://example.com/test.html#:~:text=test&text=cat",
                      "text/html", params);
   LoadURL("https://example.com/test.html#:~:text=test&text=cat");
@@ -354,7 +356,8 @@ TEST_F(TextFragmentAnchorMetricsTest, NoMatchFoundWithSearchEngineSource) {
   // Set the referrer to a known search engine URL. This should cause metrics
   // to be reported for the SearchEngine variant of histograms.
   SimRequest::Params params;
-  params.referrer = "https://www.bing.com";
+  params.requestor_origin = WebSecurityOrigin::CreateFromString(
+      WebString::FromUTF8("https://www.bing.com"));
   SimRequest request("https://example.com/test.html#:~:text=cat", "text/html",
                      params);
   LoadURL("https://example.com/test.html#:~:text=cat");
@@ -1000,7 +1003,7 @@ TEST_P(TextFragmentAnchorScrollMetricsTest, TimeToScrollToTop) {
   const int64_t time_to_scroll_to_top = 500;
   tick_clock.Advance(base::Milliseconds(time_to_scroll_to_top));
 
-  ASSERT_GT(GetDocument().View()->LayoutViewport()->GetScrollOffset().Height(),
+  ASSERT_GT(GetDocument().View()->LayoutViewport()->GetScrollOffset().height(),
             100);
 
   // Ensure scrolling but not to the top isn't counted.
@@ -1344,176 +1347,6 @@ TEST_P(TextFragmentRelatedMetricTest, ElementIdSuccessFailureCounts) {
   }
 }
 
-// Test counting occurrences of ~&~ in the URL fragment. Used for potentially
-// using ~&~ as a delimiter. Can be removed once the feature ships.
-TEST_P(TextFragmentRelatedMetricTest, TildeAmpersandTildeUseCounter) {
-  const int kUncounted = 0;
-  const int kCounted = 1;
-
-  Vector<std::pair<String, int>> test_cases = {{"", kUncounted},
-                                               {"#element", kUncounted},
-                                               {"#doesntExist", kUncounted},
-                                               {"#~&~element", kCounted},
-                                               {"#element~&~", kCounted},
-                                               {"#foo~&~bar", kCounted},
-                                               {"#foo~&~text=foo", kCounted}};
-
-  for (auto test_case : test_cases) {
-    String url = "https://example.com/test.html" + test_case.first;
-    SimRequest request(url, "text/html");
-    LoadURL(url);
-    request.Complete(R"HTML(
-      <!DOCTYPE html>
-      <p id="element">This is a test page</p>
-    )HTML");
-    // Render two frames to handle the async step added by the beforematch
-    // event.
-    Compositor().BeginFrame();
-    BeginEmptyFrame();
-
-    RunAsyncMatchingTasks();
-
-    bool is_use_counted =
-        GetDocument().IsUseCounted(WebFeature::kFragmentHasTildeAmpersandTilde);
-    if (test_case.second == kCounted) {
-      EXPECT_TRUE(is_use_counted)
-          << "Expected to count ~&~ but didn't in case: " << test_case.first;
-    } else {
-      EXPECT_FALSE(is_use_counted)
-          << "Expected not to count ~&~ but did in case: " << test_case.first;
-    }
-  }
-}
-
-// Test counting occurrences of ~@~ in the URL fragment. Used for potentially
-// using ~@~ as a delimiter. Can be removed once the feature ships.
-TEST_P(TextFragmentRelatedMetricTest, TildeAtTildeUseCounter) {
-  const int kUncounted = 0;
-  const int kCounted = 1;
-
-  Vector<std::pair<String, int>> test_cases = {{"", kUncounted},
-                                               {"#element", kUncounted},
-                                               {"#doesntExist", kUncounted},
-                                               {"#~@~element", kCounted},
-                                               {"#element~@~", kCounted},
-                                               {"#foo~@~bar", kCounted},
-                                               {"#foo~@~text=foo", kCounted}};
-
-  for (auto test_case : test_cases) {
-    String url = "https://example.com/test.html" + test_case.first;
-    SimRequest request(url, "text/html");
-    LoadURL(url);
-    request.Complete(R"HTML(
-      <!DOCTYPE html>
-      <p id="element">This is a test page</p>
-    )HTML");
-    // Render two frames to handle the async step added by the beforematch
-    // event.
-    Compositor().BeginFrame();
-    BeginEmptyFrame();
-
-    RunAsyncMatchingTasks();
-
-    bool is_use_counted =
-        GetDocument().IsUseCounted(WebFeature::kFragmentHasTildeAtTilde);
-    if (test_case.second == kCounted) {
-      EXPECT_TRUE(is_use_counted)
-          << "Expected to count ~@~ but didn't in case: " << test_case.first;
-    } else {
-      EXPECT_FALSE(is_use_counted)
-          << "Expected not to count ~@~ but did in case: " << test_case.first;
-    }
-  }
-}
-
-// Test counting occurrences of &delimiter? in the URL fragment. Used for
-// potentially using &delimiter? as a delimiter. Can be removed once the
-// feature ships.
-TEST_P(TextFragmentRelatedMetricTest, AmpersandDelimiterQuestionUseCounter) {
-  const int kUncounted = 0;
-  const int kCounted = 1;
-
-  Vector<std::pair<String, int>> test_cases = {
-      {"", kUncounted},
-      {"#element", kUncounted},
-      {"#doesntExist", kUncounted},
-      {"#&delimiter?element", kCounted},
-      {"#element&delimiter?", kCounted},
-      {"#foo&delimiter?bar", kCounted},
-      {"#foo&delimiter?text=foo", kCounted}};
-
-  for (auto test_case : test_cases) {
-    String url = "https://example.com/test.html" + test_case.first;
-    SimRequest request(url, "text/html");
-    LoadURL(url);
-    request.Complete(R"HTML(
-      <!DOCTYPE html>
-      <p id="element">This is a test page</p>
-    )HTML");
-    // Render two frames to handle the async step added by the beforematch
-    // event.
-    Compositor().BeginFrame();
-    BeginEmptyFrame();
-
-    RunAsyncMatchingTasks();
-
-    bool is_use_counted = GetDocument().IsUseCounted(
-        WebFeature::kFragmentHasAmpersandDelimiterQuestion);
-    if (test_case.second == kCounted) {
-      EXPECT_TRUE(is_use_counted)
-          << "Expected to count &delimiter? but didn't in case: "
-          << test_case.first;
-    } else {
-      EXPECT_FALSE(is_use_counted)
-          << "Expected not to count &delimiter? but did in case: "
-          << test_case.first;
-    }
-  }
-}
-
-// Test counting occurrences of non-directive :~: in the URL fragment. Used to
-// ensure :~: is web-compatible; can be removed once the feature ships.
-TEST_P(TextFragmentRelatedMetricTest, NewDelimiterUseCounter) {
-  const int kUncounted = 0;
-  const int kCounted = 1;
-
-  Vector<std::pair<String, int>> test_cases = {{"", kUncounted},
-                                               {"#element", kUncounted},
-                                               {"#doesntExist", kUncounted},
-                                               {"#:~:element", kCounted},
-                                               {"#element:~:", kCounted},
-                                               {"#foo:~:bar", kCounted},
-                                               {"#:~:utext=foo", kCounted},
-                                               {"#:~:text=foo", kUncounted},
-                                               {"#foo:~:text=foo", kUncounted}};
-
-  for (auto test_case : test_cases) {
-    String url = "https://example.com/test.html" + test_case.first;
-    SimRequest request(url, "text/html");
-    LoadURL(url);
-    request.Complete(R"HTML(
-      <!DOCTYPE html>
-      <p id="element">This is a test page</p>
-    )HTML");
-    // Render two frames to handle the async step added by the beforematch
-    // event.
-    Compositor().BeginFrame();
-    BeginEmptyFrame();
-
-    RunAsyncMatchingTasks();
-
-    bool is_use_counted =
-        GetDocument().IsUseCounted(WebFeature::kFragmentHasColonTildeColon);
-    if (test_case.second == kCounted) {
-      EXPECT_TRUE(is_use_counted)
-          << "Expected to count :~: but didn't in case: " << test_case.first;
-    } else {
-      EXPECT_FALSE(is_use_counted)
-          << "Expected not to count :~: but did in case: " << test_case.first;
-    }
-  }
-}
-
 // Test use counting the document.fragmentDirective API
 TEST_P(TextFragmentRelatedMetricTest, TextFragmentAPIUseCounter) {
   SimRequest request("https://example.com/test.html", "text/html");
@@ -1832,6 +1665,41 @@ TEST_F(TextFragmentAnchorMetricsTest,
     EXPECT_FALSE(GetDocument().IsUseCounted(
         WebFeature::kTextFragmentBlockedByForceLoadAtTop));
   }
+}
+
+TEST_F(TextFragmentAnchorMetricsTest, TextFragmentLinkOpenSource_GoogleDomain) {
+  // Set the referrer to a google domain page.
+  SimRequest::Params params;
+  params.requestor_origin = WebSecurityOrigin::CreateFromString(
+      WebString::FromUTF8("https://www.mail.google.com"));
+  SimRequest request("https://example.com/test.html#:~:text=test&text=cat",
+                     "text/html", params);
+  LoadURL("https://example.com/test.html#:~:text=test&text=cat");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p>This is a test page</p>
+    <p>With ambiguous test content</p>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  // Render two frames to handle the async step added by the beforematch event.
+  Compositor().BeginFrame();
+  BeginEmptyFrame();
+
+  // This should be recorded as coming from an unknown source (not search
+  // engine).
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.LinkOpenSource", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.LinkOpenSource", 0,
+                                       1);
 }
 
 }  // namespace blink

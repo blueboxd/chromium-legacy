@@ -32,14 +32,14 @@ void ExpandFixedBoundsInScroller(const TransformPaintPropertyNode* local,
 
   // First move the rect back to the min scroll offset, by accounting for the
   // current scroll offset.
-  rect_to_map.Rect().Move(FloatSize(node->Translation2D()));
+  rect_to_map.Rect().Offset(node->Translation2D());
 
   // Calculate the max scroll offset and expand by that amount. The max scroll
   // offset is the contents size minus one viewport's worth of space (i.e. the
   // container rect size).
-  gfx::Size contents_size = node->ScrollNode()->ContentsSize();
-  gfx::Size container_size = node->ScrollNode()->ContainerRect().size();
-  rect_to_map.Rect().Expand(FloatSize(contents_size - container_size));
+  gfx::Size expansion = node->ScrollNode()->ContentsRect().size() -
+                        node->ScrollNode()->ContainerRect().size();
+  rect_to_map.Rect().Outset(0, 0, expansion.width(), expansion.height());
 }
 
 }  // namespace
@@ -240,7 +240,7 @@ bool GeometryMapper::LocalToAncestorVisualRectInternal(
     // </div>
     // Either way, the element won't be renderable thus returning empty rect.
     success = true;
-    rect_to_map = FloatClipRect(FloatRect());
+    rect_to_map = FloatClipRect(gfx::RectF());
     return false;
   }
 
@@ -318,7 +318,7 @@ bool GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
         clip_behavior, inclusive_behavior, expand, success);
     if (!success || !intersects) {
       success = true;
-      mapping_rect = FloatClipRect(FloatRect());
+      mapping_rect = FloatClipRect(gfx::RectF());
       return false;
     }
 
@@ -441,7 +441,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
             has_animation, has_fixed, success);
     if (!success) {
       success = true;
-      return FloatClipRect(FloatRect());
+      return FloatClipRect(gfx::RectF());
     }
 
     // Don't apply this clip if it's transformed by any animating transform.

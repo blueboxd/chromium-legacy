@@ -28,6 +28,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "extensions/browser/blocklist_extension_prefs.h"
+#include "extensions/browser/blocklist_state.h"
+#include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/install_flag.h"
@@ -709,9 +711,8 @@ class ExtensionPrefsBitMapPrefValueClearedIfEqualsDefaultValue
     const base::DictionaryValue* ext =
         prefs()->GetExtensionPref(extension_->id());
     EXPECT_NE(nullptr, ext);
-    int out_value;
     // The pref value should be cleared.
-    EXPECT_FALSE(ext->GetInteger("disable_reasons", &out_value));
+    EXPECT_FALSE(ext->FindIntKey("disable_reasons"));
   }
 
  private:
@@ -731,15 +732,6 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
       dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
       webstore_extension_ = prefs_.AddExtensionWithManifestAndFlags(
           dictionary, ManifestLocation::kInternal, Extension::FROM_WEBSTORE);
-    }
-
-    {
-      base::DictionaryValue dictionary;
-      dictionary.SetString(manifest_keys::kName, "from_bookmark");
-      dictionary.SetString(manifest_keys::kVersion, "0.1");
-      dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
-      bookmark_extension_ = prefs_.AddExtensionWithManifestAndFlags(
-          dictionary, ManifestLocation::kInternal, Extension::FROM_BOOKMARK);
     }
 
     {
@@ -765,18 +757,12 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
 
   void Verify() override {
     EXPECT_TRUE(prefs()->IsFromWebStore(webstore_extension_->id()));
-    EXPECT_FALSE(prefs()->IsFromBookmark(webstore_extension_->id()));
-
-    EXPECT_TRUE(prefs()->IsFromBookmark(bookmark_extension_->id()));
-    EXPECT_FALSE(prefs()->IsFromWebStore(bookmark_extension_->id()));
-
     EXPECT_TRUE(prefs()->WasInstalledByDefault(default_extension_->id()));
     EXPECT_TRUE(prefs()->WasInstalledByOem(oem_extension_->id()));
   }
 
  private:
   scoped_refptr<Extension> webstore_extension_;
-  scoped_refptr<Extension> bookmark_extension_;
   scoped_refptr<Extension> default_extension_;
   scoped_refptr<Extension> oem_extension_;
 };
@@ -1140,6 +1126,13 @@ class ExtensionPrefsMigrateOldBlocklistPrefs : public ExtensionPrefsTest {
     // The pref is not migrated to the new pref yet.
     EXPECT_FALSE(prefs()->IsBlocklistedExtensionAcknowledged(extension_->id()));
 
+    prefs()->SetExtensionDisabled(
+        extension_->id(),
+        disable_reason::DEPRECATED_DISABLE_REMOTELY_FOR_MALWARE);
+    // The pref is not migrated to the new pref yet.
+    EXPECT_FALSE(blocklist_prefs::HasOmahaBlocklistState(
+        extension_->id(), BitMapBlocklistState::BLOCKLISTED_MALWARE, prefs()));
+
     prefs()->MigrateOldBlocklistPrefs();
   }
 
@@ -1159,6 +1152,13 @@ class ExtensionPrefsMigrateOldBlocklistPrefs : public ExtensionPrefsTest {
     // The old pref should be cleared.
     EXPECT_FALSE(is_blocklist_acknowledged_pref);
     EXPECT_TRUE(prefs()->IsBlocklistedExtensionAcknowledged(extension_->id()));
+
+    EXPECT_TRUE(blocklist_prefs::HasOmahaBlocklistState(
+        extension_->id(), BitMapBlocklistState::BLOCKLISTED_MALWARE, prefs()));
+    // The old pref should be cleared.
+    EXPECT_FALSE(prefs()->HasDisableReason(
+        extension_->id(),
+        disable_reason::DEPRECATED_DISABLE_REMOTELY_FOR_MALWARE));
   }
 
  private:

@@ -40,6 +40,7 @@ _CONFIG = [
             'base::AutoReset',
             'base::Contains',
             'base::CreateSequencedTaskRunner',
+            'base::Days',
             'base::DefaultTickClock',
             'base::ElapsedTimer',
             'base::JobDelegate',
@@ -49,12 +50,18 @@ _CONFIG = [
             'base::FileErrorOr',
             'base::FilePath',
             'base::GetUniqueIdForProcess',
+            'base::GUID',
+            'base::HexStringToUInt64',
+            'base::Hours',
             "base::i18n::TextDirection",
             "base::i18n::ToChar16Ptr",
             "base::i18n::ToUCharPtr",
             'base::Location',
             'base::MakeRefCounted',
+            'base::Microseconds',
             'base::Milliseconds',
+            'base::Minutes',
+            'base::Nanoseconds',
             'base::OptionalFromPtr',
             'base::OptionalOrNullptr',
             'base::PlatformThread',
@@ -63,21 +70,25 @@ _CONFIG = [
             'base::RunLoop',
             'base::ReadOnlySharedMemoryMapping',
             'base::ReadOnlySharedMemoryRegion',
+            'base::RemoveChars',
             'base::RepeatingTimer',
+            'base::Seconds',
             'base::SequencedTaskRunner',
             'base::SingleThreadTaskRunner',
             'base::ScopedAllowBlocking',
             'base::ScopedFD',
             'base::ScopedClosureRunner',
+            'base::StringPiece',
             'base::SupportsWeakPtr',
             'base::SysInfo',
             'base::ThreadChecker',
+            'base::ThreadTicks',
             'base::TickClock',
             'base::Time',
             'base::TimeDelta',
             'base::TimeTicks',
-            'base::ThreadTicks',
             'base::trace_event::.*',
+            'base::Token',
             'base::UnguessableToken',
             'base::UnguessableTokenHash',
             'base::UnsafeSharedMemoryRegion',
@@ -101,7 +112,7 @@ _CONFIG = [
             # //base/allocator/partition_allocator/partition_alloc_constants.h
             'base::kAlignment',
 
-            # //base/bind_post_task.h
+            # //base/task/bind_post_task.h
             'base::BindPostTask',
 
             # //base/bits.h
@@ -285,14 +296,11 @@ _CONFIG = [
             'gfx::Point',
             'gfx::PointF',
             'gfx::Point3F',
+            'gfx::QuadF',
             'gfx::Quaternion',
             'gfx::Rect',
             'gfx::RectF',
             'gfx::RRectF',
-            'gfx::ScaleToCeiledSize',
-            'gfx::ScaleToEnclosingRectSafe',
-            'gfx::ScaleToFlooredSize',
-            'gfx::ScaleVector2d',
             'gfx::Size',
             'gfx::SizeF',
             'gfx::Transform',
@@ -301,9 +309,41 @@ _CONFIG = [
 
             # Chromium geometry operations.
             'cc::MathUtil',
+            'gfx::BoundingRect',
             'gfx::ComputeApproximateMaxScale',
-            'gfx::ComputeTransform2dScaleComponents',
+            'gfx::Determinant',
+            'gfx::IntersectRects',
+            'gfx::PointAtOffsetFromOrigin',
+            'gfx::MaximumCoveredRect',
+            'gfx::RectFToSkRect',
+            'gfx::RectToSkIRect',
+            'gfx::RectToSkRect',
+            'gfx::ScalePoint',
+            'gfx::ScaleToCeiledSize',
+            'gfx::ScaleToEnclosingRectSafe',
+            'gfx::ScaleToFlooredSize',
+            'gfx::ScaleSize',
+            'gfx::ScalePoint',
+            'gfx::ScaleToRoundedPoint',
+            'gfx::ScaleVector2d',
+            'gfx::SkIRectToRect',
+            'gfx::SkRectToRectF',
+            'gfx::SubtractRects',
+            'gfx::ToCeiledPoint',
+            'gfx::ToCeiledSize',
+            'gfx::ToEnclosedRect',
+            'gfx::ToEnclosingRect',
             'gfx::ToFlooredPoint',
+            'gfx::ToFlooredSize',
+            'gfx::ToRoundedPoint',
+            'gfx::ToRoundedRect',
+            'gfx::ToRoundedSize',
+            'gfx::ToRoundedVector2d',
+            'gfx::TransposePoint',
+            'gfx::TransposeRect',
+            'gfx::TransposeSize',
+            'gfx::TryComputeTransform2dScaleComponents',
+            'gfx::UnionRects',
 
             # Range type.
             'gfx::Range',
@@ -383,13 +423,12 @@ _CONFIG = [
             'cc::SnapSelectionStrategy',
             'cc::SnapStrictness',
             'cc::TargetSnapAreaElementIds',
-            'gfx::RectToSkRect',
-            'gfx::RectToSkIRect',
-            'gfx::ScrollOffset',
             'ui::ScrollGranularity',
 
             # Document transitions
             'cc::DocumentTransitionRequest',
+            'cc::SharedElementLayer',
+            'viz::SharedElementResourceId',
 
             # base/types/strong_alias.h
             'base::StrongAlias',
@@ -427,6 +466,7 @@ _CONFIG = [
             'layout_invalidation_reason::.+',
             'media_constraints_impl::.+',
             'media_element_parser_helpers::.+',
+            'mobile_metrics_test_helpers::.+',
             'file_system_access_error::.+',
             'network_utils::.+',
             'origin_trials::.+',
@@ -543,6 +583,7 @@ _CONFIG = [
             # serialization. Please keep alphabetized.
             'ui::CanHaveInlineTextBoxChildren',
             'ui::IsCellOrTableHeader',
+            'ui::IsClickable',
             'ui::IsComboBox',
             'ui::IsContainerWithSelectableChildren',
             'ui::IsDialog',
@@ -975,7 +1016,7 @@ _CONFIG = [
         # The modules listed above need access to the following GL drawing and
         # display-related types.
         'allowed': [
-            'base::MRUCache',
+            'base::LRUCache',
             'gl::GpuPreference',
             'gpu::SHARED_IMAGE_USAGE_.+',
             'gpu::gles2::GLES2Interface',
@@ -1373,6 +1414,8 @@ _CONFIG = [
             'absl::.+',
             'base::AutoLock',
             'base::AutoUnlock',
+            # TODO(crbug.com/1266408): Temporarily added to enable splitting UMA stats based on tier.
+            'base::CPU',
             'base::LazyInstance',
             'base::Lock',
             # TODO(crbug.com/787254): Remove base::BindOnce, base::Unretained,
@@ -1398,6 +1441,8 @@ _CONFIG = [
             'media::.+',
             'net::NetworkTrafficAnnotationTag',
             'net::DefineNetworkTrafficAnnotation',
+            # TODO(crbug.com/1266408): Temporarily added to enable splitting UMA stats based on tier.
+            're2::RE2',
             'rtc::.+',
             'webrtc::.+',
             'quic::.+',
@@ -1516,10 +1561,28 @@ _CONFIG = [
     {
         'paths': [
             'third_party/blink/renderer/modules/webdatabase/dom_window_web_database.cc',
+            'third_party/blink/renderer/controller/blink_initializer.cc',
         ],
         'allowed': [
             'base::CommandLine',
         ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/controller/blink_shutdown.cc',
+        ],
+        'allowed': [
+            'base::CommandLine',
+            'switches::kDumpRuntimeCallStats',
+        ]
+    },
+    {
+        'paths':
+        ['third_party/blink/renderer/bindings/core/v8/local_window_proxy.cc'],
+        'allowed': [
+            'base::SingleSampleMetric',
+            'base::SingleSampleMetricsFactory',
+        ],
     },
 ]
 

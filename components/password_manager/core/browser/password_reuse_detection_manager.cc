@@ -150,7 +150,7 @@ void PasswordReuseDetectionManager::OnReuseCheckDone(
           ? client_->GetPasswordManager()->IsPasswordFieldDetectedOnPage()
           : false;
 
-  metrics_util::LogPasswordReuse(password_length, saved_passwords,
+  metrics_util::LogPasswordReuse(saved_passwords,
                                  matching_reused_credentials.size(),
                                  password_field_detected, reused_password_type);
   if (reused_password_type ==
@@ -192,7 +192,8 @@ void PasswordReuseDetectionManager::CheckStoresForReuse(
     const std::u16string& input) {
   PasswordReuseManager* reuse_manager = client_->GetPasswordReuseManager();
   if (reuse_manager) {
-    reuse_manager->CheckReuse(input, main_frame_url_.GetOrigin().spec(), this);
+    reuse_manager->CheckReuse(
+        input, main_frame_url_.DeprecatedGetOriginAsURL().spec(), this);
   }
 }
 

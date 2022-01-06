@@ -22,6 +22,8 @@ AX_BASE_EXPORT extern const char
     kEnableExperimentalAccessibilityLanguageDetectionDynamic[];
 AX_BASE_EXPORT extern const char
     kEnableExperimentalAccessibilitySwitchAccessText[];
+AX_BASE_EXPORT extern const char
+    kEnableExperimentalAccessibilitySwitchAccessMultistepAutomation[];
 
 // Returns true if experimental accessibility dictation extension is enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationExtensionEnabled();
@@ -36,6 +38,10 @@ IsExperimentalAccessibilityLanguageDetectionDynamicEnabled();
 
 // Returns true if experimental accessibility Switch Access text is enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilitySwitchAccessTextEnabled();
+
+// Returns true if experimental accessibility Switch Access multistep automation
+// is enabled.
+AX_BASE_EXPORT bool IsSwitchAccessMultistepAutomationEnabled();
 
 #if defined(OS_WIN)
 AX_BASE_EXPORT extern const char kEnableExperimentalUIAutomation[];

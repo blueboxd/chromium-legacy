@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/crossfade_generated_image.h"
 
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_filter_helper.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 
@@ -62,10 +63,10 @@ void CrossfadeGeneratedImage::DrawCrossfade(
   image_flags.setBlendMode(SkBlendMode::kSrcOver);
   image_flags.setColor(ScaleAlpha(flags.getColor(), 1 - percentage_));
   // TODO(junov): This code should probably be propagating the
-  // RespectImageOrientationEnum from CrossfadeGeneratedImage::draw(). Code was
-  // written this way during refactoring to avoid modifying existing behavior,
-  // but this warrants further investigation. crbug.com/472634
-  ImageDrawOptions from_draw_options = draw_options;
+  // RespectImageOrientationEnum from CrossfadeGeneratedImage::draw(). Code
+  // was written this way during refactoring to avoid modifying existing
+  // behavior, but this warrants further investigation. crbug.com/472634
+  ImageDrawOptions from_draw_options(draw_options);
   from_draw_options.respect_orientation = kDoNotRespectImageOrientation;
   from_image_->Draw(canvas, image_flags, dest_rect, from_image_rect,
                     from_draw_options);
@@ -98,10 +99,9 @@ void CrossfadeGeneratedImage::DrawTile(GraphicsContext& context,
   PaintFlags flags = context.FillFlags();
   flags.setBlendMode(SkBlendMode::kSrcOver);
   FloatRect dest_rect((FloatPoint()), size_);
-  ImageDrawOptions draw_options;
+  ImageDrawOptions draw_options(options);
   draw_options.sampling_options =
       context.ComputeSamplingOptions(this, dest_rect, src_rect);
-  draw_options.respect_orientation = options.respect_orientation;
   DrawCrossfade(context.Canvas(), flags, draw_options);
 }
 

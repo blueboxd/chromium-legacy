@@ -14,7 +14,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
@@ -132,13 +131,7 @@ void DispatchEventsAfterBackForwardCacheRestore(
         last_timings,
     const std::vector<mojo::StructPtr<mojom::BackForwardCacheTiming>>&
         new_timings) {
-  if (new_timings.size() < last_timings.size()) {
-    mojo::ReportBadMessage(base::StringPrintf(
-        "`new_timings.size()` (%zu) must be equal to or greater than "
-        "`last_timings.size()` (%zu) but is not",
-        new_timings.size(), last_timings.size()));
-    return;
-  }
+  DCHECK_GE(new_timings.size(), last_timings.size());
 
   for (size_t i = 0; i < new_timings.size(); i++) {
     auto first_paint =
@@ -1001,8 +994,9 @@ PageLoadTracker::GetNormalizedResponsivenessMetrics() const {
 const mojom::InputTiming& PageLoadTracker::GetPageInputTiming() const {
   return metrics_update_dispatcher_.page_input_timing();
 }
-const blink::MobileFriendliness& PageLoadTracker::GetMobileFriendliness()
-    const {
+
+const absl::optional<blink::MobileFriendliness>&
+PageLoadTracker::GetMobileFriendliness() const {
   return metrics_update_dispatcher_.mobile_friendliness();
 }
 

@@ -6,7 +6,6 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SCRIPT_EXECUTOR_H_
 
 #include <deque>
-#include <map>
 #include <memory>
 #include <ostream>
 #include <set>
@@ -30,6 +29,7 @@
 #include "components/autofill_assistant/browser/web/element.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/element_store.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace autofill_assistant {
 class ElementStore;
@@ -207,13 +207,13 @@ class ScriptExecutor : public ActionDelegate,
   ElementStore* GetElementStore() const override;
   WebController* GetWebController() const override;
   std::string GetEmailAddressForAccessTokenAccount() const override;
+  ukm::UkmRecorder* GetUkmRecorder() const override;
   void SetDetails(std::unique_ptr<Details> details,
                   base::TimeDelta delay) override;
   void AppendDetails(std::unique_ptr<Details> details,
                      base::TimeDelta delay) override;
   void ClearInfoBox() override;
   void SetInfoBox(const InfoBox& info_box) override;
-  void SetProgress(int progress) override;
   bool SetProgressActiveStepIdentifier(
       const std::string& active_step_identifier) override;
   void SetProgressActiveStep(int active_step) override;
@@ -254,6 +254,7 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(bool)> callback) override;
   void MaybeShowSlowConnectionWarning() override;
   base::WeakPtr<ActionDelegate> GetWeakPtr() const override;
+  ProcessedActionStatusDetailsProto& GetLogInfo() override;
 
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to
@@ -433,8 +434,6 @@ class ScriptExecutor : public ActionDelegate,
                      const ClientStatus& status,
                      std::unique_ptr<autofill::CreditCard> card,
                      const std::u16string& cvc);
-  void OnChosen(UserAction::Callback callback,
-                std::unique_ptr<TriggerContext> context);
   void OnWaitForDocumentReadyState(
       base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback,
       const ClientStatus& status,
@@ -501,10 +500,6 @@ class ScriptExecutor : public ActionDelegate,
 
     std::unique_ptr<WaitForDomOperation> wait_for_dom;
     std::unique_ptr<WaitForDocumentOperation> wait_for_document;
-
-    // Set to true when a direct action was used to trigger a UserAction within
-    // a prompt. This is reported to the backend.
-    bool direct_action = false;
 
     // This callback is set when a navigation event should terminate an ongoing
     // prompt action. Only a prompt action will set a valid callback here.

@@ -76,6 +76,9 @@ const base::Feature kFontCacheNoSizeInKey{"FontCacheNoSizeInKey",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 }
 
+const base::Feature kAsyncFontAccess{"AsyncFontAccess",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kColorEmojiLocale[] = "und-Zsye";
 
 #if defined(OS_ANDROID)
@@ -388,12 +391,6 @@ void FontCache::PurgePlatformFontDataCache() {
 
 void FontCache::PurgeFallbackListShaperCache() {
   TRACE_EVENT0("fonts,ui", "FontCache::PurgeFallbackListShaperCache");
-  unsigned items = 0;
-  FallbackListShaperCache::iterator iter;
-  for (iter = fallback_list_shaper_cache_.begin();
-       iter != fallback_list_shaper_cache_.end(); ++iter) {
-    items += iter->value->size();
-  }
   fallback_list_shaper_cache_.clear();
 }
 

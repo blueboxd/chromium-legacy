@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_post_task.h"
 #include "base/callback_helpers.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/bind_post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -329,6 +329,9 @@ VideoFrameCompositor::GetLastPresentedFrameMetadata() {
     frame_metadata->expected_display_time = last_expected_display_time_;
     frame_metadata->presented_frames = presentation_counter_;
   }
+
+  if (base::FeatureList::IsEnabled(media::kKeepRvfcFrameAlive))
+    frame_metadata->frame = last_frame;
 
   frame_metadata->width = last_frame->visible_rect().width();
   frame_metadata->height = last_frame->visible_rect().height();

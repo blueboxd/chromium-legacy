@@ -23,13 +23,10 @@ const char kBlinkSettings[] = "blink-settings";
 // the default dark mode settings is used. Valid params are given below.
 // "InversionAlgorithm" takes int value of DarkModeInversionAlgorithm enum.
 // "ImagePolicy" takes int value of DarkModeImagePolicy enum.
-// "IsGrayScale" takes 1 or 0, 1 means grayscale is true, false otherwise.
 // "TextBrightnessThreshold" takes 0 to 255 int value.
 // "BackgroundBrightnessThreshold" takes 0 to 255 int value.
 // "ContrastPercent" takes -1.0 to 1.0 float value. Higher the value, more
 // the contrast.
-// "ImageGrayScalePercent" takes 0.0 to 1.0 float value. Higher the value,
-// image would be more grayish.
 const char kDarkModeSettings[] = "dark-mode-settings";
 
 // Sets the tile size used by composited layers.
@@ -61,6 +58,10 @@ const char kDisableThreadedScrolling[] = "disable-threaded-scrolling";
 
 // Disable rasterizer that writes directly to GPU memory associated with tiles.
 const char kDisableZeroCopy[] = "disable-zero-copy";
+
+// Logs Runtime Call Stats. --single-process also needs to be used along with
+// this for the stats to be logged.
+const char kDumpRuntimeCallStats[] = "dump-blink-runtime-call-stats";
 
 // Specify that all compositor resources should be backed by GPU memory buffers.
 const char kEnableGpuMemoryBufferCompositorResources[] =
@@ -136,5 +137,9 @@ const char kConditionalFocusWindowMs[] = "conditional-focus-window-ms";
 
 const char kWebSQLInThirdPartyContextEnabled[] =
     "web-sql-in-third-party-context-enabled";
+
+// Specifies the flags passed to JS engine.
+const char kJavaScriptFlags[] = "js-flags";
+
 }  // namespace switches
 }  // namespace blink

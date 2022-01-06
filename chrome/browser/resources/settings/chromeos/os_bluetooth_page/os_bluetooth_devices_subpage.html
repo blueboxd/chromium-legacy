@@ -15,7 +15,7 @@
   }
 
   #onOff[on] {
-    color: var(--cr-toggle-color);
+    color: var(--cros-toggle-color);
   }
 
   .device-list {
@@ -64,3 +64,6 @@
     </div>
   </template>
 </div>
+<template is="dom-if" if="[[isFastPairAllowed_]]">
+  <settings-fast-pair-toggle prefs="{{prefs}}"></settings-fast-pair-toggle>
+</template>

@@ -57,13 +57,15 @@ class RmadClientImpl : public RmadClient {
   void PowerCableStateReceived(dbus::Signal* signal);
   void ProvisioningProgressReceived(dbus::Signal* signal);
   void HardwareVerificationResultReceived(dbus::Signal* signal);
+  void FinalizationProgressReceived(dbus::Signal* signal);
 
   void SignalConnected(const std::string& interface_name,
                        const std::string& signal_name,
                        bool success);
 
   dbus::ObjectProxy* rmad_proxy_ = nullptr;
-  base::ObserverList<Observer, true, false>::Unchecked observers_;
+  base::ObserverList<Observer, /*check_empty=*/true, /*allow_reentrancy=*/false>
+      observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
@@ -88,6 +90,8 @@ void RmadClientImpl::Init(dbus::Bus* bus) {
        &RmadClientImpl::ProvisioningProgressReceived},
       {rmad::kHardwareVerificationResultSignal,
        &RmadClientImpl::HardwareVerificationResultReceived},
+      {rmad::kFinalizeProgressSignal,
+       &RmadClientImpl::FinalizationProgressReceived},
   };
   auto on_connected_callback = base::BindRepeating(
       &RmadClientImpl::SignalConnected, weak_ptr_factory_.GetWeakPtr());
@@ -112,11 +116,25 @@ void RmadClientImpl::CalibrationProgressReceived(dbus::Signal* signal) {
   DCHECK_EQ(signal->GetMember(), rmad::kCalibrationProgressSignal);
   dbus::MessageReader reader(signal);
   // Read proto message
-  rmad::CalibrationComponentStatus signal_proto;
-  if (!reader.PopArrayOfBytesAsProto(&signal_proto)) {
+  dbus::MessageReader sub_reader(nullptr);
+  if (!reader.PopStruct(&sub_reader)) {
     LOG(ERROR) << "Unable to decode signal for " << signal->GetMember();
     return;
   }
+  DCHECK(!reader.HasMoreData());
+  int32_t component;
+  int32_t status;
+  double progress;
+  if (!sub_reader.PopInt32(&component) || !sub_reader.PopInt32(&status) ||
+      !sub_reader.PopDouble(&progress)) {
+    LOG(ERROR) << "Unable to decode signal for " << signal->GetMember();
+    return;
+  }
+  rmad::CalibrationComponentStatus signal_proto;
+  signal_proto.set_component(static_cast<rmad::RmadComponent>(component));
+  signal_proto.set_status(
+      static_cast<rmad::CalibrationComponentStatus::CalibrationStatus>(status));
+  signal_proto.set_progress(progress);
   for (auto& observer : observers_) {
     observer.CalibrationProgress(signal_proto);
   }
@@ -131,14 +149,12 @@ void RmadClientImpl::CalibrationOverallProgressReceived(dbus::Signal* signal) {
                << signal->GetMember() << " signal";
     return;
   }
+  DCHECK(!reader.HasMoreData());
   for (auto& observer : observers_) {
     observer.CalibrationOverallProgress(
         static_cast<rmad::CalibrationOverallStatus>(overall_progress));
   }
 }
-
-// TODO(gavindodd): Does current value of any state (e.g. HWWP) need to be
-// stored so it can be passed to new observers when added?
 
 void RmadClientImpl::ErrorReceived(dbus::Signal* signal) {
   DCHECK_EQ(signal->GetMember(), rmad::kErrorSignal);
@@ -149,6 +165,7 @@ void RmadClientImpl::ErrorReceived(dbus::Signal* signal) {
                << " signal";
     return;
   }
+  DCHECK(!reader.HasMoreData());
   for (auto& observer : observers_) {
     observer.Error(static_cast<rmad::RmadErrorCode>(error));
   }
@@ -164,6 +181,7 @@ void RmadClientImpl::HardwareWriteProtectionStateReceived(
                << " signal";
     return;
   }
+  DCHECK(!reader.HasMoreData());
   for (auto& observer : observers_) {
     observer.HardwareWriteProtectionState(enabled);
   }
@@ -178,6 +196,7 @@ void RmadClientImpl::PowerCableStateReceived(dbus::Signal* signal) {
                << signal->GetMember() << " signal";
     return;
   }
+  DCHECK(!reader.HasMoreData());
   for (auto& observer : observers_) {
     observer.PowerCableState(plugged_in);
   }
@@ -186,36 +205,73 @@ void RmadClientImpl::PowerCableStateReceived(dbus::Signal* signal) {
 void RmadClientImpl::ProvisioningProgressReceived(dbus::Signal* signal) {
   DCHECK_EQ(signal->GetMember(), rmad::kProvisioningProgressSignal);
   dbus::MessageReader reader(signal);
-  uint32_t step;
+  // Read proto message
+  dbus::MessageReader sub_reader(nullptr);
+  if (!reader.PopStruct(&sub_reader)) {
+    LOG(ERROR) << "Unable to decode signal for " << signal->GetMember();
+    return;
+  }
+  DCHECK(!reader.HasMoreData());
+  int32_t status;
   double progress;
-  if (!reader.PopUint32(&step)) {
-    LOG(ERROR) << "Unable to decode step uint32 from " << signal->GetMember()
-               << " signal";
+  if (!sub_reader.PopInt32(&status) || !sub_reader.PopDouble(&progress)) {
+    LOG(ERROR) << "Unable to decode signal for " << signal->GetMember();
     return;
   }
-  if (!reader.PopDouble(&progress)) {
-    LOG(ERROR) << "Unable to decode progress double from "
-               << signal->GetMember() << " signal";
-    return;
-  }
+  rmad::ProvisionStatus signal_proto;
+  signal_proto.set_status(static_cast<rmad::ProvisionStatus::Status>(status));
+  signal_proto.set_progress(progress);
   for (auto& observer : observers_) {
-    observer.ProvisioningProgress(
-        static_cast<rmad::ProvisionDeviceState::ProvisioningStep>(step),
-        progress);
+    observer.ProvisioningProgress(signal_proto);
   }
 }
 
 void RmadClientImpl::HardwareVerificationResultReceived(dbus::Signal* signal) {
   DCHECK_EQ(signal->GetMember(), rmad::kHardwareVerificationResultSignal);
   dbus::MessageReader reader(signal);
-  // Read proto message
-  rmad::HardwareVerificationResult signal_proto;
-  if (!reader.PopArrayOfBytesAsProto(&signal_proto)) {
+  // Read message
+  dbus::MessageReader sub_reader(nullptr);
+  if (!reader.PopStruct(&sub_reader)) {
     LOG(ERROR) << "Unable to decode signal for " << signal->GetMember();
     return;
   }
+  DCHECK(!reader.HasMoreData());
+  bool is_compliant = true;
+  std::string error_str = "";
+  if (!sub_reader.PopBool(&is_compliant) || !sub_reader.PopString(&error_str)) {
+    LOG(ERROR) << "Unable to decode signal for " << signal->GetMember();
+    return;
+  }
+  DCHECK(!reader.HasMoreData());
+  rmad::HardwareVerificationResult signal_proto;
+  signal_proto.set_is_compliant(is_compliant);
+  signal_proto.set_error_str(error_str);
   for (auto& observer : observers_) {
     observer.HardwareVerificationResult(signal_proto);
+  }
+}
+
+void RmadClientImpl::FinalizationProgressReceived(dbus::Signal* signal) {
+  DCHECK_EQ(signal->GetMember(), rmad::kFinalizeProgressSignal);
+  dbus::MessageReader reader(signal);
+  // Read message
+  dbus::MessageReader sub_reader(nullptr);
+  if (!reader.PopStruct(&sub_reader)) {
+    LOG(ERROR) << "Unable to decode signal for " << signal->GetMember();
+    return;
+  }
+  DCHECK(!reader.HasMoreData());
+  int32_t status;
+  double progress;
+  if (!sub_reader.PopInt32(&status) || !sub_reader.PopDouble(&progress)) {
+    LOG(ERROR) << "Unable to decode signal for " << signal->GetMember();
+    return;
+  }
+  rmad::FinalizeStatus signal_proto;
+  signal_proto.set_status(static_cast<rmad::FinalizeStatus::Status>(status));
+  signal_proto.set_progress(progress);
+  for (auto& observer : observers_) {
+    observer.FinalizationProgress(signal_proto);
   }
 }
 
@@ -282,10 +338,11 @@ void RmadClientImpl::GetLogPath(DBusMethodCallback<std::string> callback) {
 }
 
 void RmadClientImpl::AddObserver(Observer* observer) {
+  // Currently there is only one observer (chromeos::ShimlessRmaService) and it
+  // is added before any signals are expected, so there is no need to preserve
+  // any signals and send them to new observers.
   CHECK(observer);
   observers_.AddObserver(observer);
-  // TODO(gavindodd): Does current value of any state (e.g. HWWP) need to be
-  // 'observed' at add?
 }
 
 void RmadClientImpl::RemoveObserver(Observer* observer) {
@@ -312,6 +369,7 @@ void RmadClientImpl::OnProtoReply(DBusMethodCallback<T> callback,
     std::move(callback).Run(absl::nullopt);
     return;
   }
+  DCHECK(!reader.HasMoreData());
 
   std::move(callback).Run(std::move(response_proto));
 }
@@ -331,6 +389,7 @@ void RmadClientImpl::OnGetLogPathReply(DBusMethodCallback<std::string> callback,
     std::move(callback).Run(absl::nullopt);
     return;
   }
+  DCHECK(!reader.HasMoreData());
 
   std::move(callback).Run(std::move(log_path));
 }

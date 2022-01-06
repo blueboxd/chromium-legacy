@@ -25,7 +25,7 @@
 <translation id="1173894706177603556">പേരുമാറ്റുക</translation>
 <translation id="1173916544412572294"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, ഫോൺ ബാറ്ററി <ph name="BATTERY_STATUS" />%, വിശദാംശങ്ങൾ</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> പകർത്തുന്നു...</translation>
-<translation id="1178581264944972037">താൽക്കാലികമായി നിർത്തുക</translation>
+<translation id="1178581264944972037">അല്പംനിര്‍ത്തൂ</translation>
 <translation id="1190144681599273207">ഈ ഫയൽ ലഭ്യമാക്കുന്നതിന് ഏകദേശം <ph name="FILE_SIZE" /> മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.</translation>
 <translation id="1201402288615127009">അടുത്തത്</translation>
 <translation id="1209796539517632982">യാന്ത്രിക നാമ സെർവറുകൾ</translation>
@@ -131,6 +131,7 @@
 <translation id="2122305276694332719">മറച്ച നെറ്റ്‌വർക്കിലേക്ക് സ്വയമേവ കണക്‌റ്റ് ചെയ്യുന്നതിലൂടെ നിങ്ങളുടെ ഉപകരണവും ചില നെറ്റ്‌വർക്ക് ക്രമീകരണവും കാണാൻ മറ്റുള്ളവരെ അനുവദിക്കുന്നതിനാൽ അത് ശുപാർശചെയ്യുന്നില്ല.</translation>
 <translation id="2125607626296734455">ഖമെർ</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്, കണക്‌റ്റ് ചെയ്യുക</translation>
+<translation id="2141347188420181405"><ph name="NETWORK_INDEX" />-ൽ <ph name="NETWORK_COUNT" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, നിങ്ങളുടെ അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു, വിശദാംശങ്ങൾ</translation>
 <translation id="2142680004883808240">ഫൊണറ്റിക് YaZHert കീബോർഡ് ഉള്ള റഷ്യൻ</translation>
 <translation id="2143778271340628265">നേരിട്ടുള്ള പ്രോക്സി ക്രമീകരണം</translation>
 <translation id="2163152940313951844">അസാധുവായ പ്രതീകം: <ph name="CHARACTER_NAME" /></translation>
@@ -185,6 +186,7 @@
 <translation id="2563185590376525700">തവള</translation>
 <translation id="2578394532502990878">തമിഴ് ഉച്ചാരണ ശബ്‌ദം</translation>
 <translation id="2579959351793446050">ഒഡിയ</translation>
+<translation id="2602810353103180630"><ph name="NETWORK_INDEX" />-ൽ <ph name="NETWORK_COUNT" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, നിങ്ങളുടെ അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു, വിശദാംശങ്ങൾ</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> വീഡിയോ</translation>
 <translation id="2617342710774726426">സിം കാർഡ് ലോക്കുചെയ്‌തു</translation>
 <translation id="2620090360073999360">Google ഡ്രൈവിൽ ഇപ്പോൾ എത്തിച്ചേരാൻ കഴിയില്ല.</translation>
@@ -229,7 +231,7 @@
 <translation id="3003189754374775221"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, കണക്‌റ്റ് ചെയ്യുക</translation>
 <translation id="3003633581067744647">ലഘുചിത്ര കാഴ്ച്ചയിലേക്ക് മാറുക</translation>
 <translation id="3016566519832145558">മുന്നറിയിപ്പ്: ഇവ താൽക്കാലിക ഫയലുകളാണ് ഡിസ്ക്കിൽ ഇടമുണ്ടാക്കാൻ സ്വയമേവ ഇല്ലാതാക്കിയേക്കാം.</translation>
-<translation id="3029114385395636667">Docs, Sheets, Slides എന്നിവ ഓഫ്‌ലൈനിൽ ലഭ്യമാക്കാൻ Google Docs ഓഫ്‌ലൈൻ പ്രവർത്തനക്ഷമമാക്കുക.</translation>
+<translation id="3029114385395636667">Docs, Sheets, Slides എന്നിവ ഓഫ്‌ലൈനിൽ ലഭ്യമാക്കാൻ Google ഓഫ്‌ലൈൻ ഡോക്‌സ് പ്രവർത്തനക്ഷമമാക്കുക.</translation>
 <translation id="303198083543495566">ഭൂമിശാസ്‌ത്രം</translation>
 <translation id="3047197340186497470">ചൈനീസ് ദായി</translation>
 <translation id="3057861065630527966">നിങ്ങളുടെ ഫോട്ടോകളും വീഡിയോകളും ബാക്കപ്പ് ചെയ്യുക</translation>
@@ -705,7 +707,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165320105431587207">നെറ്റ്‌വർക്ക് കോൺഫിഗർ ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="7170041865419449892">പരിധിയ്ക്ക് പുറത്താണ്</translation>
-<translation id="7180611975245234373">റീഫ്രഷ് ചെയ്യുക</translation>
+<translation id="7180611975245234373">പുതുക്കുക</translation>
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">ഇതായി ഫയൽ സംരക്ഷിക്കുക</translation>
 <translation id="7229570126336867161">EVDO ആവശ്യമുണ്ട്</translation>

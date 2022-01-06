@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/list_model/list_item.h"
-#import "ios/chrome/browser/ui/reading_list/empty_reading_list_message_util.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_source.h"
@@ -164,6 +163,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   self.selectedUnreadItemCount = 0;
   self.selectedReadItemCount = 0;
   if (!editing) {
+    [self reloadDataIfNeededAndNotEditing];
     self.markConfirmationSheet = nil;
     self.editingWithToolbarButtons = NO;
     [self removeEmptySections];
@@ -460,7 +460,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 - (void)dataSourceChanged {
   // If the model is updated when the UI is already making a change, set a flag
   // to reload the data at the end of the editing.
-  if (self.numberOfBatchOperationInProgress) {
+  if (self.numberOfBatchOperationInProgress || self.isEditing) {
     self.dataSourceModifiedWhileEditing = YES;
   } else {
     [self reloadData];
@@ -594,7 +594,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     [self.dataSource removeEntryFromItem:item];
   };
   [self updateItemsInSection:SectionIdentifierRead withItemUpdater:updater];
-  [self exitEditingModeAnimated:YES];
 
   // Update the model and table view for the deleted items.
   UITableView* tableView = self.tableView;
@@ -610,6 +609,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     [self batchEditDidFinish];
   };
   [self performBatchTableViewUpdates:updates completion:completion];
+  [self exitEditingModeAnimated:YES];
 }
 
 - (void)deleteSelectedReadingListItems {
@@ -840,6 +840,9 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 // section from the collection.
 - (void)moveItemsFromSection:(SectionIdentifier)fromSection
                    toSection:(SectionIdentifier)toSection {
+  if (![self.tableViewModel hasSectionForSectionIdentifier:fromSection]) {
+    return;
+  }
   NSInteger sourceSection =
       [self.tableViewModel sectionForSectionIdentifier:fromSection];
   NSInteger itemCount =
@@ -983,9 +986,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     [self.dataSource removeEntryFromItem:item];
   };
   [self updateItemsAtIndexPaths:indexPaths withItemUpdater:updater];
-  if (endEditing) {
-    [self exitEditingModeAnimated:YES];
-  }
   // Update the model and table view for the deleted items.
   UITableView* tableView = self.tableView;
   NSArray* sortedIndexPaths =
@@ -1006,6 +1006,9 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     };
   }
   [self performBatchTableViewUpdates:updates completion:completion];
+  if (endEditing) {
+    [self exitEditingModeAnimated:YES];
+  }
 }
 
 // Deletes the ListItem corresponding to |indexPath| in the model.
@@ -1033,12 +1036,12 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   NSArray* sortedIndexPaths =
       [indexPaths sortedArrayUsingSelector:@selector(compare:)];
   [self updateItemsAtIndexPaths:sortedIndexPaths withItemUpdater:updater];
-  [self exitEditingModeAnimated:YES];
 
   // Move the items to the appropriate section.
   SectionIdentifier toSection =
       read ? SectionIdentifierRead : SectionIdentifierUnread;
   [self moveItemsAtIndexPaths:sortedIndexPaths toSection:toSection];
+  [self exitEditingModeAnimated:YES];
 }
 
 // Marks items from |section| with as read or unread dending on |read|.
@@ -1054,19 +1057,19 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     [self.dataSource setReadStatus:read forItem:item];
   };
   [self updateItemsInSection:section withItemUpdater:updater];
-  [self exitEditingModeAnimated:YES];
 
   // Move the items to the appropriate section.
   SectionIdentifier toSection =
       read ? SectionIdentifierRead : SectionIdentifierUnread;
   [self moveItemsFromSection:section toSection:toSection];
+  [self exitEditingModeAnimated:YES];
 }
 
 // Cleanup function called in the completion block of editing operations.
 - (void)batchEditDidFinish {
   // Reload the items if the datasource was modified during the edit.
-  if (self.dataSourceModifiedWhileEditing)
-    [self reloadData];
+  [self reloadDataIfNeededAndNotEditing];
+
   // Remove any newly emptied sections.
   [self removeEmptySections];
 }
@@ -1164,6 +1167,17 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 - (BOOL)accessibilityPerformEscape {
   [self.delegate dismissReadingListListViewController:self];
   return YES;
+}
+
+#pragma mark - Private
+
+// Reloads the data if source change during the edit mode and if it is now safe
+// to do so (local edits are done).
+- (void)reloadDataIfNeededAndNotEditing {
+  if (self.dataSourceModifiedWhileEditing &&
+      self.numberOfBatchOperationInProgress == 0 && !self.editing) {
+    [self reloadData];
+  }
 }
 
 @end

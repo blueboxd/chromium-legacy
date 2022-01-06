@@ -13,6 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/os_buildflags.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -158,21 +159,21 @@ WebRtcVideoFrameAdapter::SharedResources::GetRasterContextProvider() {
   return raster_context_provider_;
 }
 
-#if defined(OS_MAC)
-const base::Feature kWebRTCGpuMemoryBufferReadback{
-    "WebRTCGpuMemoryBufferReadback", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kWebRTCGpuMemoryBufferReadback {
+  "WebRTCGpuMemoryBufferReadback",
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
+    (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY))
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
 #endif
+};
 
-// static
 bool CanUseGpuMemoryBufferReadback(media::VideoPixelFormat format) {
-#if defined(OS_MAC)
   // GMB readback only works with NV12, so only opaque buffers can be used.
   return (format == media::PIXEL_FORMAT_XBGR ||
           format == media::PIXEL_FORMAT_XRGB) &&
          base::FeatureList::IsEnabled(kWebRTCGpuMemoryBufferReadback);
-#else
-  return false;
-#endif
 }
 
 scoped_refptr<media::VideoFrame>
@@ -213,7 +214,7 @@ WebRtcVideoFrameAdapter::SharedResources::ConstructVideoFrameFromTexture(
       // Blocking is necessary to create the GpuMemoryBuffer from this thread.
       base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
       dst_frame = accelerated_frame_pool_->MaybeCreateVideoFrame(
-          source_frame->coded_size());
+          source_frame->coded_size(), gfx::ColorSpace::CreateREC709());
       if (!dst_frame) {
         return nullptr;
       }

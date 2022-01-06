@@ -196,23 +196,17 @@ AppId InstallWebAppFromManifest(Browser* browser, const GURL& app_url) {
 }
 
 Browser* LaunchWebAppBrowser(Profile* profile, const AppId& app_id) {
-  BrowserChangeObserver observer(nullptr,
-                                 BrowserChangeObserver::ChangeType::kAdded);
-  EXPECT_TRUE(
+  content::WebContents* web_contents =
       apps::AppServiceProxyFactory::GetForProfile(profile)
           ->BrowserAppLauncher()
           ->LaunchAppWithParams(apps::AppLaunchParams(
               app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
               WindowOpenDisposition::CURRENT_TAB,
-              apps::mojom::AppLaunchSource::kSourceTest)));
-
-  Browser* browser = observer.Wait();
-  EXPECT_EQ(browser, chrome::FindLastActive());
-  bool is_correct_app_browser =
-      browser && GetAppIdFromApplicationName(browser->app_name()) == app_id;
-  EXPECT_TRUE(is_correct_app_browser);
-
-  return is_correct_app_browser ? browser : nullptr;
+              apps::mojom::LaunchSource::kFromTest));
+  EXPECT_TRUE(web_contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  EXPECT_TRUE(AppBrowserController::IsForWebApp(browser, app_id));
+  return browser;
 }
 
 // Launches the app, waits for the app url to load.
@@ -232,7 +226,7 @@ Browser* LaunchBrowserForWebAppInTab(Profile* profile, const AppId& app_id) {
           ->LaunchAppWithParams(apps::AppLaunchParams(
               app_id, apps::mojom::LaunchContainer::kLaunchContainerTab,
               WindowOpenDisposition::NEW_FOREGROUND_TAB,
-              apps::mojom::AppLaunchSource::kSourceTest));
+              apps::mojom::LaunchSource::kFromTest));
   DCHECK(web_contents);
 
   WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);

@@ -21,9 +21,9 @@
 #include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/components/sensors/sensor_util.h"
@@ -94,12 +94,17 @@ bool HasCrosCameraTest() {
 
 class MojoCameraClientObserver : public CameraClientObserver {
  public:
+  MojoCameraClientObserver() = delete;
+
   explicit MojoCameraClientObserver(
       mojo::PendingRemote<cros::mojom::CameraHalClient> client,
       cros::mojom::CameraClientType type,
       base::UnguessableToken auth_token)
       : CameraClientObserver(type, std::move(auth_token)),
         client_(std::move(client)) {}
+
+  MojoCameraClientObserver(const MojoCameraClientObserver&) = delete;
+  MojoCameraClientObserver& operator=(const MojoCameraClientObserver&) = delete;
 
   void OnChannelCreated(
       mojo::PendingRemote<cros::mojom::CameraModule> camera_module) override {
@@ -110,7 +115,6 @@ class MojoCameraClientObserver : public CameraClientObserver {
 
  private:
   mojo::Remote<cros::mojom::CameraHalClient> client_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(MojoCameraClientObserver);
 };
 
 }  // namespace

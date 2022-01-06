@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/services/auction_worklet/console.h"
 #include "gin/public/isolate_holder.h"
@@ -177,6 +177,14 @@ class AuctionV8Helper
                                       base::StringPiece function_name,
                                       base::span<v8::Local<v8::Value>> args,
                                       std::vector<std::string>& error_out);
+
+  // If any debugging session targeting `context_group_id` has set an active
+  // DOM instrumentation breakpoint `name`, asks for v8 to do a debugger pause
+  // on the next statement.
+  //
+  // Expected to be run before a corresponding RunScript.
+  void MaybeTriggerInstrumentationBreakpoint(int context_group_id,
+                                             const std::string& name);
 
   void set_script_timeout_for_testing(base::TimeDelta script_timeout);
 

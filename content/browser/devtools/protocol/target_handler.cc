@@ -115,7 +115,7 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
       return "crashed";
     case base::TERMINATION_STATUS_STILL_RUNNING:
       return "still running";
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
     // Used for the case when oom-killer kills a process on ChromeOS.
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
       return "oom killed";
@@ -159,6 +159,11 @@ class BrowserToPageConnector {
       // TODO(dgozman): handle return value of AttachClient.
       host->AttachClient(this);
     }
+
+    BrowserConnectorHostClient(const BrowserConnectorHostClient&) = delete;
+    BrowserConnectorHostClient& operator=(const BrowserConnectorHostClient&) =
+        delete;
+
     void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                  base::span<const uint8_t> message) override {
       connector_->DispatchProtocolMessage(agent_host, message);
@@ -169,7 +174,6 @@ class BrowserToPageConnector {
 
    private:
     BrowserToPageConnector* connector_;
-    DISALLOW_COPY_AND_ASSIGN(BrowserConnectorHostClient);
   };
 
   BrowserToPageConnector(const std::string& binding_name,
@@ -206,6 +210,9 @@ class BrowserToPageConnector {
     SendProtocolMessageToPage("Runtime.evaluate", std::move(evaluate_params));
     g_browser_to_page_connectors.Get()[page_host_.get()].reset(this);
   }
+
+  BrowserToPageConnector(const BrowserToPageConnector&) = delete;
+  BrowserToPageConnector& operator=(const BrowserToPageConnector&) = delete;
 
  private:
   void SendProtocolMessageToPage(const char* method,
@@ -282,8 +289,6 @@ class BrowserToPageConnector {
   std::unique_ptr<BrowserConnectorHostClient> browser_host_client_;
   std::unique_ptr<BrowserConnectorHostClient> page_host_client_;
   int page_message_id_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserToPageConnector);
 };
 
 }  // namespace
@@ -435,16 +440,15 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   }
 
   void SetThrottle(Throttle* throttle) { throttle_ = throttle; }
-  void SetServiceWorkerThrottle(
-      scoped_refptr<DevToolsThrottleHandle> service_worker_throttle) {
-    service_worker_throttle_ = service_worker_throttle;
+  void SetWorkerThrottle(
+      scoped_refptr<DevToolsThrottleHandle> worker_throttle) {
+    worker_throttle_ = std::move(worker_throttle);
   }
 
   void ResumeIfThrottled() {
     if (throttle_)
       throttle_->Clear();
-    if (service_worker_throttle_)
-      service_worker_throttle_.reset();
+    worker_throttle_.reset();
   }
 
   void SendMessageToAgentHost(base::span<const uint8_t> message) {
@@ -454,7 +458,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     // method that |message| is JSON.
     DCHECK(!flatten_protocol_);
 
-    if (throttle_ || service_worker_throttle_) {
+    if (throttle_ || worker_throttle_) {
       absl::optional<base::Value> value =
           base::JSONReader::Read(base::StringPiece(
               reinterpret_cast<const char*>(message.data()), message.size()));
@@ -532,6 +536,10 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     return GetRootClient()->MayWriteLocalFiles();
   }
 
+  bool AllowUnsafeOperations() override {
+    return GetRootClient()->AllowUnsafeOperations();
+  }
+
   content::DevToolsAgentHostClient* GetRootClient() {
     return handler_->root_session_->GetClient();
   }
@@ -542,7 +550,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   bool flatten_protocol_;
   DevToolsSession* devtools_session_ = nullptr;
   Throttle* throttle_ = nullptr;
-  scoped_refptr<DevToolsThrottleHandle> service_worker_throttle_;
+  scoped_refptr<DevToolsThrottleHandle> worker_throttle_;
   // This is needed to identify sessions associated with given
   // AutoAttacher to properly support SetAttachedTargetsOfType()
   // for a TargetHandler that serves as a client to multiple
@@ -1233,14 +1241,14 @@ void TargetHandler::ApplyNetworkContextParamsOverrides(
   }
 }
 
-void TargetHandler::AddServiceWorkerThrottle(
+void TargetHandler::AddWorkerThrottle(
     DevToolsAgentHost* agent_host,
     scoped_refptr<DevToolsThrottleHandle> throttle_handle) {
   if (!agent_host)
     return;
 
   if (auto_attached_sessions_.count(agent_host)) {
-    auto_attached_sessions_[agent_host]->SetServiceWorkerThrottle(
+    auto_attached_sessions_[agent_host]->SetWorkerThrottle(
         std::move(throttle_handle));
   }
 }

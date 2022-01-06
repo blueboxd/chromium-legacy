@@ -10,10 +10,12 @@
 #include "chrome/browser/lacros/download_controller_client_lacros.h"
 #include "chrome/browser/lacros/drivefs_cache.h"
 #include "chrome/browser/lacros/field_trial_observer.h"
+#include "chrome/browser/lacros/force_installed_tracker_lacros.h"
 #include "chrome/browser/lacros/lacros_butter_bar.h"
 #include "chrome/browser/lacros/lacros_extension_apps_controller.h"
 #include "chrome/browser/lacros/lacros_extension_apps_publisher.h"
 #include "chrome/browser/lacros/lacros_memory_pressure_evaluator.h"
+#include "chrome/browser/lacros/screen_orientation_delegate_lacros.h"
 #include "chrome/browser/lacros/task_manager_lacros.h"
 #include "chrome/browser/lacros/web_page_info_lacros.h"
 #include "chrome/browser/metrics/structured/chrome_structured_metrics_recorder.h"
@@ -34,6 +36,8 @@ void ChromeBrowserMainExtraPartsLacros::PostBrowserStart() {
   kiosk_session_service_ = std::make_unique<KioskSessionServiceLacros>();
   web_page_info_provider_ =
       std::make_unique<crosapi::WebPageInfoProviderLacros>();
+  screen_orientation_delegate_ =
+      std::make_unique<ScreenOrientationDelegateLacros>();
 
   memory_pressure::MultiSourceMemoryPressureMonitor* monitor =
       static_cast<memory_pressure::MultiSourceMemoryPressureMonitor*>(
@@ -60,6 +64,9 @@ void ChromeBrowserMainExtraPartsLacros::PostBrowserStart() {
 
   field_trial_observer_ = std::make_unique<FieldTrialObserver>();
   field_trial_observer_->Start();
+
+  force_installed_tracker_ = std::make_unique<ForceInstalledTrackerLacros>();
+  force_installed_tracker_->Start();
 
   metrics::structured::ChromeStructuredMetricsRecorder::Get()->Initialize();
 }

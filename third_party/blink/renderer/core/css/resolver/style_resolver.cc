@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_color_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
@@ -126,6 +127,21 @@ bool ShouldStoreOldStyle(const StyleRecalcContext& style_recalc_context,
   return style_recalc_context.container && state.CanAffectAnimations();
 }
 
+bool ShouldSetPendingUpdate(StyleResolverState& state, Element& element) {
+  if (!state.AnimationUpdate().IsEmpty())
+    return true;
+  // Even when the animation update is empty, we must still set the pending
+  // update in order to clear PreviousActiveInterpolationsForAnimations.
+  //
+  // See CSSAnimations::MaybeApplyPendingUpdate
+  if (const ElementAnimations* element_animations =
+          element.GetElementAnimations()) {
+    return element_animations->CssAnimations()
+        .HasPreviousActiveInterpolationsForAnimations();
+  }
+  return false;
+}
+
 void SetAnimationUpdateIfNeeded(const StyleRecalcContext& style_recalc_context,
                                 StyleResolverState& state,
                                 Element& element) {
@@ -139,7 +155,7 @@ void SetAnimationUpdateIfNeeded(const StyleRecalcContext& style_recalc_context,
   // If any changes to CSS Animations were detected, stash the update away for
   // application after the layout object is updated if we're in the appropriate
   // scope.
-  if (state.AnimationUpdate().IsEmpty())
+  if (!ShouldSetPendingUpdate(state, element))
     return;
 
   if (RuntimeEnabledFeatures::CSSDelayedAnimationUpdatesEnabled()) {
@@ -285,6 +301,18 @@ static CSSPropertyValueSet* DocumentElementUserAgentDeclarations() {
                                           *CSSInitialColorValue::Create());
   }
   return document_element_ua_decl;
+}
+
+// The 'color' property conditionally inherits from the *used* value of its
+// parent, and we rely on an explicit value in the cascade to implement this.
+// https://drafts.csswg.org/css-color-adjust-1/#propdef-forced-color-adjust
+static CSSPropertyValueSet* ForcedColorsUserAgentDeclarations() {
+  DEFINE_STATIC_LOCAL(
+      Persistent<MutableCSSPropertyValueSet>, decl,
+      (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode)));
+  if (decl->IsEmpty())
+    decl->SetProperty(CSSPropertyID::kColor, *CSSInheritedValue::Create());
+  return decl;
 }
 
 static void CollectScopedResolversForHostedShadowTrees(
@@ -982,6 +1010,11 @@ void StyleResolver::ApplyBaseStyle(
 
     GetDocument().GetStyleEngine().EnsureUAStyleForElement(*element);
 
+    if (!style_request.IsPseudoStyleRequest() && IsForcedColorsModeEnabled()) {
+      cascade.MutableMatchResult().AddMatchedProperties(
+          ForcedColorsUserAgentDeclarations());
+    }
+
     // This adds a CSSInitialColorValue to the cascade for the document
     // element. The CSSInitialColorValue will resolve to a color-scheme
     // sensitive color in Color::ApplyValue. It is added at the start of the
@@ -1035,6 +1068,8 @@ void StyleResolver::ApplyBaseStyle(
 
     if (collector.MatchedResult().DependsOnContainerQueries())
       state.Style()->SetDependsOnContainerQueries(true);
+    if (collector.MatchedResult().DependsOnViewportContainerQueries())
+      state.Style()->SetHasViewportUnits(true);
     if (collector.MatchedResult().ConditionallyAffectsAnimations())
       state.SetCanAffectAnimations();
 
@@ -1326,43 +1361,45 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
   CSSAnimations::CalculateAnimationUpdate(
       state.AnimationUpdate(), *animating_element, state.GetElement(),
       *state.Style(), state.ParentStyle(), this);
-  CSSAnimations::CalculateCompositorAnimationUpdate(
-      state.AnimationUpdate(), *animating_element, element, *state.Style(),
-      state.ParentStyle(), WasViewportResized());
   CSSAnimations::CalculateTransitionUpdate(state.AnimationUpdate(),
                                            *animating_element, *state.Style());
 
+  bool apply = !state.AnimationUpdate().IsEmpty();
+  if (apply) {
+    const ActiveInterpolationsMap& animations =
+        state.AnimationUpdate().ActiveInterpolationsForAnimations();
+    const ActiveInterpolationsMap& transitions =
+        state.AnimationUpdate().ActiveInterpolationsForTransitions();
+
+    cascade.AddInterpolations(&animations, CascadeOrigin::kAnimation);
+    cascade.AddInterpolations(&transitions, CascadeOrigin::kTransition);
+
+    CascadeFilter filter;
+    if (state.Style()->StyleType() == kPseudoIdMarker)
+      filter = filter.Add(CSSProperty::kValidForMarker, false);
+    if (IsHighlightPseudoElement(state.Style()->StyleType()))
+      filter = filter.Add(CSSProperty::kValidForHighlight, false);
+    filter = filter.Add(CSSProperty::kAnimation, true);
+
+    cascade.Apply(filter);
+
+    // Start loading resources used by animations.
+    state.LoadPendingResources();
+
+    DCHECK(!state.GetFontBuilder().FontDirty());
+  }
+
+  CSSAnimations::CalculateCompositorAnimationUpdate(
+      state.AnimationUpdate(), *animating_element, element,
+      *state.StyleRef().GetBaseComputedStyle(), state.ParentStyle(),
+      WasViewportResized(), state.AffectsCompositorSnapshots());
   CSSAnimations::SnapshotCompositorKeyframes(
-      element, state.AnimationUpdate(), *state.Style(), state.ParentStyle());
+      element, state.AnimationUpdate(),
+      *state.StyleRef().GetBaseComputedStyle(), state.ParentStyle());
   CSSAnimations::UpdateAnimationFlags(
       *animating_element, state.AnimationUpdate(), state.StyleRef());
 
-  if (state.AnimationUpdate().IsEmpty())
-    return false;
-
-  const ActiveInterpolationsMap& animations =
-      state.AnimationUpdate().ActiveInterpolationsForAnimations();
-  const ActiveInterpolationsMap& transitions =
-      state.AnimationUpdate().ActiveInterpolationsForTransitions();
-
-  cascade.AddInterpolations(&animations, CascadeOrigin::kAnimation);
-  cascade.AddInterpolations(&transitions, CascadeOrigin::kTransition);
-
-  CascadeFilter filter;
-  if (state.Style()->StyleType() == kPseudoIdMarker)
-    filter = filter.Add(CSSProperty::kValidForMarker, false);
-  if (IsHighlightPseudoElement(state.Style()->StyleType()))
-    filter = filter.Add(CSSProperty::kValidForHighlight, false);
-  filter = filter.Add(CSSProperty::kAnimation, true);
-
-  cascade.Apply(filter);
-
-  // Start loading resources used by animations.
-  state.LoadPendingResources();
-
-  DCHECK(!state.GetFontBuilder().FontDirty());
-
-  return true;
+  return apply;
 }
 
 StyleRuleKeyframes* StyleResolver::FindKeyframesRule(
@@ -1753,12 +1790,6 @@ void StyleResolver::Trace(Visitor* visitor) const {
 
 bool StyleResolver::IsForcedColorsModeEnabled() const {
   return GetDocument().InForcedColorsMode();
-}
-
-bool StyleResolver::IsForcedColorsModeEnabled(
-    const StyleResolverState& state) const {
-  return IsForcedColorsModeEnabled() &&
-         state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone;
 }
 
 scoped_refptr<ComputedStyle> StyleResolver::CreateAnonymousStyleWithDisplay(

@@ -10,8 +10,10 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -25,6 +27,7 @@
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
@@ -90,6 +93,10 @@ absl::optional<base::FilePath> GetProductVersionPath(UpdaterScope scope) {
   absl::optional<base::FilePath> product_path = GetProductPath(scope);
   return product_path ? product_path->AppendASCII(kUpdaterVersion)
                       : product_path;
+}
+
+std::wstring GetAppClientsKey(const std::wstring& id) {
+  return base::StrCat({CLIENTS_KEY, id});
 }
 
 std::wstring GetAppClientStateKey(const std::string& id) {
@@ -657,6 +664,70 @@ void ExpectLegacyUpdate3WebSucceeds(UpdaterScope scope,
       DoUpdate(scope, base::win::ScopedBstr(base::UTF8ToWide(app_id).c_str())));
 }
 
+void SetFcLaunchCmd(const std::wstring& id) {
+  base::win::RegKey key;
+  ASSERT_EQ(key.Create(HKEY_LOCAL_MACHINE, GetAppClientsKey(id).c_str(),
+                       Wow6432(KEY_WRITE)),
+            ERROR_SUCCESS);
+  EXPECT_EQ(key.WriteValue(L"fc", L"fc /?"), ERROR_SUCCESS);
+}
+
+void DeleteFcLaunchCmd(const std::wstring& id) {
+  base::win::RegKey key;
+  ASSERT_EQ(key.Create(HKEY_LOCAL_MACHINE, GetAppClientsKey(id).c_str(),
+                       Wow6432(KEY_WRITE)),
+            ERROR_SUCCESS);
+  EXPECT_EQ(key.DeleteValue(L"fc"), ERROR_SUCCESS);
+}
+
+void ExpectLegacyProcessLauncherSucceeds(UpdaterScope scope) {
+  // ProcessLauncher is only implemented for kSystem at the moment.
+  if (scope != UpdaterScope::kSystem)
+    return;
+
+  Microsoft::WRL::ComPtr<IProcessLauncher> process_launcher;
+  EXPECT_HRESULT_SUCCEEDED(::CoCreateInstance(__uuidof(ProcessLauncherClass),
+                                              nullptr, CLSCTX_LOCAL_SERVER,
+                                              IID_PPV_ARGS(&process_launcher)));
+  EXPECT_TRUE(process_launcher);
+
+  const wchar_t* const kAppId1 = L"{831EF4D0-B729-4F61-AA34-91526481799D}";
+  ULONG_PTR proc_handle = 0;
+  DWORD caller_proc_id = ::GetCurrentProcessId();
+
+  // Returns ERROR_BAD_IMPERSONATION_LEVEL when explicit security blanket is not
+  // set.
+  EXPECT_EQ(HRESULT_FROM_WIN32(ERROR_BAD_IMPERSONATION_LEVEL),
+            process_launcher->LaunchCmdElevated(kAppId1, _T("fc"),
+                                                caller_proc_id, &proc_handle));
+  EXPECT_EQ(static_cast<ULONG_PTR>(0), proc_handle);
+
+  // Sets a security blanket that will allow the server to impersonate the
+  // client.
+  EXPECT_HRESULT_SUCCEEDED(::CoSetProxyBlanket(
+      process_launcher.Get(), RPC_C_AUTHN_DEFAULT, RPC_C_AUTHZ_DEFAULT,
+      COLE_DEFAULT_PRINCIPAL, RPC_C_AUTHN_LEVEL_DEFAULT,
+      RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_DEFAULT));
+
+  // Succeeds when the command is present in the registry.
+  SetFcLaunchCmd(kAppId1);
+  EXPECT_HRESULT_SUCCEEDED(process_launcher->LaunchCmdElevated(
+      kAppId1, _T("fc"), caller_proc_id, &proc_handle));
+  EXPECT_NE(static_cast<ULONG_PTR>(0), proc_handle);
+
+  HANDLE handle = reinterpret_cast<HANDLE>(proc_handle);
+  EXPECT_NE(WAIT_FAILED, ::WaitForSingleObject(handle, 10000));
+  EXPECT_TRUE(::CloseHandle(handle));
+  DeleteFcLaunchCmd(kAppId1);
+
+  // Returns HRESULT_FROM_WIN32(ERROR_NOT_FOUND) when the command is missing in
+  // the registry.
+  EXPECT_EQ(HRESULT_FROM_WIN32(ERROR_NOT_FOUND),
+            process_launcher->LaunchCmdElevated(kAppId1, _T("fc"),
+                                                caller_proc_id, &proc_handle));
+  EXPECT_EQ(static_cast<ULONG_PTR>(0), proc_handle);
+}
+
 int RunVPythonCommand(const base::CommandLine& command_line) {
   base::CommandLine python_command = command_line;
   python_command.PrependWrapper(FILE_PATH_LITERAL("vpython3.bat"));
@@ -679,6 +750,26 @@ void RunTestServiceCommand(const std::string& sub_command) {
   base::CommandLine command(path);
   command.AppendArg(sub_command);
 
+  EXPECT_EQ(RunVPythonCommand(command), 0);
+}
+
+void InvokeTestServiceFunction(
+    const std::string& function_name,
+    const base::flat_map<std::string, base::Value>& arguments) {
+  std::string arguments_json_string;
+  EXPECT_TRUE(
+      base::JSONWriter::Write(base::Value(arguments), &arguments_json_string));
+
+  base::FilePath path(base::CommandLine::ForCurrentProcess()->GetProgram());
+  path = path.DirName();
+  path = MakeAbsoluteFilePath(path);
+  path = path.Append(FILE_PATH_LITERAL("test_service"))
+             .Append(FILE_PATH_LITERAL("service_client.py"));
+  EXPECT_TRUE(base::PathExists(path));
+
+  base::CommandLine command(path);
+  command.AppendSwitchASCII("--function", function_name);
+  command.AppendSwitchASCII("--args", arguments_json_string);
   EXPECT_EQ(RunVPythonCommand(command), 0);
 }
 

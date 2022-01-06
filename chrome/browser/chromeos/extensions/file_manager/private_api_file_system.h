@@ -348,7 +348,7 @@ class FileManagerPrivateInternalComputeChecksumFunction
   ResponseAction Run() override;
 
  private:
-  std::unique_ptr<drive::util::FileStreamMd5Digester> digester_;
+  scoped_refptr<drive::util::FileStreamMd5Digester> digester_;
 
   void RespondWith(std::string hash);
 };
@@ -426,6 +426,19 @@ class FileManagerPrivateInternalStartIOTaskFunction
 
  protected:
   ~FileManagerPrivateInternalStartIOTaskFunction() override = default;
+
+  // ExtensionFunction overrides
+  ResponseAction Run() override;
+};
+
+// Implements the chrome.fileManagerPrivate.cancelIOTask method.
+class FileManagerPrivateCancelIOTaskFunction : public LoggedExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.cancelIOTask",
+                             FILEMANAGERPRIVATE_CANCELIOTASK)
+
+ protected:
+  ~FileManagerPrivateCancelIOTaskFunction() override = default;
 
   // ExtensionFunction overrides
   ResponseAction Run() override;

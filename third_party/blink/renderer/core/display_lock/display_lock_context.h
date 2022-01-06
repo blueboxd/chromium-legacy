@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_DISPLAY_LOCK_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_DISPLAY_LOCK_CONTEXT_H_
 
+#include <utility>
+
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/style_recalc.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -132,6 +134,10 @@ class CORE_EXPORT DisplayLockContext final
     blocked_child_recalc_change_ = blocked_child_recalc_change_.Combine(change);
   }
 
+  StyleRecalcChange TakeBlockedStyleRecalcChange() {
+    return std::exchange(blocked_child_recalc_change_, StyleRecalcChange());
+  }
+
   void NotifyReattachLayoutTreeWasBlocked() {
     blocked_child_recalc_change_ =
         blocked_child_recalc_change_.ForceReattachLayoutTree();
@@ -178,12 +184,6 @@ class CORE_EXPORT DisplayLockContext final
     needs_prepaint_subtree_walk_ = true;
   }
 
-  // This is called by the style recalc code in lieu of
-  // MarkForStyleRecalcIfNeeded() in order to adjust the child change if we need
-  // to recalc children nodes here.
-  StyleRecalcChange AdjustStyleRecalcChangeForChildren(
-      StyleRecalcChange change);
-
   void DidForceActivatableDisplayLocks() {
     if (IsLocked() && IsActivatable(DisplayLockActivationReason::kAny)) {
       MarkForStyleRecalcIfNeeded();
@@ -209,8 +209,12 @@ class CORE_EXPORT DisplayLockContext final
   // We unlock auto locks for printing, which is set here.
   void SetShouldUnlockAutoForPrint(bool);
 
-  void SetActivateForFindInPage(bool activate_for_find_in_page) {
-    activate_for_find_in_page_ = activate_for_find_in_page;
+  void SetIsHiddenUntilFoundElement(bool is_hidden_until_found) {
+    is_hidden_until_found_ = is_hidden_until_found;
+  }
+
+  void SetIsDetailsSlotElement(bool is_details_slot) {
+    is_details_slot_ = is_details_slot;
   }
 
   bool HasElement() const { return element_; }
@@ -478,7 +482,16 @@ class CORE_EXPORT DisplayLockContext final
   // When we use content-visibility:hidden for the <details> element's content
   // slot or the hidden=until-found attribute, then this lock must activate
   // during find-in-page.
-  bool activate_for_find_in_page_ = false;
+  bool is_details_slot_ = false;
+
+  // When an element has the hidden=until-found attribute, it gets the a
+  // presentational style of content-visibility:hidden, and we also want to
+  // activate this lock during find-in-page.
+  bool is_hidden_until_found_ = false;
+
+  // If we have pending subtree checks, it means we should check for selection
+  // and focus at the start of the next frame.
+  bool has_pending_subtree_checks_ = false;
 
   // If true, we need to clear the fact that we have a top layer at the start of
   // the next frame.

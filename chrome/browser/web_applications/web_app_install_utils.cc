@@ -5,30 +5,39 @@
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 
 #include <algorithm>
+#include <array>
+#include <map>
+#include <set>
 #include <string>
 #include <utility>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/containers/contains.h"
-#include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/web_app_file_handler_manager.h"
-#include "chrome/browser/web_applications/web_app_file_handler_registration.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
-#include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/common/chrome_features.h"
+#include "components/services/app_service/public/cpp/icon_info.h"
+#include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
-#include "components/webapps/browser/banners/app_banner_manager.h"
+#include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/size.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/web_applications/policy/pre_redirection_url_observer.h"
@@ -435,8 +444,7 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
 
   web_app_info->url_handlers = ToWebAppUrlHandlers(manifest.url_handlers);
 
-  if (base::FeatureList::IsEnabled(blink::features::kWebAppNoteTaking) &&
-      manifest.note_taking && manifest.note_taking->new_note_url.is_valid()) {
+  if (manifest.note_taking && manifest.note_taking->new_note_url.is_valid()) {
     web_app_info->note_taking_new_note_url = manifest.note_taking->new_note_url;
   }
 
@@ -572,6 +580,24 @@ void RecordAppBanner(content::WebContents* contents, const GURL& app_url) {
       contents, app_url, app_url.spec(),
       webapps::AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
       base::Time::Now());
+}
+
+void RecordDownloadedIconsHttpResultsCodeClass(
+    base::StringPiece histogram_name,
+    IconsDownloadedResult result,
+    const DownloadedIconsHttpResults& icons_http_results) {
+  if (result != IconsDownloadedResult::kCompleted)
+    return;
+
+  for (const auto& url_and_http_status_code : icons_http_results) {
+    int http_status_code = url_and_http_status_code.second;
+    if (http_status_code != 0) {
+      DCHECK_LE(100, http_status_code);
+      DCHECK_GT(600, http_status_code);
+      base::UmaHistogramExactLinear(histogram_name.data(),
+                                    http_status_code / 100, 5);
+    }
+  }
 }
 
 webapps::WebappInstallSource ConvertExternalInstallSourceToInstallSource(

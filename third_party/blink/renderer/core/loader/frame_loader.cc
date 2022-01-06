@@ -318,7 +318,7 @@ void FrameLoader::SaveScrollState() {
   if (ScrollableArea* layout_scrollable_area = frame_->View()->LayoutViewport())
     history_item->SetScrollOffset(layout_scrollable_area->GetScrollOffset());
   history_item->SetVisualViewportScrollOffset(ToScrollOffset(
-      frame_->GetPage()->GetVisualViewport().VisibleRect().Location()));
+      frame_->GetPage()->GetVisualViewport().VisibleRect().origin()));
 
   if (frame_->IsMainFrame())
     history_item->SetPageScaleFactor(frame_->GetPage()->PageScaleFactor());
@@ -338,8 +338,11 @@ void FrameLoader::DispatchUnloadEvent(
 
 void FrameLoader::DidExplicitOpen() {
   probe::DidOpenDocument(frame_, GetDocumentLoader());
-  if (empty_document_status_ == EmptyDocumentStatus::kOnlyEmpty)
-    empty_document_status_ = EmptyDocumentStatus::kOnlyEmptyButExplicitlyOpened;
+  if (initial_empty_document_status_ ==
+      InitialEmptyDocumentStatus::kInitialOrSynchronousAboutBlank) {
+    initial_empty_document_status_ = InitialEmptyDocumentStatus::
+        kInitialOrSynchronousAboutBlankButExplicitlyOpened;
+  }
 
   // Only model a document.open() as part of a navigation if its parent is not
   // done or in the process of completing.
@@ -479,8 +482,7 @@ WebFrameLoadType FrameLoader::HandleInitialEmptyDocumentReplacementIfNeeded(
   // needed.
   if (frame_load_type == WebFrameLoadType::kStandard ||
       frame_load_type == WebFrameLoadType::kReplaceCurrentItem) {
-    if (frame_->Tree().Parent() &&
-        empty_document_status_ == EmptyDocumentStatus::kOnlyEmpty) {
+    if (frame_->Tree().Parent() && IsOnInitialEmptyDocument()) {
       // Subframe navigations from the initial empty document should always do
       // replacement.
       return WebFrameLoadType::kReplaceCurrentItem;
@@ -670,7 +672,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
                                       frame_load_type),
         resource_request.HasUserGesture(), origin_window->GetSecurityOrigin(),
         /*is_synchronously_committed=*/true, request.GetTriggeringEventInfo(),
-        nullptr /* extra_data */);
+        false /* is_browser_initiated */, nullptr /* extra_data */);
     return;
   }
 
@@ -793,9 +795,10 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
           ? CSPDisposition::DO_NOT_CHECK
           : CSPDisposition::CHECK;
 
-  // If this is a subframe load to a urn: URL, allow loading from a Web Bundle
-  // attached to the parent document.
-  if (url.Protocol() == "urn") {
+  // If this is a subframe load to a urn: / uuid-in-package: URL, allow loading
+  // from a Web Bundle attached to the parent document.
+  // TODO(https://crbug.com/1257045): Remove urn: scheme support.
+  if (url.Protocol() == "urn" || url.Protocol() == "uuid-in-package") {
     auto* parent_local_frame = DynamicTo<LocalFrame>(frame_->Tree().Parent());
     if (parent_local_frame &&
         parent_local_frame->DomWindow() == origin_window &&
@@ -988,6 +991,21 @@ void FrameLoader::CommitNavigation(
   if (!CancelProvisionalLoaderForNewNavigation())
     return;
 
+  if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow())) {
+    if (navigation_params->frame_load_type == WebFrameLoadType::kBackForward) {
+      auto result = app_history->DispatchNavigateEvent(
+          navigation_params->url, nullptr, NavigateEventType::kCrossDocument,
+          WebFrameLoadType::kBackForward,
+          navigation_params->is_browser_initiated
+              ? UserNavigationInvolvement::kBrowserUI
+              : UserNavigationInvolvement::kNone,
+          nullptr, navigation_params->history_item);
+      DCHECK_EQ(result, AppHistory::DispatchResult::kContinue);
+      if (!document_loader_)
+        return;
+    }
+  }
+
   FillStaticResponseIfNeeded(navigation_params.get(), frame_);
   AssertCanNavigate(navigation_params.get(), frame_);
 
@@ -1052,8 +1070,27 @@ void FrameLoader::CommitNavigation(
 
   tls_version_warning_origins_.clear();
 
-  if (!DocumentLoader::WillLoadUrlAsEmpty(navigation_params->url))
-    empty_document_status_ = EmptyDocumentStatus::kNonEmpty;
+  if (!navigation_params->is_synchronous_commit_for_bug_778318 ||
+      (!navigation_params->url.IsEmpty() &&
+       !KURL(navigation_params->url).IsAboutBlankURL())) {
+    // The new document is not the synchronously committed about:blank document,
+    // so lose the initial empty document status.
+    // Note 1: The actual initial empty document commit (with commit_reason set
+    // to CommitReason::kInitialization) won't go through this path since it
+    // immediately commits the DocumentLoader, so we only check for the
+    // synchronous about:blank commit here.
+    // Note 2: Even if the navigation is a synchronous one, it might be a
+    // non-about:blank/empty URL commit that is accidentally got caught by the
+    // synchronous about:blank path but can't easily be removed due to failing
+    // tests/compatibility risk (e.g. about:mumble).
+    // TODO(https://crbug.com/1215096): Tighten the conditions in
+    // RenderFrameImpl::BeginNavigation() for a navigation to enter the
+    // synchronous commit path to only accept about:blank or an empty URL which
+    // defaults to about:blank, per the spec:
+    // https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-iframe-element:about:blank
+    DCHECK_NE(commit_reason, CommitReason::kInitialization);
+    SetIsNotOnInitialEmptyDocument();
+  }
 
   // TODO(dgozman): navigation type should probably be passed by the caller.
   // It seems incorrect to pass |false| for |have_event| and then use
@@ -1136,7 +1173,7 @@ void FrameLoader::DidAccessInitialDocument() {
     // Forbid script execution to prevent re-entering V8, since this is called
     // from a binding security check.
     ScriptForbiddenScope forbid_scripts;
-    frame_->GetLocalFrameHostRemote().DidAccessInitialDocument();
+    frame_->GetPage()->GetChromeClient().DidAccessInitialMainDocument();
   }
 }
 

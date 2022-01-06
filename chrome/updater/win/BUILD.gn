@@ -38,7 +38,7 @@ executable("updater") {
     "//build/win:default_exe_manifest",
     "//chrome/updater:base",
     "//chrome/updater:constants_prod",
-    "//chrome/updater/win/ui:ui_resources",
+    "//chrome/updater/win/ui/resources",
   ]
 
   data_deps = [ ":uninstall.cmd" ]
@@ -58,7 +58,7 @@ executable("updater_test") {
     "//build/win:default_exe_manifest",
     "//chrome/updater:base",
     "//chrome/updater:constants_test",
-    "//chrome/updater/win/ui:ui_resources",
+    "//chrome/updater/win/ui/resources",
   ]
 
   data_deps = [ ":uninstall.cmd" ]
@@ -79,24 +79,6 @@ process_version("uninstall.cmd") {
 process_version_rc_template("version_resources") {
   sources = [ "updater.ver" ]
   output = "$target_gen_dir/updater_exe.rc"
-}
-
-# This build target is defined to minimize the impact of -Wno-missing-braces
-# compiler switch. In the future it might be possible to isolate the
-# dependency of ATL in the UI so ATL headers are not visible in the
-# compilation units outside the UI itself.
-# TODO(sorin): https://crbug.com/1014311
-source_set("app_install_controller") {
-  cflags_cc = [ "-Wno-missing-braces" ]
-
-  sources = [ "app_install_controller.cc" ]
-
-  deps = [
-    "//base",
-    "//base:i18n",
-    "//chrome/updater:version_header",
-    "//chrome/updater/win/ui",
-  ]
 }
 
 source_set("tag_extractor") {

@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/debug_command_queue.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -38,6 +38,20 @@ void AuctionV8DevToolsAgent::Connect(
     int context_group_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   receivers_.Add(this, std::move(agent), context_group_id);
+}
+
+void AuctionV8DevToolsAgent::MaybeTriggerInstrumentationBreakpoint(
+    int context_group_id,
+    const std::string& name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
+
+  auto it = context_groups_.find(context_group_id);
+  if (it == context_groups_.end())
+    return;  // No sessions, so no breakpoints.
+
+  for (AuctionV8DevToolsSession* session : it->second.sessions) {
+    session->MaybeTriggerInstrumentationBreakpoint(name);
+  }
 }
 
 void AuctionV8DevToolsAgent::DestroySessions() {
@@ -68,11 +82,8 @@ void AuctionV8DevToolsAgent::AttachDevToolsSession(
       session_id, client_expects_binary_responses, std::move(host),
       io_session_receiver_sequence_, std::move(io_session_receiver),
       std::move(session_destroyed));
-  sessions_.Add(std::move(session_impl), std::move(session_receiver));
-
-  // Keep track of sessions for given worklet, to help cleanup its
-  // DebugCommandQueue.
   context_group_info.sessions.insert(session_impl.get());
+  sessions_.Add(std::move(session_impl), std::move(session_receiver));
 }
 
 void AuctionV8DevToolsAgent::InspectElement(const ::gfx::Point& point) {

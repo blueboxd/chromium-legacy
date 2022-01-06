@@ -5,11 +5,13 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/strcat.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/test/values_test_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "content/browser/attribution_reporting/conversion_manager_impl.h"
-#include "content/browser/attribution_reporting/conversion_test_utils.h"
+#include "base/values.h"
+#include "content/browser/attribution_reporting/attribution_manager_impl.h"
+#include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -45,10 +47,26 @@ constexpr char kBaseDataDir[] = "content/test/data/";
 // thread-safe manner. Therefore, these must be registered prior to |server|
 // starting.
 struct ExpectedReportWaiter {
+  ExpectedReportWaiter(GURL report_url,
+                       std::string attribution_destination,
+                       std::string source_event_id,
+                       std::string source_type,
+                       std::string trigger_data,
+                       net::EmbeddedTestServer* server)
+      : ExpectedReportWaiter(std::move(report_url),
+                             base::DictionaryValue(),
+                             server) {
+    expected_body.SetStringKey("attribution_destination",
+                               std::move(attribution_destination));
+    expected_body.SetStringKey("source_event_id", std::move(source_event_id));
+    expected_body.SetStringKey("source_type", std::move(source_type));
+    expected_body.SetStringKey("trigger_data", std::move(trigger_data));
+  }
+
   // ControllableHTTPResponses can only wait for relative urls, so only supply
   // the path.
   ExpectedReportWaiter(GURL report_url,
-                       std::string body,
+                       base::Value body,
                        net::EmbeddedTestServer* server)
       : expected_url(std::move(report_url)),
         expected_body(std::move(body)),
@@ -57,7 +75,7 @@ struct ExpectedReportWaiter {
             expected_url.path())) {}
 
   GURL expected_url;
-  std::string expected_body;
+  base::Value expected_body;
   std::unique_ptr<net::test_server::ControllableHttpResponse> response;
 
   bool HasRequest() { return !!response->http_request(); }
@@ -78,7 +96,8 @@ struct ExpectedReportWaiter {
     GURL::Replacements replace_host;
     replace_host.SetHostStr(host);
 
-    EXPECT_EQ(expected_body, request.content);
+    base::Value body = base::test::ParseJson(request.content);
+    EXPECT_THAT(body, base::test::DictionaryHasValues(expected_body));
 
     // Clear the port as it is assigned by the EmbeddedTestServer at runtime.
     replace_host.SetPortStr("");
@@ -94,7 +113,7 @@ struct ExpectedReportWaiter {
 
 class AttributionsBrowserTest : public ContentBrowserTest {
  public:
-  AttributionsBrowserTest() { ConversionManagerImpl::RunInMemoryForTesting(); }
+  AttributionsBrowserTest() { AttributionManagerImpl::RunInMemoryForTesting(); }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kConversionsDebugMode);
@@ -123,7 +142,7 @@ class AttributionsBrowserTest : public ContentBrowserTest {
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
  protected:
-  ConversionDisallowingContentBrowserClient disallowed_browser_client_;
+  AttributionDisallowingContentBrowserClient disallowed_browser_client_;
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -140,9 +159,9 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"1","source_type":"navigation","trigger_data":"7"})",
-      https_server());
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"1", /*source_type=*/"navigation",
+      /*trigger_data=*/"7", https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL impression_url = https_server()->GetURL(
@@ -180,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/"", https_server());
+      /*body=*/base::Value(), https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL impression_url = https_server()->GetURL(
@@ -220,9 +239,9 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"1","source_type":"navigation","trigger_data":"7"})",
-      https_server());
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"1", /*source_type=*/"navigation",
+      /*trigger_data=*/"7", https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL impression_url = https_server()->GetURL(
@@ -257,9 +276,9 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"1","source_type":"navigation","trigger_data":"7"})",
-      https_server());
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"1", /*source_type=*/"navigation",
+      /*trigger_data=*/"7", https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL page_url = https_server()->GetURL("a.test", "/page_with_iframe.html");
@@ -305,9 +324,9 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"1","source_type":"navigation","trigger_data":"7"})",
-      https_server());
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"1", /*source_type=*/"navigation",
+      /*trigger_data=*/"7", https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL impression_url = https_server()->GetURL(
@@ -345,9 +364,9 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"1","source_type":"navigation","trigger_data":"7"})",
-      https_server());
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"1", /*source_type=*/"navigation",
+      /*trigger_data=*/"7", https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL impression_url = https_server()->GetURL(
@@ -389,9 +408,9 @@ IN_PROC_BROWSER_TEST_F(
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"1","source_type":"navigation","trigger_data":"7"})",
-      https_server());
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"1", /*source_type=*/"navigation",
+      /*trigger_data=*/"7", https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL impression_url = https_server()->GetURL(
@@ -439,9 +458,9 @@ IN_PROC_BROWSER_TEST_F(
   ExpectedReportWaiter expected_report(
       GURL("https://d.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"2","source_type":"navigation","trigger_data":"7"})",
-      https_server());
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"2", /*source_type=*/"navigation",
+      /*trigger_data=*/"7", https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL first_impression_url = https_server()->GetURL(
@@ -498,9 +517,9 @@ IN_PROC_BROWSER_TEST_F(
   ExpectedReportWaiter expected_report(
       GURL("https://d.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"1","source_type":"navigation","trigger_data":"7"})",
-      https_server());
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"1", /*source_type=*/"navigation",
+      /*trigger_data=*/"7", https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL first_impression_url = https_server()->GetURL(
@@ -559,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/"", https_server());
+      /*body=*/base::Value(), https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL impression_url = https_server()->GetURL(
@@ -609,8 +628,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"7","source_type":"event","trigger_data":"1"})",
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
   ASSERT_TRUE(https_server()->Start());
 
@@ -651,13 +670,13 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"7","source_type":"event","trigger_data":"1"})",
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
   ExpectedReportWaiter expected_report_not_sent(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/"", https_server());
+      /*body=*/base::Value(), https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL impression_url = https_server()->GetURL(
@@ -709,8 +728,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"7","source_type":"event","trigger_data":"1"})",
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
   ASSERT_TRUE(https_server()->Start());
 
@@ -746,16 +765,16 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ExpectedReportWaiter expected_report1(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"1","source_type":"navigation","trigger_data":"7"})",
-      https_server());
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"1", /*source_type=*/"navigation",
+      /*trigger_data=*/"7", https_server());
   // 12 below is sanitized to 4 here by the `AttributionPolicy`.
   ExpectedReportWaiter expected_report2(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"1","source_type":"navigation","trigger_data":"4"})",
-      https_server());
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"1", /*source_type=*/"navigation",
+      /*trigger_data=*/"4", https_server());
   ASSERT_TRUE(https_server()->Start());
 
   GURL impression_url = https_server()->GetURL(
@@ -821,8 +840,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"7","source_type":"event","trigger_data":"1"})",
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
   ASSERT_TRUE(https_server()->Start());
 
@@ -831,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   {
     auto url_loader_interceptor =
         content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
-            kBaseDataDir, kInitialUrl.GetOrigin());
+            kBaseDataDir, kInitialUrl.DeprecatedGetOriginAsURL());
     EXPECT_TRUE(NavigateToURL(web_contents(), kInitialUrl));
   }
 
@@ -881,8 +900,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"7","source_type":"event","trigger_data":"1"})",
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
   ASSERT_TRUE(https_server()->Start());
 
@@ -891,7 +910,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   {
     auto url_loader_interceptor =
         content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
-            kBaseDataDir, kInitialUrl.GetOrigin());
+            kBaseDataDir, kInitialUrl.DeprecatedGetOriginAsURL());
     EXPECT_TRUE(NavigateToURL(web_contents(), kInitialUrl));
   }
 
@@ -941,8 +960,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"7","source_type":"event","trigger_data":"1"})",
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
   ASSERT_TRUE(https_server()->Start());
 
@@ -968,7 +987,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   {
     auto url_loader_interceptor =
         content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
-            kBaseDataDir, kEmptyUrl.GetOrigin());
+            kBaseDataDir, kEmptyUrl.DeprecatedGetOriginAsURL());
     EXPECT_TRUE(NavigateToURL(web_contents(), kEmptyUrl));
   }
 
@@ -1002,8 +1021,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),
-      /*body=*/
-      R"({"source_event_id":"7","source_type":"event","trigger_data":"1"})",
+      /*attribution_destination=*/"https://b.test",
+      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
   ASSERT_TRUE(https_server()->Start());
 
@@ -1028,7 +1047,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   {
     auto url_loader_interceptor =
         content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
-            kBaseDataDir, kEmptyUrl.GetOrigin());
+            kBaseDataDir, kEmptyUrl.DeprecatedGetOriginAsURL());
     EXPECT_TRUE(NavigateToURL(web_contents(), kEmptyUrl));
   }
 

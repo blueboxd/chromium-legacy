@@ -49,12 +49,16 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
     EarlyHints(const EarlyHints& other) = delete;
     EarlyHints& operator=(const EarlyHints& other) = delete;
 
-    // True when at least one preload Link header was received during a
-    // main frame navigation.
-    bool was_preload_link_header_received = false;
+    // True when at least one preload or preconnect Link header was received
+    // during a main frame navigation.
+    bool was_resource_hints_received = false;
     // Non-null when at least one preload is actually requested.
     std::unique_ptr<NavigationEarlyHintsManager> manager;
   };
+
+  NavigationURLLoaderDelegate(const NavigationURLLoaderDelegate&) = delete;
+  NavigationURLLoaderDelegate& operator=(const NavigationURLLoaderDelegate&) =
+      delete;
 
   // Called when the request is redirected. Call FollowRedirect to continue
   // processing the request.
@@ -112,9 +116,6 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
  protected:
   NavigationURLLoaderDelegate() {}
   virtual ~NavigationURLLoaderDelegate() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderDelegate);
 };
 
 }  // namespace content

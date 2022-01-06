@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -54,9 +55,9 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/exo/buffer.h"
@@ -380,6 +381,12 @@ class FullRestoreAppLaunchHandlerBrowserTest
       int32_t restore_window_id) {
     return ::full_restore::FullRestoreReadHandler::GetInstance()->GetWindowInfo(
         restore_window_id);
+  }
+
+  std::unique_ptr<::app_restore::WindowInfo> GetWindowInfo(
+      aura::Window* window) {
+    return ::full_restore::FullRestoreReadHandler::GetInstance()->GetWindowInfo(
+        window);
   }
 
   bool HasNotificationFor(const std::string& notification_id) {
@@ -876,7 +883,7 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
   auto window = std::make_unique<aura::Window>(nullptr);
   window->Init(ui::LAYER_NOT_DRAWN);
   window->SetProperty(::app_restore::kRestoreWindowIdKey, kWindowId1);
-  auto stored_window_info = ::full_restore::GetWindowInfo(window.get());
+  auto stored_window_info = GetWindowInfo(window.get());
   EXPECT_EQ(kDeskId, *stored_window_info->desk_id);
   EXPECT_EQ(kCurrentBounds, *stored_window_info->current_bounds);
   EXPECT_EQ(kWindowStateType, *stored_window_info->window_state_type);
@@ -1029,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerChromeAppBrowserTest,
 
   EXPECT_TRUE(wm::CanActivateWindow(window));
 
-  EXPECT_EQ(0, ::full_restore::FetchRestoreWindowId(extension->id()));
+  EXPECT_EQ(0, ::app_restore::FetchRestoreWindowId(extension->id()));
 
   // Close the window.
   CloseAppWindow(app_window);
@@ -1106,10 +1113,10 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerChromeAppBrowserTest,
   ASSERT_TRUE(window1);
   EXPECT_NE(0, window1->GetProperty(::app_restore::kRestoreWindowIdKey));
 
-  auto window_info = ::full_restore::GetWindowInfo(window1);
+  auto window_info = GetWindowInfo(window1);
   ASSERT_TRUE(window_info);
   EXPECT_TRUE(window_info->activation_index.has_value());
-  EXPECT_EQ(INT32_MIN, window_info->activation_index.value());
+  EXPECT_EQ(INT32_MAX, window_info->activation_index.value());
 
   app_window2 = CreateAppWindow(browser()->profile(), extension);
   ASSERT_TRUE(app_window2);
@@ -1117,10 +1124,10 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerChromeAppBrowserTest,
   ASSERT_TRUE(window2);
   EXPECT_NE(0, window2->GetProperty(::app_restore::kRestoreWindowIdKey));
 
-  window_info = ::full_restore::GetWindowInfo(window2);
+  window_info = GetWindowInfo(window2);
   ASSERT_TRUE(window_info);
   EXPECT_TRUE(window_info->activation_index.has_value());
-  EXPECT_EQ(INT32_MIN, window_info->activation_index.value());
+  EXPECT_EQ(INT32_MAX, window_info->activation_index.value());
 
   // Create a new window, verity the restore window id is 0.
   auto* app_window = CreateAppWindow(browser()->profile(), extension);
@@ -1316,7 +1323,7 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
                         int32_t activation_index,
                         chromeos::WindowStateType window_state_type =
                             chromeos::WindowStateType::kDefault) {
-    auto window_info = ::full_restore::GetWindowInfo(window);
+    auto window_info = GetWindowInfo(window);
     ASSERT_TRUE(window_info);
     EXPECT_TRUE(window_info->activation_index.has_value());
     EXPECT_EQ(activation_index, window_info->activation_index.value());
@@ -1410,6 +1417,14 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
 
   TestFullRestoreInfoObserver* test_full_restore_info_observer() {
     return &test_full_restore_info_observer_;
+  }
+
+  const std::map<int32_t, std::string>& task_id_to_app_id() {
+    auto* arc_save_handler =
+        ::full_restore::FullRestoreSaveHandler::GetInstance()
+            ->arc_save_handler_.get();
+    DCHECK(arc_save_handler);
+    return arc_save_handler->task_id_to_app_id_;
   }
 
  protected:
@@ -1918,6 +1933,89 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
 
   ASSERT_FALSE(GetWindowInfo(kTaskId1));
   ASSERT_FALSE(GetWindowInfo(kTaskId2));
+
+  StopInstance();
+}
+
+// Test ARC apps restore data is removed, when Play Store is disabled.
+IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
+                       DisablePlayStore) {
+  SetProfile();
+  InstallTestApps(kTestAppPackage, true);
+
+  const std::string app_id1 = GetTestApp1Id(kTestAppPackage);
+  const std::string app_id2 = GetTestApp2Id(kTestAppPackage);
+  int32_t session_id1 =
+      ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
+  int32_t session_id2 =
+      ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
+  ::full_restore::FullRestoreInfo::GetInstance()->AddObserver(
+      test_full_restore_info_observer());
+
+  SaveAppLaunchInfo(app_id1, session_id1);
+  SaveAppLaunchInfo(app_id2, session_id2);
+
+  // Simulate creating kTaskId1.
+  int32_t kTaskId1 = 100;
+  CreateTask(app_id1, kTaskId1, session_id1);
+
+  // Create the window for the app1 and store its bounds.
+  views::Widget* widget1 = CreateExoWindow("org.chromium.arc.100");
+  aura::Window* window1 = widget1->GetNativeWindow();
+
+  // Create the window for the app2 and store its bounds.
+  int32_t kTaskId2 = 101;
+  views::Widget* widget2 = CreateExoWindow("org.chromium.arc.101");
+  aura::Window* window2 = widget2->GetNativeWindow();
+
+  // Simulate creating kTaskId2.
+  CreateTask(app_id2, kTaskId2, session_id2);
+  VerifyObserver(window1, /*launch_count=*/1, /*init_count=*/0);
+  VerifyObserver(window2, /*launch_count=*/1, /*init_count=*/0);
+
+  VerifyWindowProperty(window1, kTaskId1, /*restore_window_id*/ 0,
+                       /*hidden=*/false);
+  VerifyWindowProperty(window2, kTaskId2, /*restore_window_id*/ 0,
+                       /*hidden=*/false);
+
+  WaitForAppLaunchInfoSaved();
+
+  int32_t activation_index1 = 11;
+  int32_t activation_index2 = 12;
+  SaveWindowInfo(window1, activation_index1,
+                 chromeos::WindowStateType::kMaximized);
+  SaveWindowInfo(window2, activation_index2,
+                 chromeos::WindowStateType::kMinimized);
+
+  WaitForAppLaunchInfoSaved();
+
+  // Verify ARC app launch info is saved in `restore_data`.
+  const auto* restore_data =
+      ::full_restore::FullRestoreSaveHandler::GetInstance()->GetRestoreData(
+          profile()->GetPath());
+  ASSERT_TRUE(restore_data);
+  ASSERT_FALSE(restore_data->app_id_to_launch_list().empty());
+  ASSERT_FALSE(task_id_to_app_id().empty());
+
+  // Simulate Play Store is disabled.
+  app_restore::AppRestoreArcTaskHandler::GetForProfile(profile())
+      ->OnArcPlayStoreEnabledChanged(/*enabled=*/false);
+  widget1->CloseNow();
+
+  // Verify ARC app launch info is removed from `restore_data`.
+  ASSERT_TRUE(restore_data->app_id_to_launch_list().empty());
+  ASSERT_TRUE(task_id_to_app_id().empty());
+
+  widget2->CloseNow();
+
+  // Simulate Play Store is enabled and `app_id1` is launched.
+  int32_t session_id3 =
+      ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
+  int32_t kTaskId3 = 201;
+  SaveAppLaunchInfo(app_id1, session_id3);
+  CreateTask(app_id1, kTaskId3, session_id3);
+  ASSERT_FALSE(restore_data->app_id_to_launch_list().empty());
+  ASSERT_TRUE(base::Contains(restore_data->app_id_to_launch_list(), app_id1));
 
   StopInstance();
 }
@@ -2469,7 +2567,7 @@ class FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest
   void ModifyAppReadiness(apps::mojom::Readiness readiness) {
     apps::mojom::AppType app_type = apps::mojom::AppType::kWeb;
     if (crosapi::browser_util::IsLacrosEnabled() &&
-        base::FeatureList::IsEnabled(features::kWebAppsCrosapi)) {
+        web_app::IsWebAppsCrosapiEnabled()) {
       app_type = apps::mojom::AppType::kSystemWeb;
     }
 

@@ -73,7 +73,6 @@ TEST_F(ShimlessRmaMojoToProtoTest, StatesMatch) {
         rmad::RmadState::kWpDisableMethod},
        {mojom::RmaState::kEnterRSUWPDisableCode,
         rmad::RmadState::kWpDisableRsu},
-       {mojom::RmaState::kVerifyRsu, rmad::RmadState::kVerifyRsu},
        {mojom::RmaState::kWaitForManualWPDisable,
         rmad::RmadState::kWpDisablePhysical},
        {mojom::RmaState::kWPDisableComplete,
@@ -227,12 +226,14 @@ TEST_F(ShimlessRmaMojoToProtoTest, RepairComponentsMatch) {
            {mojom::ComponentType::kWireless,
             rmad::RmadComponent::RMAD_COMPONENT_WIRELESS},
            // Additional rmad components.
-           {mojom::ComponentType::kGyroscope,
-            rmad::RmadComponent::RMAD_COMPONENT_GYROSCOPE},
            {mojom::ComponentType::kBaseAccelerometer,
             rmad::RmadComponent::RMAD_COMPONENT_BASE_ACCELEROMETER},
            {mojom::ComponentType::kLidAccelerometer,
             rmad::RmadComponent::RMAD_COMPONENT_LID_ACCELEROMETER},
+           {mojom::ComponentType::kBaseGyroscope,
+            rmad::RmadComponent::RMAD_COMPONENT_BASE_GYROSCOPE},
+           {mojom::ComponentType::kLidGyroscope,
+            rmad::RmadComponent::RMAD_COMPONENT_LID_GYROSCOPE},
            {mojom::ComponentType::kScreen,
             rmad::RmadComponent::RMAD_COMPONENT_SCREEN},
 
@@ -272,14 +273,33 @@ TEST_F(ShimlessRmaMojoToProtoTest, RepairStatesMatch) {
   TestMojoToProto(enums);
 }
 
-TEST_F(ShimlessRmaMojoToProtoTest, ProvisioningStepsMatch) {
-  constexpr auto enums =
-      base::MakeFixedFlatMap<mojom::ProvisioningStep,
-                             rmad::ProvisionDeviceState::ProvisioningStep>(
-          {{mojom::ProvisioningStep::kInProgress,
-            rmad::ProvisionDeviceState::RMAD_PROVISIONING_STEP_IN_PROGRESS},
-           {mojom::ProvisioningStep::kProvisioningComplete,
-            rmad::ProvisionDeviceState::RMAD_PROVISIONING_STEP_COMPLETE}});
+TEST_F(ShimlessRmaMojoToProtoTest, ProvisioningStatusMatch) {
+  constexpr auto enums = base::MakeFixedFlatMap<mojom::ProvisioningStatus,
+                                                rmad::ProvisionStatus::Status>(
+      {{mojom::ProvisioningStatus::kInProgress,
+        rmad::ProvisionStatus::RMAD_PROVISION_STATUS_IN_PROGRESS},
+       {mojom::ProvisioningStatus::kComplete,
+        rmad::ProvisionStatus::RMAD_PROVISION_STATUS_COMPLETE},
+       {mojom::ProvisioningStatus::kFailedBlocking,
+        rmad::ProvisionStatus::RMAD_PROVISION_STATUS_FAILED_BLOCKING},
+       {mojom::ProvisioningStatus::kFailedNonBlocking,
+        rmad::ProvisionStatus::RMAD_PROVISION_STATUS_FAILED_NON_BLOCKING}});
+
+  TestProtoToMojo(enums);
+  TestMojoToProto(enums);
+}
+
+TEST_F(ShimlessRmaMojoToProtoTest, FinalizationStatusMatch) {
+  constexpr auto enums = base::MakeFixedFlatMap<mojom::FinalizationStatus,
+                                                rmad::FinalizeStatus::Status>(
+      {{mojom::FinalizationStatus::kInProgress,
+        rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_IN_PROGRESS},
+       {mojom::FinalizationStatus::kComplete,
+        rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_COMPLETE},
+       {mojom::FinalizationStatus::kFailedBlocking,
+        rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_BLOCKING},
+       {mojom::FinalizationStatus::kFailedNonBlocking,
+        rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_NON_BLOCKING}});
 
   TestProtoToMojo(enums);
   TestMojoToProto(enums);

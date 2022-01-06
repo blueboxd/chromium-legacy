@@ -206,6 +206,12 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_BATTERY_PERCENTAGE_A11Y_LABEL},
       {"bluetoothDeviceDetailConnectedA11yLabel",
        IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_CONNECTED_A11Y_LABEL},
+      {"bluetoothDeviceDetailConnectingA11yLabel",
+       IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_CONNECTING_A11Y_LABEL},
+      {"bluetoothDeviceDetailConnectionFailureA11yLabel",
+       IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_CONNECTION_FAILURE_A11Y_LABEL},
+      {"bluetoothDeviceDetailConnectionFailureLabel",
+       IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_CONNECTION_FAILURE_LABEL},
       {"bluetoothDeviceDetailDisconnectedA11yLabel",
        IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_DISCONNECTED_A11Y_LABEL},
       {"bluetoothChangeNameDialogInputA11yLabel",
@@ -278,6 +284,8 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE},
       {"bluetoothRemove", IDS_SETTINGS_BLUETOOTH_REMOVE},
       {"bluetoothManaged", IDS_SETTINGS_BLUETOOTH_MANAGED},
+      {"enableFastPairLabel", IDS_BLUETOOTH_ENABLE_FAST_PAIR_LABEL},
+      {"enableFastPairSubtitle", IDS_BLUETOOTH_ENABLE_FAST_PAIR_SUBTITLE},
       {"bluetoothPrimaryUserControlled",
        IDS_SETTINGS_BLUETOOTH_PRIMARY_USER_CONTROLLED},
       {"bluetoothDeviceWithConnectionStatus",
@@ -316,6 +324,7 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_BLUETOOTH_DEVICE_LIST_PREVIOUSLY_CONNECTED},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
+  html_source->AddBoolean("enableFastPairFlag", features::IsFastPairEnabled());
   chromeos::bluetooth::AddLoadTimeData(html_source);
 }
 
@@ -429,6 +438,8 @@ void BluetoothSection::UpdateSearchTags() {
   }
 
   updater.AddSearchTags(GetBluetoothOnSearchConcepts());
+
+  // TODO(crbug/1257312): Add Fast Pair search concepts.
 
   // Filter devices so that only those shown in the UI are returned. Note that
   // passing |max_devices| of 0 indicates that there is no maximum.

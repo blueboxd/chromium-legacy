@@ -33,6 +33,9 @@ class SkBitmap;
 // A map of icon urls to the bitmaps provided by that url.
 using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
 
+// A map of icon urls to http status results. `http_status_code` is never 0.
+using DownloadedIconsHttpResults = std::map<GURL, int /*http_status_code*/>;
+
 using SquareSizePx = int;
 // Iterates in ascending order (checked in SortedSizesPxIsAscending test).
 using SortedSizesPx = base::flat_set<SquareSizePx, std::less<>>;
@@ -236,6 +239,10 @@ struct WebApplicationInfo {
   // The expected page background color of the web app.
   // https://www.w3.org/TR/appmanifest/#background_color-member
   absl::optional<SkColor> background_color;
+
+  // The color to use for the background when
+  // launched in dark mode. This doesn't yet have manifest support.
+  absl::optional<SkColor> dark_mode_background_color;
 
   // App preference regarding whether the app should be opened in a tab,
   // in a window (with or without minimal-ui buttons), or full screen. Defaults

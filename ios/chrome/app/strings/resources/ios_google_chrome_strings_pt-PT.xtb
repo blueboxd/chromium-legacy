@@ -3,7 +3,7 @@
 <translationbundle lang="pt-PT">
 <translation id="1096883626080133124">Faça mais com um Google Chrome simples, seguro e mais rápido do que nunca</translation>
 <translation id="1282031177488366470">Ajudar a melhorar as funcionalidades e o desempenho do Chrome</translation>
-<translation id="1354592789402432496">O seu administrador requer que inicie sessão com uma conta de organização. As contas restringidas pelo seu administrador estão ocultas.</translation>
+<translation id="1314663809820920746">Ainda pode ver todos os seus marcadores, histórico, palavras-passe e outras definições neste dispositivo. Se efetuar alterações, estas não serão sincronizadas com a sua Conta Google.</translation>
 <translation id="1479202195792305274">O Chrome pode verificar as suas palavras-passe quando inicia sessão com a sua Conta Google.</translation>
 <translation id="1493827051843127077">Defina o Chrome como a predefinição para sincronizar os separadores, as palavras-chave e as informações de pagamento em todos os seus dispositivos</translation>
 <translation id="1504372625950710826">O Chrome não conseguiu verificar se existem atualizações. Experimente verificar a sua ligação à Internet.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Está offline. O Chrome não consegue verificar se existem atualizações.</translation>
 <translation id="5716154293141027663">Abra o Chrome sempre que tocar em links noutras apps</translation>
-<translation id="572883588166315317">A sua organização requer que inicie sessão para utilizar o Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="5854621639439811139">Sugestão para o Chrome: alguns botões encontram-se agora na parte inferior do ecrã, como Voltar, Avançar e Pesquisar.</translation>
-<translation id="5876773482963502140">Se permitir que o Chrome conheça a sua localização, este envia-a para quaisquer sites que permitir. Os sites podem solicitar a sua localização quando têm informações locais para lhe mostrar, como notícias ou lojas próximas.</translation>
 <translation id="5998675059699164418">A sua organização requer que inicie sessão para utilizar o Chrome.</translation>
 <translation id="6054613632208573261">Utilize o Chrome por predefinição</translation>
 <translation id="6063091872902370735">Permitir o início de sessão no Chrome</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Escolha se pretende limpar os seus dados do Chrome deste dispositivo ou mantê-los</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Todos os direitos reservados.</translation>
 <translation id="840168496893712993">Alguns suplementos provocam falhas no sistema do Chrome. Tente desinstalá-los.</translation>
+<translation id="8414886616817913619">A sua organização requer que inicie sessão para utilizar o Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Os dados selecionados foram removidos do Chrome e dos dispositivos sincronizados. A sua Conta Google pode ter outras formas do histórico de navegação, como pesquisas e atividade de outros serviços Google, em history.google.com.</translation>
 <translation id="850555388806794946">Para definir o Chrome como o navegador predefinido:
   1. Abra as Definições

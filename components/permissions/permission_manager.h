@@ -211,7 +211,7 @@ class PermissionManager : public KeyedService,
   // permissions::Observer:
   void OnPermissionChanged(const ContentSettingsPattern& primary_pattern,
                            const ContentSettingsPattern& secondary_pattern,
-                           ContentSettingsType content_type) override;
+                           ContentSettingsTypeSet content_type_set) override;
 
   PermissionResult GetPermissionStatusHelper(
       ContentSettingsType permission,
@@ -246,9 +246,6 @@ class PermissionManager : public KeyedService,
   url::Origin devtools_global_overrides_origin_;
 
   bool is_shutting_down_ = false;
-
-  // This is false when not processing a permission change and true otherwise
-  bool is_processing_permission_change_ = false;
 };
 
 }  // namespace permissions

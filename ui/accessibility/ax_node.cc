@@ -8,6 +8,8 @@
 
 #include <algorithm>
 
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -46,6 +48,7 @@ AXNode::AXNode(AXNode::OwnerTree* tree,
 AXNode::~AXNode() = default;
 
 AXNodeData&& AXNode::TakeData() {
+  has_data_been_taken_ = true;
   return std::move(data_);
 }
 
@@ -162,7 +165,25 @@ AXNode* AXNode::GetParentCrossingTreeBoundary() const {
 }
 
 AXNode* AXNode::GetUnignoredParent() const {
-  DCHECK(!tree_->GetTreeUpdateInProgressState());
+  // TODO(crbug.com/1237353): The following bailout is to test a hypothesis that
+  // this function is sometimes called while a tree update is in progress or
+  // when data_ isn't valid, which may be the cause of the crash detailed in
+  // crbug.com/1237353. Once this hypothesis has been verified, replace the
+  // bailout with a fix, which ideally should not call this function under
+  // the circumstances hypothesized. Also, add back in the following line:
+  // DCHECK(!tree_->GetTreeUpdateInProgressState());
+  if (tree_->GetTreeUpdateInProgressState() || is_data_still_uninitialized_ ||
+      has_data_been_taken_) {
+    static auto* const crash_key = base::debug::AllocateCrashKeyString(
+        "ax_node_err", base::debug::CrashKeySize::Size64);
+    std::ostringstream error;
+    error << "dataUninitialized=" << is_data_still_uninitialized_
+          << " dataTaken=" << has_data_been_taken_
+          << " treeUpdating=" << tree_->GetTreeUpdateInProgressState();
+    base::debug::SetCrashKeyString(crash_key, error.str());
+    base::debug::DumpWithoutCrashing();
+    return nullptr;
+  }
   AXNode* unignored_parent = GetParent();
   while (unignored_parent && unignored_parent->IsIgnored())
     unignored_parent = unignored_parent->GetParent();
@@ -641,6 +662,8 @@ bool AXNode::IsLineBreak() const {
 
 void AXNode::SetData(const AXNodeData& src) {
   data_ = src;
+  is_data_still_uninitialized_ = false;
+  has_data_been_taken_ = false;
 }
 
 void AXNode::SetLocation(AXNodeID offset_container_id,
@@ -791,14 +814,23 @@ bool AXNode::GetString16Attribute(ax::mojom::StringAttribute attribute,
   return false;
 }
 
+bool AXNode::HasInheritedStringAttribute(
+    ax::mojom::StringAttribute attribute) const {
+  for (const AXNode* current_node = this; current_node;
+       current_node = current_node->GetParent()) {
+    if (current_node->HasStringAttribute(attribute))
+      return true;
+  }
+  return false;
+}
+
 const std::string& AXNode::GetInheritedStringAttribute(
     ax::mojom::StringAttribute attribute) const {
-  const AXNode* current_node = this;
-  do {
+  for (const AXNode* current_node = this; current_node;
+       current_node = current_node->GetParent()) {
     if (current_node->HasStringAttribute(attribute))
       return current_node->GetStringAttribute(attribute);
-    current_node = current_node->GetParent();
-  } while (current_node);
+  }
   return base::EmptyString();
 }
 
@@ -932,22 +964,22 @@ const AXHypertext& AXNode::GetOldHypertext() const {
 
 const std::string& AXNode::GetInnerText() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
-  return GetComputedNodeData().GetOrComputeInnerTextUTF8();
+  return GetComputedNodeData().GetOrComputeTextContentUTF8();
 }
 
 const std::u16string& AXNode::GetInnerTextUTF16() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
-  return GetComputedNodeData().GetOrComputeInnerTextUTF16();
+  return GetComputedNodeData().GetOrComputeTextContentUTF16();
 }
 
 int AXNode::GetInnerTextLength() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
-  return GetComputedNodeData().GetOrComputeInnerTextLengthUTF8();
+  return GetComputedNodeData().GetOrComputeTextContentLengthUTF8();
 }
 
 int AXNode::GetInnerTextLengthUTF16() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
-  return GetComputedNodeData().GetOrComputeInnerTextLengthUTF16();
+  return GetComputedNodeData().GetOrComputeTextContentLengthUTF16();
 }
 
 std::string AXNode::GetLanguage() const {
@@ -1568,7 +1600,10 @@ std::string AXNode::GetValueForTextField() const {
 }
 
 bool AXNode::IsIgnored() const {
-  return data().IsIgnored();
+  // If the focus has moved, then it could make a previously ignored node
+  // unignored or vice versa. We never ignore focused nodes otherwise users of
+  // assistive software might be unable to interact with the webpage.
+  return AXTree::ComputeNodeIsIgnored(&tree_->data(), data());
 }
 
 bool AXNode::IsIgnoredForTextNavigation() const {
@@ -1588,14 +1623,7 @@ bool AXNode::IsIgnoredForTextNavigation() const {
 }
 
 bool AXNode::IsInvisibleOrIgnored() const {
-  if (!data().IsInvisibleOrIgnored())
-    return false;
-
-  return !IsFocusedWithinThisTree();
-}
-
-bool AXNode::IsFocusedWithinThisTree() const {
-  return id() == tree_->data().focus_id;
+  return id() != tree_->data().focus_id && (IsIgnored() || data_.IsInvisible());
 }
 
 bool AXNode::IsChildOfLeaf() const {
@@ -1688,7 +1716,9 @@ bool AXNode::IsLeaf() const {
       return true;
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kListBoxOption:
-    case ax::mojom::Role::kMath:  // role="math" is flat, unlike <math>.
+    // role="math" is flat. But always return false for kMathMLMath since the
+    // children of a <math> tag should be exposed to make MathML accessible.
+    case ax::mojom::Role::kMath:
     case ax::mojom::Role::kMenuListOption:
     case ax::mojom::Role::kMenuItem:
     case ax::mojom::Role::kMenuItemCheckBox:

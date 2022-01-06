@@ -30,8 +30,8 @@ body { margin:0; padding: 0; }
   object->AbsoluteQuads(quads, 0);
   EXPECT_EQ(1u, quads.size());
   FloatRect bounding = quads.back().BoundingBox();
-  EXPECT_EQ(7.0f, bounding.MinXMinYCorner().X());
-  EXPECT_EQ(307.0f, bounding.MaxXMinYCorner().X());
+  EXPECT_EQ(7.0f, bounding.x());
+  EXPECT_EQ(307.0f, bounding.right());
 }
 
 TEST_F(LayoutNGSVGTextTest, LocalVisualRect) {
@@ -50,6 +50,26 @@ text { font-family: Ahem; }
   // The descent of the font is 4px.  The bottom of the visual rect should
   // be greater than 32 + 4 if rotate is specified.
   EXPECT_GT(object->LocalVisualRect().Bottom(), LayoutUnit(36));
+}
+
+TEST_F(LayoutNGSVGTextTest, ObjectBoundingBox) {
+  SetBodyInnerHTML(R"HTML(
+<html>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 480 360">
+<text text-anchor="middle" x="240" y="25" font-size="16" id="t">
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq</text>
+</svg>
+</body><style>
+* { scale: 4294967108 33 -0.297499; }
+</style>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  gfx::RectF box = GetLayoutObjectByElementId("t")->ObjectBoundingBox();
+  EXPECT_FALSE(std::isinf(box.origin().x()));
+  EXPECT_FALSE(std::isinf(box.origin().y()));
+  EXPECT_FALSE(std::isinf(box.width()));
+  EXPECT_FALSE(std::isinf(box.height()));
 }
 
 }  // namespace blink

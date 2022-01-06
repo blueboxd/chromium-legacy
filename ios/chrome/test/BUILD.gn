@@ -70,7 +70,6 @@ source_set("test_support") {
 }
 
 source_set("eg_test_support+eg2") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
@@ -189,7 +188,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/favicon:unit_tests",
     "//ios/chrome/browser/find_in_page:unit_tests",
     "//ios/chrome/browser/flags:unit_tests",
-    "//ios/chrome/browser/geolocation:unit_tests",
     "//ios/chrome/browser/history:unit_tests",
     "//ios/chrome/browser/infobars:unit_tests",
     "//ios/chrome/browser/infobars/overlays:unit_tests",
@@ -247,6 +245,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin:unit_tests",
     "//ios/chrome/browser/ui/authentication/signin/trusted_vault_reauthentication:unit_tests",
     "//ios/chrome/browser/ui/authentication/signin/user_signin:unit_tests",
+    "//ios/chrome/browser/ui/authentication/signin_sync:unit_tests",
     "//ios/chrome/browser/ui/authentication/unified_consent:unit_tests",
     "//ios/chrome/browser/ui/authentication/unified_consent/identity_chooser:unit_tests",
     "//ios/chrome/browser/ui/autofill/cells:unit_tests",

@@ -13,6 +13,7 @@
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/event_rewriter.h"
@@ -226,9 +227,28 @@ TEST_F(WindowTreeHostWithOcclusionTest, ToggleOccluded) {
   ASSERT_TRUE(NativeWindowOcclusionTracker::
                   IsNativeWindowOcclusionTrackingAlwaysEnabled(host()));
   host()->Show();
-  host()->SetNativeWindowOcclusionState(Window::OcclusionState::OCCLUDED);
+  host()->SetNativeWindowOcclusionState(Window::OcclusionState::OCCLUDED, {});
   EXPECT_FALSE(host()->compositor()->IsVisible());
-  host()->SetNativeWindowOcclusionState(Window::OcclusionState::VISIBLE);
+  host()->SetNativeWindowOcclusionState(Window::OcclusionState::VISIBLE, {});
+  EXPECT_TRUE(host()->compositor()->IsVisible());
+}
+
+TEST_F(WindowTreeHostWithOcclusionTest, VideoCaptureLockForcesVisible) {
+  ASSERT_TRUE(NativeWindowOcclusionTracker::
+                  IsNativeWindowOcclusionTrackingAlwaysEnabled(host()));
+  host()->Show();
+  host()->SetNativeWindowOcclusionState(Window::OcclusionState::OCCLUDED, {});
+  EXPECT_FALSE(host()->compositor()->IsVisible());
+  std::unique_ptr<WindowTreeHost::VideoCaptureLock> lock =
+      host()->CreateVideoCaptureLock();
+  EXPECT_TRUE(host()->compositor()->IsVisible());
+  host()->SetNativeWindowOcclusionState(Window::OcclusionState::VISIBLE, {});
+  EXPECT_TRUE(host()->compositor()->IsVisible());
+  host()->SetNativeWindowOcclusionState(Window::OcclusionState::OCCLUDED, {});
+  EXPECT_TRUE(host()->compositor()->IsVisible());
+  lock.reset();
+  EXPECT_FALSE(host()->compositor()->IsVisible());
+  host()->SetNativeWindowOcclusionState(Window::OcclusionState::VISIBLE, {});
   EXPECT_TRUE(host()->compositor()->IsVisible());
 }
 #endif

@@ -10,7 +10,7 @@
 #include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "media/audio/alsa/alsa_output.h"
 #include "media/audio/alsa/alsa_util.h"
 #include "media/audio/alsa/alsa_wrapper.h"
@@ -241,7 +241,7 @@ void AlsaPcmInputStream::ReadAudio() {
 
   next_read_time_ += buffer_duration_;
   base::TimeDelta delay = next_read_time_ - base::TimeTicks::Now();
-  if (delay < base::TimeDelta()) {
+  if (delay.is_negative()) {
     DVLOG(1) << "Audio read callback behind schedule by "
              << (buffer_duration_ - delay).InMicroseconds()
              << " (us).";

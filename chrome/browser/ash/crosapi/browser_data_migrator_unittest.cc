@@ -12,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
+#include "chrome/browser/ash/crosapi/fake_migration_progress_tracker.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -155,6 +156,7 @@ TEST_F(BrowserDataMigratorTest, GetTargetInfo) {
 
   // Check for common data.
   std::vector<BrowserDataMigrator::TargetItem> expected_common_data_items = {
+
       {from_dir_.Append(kAffiliationDatabase), kFileSize * 2,
        BrowserDataMigrator::TargetItem::ItemType::kDirectory},
       {from_dir_.Append(kCookies), kFileSize,
@@ -188,7 +190,10 @@ TEST_F(BrowserDataMigratorTest, CopyDirectory) {
   base::CreateSymbolicLink(user_data_dir_.GetPath().Append(kFirstRun),
                            copy_from.Append(kFirstRun));
 
-  ASSERT_TRUE(BrowserDataMigrator::CopyDirectory(copy_from, copy_to));
+  scoped_refptr<CancelFlag> cancelled = base::MakeRefCounted<CancelFlag>();
+  FakeMigrationProgressTracker progress_tracker;
+  ASSERT_TRUE(BrowserDataMigrator::CopyDirectory(
+      copy_from, copy_to, cancelled.get(), &progress_tracker));
 
   // Setup `copy_from` as below.
   // |- copy_from/
@@ -338,11 +343,61 @@ TEST_F(BrowserDataMigratorTest, RecordStatus) {
   }
 }
 
+TEST_F(BrowserDataMigratorTest, SetupTmpDir) {
+  base::FilePath tmp_dir = from_dir_.Append(kTmpDir);
+  scoped_refptr<CancelFlag> cancel_flag = base::MakeRefCounted<CancelFlag>();
+  BrowserDataMigrator::TargetInfo target_info =
+      BrowserDataMigrator::GetTargetInfo(from_dir_);
+  FakeMigrationProgressTracker progress_tracker;
+  EXPECT_TRUE(BrowserDataMigrator::SetupTmpDir(
+      target_info, from_dir_, tmp_dir, cancel_flag.get(), &progress_tracker));
+
+  EXPECT_TRUE(base::PathExists(tmp_dir));
+  EXPECT_TRUE(base::PathExists(tmp_dir.Append(kFirstRun)));
+  EXPECT_TRUE(base::PathExists(tmp_dir.Append(kLacrosProfilePath)));
+  EXPECT_TRUE(
+      base::PathExists(tmp_dir.Append(kLacrosProfilePath).Append(kBookmarks)));
+  EXPECT_TRUE(
+      base::PathExists(tmp_dir.Append(kLacrosProfilePath).Append(kCookies)));
+  EXPECT_TRUE(base::PathExists(
+      tmp_dir.Append(kLacrosProfilePath).Append(kAffiliationDatabase)));
+  EXPECT_TRUE(base::PathExists(tmp_dir.Append(kLacrosProfilePath)
+                                   .Append(kAffiliationDatabase)
+                                   .Append(kDataFile)));
+  EXPECT_TRUE(base::PathExists(tmp_dir.Append(kLacrosProfilePath)
+                                   .Append(kAffiliationDatabase)
+                                   .Append(kDownloads)
+                                   .Append(kDataFile)));
+}
+
+TEST_F(BrowserDataMigratorTest, CancelSetupTmpDir) {
+  base::FilePath tmp_dir = from_dir_.Append(kTmpDir);
+  scoped_refptr<CancelFlag> cancel_flag = base::MakeRefCounted<CancelFlag>();
+  FakeMigrationProgressTracker progress_tracker;
+  BrowserDataMigrator::TargetInfo target_info =
+      BrowserDataMigrator::GetTargetInfo(from_dir_);
+
+  // Set cancel_flag to cancel migrationl.
+  cancel_flag->Set();
+  EXPECT_FALSE(BrowserDataMigrator::SetupTmpDir(
+      target_info, user_data_dir_.GetPath(), tmp_dir, cancel_flag.get(),
+      &progress_tracker));
+
+  // These files should not exist.
+  EXPECT_FALSE(base::PathExists(tmp_dir.Append(kFirstRun)));
+  EXPECT_FALSE(
+      base::PathExists(tmp_dir.Append(kLacrosProfilePath).Append(kBookmarks)));
+}
+
 TEST_F(BrowserDataMigratorTest, Migrate) {
   base::HistogramTester histogram_tester;
 
   {
-    BrowserDataMigrator::MigrateInternal(from_dir_);
+    scoped_refptr<CancelFlag> cancelled = base::MakeRefCounted<CancelFlag>();
+    std::unique_ptr<MigrationProgressTracker> progress_tracker =
+        std::make_unique<FakeMigrationProgressTracker>();
+    BrowserDataMigrator::MigrateInternal(from_dir_, std::move(progress_tracker),
+                                         cancelled);
 
     // Expected dir structure after migration.
     // ./                             /* user_data_dir_ */

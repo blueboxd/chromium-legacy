@@ -71,6 +71,7 @@ class CC_EXPORT DroppedFrameCounter {
   void AddPartialFrame();
   void AddDroppedFrame();
   void ReportFrames();
+  void ReportFramesForUI();
 
   void OnBeginFrame(const viz::BeginFrameArgs& args, bool is_scroll_active);
   void OnEndFrame(const viz::BeginFrameArgs& args, bool is_dropped);
@@ -87,6 +88,9 @@ class CC_EXPORT DroppedFrameCounter {
   // frames are not considered to be dropped.
   void ResetPendingFrames(base::TimeTicks timestamp);
 
+  // Enable dropped frame report for ui::Compositor..
+  void EnableReporForUI();
+
   void set_total_counter(TotalFrameCounter* total_counter) {
     total_counter_ = total_counter;
   }
@@ -98,6 +102,18 @@ class CC_EXPORT DroppedFrameCounter {
 
   double sliding_window_max_percent_dropped() const {
     return sliding_window_max_percent_dropped_;
+  }
+
+  absl::optional<double> max_percent_dropped_After_1_sec() const {
+    return sliding_window_max_percent_dropped_After_1_sec_;
+  }
+
+  absl::optional<double> max_percent_dropped_After_2_sec() const {
+    return sliding_window_max_percent_dropped_After_2_sec_;
+  }
+
+  absl::optional<double> max_percent_dropped_After_5_sec() const {
+    return sliding_window_max_percent_dropped_After_5_sec_;
   }
 
   uint32_t SlidingWindow95PercentilePercentDropped() const {
@@ -112,6 +128,7 @@ class CC_EXPORT DroppedFrameCounter {
   void NotifyFrameResult(const viz::BeginFrameArgs& args, bool is_dropped);
   base::TimeDelta ComputeCurrentWindowSize() const;
 
+  void PopSlidingWindow();
   void UpdateMaxPercentDroppedFrame(double percent_dropped_frame);
 
   const base::TimeDelta kSlidingWindowInterval = base::Seconds(1);
@@ -153,6 +170,8 @@ class CC_EXPORT DroppedFrameCounter {
   };
   absl::optional<ScrollStartInfo> scroll_start_;
   std::map<viz::BeginFrameId, ScrollStartInfo> scroll_start_per_frame_;
+
+  bool report_for_ui_ = false;
 };
 
 CC_EXPORT std::ostream& operator<<(

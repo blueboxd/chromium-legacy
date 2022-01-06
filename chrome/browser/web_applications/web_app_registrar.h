@@ -128,8 +128,10 @@ class WebAppRegistrar : public ProfileManagerObserver {
   std::string GetAppShortName(const AppId& app_id) const;
   std::string GetAppDescription(const AppId& app_id) const;
   absl::optional<SkColor> GetAppThemeColor(const AppId& app_id) const;
-  absl::optional<SkColor> GetAppBackgroundColor(const AppId& app_id) const;
   absl::optional<SkColor> GetAppDarkModeThemeColor(const AppId& app_id) const;
+  absl::optional<SkColor> GetAppBackgroundColor(const AppId& app_id) const;
+  absl::optional<SkColor> GetAppDarkModeBackgroundColor(
+      const AppId& app_id) const;
   const GURL& GetAppStartUrl(const AppId& app_id) const;
   absl::optional<std::string> GetAppManifestId(const AppId& app_id) const;
   const std::string* GetAppLaunchQueryParams(const AppId& app_id) const;
@@ -189,6 +191,14 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // "start_url" field if unavailable. Returns an invalid GURL iff the |app_id|
   // does not refer to an installed web app.
   GURL GetAppScope(const AppId& app_id) const;
+
+  // Returns whether |url| is in the scope of |app_id|.
+  bool IsUrlInAppScope(const GURL& url, const AppId& app_id) const;
+
+  // Returns the strength of matching |url_spec| to the scope of |app_id|,
+  // returns 0 if not in scope.
+  size_t GetUrlInAppScopeScore(const std::string& url_spec,
+                               const AppId& app_id) const;
 
   // Returns the app id of an app in the registry with the longest scope that is
   // a prefix of |url|, if any.
@@ -311,7 +321,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
       Filter filter_;
     };
 
-    AppSet(const WebAppRegistrar* registrar, Filter filter);
+    AppSet(const WebAppRegistrar* registrar, Filter filter, bool empty);
     AppSet(AppSet&&) = default;
     AppSet(const AppSet&) = delete;
     AppSet& operator=(const AppSet&) = delete;
@@ -328,6 +338,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
    private:
     const WebAppRegistrar* const registrar_;
     const Filter filter_;
+    const bool empty_;
 #if DCHECK_IS_ON()
     const size_t mutations_count_;
 #endif
@@ -356,6 +367,8 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
   void CountMutation();
 
+  bool registry_profile_being_deleted_ = false;
+
  private:
   Profile* const profile_;
 
@@ -363,7 +376,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
   OsIntegrationManager* os_integration_manager_ = nullptr;
 
   Registry registry_;
-  bool registry_profile_being_deleted_ = false;
 #if DCHECK_IS_ON()
   size_t mutations_count_ = 0;
 #endif

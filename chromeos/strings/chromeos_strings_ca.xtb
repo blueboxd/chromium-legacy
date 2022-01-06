@@ -1,17 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="1018219910092211213">No es pot resoldre el DNS</translation>
 <translation id="1018656279737460067">S'ha cancel·lat</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> fils, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1059913517121127803">No s'ha pogut iniciar l'escaneig</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">S'ha detectat un tallafoc</translation>
 <translation id="1075811647922107217">Mida de la pàgina</translation>
-<translation id="110351136513869678">Visita la configuració per ajustar-la</translation>
+<translation id="1094693127011229778">L'adreça IP no està disponible</translation>
 <translation id="1119447706177454957">Error intern</translation>
 <translation id="1124772482545689468">Usuari</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1175697296044146566">Aquest dispositiu <ph name="DEVICE_TYPE" /> està gestionat per <ph name="MANAGER" />.</translation>
+<translation id="1175951029573070619">Normal (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
 <translation id="1195447618553298278">Error desconegut.</translation>
 <translation id="1204296502688602597">Latència de DNS</translation>
@@ -21,6 +23,7 @@
 <translation id="1270369111467284986">Possible portal captiu</translation>
 <translation id="1290331692326790741">Senyal feble</translation>
 <translation id="1301069673413256657">GSM</translation>
+<translation id="1310380015393971138">No hi ha cap xarxa <ph name="NETWORK_NAME" /> disponible</translation>
 <translation id="1314565355471455267">VPN d'Android</translation>
 <translation id="131461803491198646">Xarxa domèstica, no itinerància</translation>
 <translation id="1327977588028644528">Passarel·la</translation>
@@ -39,6 +42,8 @@
 <translation id="150962533380566081">El PUK no és vàlid.</translation>
 <translation id="1510238584712386396">Menú d'aplicacions</translation>
 <translation id="155865706765934889">Ratolí tàctil</translation>
+<translation id="1567064801249837505">Àlbums</translation>
+<translation id="1572585716423026576">Defineix com a fons de pantalla</translation>
 <translation id="1621067168122174824">Executa la prova de càrrega</translation>
 <translation id="1639239467298939599">S'està carregant</translation>
 <translation id="1641857168437328880">Alimentador de documents (a una cara)</translation>
@@ -51,23 +56,23 @@
 <translation id="1717874160321062422">Gestionat per <ph name="FIRST_MANAGER" /> i <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Servidors de noms</translation>
 <translation id="1731082422893354635">Ratolí tàctil Bluetooth</translation>
+<translation id="1753496554272155572">Surt de la previsualització del fons de pantalla</translation>
+<translation id="175763766237925754">Bo (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1792647875738159689">S'està cancel·lant l'escaneig</translation>
 <translation id="1851218745569890714">Videoconferències</translation>
 <translation id="1874612839560830905">MTU</translation>
-<translation id="1881378885488531302">No es pot obtenir l'adreça IP</translation>
 <translation id="1887850431809612466">Revisió de maquinari</translation>
-<translation id="1901646112321215184">No s'ha configurat cap servidor DNS</translation>
 <translation id="1905710495812624430">S'ha superat el nombre màxim d'intents permesos.</translation>
 <translation id="1908234395526491708">Errors en la sol·licitud d'UDP</translation>
 <translation id="1930797645656624981">Servei del mètode d'introducció de text a Chrome OS</translation>
 <translation id="1947737735496445907">Imprès</translation>
-<translation id="197386857804679933">Ves a la configuració per tornar a connectar</translation>
 <translation id="1979103255016296513">Canvi de contrasenya vençut</translation>
 <translation id="1999615961760456652">Portal captiu</translation>
 <translation id="2006864819935886708">Connectivitat</translation>
 <translation id="2008685064673031089">Cerca principal</translation>
+<translation id="2016697457005847575">Prova els passos de resolució de problemes</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Més opcions de configuració</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versió <ph name="MILESTONE_VERSION" /></translation>
@@ -86,6 +91,7 @@
 <translation id="2323506179655536734">OMÈS</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> ppp</translation>
 <translation id="2338501278241028356">Activa el Bluetooth per detectar dispositius propers</translation>
+<translation id="2346474577291266260">Excel·lent (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2364498172489649528">Comprovació superada</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Envia un informe de suggeriments</translation>
@@ -99,6 +105,7 @@
 <translation id="2505327257735685095">Actualitza la imatge actual del fons de pantalla</translation>
 <translation id="2517472476991765520">Escaneja</translation>
 <translation id="2570743873672969996">S'està executant la prova <ph name="TEST_NAME" />...</translation>
+<translation id="2584559707064218956">Per configurar-la, ves a Configuració</translation>
 <translation id="2585245331261708204">Novetats de Chrome OS</translation>
 <translation id="2619761439309613843">Actualització diària</translation>
 <translation id="2620436844016719705">Sistema</translation>
@@ -110,13 +117,11 @@
 <translation id="2860473693272905224">Col·loca una altra pàgina a l'escàner</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2878387241690264070">S'ha descarregat un <ph name="RATE" /> en <ph name="NUM_SECONDS" /> segons.</translation>
-<translation id="2927511423571448384">No es pot connectar amb llocs web HTTP (port 80) a través del tallafoc des d'Android</translation>
 <translation id="3008341117444806826">ACTUALITZA</translation>
 <translation id="3009958530611748826">Selecciona en quina carpeta vols que es desi</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Punt final</translation>
 <translation id="3069085583900247081">La prova no s'ha superat</translation>
-<translation id="3076387335132326640">Estàs utilitzant una xarxa oberta</translation>
 <translation id="3083667275341675831">Diagnòstic de connectivitat</translation>
 <translation id="3091839911843451378">Error: s'ha aturat</translation>
 <translation id="3102119246920354026">Memòria cau</translation>
@@ -147,9 +152,10 @@
 <translation id="3532980081107202182">Queden aproximadament <ph name="MIN_REMAINING" /> minuts</translation>
 <translation id="3565064564551103223">IP permeses</translation>
 <translation id="357889014807611375">Wi‑Fi d'ús mesurat</translation>
-<translation id="3582041541988388905">No s'ha detectat cap connexió <ph name="NETWORK_NAME" /></translation>
+<translation id="3583278742022654445">Intensitat del senyal fluixa. Prova d'apropar-te a la font de senyal de la Wi-Fi.</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
 <translation id="360565022852130722">La xarxa Wi-Fi està protegida amb el protocol dèbil WEP 802.1x</translation>
+<translation id="3606583719724308068">Latència alta als llocs web HTTPS</translation>
 <translation id="3689839747745352263">Prova <ph name="TEST_NAME" /></translation>
 <translation id="3708186454126126312">Connectats anteriorment</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> ressenyes)</translation>
@@ -158,6 +164,7 @@
 <translation id="38114475217616659">Esborra tot l'historial</translation>
 <translation id="3820172043799983114">El PIN no és vàlid.</translation>
 <translation id="3838338534323494292">Contrasenya nova</translation>
+<translation id="385051799172605136">Enrere</translation>
 <translation id="3858860766373142691">Nom</translation>
 <translation id="3865414814144988605">Resolució</translation>
 <translation id="387301095347517405">El nombre de vegades que la bateria s'ha carregat completament</translation>
@@ -169,11 +176,13 @@
 <translation id="39823212440917567">Se suprimiran les tasques d'impressió amb una antiguitat superior a <ph name="NUMBER_OF_DAYS" /> dies</translation>
 <translation id="4003384961948020559">Error: safata de sortida plena</translation>
 <translation id="4034824040120875894">Impressora</translation>
+<translation id="4044093238444069296">No es pot contactar amb la passarel·la</translation>
 <translation id="404928562651467259">ADVERTIMENT</translation>
 <translation id="409427325554347132">Desa els detalls de la prova</translation>
 <translation id="4111761024568264522">Ratolí tàctil USB</translation>
 <translation id="4131410914670010031">Blanc i negre</translation>
 <translation id="4145784616224233563">Tallafoc HTTP</translation>
+<translation id="4147897805161313378">Google Fotos</translation>
 <translation id="4155551848414053977">Comprova que l'escàner estigui encès i disponible a través de la teva xarxa o d'una connexió directa</translation>
 <translation id="4170700058716978431">NO SUPERADA</translation>
 <translation id="4176463684765177261">Desactivat</translation>
@@ -190,6 +199,7 @@
 <translation id="4378551569595875038">Connectant...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">La meva unitat</translation>
+<translation id="4428374560396076622">La xarxa <ph name="NETWORK_NAME" /> està desactivada</translation>
 <translation id="4429881212383817840">El tiquet de Kerberos caducarà aviat</translation>
 <translation id="4431821876790500265">Mostra l'informe</translation>
 <translation id="445059817448385655">Contrasenya antiga</translation>
@@ -204,7 +214,6 @@
 <translation id="455835558791489930">Bateria de <ph name="CHARGE_VALUE" /> mAh</translation>
 <translation id="4561801978359312462">SIM desbloquejada</translation>
 <translation id="4562494484721939086">Sense servei</translation>
-<translation id="4567024731344774461">No es pot resoldre el DNS des d'Android</translation>
 <translation id="458794348635939462">No s'han pogut resoldre tots els amfitrions</translation>
 <translation id="4593212453765072419">Cal l'autenticació del servidor intermediari</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" />. Prem Retorn per cancel·lar la tasca d'impressió.</translation>
@@ -229,7 +238,6 @@
 <translation id="484790837831576105">(Android) Resolució de DNS</translation>
 <translation id="4848429997038228357">EN EXECUCIÓ</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Queda {0} intent.}other{<ph name="ERROR_MESSAGE" /> Queden {0} intents.}}</translation>
-<translation id="4871137769558798671">No es pot connectar amb llocs web HTTPS (port 443) a través del tallafoc</translation>
 <translation id="4880328057631981605">Nom del punt d'accés</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">Tria'n una de nova immediatament</translation>
@@ -237,6 +245,7 @@
 <translation id="4917385247580444890">Forta</translation>
 <translation id="4917889632206600977">S'ha aturat: no hi ha paper</translation>
 <translation id="4921665434385737356">S'ha carregat un <ph name="RATE" /> en <ph name="NUM_SECONDS" /> segons.</translation>
+<translation id="4930320165497208503">Per configurar o actualitzar una connexió, ves a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="498186245079027698">Comprova l'escàner i torna-ho a provar. Assegura't que hi hagi prou espai local per desar els fitxers escanejats.</translation>
 <translation id="4985509611418653372">Executa</translation>
@@ -273,6 +282,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5332948983412042822">Tria'n una de nova ara</translation>
 <translation id="5333530671332546086">Estat del portal desconegut</translation>
 <translation id="5346687412805619883">Xarxa local</translation>
+<translation id="5358174242040570474">S'ha produït un error. Prova novament de triar un fons de pantalla o d'obrir l'aplicació.</translation>
 <translation id="5372659122375744710">La xarxa Wi-Fi no és segura</translation>
 <translation id="5401938042319910061">S'han executat totes les rutines</translation>
 <translation id="5423849171846380976">Activat</translation>
@@ -287,7 +297,6 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5502931783115429516">Android no s'està executant</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
-<translation id="5546352997259770619">Intensitat del senyal baixa; prova d'apropar-te al punt d'accés</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Torna a escanejar</translation>
 <translation id="5669267381087807207">Activant</translation>
@@ -295,7 +304,6 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5691511426247308406">Família</translation>
 <translation id="5701381305118179107">Centre</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> de <ph name="TOTAL_PAGES" /></translation>
-<translation id="5715997777752246116">No s'ha configurat cap servidor de noms</translation>
 <translation id="5760715441271661976">Estat del portal</translation>
 <translation id="5784136236926853061">La latència d'HTTP és alta</translation>
 <translation id="5832805196449965646">Afegeix una persona</translation>
@@ -339,15 +347,14 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="636850387210749493">Inscripció empresarial</translation>
 <translation id="6379086450106841622">Pantalla tàctil</translation>
 <translation id="6388847657025262518">L'alimentador de documents de l'escàner està encallat. Comprova l'alimentador i torna-ho a provar.</translation>
-<translation id="6395640744968320699">No es pot connectar amb llocs web HTTP (port 80) a través del tallafoc</translation>
 <translation id="641081527798843608">Coincidència d'assumpte</translation>
 <translation id="6423239382391657905">VPN oberta</translation>
+<translation id="6439505561246192797">Feble (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6456394469623773452">Bona</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Vols tornar a escanejar la pàgina?}=1{Vols tornar a escanejar la pàgina {PAGE_NUMBER}?}other{Vols tornar a escanejar les pàgines {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">Gestionat per <ph name="MANAGER" /></translation>
 <translation id="649050271426829538">S'ha aturat: embús de paper</translation>
-<translation id="6498608540383876992">No es pot contactar amb la passarel·la</translation>
 <translation id="6516990319416533844">Per provar la velocitat de càrrega de la bateria, deixa que es gasti durant una estona</translation>
 <translation id="6517239166834772319">Explora</translation>
 <translation id="6527081081771465939">Protocol de seguretat Wi-Fi desconegut</translation>
@@ -357,14 +364,13 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="6574762126505704998">Emplena</translation>
 <translation id="6575134580692778371">No configurat</translation>
 <translation id="6596816719288285829">Adreça IP</translation>
-<translation id="6603230386432466813">Tens problemes per connectar-te?</translation>
 <translation id="6618744767048954150">Comprovació en curs</translation>
 <translation id="6620487321149975369">Les tasques d'impressió es mostraran a l'historial tret que se suprimeixin manualment</translation>
 <translation id="6643016212128521049">Esborra</translation>
 <translation id="6657585470893396449">Contrasenya</translation>
 <translation id="6704062477274546131">Resolució de DNS</translation>
-<translation id="6714650824879092633"><ph name="NETWORK_NAME" /> s'ha desactivat</translation>
 <translation id="6747215703636344499">S'ha aturat: safata de sortida plena</translation>
+<translation id="6749473226660745022">Fotos</translation>
 <translation id="6756731097889387912">No s'ha pogut cancel·lar l'escaneig</translation>
 <translation id="6766275201586212568">Algunes resolucions de DNS han fallat</translation>
 <translation id="6768237774506518020">El percentatge d'error de la resolució de DNS és alt</translation>
@@ -376,13 +382,13 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="6957231940976260713">Nom del servei</translation>
 <translation id="6961170852793647506">Per començar, col·loca el document a l'escàner</translation>
 <translation id="6977381486153291903">Revisió de microprogramari</translation>
-<translation id="6982876849933694860">Per configurar una connexió nova, ves a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> gestiona aquest dispositiu i té accés a tota l'activitat dels usuaris, com ara les pàgines web visitades, les contrasenyes i el correu electrònic.</translation>
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7058278511608979688">Finalitza i desa</translation>
 <translation id="7059230779847288458">S'està carregant. <ph name="TIME_VALUE" /> per completar la càrrega.</translation>
 <translation id="708426984172631313">ATURAT</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="710028965487274708">Error: s'ha produït un error en l'autorització</translation>
 <translation id="7134436342991564651">{0,plural, =1{Servidor de noms}other{Servidors de noms}}</translation>
 <translation id="7143207342074048698">Connectant</translation>
 <translation id="7144878232160441200">Torna-ho a provar</translation>
@@ -395,7 +401,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7271040990581020067">L'escàner s'està utilitzant en aquests moments. Torna-ho a provar més tard.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Col·leccions de fons de pantalla</translation>
-<translation id="7292680402155138244">Latència alta als llocs web HTTPS (port 443)</translation>
+<translation id="7297226631177386107">No es pot establir la connexió amb llocs web HTTPS a través del tallafoc</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -428,6 +434,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7762130827864645708">La contrasenya s'ha canviat correctament. Utilitza la contrasenya nova a partir d'ara.</translation>
 <translation id="7763470514545477072">Sufix de domini coincident</translation>
 <translation id="7769672763586021400">Identificador del model</translation>
+<translation id="7784116172884276937">No hi ha cap servidor DNS configurat</translation>
 <translation id="7805768142964895445">Estat</translation>
 <translation id="7819857487979277519">PSK (WPA o RSN)</translation>
 <translation id="7835501727204647447">Instal·la CloudReady</translation>
@@ -437,36 +444,34 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7882358943899516840">Tipus de proveïdor</translation>
 <translation id="7882501334836096755">Clau pública</translation>
 <translation id="7890841768028788197">Pantalla tàctil interna</translation>
-<translation id="7895471513946376273">Descobreix les eines de dibuix i disseny</translation>
 <translation id="7936303884198020182">No s'han trobat servidors de noms</translation>
 <translation id="7943235353293548836">Interval de keepalive persistent</translation>
 <translation id="7955587717700691983">Teclat Bluetooth</translation>
 <translation id="7960831585769876809">Temperatura</translation>
+<translation id="7977800524392185497">Per unir-te a una xarxa <ph name="NETWORK_NAME" />, ves a Configuració</translation>
 <translation id="7978412674231730200">Clau privada</translation>
 <translation id="7994702968232966508">Mètode EAP</translation>
-<translation id="8020238979854764615">S'ha produït un error. Torna-ho a provar triant altres imatges.</translation>
 <translation id="802154636333426148">Error de baixada</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="8041089156583427627">Envia suggeriments</translation>
 <translation id="8075838845814659848">Càrrega restant</translation>
+<translation id="8082366717211101304">No es pot resoldre el DNS des d'aplicacions d'Android</translation>
 <translation id="808894953321890993">Canvia la contrasenya</translation>
+<translation id="8104083085214006426">Estàs utilitzant una xarxa oberta i no segura</translation>
 <translation id="811820734797650957">(Android) Es pot fer ping a la passarel·la</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8132480444149501833">Sol·licita els comptadors de trànsit</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
-<translation id="8177708084858970226">No es pot resoldre el DNS</translation>
 <translation id="8206859287963243715">Cel·lular</translation>
 <translation id="8208861521865154048">Avantatges</translation>
 <translation id="8230672074305416752">No s'ha pogut fer ping a la passarel·la de xarxa predeterminada</translation>
 <translation id="8246209727385807362">Operador de telefonia mòbil desconegut</translation>
 <translation id="8286154143153872371">Connecta't a una xarxa i torna a carregar la pàgina per veure el fons de pantalla.</translation>
 <translation id="8291967909914612644">País del proveïdor domèstic</translation>
-<translation id="829270796093605079">Eines de disseny</translation>
 <translation id="8294431847097064396">Font</translation>
 <translation id="8297006494302853456">Feble</translation>
 <translation id="8302368968391049045">Tallafoc HTTPS</translation>
 <translation id="8318753676953949627">Cap imatge</translation>
-<translation id="8346875532700229909">No es pot contactar amb la passarel·la des d'Android</translation>
 <translation id="8347227221149377169">Tasques d'impressió</translation>
 <translation id="8352772353338965963">Afegiu un compte per a l'inici de sessió múltiple. Es pot accedir a tots el comptes registrats sense contrasenya, de manera que només hauríeu d'utilitzar aquesta funció en comptes de confiança.</translation>
 <translation id="8364946094152050673">Servidors de noms buits</translation>
@@ -476,10 +481,12 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Teclat intern</translation>
 <translation id="843568408673868420">Connectivitat a Internet</translation>
+<translation id="844521431886043384">No s'ha configurat el DNS</translation>
 <translation id="8461329675984532579">Nom del proveïdor domèstic</translation>
 <translation id="8475690821716466388">La xarxa Wi-Fi està protegida amb el protocol dèbil WEP PSK</translation>
 <translation id="8477551185774834963">La latència DNS supera lleugerament el llindar permès</translation>
 <translation id="8483248364096924578">Adreça IP</translation>
+<translation id="8491311378305535241">No es pot establir la connexió amb llocs web HTTPS a través del tallafoc des d'aplicacions d'Android</translation>
 <translation id="8498220429738806196">Comptadors de trànsit</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>
 <translation id="8503836310948963452">Només queden uns quants minuts...</translation>
@@ -505,6 +512,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="8818152010000655963">Fons de pantalla</translation>
 <translation id="8834539327799336565">Connectats actualment</translation>
 <translation id="8845001906332463065">Obteniu ajuda</translation>
+<translation id="8855781559874488009">No es pot establir la connexió amb llocs web HTTP a través del tallafoc</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">La prova s'ha superat</translation>
 <translation id="8898840733695078011">Intensitat del senyal</translation>
@@ -530,12 +538,14 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="910415269708673980">Actualitza el tiquet de: <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">S'està cercant la pàgina <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Desbloqueja</translation>
+<translation id="9122602430962285795">Per tornar-te a connectar, ves a Configuració</translation>
 <translation id="9126720536733509015">Desa múltiples pàgines en un PDF</translation>
 <translation id="9137526406337347448">Serveis de Google</translation>
 <translation id="9149391708638971077">Executa la prova de memòria</translation>
 <translation id="9173638680043580060">Queda menys d'un minut</translation>
 <translation id="917720651393141712">Prova</translation>
 <translation id="9190063653747922532">L2TP/IPsec + clau precompartida</translation>
+<translation id="9204237731135241582">No es pot contactar amb la passarel·la des d'aplicacions d'Android</translation>
 <translation id="9211490828691860325">Tots els escriptoris</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">No activat</translation>

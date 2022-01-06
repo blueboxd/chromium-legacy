@@ -6,11 +6,12 @@
 
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/button_style.h"
 #include "ash/system/time/calendar_month_view.h"
 #include "ash/system/time/calendar_utils.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "ash/system/unified/rounded_label_button.h"
+#include "base/bind.h"
 #include "base/check.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,9 +19,10 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/table_layout.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -39,6 +41,10 @@ constexpr gfx::Insets kContentInsets{kContentVerticalPadding};
 // The pixel that will be applied to indicate that we can see this is the view's
 // bottom if there's this much pixel left.
 constexpr int kPrepareEndOfView = 30;
+
+// After the user is finished navigating to a different month, this is how long
+// we wait before fetchiung more events.
+constexpr base::TimeDelta kScrollingSettledTimeout = base::Milliseconds(100);
 
 // TODO(https://crbug.com/1236276): for some language it may start from "M".
 constexpr int kDefaultWeekTitles[] = {
@@ -85,11 +91,10 @@ class CalendarLabel : public views::Label {
 class MonthHeaderView : public views::View {
  public:
   MonthHeaderView() {
-    views::GridLayout* layout =
-        SetLayoutManager(std::make_unique<views::GridLayout>());
-    views::ColumnSet* column_set = layout->AddColumnSet(0);
-    calendar_utils::SetUpWeekColumnSets(column_set);
-    layout->StartRow(0, 0);
+    views::TableLayout* layout =
+        SetLayoutManager(std::make_unique<views::TableLayout>());
+    calendar_utils::SetUpWeekColumns(layout);
+    layout->AddRows(1, views::TableLayout::kFixedSize);
 
     for (int week_day : kDefaultWeekTitles) {
       auto label =
@@ -101,7 +106,7 @@ class MonthHeaderView : public views::View {
       label->SetSubpixelRenderingEnabled(false);
       label->SetTextContext(CONTEXT_CALENDAR_DATE);
 
-      layout->AddView(std::move(label));
+      AddChildView(std::move(label));
     }
   }
 
@@ -120,15 +125,15 @@ class CalendarView::MonthYearHeaderView : public views::View {
       : month_label_(AddChildView(std::make_unique<views::Label>())) {
     switch (type) {
       case PREVIOUS:
-        date_ = calendar_view_controller->GetPreviousMonthFirstDay();
+        date_ = calendar_view_controller->GetPreviousMonthFirstDayLocal(1);
         month_name_ = calendar_view_controller->GetPreviousMonthName();
         break;
       case CURRENT:
-        date_ = calendar_view_controller->GetOnScreenMonthFirstDay();
+        date_ = calendar_view_controller->GetOnScreenMonthFirstDayLocal();
         month_name_ = calendar_view_controller->GetOnScreenMonthName();
         break;
       case NEXT:
-        date_ = calendar_view_controller->GetNextMonthFirstDay();
+        date_ = calendar_view_controller->GetNextMonthFirstDayLocal(1);
         month_name_ = calendar_view_controller->GetNextMonthName();
         break;
     }
@@ -140,11 +145,11 @@ class CalendarView::MonthYearHeaderView : public views::View {
     month_label_->SetBorder(
         views::CreateEmptyBorder(gfx::Insets(kLabelVerticalPadding, 0)));
 
-    if (calendar_utils::GetExploded(date_).year !=
-        calendar_utils::GetExploded(base::Time::Now()).year) {
+    if (calendar_utils::GetExplodedLocal(date_).year !=
+        calendar_utils::GetExplodedLocal(base::Time::Now()).year) {
       year_label_ = AddChildView(std::make_unique<views::Label>());
       year_label_->SetText(base::UTF8ToUTF16(
-          base::NumberToString(calendar_utils::GetExploded(date_).year)));
+          base::NumberToString(calendar_utils::GetExplodedLocal(date_).year)));
       SetupLabel(year_label_);
       year_label_->SetBorder(views::CreateEmptyBorder(
           gfx::Insets(kLabelVerticalPadding, kLabelTextInBetweenPadding)));
@@ -184,11 +189,15 @@ class CalendarView::MonthYearHeaderView : public views::View {
 };
 
 CalendarView::CalendarView(DetailedViewDelegate* delegate,
-                           UnifiedSystemTrayController* controller,
-                           CalendarViewController* calendar_view_controller)
+                           UnifiedSystemTrayController* controller)
     : TrayDetailedView(delegate),
       controller_(controller),
-      calendar_view_controller_(calendar_view_controller) {
+      calendar_view_controller_(std::make_unique<CalendarViewController>()),
+      scrolling_settled_timer_(
+          FROM_HERE,
+          kScrollingSettledTimeout,
+          base::BindRepeating(&CalendarView::OnScrollingSettledTimerFired,
+                              base::Unretained(this))) {
   CreateTitleRow(IDS_ASH_CALENDAR_TITLE);
 
   // Add the header.
@@ -200,8 +209,8 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
 
   header_year_ = TrayPopupUtils::CreateDefaultLabel();
   header_year_->SetText(base::UTF8ToUTF16(base::NumberToString(
-      calendar_utils::GetExploded(
-          calendar_view_controller_->GetOnScreenMonthFirstDay())
+      calendar_utils::GetExplodedLocal(
+          calendar_view_controller_->GetOnScreenMonthFirstDayLocal())
           .year)));
   header_year_->SetBorder(views::CreateEmptyBorder(
       0, kLabelTextInBetweenPadding, 0, kLabelTextInBetweenPadding));
@@ -216,19 +225,19 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
   tri_view->AddView(TriView::Container::START, header_);
   tri_view->AddView(TriView::Container::START, header_year_);
 
-  auto* down_button = new HeaderButton(
+  down_button_ = new HeaderButton(
       base::BindRepeating(&CalendarView::ScrollDownOneMonthAndAutoScroll,
                           base::Unretained(this)),
       vector_icons::kCaretDownIcon,
       IDS_ASH_CALENDAR_DOWN_BUTTON_ACCESSIBLE_DESCRIPTION);
-  auto* up_button = new HeaderButton(
+  up_button_ = new HeaderButton(
       base::BindRepeating(&CalendarView::ScrollUpOneMonthAndAutoScroll,
                           base::Unretained(this)),
       vector_icons::kCaretUpIcon,
       IDS_ASH_CALENDAR_UP_BUTTON_ACCESSIBLE_DESCRIPTION);
 
-  tri_view->AddView(TriView::Container::END, down_button);
-  tri_view->AddView(TriView::Container::END, up_button);
+  tri_view->AddView(TriView::Container::END, down_button_);
+  tri_view->AddView(TriView::Container::END, up_button_);
 
   AddChildView(tri_view);
 
@@ -246,22 +255,31 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
   scroll_view_->SetDrawOverflowIndicator(false);
   scroll_view_->SetVerticalScrollBarMode(
       views::ScrollView::ScrollBarMode::kHiddenButEnabled);
+  on_contents_scrolled_subscription_ =
+      scroll_view_->AddContentsScrolledCallback(base::BindRepeating(
+          &CalendarView::OnContentsScrolled, base::Unretained(this)));
 
   content_view_ = scroll_view_->SetContents(std::make_unique<views::View>());
   content_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   content_view_->SetBorder(views::CreateEmptyBorder(kContentInsets));
+  // Focusable nodes must have an accessible name.
+  content_view_->GetViewAccessibility().OverrideName(GetClassName());
   content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
 
   SetMonthViews();
 
-  scoped_scroll_view_observer_.Observe(scroll_view_);
-  scoped_calendar_view_controller_observer_.Observe(calendar_view_controller_);
+  scoped_calendar_view_controller_observer_.Observe(
+      calendar_view_controller_.get());
   scoped_view_observer_.AddObservation(scroll_view_);
   scoped_view_observer_.AddObservation(content_view_);
 }
 
 CalendarView::~CalendarView() = default;
+
+void CalendarView::Init() {
+  calendar_view_controller_->FetchEvents();
+}
 
 void CalendarView::CreateExtraTitleRowButtons() {
   DCHECK(!reset_to_today_button_);
@@ -284,9 +302,10 @@ void CalendarView::CreateExtraTitleRowButtons() {
 views::Button* CalendarView::CreateInfoButton(
     views::Button::PressedCallback callback,
     int info_accessible_name_id) {
-  auto* button = new RoundedLabelButton(
-      std::move(callback),
-      l10n_util::GetStringUTF16(IDS_ASH_CALENDA_INFO_BUTTON));
+  auto* button =
+      new PillButton(std::move(callback),
+                     l10n_util::GetStringUTF16(IDS_ASH_CALENDA_INFO_BUTTON),
+                     PillButton::Type::kIconless, /*icon=*/nullptr);
   button->SetAccessibleName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_INFO_BUTTON_ACCESSIBLE_DESCRIPTION,
       base::TimeFormatWithPattern(base::Time::Now(), "MMMMdyyyy")));
@@ -296,14 +315,15 @@ views::Button* CalendarView::CreateInfoButton(
 void CalendarView::SetMonthViews() {
   previous_label_ = AddLabelWithId(LabelType::PREVIOUS);
   previous_month_ =
-      AddMonth(calendar_view_controller_->GetPreviousMonthFirstDay());
+      AddMonth(calendar_view_controller_->GetPreviousMonthFirstDayLocal(1));
 
   current_label_ = AddLabelWithId(LabelType::CURRENT);
   current_month_ =
-      AddMonth(calendar_view_controller_->GetOnScreenMonthFirstDay());
+      AddMonth(calendar_view_controller_->GetOnScreenMonthFirstDayLocal());
 
   next_label_ = AddLabelWithId(LabelType::NEXT);
-  next_month_ = AddMonth(calendar_view_controller_->GetNextMonthFirstDay());
+  next_month_ =
+      AddMonth(calendar_view_controller_->GetNextMonthFirstDayLocal(1));
 }
 
 int CalendarView::PositionOfCurrentMonth() {
@@ -440,8 +460,8 @@ void CalendarView::OnViewFocused(View* observed_view) {
 }
 
 views::View* CalendarView::AddLabelWithId(LabelType type, bool add_at_front) {
-  auto label =
-      std::make_unique<MonthYearHeaderView>(type, calendar_view_controller_);
+  auto label = std::make_unique<MonthYearHeaderView>(
+      type, calendar_view_controller_.get());
   if (add_at_front)
     return content_view_->AddChildViewAt(std::move(label), 0);
   return content_view_->AddChildView(std::move(label));
@@ -449,8 +469,8 @@ views::View* CalendarView::AddLabelWithId(LabelType type, bool add_at_front) {
 
 CalendarMonthView* CalendarView::AddMonth(base::Time month_first_date,
                                           bool add_at_front) {
-  auto month = std::make_unique<CalendarMonthView>(month_first_date,
-                                                   calendar_view_controller_);
+  auto month = std::make_unique<CalendarMonthView>(
+      month_first_date, calendar_view_controller_.get());
   month->SetBorder(views::CreateEmptyBorder(kMonthVerticalPadding, 0,
                                             kMonthVerticalPadding, 0));
   if (add_at_front) {
@@ -460,36 +480,26 @@ CalendarMonthView* CalendarView::AddMonth(base::Time month_first_date,
   }
 }
 
-void CalendarView::OnContentsScrolled() {
-  // The scroll position is reset because it's adjusting the position when
-  // adding or removing views from the `scroll_view_`. It should scroll to the
-  // position we want, so we don't need to check the visible area position.
-  if (is_resetting_scroll_)
-    return;
-
-  // Scrolls to the previous month if the current label is moving down and
-  // passing the top of the visible area.
-  if (scroll_view_->GetVisibleRect().y() <= current_label_->y()) {
-    ScrollUpOneMonth();
-  } else if (scroll_view_->GetVisibleRect().y() >= next_label_->y() ||
-             scroll_view_->GetVisibleRect().y() +
-                     scroll_view_->GetVisibleRect().height() >
-                 next_month_->y() + next_month_->height() - kPrepareEndOfView) {
-    ScrollDownOneMonth();
-  }
-}
-
 void CalendarView::OnMonthChanged(const base::Time::Exploded current_month) {
   std::u16string year_string =
       base::UTF8ToUTF16(base::NumberToString(current_month.year));
 
   header_->SetText(calendar_view_controller_->GetOnScreenMonthName());
   header_year_->SetText(year_string);
+
+  scrolling_settled_timer_.Reset();
+}
+
+void CalendarView::OnEventsFetched(
+    const google_apis::calendar::EventList* events) {
+  // No need to store the events, but we need to notify the month views that
+  // something may have changed and they need to refresh.
+  SchedulePaint();
 }
 
 void CalendarView::ScrollUpOneMonth() {
   calendar_view_controller_->UpdateMonth(
-      calendar_view_controller_->GetPreviousMonthFirstDay());
+      calendar_view_controller_->GetPreviousMonthFirstDayLocal(1));
   content_view_->RemoveChildViewT(next_label_);
   content_view_->RemoveChildViewT(next_month_);
 
@@ -499,7 +509,7 @@ void CalendarView::ScrollUpOneMonth() {
   current_month_ = previous_month_;
 
   previous_month_ =
-      AddMonth(calendar_view_controller_->GetPreviousMonthFirstDay(),
+      AddMonth(calendar_view_controller_->GetPreviousMonthFirstDayLocal(1),
                /*add_at_front=*/true);
   if (IsDateCellViewFocused())
     previous_month_->EnableFocus();
@@ -528,7 +538,7 @@ void CalendarView::ScrollDownOneMonth() {
                        previous_label_->GetPreferredSize().height();
 
   calendar_view_controller_->UpdateMonth(
-      calendar_view_controller_->GetNextMonthFirstDay());
+      calendar_view_controller_->GetNextMonthFirstDayLocal(1));
 
   content_view_->RemoveChildViewT(previous_label_);
   content_view_->RemoveChildViewT(previous_month_);
@@ -539,7 +549,8 @@ void CalendarView::ScrollDownOneMonth() {
   current_month_ = next_month_;
 
   next_label_ = AddLabelWithId(LabelType::NEXT);
-  next_month_ = AddMonth(calendar_view_controller_->GetNextMonthFirstDay());
+  next_month_ =
+      AddMonth(calendar_view_controller_->GetNextMonthFirstDayLocal(1));
   if (IsDateCellViewFocused())
     next_month_->EnableFocus();
 
@@ -671,6 +682,29 @@ void CalendarView::OnEvent(ui::Event* event) {
     }
     default:
       NOTREACHED();
+  }
+}
+
+void CalendarView::OnScrollingSettledTimerFired() {
+  calendar_view_controller_->FetchEvents();
+}
+
+void CalendarView::OnContentsScrolled() {
+  // The scroll position is reset because it's adjusting the position when
+  // adding or removing views from the `scroll_view_`. It should scroll to the
+  // position we want, so we don't need to check the visible area position.
+  if (is_resetting_scroll_)
+    return;
+
+  // Scrolls to the previous month if the current label is moving down and
+  // passing the top of the visible area.
+  if (scroll_view_->GetVisibleRect().y() <= current_label_->y()) {
+    ScrollUpOneMonth();
+  } else if (scroll_view_->GetVisibleRect().y() >= next_label_->y() ||
+             scroll_view_->GetVisibleRect().y() +
+                     scroll_view_->GetVisibleRect().height() >
+                 next_month_->y() + next_month_->height() - kPrepareEndOfView) {
+    ScrollDownOneMonth();
   }
 }
 

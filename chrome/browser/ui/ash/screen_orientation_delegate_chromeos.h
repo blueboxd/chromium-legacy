@@ -25,7 +25,8 @@ class ScreenOrientationDelegateChromeos
   bool FullScreenRequired(content::WebContents* web_contents) override;
   void Lock(content::WebContents* web_contents,
             device::mojom::ScreenOrientationLockType lock_orientation) override;
-  bool ScreenOrientationProviderSupported() override;
+  bool ScreenOrientationProviderSupported(
+      content::WebContents* web_contents) override;
   void Unlock(content::WebContents* web_contents) override;
 };
 

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/components/pcie_peripheral/pcie_peripheral_manager.h"
+#include "ash/components/timezone/timezone_resolver.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -36,7 +37,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/sync/ash_turn_sync_on_helper.h"
-#include "chrome/browser/ash/sync/split_settings_sync_field_trial.h"
+#include "chrome/browser/ash/sync/sync_consent_optional_field_trial.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/ash/system/timezone_util.h"
@@ -52,7 +53,6 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/devicemode.h"
 #include "chromeos/system/statistics_provider.h"
-#include "chromeos/timezone/timezone_resolver.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/feedback/content/content_tracing_manager.h"
 #include "components/language/core/browser/pref_names.h"
@@ -142,9 +142,10 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
       chromeos::prefs::kDeviceSystemWideTracingEnabled, true);
   registry->RegisterBooleanPref(
       ash::prefs::kLocalStateDevicePeripheralDataAccessEnabled, false);
+  registry->RegisterBooleanPref(ash::prefs::kDeviceI18nShortcutsEnabled, true);
 
   ash::RegisterLocalStatePrefs(registry);
-  split_settings_sync_field_trial::RegisterLocalStatePrefs(registry);
+  sync_consent_optional_field_trial::RegisterLocalStatePrefs(registry);
 }
 
 // static
@@ -214,6 +215,9 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       ::prefs::kTouchpadScrollAcceleration, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
+  registry->RegisterBooleanPref(
+      ::prefs::kTouchpadHapticFeedback, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterBooleanPref(::prefs::kLabsMediaplayerEnabled, false);
   registry->RegisterBooleanPref(::prefs::kLabsAdvancedFilesystemEnabled, false);
   registry->RegisterBooleanPref(::prefs::kAppReinstallRecommendationEnabled,
@@ -233,6 +237,9 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterIntegerPref(
       ::prefs::kTouchpadScrollSensitivity, 3,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
+  registry->RegisterIntegerPref(
+      ::prefs::kTouchpadHapticClickSensitivity, 3,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       ::prefs::kUse24HourClock, base::GetHourClockType() == base::k24HourClock,
@@ -518,6 +525,10 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   touchpad_acceleration_.Init(::prefs::kTouchpadAcceleration, prefs, callback);
   touchpad_scroll_acceleration_.Init(::prefs::kTouchpadScrollAcceleration,
                                      prefs, callback);
+  touchpad_haptic_feedback_.Init(::prefs::kTouchpadHapticFeedback, prefs,
+                                 callback);
+  touchpad_haptic_click_sensitivity_.Init(
+      ::prefs::kTouchpadHapticClickSensitivity, prefs, callback);
   download_default_directory_.Init(::prefs::kDownloadDefaultDirectory, prefs,
                                    callback);
   preload_engines_.Init(::prefs::kLanguagePreloadEngines, prefs, callback);
@@ -588,14 +599,14 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
   // Initialize preferences to currently saved state.
   ApplyPreferences(REASON_INITIALIZATION, "");
 
-  const std::string& login_input_method_used =
-      session_manager->user_context().GetLoginInputMethodUsed();
+  const std::string& login_input_method_id_used =
+      session_manager->user_context().GetLoginInputMethodIdUsed();
 
-  if (user_is_primary_ && !login_input_method_used.empty()) {
+  if (user_is_primary_ && !login_input_method_id_used.empty()) {
     // Persist input method when transitioning from Login screen into the
     // session.
-    ash::input_method::InputMethodPersistence::SetUserLastLoginInputMethod(
-        login_input_method_used, input_method::InputMethodManager::Get(),
+    ash::input_method::InputMethodPersistence::SetUserLastLoginInputMethodId(
+        login_input_method_id_used, input_method::InputMethodManager::Get(),
         profile);
   }
 
@@ -874,6 +885,23 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     ReportBooleanPrefApplication(reason, "Touchpad.ScrollAcceleration.Changed",
                                  "Touchpad.ScrollAcceleration.Started",
                                  enabled);
+  }
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == ::prefs::kTouchpadHapticFeedback) {
+    const bool enabled = touchpad_haptic_feedback_.GetValue();
+    if (user_is_active)
+      touchpad_settings.SetHapticFeedback(enabled);
+    ReportBooleanPrefApplication(reason, "Touchpad.HapticFeedback.Changed",
+                                 "Touchpad.HapticFeedback.Started", enabled);
+  }
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == ::prefs::kTouchpadHapticClickSensitivity) {
+    const int sensitivity_int = touchpad_haptic_click_sensitivity_.GetValue();
+    if (user_is_active)
+      touchpad_settings.SetHapticClickSensitivity(sensitivity_int);
+    ReportSensitivityPrefApplication(
+        reason, "Touchpad.HapticClickSensitivity.Changed",
+        "Touchpad.HapticClickSensitivity.Started", sensitivity_int);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == ::prefs::kDownloadDefaultDirectory) {

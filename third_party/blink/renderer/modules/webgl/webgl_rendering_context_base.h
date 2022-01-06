@@ -28,10 +28,10 @@
 
 #include <memory>
 
-#include "base/containers/mru_cache.h"
+#include "base/containers/lru_cache.h"
 #include "base/macros.h"
 #include "base/numerics/checked_math.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -705,6 +705,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool PaintRenderingResultsToCanvas(SourceDrawingBuffer) override;
   bool CopyRenderingResultsFromDrawingBuffer(CanvasResourceProvider*,
                                              SourceDrawingBuffer) override;
+  void CopyRenderingResultsToVideoFrame(
+      WebGraphicsContext3DVideoFramePool*,
+      SourceDrawingBuffer,
+      const gfx::ColorSpace&,
+      VideoFrameCopyCompletedCallback&) override;
+
   cc::Layer* CcLayer() const override;
   void Stop() override;
   void FinalizeFrame() override;
@@ -1177,21 +1183,21 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     int image_width = static_cast<int>(image->width());
     int image_height = static_cast<int>(image->height());
     *selecting_sub_rectangle =
-        !(sub_rect.X() == 0 && sub_rect.Y() == 0 &&
-          sub_rect.Width() == image_width && sub_rect.Height() == image_height);
+        !(sub_rect.x() == 0 && sub_rect.y() == 0 &&
+          sub_rect.width() == image_width && sub_rect.height() == image_height);
     // If the source image rect selects anything except the entire
     // contents of the image, assert that we're running WebGL 2.0 or
     // higher, since this should never happen for WebGL 1.0 (even though
     // the code could support it). If the image is null, that will be
     // signaled as an error later.
     DCHECK(!*selecting_sub_rectangle || IsWebGL2())
-        << "subRect = (" << sub_rect.Width() << " x " << sub_rect.Height()
-        << ") @ (" << sub_rect.X() << ", " << sub_rect.Y() << "), image = ("
+        << "subRect = (" << sub_rect.width() << " x " << sub_rect.height()
+        << ") @ (" << sub_rect.x() << ", " << sub_rect.y() << "), image = ("
         << image_width << " x " << image_height << ")";
 
-    if (!sub_rect.IsValid() || sub_rect.X() < 0 || sub_rect.Y() < 0 ||
-        sub_rect.MaxX() > image_width || sub_rect.MaxY() > image_height ||
-        sub_rect.Width() < 0 || sub_rect.Height() < 0) {
+    if (!sub_rect.IsValid() || sub_rect.x() < 0 || sub_rect.y() < 0 ||
+        sub_rect.right() > image_width || sub_rect.bottom() > image_height ||
+        sub_rect.width() < 0 || sub_rect.height() < 0) {
       SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                         "source sub-rectangle specified via pixel unpack "
                         "parameters is invalid");
@@ -1213,11 +1219,11 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       if (unpack_image_height) {
         max_y_accessed = unpack_image_height;
       } else {
-        max_y_accessed = sub_rect.Height();
+        max_y_accessed = sub_rect.height();
       }
       max_y_accessed *= depth - 1;
-      max_y_accessed += sub_rect.Height();
-      max_y_accessed += sub_rect.Y();
+      max_y_accessed += sub_rect.height();
+      max_y_accessed += sub_rect.y();
 
       if (!max_y_accessed.IsValid()) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
@@ -1904,7 +1910,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool checkProgramCompletionQueryAvailable(WebGLProgram* program,
                                             bool* completed);
   static constexpr unsigned int kMaxProgramCompletionQueries = 128u;
-  base::MRUCache<WebGLProgram*, GLuint> program_completion_queries_;
+  base::LRUCache<WebGLProgram*, GLuint> program_completion_queries_;
 
   int number_of_user_allocated_multisampled_renderbuffers_;
 

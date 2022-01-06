@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/blob_internals_url_loader.h"
@@ -276,6 +276,9 @@ class WebUIURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
     return pending_remote;
   }
 
+  WebUIURLLoaderFactory(const WebUIURLLoaderFactory&) = delete;
+  WebUIURLLoaderFactory& operator=(const WebUIURLLoaderFactory&) = delete;
+
  private:
   ~WebUIURLLoaderFactory() override = default;
 
@@ -361,8 +364,6 @@ class WebUIURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
   int const frame_tree_node_id_;
   const std::string scheme_;
   const base::flat_set<std::string> allowed_hosts_;  // if empty all allowed.
-
-  DISALLOW_COPY_AND_ASSIGN(WebUIURLLoaderFactory);
 };
 
 }  // namespace

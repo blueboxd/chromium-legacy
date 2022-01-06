@@ -53,7 +53,7 @@ constexpr int kAlpha95 = 242;  // 95%
 // Alpha value that is used to calculate themed color. Please see function
 // GetBackgroundThemedColor() about how the themed color is calculated.
 constexpr int kDarkBackgroundBlendAlpha = 127;   // 50%
-constexpr int kLightBackgroundBlendAlpha = 191;  // 75%
+constexpr int kLightBackgroundBlendAlpha = 127;  // 50%
 
 // The default background color that can be applied on any layer.
 constexpr SkColor kBackgroundColorDefaultLight = SK_ColorWHITE;
@@ -264,11 +264,18 @@ bool AshColorProvider::IsDarkModeEnabled() const {
   if (!features::IsDarkLightModeEnabled() && override_light_mode_as_default_)
     return false;
 
+  // Keep colors in OOBE as LIGHT when D/L is enabled. When the feature is
+  // disabled, lots of colors are hard coded in OOBE for now.
+  if (features::IsDarkLightModeEnabled() &&
+      Shell::Get()->session_controller()->GetSessionState() ==
+          session_manager::SessionState::OOBE) {
+    return false;
+  }
+
   // Keep it at dark mode if it is not in an active user session or
   // kDarkLightMode feature is not enabled.
-  // TODO(minch): Make LIGHT as the color mode while it is not in an active user
-  // session once kDarkLightMode feature is launched. Or investigate how to
-  // enable the feature in non-active user session as well.
+  // TODO(minch): Besides OOBE, make LIGHT as the color mode for other
+  // non-active user session as well while enabling D/L feature.
   if (!active_user_pref_service_ || !features::IsDarkLightModeEnabled())
     return true;
   return active_user_pref_service_->GetBoolean(prefs::kDarkModeEnabled);
@@ -300,7 +307,8 @@ void AshColorProvider::UpdateColorModeThemed(bool is_themed) {
 
 SkColor AshColorProvider::GetShieldLayerColorImpl(ShieldLayerType type,
                                                   bool inverted) const {
-  constexpr int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80, kAlpha90};
+  constexpr int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60,
+                             kAlpha80, kAlpha90, kAlpha95};
   DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
   return SkColorSetA(
       inverted ? GetInvertedBackgroundColor() : GetBackgroundColor(),
@@ -359,7 +367,6 @@ SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
       return gfx::kGoogleGrey500;
     case ContentLayerType::kIconColorSecondaryBackground:
       return use_dark_color ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
-    case ContentLayerType::kButtonLabelColor:
     case ContentLayerType::kAppStateIndicatorColor:
     case ContentLayerType::kScrollBarColor:
     case ContentLayerType::kSliderColorInactive:
@@ -400,6 +407,7 @@ SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
       return use_dark_color ? SkColorSetA(SK_ColorWHITE, 0x0D)
                             : SkColorSetA(SK_ColorBLACK, 0x14);
     case ContentLayerType::kButtonIconColor:
+    case ContentLayerType::kButtonLabelColor:
       return use_dark_color ? gfx::kGoogleGrey200 : gfx::kGoogleGrey900;
     default:
       return ResolveColor(type, use_dark_color);

@@ -3,7 +3,7 @@
 <translationbundle lang="cs">
 <translation id="1096883626080133124">S Google Chrome toho stihnete víc – je jednoduchý, bezpečný a rychlejší než kdy dřív</translation>
 <translation id="1282031177488366470">Pomozte zlepšit funkce a výkon Chromu</translation>
-<translation id="1354592789402432496">Váš administrátor vyžaduje, abyste se přihlásili pomocí účtu organizace. Účty, které váš administrátor nepovoluje, jsou skryty.</translation>
+<translation id="1314663809820920746">Všechny záložky, historii, hesla a další nastavení na tomto zařízení nadále uvidíte. Pokud provedete nějaké změny, do účtu Google se synchronizovat nebudou.</translation>
 <translation id="1479202195792305274">Když se přihlásíte k účtu Google, může vám Chrome kontrolovat hesla</translation>
 <translation id="1493827051843127077">Nastavte si Chrome jako výchozí prohlížeč a karty, hesla a platební údaje se budou synchronizovat na všechna vaše zařízení</translation>
 <translation id="1504372625950710826">Chrome nemůže vyhledat dostupné aktualizace. Zkuste zkontrolovat připojení k internetu.</translation>
@@ -61,9 +61,7 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Chrome nemůže vyhledat dostupné aktualizace, protože jste offline</translation>
 <translation id="5716154293141027663">Otevřít Chrome při každém klepnutí na odkaz v jiné aplikaci</translation>
-<translation id="572883588166315317">Vaše organizace vyžaduje, abyste se k používání Chromu přihlásili. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="5854621639439811139">Tip pro Chrome. Některá tlačítka, například Zpět, Vpřed a Hledat, jsou teď v dolní části obrazovky.</translation>
-<translation id="5876773482963502140">Když Chromu povolíte přístup k poloze, bude ji odesílat webům, u kterých to povolíte. Weby o vaši polohu mohou žádat, pokud pro vás mají místní informace, například seznamy obchodů v okolí nebo místní zprávy.</translation>
 <translation id="5998675059699164418">Vaše organizace vyžaduje, abyste se k používání Chromu přihlásili.</translation>
 <translation id="6054613632208573261">Používejte Chrome ve výchozím nastavení</translation>
 <translation id="6063091872902370735">Povolit přihlášení do Chromu</translation>
@@ -100,6 +98,7 @@
 <translation id="8357607116237445042">Zvolte, zda z tohoto zařízení chcete vymazat data prohlížeče Chrome, nebo je ponechat</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Všechna práva vyhrazena.</translation>
 <translation id="840168496893712993">Některé doplňky způsobují selhání prohlížeče Chrome. Zkuste je prosím odinstalovat.</translation>
+<translation id="8414886616817913619">Vaše organizace vyžaduje, abyste se k používání Chromu přihlásili. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="8459495907675268833">Vybraná data byla z Chromu a synchronizovaných zařízení odstraněna. Na stránce history.google.com mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google, například vyhledávací dotazy a aktivita z ostatních služeb Google.</translation>
 <translation id="850555388806794946">Postup nastavení Chromu jako výchozího prohlížeče:
   1. Otevřete nastavení.

@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
  * menu. Default: {@code false}</li>
  * <li>{@code edit_bookmark_in_app_menu}: boolean; show "Edit Bookmark" in the app menu. Default:
  * {@code false}</li>
+ * <li>{@code bookmark_visuals_enabled}: boolean; refresh the visual looks of the bookmarks
+ * manager. Default: {@code false}</li>
  * <li>{@code bookmarks_refresh_min_version}: boolean; see {@link #VERSION}.</li>
  * </ul>
  */
@@ -31,8 +33,6 @@ public class BookmarkFeatures {
      * ChromeFeatureList#BOOKMARKS_IMPROVED_SAVE_FLOW}
      * <li>{@code bookmarks_refresh_min_version} - {@link ChromeFeatureList#BOOKMARKS_REFRESH}
      * <li>{@code read_later_min_version} - {@link ChromeFeatureList#READ_LATER}
-     * <li>{@code bookmark_visuals_enabled}: boolean; refresh the visual looks of the bookmarks
-     * manager. Default: {@code false}</li>
      * </ul>
      *
      * <p>These parameters allow to control for cases where a significant bug fix or change of param
@@ -91,15 +91,9 @@ public class BookmarkFeatures {
                         BOOKMARK_VISUALS_ENABLED_DEFAULT);
     }
 
-    public static boolean isAddBookmarkMenuItemEnabled() {
+    public static boolean isBookmarkMenuItemAsDedicatedRowEnabled() {
         return isBookmarksRefreshEnabled()
                 && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        ChromeFeatureList.BOOKMARKS_REFRESH, "add_bookmark_in_app_menu", false);
-    }
-
-    public static boolean isEditBookmarkMenuItemEnabled() {
-        return isBookmarksRefreshEnabled()
-                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        ChromeFeatureList.BOOKMARKS_REFRESH, "edit_bookmark_in_app_menu", false);
+                        ChromeFeatureList.BOOKMARKS_REFRESH, "bookmark_in_app_menu", false);
     }
 }

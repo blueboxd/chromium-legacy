@@ -14,7 +14,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -97,7 +97,8 @@ class TestPasswordStore : public PasswordStore, public PasswordStoreBackend {
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
   FieldInfoStore* GetFieldInfoStore() override;
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
-  CreateSyncControllerDelegateFactory() override;
+  CreateSyncControllerDelegate() override;
+  void GetSyncStatus(base::OnceCallback<void(bool)> callback) override;
 
  private:
   LoginsResult GetAllLoginsInternal();

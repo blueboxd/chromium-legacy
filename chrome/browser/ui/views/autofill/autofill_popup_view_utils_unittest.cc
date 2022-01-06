@@ -164,3 +164,155 @@ TEST(AutofillPopupViewUtilsTest, ElementOutOfContentAreaBounds) {
   EXPECT_FALSE(
       CanShowDropdownHere(item_height, content_area_bounds, element_bounds));
 }
+
+TEST(AutofillPopupViewUtilsTest, GetAvailableVerticalSpaceOnSideOfElement) {
+  gfx::Rect content_area_bounds(100, 200, 500, 600);
+  gfx::Rect element_bounds(250, 350, 200, 100);
+
+  EXPECT_EQ(
+      GetAvailableVerticalSpaceOnSideOfElement(
+          content_area_bounds, element_bounds, views::BubbleArrowSide::kLeft),
+      content_area_bounds.height());
+  EXPECT_EQ(
+      GetAvailableVerticalSpaceOnSideOfElement(
+          content_area_bounds, element_bounds, views::BubbleArrowSide::kRight),
+      content_area_bounds.height());
+  // There are 150 pixels above the element and 350 below.
+  EXPECT_EQ(
+      GetAvailableVerticalSpaceOnSideOfElement(
+          content_area_bounds, element_bounds, views::BubbleArrowSide::kTop),
+      350);
+  EXPECT_EQ(
+      GetAvailableVerticalSpaceOnSideOfElement(
+          content_area_bounds, element_bounds, views::BubbleArrowSide::kBottom),
+      150);
+}
+
+TEST(AutofillPopupViewUtilsTest, GetAvailableHorizontalSpaceOnSideOfElement) {
+  gfx::Rect content_area_bounds(100, 200, 700, 600);
+  gfx::Rect element_bounds(220, 350, 200, 100);
+
+  EXPECT_EQ(
+      GetAvailableHorizontalSpaceOnSideOfElement(
+          content_area_bounds, element_bounds, views::BubbleArrowSide::kLeft),
+      380);
+  EXPECT_EQ(
+      GetAvailableHorizontalSpaceOnSideOfElement(
+          content_area_bounds, element_bounds, views::BubbleArrowSide::kRight),
+      120);
+  EXPECT_EQ(
+      GetAvailableHorizontalSpaceOnSideOfElement(
+          content_area_bounds, element_bounds, views::BubbleArrowSide::kTop),
+      content_area_bounds.width());
+  EXPECT_EQ(
+      GetAvailableHorizontalSpaceOnSideOfElement(
+          content_area_bounds, element_bounds, views::BubbleArrowSide::kBottom),
+      content_area_bounds.width());
+}
+
+TEST(AutofillPopupViewUtilsTest, IsBubblePlaceableOnSideOfElement) {
+  // 200 pixels on top of the element.
+  // 55O pixels below the element.
+  // 100 pixels on the left side (BubbleArrowSide::kRight)
+  // 4OO pixels on the right side.
+  gfx::Rect content_area_bounds = {0, 0, 800, 800};
+  gfx::Rect element_bounds = {100, 200, 300, 50};
+  gfx::Size preferred_size = {200, 300};
+
+  // The bubble fits below (BubbleArrowSide::kTop) and on the right side of the
+  // element.
+  EXPECT_FALSE(IsBubblePlaceableOnSideOfElement(
+      content_area_bounds, element_bounds, preferred_size, 12,
+      views::BubbleArrowSide::kBottom));
+  EXPECT_FALSE(IsBubblePlaceableOnSideOfElement(
+      content_area_bounds, element_bounds, preferred_size, 12,
+      views::BubbleArrowSide::kRight));
+  EXPECT_TRUE(IsBubblePlaceableOnSideOfElement(
+      content_area_bounds, element_bounds, preferred_size, 12,
+      views::BubbleArrowSide::kLeft));
+  EXPECT_TRUE(IsBubblePlaceableOnSideOfElement(
+      content_area_bounds, element_bounds, preferred_size, 12,
+      views::BubbleArrowSide::kTop));
+}
+
+TEST(AutofillPopupViewUtilsTest, GetOptimalBubbleArrowSide) {
+  // For this test, we fix the content area and the bubble size.
+  gfx::Rect content_area_bounds = {0, 0, 800, 800};
+  gfx::Size preferred_bubble_size = {200, 300};
+
+  struct TestCase {
+    gfx::Rect element_bounds;
+    views::BubbleArrowSide expected_arrow_side;
+  } test_cases[]{
+      {gfx::Rect{0, 0, 100, 800}, views::BubbleArrowSide::kLeft},
+      {gfx::Rect{600, 0, 100, 800}, views::BubbleArrowSide::kRight},
+      {gfx::Rect{0, 0, 100, 200}, views::BubbleArrowSide::kTop},
+      {gfx::Rect{0, 600, 100, 200}, views::BubbleArrowSide::kBottom},
+  };
+
+  for (TestCase& test_case : test_cases) {
+    EXPECT_EQ(
+        GetOptimalBubbleArrowSide(content_area_bounds, test_case.element_bounds,
+                                  preferred_bubble_size),
+        test_case.expected_arrow_side);
+  }
+}
+
+TEST(AutofillPopupViewUtilsTest, GetOptimalBubblePlacement) {
+  // For this test, the content area bounds and preferred bubble size is fixed.
+  gfx::Rect content_area_bounds = {0, 0, 800, 800};
+  gfx::Size preferred_bubble_size = {200, 300};
+  int scrollbar_width = 10;
+  int maximum_offset_to_center = 120;
+
+  struct TestCase {
+    bool right_to_left;
+    gfx::Rect element_bounds;
+    gfx::Rect expected_popup_bounds;
+    views::BubbleBorder::Arrow expected_arrow;
+
+  } test_cases[]{
+      // The element is placed in the top corner and the bubble should be shown
+      // below the element, are displaced by half the field width.
+      {false,
+       {0, 0, 100, 20},
+       {50, 20, 200, 300},
+       views::BubbleBorder::Arrow::TOP_LEFT},
+      // The element is placed in the top corner and the bubble should be shown
+      // below the element, displaced by maximum of 120 pixels.
+      {false,
+       {0, 0, 300, 20},
+       {maximum_offset_to_center, 20, 200, 300},
+       views::BubbleBorder::Arrow::TOP_LEFT},
+      // The element is placed in the lower left corner which should create a
+      // bubble on top of the element.
+      {false,
+       {0, 780, 100, 20},
+       {50, 480, 200, 300},
+       views::BubbleBorder::Arrow::BOTTOM_LEFT},
+      // Test a basic right website with an element placed on the upper
+      // right corner. The bubble should be displaced to the left.
+      {true,
+       {700, 0, 100, 20},
+       {550, 20, 200, 300},
+       views::BubbleBorder::Arrow::TOP_RIGHT},
+      // Test a field that is barely visible. This should create a bubble on the
+      // side.
+      {false,
+       {-95, 300, 100, 20},
+       {5, 300, 200, 300},
+       views::BubbleBorder::Arrow::LEFT_TOP},
+  };
+
+  for (TestCase& test_case : test_cases) {
+    gfx::Rect popup_bounds;
+
+    EXPECT_EQ(test_case.expected_arrow,
+              GetOptimalBubblePlacement(
+                  content_area_bounds, test_case.element_bounds,
+                  preferred_bubble_size, test_case.right_to_left,
+                  scrollbar_width, maximum_offset_to_center, popup_bounds));
+
+    EXPECT_EQ(popup_bounds, test_case.expected_popup_bounds);
+  }
+}

@@ -78,6 +78,7 @@
       "is_debug": false,
       "target_cpu": "arm64",
       "target_os": "fuchsia",
+      "test_host_cpu": "arm64",
       "use_goma": true
     }
   },
@@ -222,17 +223,6 @@
       "target_cpu": "x86",
       "use_cxx11": true,
       "use_goma": false
-    }
-  },
-  "linux-ozone-rel": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "ozone_platform": "headless",
-      "use_bundled_weston": true,
-      "use_goma": true,
-      "use_ozone": true
     }
   },
   "linux-trusty-rel": {

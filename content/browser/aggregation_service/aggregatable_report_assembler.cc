@@ -13,6 +13,7 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/default_clock.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
@@ -21,6 +22,7 @@
 #include "content/browser/aggregation_service/aggregation_service_network_fetcher_impl.h"
 #include "content/browser/aggregation_service/public_key.h"
 #include "content/public/browser/storage_partition.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
@@ -35,6 +37,18 @@ AggregatableReportAssembler::AggregatableReportAssembler(
               std::make_unique<AggregationServiceNetworkFetcherImpl>(
                   base::DefaultClock::GetInstance(),
                   storage_partition)),
+          std::make_unique<AggregatableReport::Provider>()) {}
+
+AggregatableReportAssembler::AggregatableReportAssembler(
+    AggregatableReportManager* manager,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : AggregatableReportAssembler(
+          std::make_unique<AggregationServiceKeyFetcher>(
+              manager,
+              AggregationServiceNetworkFetcherImpl::
+                  CreateForTesting(  // IN-TEST
+                      base::DefaultClock::GetInstance(),
+                      std::move(url_loader_factory))),
           std::make_unique<AggregatableReport::Provider>()) {}
 
 AggregatableReportAssembler::AggregatableReportAssembler(
@@ -73,21 +87,32 @@ AggregatableReportAssembler::CreateForTesting(
       std::move(fetcher), std::move(report_provider)));
 }
 
+// static
+std::unique_ptr<AggregatableReportAssembler>
+AggregatableReportAssembler::CreateForTesting(
+    AggregatableReportManager* manager,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  return base::WrapUnique(
+      new AggregatableReportAssembler(manager, std::move(url_loader_factory)));
+}
+
 void AggregatableReportAssembler::AssembleReport(
     AggregatableReportRequest report_request,
     AssemblyCallback callback) {
-  DCHECK_EQ(report_request.processing_origins().size(),
-            AggregatableReport::kNumberOfProcessingOrigins);
   DCHECK(base::ranges::is_sorted(report_request.processing_origins()));
+  const size_t num_processing_origins =
+      report_request.processing_origins().size();
+  DCHECK(AggregatableReport::IsNumberOfProcessingOriginsValid(
+      num_processing_origins,
+      report_request.payload_contents().processing_type));
 
   const AggregationServicePayloadContents& contents =
       report_request.payload_contents();
 
-  // Currently, these should be the only possible enum values.
-  DCHECK_EQ(contents.operation,
-            AggregationServicePayloadContents::Operation::kCountValueHistogram);
-  DCHECK_EQ(contents.processing_type,
-            AggregationServicePayloadContents::ProcessingType::kTwoParty);
+  // Currently, this is the only supported operation.
+  DCHECK_EQ(
+      contents.operation,
+      AggregationServicePayloadContents::Operation::kHierarchicalHistogram);
 
   if (pending_requests_.size() >= kMaxSimultaneousRequests) {
     std::move(callback).Run(absl::nullopt,
@@ -100,13 +125,12 @@ void AggregatableReportAssembler::AssembleReport(
 
   const PendingRequest& pending_request =
       pending_requests_
-          .emplace(id, PendingRequest(
-                           std::move(report_request), std::move(callback),
-                           /*num_processing_origins=*/
-                           AggregatableReport::kNumberOfProcessingOrigins))
+          .emplace(
+              id, PendingRequest(std::move(report_request), std::move(callback),
+                                 num_processing_origins))
           .first->second;
 
-  for (size_t i = 0; i < AggregatableReport::kNumberOfProcessingOrigins; ++i) {
+  for (size_t i = 0; i < num_processing_origins; ++i) {
     // `fetcher_` is owned by `this`, so `base::Unretained()` is safe.
     fetcher_->GetPublicKey(
         pending_request.report_request.processing_origins()[i],
@@ -144,7 +168,7 @@ void AggregatableReportAssembler::OnPublicKeyFetched(
       std::move(key);
 
   if (pending_request.num_returned_key_fetches ==
-      AggregatableReport::kNumberOfProcessingOrigins) {
+      pending_request.report_request.processing_origins().size()) {
     OnAllPublicKeysFetched(report_id, pending_request);
   }
 }

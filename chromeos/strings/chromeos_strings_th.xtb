@@ -1,17 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="1018219910092211213">ไม่สามารถแปลง DNS</translation>
 <translation id="1018656279737460067">ยกเลิกแล้ว</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> เทรด, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1059913517121127803">เริ่มการสแกนไม่ได้</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">ตรวจพบไฟร์วอลล์</translation>
 <translation id="1075811647922107217">ขนาดหน้า</translation>
-<translation id="110351136513869678">ไปที่การตั้งค่าเพื่อกำหนดค่า</translation>
+<translation id="1094693127011229778">ที่อยู่ IP ไม่พร้อมใช้งาน</translation>
 <translation id="1119447706177454957">ข้อผิดพลาดภายใน</translation>
 <translation id="1124772482545689468">ผู้ใช้</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> เครื่องนี้จัดการโดย <ph name="MANAGER" /></translation>
+<translation id="1175951029573070619">ปานกลาง (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">นำออก</translation>
 <translation id="1195447618553298278">ข้อผิดพลาดที่ไม่รู้จัก</translation>
 <translation id="1204296502688602597">เวลาในการตอบสนองของ DNS</translation>
@@ -21,6 +23,7 @@
 <translation id="1270369111467284986">สงสัยว่าเป็นแคพทีฟพอร์ทัล</translation>
 <translation id="1290331692326790741">สัญญาณไม่ดี</translation>
 <translation id="1301069673413256657">GSM</translation>
+<translation id="1310380015393971138">ไม่มีเครือข่าย<ph name="NETWORK_NAME" />ที่ใช้งานได้</translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">เครือข่ายในประเทศ ไม่ใช่โรมมิ่ง</translation>
 <translation id="1327977588028644528">เกตเวย์</translation>
@@ -39,6 +42,8 @@
 <translation id="150962533380566081">PUK ไม่ถูกต้อง</translation>
 <translation id="1510238584712386396">ตัวเรียกใช้งาน</translation>
 <translation id="155865706765934889">ทัชแพด</translation>
+<translation id="1567064801249837505">อัลบั้ม</translation>
+<translation id="1572585716423026576">ตั้งเป็นวอลเปเปอร์</translation>
 <translation id="1621067168122174824">ทดสอบการชาร์จแบตเตอรี่</translation>
 <translation id="1639239467298939599">กำลังโหลด</translation>
 <translation id="1641857168437328880">ตัวป้อนเอกสาร (ด้านเดียว)</translation>
@@ -51,23 +56,23 @@
 <translation id="1717874160321062422">จัดการโดย <ph name="FIRST_MANAGER" /> และ <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">เซิร์ฟเวอร์ชื่อ</translation>
 <translation id="1731082422893354635">ทัชแพดบลูทูธ</translation>
+<translation id="1753496554272155572">ออกจากตัวอย่างวอลเปเปอร์</translation>
+<translation id="175763766237925754">ดี (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1792647875738159689">กำลังยกเลิกการสแกน</translation>
 <translation id="1851218745569890714">การประชุมทางวิดีโอ</translation>
 <translation id="1874612839560830905">MTU</translation>
-<translation id="1881378885488531302">รับที่อยู่ IP ไม่ได้</translation>
 <translation id="1887850431809612466">การแก้ไขฮาร์ดแวร์</translation>
-<translation id="1901646112321215184">ไม่ได้กำหนดค่าเซิร์ฟเวอร์ DNS</translation>
 <translation id="1905710495812624430">ลองทำเกินจำนวนครั้งที่กำหนดไว้แล้ว</translation>
 <translation id="1908234395526491708">ขอ UDP ไม่สำเร็จ</translation>
 <translation id="1930797645656624981">บริการวิธีการป้อนข้อมูลของ Chrome OS</translation>
 <translation id="1947737735496445907">พิมพ์แล้ว</translation>
-<translation id="197386857804679933">ไปที่การตั้งค่าเพื่อเชื่อมต่ออีกครั้ง</translation>
 <translation id="1979103255016296513">เลยเวลาเปลี่ยนรหัสผ่านแล้ว</translation>
 <translation id="1999615961760456652">แคพทีฟพอร์ทัล</translation>
 <translation id="2006864819935886708">การเชื่อมต่อ</translation>
 <translation id="2008685064673031089">Prime Search</translation>
+<translation id="2016697457005847575">ลองทำตามขั้นตอนการแก้ปัญหา</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">การตั้งค่าเพิ่มเติม</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" /> เวอร์ชัน <ph name="MILESTONE_VERSION" /></translation>
@@ -86,6 +91,7 @@
 <translation id="2323506179655536734">ข้าม</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">เปิดบลูทูธเพื่อค้นหาอุปกรณ์ใกล้เคียง</translation>
+<translation id="2346474577291266260">ดีมาก (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2364498172489649528">ผ่าน</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">ส่งรายงานความคิดเห็น</translation>
@@ -99,6 +105,7 @@
 <translation id="2505327257735685095">รีเฟรชรูปภาพวอลเปเปอร์ปัจจุบัน</translation>
 <translation id="2517472476991765520">สแกน</translation>
 <translation id="2570743873672969996">กำลังทำการทดสอบ <ph name="TEST_NAME" />...</translation>
+<translation id="2584559707064218956">ไปที่การตั้งค่าเพื่อตั้งค่า</translation>
 <translation id="2585245331261708204">มีอะไรใหม่ใน Chrome OS</translation>
 <translation id="2619761439309613843">รีเฟรชทุกวัน</translation>
 <translation id="2620436844016719705">ระบบ</translation>
@@ -110,13 +117,11 @@
 <translation id="2860473693272905224">วางอีกหน้าบนเครื่องสแกน</translation>
 <translation id="2872961005593481000">ปิด</translation>
 <translation id="2878387241690264070">คายประจุ <ph name="RATE" /> ใน <ph name="NUM_SECONDS" /> วินาที</translation>
-<translation id="2927511423571448384">ไม่สามารถเชื่อมต่อผ่านไฟร์วอลล์ไปยังเว็บไซต์ HTTP (พอร์ต 80) จาก Android</translation>
 <translation id="3008341117444806826">รีเฟรช</translation>
 <translation id="3009958530611748826">เลือกโฟลเดอร์ที่จะใช้บันทึก</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">ปลายทาง</translation>
 <translation id="3069085583900247081">การทดสอบไม่สำเร็จ</translation>
-<translation id="3076387335132326640">คุณกำลังใช้เครือข่ายแบบเปิด</translation>
 <translation id="3083667275341675831">การวินิจฉัยการเชื่อมต่อ</translation>
 <translation id="3091839911843451378">ไม่สำเร็จ - หยุดทำงาน</translation>
 <translation id="3102119246920354026">แคช</translation>
@@ -147,9 +152,10 @@
 <translation id="3532980081107202182">เหลือเวลาอีกประมาณ <ph name="MIN_REMAINING" /> นาที</translation>
 <translation id="3565064564551103223">IP ที่อนุญาต</translation>
 <translation id="357889014807611375">Wi-Fi ที่มีการวัดปริมาณอินเทอร์เน็ต</translation>
-<translation id="3582041541988388905">ไม่พบการเชื่อมต่อ <ph name="NETWORK_NAME" /></translation>
+<translation id="3583278742022654445">ความแรงสัญญาณไม่ดี ลองขยับไปใกล้ๆ แหล่งสัญญาณ Wi-Fi มากขึ้น</translation>
 <translation id="3595596368722241419">แบตเตอรี่เต็ม</translation>
 <translation id="360565022852130722">เครือข่าย WiFi มีการรักษาความปลอดภัยด้วยโปรโตคอล WEP 802.1x ที่ไม่รัดกุม</translation>
+<translation id="3606583719724308068">เวลาในการตอบสนองไปยังเว็บไซต์ HTTPS สูง</translation>
 <translation id="3689839747745352263">การทดสอบ <ph name="TEST_NAME" /></translation>
 <translation id="3708186454126126312">อุปกรณ์ที่เคยเชื่อมต่อ</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> รีวิว)</translation>
@@ -158,6 +164,7 @@
 <translation id="38114475217616659">ล้างประวัติทั้งหมด</translation>
 <translation id="3820172043799983114">PIN ไม่ถูกต้อง</translation>
 <translation id="3838338534323494292">รหัสผ่านใหม่</translation>
+<translation id="385051799172605136">กลับ</translation>
 <translation id="3858860766373142691">ชื่อ</translation>
 <translation id="3865414814144988605">ความละเอียด</translation>
 <translation id="387301095347517405">จำนวนครั้งที่ชาร์จแบตเตอรี่จนเต็ม</translation>
@@ -169,11 +176,13 @@
 <translation id="39823212440917567">ระบบจะนำงานพิมพ์ที่เก่ากว่า <ph name="NUMBER_OF_DAYS" /> วันออก</translation>
 <translation id="4003384961948020559">ไม่สำเร็จ - ถาดกระดาษขาออกเต็ม</translation>
 <translation id="4034824040120875894">เครื่องพิมพ์</translation>
+<translation id="4044093238444069296">ไม่สามารถติดต่อกับเกตเวย์</translation>
 <translation id="404928562651467259">คำเตือน</translation>
 <translation id="409427325554347132">บันทึกรายละเอียดการทดสอบ</translation>
 <translation id="4111761024568264522">ทัชแพด USB</translation>
 <translation id="4131410914670010031">ขาวดำ</translation>
 <translation id="4145784616224233563">ไฟร์วอลล์ HTTP</translation>
+<translation id="4147897805161313378">Google Photos</translation>
 <translation id="4155551848414053977">ตรวจสอบว่าเครื่องสแกนเปิดอยู่และใช้งานได้ผ่านทางเครือข่ายของคุณหรือการเชื่อมต่อโดยตรง</translation>
 <translation id="4170700058716978431">ไม่สำเร็จ</translation>
 <translation id="4176463684765177261">ปิดการทำงาน</translation>
@@ -190,6 +199,7 @@
 <translation id="4378551569595875038">กำลังเชื่อมต่อ</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">ไดรฟ์ของฉัน</translation>
+<translation id="4428374560396076622"><ph name="NETWORK_NAME" /> ปิดอยู่</translation>
 <translation id="4429881212383817840">ตั๋ว Kerberos กำลังจะหมดอายุ</translation>
 <translation id="4431821876790500265">ดูรายงาน</translation>
 <translation id="445059817448385655">รหัสผ่านเดิม</translation>
@@ -204,7 +214,6 @@
 <translation id="455835558791489930">แบตเตอรี่ <ph name="CHARGE_VALUE" />mAh</translation>
 <translation id="4561801978359312462">ปลดล็อกซิมแล้ว</translation>
 <translation id="4562494484721939086">ไม่มีบริการ</translation>
-<translation id="4567024731344774461">ไม่สามารถแปลง DNS จาก Android</translation>
 <translation id="458794348635939462">แก้ไขทุกโฮสต์ไม่สำเร็จ</translation>
 <translation id="4593212453765072419">จำเป็นต้องมีการตรวจสอบสิทธิ์พร็อกซี</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> จาก <ph name="TOTAL_PAGE_NUMBER" /> หน้า กด Enter เพื่อยกเลิกงานพิมพ์</translation>
@@ -229,7 +238,6 @@
 <translation id="484790837831576105">(Android) การแปลง DNS</translation>
 <translation id="4848429997038228357">กำลังดำเนินการ</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> ลองได้อีก {0} ครั้ง}other{<ph name="ERROR_MESSAGE" /> ลองได้อีก {0} ครั้ง}}</translation>
-<translation id="4871137769558798671">ไม่สามารถเชื่อมต่อผ่านไฟร์วอลล์ไปยังเว็บไซต์ HTTPS (พอร์ต 443)</translation>
 <translation id="4880328057631981605">ชื่อจุดเข้าใช้งาน</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">อย่ารอช้า รีบเลือกรหัสผ่านใหม่</translation>
@@ -237,6 +245,7 @@
 <translation id="4917385247580444890">แรง</translation>
 <translation id="4917889632206600977">หยุดพิมพ์ - กระดาษหมด</translation>
 <translation id="4921665434385737356">ชาร์จ <ph name="RATE" /> ใน <ph name="NUM_SECONDS" /> วินาที</translation>
+<translation id="4930320165497208503">ไปที่<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" />เพื่อตั้งค่าหรืออัปเดตการเชื่อมต่อ</translation>
 <translation id="4932733599132424254">วันที่</translation>
 <translation id="498186245079027698">ตรวจสอบเครื่องสแกนแล้วลองอีกครั้ง ตรวจดูว่ามีพื้นที่ว่างในเครื่องเพียงพอสำหรับบันทึกไฟล์ที่สแกน</translation>
 <translation id="4985509611418653372">เรียกใช้</translation>
@@ -273,6 +282,7 @@
 <translation id="5332948983412042822">เลือกรหัสผ่านใหม่เลย</translation>
 <translation id="5333530671332546086">สถานะพอร์ทัลที่ไม่รู้จัก</translation>
 <translation id="5346687412805619883">เครือข่ายภายใน</translation>
+<translation id="5358174242040570474">เกิดข้อผิดพลาด ลองเลือกวอลเปเปอร์อีกครั้งหรือเปิดแอปใหม่</translation>
 <translation id="5372659122375744710">เครือข่าย WiFi ไม่ปลอดภัย</translation>
 <translation id="5401938042319910061">เรียกใช้กิจวัตรทั้งหมด</translation>
 <translation id="5423849171846380976">เปิดอยู่</translation>
@@ -287,7 +297,6 @@
 <translation id="5502931783115429516">Android ไม่ทำงาน</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
-<translation id="5546352997259770619">สัญญาณมีความแรงต่ำ ลองย้ายเข้าไปใกล้จุดเข้าใช้งานมากขึ้น</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">สแกนอีกครั้ง</translation>
 <translation id="5669267381087807207">กำลังเปิดใช้</translation>
@@ -295,7 +304,6 @@
 <translation id="5691511426247308406">ครอบครัว</translation>
 <translation id="5701381305118179107">กึ่งกลาง</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> จาก <ph name="TOTAL_PAGES" /></translation>
-<translation id="5715997777752246116">ไม่ได้กําหนดค่าเนมเซิร์ฟเวอร์</translation>
 <translation id="5760715441271661976">สถานะพอร์ทัล</translation>
 <translation id="5784136236926853061">เวลาในการตอบสนองของ HTTP สูง</translation>
 <translation id="5832805196449965646">เพิ่มบุคคล</translation>
@@ -339,15 +347,14 @@
 <translation id="636850387210749493">การลงทะเบียนองค์กร</translation>
 <translation id="6379086450106841622">หน้าจอสัมผัส</translation>
 <translation id="6388847657025262518">ตัวป้อนเอกสารของเครื่องสแกนมีกระดาษติด ตรวจสอบตัวป้อนเอกสารแล้วลองอีกครั้ง</translation>
-<translation id="6395640744968320699">ไม่สามารถเชื่อมต่อผ่านไฟร์วอลล์ไปยังเว็บไซต์ HTTP (พอร์ต 80)</translation>
 <translation id="641081527798843608">หัวเรื่องที่ตรงกัน</translation>
 <translation id="6423239382391657905">เปิด VPN</translation>
+<translation id="6439505561246192797">อ่อน (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6456394469623773452">ดี</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{สแกนหน้าอีกครั้งไหม}=1{สแกนหน้าที่ {PAGE_NUMBER} อีกครั้งไหม}other{สแกนหน้าที่ {PAGE_NUMBER} อีกครั้งไหม}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">จัดการโดย <ph name="MANAGER" /></translation>
 <translation id="649050271426829538">หยุดพิมพ์ - กระดาษติด</translation>
-<translation id="6498608540383876992">ไม่สามารถติดต่อกับเกตเวย์</translation>
 <translation id="6516990319416533844">ปล่อยให้มีการใช้งานแบตเตอรี่อีกสักครู่เพื่อทดสอบอัตราการชาร์จแบตเตอรี่</translation>
 <translation id="6517239166834772319">สำรวจ</translation>
 <translation id="6527081081771465939">โปรโตคอลรักษาความปลอดภัย WiFi ที่ไม่รู้จัก</translation>
@@ -357,14 +364,13 @@
 <translation id="6574762126505704998">เติม</translation>
 <translation id="6575134580692778371">ไม่ได้กำหนดค่า</translation>
 <translation id="6596816719288285829">ที่อยู่ IP</translation>
-<translation id="6603230386432466813">หากพบปัญหาในการเชื่อมต่อ</translation>
 <translation id="6618744767048954150">กำลังดำเนินการ</translation>
 <translation id="6620487321149975369">งานพิมพ์จะปรากฏในประวัติการพิมพ์ เว้นแต่จะมีผู้ใช้นำออกไปด้วยตนเอง</translation>
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="6704062477274546131">การแปลง DNS</translation>
-<translation id="6714650824879092633">ปิดใช้ <ph name="NETWORK_NAME" /> แล้ว</translation>
 <translation id="6747215703636344499">หยุดพิมพ์ - ถาดกระดาษออกเต็ม</translation>
+<translation id="6749473226660745022">รูปภาพ</translation>
 <translation id="6756731097889387912">ยกเลิกการสแกนไม่ได้</translation>
 <translation id="6766275201586212568">การแปลง DNS ที่ไม่สำเร็จ</translation>
 <translation id="6768237774506518020">อัตราการแปลง DNS ไม่สำเร็จสูง</translation>
@@ -376,13 +382,13 @@
 <translation id="6957231940976260713">ชื่อบริการ</translation>
 <translation id="6961170852793647506">วางเอกสารบนเครื่องสแกนเพื่อเริ่มต้นใช้งาน</translation>
 <translation id="6977381486153291903">การแก้ไขเฟิร์มแวร์</translation>
-<translation id="6982876849933694860">หากต้องการตั้งค่าการเชื่อมต่อใหม่ ให้ไปที่<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> จัดการอุปกรณ์นี้และมีสิทธิ์เข้าถึงกิจกรรมทั้งหมดของผู้ใช้ ซึ่งรวมถึงหน้าเว็บที่เข้าชม รหัสผ่าน และอีเมล</translation>
 <translation id="7040230719604914234">โอเปอเรเตอร์</translation>
 <translation id="7058278511608979688">สิ้นสุดและบันทึก</translation>
 <translation id="7059230779847288458">กำลังชาร์จ อีก <ph name="TIME_VALUE" />จะเต็ม</translation>
 <translation id="708426984172631313">หยุดแล้ว</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="710028965487274708">ไม่สำเร็จ - การให้สิทธิ์ไม่สำเร็จ</translation>
 <translation id="7134436342991564651">{0,plural, =1{เนมเซิร์ฟเวอร์}other{เนมเซิร์ฟเวอร์}}</translation>
 <translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
 <translation id="7144878232160441200">ลองอีกครั้ง</translation>
@@ -395,7 +401,7 @@
 <translation id="7271040990581020067">เครื่องสแกนกำลังทำงานอยู่ ลองอีกครั้งในภายหลัง</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">คอลเล็กชันภาพวอลเปเปอร์</translation>
-<translation id="7292680402155138244">เวลาในการตอบสนองไปยังเว็บไซต์ HTTPS (พอร์ต 443) สูง</translation>
+<translation id="7297226631177386107">ไม่สามารถเชื่อมต่อผ่านไฟร์วอลล์ไปยังเว็บไซต์ HTTPS</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -428,6 +434,7 @@
 <translation id="7762130827864645708">เปลี่ยนรหัสผ่านสำเร็จ โปรดใช้รหัสผ่านใหม่จากนี้ไป</translation>
 <translation id="7763470514545477072">การจับคู่ส่วนต่อท้ายโดเมน</translation>
 <translation id="7769672763586021400">รหัสรุ่น</translation>
+<translation id="7784116172884276937">ไม่มีเซิร์ฟเวอร์ DNS ที่ตั้งค่าไว้</translation>
 <translation id="7805768142964895445">สถานะ</translation>
 <translation id="7819857487979277519">PSK (WPA หรือ RSN)</translation>
 <translation id="7835501727204647447">ติดตั้ง CloudReady</translation>
@@ -437,36 +444,34 @@
 <translation id="7882358943899516840">ประเภทผู้ให้บริการ</translation>
 <translation id="7882501334836096755">คีย์สาธารณะ</translation>
 <translation id="7890841768028788197">หน้าจอสัมผัสภายใน</translation>
-<translation id="7895471513946376273">สำรวจเครื่องมือสำหรับการวาดภาพและการออกแบบ</translation>
 <translation id="7936303884198020182">ไม่พบเนมเซิร์ฟเวอร์</translation>
 <translation id="7943235353293548836">ระยะเวลาของ Keepalive ต่อเนื่อง</translation>
 <translation id="7955587717700691983">แป้นพิมพ์บลูทูธ</translation>
 <translation id="7960831585769876809">อุณหภูมิ</translation>
+<translation id="7977800524392185497">ไปที่การตั้งค่าเพื่อเข้าร่วมเครือข่าย <ph name="NETWORK_NAME" /></translation>
 <translation id="7978412674231730200">กุญแจส่วนตัว</translation>
 <translation id="7994702968232966508">วิธีการ EAP</translation>
-<translation id="8020238979854764615">เกิดข้อผิดพลาด โปรดเลือกรูปอื่นเพื่อลองอีกครั้ง</translation>
 <translation id="802154636333426148">การดาวน์โหลดล้มเหลว</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="8041089156583427627">ส่งความคิดเห็น</translation>
 <translation id="8075838845814659848">การชาร์จที่เหลือ</translation>
+<translation id="8082366717211101304">ไม่สามารถแปลง DNS จากแอป Android</translation>
 <translation id="808894953321890993">เปลี่ยนรหัสผ่าน</translation>
+<translation id="8104083085214006426">คุณกำลังใช้เครือข่ายแบบเปิดที่ไม่ปลอดภัย</translation>
 <translation id="811820734797650957">(Android) ปิงเกตเวย์ได้</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />°C</translation>
 <translation id="8132480444149501833">ขอตัวนับการรับส่งข้อมูล</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
-<translation id="8177708084858970226">ไม่สามารถแปลง DNS</translation>
 <translation id="8206859287963243715">โทรศัพท์มือถือ</translation>
 <translation id="8208861521865154048">สิทธิประโยชน์</translation>
 <translation id="8230672074305416752">ใช้คำสั่ง ping กับเกตเวย์เครือข่ายเริ่มต้นไม่สำเร็จ</translation>
 <translation id="8246209727385807362">ผู้ให้บริการที่ไม่รู้จัก</translation>
 <translation id="8286154143153872371">โปรดเชื่อมต่อเครือข่ายและโหลดหน้าซ้ำเพื่อดูวอลเปเปอร์</translation>
 <translation id="8291967909914612644">ประเทศผู้ให้บริการหน้าแรก</translation>
-<translation id="829270796093605079">สำรวจเครื่องมือออกแบบ</translation>
 <translation id="8294431847097064396">แหล่งที่มา</translation>
 <translation id="8297006494302853456">อ่อน</translation>
 <translation id="8302368968391049045">ไฟร์วอลล์ HTTPS</translation>
 <translation id="8318753676953949627">ไม่มีภาพ</translation>
-<translation id="8346875532700229909">ไม่สามารถติดต่อกับเกตเวย์จาก Android</translation>
 <translation id="8347227221149377169">งานพิมพ์</translation>
 <translation id="8352772353338965963">เพิ่มบัญชีเพื่อลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี บัญชีที่ลงชื่อเข้าใช้แล้วทั้งหมดสามารถเข้าถึงได้โดยไม่ต้องใช้รหัสผ่าน คุณจึงควรใช้ฟีเจอร์นี้กับบัญชีที่เชื่อถือเท่านั้น</translation>
 <translation id="8364946094152050673">เนมเซิร์ฟเวอร์ว่างเปล่า</translation>
@@ -476,10 +481,12 @@
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">แป้นพิมพ์ภายใน</translation>
 <translation id="843568408673868420">การเชื่อมต่ออินเทอร์เน็ต</translation>
+<translation id="844521431886043384">ไม่ได้ตั้งค่า DNS</translation>
 <translation id="8461329675984532579">ชื่อผู้ให้บริการหน้าแรก</translation>
 <translation id="8475690821716466388">เครือข่าย WiFi มีการรักษาความปลอดภัยด้วยโปรโตคอล WEP PSK ที่ไม่รัดกุม</translation>
 <translation id="8477551185774834963">เวลาในการตอบสนอง DNS สูงกว่าเกณฑ์ที่ยอมรับได้เล็กน้อย</translation>
 <translation id="8483248364096924578">ที่อยู่ IP</translation>
+<translation id="8491311378305535241">ไม่สามารถเชื่อมต่อผ่านไฟร์วอลล์ไปยังเว็บไซต์ HTTP จากแอป Android</translation>
 <translation id="8498220429738806196">ตัวนับการรับส่งข้อมูล</translation>
 <translation id="8503813439785031346">ชื่อผู้ใช้</translation>
 <translation id="8503836310948963452">อีกเพียงไม่กี่นาทีเท่านั้น...</translation>
@@ -505,6 +512,7 @@
 <translation id="8818152010000655963">วอลเปเปอร์</translation>
 <translation id="8834539327799336565">เชื่อมต่ออยู่</translation>
 <translation id="8845001906332463065">ขอความช่วยเหลือ</translation>
+<translation id="8855781559874488009">ไม่สามารถเชื่อมต่อผ่านไฟร์วอลล์ไปยังเว็บไซต์ HTTP</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">การทดสอบสำเร็จ</translation>
 <translation id="8898840733695078011">ความแรงสัญญาณ</translation>
@@ -530,12 +538,14 @@
 <translation id="910415269708673980">รีเฟรชตั๋วสำหรับ <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">กำลังสแกนหน้า <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">ปลดล็อก</translation>
+<translation id="9122602430962285795">ไปที่การตั้งค่าเพื่อเชื่อมต่ออีกครั้ง</translation>
 <translation id="9126720536733509015">บันทึกหลายหน้าเป็น PDF ไฟล์เดียว</translation>
 <translation id="9137526406337347448">Google Services</translation>
 <translation id="9149391708638971077">ทดสอบหน่วยความจำ</translation>
 <translation id="9173638680043580060">เหลืออีกไม่ถึง 1 นาที</translation>
 <translation id="917720651393141712">ทดสอบ</translation>
 <translation id="9190063653747922532">L2TP/IPsec + คีย์ที่แชร์ล่วงหน้า</translation>
+<translation id="9204237731135241582">ไม่สามารถติดต่อกับเกตเวย์จากแอป Android</translation>
 <translation id="9211490828691860325">เดสก์ทั้งหมด</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">ไม่ได้เปิดการใช้งาน</translation>

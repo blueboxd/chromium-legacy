@@ -10,6 +10,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "chrome/browser/share/share_features.h"
 #include "chrome/browser/share/share_metrics.h"
 #include "chrome/browser/sharing_hub/sharing_hub_model.h"
 #include "chrome/browser/sharing_hub/sharing_hub_service.h"
@@ -30,6 +31,11 @@
 namespace share {
 
 namespace {
+
+// Third party command IDs are allocated by SharingHubModel starting at 0, but that conflicts
+// with the dynamic IDs allocated for text editing commands by views::Textfield, so offset those
+// command IDs here. See https://crbug.com/1259293 for more details.
+const int kMenuCommandIdOffset = 2000;
 
 // TODO(ellyjones): This is duplicated from RenderViewContextMenu, where it
 // doesn't really belong. There is a note on the RenderViewContextMenu to remove
@@ -65,6 +71,12 @@ const base::Feature kShareMenu{
     "ShareMenu",
     base::FEATURE_DISABLED_BY_DEFAULT,
 };
+
+// static
+bool ShareSubmenuModel::IsEnabled() {
+  return base::FeatureList::IsEnabled(kShareMenu) ||
+         share::AreUpcomingSharingFeaturesEnabled();
+}
 
 ShareSubmenuModel::ShareSubmenuModel(
     Browser* browser,
@@ -111,7 +123,8 @@ void ShareSubmenuModel::ExecuteCommand(int id, int event_flags) {
     default:
       base::RecordAction(
           base::UserMetricsAction("ShareSubmenu.ThirdPartySelected"));
-      ShareToThirdParty(id);
+      DCHECK_GE(id, kMenuCommandIdOffset);
+      ShareToThirdParty(id - kMenuCommandIdOffset);
       break;
   }
 }
@@ -195,7 +208,8 @@ void ShareSubmenuModel::AddShareToThirdPartyItems() {
 
   for (const auto& action : actions) {
     auto image = ui::ImageModel::FromImageSkia(action.third_party_icon);
-    AddItemWithIcon(action.command_id, action.title, image);
+    AddItemWithIcon(action.command_id + kMenuCommandIdOffset, action.title,
+                    image);
     SetAccessibleNameAt(
         GetItemCount() - 1,
         l10n_util::GetStringFUTF16(IDS_SHARING_HUB_SHARE_LABEL_ACCESSIBILITY,

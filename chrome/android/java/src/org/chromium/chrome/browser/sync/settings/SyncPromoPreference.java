@@ -20,8 +20,8 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninManager.SignInStateObserver;
-import org.chromium.chrome.browser.signin.ui.PersonalizedSigninPromoView;
-import org.chromium.chrome.browser.signin.ui.SigninPromoController;
+import org.chromium.chrome.browser.ui.signin.PersonalizedSigninPromoView;
+import org.chromium.chrome.browser.ui.signin.SigninPromoController;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
@@ -121,7 +121,9 @@ public class SyncPromoPreference extends Preference
         final boolean hasStateChangedFromHiddenToShown = mState == State.PROMO_HIDDEN
                 && (state == State.PERSONALIZED_SIGNIN_PROMO
                         || state == State.PERSONALIZED_SYNC_PROMO);
-        if (hasStateChangedFromHiddenToShown) mSigninPromoController.increasePromoShowCount();
+        if (hasStateChangedFromHiddenToShown) {
+            mSigninPromoController.increasePromoShowCount();
+        }
 
         mState = state;
         assert mStateChangedCallback != null;

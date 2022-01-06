@@ -142,17 +142,9 @@ void PrintCrashKeysForBug1250218(FrameTreeNode* ftn,
       back_forward_cache.IsBrowsingInstanceInBackForwardCacheForDebugging(
           focused_site_instance->GetBrowsingInstanceId()));
   SCOPED_CRASH_KEY_BOOL(
-      "NoProxy", "focused_si_in_bfcache",
-      back_forward_cache.IsSiteInstanceInBackForwardCacheForDebugging(
-          focused_site_instance->GetId()));
-  SCOPED_CRASH_KEY_BOOL(
       "NoProxy", "proxy_bi_in_bfcache",
       back_forward_cache.IsBrowsingInstanceInBackForwardCacheForDebugging(
           proxy_site_instance->GetBrowsingInstanceId()));
-  SCOPED_CRASH_KEY_BOOL(
-      "NoProxy", "proxy_si_in_bfcache",
-      back_forward_cache.IsSiteInstanceInBackForwardCacheForDebugging(
-          proxy_site_instance->GetId()));
 
   base::debug::DumpWithoutCrashing();
 
@@ -353,6 +345,11 @@ FrameTree::NodeRange FrameTree::SubtreeNodes(FrameTreeNode* subtree_root) {
                    /* should_descend_into_inner_trees */ false);
 }
 
+FrameTree::NodeRange FrameTree::NodesIncludingInnerTreeNodes() {
+  return NodeRange({root_}, nullptr,
+                   /* should_descend_into_inner_trees */ true);
+}
+
 FrameTree::NodeRange FrameTree::SubtreeAndInnerTreeNodes(
     RenderFrameHostImpl* parent) {
   std::vector<FrameTreeNode*> starting_nodes;
@@ -408,8 +405,7 @@ FrameTreeNode* FrameTree::AddFrame(
   // it is in the same SiteInstance as the parent frame. Ensure that the process
   // which requested a child frame to be added is the same as the process of the
   // parent node.
-  if (parent->GetProcess()->GetID() != process_id)
-    return nullptr;
+  CHECK_EQ(parent->GetProcess()->GetID(), process_id);
 
   std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
       this, parent, scope, frame_name, frame_unique_name, is_created_by_script,
@@ -431,7 +427,7 @@ FrameTreeNode* FrameTree::AddFrame(
 
   // Add the new node to the FrameTree, creating the RenderFrameHost.
   FrameTreeNode* added_node =
-      parent->AddChild(std::move(new_node), process_id, new_routing_id,
+      parent->AddChild(std::move(new_node), new_routing_id,
                        std::move(frame_remote), frame_token);
 
   added_node->SetFencedFrameNonceIfNeeded();
@@ -625,7 +621,10 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
   // The accessibility tree data for the root of the frame tree keeps
   // track of the focused frame too, so update that every time the
   // focused frame changes.
-  root()->current_frame_host()->GetOutermostMainFrame()->UpdateAXTreeData();
+  root()
+      ->current_frame_host()
+      ->GetOutermostMainFrameOrEmbedder()
+      ->UpdateAXTreeData();
 }
 
 scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
@@ -642,7 +641,8 @@ scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
 
 scoped_refptr<RenderViewHostImpl> FrameTree::GetRenderViewHost(
     SiteInstance* site_instance) {
-  auto it = render_view_host_map_.find(GetRenderViewHostMapId(site_instance));
+  auto it = render_view_host_map_.find(GetRenderViewHostMapId(
+      static_cast<SiteInstanceImpl*>(site_instance)->group()));
   if (it == render_view_host_map_.end())
     return nullptr;
 
@@ -650,11 +650,9 @@ scoped_refptr<RenderViewHostImpl> FrameTree::GetRenderViewHost(
 }
 
 FrameTree::RenderViewHostMapId FrameTree::GetRenderViewHostMapId(
-    SiteInstance* site_instance) const {
-  // TODO(acolwell): Change this to use a SiteInstanceGroup ID once
-  // SiteInstanceGroups are implemented so that all SiteInstances within a
-  // group can use the same RenderViewHost.
-  return RenderViewHostMapId::FromUnsafeValue(site_instance->GetId().value());
+    SiteInstanceGroup* site_instance_group) const {
+  return RenderViewHostMapId::FromUnsafeValue(
+      site_instance_group->GetId().value());
 }
 
 void FrameTree::RegisterRenderViewHost(RenderViewHostMapId id,
@@ -888,6 +886,37 @@ void FrameTree::Shutdown() {
   manager_delegate_->OnFrameTreeNodeDestroyed(root_);
   render_view_delegate_->RenderViewDeleted(
       root_manager->current_frame_host()->render_view_host());
+}
+
+base::SafeRef<FrameTree> FrameTree::GetSafeRef() {
+  return weak_ptr_factory_.GetSafeRef();
+}
+
+void FrameTree::FocusOuterFrameTrees() {
+  OPTIONAL_TRACE_EVENT0("content", "FrameTree::FocusOuterFrameTrees");
+
+  FrameTree* frame_tree_to_focus = this;
+  while (true) {
+    FrameTreeNode* outer_node = FrameTreeNode::GloballyFindByID(
+        frame_tree_to_focus->delegate()->GetOuterDelegateFrameTreeNodeId());
+    if (!outer_node || !outer_node->current_frame_host()->IsActive()) {
+      // Don't set focus on an inactive FrameTreeNode.
+      return;
+    }
+    outer_node->frame_tree()->SetFocusedFrame(outer_node, nullptr);
+
+    // For a browser initiated focus change, let embedding renderer know of the
+    // change. Otherwise, if the currently focused element is just across a
+    // process boundary in focus order, it will not be possible to move across
+    // that boundary. This is because the target element will already be focused
+    // (that renderer was not notified) and drop the event.
+    if (auto* proxy_to_outer_delegate = frame_tree_to_focus->root()
+                                            ->render_manager()
+                                            ->GetProxyToOuterDelegate()) {
+      proxy_to_outer_delegate->SetFocusedFrame();
+    }
+    frame_tree_to_focus = outer_node->frame_tree();
+  }
 }
 
 }  // namespace content

@@ -124,10 +124,6 @@ SendTabToSelfToolbarIconController::GetActiveDelegate() {
   return nullptr;
 }
 
-const Profile* SendTabToSelfToolbarIconController::profile() const {
-  return profile_;
-}
-
 void SendTabToSelfToolbarIconController::LogNotificationOpened() {
   send_tab_to_self::RecordNotificationOpened();
 }

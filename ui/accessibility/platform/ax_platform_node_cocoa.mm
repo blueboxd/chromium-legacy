@@ -12,6 +12,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node_mac.h"
+#include "ui/accessibility/platform/ax_private_attributes_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -155,7 +156,30 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kMain, NSAccessibilityGroupRole},
       {ax::mojom::Role::kMark, NSAccessibilityGroupRole},
       {ax::mojom::Role::kMarquee, NSAccessibilityGroupRole},
+      // https://w3c.github.io/mathml-aam/#mathml-element-mappings
       {ax::mojom::Role::kMath, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLFraction, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLIdentifier, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLMath, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLMultiscripts, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLNoneScript, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLNumber, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLOperator, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLOver, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLPrescriptDelimiter, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLRoot, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLRow, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLSquareRoot, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLStringLiteral, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLSub, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLSubSup, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLSup, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLTable, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLTableCell, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLTableRow, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLText, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLUnder, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kMathMLUnderOver, NSAccessibilityGroupRole},
       {ax::mojom::Role::kMenu, NSAccessibilityMenuRole},
       {ax::mojom::Role::kMenuBar, NSAccessibilityMenuBarRole},
       {ax::mojom::Role::kMenuItem, NSAccessibilityMenuItemRole},
@@ -255,7 +279,29 @@ RoleMap BuildSubroleMap() {
       {ax::mojom::Role::kLog, @"AXApplicationLog"},
       {ax::mojom::Role::kMain, @"AXLandmarkMain"},
       {ax::mojom::Role::kMarquee, @"AXApplicationMarquee"},
+      // https://w3c.github.io/mathml-aam/#mathml-element-mappings
       {ax::mojom::Role::kMath, @"AXDocumentMath"},
+      {ax::mojom::Role::kMathMLFraction, @"AXMathFraction"},
+      {ax::mojom::Role::kMathMLIdentifier, @"AXMathIdentifier"},
+      {ax::mojom::Role::kMathMLMath, @"AXDocumentMath"},
+      {ax::mojom::Role::kMathMLMultiscripts, @"AXMathMultiscript"},
+      {ax::mojom::Role::kMathMLNoneScript, @"AXMathRow"},
+      {ax::mojom::Role::kMathMLNumber, @"AXMathNumber"},
+      {ax::mojom::Role::kMathMLOperator, @"AXMathOperator"},
+      {ax::mojom::Role::kMathMLOver, @"AXMathUnderOver"},
+      {ax::mojom::Role::kMathMLPrescriptDelimiter, @"AXMathRow"},
+      {ax::mojom::Role::kMathMLRoot, @"AXMathRoot"},
+      {ax::mojom::Role::kMathMLRow, @"AXMathRow"},
+      {ax::mojom::Role::kMathMLSquareRoot, @"AXMathSquareRoot"},
+      {ax::mojom::Role::kMathMLSub, @"AXMathSubscriptSuperscript"},
+      {ax::mojom::Role::kMathMLSubSup, @"AXMathSubscriptSuperscript"},
+      {ax::mojom::Role::kMathMLSup, @"AXMathSubscriptSuperscript"},
+      {ax::mojom::Role::kMathMLTable, @"AXMathTable"},
+      {ax::mojom::Role::kMathMLTableCell, @"AXMathTableCell"},
+      {ax::mojom::Role::kMathMLTableRow, @"AXMathTableRow"},
+      {ax::mojom::Role::kMathMLText, @"AXMathText"},
+      {ax::mojom::Role::kMathMLUnder, @"AXMathUnderOver"},
+      {ax::mojom::Role::kMathMLUnderOver, @"AXMathUnderOver"},
       {ax::mojom::Role::kNavigation, @"AXLandmarkNavigation"},
       {ax::mojom::Role::kNote, @"AXDocumentNote"},
       {ax::mojom::Role::kRegion, @"AXLandmarkRegion"},
@@ -365,8 +411,12 @@ bool IsAXSetter(SEL selector) {
 @interface AXPlatformNodeCocoa (Private)
 // Helper function for string attributes that don't require extra processing.
 - (NSString*)getStringAttribute:(ax::mojom::StringAttribute)attribute;
+
 // Returns AXValue, or nil if AXValue isn't an NSString.
 - (NSString*)getAXValueAsString;
+
+// Returns the native wrapper for the given node id.
+- (AXPlatformNodeCocoa*)fromNodeID:(ui::AXNodeID)id;
 @end
 
 @implementation AXPlatformNodeCocoa {
@@ -432,6 +482,13 @@ bool IsAXSetter(SEL selector) {
   return [value isKindOfClass:[NSString class]] ? value : nil;
 }
 
+- (AXPlatformNodeCocoa*)fromNodeID:(ui::AXNodeID)id {
+  ui::AXPlatformNode* cell = _node->GetDelegate()->GetFromNodeID(id);
+  if (cell)
+    return cell->GetNativeViewAccessible();
+  return nil;
+}
+
 - (NSString*)getName {
   return base::SysUTF8ToNSString(_node->GetName());
 }
@@ -494,6 +551,7 @@ bool IsAXSetter(SEL selector) {
         _pendingAnnouncement.reset();
       });
 }
+
 // NSAccessibility informal protocol implementation.
 
 - (BOOL)accessibilityIsIgnored {
@@ -579,6 +637,7 @@ bool IsAXSetter(SEL selector) {
 - (NSArray*)accessibilityAttributeNames {
   if (!_node)
     return @[];
+
   // These attributes are required on all accessibility objects.
   NSArray* const kAllRoleAttributes = @[
     NSAccessibilityChildrenAttribute,
@@ -613,7 +672,9 @@ bool IsAXSetter(SEL selector) {
   base::scoped_nsobject<NSMutableArray> axAttributes(
       [[NSMutableArray alloc] init]);
   [axAttributes addObjectsFromArray:kAllRoleAttributes];
-  switch (_node->GetRole()) {
+
+  ax::mojom::Role role = _node->GetRole();
+  switch (role) {
     case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kTextFieldWithComboBox:
     case ax::mojom::Role::kStaticText:
@@ -631,18 +692,108 @@ bool IsAXSetter(SEL selector) {
     case ax::mojom::Role::kToggleButton:
       [axAttributes addObjectsFromArray:kValueAttributes];
       break;
+    case ax::mojom::Role::kMathMLFraction:
+      [axAttributes addObjectsFromArray:@[
+        NSAccessibilityMathFractionNumeratorAttribute,
+        NSAccessibilityMathFractionDenominatorAttribute
+      ]];
+      break;
+    case ax::mojom::Role::kMathMLSquareRoot:
+      [axAttributes addObject:NSAccessibilityMathRootRadicandAttribute];
+      break;
+    case ax::mojom::Role::kMathMLRoot:
+      [axAttributes addObjectsFromArray:@[
+        NSAccessibilityMathRootRadicandAttribute,
+        NSAccessibilityMathRootIndexAttribute
+      ]];
+      break;
+    case ax::mojom::Role::kMathMLSub:
+      [axAttributes addObjectsFromArray:@[
+        NSAccessibilityMathBaseAttribute, NSAccessibilityMathSubscriptAttribute
+      ]];
+      break;
+    case ax::mojom::Role::kMathMLSup:
+      [axAttributes addObjectsFromArray:@[
+        NSAccessibilityMathBaseAttribute,
+        NSAccessibilityMathSuperscriptAttribute
+      ]];
+      break;
+    case ax::mojom::Role::kMathMLSubSup:
+      [axAttributes addObjectsFromArray:@[
+        NSAccessibilityMathBaseAttribute, NSAccessibilityMathSubscriptAttribute,
+        NSAccessibilityMathSuperscriptAttribute
+      ]];
+      break;
+    case ax::mojom::Role::kMathMLUnder:
+      [axAttributes addObjectsFromArray:@[
+        NSAccessibilityMathBaseAttribute, NSAccessibilityMathUnderAttribute
+      ]];
+      break;
+    case ax::mojom::Role::kMathMLOver:
+      [axAttributes addObjectsFromArray:@[
+        NSAccessibilityMathBaseAttribute, NSAccessibilityMathOverAttribute
+      ]];
+      break;
+    case ax::mojom::Role::kMathMLUnderOver:
+      [axAttributes addObjectsFromArray:@[
+        NSAccessibilityMathBaseAttribute, NSAccessibilityMathUnderAttribute,
+        NSAccessibilityMathOverAttribute
+      ]];
+      break;
+    case ax::mojom::Role::kMathMLMultiscripts:
+      [axAttributes addObjectsFromArray:@[
+        NSAccessibilityMathPostscriptsAttribute,
+        NSAccessibilityMathPrescriptsAttribute
+      ]];
+      break;
       // TODO(tapted): Add additional attributes based on role.
     default:
       break;
   }
   if (_node->HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     [axAttributes addObject:NSAccessibilitySelectedAttribute];
-  if (ui::IsMenuItem(_node->GetRole()))
+  if (ui::IsMenuItem(role))
     [axAttributes addObject:@"AXMenuItemMarkChar"];
-  if (ui::IsItemLike(_node->GetRole()))
+  if (ui::IsItemLike(role))
     [axAttributes addObjectsFromArray:@[ @"AXARIAPosInSet", @"AXARIASetSize" ]];
-  if (ui::IsSetLike(_node->GetRole()))
+  if (ui::IsSetLike(role))
     [axAttributes addObject:@"AXARIASetSize"];
+
+  // Live regions.
+  if (_node->HasStringAttribute(ax::mojom::StringAttribute::kLiveStatus))
+    [axAttributes addObject:NSAccessibilityARIALiveAttribute];
+  if (_node->HasStringAttribute(ax::mojom::StringAttribute::kLiveRelevant))
+    [axAttributes addObject:NSAccessibilityARIARelevantAttribute];
+  if (_node->HasBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic))
+    [axAttributes addObject:NSAccessibilityARIAAtomicAttribute];
+  if (_node->HasBoolAttribute(ax::mojom::BoolAttribute::kBusy))
+    [axAttributes addObject:NSAccessibilityARIABusyAttribute];
+  if (_node->HasIntAttribute(ax::mojom::IntAttribute::kAriaCurrentState))
+    [axAttributes addObject:NSAccessibilityARIACurrentAttribute];
+
+  // Focusable element or a control element.
+  if (ui::IsControl(role)) {
+    [axAttributes addObjectsFromArray:@[
+      NSAccessibilityAccessKeyAttribute,
+    ]];
+  }
+
+  // Autocomplete.
+  if (_node->HasStringAttribute(ax::mojom::StringAttribute::kAutoComplete))
+    [axAttributes addObject:NSAccessibilityAutocompleteValueAttribute];
+
+  // Details.
+  if (_node->HasIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds)) {
+    [axAttributes addObject:NSAccessibilityDetailsElementsAttribute];
+  }
+
+  // Table and grid.
+  if (ui::IsTableLike(role)) {
+    [axAttributes addObject:NSAccessibilityColumnHeaderUIElementsAttribute];
+  }
+  if (ui::IsCellOrTableHeader(role) && role != ax::mojom::Role::kColumnHeader) {
+    [axAttributes addObject:NSAccessibilityColumnHeaderUIElementsAttribute];
+  }
   return axAttributes.autorelease();
 }
 
@@ -693,6 +844,100 @@ bool IsAXSetter(SEL selector) {
 
 // NSAccessibility attributes. Order them according to
 // NSAccessibilityConstants.h, or see https://crbug.com/678898.
+
+- (NSString*)AXAccessKey {
+  if (![self instanceActive])
+    return nil;
+
+  return [self getStringAttribute:ax::mojom::StringAttribute::kAccessKey];
+}
+
+- (NSNumber*)AXARIAAtomic {
+  if (![self instanceActive])
+    return nil;
+
+  return @(_node->GetBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic));
+}
+
+- (NSNumber*)AXARIABusy {
+  if (![self instanceActive])
+    return nil;
+
+  return @(_node->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy));
+}
+
+- (NSString*)AXARIACurrent {
+  if (![self instanceActive])
+    return nil;
+
+  int ariaCurrent;
+  if (!_node->GetIntAttribute(ax::mojom::IntAttribute::kAriaCurrentState,
+                              &ariaCurrent))
+    return nil;
+
+  switch (static_cast<ax::mojom::AriaCurrentState>(ariaCurrent)) {
+    case ax::mojom::AriaCurrentState::kNone:
+      NOTREACHED();
+      return @"false";
+    case ax::mojom::AriaCurrentState::kFalse:
+      return @"false";
+    case ax::mojom::AriaCurrentState::kTrue:
+      return @"true";
+    case ax::mojom::AriaCurrentState::kPage:
+      return @"page";
+    case ax::mojom::AriaCurrentState::kStep:
+      return @"step";
+    case ax::mojom::AriaCurrentState::kLocation:
+      return @"location";
+    case ax::mojom::AriaCurrentState::kDate:
+      return @"date";
+    case ax::mojom::AriaCurrentState::kTime:
+      return @"time";
+  }
+
+  NOTREACHED();
+  return @"false";
+}
+
+- (NSString*)AXARIALive {
+  if (![self instanceActive])
+    return nil;
+
+  return [self getStringAttribute:ax::mojom::StringAttribute::kLiveStatus];
+}
+
+- (NSString*)AXARIARelevant {
+  if (![self instanceActive])
+    return nil;
+
+  return [self getStringAttribute:ax::mojom::StringAttribute::kLiveRelevant];
+}
+
+- (NSString*)AXAutocompleteValue {
+  if (![self instanceActive])
+    return nil;
+
+  return [self getStringAttribute:ax::mojom::StringAttribute::kAutoComplete];
+}
+
+- (NSArray*)AXColumnHeaderUIElements {
+  return [self accessibilityColumnHeaderUIElements];
+}
+
+- (NSArray*)AXDetailsElements {
+  if (![self instanceActive])
+    return nil;
+
+  NSMutableArray* elements = [[[NSMutableArray alloc] init] autorelease];
+  for (ui::AXNodeID id :
+       _node->GetIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds)) {
+    AXPlatformNodeCocoa* node = [self fromNodeID:id];
+    if (node)
+      [elements addObject:node];
+  }
+
+  return [elements count] ? elements : nil;
+}
 
 - (NSString*)AXRole {
   if (!_node)
@@ -1215,6 +1460,251 @@ bool IsAXSetter(SEL selector) {
 
 - (NSRange)accessibilityRangeForPosition:(NSPoint)point {
   return [[self AXRangeForPosition:[NSValue valueWithPoint:point]] rangeValue];
+}
+
+//
+// NSAccessibility protocol: configuring table and outline views
+
+- (NSArray*)accessibilityColumnHeaderUIElements {
+  if (![self instanceActive])
+    return nil;
+
+  ui::AXPlatformNodeDelegate* delegate = _node->GetDelegate();
+  DCHECK(delegate);
+
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+
+  // If this is a table, return all column headers.
+  ax::mojom::Role role = _node->GetRole();
+  if (ui::IsTableLike(role)) {
+    for (ui::AXNodeID id : delegate->GetColHeaderNodeIds()) {
+      AXPlatformNodeCocoa* colheader = [self fromNodeID:id];
+      if (colheader)
+        [ret addObject:colheader];
+    }
+    return [ret count] ? ret : nil;
+  }
+
+  // Otherwise if this is a cell or a header cell, return the column headers for
+  // it.
+  if (!ui::IsCellOrTableHeader(role))
+    return nil;
+
+  ui::AXPlatformNodeBase* table = _node->GetTable();
+  if (!table)
+    return nil;
+
+  absl::optional<int> column = delegate->GetTableCellColIndex();
+  if (!column)
+    return nil;
+
+  ui::AXPlatformNodeDelegate* tableDelegate = table->GetDelegate();
+  DCHECK(tableDelegate);
+  for (ui::AXNodeID id : tableDelegate->GetColHeaderNodeIds(*column)) {
+    AXPlatformNodeCocoa* colheader = [self fromNodeID:id];
+    if (colheader)
+      [ret addObject:colheader];
+  }
+  return [ret count] ? ret : nil;
+}
+
+// MathML attributes.
+// TODO(crbug.com/1051115): The MathML aam considers only in-flow children.
+// TODO(crbug.com/1051115): When/if it is needed to expose this for other a11y
+// APIs, then some of the logic below should probably be moved to the
+// platform-independent classes.
+
+- (id)AXMathFractionNumerator {
+  if (![self instanceActive] ||
+      _node->GetRole() != ax::mojom::Role::kMathMLFraction) {
+    return nil;
+  }
+  NSArray* children = [self AXChildren];
+  if ([children count] >= 1)
+    return children[0];
+  return nil;
+}
+
+- (id)AXMathFractionDenominator {
+  if (![self instanceActive] ||
+      _node->GetRole() != ax::mojom::Role::kMathMLFraction) {
+    return nil;
+  }
+  NSArray* children = [self AXChildren];
+  if ([children count] >= 2)
+    return children[1];
+  return nil;
+}
+
+- (id)AXMathRootRadicand {
+  if (![self instanceActive] ||
+      !(_node->GetRole() == ax::mojom::Role::kMathMLRoot ||
+        _node->GetRole() == ax::mojom::Role::kMathMLSquareRoot)) {
+    return nil;
+  }
+  NSArray* children = [self AXChildren];
+  if (_node->GetRole() == ax::mojom::Role::kMathMLRoot) {
+    if ([children count] >= 1)
+      return [[NSArray arrayWithObjects:children[0], nil] autorelease];
+    return nil;
+  }
+  return children;
+}
+
+- (id)AXMathRootIndex {
+  if (![self instanceActive] ||
+      _node->GetRole() != ax::mojom::Role::kMathMLRoot) {
+    return nil;
+  }
+  NSArray* children = [self AXChildren];
+  if ([children count] >= 2)
+    return children[1];
+  return nil;
+}
+
+- (id)AXMathBase {
+  if (![self instanceActive] ||
+      !(_node->GetRole() == ax::mojom::Role::kMathMLSub ||
+        _node->GetRole() == ax::mojom::Role::kMathMLSup ||
+        _node->GetRole() == ax::mojom::Role::kMathMLSubSup ||
+        _node->GetRole() == ax::mojom::Role::kMathMLUnder ||
+        _node->GetRole() == ax::mojom::Role::kMathMLOver ||
+        _node->GetRole() == ax::mojom::Role::kMathMLUnderOver ||
+        _node->GetRole() == ax::mojom::Role::kMathMLMultiscripts)) {
+    return nil;
+  }
+  NSArray* children = [self AXChildren];
+  if ([children count] >= 1)
+    return children[0];
+  return nil;
+}
+
+- (id)AXMathUnder {
+  if (![self instanceActive] ||
+      !(_node->GetRole() == ax::mojom::Role::kMathMLUnder ||
+        _node->GetRole() == ax::mojom::Role::kMathMLUnderOver)) {
+    return nil;
+  }
+  NSArray* children = [self AXChildren];
+  if ([children count] >= 2)
+    return children[1];
+  return nil;
+}
+
+- (id)AXMathOver {
+  if (![self instanceActive] ||
+      !(_node->GetRole() == ax::mojom::Role::kMathMLOver ||
+        _node->GetRole() == ax::mojom::Role::kMathMLUnderOver)) {
+    return nil;
+  }
+  NSArray* children = [self AXChildren];
+  if (_node->GetRole() == ax::mojom::Role::kMathMLOver &&
+      [children count] >= 2) {
+    return children[1];
+  }
+  if (_node->GetRole() == ax::mojom::Role::kMathMLUnderOver &&
+      [children count] >= 3) {
+    return children[2];
+  }
+  return nil;
+}
+
+- (id)AXMathSubscript {
+  if (![self instanceActive] ||
+      !(_node->GetRole() == ax::mojom::Role::kMathMLSub ||
+        _node->GetRole() == ax::mojom::Role::kMathMLSubSup)) {
+    return nil;
+  }
+  NSArray* children = [self AXChildren];
+  if ([children count] >= 2)
+    return children[1];
+  return nil;
+}
+
+- (id)AXMathSuperscript {
+  if (![self instanceActive] ||
+      !(_node->GetRole() == ax::mojom::Role::kMathMLSup ||
+        _node->GetRole() == ax::mojom::Role::kMathMLSubSup)) {
+    return nil;
+  }
+  NSArray* children = [self AXChildren];
+  if (_node->GetRole() == ax::mojom::Role::kMathMLSup &&
+      [children count] >= 2) {
+    return children[1];
+  }
+  if (_node->GetRole() == ax::mojom::Role::kMathMLSubSup &&
+      [children count] >= 3) {
+    return children[2];
+  }
+  return nil;
+}
+
+static NSDictionary* createMathSubSupScriptsPair(
+    AXPlatformNodeCocoa* subscript,
+    AXPlatformNodeCocoa* superscript) {
+  AXPlatformNodeCocoa* nodes[2];
+  NSString* keys[2];
+  NSUInteger count = 0;
+  if (subscript) {
+    nodes[count] = subscript;
+    keys[count] = NSAccessibilityMathSubscriptAttribute;
+    count++;
+  }
+  if (superscript) {
+    nodes[count] = superscript;
+    keys[count] = NSAccessibilityMathSuperscriptAttribute;
+    count++;
+  }
+  return [[NSDictionary alloc] initWithObjects:nodes forKeys:keys count:count];
+}
+
+- (NSArray*)AXMathPostscripts {
+  if (![self instanceActive] ||
+      _node->GetRole() != ax::mojom::Role::kMathMLMultiscripts)
+    return nil;
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+  bool foundBaseElement = false;
+  AXPlatformNodeCocoa* subscript = nullptr;
+  for (AXPlatformNodeCocoa* child in [self AXChildren]) {
+    if ([child node]->GetRole() == ax::mojom::Role::kMathMLPrescriptDelimiter)
+      break;
+    if (!foundBaseElement) {
+      foundBaseElement = true;
+      continue;
+    }
+    if (!subscript) {
+      subscript = child;
+      continue;
+    }
+    AXPlatformNodeCocoa* superscript = child;
+    [ret addObject:createMathSubSupScriptsPair(subscript, superscript)];
+    subscript = nullptr;
+  }
+  return [ret count] ? ret : nil;
+}
+
+- (NSArray*)AXMathPrescripts {
+  if (![self instanceActive] ||
+      _node->GetRole() != ax::mojom::Role::kMathMLMultiscripts)
+    return nil;
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+  bool foundPrescriptDelimiter = false;
+  AXPlatformNodeCocoa* subscript = nullptr;
+  for (AXPlatformNodeCocoa* child in [self AXChildren]) {
+    if (!foundPrescriptDelimiter) {
+      foundPrescriptDelimiter = ([child node]->GetRole() ==
+                                 ax::mojom::Role::kMathMLPrescriptDelimiter);
+      continue;
+    }
+    if (!subscript) {
+      subscript = child;
+      continue;
+    }
+    AXPlatformNodeCocoa* superscript = child;
+    [ret addObject:createMathSubSupScriptsPair(subscript, superscript)];
+    subscript = nullptr;
+  }
+  return [ret count] ? ret : nil;
 }
 
 @end

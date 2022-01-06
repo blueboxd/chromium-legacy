@@ -23,14 +23,21 @@ const char kStartDiscovery[] = "StartDiscovery";
 const char kCancelDiscovery[] = "CancelDiscovery";
 const char kCreateBond[] = "CreateBond";
 const char kRegisterCallback[] = "RegisterCallback";
+const char kRegisterConnectionCallback[] = "RegisterConnectionCallback";
 
 // TODO(abps) - Rename this to AdapterCallback in platform and here
 const char kCallbackInterface[] = "org.chromium.bluetooth.BluetoothCallback";
+const char kConnectionCallbackInterface[] =
+    "org.chromium.bluetooth.BluetoothConnectionCallback";
 
 const char kOnAddressChanged[] = "OnBluetoothAddressChanged";
 const char kOnDeviceFound[] = "OnDeviceFound";
 const char kOnDiscoveringChanged[] = "OnDiscoveringChanged";
 const char kOnSspRequest[] = "OnSspRequest";
+
+const char kOnBondStateChanged[] = "OnBondStateChanged";
+const char kOnDeviceConnected[] = "OnDeviceConnected";
+const char kOnDeviceDisconnected[] = "OnDeviceDisconnected";
 }  // namespace adapter
 
 namespace manager {

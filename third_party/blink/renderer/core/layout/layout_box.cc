@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
 #include "third_party/blink/renderer/core/layout/custom_scrollbar.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
-#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
@@ -668,7 +667,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
     // offset is the distance from the beginning of flow for the box, which is
     // the dimension we want to preserve.
     ScrollOffset old_offset = scrollable_area->GetScrollOffset();
-    if (old_offset.Width() || old_offset.Height()) {
+    if (old_offset.width() || old_offset.height()) {
       ScrollOffset new_offset = old_offset.ScaledBy(new_style.EffectiveZoom() /
                                                     old_style->EffectiveZoom());
       scrollable_area->SetScrollOffsetUnconditionally(new_offset);
@@ -949,7 +948,6 @@ void LayoutBox::LayoutSubtreeRoot() {
 void LayoutBox::UpdateLayout() {
   NOT_DESTROYED();
   DCHECK(NeedsLayout());
-  LayoutAnalyzer::Scope analyzer(*this);
 
   if (ChildLayoutBlockedByDisplayLock())
     return;
@@ -1496,14 +1494,14 @@ void LayoutBox::SetLocationAndUpdateOverflowControlsIfNeeded(
   // The Layer does not yet have the up to date subpixel accumulation
   // so we base the size strictly on the frame rect's location.
   IntSize old_pixel_snapped_border_rect_size =
-      PixelSnappedBorderBoxRect().Size();
+      PixelSnappedBorderBoxRect().size();
   SetLocation(location);
   // TODO(crbug.com/1020913): This is problematic because this function may be
   // called after layout of this LayoutBox. Changing scroll container size here
   // will cause inconsistent layout. Also we should be careful not to set
   // this LayoutBox NeedsLayout. This will be unnecessary when we support
   // subpixel layout of scrollable area and overflow controls.
-  if (PixelSnappedBorderBoxRect().Size() !=
+  if (PixelSnappedBorderBoxRect().size() !=
       old_pixel_snapped_border_rect_size) {
     bool needed_layout = NeedsLayout();
     PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbar;
@@ -1807,15 +1805,15 @@ PhysicalOffset LayoutBox::CalculateAutoscrollDirection(
   belt_box.Inflate(LayoutUnit(-kAutoscrollBeltSize));
   FloatPoint point = point_in_root_frame;
 
-  if (point.X() < belt_box.X())
-    point.Move(-kAutoscrollBeltSize, 0);
-  else if (point.X() > belt_box.Right())
-    point.Move(kAutoscrollBeltSize, 0);
+  if (point.x() < belt_box.X())
+    point.Offset(-kAutoscrollBeltSize, 0);
+  else if (point.x() > belt_box.Right())
+    point.Offset(kAutoscrollBeltSize, 0);
 
-  if (point.Y() < belt_box.Y())
-    point.Move(0, -kAutoscrollBeltSize);
-  else if (point.Y() > belt_box.Bottom())
-    point.Move(0, kAutoscrollBeltSize);
+  if (point.y() < belt_box.Y())
+    point.Offset(0, -kAutoscrollBeltSize);
+  else if (point.y() > belt_box.Bottom())
+    point.Offset(0, kAutoscrollBeltSize);
 
   return PhysicalOffset::FromFloatSizeRound(point - point_in_root_frame);
 }
@@ -1917,9 +1915,10 @@ IntSize LayoutBox::OriginAdjustmentForScrollbars() const {
   }
 }
 
-IntPoint LayoutBox::ScrollOrigin() const {
+gfx::Point LayoutBox::ScrollOrigin() const {
   NOT_DESTROYED();
-  return GetScrollableArea() ? GetScrollableArea()->ScrollOrigin() : IntPoint();
+  return GetScrollableArea() ? GetScrollableArea()->ScrollOrigin()
+                             : gfx::Point();
 }
 
 PhysicalOffset LayoutBox::ScrolledContentOffset() const {
@@ -1930,11 +1929,11 @@ PhysicalOffset LayoutBox::ScrolledContentOffset() const {
       GetScrollableArea()->GetScrollOffset());
 }
 
-IntPoint LayoutBox::PixelSnappedScrolledContentOffset() const {
+gfx::Vector2d LayoutBox::PixelSnappedScrolledContentOffset() const {
   NOT_DESTROYED();
   DCHECK(IsScrollContainer());
   DCHECK(GetScrollableArea());
-  return IntPoint(GetScrollableArea()->ScrollOffsetInt());
+  return ToGfxVector2d(GetScrollableArea()->ScrollOffsetInt());
 }
 
 PhysicalRect LayoutBox::ClippingRect(const PhysicalOffset& location) const {
@@ -1983,13 +1982,8 @@ bool LayoutBox::MapVisualRectToContainer(
     VisualRectFlags visual_rect_flags,
     TransformState& transform_state) const {
   NOT_DESTROYED();
-  // TODO(dbaron): When TransformInteropEnabled is false, this doesn't
-  // really match rendering.  It needs to consider
-  // PaintPropertyTreeBuilder::NeedsTransform().
-  bool container_preserve_3d =
-      container_object->StyleRef().Preserves3D() &&
-      (!RuntimeEnabledFeatures::TransformInteropEnabled() ||
-       container_object == NearestAncestorForElement());
+  bool container_preserve_3d = container_object->StyleRef().Preserves3D() &&
+                               container_object == NearestAncestorForElement();
 
   TransformState::TransformAccumulation accumulation =
       container_preserve_3d ? TransformState::kAccumulateTransform
@@ -2024,8 +2018,8 @@ bool LayoutBox::MapVisualRectToContainer(
   // the desired subpixel accumulation at this point, and the transform may
   // include a scale. This only makes sense for non-preserve3D.
   //
-  // TODO(dbaron): With the TransformInterop feature enabled, does the
-  // flattening here need to be done for the early return case above as well?
+  // TODO(dbaron): Does the flattening here need to be done for the
+  // early return case above as well?
   // (Why is this flattening needed in addition to the flattening done by
   // using TransformState::kAccumulateTransform?)
   if (!StyleRef().Preserves3D()) {
@@ -2055,9 +2049,7 @@ bool LayoutBox::MapVisualRectToContainer(
   bool has_perspective = container_object && container_object->HasLayer() &&
                          container_object->StyleRef().HasPerspective();
   if (has_perspective && container_object != NearestAncestorForElement()) {
-    if (RuntimeEnabledFeatures::TransformInteropEnabled()) {
-      has_perspective = false;
-    }
+    has_perspective = false;
 
     if (StyleRef().Preserves3D() || transform.M13() != 0.0 ||
         transform.M23() != 0.0 || transform.M43() != 0.0) {
@@ -2077,8 +2069,8 @@ bool LayoutBox::MapVisualRectToContainer(
     TransformationMatrix perspective_matrix;
     perspective_matrix.ApplyPerspective(
         container_object->StyleRef().UsedPerspective());
-    perspective_matrix.ApplyTransformOrigin(perspective_origin.X(),
-                                            perspective_origin.Y(), 0);
+    perspective_matrix.ApplyTransformOrigin(perspective_origin.x(),
+                                            perspective_origin.y(), 0);
 
     transform = perspective_matrix * transform;
   }
@@ -2705,6 +2697,9 @@ bool LayoutBox::ForegroundIsKnownToBeOpaqueInRect(
     return false;
   for (LayoutObject* child = SlowFirstChild(); child;
        child = child->NextSibling()) {
+    // We do not bother checking descendants of |LayoutInline|, including
+    // block-in-inline, because the cost of checking them overweights the
+    // benefits.
     if (!child->IsBox())
       continue;
     auto* child_box = To<LayoutBox>(child);
@@ -3160,8 +3155,8 @@ LayoutUnit LayoutBox::PerpendicularContainingBlockLogicalHeight() const {
   if (!logical_height_length.IsFixed()) {
     LayoutUnit fill_fallback_extent =
         LayoutUnit(containing_block_style.IsHorizontalWritingMode()
-                       ? View()->GetFrameView()->Size().Height()
-                       : View()->GetFrameView()->Size().Width());
+                       ? View()->GetFrameView()->Size().height()
+                       : View()->GetFrameView()->Size().width());
     LayoutUnit fill_available_extent =
         ContainingBlock()->AvailableLogicalHeight(kExcludeMarginBorderPadding);
     if (fill_available_extent == -1)
@@ -3312,6 +3307,9 @@ void LayoutBox::SetCachedLayoutResult(
   NOT_DESTROYED();
   DCHECK(!result->PhysicalFragment().BreakToken());
   DCHECK(To<NGPhysicalBoxFragment>(result->PhysicalFragment()).IsOnlyForNode());
+
+  if (!result->GetConstraintSpaceForCaching().ShouldCacheResult())
+    return;
 
   if (result->GetConstraintSpaceForCaching().CacheSlot() ==
       NGCacheSlot::kMeasure) {
@@ -3501,6 +3499,9 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     NGLayoutCacheStatus* out_cache_status) {
   NOT_DESTROYED();
   *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
+
+  if (!new_space.ShouldCacheResult())
+    return nullptr;
 
   const bool use_layout_cache_slot =
       new_space.CacheSlot() == NGCacheSlot::kLayout &&
@@ -5564,8 +5565,8 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
   NOT_DESTROYED();
   if (auto* layout_view = DynamicTo<LayoutView>(this)) {
     return LayoutUnit(IsHorizontalWritingMode()
-                          ? layout_view->GetFrameView()->Size().Height()
-                          : layout_view->GetFrameView()->Size().Width());
+                          ? layout_view->GetFrameView()->Size().height()
+                          : layout_view->GetFrameView()->Size().width());
   }
 
   // We need to stop here, since we don't want to increase the height of the
@@ -7183,7 +7184,7 @@ PhysicalRect LayoutBox::PhysicalVisualOverflowRectIncludingFilters() const {
   if (!StyleRef().HasFilter())
     return bounds_rect;
   FloatRect float_rect(bounds_rect);
-  float_rect.UniteIfNonZero(Layer()->FilterReferenceBox());
+  float_rect.UnionIfNonZero(Layer()->FilterReferenceBox());
   float_rect = Layer()->MapRectForFilter(float_rect);
   return PhysicalRect::EnclosingRect(float_rect);
 }
@@ -7575,6 +7576,9 @@ bool LayoutBox::HasUnsplittableScrollingOverflow(
 LayoutBox::PaginationBreakability LayoutBox::GetPaginationBreakability(
     FragmentationEngine engine) const {
   NOT_DESTROYED();
+  // TODO(almaher): Don't consider a writing mode root monolitic if
+  // IsLayoutNGFlexibleBox(). The breakability should be handled at the item
+  // level. (Likely same for Table and Grid).
   if (ShouldBeConsideredAsReplaced() ||
       HasUnsplittableScrollingOverflow(engine) ||
       (Parent() && IsWritingModeRoot()) ||

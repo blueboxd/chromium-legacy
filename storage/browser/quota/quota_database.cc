@@ -354,7 +354,7 @@ QuotaError QuotaDatabase::SetStorageKeyLastAccessTime(
   return QuotaError::kNone;
 }
 
-QuotaError QuotaDatabase::SetBucketLastAccessTime(const BucketId bucket_id,
+QuotaError QuotaDatabase::SetBucketLastAccessTime(BucketId bucket_id,
                                                   base::Time last_accessed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!bucket_id.is_null());
@@ -420,7 +420,7 @@ QuotaError QuotaDatabase::SetStorageKeyLastModifiedTime(
   return QuotaError::kNone;
 }
 
-QuotaError QuotaDatabase::SetBucketLastModifiedTime(const BucketId bucket_id,
+QuotaError QuotaDatabase::SetBucketLastModifiedTime(BucketId bucket_id,
                                                     base::Time last_modified) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!bucket_id.is_null());
@@ -482,7 +482,7 @@ bool QuotaDatabase::RegisterInitialStorageKeyInfo(
   return true;
 }
 
-bool QuotaDatabase::GetBucketInfo(const BucketId bucket_id,
+bool QuotaDatabase::GetBucketInfo(BucketId bucket_id,
                                   QuotaDatabase::BucketTableEntry* entry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!bucket_id.is_null());
@@ -557,7 +557,7 @@ bool QuotaDatabase::DeleteStorageKeyInfo(const StorageKey& storage_key,
   return true;
 }
 
-bool QuotaDatabase::DeleteBucketInfo(const BucketId bucket_id) {
+bool QuotaDatabase::DeleteBucketInfo(BucketId bucket_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!bucket_id.is_null());
   if (EnsureOpened(EnsureOpenedMode::kFailIfNotFound) != QuotaError::kNone)
@@ -574,7 +574,7 @@ bool QuotaDatabase::DeleteBucketInfo(const BucketId bucket_id) {
   return true;
 }
 
-QuotaErrorOr<BucketInfo> QuotaDatabase::GetLRUBucket(
+QuotaErrorOr<BucketLocator> QuotaDatabase::GetLRUBucket(
     StorageType type,
     const std::set<BucketId>& bucket_exceptions,
     SpecialStoragePolicy* special_storage_policy) {
@@ -585,8 +585,7 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::GetLRUBucket(
 
   // clang-format off
   static constexpr char kSql[] =
-      "SELECT id, storage_key, name, expiration, quota "
-        "FROM buckets "
+      "SELECT id, storage_key, name FROM buckets "
         "WHERE type = ? "
         "ORDER BY last_accessed";
   // clang-format on
@@ -612,9 +611,8 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::GetLRUBucket(
          special_storage_policy->IsStorageUnlimited(read_gurl))) {
       continue;
     }
-    return BucketInfo(read_bucket_id, std::move(read_storage_key).value(), type,
-                      statement.ColumnString(2), statement.ColumnTime(3),
-                      statement.ColumnInt(4));
+    return BucketLocator(read_bucket_id, std::move(read_storage_key).value(),
+                         type, statement.ColumnString(2) == kDefaultBucketName);
   }
   return QuotaError::kNotFound;
 }
@@ -643,7 +641,7 @@ QuotaErrorOr<std::set<StorageKey>> QuotaDatabase::GetStorageKeysForType(
   return storage_keys;
 }
 
-QuotaErrorOr<std::set<BucketInfo>> QuotaDatabase::GetBucketsModifiedBetween(
+QuotaErrorOr<std::set<BucketLocator>> QuotaDatabase::GetBucketsModifiedBetween(
     StorageType type,
     base::Time begin,
     base::Time end) {
@@ -656,7 +654,7 @@ QuotaErrorOr<std::set<BucketInfo>> QuotaDatabase::GetBucketsModifiedBetween(
   DCHECK(end != base::Time());
   // clang-format off
   static constexpr char kSql[] =
-      "SELECT id, storage_key, name, expiration, quota FROM buckets "
+      "SELECT id, storage_key, name FROM buckets "
         "WHERE type = ? AND last_modified >= ? AND last_modified < ?";
   // clang-format on
 
@@ -665,15 +663,15 @@ QuotaErrorOr<std::set<BucketInfo>> QuotaDatabase::GetBucketsModifiedBetween(
   statement.BindTime(1, begin);
   statement.BindTime(2, end);
 
-  std::set<BucketInfo> buckets;
+  std::set<BucketLocator> buckets;
   while (statement.Step()) {
     absl::optional<StorageKey> read_storage_key =
         StorageKey::Deserialize(statement.ColumnString(1));
     if (!read_storage_key.has_value())
       continue;
     buckets.emplace(BucketId(statement.ColumnInt64(0)),
-                    read_storage_key.value(), type, statement.ColumnString(2),
-                    statement.ColumnTime(3), statement.ColumnInt(4));
+                    read_storage_key.value(), type,
+                    statement.ColumnString(2) == kDefaultBucketName);
   }
   return buckets;
 }

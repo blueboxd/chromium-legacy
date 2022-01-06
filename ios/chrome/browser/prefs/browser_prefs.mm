@@ -69,7 +69,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
-#include "ios/chrome/browser/ui/first_run/default_browser_promo_field_trial.h"
 #include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
@@ -129,6 +128,10 @@ const char kSigninAllowedByPolicy[] = "signin.allowed_by_policy";
 
 // Deprecated 09/2021
 const char kTrialGroupPrefName[] = "location_permissions.trial_group";
+
+// Deprecated 10/2021
+const char kSigninBottomSheetShownCount[] =
+    "ios.signin.bottom_sheet_shown_count";
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -144,7 +147,6 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   sessions::SessionIdGenerator::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
-  fre_default_browser_promo_field_trial::RegisterLocalStatePrefs(registry);
   fre_field_trial::RegisterLocalStatePrefs(registry);
   component_updater::AutofillStatesComponentInstallerPolicy::RegisterPrefs(
       registry);
@@ -193,6 +195,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                                 static_cast<int>(BrowserSigninMode::kEnabled));
 
   registry->RegisterIntegerPref(kTrialGroupPrefName, 0);
+
+  registry->RegisterIntegerPref(kSigninBottomSheetShownCount, 0);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -321,6 +325,9 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
 
   // Added 09/2021
   prefs->ClearPref(kTrialGroupPrefName);
+
+  // Added 10/2021
+  prefs->ClearPref(kSigninBottomSheetShownCount);
 }
 
 // This method should be periodically pruned of year+ old migrations.

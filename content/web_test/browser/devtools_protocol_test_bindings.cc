@@ -96,8 +96,6 @@ void DevToolsProtocolTestBindings::HandleMessageFromTest(base::Value message) {
     return;
   }
 
-  int request_id = 0;
-  dict->GetInteger("id", &request_id);
   dict->GetList("params", &params);
 
   if (method == "dispatchProtocolMessage" && params &&
@@ -145,6 +143,10 @@ void DevToolsProtocolTestBindings::DispatchProtocolMessage(
 void DevToolsProtocolTestBindings::AgentHostClosed(
     DevToolsAgentHost* agent_host) {
   agent_host_ = nullptr;
+}
+
+bool DevToolsProtocolTestBindings::AllowUnsafeOperations() {
+  return true;
 }
 
 }  // namespace content

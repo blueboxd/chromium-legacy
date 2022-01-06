@@ -627,8 +627,7 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     // A menu item could have something other than a role of
     // |ROLE_SYSTEM_MENUITEM|. Zoom modification controls for example have a
     // role of button.
-    auto* parent =
-        static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
+    auto* parent = GetParentPlatformNodeWin();
     int role = MSAARole();
     if (role == ROLE_SYSTEM_MENUITEM) {
       event_type = ax::mojom::Event::kFocus;
@@ -1098,32 +1097,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accName(VARIANT var_id, BSTR* name_bstr) {
 
   bool has_name = target->HasStringAttribute(ax::mojom::StringAttribute::kName);
   std::wstring name = base::UTF8ToWide(target->GetName());
-  auto status = GetData().GetImageAnnotationStatus();
-  switch (status) {
-    case ax::mojom::ImageAnnotationStatus::kNone:
-    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
-    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
-    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
-      break;
-
-    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
-    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
-    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
-    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
-    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
-      AppendTextToString(
-          base::UTF16ToWide(
-              GetDelegate()->GetLocalizedStringForImageAnnotationStatus(
-                  status)),
-          &name);
-      break;
-
-    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
-      AppendTextToString(base::UTF8ToWide(GetStringAttribute(
-                             ax::mojom::StringAttribute::kImageAnnotation)),
-                         &name);
-      break;
-  }
+  AugmentNameWithImageAnnotationIfApplicable(&name);
 
   if (name.empty() && !has_name)
     return S_FALSE;
@@ -1173,6 +1147,16 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_VALUE);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, value, target);
+  // Special case for indeterminate progressbar.
+  if (GetRole() == ax::mojom::Role::kProgressIndicator &&
+      !HasFloatAttribute(ax::mojom::FloatAttribute::kValueForRange)) {
+    // The MIXED state is also exposed for an indeterminate value.
+    // However, without some value here, NVDA/JAWS 2022 will ignore the
+    // progress indicator in the virtual buffer.
+    *value = SysAllocString(L"0");
+    return S_OK;
+  }
+
   *value = GetValueAttributeAsBstr(target);
   return S_OK;
 }
@@ -1871,6 +1855,36 @@ int AXPlatformNodeWin::GetAnnotationTypeImpl() const {
   }
 }
 
+void AXPlatformNodeWin::AugmentNameWithImageAnnotationIfApplicable(
+    std::wstring* name) const {
+  auto status = GetData().GetImageAnnotationStatus();
+  switch (status) {
+    case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
+    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
+      break;
+
+    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+      AppendTextToString(
+          base::UTF16ToWide(
+              GetDelegate()->GetLocalizedStringForImageAnnotationStatus(
+                  status)),
+          name);
+      break;
+
+    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+      AppendTextToString(base::UTF8ToWide(GetStringAttribute(
+                             ax::mojom::StringAttribute::kImageAnnotation)),
+                         name);
+      break;
+  }
+}
+
 //
 // IExpandCollapseProvider implementation.
 //
@@ -2275,6 +2289,15 @@ bool AXPlatformNodeWin::ISelectionItemProviderIsSelected() const {
   // SelectionItem.IsSelected is set according to the True or False value of
   // aria-selected.
   return GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+}
+
+bool AXPlatformNodeWin::IsNodeInaccessibleForUIA() const {
+  // Ignored nodes and those that are descendants of a leaf node shouldn't be
+  // exposed to UIA. For example, an atomic text field can have text children
+  // in our internal AX tree but isn't supposed to have any in UIA's AX tree.
+  // We also don't expose inline text boxes to UIA.
+  return GetData().IsIgnored() ||
+         GetRole() == ax::mojom::Role::kInlineTextBox || IsChildOfLeaf();
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::AddToSelection() {
@@ -4912,8 +4935,7 @@ void AXPlatformNodeWin::GetAnnotationObjectsAttribute(
   // parent) of the text node, but it can be on any ancestor of the text node.
   // TODO(vicfei): Need to find an efficient algorithm to walk up current node's
   // ancestors to find the attribute. https://crbug.com/1201327
-  AXPlatformNodeWin* parent_platform_node =
-      static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
+  AXPlatformNodeWin* parent_platform_node = GetParentPlatformNodeWin();
 
   if (!parent_platform_node || !IsText())
     return;
@@ -4942,6 +4964,9 @@ HRESULT AXPlatformNodeWin::GetAnnotationTypesAttribute(
   MarkerTypeRangeResult grammar_result = MarkerTypeRangeResult::kNone;
   MarkerTypeRangeResult spelling_result = MarkerTypeRangeResult::kNone;
   MarkerTypeRangeResult highlight_result = MarkerTypeRangeResult::kNone;
+  MarkerTypeRangeResult highlight_spelling_result =
+      MarkerTypeRangeResult::kNone;
+  MarkerTypeRangeResult highlight_grammar_result = MarkerTypeRangeResult::kNone;
 
   if (IsText() || IsAtomicTextField()) {
     grammar_result = GetMarkerTypeFromRange(start_offset, end_offset,
@@ -4949,12 +4974,21 @@ HRESULT AXPlatformNodeWin::GetAnnotationTypesAttribute(
     spelling_result = GetMarkerTypeFromRange(start_offset, end_offset,
                                              ax::mojom::MarkerType::kSpelling);
     highlight_result = GetMarkerTypeFromRange(
-        start_offset, end_offset, ax::mojom::MarkerType::kHighlight);
+        start_offset, end_offset, ax::mojom::MarkerType::kHighlight,
+        ax::mojom::HighlightType::kHighlight);
+    highlight_spelling_result = GetMarkerTypeFromRange(
+        start_offset, end_offset, ax::mojom::MarkerType::kHighlight,
+        ax::mojom::HighlightType::kSpellingError);
+    highlight_grammar_result = GetMarkerTypeFromRange(
+        start_offset, end_offset, ax::mojom::MarkerType::kHighlight,
+        ax::mojom::HighlightType::kGrammarError);
   }
 
   if (grammar_result == MarkerTypeRangeResult::kMixed ||
       spelling_result == MarkerTypeRangeResult::kMixed ||
-      highlight_result == MarkerTypeRangeResult::kMixed) {
+      highlight_result == MarkerTypeRangeResult::kMixed ||
+      highlight_spelling_result == MarkerTypeRangeResult::kMixed ||
+      highlight_grammar_result == MarkerTypeRangeResult::kMixed) {
     Microsoft::WRL::ComPtr<IUnknown> mixed_attribute_value;
     HRESULT hr = ::UiaGetReservedMixedAttributeValue(&mixed_attribute_value);
     if (SUCCEEDED(hr))
@@ -4962,9 +4996,11 @@ HRESULT AXPlatformNodeWin::GetAnnotationTypesAttribute(
     return hr;
   }
 
-  if (spelling_result == MarkerTypeRangeResult::kMatch)
+  if (spelling_result == MarkerTypeRangeResult::kMatch ||
+      highlight_spelling_result == MarkerTypeRangeResult::kMatch)
     result->Insert<VT_I4>(AnnotationType_SpellingError);
-  if (grammar_result == MarkerTypeRangeResult::kMatch)
+  if (grammar_result == MarkerTypeRangeResult::kMatch ||
+      highlight_grammar_result == MarkerTypeRangeResult::kMatch)
     result->Insert<VT_I4>(AnnotationType_GrammarError);
   if (highlight_result == MarkerTypeRangeResult::kMatch)
     result->Insert<VT_I4>(AnnotationType_Highlighted);
@@ -5134,10 +5170,13 @@ void AXPlatformNodeWin::AggregateRangesForMarkerType(
     AXPlatformNodeBase* node,
     ax::mojom::MarkerType marker_type,
     int offset_ranges_amount,
-    std::vector<std::pair<int, int>>* ranges) {
+    std::vector<std::pair<int, int>>* ranges,
+    const absl::optional<ax::mojom::HighlightType>& highlight_type) {
   DCHECK(node->IsText());
   const std::vector<int32_t>& marker_types =
       node->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes);
+  const std::vector<int32_t>& highlight_types =
+      node->GetIntListAttribute(ax::mojom::IntListAttribute::kHighlightTypes);
   const std::vector<int>& marker_starts =
       node->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts);
   const std::vector<int>& marker_ends =
@@ -5146,6 +5185,12 @@ void AXPlatformNodeWin::AggregateRangesForMarkerType(
   for (size_t i = 0; i < marker_types.size(); ++i) {
     if (static_cast<ax::mojom::MarkerType>(marker_types[i]) != marker_type)
       continue;
+
+    if (marker_type == ax::mojom::MarkerType::kHighlight &&
+        highlight_type !=
+            static_cast<ax::mojom::HighlightType>(highlight_types[i])) {
+      continue;
+    }
 
     const int marker_start = marker_starts[i] + offset_ranges_amount;
     const int marker_end = marker_ends[i] + offset_ranges_amount;
@@ -5157,13 +5202,14 @@ AXPlatformNodeWin::MarkerTypeRangeResult
 AXPlatformNodeWin::GetMarkerTypeFromRange(
     const absl::optional<int>& start_offset,
     const absl::optional<int>& end_offset,
-    ax::mojom::MarkerType marker_type) {
+    ax::mojom::MarkerType marker_type,
+    const absl::optional<ax::mojom::HighlightType>& highlight_type) {
   DCHECK(IsText() || IsAtomicTextField());
   std::vector<std::pair<int, int>> relevant_ranges;
 
   if (IsText()) {
     AggregateRangesForMarkerType(this, marker_type, /*offset_ranges_amount=*/0,
-                                 &relevant_ranges);
+                                 &relevant_ranges, highlight_type);
   } else if (IsAtomicTextField()) {
     int offset_ranges_amount = 0;
     for (AXPlatformNodeBase* static_text = GetFirstTextOnlyDescendant();
@@ -5181,8 +5227,8 @@ AXPlatformNodeWin::GetMarkerTypeFromRange(
       }
 
       AggregateRangesForMarkerType(static_text, marker_type,
-                                   child_offset_ranges_amount,
-                                   &relevant_ranges);
+                                   child_offset_ranges_amount, &relevant_ranges,
+                                   highlight_type);
     }
   }
 
@@ -5532,7 +5578,33 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_ANIMATION;
 
     case ax::mojom::Role::kMath:
+    case ax::mojom::Role::kMathMLMath:
       return ROLE_SYSTEM_EQUATION;
+
+    // TODO(http://crbug.com/1260584): Refine this if/when a MSAA API exists for
+    // properly exposing MathML content.
+    case ax::mojom::Role::kMathMLFraction:
+    case ax::mojom::Role::kMathMLIdentifier:
+    case ax::mojom::Role::kMathMLMultiscripts:
+    case ax::mojom::Role::kMathMLNoneScript:
+    case ax::mojom::Role::kMathMLNumber:
+    case ax::mojom::Role::kMathMLOperator:
+    case ax::mojom::Role::kMathMLOver:
+    case ax::mojom::Role::kMathMLPrescriptDelimiter:
+    case ax::mojom::Role::kMathMLRoot:
+    case ax::mojom::Role::kMathMLRow:
+    case ax::mojom::Role::kMathMLSquareRoot:
+    case ax::mojom::Role::kMathMLStringLiteral:
+    case ax::mojom::Role::kMathMLSub:
+    case ax::mojom::Role::kMathMLSubSup:
+    case ax::mojom::Role::kMathMLSup:
+    case ax::mojom::Role::kMathMLTable:
+    case ax::mojom::Role::kMathMLTableCell:
+    case ax::mojom::Role::kMathMLTableRow:
+    case ax::mojom::Role::kMathMLText:
+    case ax::mojom::Role::kMathMLUnder:
+    case ax::mojom::Role::kMathMLUnderOver:
+      return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kMenu:
       return ROLE_SYSTEM_MENUPOPUP;
@@ -5744,6 +5816,11 @@ int AXPlatformNodeWin::MSAARole() {
 
   NOTREACHED();
   return ROLE_SYSTEM_GROUPING;
+}
+
+AXPlatformNodeWin* AXPlatformNodeWin::GetParentPlatformNodeWin() const {
+  return static_cast<AXPlatformNodeWin*>(
+      AXPlatformNode::FromNativeViewAccessible(GetParent()));
 }
 
 bool AXPlatformNodeWin::IsWebAreaForPresentationalIframe() {
@@ -6362,6 +6439,32 @@ std::wstring AXPlatformNodeWin::UIAAriaRole() {
       return L"marquee";
 
     case ax::mojom::Role::kMath:
+    case ax::mojom::Role::kMathMLMath:
+      return L"group";
+
+    // TODO(http://crbug.com/1260585): Refine this if/when a UIA API exists for
+    // properly exposing MathML content.
+    case ax::mojom::Role::kMathMLFraction:
+    case ax::mojom::Role::kMathMLIdentifier:
+    case ax::mojom::Role::kMathMLMultiscripts:
+    case ax::mojom::Role::kMathMLNoneScript:
+    case ax::mojom::Role::kMathMLNumber:
+    case ax::mojom::Role::kMathMLOperator:
+    case ax::mojom::Role::kMathMLOver:
+    case ax::mojom::Role::kMathMLPrescriptDelimiter:
+    case ax::mojom::Role::kMathMLRoot:
+    case ax::mojom::Role::kMathMLRow:
+    case ax::mojom::Role::kMathMLSquareRoot:
+    case ax::mojom::Role::kMathMLStringLiteral:
+    case ax::mojom::Role::kMathMLSub:
+    case ax::mojom::Role::kMathMLSubSup:
+    case ax::mojom::Role::kMathMLSup:
+    case ax::mojom::Role::kMathMLTable:
+    case ax::mojom::Role::kMathMLTableCell:
+    case ax::mojom::Role::kMathMLTableRow:
+    case ax::mojom::Role::kMathMLText:
+    case ax::mojom::Role::kMathMLUnder:
+    case ax::mojom::Role::kMathMLUnderOver:
       return L"group";
 
     case ax::mojom::Role::kMenu:
@@ -7025,6 +7128,32 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_TextControlTypeId;
 
     case ax::mojom::Role::kMath:
+    case ax::mojom::Role::kMathMLMath:
+      return UIA_GroupControlTypeId;
+
+    // TODO(http://crbug.com/1260585): Refine this if/when a UIA API exists for
+    // properly exposing MathML content.
+    case ax::mojom::Role::kMathMLFraction:
+    case ax::mojom::Role::kMathMLIdentifier:
+    case ax::mojom::Role::kMathMLMultiscripts:
+    case ax::mojom::Role::kMathMLNoneScript:
+    case ax::mojom::Role::kMathMLNumber:
+    case ax::mojom::Role::kMathMLOperator:
+    case ax::mojom::Role::kMathMLOver:
+    case ax::mojom::Role::kMathMLPrescriptDelimiter:
+    case ax::mojom::Role::kMathMLRoot:
+    case ax::mojom::Role::kMathMLRow:
+    case ax::mojom::Role::kMathMLSquareRoot:
+    case ax::mojom::Role::kMathMLStringLiteral:
+    case ax::mojom::Role::kMathMLSub:
+    case ax::mojom::Role::kMathMLSubSup:
+    case ax::mojom::Role::kMathMLSup:
+    case ax::mojom::Role::kMathMLTable:
+    case ax::mojom::Role::kMathMLTableCell:
+    case ax::mojom::Role::kMathMLTableRow:
+    case ax::mojom::Role::kMathMLText:
+    case ax::mojom::Role::kMathMLUnder:
+    case ax::mojom::Role::kMathMLUnderOver:
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kMenu:
@@ -7452,14 +7581,17 @@ absl::optional<LONG> AXPlatformNodeWin::ComputeUIALandmarkType() const {
   }
 }
 
-bool AXPlatformNodeWin::IsInaccessibleDueToAncestor() const {
-  AXPlatformNodeWin* parent = static_cast<AXPlatformNodeWin*>(
-      AXPlatformNode::FromNativeViewAccessible(GetParent()));
+bool AXPlatformNodeWin::IsInaccessibleForUIA() const {
+  if (IsNodeInaccessibleForUIA())
+    return true;
+
+  AXPlatformNodeWin* parent = GetParentPlatformNodeWin();
   while (parent) {
-    if (parent->ShouldHideChildrenForUIA())
+    if (parent->IsNodeInaccessibleForUIA() ||
+        parent->ShouldHideChildrenForUIA()) {
       return true;
-    parent = static_cast<AXPlatformNodeWin*>(
-        FromNativeViewAccessible(parent->GetParent()));
+    }
+    parent = parent->GetParentPlatformNodeWin();
   }
   return false;
 }
@@ -7827,6 +7959,8 @@ HRESULT AXPlatformNodeWin::GetStringAttributeAsBstr(
 
 HRESULT AXPlatformNodeWin::GetNameAsBstr(BSTR* value_bstr) const {
   std::wstring str = base::UTF8ToWide(GetName());
+  AugmentNameWithImageAnnotationIfApplicable(&str);
+
   *value_bstr = SysAllocString(str.c_str());
   DCHECK(*value_bstr);
   return S_OK;
@@ -7958,8 +8092,7 @@ HRESULT AXPlatformNodeWin::AllocateComArrayFromVector(
 
 bool AXPlatformNodeWin::IsHyperlink() {
   int32_t hyperlink_index = -1;
-  AXPlatformNodeWin* parent =
-      static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
+  AXPlatformNodeWin* parent = GetParentPlatformNodeWin();
   if (parent) {
     hyperlink_index = parent->GetHyperlinkIndexFromChild(this);
   }
@@ -8195,17 +8328,12 @@ void AXPlatformNodeWin::FireLiveRegionChangeRecursive() {
   }
 }
 
-AXPlatformNodeWin* AXPlatformNodeWin::GetLowestAccessibleElement() {
-  if (!IsInaccessibleDueToAncestor())
-    return this;
-
-  AXPlatformNodeWin* parent = static_cast<AXPlatformNodeWin*>(
-      AXPlatformNode::FromNativeViewAccessible(GetParent()));
-  while (parent) {
-    if (parent->ShouldHideChildrenForUIA())
-      return parent;
-    parent = static_cast<AXPlatformNodeWin*>(
-        AXPlatformNode::FromNativeViewAccessible(parent->GetParent()));
+AXPlatformNodeWin* AXPlatformNodeWin::GetLowestAccessibleElementForUIA() {
+  AXPlatformNodeWin* node = this;
+  while (node) {
+    if (!node->IsInaccessibleForUIA())
+      return node;
+    node = node->GetParentPlatformNodeWin();
   }
 
   NOTREACHED();

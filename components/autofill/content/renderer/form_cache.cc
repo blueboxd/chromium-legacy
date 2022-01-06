@@ -88,31 +88,15 @@ void LogDeprecationMessages(const WebFormControlElement& element) {
 }
 
 // Determines whether the form is interesting enough to be sent to the browser
-// for further operations.
+// for further operations. This is the case if any of the below holds:
+// (1) At least one field is editable.
+// (2) At least one field has a non-empty autocomplete attribute.
+// (3) There is at least one iframe.
 bool IsFormInteresting(const FormData& form, size_t num_editable_elements) {
-  if (form.fields.empty() && form.child_frames.empty())
-    return false;
-
-  // If the form has at least one field with an autocomplete attribute, it is a
-  // candidate for autofill.
-  bool all_fields_are_passwords = true;
-  for (const FormFieldData& field : form.fields) {
-    if (!field.autocomplete_attribute.empty())
-      return true;
-    if (field.form_control_type != "password")
-      all_fields_are_passwords = false;
-  }
-
-  // If there are no autocomplete attributes, the form needs to have at least
-  // the required number of editable fields for the prediction routines to be a
-  // candidate for autofill.
-  return num_editable_elements >= kMinRequiredFieldsForHeuristics ||
-         num_editable_elements >= kMinRequiredFieldsForQuery ||
-         num_editable_elements >= kMinRequiredFieldsForUpload ||
-         (all_fields_are_passwords &&
-          num_editable_elements >=
-              kRequiredFieldsForFormsWithOnlyPasswordFields) ||
-         form.child_frames.size() > 0;
+  DCHECK_GE(form.fields.size(), num_editable_elements);
+  return num_editable_elements >= 1 || !form.child_frames.empty() ||
+         base::ranges::any_of(form.fields, base::not_fn(&std::string::empty),
+                              &FormFieldData::autocomplete_attribute);
 }
 
 }  // namespace
@@ -152,22 +136,16 @@ FormCache::UpdateFormCacheResult FormCache::UpdateFormCache(
   parsed_forms_by_renderer_id_.clear();
 
   UpdateFormCacheResult r;
-  r.removed_forms = [&old_parsed_forms] {
-    std::vector<FormRendererId> vec;
-    vec.reserve(old_parsed_forms.size());
-    for (const auto& p : old_parsed_forms)
-      vec.push_back(p.first);
-    return base::flat_set<FormRendererId>(std::move(vec));
-  }();
+  r.removed_forms = base::MakeFlatSet<FormRendererId>(
+      old_parsed_forms, {}, &std::pair<const FormRendererId, FormData>::first);
 
-  size_t frame_depth = form_util::GetFrameDepth(frame_);
   size_t num_fields_seen = 0;
   size_t num_frames_seen = 0;
 
   // Helper function that stores new autofillable forms in |forms|. Returns
   // false iff the total number of fields exceeds |kMaxParseableFields|. Clears
   // |form|'s FormData::child_frames if the total number of frames exceeds
-  // MaxParseableChildFrames().
+  // kMaxParseableChildFrames.
   auto ProcessForm =
       [&](FormData form,
           const std::vector<WebFormControlElement>& control_elements) {
@@ -182,9 +160,9 @@ FormCache::UpdateFormCacheResult FormCache::UpdateFormCache(
         if (num_fields_seen > kMaxParseableFields)
           return false;
 
-        // Enforce the MaxParseableChildFrames() limit: ignore the iframes, but
+        // Enforce the kMaxParseableChildFrames limit: ignore the iframes, but
         // do not ignore the fields (i.e., continue parsing).
-        if (num_frames_seen > MaxParseableChildFrames(frame_depth))
+        if (num_frames_seen > kMaxParseableChildFrames)
           form.child_frames.clear();
 
         size_t num_editable_elements =
@@ -267,13 +245,8 @@ FormCache::UpdateFormCacheResult FormCache::ExtractNewForms(
   }
 
   UpdateFormCacheResult r;
-  r.removed_forms = [this] {
-    std::vector<FormRendererId> vec;
-    vec.reserve(parsed_forms_.size());
-    for (const FormData& form : parsed_forms_)
-      vec.push_back(form.unique_renderer_id);
-    return base::flat_set<FormRendererId>(std::move(vec));
-  }();
+  r.removed_forms = base::MakeFlatSet<FormRendererId>(
+      parsed_forms_, {}, &FormData::unique_renderer_id);
 
   WebDocument document = frame_->GetDocument();
   if (document.IsNull()) {
@@ -294,7 +267,6 @@ FormCache::UpdateFormCacheResult FormCache::ExtractNewForms(
       static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
                                           form_util::EXTRACT_OPTIONS);
 
-  size_t frame_depth = form_util::GetFrameDepth(frame_);
   size_t num_fields_seen = 0;
   size_t num_frames_seen = 0;
   for (const WebFormElement& form_element : document.Forms()) {
@@ -320,7 +292,7 @@ FormCache::UpdateFormCacheResult FormCache::ExtractNewForms(
       return r;
     }
 
-    if (num_frames_seen > MaxParseableChildFrames(frame_depth))
+    if (num_frames_seen > kMaxParseableChildFrames)
       form.child_frames.clear();
 
     size_t num_editable_elements =
@@ -384,7 +356,7 @@ FormCache::UpdateFormCacheResult FormCache::ExtractNewForms(
     return r;
   }
 
-  if (num_frames_seen > MaxParseableChildFrames(frame_depth))
+  if (num_frames_seen > kMaxParseableChildFrames)
     synthetic_form.child_frames.clear();
 
   size_t num_editable_elements =

@@ -17,8 +17,8 @@
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/no_destructor.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #import "components/remote_cocoa/app_shim/browser_native_widget_window_mac.h"
 #import "components/remote_cocoa/app_shim/certificate_viewer.h"
@@ -1291,6 +1291,7 @@ void NativeWidgetNSWindowBridge::SetOpacity(float opacity) {
 
 void NativeWidgetNSWindowBridge::SetWindowLevel(int32_t level) {
   [window_ setLevel:level];
+  [bridged_view_ updateCursorTrackingArea];
 
   // Windows that have a higher window level than NSNormalWindowLevel default to
   // NSWindowCollectionBehaviorTransient. Set the value explicitly here to match

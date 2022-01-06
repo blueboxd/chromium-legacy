@@ -19,6 +19,7 @@ namespace os.diagnostics {
   };
 
   enum RoutineStatus {
+    unknown,
     ready,
     running,
     waiting_user_action,
@@ -41,6 +42,7 @@ namespace os.diagnostics {
   };
 
   enum UserMessageType {
+    unknown,
     unplug_ac_power,
     plug_in_ac_power
   };

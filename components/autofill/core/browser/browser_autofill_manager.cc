@@ -1535,6 +1535,7 @@ void BrowserAutofillManager::UploadFormDataAsyncCallback(
     const TimeTicks& submission_time,
     bool observed_submission) {
   if (submitted_form->ShouldRunHeuristics() ||
+      submitted_form->ShouldRunPromoCodeHeuristics() ||
       submitted_form->ShouldBeQueried()) {
     submitted_form->LogQualityMetrics(
         submitted_form->form_parsed_timestamp(), interaction_time,
@@ -2580,8 +2581,6 @@ void BrowserAutofillManager::GetAvailableSuggestions(
   // warning message and don't offer autofill. The warning is shown even if
   // there are no autofill suggestions available.
   if (IsFormMixedContent(client(), form) &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillPreventMixedFormsFilling) &&
       client()->GetPrefs()->GetBoolean(::prefs::kMixedFormsWarningsEnabled)) {
     suggestions->clear();
     // If the user begins typing, we interpret that as dismissing the warning.

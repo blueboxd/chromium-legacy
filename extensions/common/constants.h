@@ -138,8 +138,46 @@ extern const char kUpdateURLData[];
 // from a non-service worker context
 extern const int kMainThreadId;
 
-using apps::mojom::AppLaunchSource;
 using apps::mojom::LaunchContainer;
+
+// Enumeration of possible app launch sources.
+// This should be kept in sync with LaunchSource in
+// extensions/common/api/app_runtime.idl, and GetLaunchSourceEnum() in
+// extensions/browser/api/app_runtime/app_runtime_api.cc.
+// Note the enumeration is used in UMA histogram so entries
+// should not be re-ordered or removed.
+enum class AppLaunchSource {
+  kSourceNone = 0,
+  kSourceUntracked = 1,
+  kSourceAppLauncher = 2,
+  kSourceNewTabPage = 3,
+  kSourceReload = 4,
+  kSourceRestart = 5,
+  kSourceLoadAndLaunch = 6,
+  kSourceCommandLine = 7,
+  kSourceFileHandler = 8,
+  kSourceUrlHandler = 9,
+  kSourceSystemTray = 10,
+  kSourceAboutPage = 11,
+  kSourceKeyboard = 12,
+  kSourceExtensionsPage = 13,
+  kSourceManagementApi = 14,
+  kSourceEphemeralAppDeprecated = 15,
+  kSourceBackground = 16,
+  kSourceKiosk = 17,
+  kSourceChromeInternal = 18,
+  kSourceTest = 19,
+  kSourceInstalledNotification = 20,
+  kSourceContextMenu = 21,
+  kSourceArc = 22,
+  kSourceIntentUrl = 23,        // App launch triggered by a URL.
+  kSourceRunOnOsLogin = 24,     // App launched during OS login.
+  kSourceProtocolHandler = 25,  // App launch via protocol handler.
+
+  // Add any new values above this one, and update kMaxValue to the highest
+  // enumerator value.
+  kMaxValue = kSourceProtocolHandler,
+};
 
 // This enum is used for the launch type the user wants to use for an
 // application.
@@ -227,7 +265,7 @@ extern const char kCalculatorAppId[];
 extern const char kCalendarDemoAppId[];
 
 // The extension id of the GMail application.
-extern const char kGMailAppId[];
+extern const char kGmailAppId[];
 
 // The extension id of the demo Google Docs application.
 extern const char kGoogleDocsDemoAppId[];
@@ -273,6 +311,15 @@ extern const char kGeForceNowAppId[];
 
 // The extension id of the Zoom PWA.
 extern const char kZoomAppId[];
+
+// The extension id of the Google Docs application.
+extern const char kGoogleDocsAppId[];
+
+// The extension id of the Google Sheets application.
+extern const char kGoogleSheetsAppId[];
+
+// The extension id of the Google Slides application.
+extern const char kGoogleSlidesAppId[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // The extension id of the default Demo Mode Highlights app.

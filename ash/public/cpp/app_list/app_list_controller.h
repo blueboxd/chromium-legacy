@@ -19,6 +19,8 @@ namespace ash {
 
 class AppListClient;
 class AppListControllerObserver;
+class AppListModel;
+class SearchModel;
 
 // An interface implemented in Ash to handle calls from Chrome.
 // These include:
@@ -67,9 +69,14 @@ class ASH_PUBLIC_EXPORT AppListController {
   virtual void UpdateSearchBox(const std::u16string& text,
                                bool initiated_by_user) = 0;
 
-  // Publishes search results to Ash to render them.
+  // Publishes search results to Ash to render them. The order of the
+  // |categories| vector is the order cateogories should be displayed in. Each
+  // result in |results| contains a category as a member, which is guaranteed
+  // to exist in |categories|. However, some values in |categories| may have
+  // no results associated with them.
   virtual void PublishSearchResults(
-      std::vector<std::unique_ptr<SearchResultMetadata>> results) = 0;
+      std::vector<std::unique_ptr<SearchResultMetadata>> results,
+      const std::vector<ash::AppListSearchResultCategory>& categories) = 0;
 
   // Updates an item's metadata (e.g. name, position, etc).
   virtual void SetItemMetadata(const std::string& id,
@@ -85,10 +92,21 @@ class ASH_PUBLIC_EXPORT AppListController {
                                              const SkColor color) = 0;
 
   // Update the whole model, usually when profile changes happen in Chrome.
+  // DEPRECATED: Usages of `SetModelData()` will be replaced with
+  // `SetActiveModel()` - https://crbug.com/1263604.
   virtual void SetModelData(
       int profile_id,
       std::vector<std::unique_ptr<AppListItemMetadata>> apps,
       bool is_search_engine_google) = 0;
+
+  // Updates the app list model and search model that should be used by the
+  // controller.
+  // This can be used to update the models represented in the app list UI when
+  // the active user profile changes in Chrome, and is intended to replace
+  // `SetModelData()`. Additionally, it can be used in tests to instantiate
+  // testing models.
+  virtual void SetActiveModel(AppListModel* model,
+                              SearchModel* search_model) = 0;
 
   // Updates a search rresult's metadata.
   virtual void SetSearchResultMetadata(
@@ -99,29 +117,6 @@ class ASH_PUBLIC_EXPORT AppListController {
       base::OnceCallback<void(const base::flat_map<std::string, uint16_t>&)>;
   virtual void GetIdToAppListIndexMap(
       GetIdToAppListIndexMapCallback callback) = 0;
-
-  // Finds the OEM folder or creates one if it doesn't exist.
-  // |oem_folder_name|: the expected name of the OEM folder while creating.
-  // |preferred_oem_position|: the preferred position of the OEM folder while
-  //                           creating; if it's invalid then the final position
-  //                           is determined in Ash.
-  // |oem_folder|: the meta data of the existing/created OEM folder.
-  using FindOrCreateOemFolderCallback = base::OnceClosure;
-  virtual void FindOrCreateOemFolder(
-      const std::string& oem_folder_name,
-      const syncer::StringOrdinal& preferred_oem_position,
-      FindOrCreateOemFolderCallback callback) = 0;
-
-  // Resolves the position of the OEM folder.
-  // |preferred_oem_position|: the preferred position of the OEM folder; if it's
-  //                           invalid then the final position is determined in
-  //                           Ash.
-  // |oem_folder|: the meta data of the OEM folder, or null if it doesn't exist.
-  using ResolveOemFolderPositionCallback =
-      base::OnceCallback<void(std::unique_ptr<AppListItemMetadata>)>;
-  virtual void ResolveOemFolderPosition(
-      const syncer::StringOrdinal& preferred_oem_position,
-      ResolveOemFolderPositionCallback callback) = 0;
 
   // Notifies sync service has finished processing sync changes.
   virtual void NotifyProcessSyncChangesFinished() = 0;

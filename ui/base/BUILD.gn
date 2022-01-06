@@ -13,6 +13,7 @@ import("//build/config/ozone.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/util/branding.gni")
+import("//skia/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
@@ -634,6 +635,13 @@ component("features") {
     "ui_base_features.h",
   ]
 
+  if (is_chromeos_ash) {
+    sources += [
+      "shortcut_mapping_pref_delegate.cc",
+      "shortcut_mapping_pref_delegate.h",
+    ]
+  }
+
   deps = [
     ":buildflags",
     "//base",
@@ -731,6 +739,7 @@ static_library("test_support") {
       "accelerators/test_accelerator_target.h",
       "test/mock_base_window.cc",
       "test/mock_base_window.h",
+      "test/test_dialog_model_host.cc",
       "test/test_dialog_model_host.h",
       "test/ui_controls.h",
       "test/view_tree_validator.h",
@@ -1180,7 +1189,7 @@ test("ui_base_unittests") {
     data += [ "$root_out_dir/ui_unittests Framework.framework/" ]
   }
 
-  if (!is_ios) {
+  if (skia_support_skottie && !is_ios) {
     sources += [ "//ui/lottie/animation_unittest.cc" ]
     deps += [ "//ui/lottie" ]
   }

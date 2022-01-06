@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunker.h"
 
-#include "cc/base/features.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 
 namespace blink {
@@ -35,7 +34,7 @@ bool PaintChunker::IsInInitialState() const {
 #endif
 
 void PaintChunker::StartMarkingClientsForValidation(
-    Vector<const DisplayItemClient*>& clients_to_validate) {
+    HeapVector<Member<const DisplayItemClient>>& clients_to_validate) {
 #if DCHECK_IS_ON()
   DCHECK(IsInInitialState());
 #endif
@@ -136,9 +135,8 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItemClient& client,
 
   if (should_compute_contents_opaque_ && item.IsDrawing()) {
     const DrawingDisplayItem& drawing = To<DrawingDisplayItem>(item);
-    chunk.rect_known_to_be_opaque =
-        gfx::Rect(MaximumCoveredRect(IntRect(chunk.rect_known_to_be_opaque),
-                                     IntRect(drawing.RectKnownToBeOpaque())));
+    chunk.rect_known_to_be_opaque = gfx::MaximumCoveredRect(
+        chunk.rect_known_to_be_opaque, drawing.RectKnownToBeOpaque());
     if (chunk.text_known_to_be_on_opaque_background) {
       if (const auto* paint_record = drawing.GetPaintRecord().get()) {
         if (paint_record->has_draw_text_ops()) {
@@ -192,10 +190,23 @@ bool PaintChunker::AddHitTestDataToCurrentChunk(const PaintChunk::Id& id,
     chunk.EnsureHitTestData().touch_action_rects.push_back(
         TouchActionRect{rect, touch_action});
   }
-  if (blocking_wheel) {
-    DCHECK(base::FeatureList::IsEnabled(::features::kWheelEventRegions));
+  if (blocking_wheel)
     chunk.EnsureHitTestData().wheel_event_rects.push_back(rect);
+  return created_new_chunk;
+}
+
+bool PaintChunker::AddRegionCaptureDataToCurrentChunk(
+    const PaintChunk::Id& id,
+    const DisplayItemClient& client,
+    const RegionCaptureCropId& crop_id,
+    const gfx::Rect& rect) {
+  DCHECK(!crop_id->is_zero());
+  bool created_new_chunk = EnsureCurrentChunk(id, client);
+  auto& chunk = chunks_->back();
+  if (!chunk.region_capture_data) {
+    chunk.region_capture_data = std::make_unique<RegionCaptureData>();
   }
+  chunk.region_capture_data->insert_or_assign(crop_id, std::move(rect));
   return created_new_chunk;
 }
 
@@ -265,13 +276,13 @@ void PaintChunker::CreateScrollHitTestChunk(
   SetWillForceNewChunk(true);
 }
 
-bool PaintChunker::ProcessBackgroundColorCandidate(
+void PaintChunker::ProcessBackgroundColorCandidate(
     const PaintChunk::Id& id,
     const DisplayItemClient& client,
     Color color,
     float area) {
   if (color == Color::kTransparent)
-    return false;
+    return;
 
   bool created_new_chunk = EnsureCurrentChunk(id, client);
   float min_background_area = kMinBackgroundColorCoverageRatio *
@@ -285,7 +296,6 @@ bool PaintChunker::ProcessBackgroundColorCandidate(
             : color;
     candidate_background_area_ = area;
   }
-  return created_new_chunk;
 }
 
 void PaintChunker::FinalizeLastChunkProperties() {

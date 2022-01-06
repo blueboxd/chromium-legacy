@@ -54,7 +54,6 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void EnforceInsecureRequestPolicy(
       mojom::InsecureRequestPolicy policy_bitmap) override;
   void EnforceInsecureNavigationsSet(const WTF::Vector<uint32_t>& set) override;
-  void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
   void SuddenTerminationDisablerChanged(
       bool present,
       blink::mojom::SuddenTerminationDisablerType disabler_type) override;
@@ -65,7 +64,6 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void BubbleLogicalScrollInParentFrame(
       blink::mojom::blink::ScrollDirection direction,
       ui::ScrollGranularity granularity) override;
-  void DidAccessInitialDocument() override;
   void DidBlockNavigation(const KURL& blocked_url,
                           const KURL& initiator_url,
                           mojom::NavigationBlockedReason reason) override;

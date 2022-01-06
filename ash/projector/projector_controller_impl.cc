@@ -11,6 +11,8 @@
 #include "ash/public/cpp/projector/projector_client.h"
 #include "ash/public/cpp/projector/projector_session.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
@@ -62,9 +64,13 @@ ProjectorControllerImpl::ProjectorControllerImpl()
     : projector_session_(std::make_unique<ash::ProjectorSessionImpl>()),
       ui_controller_(std::make_unique<ash::ProjectorUiController>(this)),
       metadata_controller_(
-          std::make_unique<ash::ProjectorMetadataController>()) {}
+          std::make_unique<ash::ProjectorMetadataController>()) {
+  projector_session_->AddObserver(this);
+}
 
-ProjectorControllerImpl::~ProjectorControllerImpl() = default;
+ProjectorControllerImpl::~ProjectorControllerImpl() {
+  projector_session_->RemoveObserver(this);
+}
 
 // static
 ProjectorControllerImpl* ProjectorControllerImpl::Get() {
@@ -77,8 +83,13 @@ void ProjectorControllerImpl::StartProjectorSession(
 
   auto* controller = CaptureModeController::Get();
   if (!controller->is_recording_in_progress()) {
-    projector_session_->Start(storage_dir);
+    // A capture mode session can be blocked by many factors, such as policy,
+    // DLP, ... etc. We don't start a Projector session until we're sure a
+    // capture session started.
     controller->Start(CaptureModeEntryType::kProjector);
+    if (controller->IsActive()) {
+      projector_session_->Start(storage_dir);
+    }
   }
 }
 
@@ -87,7 +98,8 @@ void ProjectorControllerImpl::CreateScreencastContainerFolder(
   base::FilePath mounted_path;
   if (!client_->GetDriveFsMountPointPath(&mounted_path)) {
     LOG(ERROR) << "Failed to get DriveFs mounted point path.";
-    // TODO(b/197363815): Notify user when there is an error.
+    ProjectorUiController::ShowFailureNotification(
+        IDS_ASH_PROJECTOR_FAILURE_MESSAGE_DRIVEFS);
     std::move(callback).Run(base::FilePath());
     return;
   }
@@ -114,6 +126,8 @@ void ProjectorControllerImpl::OnSpeechRecognitionAvailable(bool available) {
     return;
 
   is_speech_recognition_available_ = available;
+
+  OnNewScreencastPreconditionChanged();
 }
 
 void ProjectorControllerImpl::OnTranscription(
@@ -146,7 +160,7 @@ bool ProjectorControllerImpl::CanStartNewSession() const {
          client_->IsDriveFsMounted();
 }
 
-void ProjectorControllerImpl::OnToolSet(const chromeos::AnnotatorTool& tool) {
+void ProjectorControllerImpl::OnToolSet(const AnnotatorTool& tool) {
   // TODO(b/198184362): Reflect the annotator tool changes on the Projector
   // toolbar.
 }
@@ -203,6 +217,21 @@ void ProjectorControllerImpl::OnRecordingEnded() {
   client_->OpenProjectorApp();
 }
 
+void ProjectorControllerImpl::OnRecordingStartAborted() {
+  DCHECK(projector_session_->is_active());
+
+  // Delete the DriveFS path that might have been created for this aborted
+  // session if any.
+  if (projector_session_->screencast_container_path()) {
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(base::GetDeletePathRecursivelyCallback(),
+                       *projector_session_->screencast_container_path()));
+  }
+
+  projector_session_->Stop();
+}
+
 void ProjectorControllerImpl::OnLaserPointerPressed() {
   ui_controller_->OnLaserPointerPressed();
 }
@@ -241,6 +270,10 @@ void ProjectorControllerImpl::OnChangeMarkerColorPressed(SkColor new_color) {
   ui_controller_->OnChangeMarkerColorPressed(new_color);
 }
 
+void ProjectorControllerImpl::OnNewScreencastPreconditionChanged() {
+  client_->OnNewScreencastPreconditionChanged(CanStartNewSession());
+}
+
 void ProjectorControllerImpl::SetProjectorUiControllerForTest(
     std::unique_ptr<ProjectorUiController> ui_controller) {
   ui_controller_ = std::move(ui_controller);
@@ -249,6 +282,11 @@ void ProjectorControllerImpl::SetProjectorUiControllerForTest(
 void ProjectorControllerImpl::SetProjectorMetadataControllerForTest(
     std::unique_ptr<ProjectorMetadataController> metadata_controller) {
   metadata_controller_ = std::move(metadata_controller);
+}
+
+void ProjectorControllerImpl::OnProjectorSessionActiveStateChanged(
+    bool active) {
+  OnNewScreencastPreconditionChanged();
 }
 
 void ProjectorControllerImpl::StartSpeechRecognition() {
@@ -280,6 +318,8 @@ void ProjectorControllerImpl::OnContainerFolderCreated(
   if (!success) {
     LOG(ERROR) << "Failed to create screencast container path: "
                << path.DirName();
+    ProjectorUiController::ShowFailureNotification(
+        IDS_ASH_PROJECTOR_FAILURE_MESSAGE_SAVE_SCREENCAST);
     std::move(callback).Run(base::FilePath());
     return;
   }

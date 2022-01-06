@@ -28,10 +28,12 @@ CONTENT_EXPORT extern const base::Feature kAudioProcessHighPriorityWin;
 CONTENT_EXPORT extern const base::Feature kAudioServiceLaunchOnStartup;
 CONTENT_EXPORT extern const base::Feature kAudioServiceOutOfProcess;
 CONTENT_EXPORT extern const base::Feature kAudioServiceSandbox;
+CONTENT_EXPORT extern const base::Feature kAvoidUnnecessaryBeforeUnloadCheck;
 CONTENT_EXPORT extern const base::Feature kBackgroundFetch;
 CONTENT_EXPORT extern const base::Feature kBackForwardCache;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheSameSiteForBots;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheMemoryControls;
+CONTENT_EXPORT extern const base::Feature kBackForwardCacheMediaSessionService;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
 CONTENT_EXPORT extern const base::Feature kBlockInsecurePrivateNetworkRequests;
 CONTENT_EXPORT extern const base::Feature
@@ -225,6 +227,9 @@ CONTENT_EXPORT extern const base::Feature kTouchpadAsyncPinchEvents;
 CONTENT_EXPORT extern const base::Feature kTouchpadOverscrollHistoryNavigation;
 CONTENT_EXPORT extern const base::Feature kTrustedDOMTypes;
 CONTENT_EXPORT extern const base::Feature kUnrestrictedSharedArrayBuffer;
+#if defined(OS_ANDROID) && defined(INCLUDE_BOTH_V8_SNAPSHOTS)
+CONTENT_EXPORT extern const base::Feature kUseContextSnapshot;
+#endif
 CONTENT_EXPORT extern const base::Feature kUserActivationSameOriginVisibility;
 CONTENT_EXPORT extern const base::Feature kVerifyDidCommitParams;
 CONTENT_EXPORT extern const base::Feature kVideoPlaybackQuality;
@@ -266,12 +271,21 @@ CONTENT_EXPORT extern const base::Feature kWebXrArModule;
 CONTENT_EXPORT extern const base::Feature kAccessibilityPageZoom;
 CONTENT_EXPORT extern const base::Feature
     kBackgroundMediaRendererHasModerateBinding;
+CONTENT_EXPORT extern const base::Feature kBigLittleScheduling;
 CONTENT_EXPORT extern const base::Feature kBindingManagementWaiveCpu;
 CONTENT_EXPORT extern const base::Feature kOnDemandAccessibilityEvents;
 CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteGlobal;
 CONTENT_EXPORT extern const base::Feature kUserMediaScreenCapturing;
 CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;
 CONTENT_EXPORT extern const base::Feature kWebNfc;
+
+extern const char kBigLittleSchedulingBrowserMainBiggerParam[];
+extern const char kBigLittleSchedulingBrowserMainBigParam[];
+extern const char kBigLittleSchedulingBrowserIOBigParam[];
+extern const char kBigLittleSchedulingRenderMainBigParam[];
+extern const char kBigLittleSchedulingNetworkMainBigParam[];
+extern const char kBigLittleSchedulingGpuMainBigParam[];
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MAC)
@@ -288,10 +302,6 @@ CONTENT_EXPORT extern const char
 CONTENT_EXPORT extern const base::FeatureParam<bool>
     kWebUIJavaScriptErrorReportsSendToProductionParam;
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-CONTENT_EXPORT extern const base::Feature kAuraWindowSubtreeCapture;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 CONTENT_EXPORT extern const base::Feature kWebRtcPipeWireCapturer;

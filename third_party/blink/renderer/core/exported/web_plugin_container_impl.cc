@@ -170,27 +170,34 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
                                    const CullRect& cull_rect,
                                    const IntSize& paint_offset) const {
   // Don't paint anything if the plugin doesn't intersect.
-  if (!cull_rect.Intersects(FrameRect()))
+  if (!cull_rect.Intersects(ToGfxRect(FrameRect())))
     return;
 
   IntRect visual_rect = FrameRect();
-  visual_rect.Move(paint_offset);
+  visual_rect.Offset(paint_offset);
 
-  if (WantsWheelEvents() &&
-      base::FeatureList::IsEnabled(::features::kWheelEventRegions)) {
-    context.GetPaintController().RecordHitTestData(
-        *GetLayoutEmbeddedContent(), visual_rect, TouchAction::kAuto, true);
+  if (WantsWheelEvents()) {
+    context.GetPaintController().RecordHitTestData(*GetLayoutEmbeddedContent(),
+                                                   ToGfxRect(visual_rect),
+                                                   TouchAction::kAuto, true);
+  }
+
+  if (element_->GetRegionCaptureCropId()) {
+    context.GetPaintController().RecordRegionCaptureData(
+        *GetLayoutEmbeddedContent(), *(element_->GetRegionCaptureCropId()),
+        ToGfxRect(visual_rect));
   }
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && layer_) {
-    layer_->SetBounds(gfx::Size(Size()));
+    layer_->SetBounds(ToGfxSize(Size()));
     layer_->SetIsDrawable(true);
     layer_->SetHitTestable(true);
+    auto offset = ToRoundedPoint(
+        GetLayoutEmbeddedContent()->ReplacedContentRect().offset);
     // When compositing is after paint, composited plugins should have their
     // layers inserted rather than invoking WebPlugin::paint.
     RecordForeignLayer(context, *element_->GetLayoutObject(),
-                       DisplayItem::kForeignLayerPlugin, layer_,
-                       FrameRect().Location() + paint_offset);
+                       DisplayItem::kForeignLayerPlugin, layer_, offset);
     return;
   }
 
@@ -199,20 +206,20 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
     return;
 
   DrawingRecorder recorder(context, *element_->GetLayoutObject(),
-                           DisplayItem::kWebPlugin, visual_rect);
+                           DisplayItem::kWebPlugin, ToGfxRect(visual_rect));
   context.Save();
 
   // The plugin is positioned in the root frame's coordinates, so it needs to
   // be painted in them too.
-  FloatPoint origin(ParentFrameView()->ConvertToRootFrame(IntPoint()));
-  origin.Move(-paint_offset);
-  context.Translate(-origin.X(), -origin.Y());
+  FloatPoint origin(ParentFrameView()->ConvertToRootFrame(gfx::Point()));
+  origin.Offset(-paint_offset);
+  context.Translate(-origin.x(), -origin.y());
 
   cc::PaintCanvas* canvas = context.Canvas();
 
   IntRect window_rect =
       ParentFrameView()->ConvertToRootFrame(IntRect(cull_rect.Rect()));
-  web_plugin_->Paint(canvas, window_rect);
+  web_plugin_->Paint(canvas, ToGfxRect(window_rect));
 
   context.Restore();
 }
@@ -435,7 +442,7 @@ void WebPluginContainerImpl::PrintPage(int page_number, GraphicsContext& gc) {
     return;
 
   DrawingRecorder recorder(gc, *element_->GetLayoutObject(),
-                           DisplayItem::kWebPlugin, FrameRect());
+                           DisplayItem::kWebPlugin, ToGfxRect(FrameRect()));
   gc.Save();
 
   cc::PaintCanvas* canvas = gc.Canvas();
@@ -536,8 +543,8 @@ void WebPluginContainerImpl::ReportGeometry() {
 
   IntRect window_rect, clip_rect, unobscured_rect;
   CalculateGeometry(window_rect, clip_rect, unobscured_rect);
-  web_plugin_->UpdateGeometry(window_rect, clip_rect, unobscured_rect,
-                              IsSelfVisible());
+  web_plugin_->UpdateGeometry(ToGfxRect(window_rect), ToGfxRect(clip_rect),
+                              ToGfxRect(unobscured_rect), IsSelfVisible());
 }
 
 v8::Local<v8::Object> WebPluginContainerImpl::V8ObjectForElement() {
@@ -665,15 +672,15 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
 gfx::Point WebPluginContainerImpl::RootFrameToLocalPoint(
     const gfx::Point& point_in_root_frame) {
   gfx::Point point_in_content =
-      ParentFrameView()->ConvertFromRootFrame(IntPoint(point_in_root_frame));
-  return RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocalPoint(
+      ParentFrameView()->ConvertFromRootFrame(point_in_root_frame);
+  return ToRoundedPoint(element_->GetLayoutObject()->AbsoluteToLocalPoint(
       PhysicalOffset(point_in_content)));
 }
 
 gfx::Point WebPluginContainerImpl::LocalToRootFramePoint(
     const gfx::Point& point_in_local) {
-  IntPoint absolute_point =
-      RoundedIntPoint(element_->GetLayoutObject()->LocalToAbsolutePoint(
+  gfx::Point absolute_point =
+      ToRoundedPoint(element_->GetLayoutObject()->LocalToAbsolutePoint(
           PhysicalOffset(point_in_local)));
   return ParentFrameView()->ConvertToRootFrame(absolute_point);
 }
@@ -859,9 +866,9 @@ void WebPluginContainerImpl::HandleDragEvent(MouseEvent& event) {
   WebDragData drag_data = data_transfer->GetDataObject()->ToWebDragData();
   DragOperationsMask drag_operation_mask = data_transfer->SourceOperation();
   gfx::PointF drag_screen_location(event.screenX(), event.screenY());
-  IntPoint location(Location());
-  gfx::PointF drag_location(event.AbsoluteLocation().X() - location.X(),
-                            event.AbsoluteLocation().Y() - location.Y());
+  gfx::Point location(Location());
+  gfx::PointF drag_location(event.AbsoluteLocation().X() - location.x(),
+                            event.AbsoluteLocation().Y() - location.y());
 
   web_plugin_->HandleDragStatusUpdate(drag_status, drag_data,
                                       drag_operation_mask, drag_location,
@@ -879,7 +886,7 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent& event) {
   FloatPoint local_point =
       element_->GetLayoutObject()->AbsoluteToLocalFloatPoint(absolute_location);
   WebMouseWheelEvent translated_event = event.NativeEvent().FlattenTransform();
-  translated_event.SetPositionInWidget(local_point.X(), local_point.Y());
+  translated_event.SetPositionInWidget(local_point.x(), local_point.y());
 
   ui::Cursor dummy_cursor;
   if (web_plugin_->HandleInputEvent(
@@ -968,7 +975,7 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
     FloatPoint local_point =
         element_->GetLayoutObject()->AbsoluteToLocalFloatPoint(
             absolute_location);
-    transformed_event.touches[i].SetPositionInWidget(local_point);
+    transformed_event.touches[i].SetPositionInWidget(ToGfxPointF(local_point));
   }
   return transformed_event;
 }
@@ -1032,7 +1039,7 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
       element_->GetLayoutObject()->AbsoluteToLocalFloatPoint(
           FloatPoint(absolute_root_frame_location));
   translated_event.FlattenTransform();
-  translated_event.SetPositionInWidget(local_point);
+  translated_event.SetPositionInWidget(ToGfxPointF(local_point));
 
   ui::Cursor dummy_cursor;
   if (web_plugin_->HandleInputEvent(

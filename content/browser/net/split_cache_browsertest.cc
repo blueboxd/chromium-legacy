@@ -40,7 +40,12 @@ namespace content {
 class SplitCacheContentBrowserTest : public ContentBrowserTest {
  public:
   enum class Context { kMainFrame, kSameOriginFrame, kCrossOriginFrame };
+
   SplitCacheContentBrowserTest() = default;
+
+  SplitCacheContentBrowserTest(const SplitCacheContentBrowserTest&) = delete;
+  SplitCacheContentBrowserTest& operator=(const SplitCacheContentBrowserTest&) =
+      delete;
 
   void SetUp() override {
     RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
@@ -145,8 +150,8 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
     EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
     return static_cast<WebContentsImpl*>(shell()->web_contents())
-        ->GetFrameTree()
-        ->root()
+        ->GetPrimaryFrameTree()
+        .root()
         ->child_at(0)
         ->current_frame_host();
   }
@@ -379,9 +384,6 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
   GURL GenURL(const std::string& host, const std::string& path) {
     return embedded_test_server()->GetURL(host, path);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SplitCacheContentBrowserTest);
 };
 
 class SplitCacheRegistrableDomainContentBrowserTest

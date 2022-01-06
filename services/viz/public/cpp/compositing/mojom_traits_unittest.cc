@@ -17,6 +17,7 @@
 #include "components/viz/common/resources/resource_settings.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/common/surfaces/region_capture_bounds.h"
 #include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_range.h"
@@ -360,7 +361,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
       run_loop_for_release.QuitClosure(), sync_token));
 
   output->SendResult(std::make_unique<CopyOutputTextureResult>(
-      result_rect,
+      result_format, result_rect,
       CopyOutputResult::TextureResult(mailbox, sync_token,
                                       gfx::ColorSpace::CreateSRGB()),
       std::move(release_callbacks)));
@@ -768,9 +769,9 @@ TEST_F(StructTraitsTest, RenderPass) {
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 filters, backdrop_filters, backdrop_filter_bounds,
                 subtree_capture_id, output_rect.size(),
-                has_transparent_background, cache_render_pass,
-                has_damage_from_contributing_content, generate_mipmap,
-                has_per_quad_damage);
+                SharedElementResourceId(), has_transparent_background,
+                cache_render_pass, has_damage_from_contributing_content,
+                generate_mipmap, has_per_quad_damage);
   input->copy_requests.push_back(CopyOutputRequest::CreateStubForTesting());
   const gfx::Rect copy_output_area(24, 42, 75, 57);
   input->copy_requests.back()->set_area(copy_output_area);
@@ -915,9 +916,9 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 cc::FilterOperations(), cc::FilterOperations(),
                 backdrop_filter_bounds, subtree_capture_id, output_rect.size(),
-                has_transparent_background, cache_render_pass,
-                has_damage_from_contributing_content, generate_mipmap,
-                has_per_quad_damage);
+                SharedElementResourceId(), has_transparent_background,
+                cache_render_pass, has_damage_from_contributing_content,
+                generate_mipmap, has_per_quad_damage);
 
   // Unlike the previous test, don't add any quads to the list; we need to
   // verify that the serialization code can deal with that.
@@ -1337,7 +1338,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
   mailbox.SetName(mailbox_name);
   std::unique_ptr<CopyOutputResult> input =
       std::make_unique<CopyOutputTextureResult>(
-          result_rect,
+          CopyOutputResult::Format::RGBA, result_rect,
           CopyOutputResult::TextureResult(mailbox, sync_token,
                                           result_color_space),
           std::move(release_callbacks));

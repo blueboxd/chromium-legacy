@@ -152,7 +152,6 @@ component("policy") {
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.memorypressure",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.net",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.net.interfaces",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.scenic",
@@ -181,7 +180,9 @@ source_set("tests") {
     ":policy",
     "//base",
     "//base/test:test_support",
+    "//ppapi/buildflags:buildflags",
     "//printing/buildflags",
+    "//sandbox/policy/mojom",
     "//testing/gtest",
   ]
 

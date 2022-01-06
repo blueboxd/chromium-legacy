@@ -16,8 +16,8 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -176,7 +176,7 @@ class DefaultPollPolicy
       const int kDelay4Seconds = 4 * 60 * 60;  // 4 Hours
 
       // Initial poll.
-      if (current_delay < base::TimeDelta()) {
+      if (current_delay.is_negative()) {
         *next_delay = base::Seconds(kDelay1Seconds);
         return MODE_USE_TIMER;
       }

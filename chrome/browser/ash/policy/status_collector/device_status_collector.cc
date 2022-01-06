@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "ash/components/audio/cras_audio_handler.h"
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
@@ -30,12 +31,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -66,6 +67,8 @@
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/hermes/hermes_euicc_client.h"
+#include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
@@ -82,9 +85,9 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/mojom/enterprise_reporting.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
@@ -2314,6 +2317,19 @@ bool DeviceStatusCollector::GetNetworkConfiguration(
       interface->set_iccid((*device)->iccid());
     if (!(*device)->path().empty())
       interface->set_device_path((*device)->path());
+
+    // Report EIDs for cellular connections.
+    if ((*device)->type() == shill::kTypeCellular &&
+        ash::features::IsESimPolicyEnabled()) {
+      std::vector<std::string> eids;
+      for (const auto& euicc_path :
+           chromeos::HermesManagerClient::Get()->GetAvailableEuiccs()) {
+        chromeos::HermesEuiccClient::Properties* properties =
+            chromeos::HermesEuiccClient::Get()->GetProperties(euicc_path);
+        interface->add_eids(properties->eid().value());
+      }
+    }
+
     anything_reported = true;
   }
 

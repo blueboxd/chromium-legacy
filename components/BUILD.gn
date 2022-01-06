@@ -147,6 +147,7 @@ test("components_unittests") {
     "//components/reporting/client:unit_tests",
     "//components/reporting/compression:unit_tests",
     "//components/reporting/encryption:unit_tests",
+    "//components/reporting/metrics:unit_tests",
     "//components/reporting/storage:unit_tests",
     "//components/reporting/util:unit_tests",
     "//components/reputation/core:unit_tests",
@@ -297,6 +298,7 @@ test("components_unittests") {
       "//components/optimization_guide/core:unit_tests",
       "//components/page_image_annotation/content/renderer:unit_tests",
       "//components/page_image_annotation/core:unit_tests",
+      "//components/page_info:unit_tests",
       "//components/page_load_metrics/browser:unit_tests",
       "//components/page_load_metrics/browser/observers/ad_metrics:unit_tests",
       "//components/page_load_metrics/renderer:unit_tests",
@@ -315,12 +317,14 @@ test("components_unittests") {
 
       # TODO(chromium: 1169835) components / reporting / storage / resources: unit_tests
       # can't be run on iOS until they are updated.
-      "//components/reporting/storage/resources:unit_tests",
+      "//components/reporting/resources:unit_tests",
       "//components/safe_browsing/content/browser/password_protection:password_protection_unittest",
       "//components/safe_browsing/content/browser/triggers:unit_tests",
       "//components/safe_browsing/content/browser/web_ui:unit_tests",
       "//components/safe_browsing/core/browser:token_fetcher_unit_tests",
       "//components/safe_browsing/core/browser/realtime:unit_tests",
+      "//components/safe_browsing/core/browser/tailored_security_service:unit_tests",
+      "//components/safe_browsing/core/common:unit_tests",
       "//components/safety_check:unit_tests",
       "//components/security_interstitials/content:unit_tests",
       "//components/security_state/content:unit_tests",
@@ -429,7 +433,8 @@ test("components_unittests") {
     ]
     if (use_v8_context_snapshot) {
       deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-    } else {
+    }
+    if (!use_v8_context_snapshot || include_both_v8_snapshots) {
       deps += [ "//v8:v8_external_startup_data_assets" ]
     }
 
@@ -469,6 +474,7 @@ test("components_unittests") {
     deps += [
       "//components/arc:unit_tests",
       "//components/arc/mojom:unit_tests",
+      "//components/arc/session:unit_tests",
       "//components/desks_storage:unit_tests",
       "//components/guest_os:unit_tests",
       "//components/metrics/structured:unit_tests",
@@ -520,6 +526,7 @@ test("components_unittests") {
       "//components/safe_browsing/content/renderer:websocket_sb_handshake_throttle_unittest",
       "//components/safe_browsing/core/browser:ping_manager_unittest",
       "//components/safe_browsing/core/browser:safe_browsing_url_checker_unittest",
+      "//components/safe_browsing/core/browser:user_population_unittest",
       "//components/safe_browsing/core/browser:verdict_cache_manager_unittest",
       "//components/safe_browsing/core/browser/db:unit_tests_local_db",
       "//components/safe_browsing/core/browser/db:v4_test_util",
@@ -606,7 +613,8 @@ if (is_android) {
     ]
     if (use_v8_context_snapshot) {
       deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-    } else {
+    }
+    if (!use_v8_context_snapshot || include_both_v8_snapshots) {
       deps += [ "//v8:v8_external_startup_data_assets" ]
     }
   }
@@ -653,6 +661,7 @@ if (!is_ios) {
 
     sources = [
       "autofill/content/browser/risk/fingerprint_browsertest.cc",
+      "autofill/content/renderer/autofill_agent_browsertest.cc",
       "autofill/content/renderer/form_autofill_util_browsertest.cc",
       "autofill/content/renderer/form_cache_browsertest.cc",
       "autofill/content/renderer/html_based_username_detector_browsertest.cc",
@@ -760,13 +769,18 @@ if (!is_ios) {
 
     if (is_android) {
       sources += [
+        "autofill_assistant/browser/mock_script_executor_delegate.cc",
+        "autofill_assistant/browser/mock_script_executor_delegate.h",
         "autofill_assistant/browser/web/web_controller_browsertest.cc",
+        "browser_ui/client_certificate/android/ssl_client_certificate_request_browsertest.cc",
         "test/android/browsertests_apk/components_browser_tests_jni_onload.cc",
       ]
       sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
       deps += [
         "//components/autofill_assistant/browser",
         "//components/autofill_assistant/browser:proto",
+        "//components/browser_ui/client_certificate/android",
+        "//components/browser_ui/client_certificate/android:java",
         "//components/download/internal/common:internal_java",
         "//content/public/test/android:android_test_message_pump_support_java",
         "//content/shell:content_shell_app",
@@ -854,7 +868,8 @@ if (!is_ios) {
       deps += [ "//ui/android:ui_java" ]
       if (use_v8_context_snapshot) {
         deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-      } else {
+      }
+      if (!use_v8_context_snapshot || include_both_v8_snapshots) {
         deps += [ "//v8:v8_external_startup_data_assets" ]
       }
     }

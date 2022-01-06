@@ -38,10 +38,10 @@
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/hang_watcher.h"
 #include "base/threading/platform_thread.h"
@@ -200,35 +200,56 @@ namespace {
 #endif
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-void LoadV8SnapshotFile() {
-#if defined(USE_V8_CONTEXT_SNAPSHOT)
-  static constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
-      gin::V8Initializer::V8SnapshotFileType::kWithAdditionalContext;
-  static const char* snapshot_data_descriptor =
-      kV8ContextSnapshotDataDescriptor;
-#else
-  static constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
-      gin::V8Initializer::V8SnapshotFileType::kDefault;
-  static const char* snapshot_data_descriptor = kV8SnapshotDataDescriptor;
-#endif  // USE_V8_CONTEXT_SNAPSHOT
-  ALLOW_UNUSED_LOCAL(kSnapshotType);
-  ALLOW_UNUSED_LOCAL(snapshot_data_descriptor);
 
+gin::V8SnapshotFileType GetSnapshotType(const base::CommandLine& command_line) {
+#if defined(OS_ANDROID) && defined(INCLUDE_BOTH_V8_SNAPSHOTS)
+  if (command_line.HasSwitch(switches::kUseContextSnapshotSwitch))
+    return gin::V8SnapshotFileType::kWithAdditionalContext;
+  return gin::V8SnapshotFileType::kDefault;
+#elif defined(USE_V8_CONTEXT_SNAPSHOT)
+  return gin::V8SnapshotFileType::kWithAdditionalContext;
+#else
+  return gin::V8SnapshotFileType::kDefault;
+#endif
+}
+
+#if defined(OS_POSIX) && !defined(OS_MAC)
+std::string GetSnapshotDataDescriptor(const base::CommandLine& command_line) {
+#if defined(OS_ANDROID) && defined(INCLUDE_BOTH_V8_SNAPSHOTS)
+  if (command_line.HasSwitch(switches::kUseContextSnapshotSwitch))
+    return std::string();
+  return kV8SnapshotDataDescriptor;
+#elif defined(USE_V8_CONTEXT_SNAPSHOT)
+#if defined(OS_ANDROID)
+  // On android, the renderer loads the context snapshot directly.
+  return std::string();
+#else
+  return kV8ContextSnapshotDataDescriptor;
+#endif
+#else
+  return kV8SnapshotDataDescriptor;
+#endif
+}
+
+#endif
+
+void LoadV8SnapshotFile(const base::CommandLine& command_line) {
+  const gin::V8SnapshotFileType snapshot_type = GetSnapshotType(command_line);
 #if defined(OS_POSIX) && !defined(OS_MAC)
   base::FileDescriptorStore& file_descriptor_store =
       base::FileDescriptorStore::GetInstance();
   base::MemoryMappedFile::Region region;
-  base::ScopedFD fd =
-      file_descriptor_store.MaybeTakeFD(snapshot_data_descriptor, &region);
+  base::ScopedFD fd = file_descriptor_store.MaybeTakeFD(
+      GetSnapshotDataDescriptor(command_line), &region);
   if (fd.is_valid()) {
     base::File file(std::move(fd));
     gin::V8Initializer::LoadV8SnapshotFromFile(std::move(file), &region,
-                                               kSnapshotType);
+                                               snapshot_type);
     return;
   }
 #endif  // OS_POSIX && !OS_MAC
 
-  gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
+  gin::V8Initializer::LoadV8Snapshot(snapshot_type);
 }
 
 bool ShouldLoadV8Snapshot(const base::CommandLine& command_line,
@@ -249,7 +270,7 @@ void LoadV8SnapshotIfNeeded(const base::CommandLine& command_line,
                             const std::string& process_type) {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (ShouldLoadV8Snapshot(command_line, process_type))
-    LoadV8SnapshotFile();
+    LoadV8SnapshotFile(command_line);
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 }
 
@@ -471,7 +492,7 @@ void InstallConsoleControlHandler(bool is_browser_process) {
 bool ShouldAllowSystemTracingConsumer() {
 // System tracing consumer support is currently only supported on ChromeOS.
 // TODO(crbug.com/1173395): Also enable for Lacros-Chrome.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
   // The consumer should only be enabled when the delegate allows it.
   TracingDelegate* delegate =
       GetContentClient()->browser()->GetTracingDelegate();

@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -89,6 +89,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       mojom::CreateViewParamsPtr params,
       bool was_created_by_renderer,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  RenderViewImpl(const RenderViewImpl&) = delete;
+  RenderViewImpl& operator=(const RenderViewImpl&) = delete;
 
   // Instances of this object are created by and destroyed by the browser
   // process. This method must be called exactly once by the IPC subsystem when
@@ -195,8 +198,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // use the Observer interface to filter IPC messages and receive frame change
   // notifications.
   // ---------------------------------------------------------------------------
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewImpl);
 };
 
 }  // namespace content

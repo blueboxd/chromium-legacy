@@ -4,6 +4,7 @@
 
 import {$} from 'chrome://resources/js/util.m.js';
 
+const MAX_NUMBER_OF_STATE_CHANGES_DISPLAYED = 10;
 /**
  * The data of a peer connection update.
  * @param {number} pid The id of the renderer.
@@ -118,6 +119,20 @@ export class PeerConnectionUpdateTable {
     } else if (update.type === 'setConfiguration') {
       // Update the configuration that is displayed at the top.
       peerConnectionElement.firstChild.children[2].textContent = update.value;
+    } else if (['iceConnectionStateChange', 'connectionStateChange',
+        'signalingStateChange'].includes(update.type)) {
+      const fieldName = {
+        'iceConnectionStateChange' : 'iceconnectionstate',
+        'connectionStateChange' : 'connectionstate',
+        'signalingStateChange' : 'signalingstate',
+      }[update.type];
+      const el = peerConnectionElement.getElementsByClassName(fieldName)[0];
+      const numberOfEvents = el.textContent.split(' => ').length;
+      if (numberOfEvents < MAX_NUMBER_OF_STATE_CHANGES_DISPLAYED) {
+        el.textContent += ' => ' + update.value;
+      } else if (numberOfEvents === MAX_NUMBER_OF_STATE_CHANGES_DISPLAYED) {
+        el.textContent += ' ...';
+      }
     }
 
     const summaryItem = $('summary-template').content.cloneNode(true);
@@ -137,39 +152,6 @@ export class PeerConnectionUpdateTable {
       valueContainer.parentElement.classList.add('update-log-failure');
     }
 
-    let {value} = update;
-    // map internal names and values to names and events from the
-    // specification. This is a display change which shall not
-    // change the JSON dump.
-    if (update.type === 'iceConnectionStateChange') {
-      value = {
-        ICEConnectionStateNew: 'new',
-        ICEConnectionStateChecking: 'checking',
-        ICEConnectionStateConnected: 'connected',
-        ICEConnectionStateCompleted: 'completed',
-        ICEConnectionStateFailed: 'failed',
-        ICEConnectionStateDisconnected: 'disconnected',
-        ICEConnectionStateClosed: 'closed',
-      }[value] ||
-          value;
-    } else if (update.type === 'iceGatheringStateChange') {
-      value = {
-        ICEGatheringStateNew: 'new',
-        ICEGatheringStateGathering: 'gathering',
-        ICEGatheringStateComplete: 'complete',
-      }[value] ||
-          value;
-    } else if (update.type === 'signalingStateChange') {
-      value = {
-        SignalingStateStable: 'stable',
-        SignalingStateHaveLocalOffer: 'have-local-offer',
-        SignalingStateHaveRemoteOffer: 'have-remote-offer',
-        SignalingStateHaveLocalPrAnswer: 'have-local-pranswer',
-        SignalingStateHaveRemotePrAnswer: 'have-remote-pranswer',
-        SignalingStateClosed: 'closed',
-      }[value] ||
-          value;
-    }
 
     // RTCSessionDescription is serialized as 'type: <type>, sdp:'
     if (update.value.indexOf(', sdp:') !== -1) {
@@ -203,7 +185,7 @@ export class PeerConnectionUpdateTable {
         valueContainer.appendChild(sectionDetails);
       });
     } else {
-      valueContainer.textContent = value;
+      valueContainer.textContent = update.value;
     }
   }
 

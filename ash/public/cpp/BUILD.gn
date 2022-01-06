@@ -7,6 +7,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # C++ headers and sources that can be used outside ash.
 component("cpp") {
   sources = [
+    "accelerator_configuration.cc",
+    "accelerator_configuration.h",
     "accelerators.cc",
     "accelerators.h",
     "accessibility_controller.cc",
@@ -48,6 +50,7 @@ component("cpp") {
     "app_list/app_list_features.h",
     "app_list/app_list_metrics.cc",
     "app_list/app_list_metrics.h",
+    "app_list/app_list_model_delegate.h",
     "app_list/app_list_notifier.h",
     "app_list/app_list_switches.cc",
     "app_list/app_list_switches.h",
@@ -65,6 +68,10 @@ component("cpp") {
     "ash_typography.cc",
     "ash_typography.h",
     "ash_view_ids.h",
+    "ash_web_view.cc",
+    "ash_web_view.h",
+    "ash_web_view_factory.cc",
+    "ash_web_view_factory.h",
     "assistant/assistant_interface_binder.cc",
     "assistant/assistant_interface_binder.h",
     "assistant/assistant_setup.cc",
@@ -73,10 +80,6 @@ component("cpp") {
     "assistant/assistant_state.h",
     "assistant/assistant_state_base.cc",
     "assistant/assistant_state_base.h",
-    "assistant/assistant_web_view.cc",
-    "assistant/assistant_web_view.h",
-    "assistant/assistant_web_view_factory.cc",
-    "assistant/assistant_web_view_factory.h",
     "assistant/controller/assistant_alarm_timer_controller.cc",
     "assistant/controller/assistant_alarm_timer_controller.h",
     "assistant/controller/assistant_controller.cc",
@@ -178,9 +181,6 @@ component("cpp") {
     "media_client.h",
     "media_controller.cc",
     "media_controller.h",
-    "media_notification_provider.cc",
-    "media_notification_provider.h",
-    "media_notification_provider_observer.h",
     "message_center/arc_notification_constants.h",
     "message_center/arc_notification_manager_base.cc",
     "message_center/arc_notification_manager_base.h",
@@ -342,6 +342,7 @@ component("cpp") {
   ]
 
   deps = [
+    "//ash/components/audio",
     "//ash/components/quick_answers/public/cpp:prefs",
     "//ash/constants",
     "//ash/public/cpp/ambient/proto",

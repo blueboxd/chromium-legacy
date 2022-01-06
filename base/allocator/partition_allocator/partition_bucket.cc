@@ -13,7 +13,6 @@
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-#include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
@@ -505,6 +504,11 @@ PartitionBucket<thread_safe>::AllocNewSlotSpan(PartitionRoot<thread_safe>* root,
       bits::AlignUp(root->next_partition_page, slot_span_alignment);
   if (UNLIKELY(adjusted_next_partition_page + slot_span_reservation_size >
                root->next_partition_page_end)) {
+    // AllocNewSuperPage() may crash (e.g. address space exhaustion), put data
+    // on stack.
+    PA_DEBUG_DATA_ON_STACK("slotsize", slot_size);
+    PA_DEBUG_DATA_ON_STACK("spansize", slot_span_reservation_size);
+
     // In this case, we can no longer hand out pages from the current super page
     // allocation. Get a new super page.
     if (!AllocNewSuperPage(root, flags)) {
@@ -540,9 +544,16 @@ PartitionBucket<thread_safe>::AllocNewSlotSpan(PartitionRoot<thread_safe>* root,
   // If lazy commit is enabled, pages will be committed when provisioning slots,
   // in ProvisionMoreSlotsAndAllocOne(), not here.
   if (!root->use_lazy_commit) {
+    PA_DEBUG_DATA_ON_STACK("slotsize", slot_size);
+    PA_DEBUG_DATA_ON_STACK("spansize", slot_span_reservation_size);
+    PA_DEBUG_DATA_ON_STACK("spancmt", slot_span_committed_size);
+
     root->RecommitSystemPagesForData(slot_span_start, slot_span_committed_size,
                                      PageUpdatePermissions);
   }
+
+  PA_CHECK(get_slots_per_span() <=
+           SlotSpanMetadata<ThreadSafe>::kMaxSlotsPerSlotSpan);
 
   // Double check that we had enough space in the super page for the new slot
   // span.
@@ -742,12 +753,20 @@ ALWAYS_INLINE char* PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
                                      PageUpdatePermissions);
   }
 
+  if (LIKELY(size <= kMaxMemoryTaggingSize)) {
+    // Ensure the memory tag of the return_slot is unguessable.
+    return_slot = memory::TagMemoryRangeRandomly(return_slot, size);
+  }
+
   // Add all slots that fit within so far committed pages to the free list.
   PartitionFreelistEntry* prev_entry = nullptr;
   char* next_slot_end = next_slot + size;
   size_t free_list_entries_added = 0;
   while (next_slot_end <= commit_end) {
     auto* entry = new (next_slot) PartitionFreelistEntry();
+    if (LIKELY(size <= kMaxMemoryTaggingSize)) {
+      entry = memory::TagMemoryRangeRandomly(entry, size);
+    }
     if (!slot_span->freelist_head) {
       PA_DCHECK(!prev_entry);
       PA_DCHECK(!free_list_entries_added);
@@ -826,6 +845,15 @@ bool PartitionBucket<thread_safe>::SetNewActiveSlotSpan() {
   active_slot_spans_head =
       SlotSpanMetadata<thread_safe>::get_sentinel_slot_span();
   return false;
+}
+
+template <bool thread_safe>
+void PartitionBucket<thread_safe>::SortSlotSpanFreelists() {
+  for (auto* slot_span = active_slot_spans_head; slot_span;
+       slot_span = slot_span->next_slot_span) {
+    if (slot_span->num_allocated_slots > 0)
+      slot_span->SortFreelist();
+  }
 }
 
 template <bool thread_safe>

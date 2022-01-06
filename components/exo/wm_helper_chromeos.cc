@@ -17,6 +17,7 @@
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager.h"
@@ -30,9 +31,6 @@ namespace {
 aura::Window* GetPrimaryRoot() {
   return ash::Shell::Get()->GetPrimaryRootWindow();
 }
-
-// A property key to store whether IME should be blocked for the surface.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kImeBlockedKey, false)
 
 }  // namespace
 
@@ -267,15 +265,6 @@ double WMHelperChromeOS::GetDeviceScaleFactorForWindow(
 void WMHelperChromeOS::SetDefaultScaleCancellation(
     bool default_scale_cancellation) {
   default_scale_cancellation_ = default_scale_cancellation;
-}
-
-void WMHelperChromeOS::SetImeBlocked(aura::Window* window, bool ime_blocked) {
-  DCHECK_EQ(window, window->GetToplevelWindow());
-  window->SetProperty(kImeBlockedKey, ime_blocked);
-}
-
-bool WMHelperChromeOS::IsImeBlocked(aura::Window* window) const {
-  return window && window->GetToplevelWindow()->GetProperty(kImeBlockedKey);
 }
 
 WMHelper::LifetimeManager* WMHelperChromeOS::GetLifetimeManager() {

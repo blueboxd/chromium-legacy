@@ -76,15 +76,37 @@ std::vector<ui::AXPropertyFilter> DumpAccessibilityTreeTest::DefaultFilters()
 void DumpAccessibilityTreeTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   DumpAccessibilityTestBase::SetUpCommandLine(command_line);
-  // Enable <dialog>, which is used in some tests.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
+  // Enable auto expand <details> element, which is used in some tests.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "AutoExpandDetailsElement");
+  // Enable MathMLCore, used in other tests.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "MathMLCore");
+  // Enable KeyboardFocusableScrollers, used by AccessibilityScrollableOverflow.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "KeyboardFocusableScrollers");
+  // Enable HighlightAPI, used by AccessibilityCSSPseudoElementHighligh.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "HighlightAPI");
+  // Enable ARIA touch pass through, used by AccessibilityAriaTouchPassthrough.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "AccessibilityAriaTouchPassthrough");
+  // Enable AccessibilityAriaVirtualContent.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "AccessibilityAriaVirtualContent");
+  // Enable ComputedAccessibilityInfo.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "ComputedAccessibilityInfo");
   // Enable accessibility object model, used in other tests.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableBlinkFeatures, "AccessibilityObjectModel");
   // Enable display locking, used in some tests.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableBlinkFeatures, "CSSContentVisibilityHiddenMatchable");
+  // Enable HTMLSelectMenuElement, used by AccessibilitySelectMenu and
+  // AccessibilitySelectMenuOpen.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "HTMLSelectMenuElement");
   // LayoutNGTable table trees have an additional row GenericContainer.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableBlinkFeatures, "LayoutNGTable");
@@ -347,10 +369,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityCustomRowElement) {
   RunCSSTest(FILE_PATH_LITERAL("table-custom-row-element.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSOverflow) {
-  RunCSSTest(FILE_PATH_LITERAL("overflow.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSTransform) {
@@ -1994,6 +2012,24 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-transform-scrolled.html"));
 }
 
+#if defined(OS_LINUX)
+// TODO(crbug.com/1265293): test is flaky on linux.
+#define MAYBE_AccessibilityIframeWithInvalidChildren \
+  DISABLED_AccessibilityIframeWithInvalidChildren
+#else
+#define MAYBE_AccessibilityIframeWithInvalidChildren \
+  AccessibilityIframeWithInvalidChildren
+#endif
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilityIframeWithInvalidChildren) {
+  RunHtmlTest(FILE_PATH_LITERAL("iframe-with-invalid-children.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityIframeWithInvalidChildrenAdded) {
+  RunHtmlTest(FILE_PATH_LITERAL("iframe-with-invalid-children-added.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityImg) {
   RunHtmlTest(FILE_PATH_LITERAL("img.html"));
 }
@@ -2020,13 +2056,7 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInPageLinks) {
 }
 
 // TODO(crbug.com/1193963): fails on Windows.
-#if defined(OS_WIN)
-#define MAYBE_AccessibilityInputButton DISABLED_AccessibilityInputButton
-#else
-#define MAYBE_AccessibilityInputButton AccessibilityInputButton
-#endif
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilityInputButton) {
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputButton) {
   RunHtmlTest(FILE_PATH_LITERAL("input-button.html"));
 }
 
@@ -2177,11 +2207,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputSearch) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInsertBefore) {
   RunHtmlTest(FILE_PATH_LITERAL("insert-before.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityScrollableInput) {
-  RunHtmlTest(FILE_PATH_LITERAL("scrollable-input.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
@@ -2672,11 +2697,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySelectMenu) {
-  RunHtmlTest(FILE_PATH_LITERAL("select-menu.html"));
+  RunHtmlTest(FILE_PATH_LITERAL("selectmenu.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySelectMenuOpen) {
-  RunHtmlTest(FILE_PATH_LITERAL("select-menu-open.html"));
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE(AccessibilitySelectMenuOpen)) {
+  RunHtmlTest(FILE_PATH_LITERAL("selectmenu-open.html"));
 }
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -2727,8 +2753,17 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySvg) {
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilitySvgAsObjectSource) {
+  RunHtmlTest(FILE_PATH_LITERAL("svg-as-object-source.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilitySvgChildOfButton) {
   RunHtmlTest(FILE_PATH_LITERAL("svg-child-of-button.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySvgChildOfSvg) {
+  RunHtmlTest(FILE_PATH_LITERAL("svg-child-of-svg.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySvgDescInGroup) {
@@ -2766,18 +2801,17 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilitySvgWithNonLinkAnchors) {
+  RunHtmlTest(FILE_PATH_LITERAL("svg-with-non-link-anchors.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilitySvgSymbolWithRole) {
   RunHtmlTest(FILE_PATH_LITERAL("svg-symbol-with-role.html"));
 }
 
-// On ChromeOS, SVG <g> elements are included.
-#if defined(OS_CHROMEOS)
-#define AccessibilitySvgG_TestFile FILE_PATH_LITERAL("svg-g-for-cros.html")
-#else
-#define AccessibilitySvgG_TestFile FILE_PATH_LITERAL("svg-g.html")
-#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySvgG) {
-  RunHtmlTest(AccessibilitySvgG_TestFile);
+  RunHtmlTest(FILE_PATH_LITERAL("svg-g.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
@@ -3173,6 +3207,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MathNameFromContents) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, SVGAndMathElements) {
   RunHtmlTest(FILE_PATH_LITERAL("svg-and-math-elements.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MathMLSpace) {
+  RunMathMLTest(FILE_PATH_LITERAL("mspace.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MathMLUnknown) {
+  RunMathMLTest(FILE_PATH_LITERAL("unknown.html"));
 }
 
 //

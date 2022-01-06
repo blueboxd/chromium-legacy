@@ -23,6 +23,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/hdr_metadata.h"
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/gfx/overlay_transform.h"
 
@@ -95,6 +96,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
   // ColorSpace of the buffer for scanout.
   gfx::ColorSpace color_space;
+  // Optional HDR Metadata for the buffer.
+  absl::optional<gfx::HDRMetadata> hdr_metadata;
   // Size of the resource, in pixels.
   gfx::Size resource_size_in_pixels;
   // Rect on the display to position the overlay to. Implementer must convert
@@ -152,10 +155,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // Is true if an HW overlay is required for the quad content.
   bool requires_overlay = false;
 
-  // Identifier passed through by the video decoder that allows us to validate
-  // if a protected surface can still be displayed. Non-zero when valid.
-  uint32_t hw_protected_validation_id = 0;
-
   // for solid color quads only
   absl::optional<SkColor> solid_color;
 
@@ -178,6 +177,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
 
   // Hints for overlay prioritization when delegated composition is used.
   gfx::OverlayPriorityHint priority_hint = gfx::OverlayPriorityHint::kNone;
+
+  // Specifies the rounded corners of overlay candidate.
+  gfx::RRectF rounded_corners;
 
  private:
   static bool FromDrawQuadResource(

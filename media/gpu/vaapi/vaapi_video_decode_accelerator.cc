@@ -46,7 +46,6 @@
 #include "media/gpu/vp8_decoder.h"
 #include "media/gpu/vp9_decoder.h"
 #include "media/video/picture.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gl/gl_image.h"
 
 namespace media {
@@ -122,7 +121,7 @@ class VaapiVideoDecodeAccelerator::InputBuffer {
   base::OnceCallback<void(int32_t id)> release_cb_;
 };
 
-void VaapiVideoDecodeAccelerator::NotifyStatus(Status status) {
+void VaapiVideoDecodeAccelerator::NotifyStatus(VaapiStatus status) {
   DCHECK(!status.is_ok());
   // Send a platform notification error
   NotifyError(PLATFORM_FAILURE);
@@ -205,7 +204,8 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
       VaapiWrapper::kDecode, profile, EncryptionScheme::kUnencrypted,
       base::BindRepeating(&ReportVaapiErrorToUMA,
-                          "Media.VaapiVideoDecodeAccelerator.VAAPIError"));
+                          "Media.VaapiVideoDecodeAccelerator.VAAPIError"),
+      /*enforce_sequence_affinity=*/false);
 
   UMA_HISTOGRAM_BOOLEAN("Media.VAVDA.VaapiWrapperCreationSuccess",
                         vaapi_wrapper_.get());
@@ -620,7 +620,8 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
     auto new_vaapi_wrapper = VaapiWrapper::CreateForVideoCodec(
         VaapiWrapper::kDecode, profile_, EncryptionScheme::kUnencrypted,
         base::BindRepeating(&ReportVaapiErrorToUMA,
-                            "Media.VaapiVideoDecodeAccelerator.VAAPIError"));
+                            "Media.VaapiVideoDecodeAccelerator.VAAPIError"),
+        /*enforce_sequence_affinity=*/false);
     RETURN_AND_NOTIFY_ON_FAILURE(new_vaapi_wrapper.get(),
                                  "Failed creating VaapiWrapper",
                                  INVALID_ARGUMENT, );
@@ -716,7 +717,8 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
           EncryptionScheme::kUnencrypted,
           base::BindRepeating(
               &ReportVaapiErrorToUMA,
-              "Media.VaapiVideoDecodeAccelerator.Vpp.VAAPIError"));
+              "Media.VaapiVideoDecodeAccelerator.Vpp.VAAPIError"),
+          /*enforce_sequence_affinity=*/false);
       RETURN_AND_NOTIFY_ON_FAILURE(vpp_vaapi_wrapper_,
                                    "Failed to initialize VppVaapiWrapper",
                                    PLATFORM_FAILURE, );

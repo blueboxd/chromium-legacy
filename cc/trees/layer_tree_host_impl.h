@@ -17,10 +17,10 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/containers/mru_cache.h"
+#include "base/containers/lru_cache.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/shared_memory_mapping.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "cc/base/synced_property.h"
 #include "cc/benchmarks/micro_benchmark_controller_impl.h"
@@ -70,6 +70,7 @@
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/region_capture_bounds.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_range.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -239,6 +240,7 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
     // The original BeginFrameArgs that triggered the latest update from the
     // main thread.
     viz::BeginFrameArgs origin_begin_main_frame_args;
+    bool has_shared_element_resources = false;
   };
 
   // A struct of data for a single UIResource, including the backing
@@ -747,6 +749,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   virtual bool IsUIResourceOpaque(UIResourceId uid) const;
 
   void ScheduleMicroBenchmark(std::unique_ptr<MicroBenchmarkImpl> benchmark);
+
+  viz::RegionCaptureBounds CollectRegionCaptureBounds();
 
   viz::CompositorFrameMetadata MakeCompositorFrameMetadata();
   RenderFrameMetadata MakeRenderFrameMetadata(FrameData* frame);
@@ -1286,7 +1290,7 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // computation is deterministic for a given color space, can be called
   // multiple times per frame, and incurs a non-trivial cost.
   // mutable because |contains_srgb_cache_| is accessed in a const method.
-  mutable base::MRUCache<gfx::ColorSpace, bool> contains_srgb_cache_;
+  mutable base::LRUCache<gfx::ColorSpace, bool> contains_srgb_cache_;
 
   // When enabled, calculates which frame sinks can be throttled based on
   // some pre-defined criteria.

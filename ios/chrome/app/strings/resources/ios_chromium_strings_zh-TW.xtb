@@ -5,7 +5,6 @@
 <translation id="1185134272377778587">關於 Chromium</translation>
 <translation id="1257458525759135959">如要儲存圖片，請輕觸 [設定] 並允許 Chromium 新增相片</translation>
 <translation id="1289216811211435351">改為使用 Chromium</translation>
-<translation id="1354592789402432496">你的管理員要求你使用機構帳戶登入。系統已隱藏受管理員限制登入的帳戶。</translation>
 <translation id="1361748954329991663">Chromium 版本過舊。如果 <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> 中沒有任何可用的更新，則表示你的裝置可能已停止支援新版 Chromium。</translation>
 <translation id="1370204544543370355">如要充分運用 Chromium 的所有功能，請透過 Google 帳戶登入 Chromium</translation>
 <translation id="1431818719585918472">讓 Chromium 鎖定你的無痕分頁。</translation>
@@ -23,6 +22,7 @@
 <translation id="2168108852149185974">部分外掛程式造成 Chromium 當機，請解除安裝這些外掛程式：</translation>
 <translation id="2178608107313874732">Chromium 目前無法使用你的相機</translation>
 <translation id="2195025571279539885">下次造訪這個網站時，需要 Chromium 為您翻譯其中的<ph name="LANGUAGE_NAME" />網頁嗎？</translation>
+<translation id="2218146227246548550">根據貴機構的政策規定，你必須先登入才能使用 Chromium。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="2426113998523353159">貴機構要求你先登入才能使用 Chromium。</translation>
 <translation id="2450140762465183767">現在只要在訊息、文件和其他應用程式中輕觸連結，即可透過 Chromium 開啟。</translation>
 <translation id="2478931088402984578">選取 [Chromium]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
@@ -40,6 +40,7 @@
 <translation id="3472200483164753384">Chromium Canary 不支援這項功能</translation>
 <translation id="3639997914391704523">如果你使用 Google 帳戶登入，Chromium 可以檢查你的密碼。</translation>
 <translation id="3805899903892079518">Chromium 無法存取您的相片或影片，請前往「iOS 設定」中的 [隱私權] &gt; [相片] 啟用存取權。</translation>
+<translation id="3946918322491238254">你仍然可以在這部裝置上查看自己的所有書籤、歷史記錄、密碼和其他設定，但你所做的變更將不會同步到帳戶。</translation>
 <translation id="4099085513035183040">Chromium Beta 版不支援這項功能</translation>
 <translation id="4555020257205549924">開啟這項功能後，Chromium 會使用 Google 翻譯來翻譯其他語言的網頁。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">現在只要在訊息、文件和其他應用程式中輕觸連結，即可透過 Chromium 開啟。</translation>
@@ -52,7 +53,6 @@
 <translation id="5171868502429358653">登入 Chromium</translation>
 <translation id="5224391634244552924">未儲存任何密碼。你必須先儲存密碼，才能使用 Chromium 的密碼檢查功能。</translation>
 <translation id="5308226104666789935">Chromium 無法檢查更新</translation>
-<translation id="5324242752415821224">根據貴機構的政策規定，你必須先登入才能使用 Chromium。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" />。</translation>
 <translation id="5396916991083608703">要將 Chromium 設為預設瀏覽器嗎？</translation>
 <translation id="5521125884468363740">登入帳戶並開啟同步功能後，不論從何處使用 Chromium 都能查看你的分頁</translation>
 <translation id="5573014823074921752">Chromium 提示。如需更多分頁選項，請輕觸並按住工具列 (位於畫面底部或頂端) 中的 [顯示分頁] 按鈕。</translation>
@@ -73,7 +73,6 @@
 <translation id="6424492062988593837">Chromium 現在變得更進步了！歡迎你升級使用新版本。</translation>
 <translation id="6752854822223394465">貴機構正在設定 Chromium...</translation>
 <translation id="6820823224820483452">Chromium 無法檢查所有密碼，請明天再試。</translation>
-<translation id="6827294685447036764">如果允許 Chromium 取得位置資訊，Chromium 會將這項資訊傳送至你允許存取該資訊的網站。當網站要向你顯示當地資訊時 (例如附近商家或新聞)，可能會要求你提供位置資訊。</translation>
 <translation id="7018284295775193585">Chromium 無法更新</translation>
 <translation id="7045244423563602563">使用你專屬的 Chromium</translation>
 <translation id="7099326575020694068">Chromium 無法在分割模式中使用你的相機</translation>

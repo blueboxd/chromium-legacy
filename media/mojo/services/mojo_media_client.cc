@@ -4,7 +4,7 @@
 
 #include "media/mojo/services/mojo_media_client.h"
 
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
@@ -24,9 +24,9 @@ std::unique_ptr<AudioDecoder> MojoMediaClient::CreateAudioDecoder(
   return nullptr;
 }
 
-void MojoMediaClient::GetSupportedVideoDecoderConfigs(
-    MojoMediaClient::SupportedVideoDecoderConfigsCallback callback) {
-  std::move(callback).Run({});
+SupportedVideoDecoderConfigs
+MojoMediaClient::GetSupportedVideoDecoderConfigs() {
+  return {};
 }
 
 VideoDecoderType MojoMediaClient::GetDecoderImplementationType() {

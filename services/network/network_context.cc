@@ -20,11 +20,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -84,7 +84,6 @@
 #include "services/network/network_service.h"
 #include "services/network/network_service_network_delegate.h"
 #include "services/network/network_service_proxy_delegate.h"
-#include "services/network/p2p/socket_manager.h"
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/proxy_lookup_request.h"
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
@@ -95,7 +94,7 @@
 #include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/public/mojom/reporting_report.mojom.h"
+#include "services/network/public/mojom/reporting_service.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/resolve_host_request.h"
@@ -151,6 +150,10 @@
 #if BUILDFLAG(ENABLE_MDNS)
 #include "services/network/mdns_responder.h"
 #endif  // BUILDFLAG(ENABLE_MDNS)
+
+#if BUILDFLAG(IS_P2P_ENABLED)
+#include "services/network/p2p/socket_manager.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
@@ -443,7 +446,9 @@ NetworkContext::NetworkContext(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
       receiver_(this, std::move(receiver)),
-      cors_preflight_controller_(network_service) {
+      cors_preflight_controller_(network_service),
+      cors_non_wildcard_request_headers_support_(base::FeatureList::IsEnabled(
+          features::kCorsNonWildcardRequestHeadersSupport)) {
 #if defined(OS_WIN) && DCHECK_IS_ON()
   if (params_->file_paths) {
     DCHECK(params_->win_permissions_set)
@@ -1833,6 +1838,7 @@ void NetworkContext::PreconnectSockets(
       base::saturated_cast<int32_t>(num_streams), request_info);
 }
 
+#if BUILDFLAG(IS_P2P_ENABLED)
 void NetworkContext::CreateP2PSocketManager(
     const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<mojom::P2PTrustedSocketManagerClient> client,
@@ -1848,6 +1854,7 @@ void NetworkContext::CreateP2PSocketManager(
           url_request_context_);
   socket_managers_[socket_manager.get()] = std::move(socket_manager);
 }
+#endif  // BUILDFLAG(IS_P2P_ENABLED)
 
 void NetworkContext::CreateMdnsResponder(
     mojo::PendingReceiver<mojom::MdnsResponder> responder_receiver) {
@@ -1932,6 +1939,15 @@ void NetworkContext::AddAuthCacheEntry(
   std::move(callback).Run();
 }
 
+void NetworkContext::SetCorsNonWildcardRequestHeadersSupport(bool value) {
+  if (!base::FeatureList::IsEnabled(
+          features::kCorsNonWildcardRequestHeadersSupport)) {
+    return;
+  }
+  cors_non_wildcard_request_headers_support_ =
+      cors::NonWildcardRequestHeadersSupport(value);
+}
+
 void NetworkContext::LookupServerBasicAuthCredentials(
     const GURL& url,
     const net::NetworkIsolationKey& network_isolation_key,
@@ -1940,9 +1956,9 @@ void NetworkContext::LookupServerBasicAuthCredentials(
       url_request_context_->http_transaction_factory()
           ->GetSession()
           ->http_auth_cache();
-  net::HttpAuthCache::Entry* entry =
-      http_auth_cache->LookupByPath(url.GetOrigin(), net::HttpAuth::AUTH_SERVER,
-                                    network_isolation_key, url.path());
+  net::HttpAuthCache::Entry* entry = http_auth_cache->LookupByPath(
+      url.DeprecatedGetOriginAsURL(), net::HttpAuth::AUTH_SERVER,
+      network_isolation_key, url.path());
   if (entry && entry->scheme() == net::HttpAuth::AUTH_SCHEME_BASIC)
     std::move(callback).Run(entry->credentials());
   else
@@ -2556,11 +2572,13 @@ GURL NetworkContext::GetHSTSRedirect(const GURL& original_url) {
   return original_url.ReplaceComponents(replacements);
 }
 
+#if BUILDFLAG(IS_P2P_ENABLED)
 void NetworkContext::DestroySocketManager(P2PSocketManager* socket_manager) {
   auto iter = socket_managers_.find(socket_manager);
   DCHECK(iter != socket_managers_.end());
   socket_managers_.erase(iter);
 }
+#endif  // BUILDFLAG(IS_P2P_ENABLED)
 
 void NetworkContext::CanUploadDomainReliability(
     const GURL& origin,

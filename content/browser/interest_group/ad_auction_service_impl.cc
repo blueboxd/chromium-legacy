@@ -7,8 +7,11 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/no_destructor.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
@@ -30,6 +33,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -42,6 +46,13 @@
 namespace content {
 
 namespace {
+
+AdAuctionServiceImpl::AuctionCompleteCallback& GetAuctionCompleteCallback() {
+  static base::NoDestructor<AdAuctionServiceImpl::AuctionCompleteCallback>
+      auction_complete_callback{
+          AdAuctionServiceImpl::AuctionCompleteCallback()};
+  return *auction_complete_callback.get();
+}
 
 constexpr base::TimeDelta kMaxExpiry = base::Days(30);
 
@@ -73,7 +84,8 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 // an in-browser interest group based ad auction to an auction participant.
 void FetchReport(network::mojom::URLLoaderFactory* url_loader_factory,
                  const GURL& url,
-                 const url::Origin& frame_origin) {
+                 const url::Origin& frame_origin,
+                 network::mojom::ClientSecurityStatePtr client_security_state) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
   resource_request->redirect_mode = network::mojom::RedirectMode::kError;
@@ -82,6 +94,8 @@ void FetchReport(network::mojom::URLLoaderFactory* url_loader_factory,
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
   resource_request->trusted_params->isolation_info =
       net::IsolationInfo::CreateTransient();
+  resource_request->trusted_params->client_security_state =
+      std::move(client_security_state);
   auto simple_url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), kTrafficAnnotation);
   network::SimpleURLLoader* simple_url_loader_ptr = simple_url_loader.get();
@@ -209,12 +223,15 @@ void AdAuctionServiceImpl::UpdateAdInterestGroups() {
           origin().GetURL())) {
     return;
   }
-  GetInterestGroupManager().UpdateInterestGroupsOfOwner(origin());
+  GetInterestGroupManager().UpdateInterestGroupsOfOwner(
+      origin(), GetFrame()->BuildClientSecurityState());
 }
 
 void AdAuctionServiceImpl::RunAdAuction(blink::mojom::AuctionAdConfigPtr config,
                                         RunAdAuctionCallback callback) {
   if (!IsAuctionValid(*config)) {
+    if (GetAuctionCompleteCallback())
+      GetAuctionCompleteCallback().Run({"Invalid auction config"});
     std::move(callback).Run(absl::nullopt);
     return;
   }
@@ -224,6 +241,8 @@ void AdAuctionServiceImpl::RunAdAuction(blink::mojom::AuctionAdConfigPtr config,
   // If the interest group API is not allowed for this seller do nothing.
   if (!GetContentClient()->browser()->IsInterestGroupAPIAllowed(
           browser_context, frame_origin, config->seller.GetURL())) {
+    if (GetAuctionCompleteCallback())
+      GetAuctionCompleteCallback().Run({"Interest group API not allowed"});
     std::move(callback).Run(absl::nullopt);
     return;
   }
@@ -241,6 +260,8 @@ void AdAuctionServiceImpl::RunAdAuction(blink::mojom::AuctionAdConfigPtr config,
   // If there are no buyers (either due to filtering, or in the original auction
   // request), fail the auction.
   if (filtered_buyers.empty()) {
+    if (GetAuctionCompleteCallback())
+      GetAuctionCompleteCallback().Run({"No valid buyers"});
     std::move(callback).Run(absl::nullopt);
     return;
   }
@@ -308,6 +329,17 @@ RenderFrameHostImpl* AdAuctionServiceImpl::GetFrame() {
   return static_cast<RenderFrameHostImpl*>(render_frame_host());
 }
 
+network::mojom::ClientSecurityStatePtr
+AdAuctionServiceImpl::GetClientSecurityState() {
+  return GetFrame()->BuildClientSecurityState();
+}
+
+void AdAuctionServiceImpl::SetOnAuctionCompleteCallbackForTesting(
+    base::RepeatingCallback<void(const std::vector<std::string>& errors)>
+        auction_complete_callback) {
+  GetAuctionCompleteCallback() = std::move(auction_complete_callback);
+}
+
 void AdAuctionServiceImpl::OnAuctionComplete(
     RunAdAuctionCallback callback,
     AuctionRunner* auction,
@@ -324,16 +356,24 @@ void AdAuctionServiceImpl::OnAuctionComplete(
 
   // Forward debug information to devtools.
   for (const std::string& error : errors) {
-    devtools_instrumentation::LogWorkletError(
-        static_cast<RenderFrameHostImpl*>(render_frame_host()), error);
+    devtools_instrumentation::LogWorkletMessage(
+        *GetFrame(), blink::mojom::ConsoleMessageLevel::kError,
+        base::StrCat({"Worklet error: ", error}));
   }
 
   if (!render_url) {
     DCHECK(!bidder_report_url);
     DCHECK(!seller_report_url);
+    if (GetAuctionCompleteCallback()) {
+      errors.push_back("No auction winner");
+      GetAuctionCompleteCallback().Run(errors);
+    }
     std::move(callback).Run(absl::nullopt);
     return;
   }
+
+  if (GetAuctionCompleteCallback())
+    GetAuctionCompleteCallback().Run(errors);
 
   // If fenced frames are enabled, create and return a URN URL instead of the
   // real URL.
@@ -350,10 +390,14 @@ void AdAuctionServiceImpl::OnAuctionComplete(
   std::move(callback).Run(render_url);
 
   network::mojom::URLLoaderFactory* factory = GetTrustedURLLoaderFactory();
-  if (bidder_report_url)
-    FetchReport(factory, *bidder_report_url, origin());
-  if (seller_report_url)
-    FetchReport(factory, *seller_report_url, origin());
+  if (bidder_report_url) {
+    FetchReport(factory, *bidder_report_url, origin(),
+                GetFrame()->BuildClientSecurityState());
+  }
+  if (seller_report_url) {
+    FetchReport(factory, *seller_report_url, origin(),
+                GetFrame()->BuildClientSecurityState());
+  }
 }
 
 InterestGroupManager& AdAuctionServiceImpl::GetInterestGroupManager() const {

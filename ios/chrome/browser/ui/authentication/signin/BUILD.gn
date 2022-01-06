@@ -80,7 +80,6 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/pref_registry",
-    "//components/signin/ios/browser:features",
     "//components/sync/base",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
@@ -113,7 +112,6 @@ source_set("constants") {
 }
 
 source_set("eg2_tests") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
@@ -123,7 +121,6 @@ source_set("eg2_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//components/signin/ios/browser:features",
     "//components/signin/public/base",
     "//components/strings:components_strings_grit",
     "//ios/chrome/app/strings",

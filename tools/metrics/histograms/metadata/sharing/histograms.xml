@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -25,7 +26,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="2022-05-04">
   <owner>ellyjones@chromium.org</owner>
   <owner>sophey@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     The UI surface that started any share attempt. Android only.
   </summary>
@@ -34,7 +35,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Sharing.AnyShareStartedDesktop" enum="ShareSourceDesktop"
     expires_after="2022-05-04">
   <owner>kristipark@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     The UI surface that started any share attempt. Desktop only.
   </summary>
@@ -110,7 +111,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.ClickToCallSelectedAppIndex" units="index"
-    expires_after="M98">
+    expires_after="2022-04-24">
 <!-- Name completed by histogram_suffixes name="SharingClickToCallUi" -->
 
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -122,7 +123,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.ClickToCallSelectedDeviceIndex" units="index"
-    expires_after="2021-12-26">
+    expires_after="2022-04-24">
 <!-- Name completed by histogram_suffixes name="SharingClickToCallUi" -->
 
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -136,7 +137,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Sharing.DefaultSharesheetAndroid.Opened" enum="ShareOrigin"
     expires_after="2022-04-17">
   <owner>sophey@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Records the origin of the share that opened the default sharesheet. Recorded
     when the sharesheeet is opened.
@@ -209,9 +210,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.LongScreenshots.BitmapGenerationStatus"
-    enum="SharingLongScreenshotsEvent" expires_after="M98">
+    enum="SharingLongScreenshotsEvent" expires_after="M105">
   <owner>skare@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Counts of Bitmap Generator statuses when capturing long screenshots.
     Recorded when a new bitmap is requested from the paint_preview engine, for
@@ -220,7 +221,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.LongScreenshots.BitmapSelectedHeight" units="pixels"
-    expires_after="M98">
+    expires_after="M105">
   <owner>skare@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -230,9 +231,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.LongScreenshots.Event"
-    enum="SharingLongScreenshotsEvent" expires_after="M98">
+    enum="SharingLongScreenshotsEvent" expires_after="M105">
   <owner>skare@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Counts of events in the long screenshot capture process. Events are recorded
     for events such as opening/confirming the dialog, or on corner cases such as
@@ -409,7 +410,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Sharing.Screenshot.Action" enum="SharingScreenshotAction"
     expires_after="M105">
   <owner>jeffreycohen@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Logged when actions are taken in the sharing screenshot image editing
     feature.
@@ -419,7 +420,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Sharing.ScreenshotFallback.Action"
     enum="SharingScreenshotFallbackAction" expires_after="M105">
   <owner>jeffreycohen@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Logged when actions are taken in the sharing screenshot fallback feature.
   </summary>
@@ -429,7 +430,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="Boolean" expires_after="2022-05-01">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>kristipark@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>Whether the editor was dismissed during editor recreation.</summary>
 </histogram>
 
@@ -489,7 +490,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Sharing.SendTabToSelf.NotificationStatus"
     enum="SendTabToSelfNotificationStatus" expires_after="2022-04-17">
   <owner>ellyjones@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Status of STTS notifications. Recorded whenever a target device is chosen, a
     recieved notification is shown, or an action is taken on the notification.
@@ -556,10 +557,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.ShareTargetUpdate.DynamicUpdateResult"
-    enum="ShareTargetUpdateResult" expires_after="M98">
+    enum="ShareTargetUpdateResult" expires_after="M102">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>kristipark@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     The result of reading/parsing/accepting a new proto for the third party
     Share Targets.
@@ -574,7 +575,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     enum="ShareTargetUpdateResult" expires_after="2022-05-01">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>kristipark@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     The result of reading/parsing/accepting a new proto for the third party
     Share Targets.
@@ -584,25 +585,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Sharing.ShareTargetUpdate.Version"
-    units="FileTypePolicies Version" expires_after="M98">
-  <owner>jeffreycohen@chromium.org</owner>
-  <owner>kristipark@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+<histogram name="Sharing.SharingHubAndroid.CloseReason"
+    enum="BottomSheet.StateChangeReason" expires_after="2022-05-01">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
-    Integer version number citing which version of the proto data chrome just
-    loaded. Latest version is in share_targets.asciipb.
-
-    This is for the file types loaded from the component-update system. This
-    includes both those loaded from disk shortly after startup, and those
-    received over the network when the component version changes
+    The reason why the Clank sharing hub was closed, logged when the bottom
+    sheet transitions into the HIDDEN state. Android-only.
   </summary>
 </histogram>
 
 <histogram name="Sharing.SharingHubAndroid.Opened" enum="ShareOrigin"
     expires_after="2022-04-17">
   <owner>sophey@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Records the origin of the share that opened the sharing hub. Recorded when
     the sharing hub is opened.
@@ -627,7 +623,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Sharing.SharingHubAndroid.ThirdPartyAppUsage"
     enum="SharingHubBottomRowIndex" expires_after="2022-04-17">
   <owner>sophey@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Records the index of the third party app selected from the bottom row of the
     sharing hub.
@@ -649,7 +645,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Sharing.SharingHubAndroid.TimeToShare" units="ms"
     expires_after="2022-04-17">
   <owner>sophey@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Records the amount of time taken for the user to select a share target after
     initiating a share.
@@ -659,7 +655,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Sharing.SharingHubAndroid.TimeToShowShareSheet" units="ms"
     expires_after="2022-04-17">
   <owner>sophey@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Records the amount of time taken for the custom share sheet to open after a
     share was initiated.
@@ -667,9 +663,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.SharingHubAndroid.{DetailedContentType}.{ShareStatus}"
-    enum="LinkToggleState" expires_after="M98">
+    enum="LinkToggleState" expires_after="M101">
   <owner>sophey@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Records what the link toggle state is when a share of a
     {DetailedContentType} is {ShareStatus}.
@@ -691,7 +687,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Sharing.SharingHubDesktop.CrOSSharesheetResult"
     enum="SharingHubSharesheetResult" expires_after="2022-04-03">
   <owner>kristipark@chromium.org</owner>
-  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
     Records whether the user selects a share target after opening the Chrome OS
     sharesheet.
@@ -721,7 +717,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherScreenOnAndUnlocked" enum="Boolean"
-    expires_after="M100">
+    expires_after="2022-05-01">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity@google.com</owner>
   <summary>
@@ -732,7 +728,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherTapWithChromeDestroyed" enum="Boolean"
-    expires_after="M100">
+    expires_after="2022-05-01">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity@google.com</owner>
   <summary>

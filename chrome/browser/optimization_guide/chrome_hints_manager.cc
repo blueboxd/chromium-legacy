@@ -24,19 +24,6 @@
 
 namespace {
 
-// Creates the platform specific push notification manager.
-std::unique_ptr<optimization_guide::PushNotificationManager>
-MaybeCreatePushNotificationManager(PrefService* pref_service) {
-#if defined(OS_ANDROID)
-  if (optimization_guide::features::IsPushNotificationsEnabled()) {
-    return std::make_unique<
-        optimization_guide::android::AndroidPushNotificationManager>(
-        pref_service);
-  }
-#endif
-  return nullptr;
-}
-
 // Returns true if we can make a request for hints for |prediction|.
 bool IsAllowedToFetchForNavigationPrediction(
     const absl::optional<NavigationPredictorKeyedService::Prediction>
@@ -69,7 +56,9 @@ ChromeHintsManager::ChromeHintsManager(
     optimization_guide::TopHostProvider* top_host_provider,
     optimization_guide::TabUrlProvider* tab_url_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    network::NetworkConnectionTracker* network_connection_tracker)
+    network::NetworkConnectionTracker* network_connection_tracker,
+    std::unique_ptr<optimization_guide::PushNotificationManager>
+        push_notification_manager)
     : HintsManager(profile->IsOffTheRecord(),
                    g_browser_process->GetApplicationLocale(),
                    pref_service,
@@ -78,7 +67,7 @@ ChromeHintsManager::ChromeHintsManager(
                    tab_url_provider,
                    url_loader_factory,
                    network_connection_tracker,
-                   MaybeCreatePushNotificationManager(pref_service)),
+                   std::move(push_notification_manager)),
       profile_(profile) {
   NavigationPredictorKeyedService* navigation_predictor_service =
       NavigationPredictorKeyedServiceFactory::GetForProfile(profile);

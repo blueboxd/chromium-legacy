@@ -12,7 +12,6 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "build/build_config.h"
-#include "cc/input/browser_controls_state.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/common/isolated_world_ids.h"
@@ -286,14 +285,32 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // the primary main frame.
   virtual bool IsInPrimaryMainFrame() = 0;
 
+  // Returns the topmost ancestor RenderFrameHost of this RenderFrameHost. This
+  // includes any parents (in the case of subframes) and any outer documents
+  // (e.g. fenced frame owners), but does not traverse out of GuestViews.
+  // This can be used instead of GetMainFrame in cases where we want to escape
+  // inner pages. See also GetParentOrOuterDocument for more details on the
+  // distinction of "parents" and "outer documents."
+  // Note that this may be different from getting the WebContents' primary main
+  // frame. For example, if `this` is in a bfcached or prerendered page, this
+  // will return the cached/prerendered page's main RenderFrameHost.
+  virtual RenderFrameHost* GetOutermostMainFrame() = 0;
+
   // Fenced frames (meta-bug https://crbug.com/1111084):
-  // Returns true if this document is the root of a fenced frame tree.
+  // Returns true if this document is the root of a fenced frame tree. This
+  // supports both Shadow DOM and MPArch implementations.
   //
   // In particular, this always returns false for frames loaded inside a
   // <fencedframe> element, if the frame is not the top-level <fencedframe>
   // itself. That is, this will return false for all <iframes> nested under a
   // <fencedframe>.
   virtual bool IsFencedFrameRoot() = 0;
+
+  // Fenced frames (meta-bug https://crbug.com/1111084):
+  // Returns true if `this` was loaded in a <fencedframe> element directly or if
+  // one of `this` ancestors was loaded in a <fencedframe> element. This
+  // supports both Shadow DOM and MPArch implementations.
+  virtual bool IsNestedWithinFencedFrame() = 0;
 
   // |ForEachRenderFrameHost| traverses this RenderFrameHost and all of its
   // descendants, including frames in any inner frame trees, in breadth-first
@@ -351,8 +368,8 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrameHost, while this RenderFrameHost might host multiple documents
   // over its lifetime, and this RenderFrameHost might have a shorter lifetime
   // than the frame hosting content, as explained above. For associating data
-  // with a single document, RenderDocumentHostUserData can be used.
-  virtual int GetFrameTreeNodeId() = 0;
+  // with a single document, DocumentUserData can be used.
+  virtual int GetFrameTreeNodeId() const = 0;
 
   // Used for devtools instrumentation and trace-ability. The token is
   // propagated to Blink's LocalFrame and both Blink and content/
@@ -907,13 +924,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // The |notification_type| parameter is used for histograms only.
   virtual void NotifyUserActivation(
       blink::mojom::UserActivationNotificationType notification_type) = 0;
-
-  // Notifies the renderer whether hiding/showing the browser controls is
-  // enabled, what the current state should be, and whether or not to animate to
-  // the proper state.
-  virtual void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                          cc::BrowserControlsState current,
-                                          bool animate) = 0;
 
   // Reloads the frame. It initiates a reload but doesn't wait for it to finish.
   // In some rare cases, there is no history related to the frame, nothing

@@ -190,11 +190,11 @@ std::map<base::PlatformThreadId, std::string> ThreadNames(pid_t pid) {
       continue;
     buffer[bytes_read] = '\0';
 
-    int pid, ppid, pgrp;
+    int process_id, ppid, pgrp;
     char name[256];
     char state;
-    sscanf(buffer, "%d %s %c %d %d", &pid, name, &state, &ppid, &pgrp);
-    result[base::PlatformThreadId(pid)] = std::string(name);
+    sscanf(buffer, "%d %s %c %d %d", &process_id, name, &state, &ppid, &pgrp);
+    result[base::PlatformThreadId(process_id)] = std::string(name);
   }
 
   return result;
@@ -498,13 +498,22 @@ void DisplayRootData(PartitionRootInspector& root_inspector) {
   uint64_t total_duration_ms =
       root->syscall_total_time_ns.load(std::memory_order_relaxed) / 1e6;
 
-  std::cout << "\n\nSyscall count = " << syscall_count
-            << "\tTotal duration = " << total_duration_ms << "ms\n"
-            << "Max committed size = "
-            << root->max_size_of_committed_pages.load(
-                   std::memory_order_relaxed) /
-                   1024
-            << "kiB";
+  uint64_t virtual_size =
+      root->total_size_of_super_pages.load(std::memory_order_relaxed) +
+      root->total_size_of_direct_mapped_pages.load(std::memory_order_relaxed);
+
+  std::cout
+      << "\n\nSyscall count = " << syscall_count
+      << "\tTotal duration = " << total_duration_ms << "ms\n"
+      << "Max committed size = "
+      << root->max_size_of_committed_pages.load(std::memory_order_relaxed) /
+             1024
+      << "kiB\n"
+      << "Allocated/Committed/Virtual = "
+      << root->get_total_size_of_allocated_bytes() / 1024 << " / "
+      << root->total_size_of_committed_pages.load(std::memory_order_relaxed) /
+             1024
+      << " / " << virtual_size / 1024 << " kiB\n";
   std::cout << "\nEmpty Slot Spans Dirty Size = "
             << TS_UNCHECKED_READ(root->empty_slot_spans_dirty_bytes) / 1024
             << "kiB";

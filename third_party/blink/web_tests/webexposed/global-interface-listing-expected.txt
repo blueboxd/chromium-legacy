@@ -672,6 +672,10 @@ interface BroadcastChannel : EventTarget
     method postMessage
     setter onmessage
     setter onmessageerror
+interface BrowserCaptureMediaStreamTrack : FocusableMediaStreamTrack
+    attribute @@toStringTag
+    method constructor
+    method cropTo
 interface ByteLengthQueuingStrategy
     attribute @@toStringTag
     getter highWaterMark
@@ -771,6 +775,12 @@ interface CSSKeywordValue : CSSStyleValue
     getter value
     method constructor
     setter value
+interface CSSLayerBlockRule : CSSGroupingRule
+    attribute @@toStringTag
+    method constructor
+interface CSSLayerStatementRule : CSSRule
+    attribute @@toStringTag
+    method constructor
 interface CSSMathInvert : CSSMathValue
     attribute @@toStringTag
     getter value
@@ -1735,6 +1745,11 @@ interface DevicePosture : EventTarget
     getter type
     method constructor
     setter onchange
+interface Directive
+    attribute @@toStringTag
+    getter type
+    method constructor
+    method toString
 interface Document : Node
     attribute @@toStringTag
     attribute @@unscopables
@@ -1869,6 +1884,7 @@ interface Document : Node
     getter onselect
     getter onselectionchange
     getter onselectstart
+    getter onslotchange
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -2071,6 +2087,7 @@ interface Document : Node
     setter onselect
     setter onselectionchange
     setter onselectstart
+    setter onslotchange
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -2744,7 +2761,9 @@ interface FormDataEvent : Event
     method constructor
 interface FragmentDirective
     attribute @@toStringTag
+    getter items
     method constructor
+    method createSelectorDirective
 interface GainNode : AudioNode
     attribute @@toStringTag
     getter gain
@@ -3236,11 +3255,13 @@ interface HTMLElement : Element
     getter onresize
     getter onscroll
     getter onscrollend
+    getter onsecuritypolicyviolation
     getter onseeked
     getter onseeking
     getter onselect
     getter onselectionchange
     getter onselectstart
+    getter onslotchange
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -3356,11 +3377,13 @@ interface HTMLElement : Element
     setter onresize
     setter onscroll
     setter onscrollend
+    setter onsecuritypolicyviolation
     setter onseeked
     setter onseeking
     setter onselect
     setter onselectionchange
     setter onselectstart
+    setter onslotchange
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -3722,6 +3745,7 @@ interface HTMLInputElement : HTMLElement
     method setCustomValidity
     method setRangeText
     method setSelectionRange
+    method showPicker
     method stepDown
     method stepUp
     setter accept
@@ -4206,9 +4230,13 @@ interface HTMLSelectElement : HTMLElement
     setter value
 interface HTMLSelectMenuElement : HTMLElement
     attribute @@toStringTag
+    getter form
+    getter name
     getter open
+    getter type
     getter value
     method constructor
+    setter name
     setter value
 interface HTMLSlotElement : HTMLElement
     attribute @@toStringTag
@@ -4525,6 +4553,7 @@ interface Highlight
     attribute @@toStringTag
     getter priority
     getter size
+    getter type
     method @@iterator
     method add
     method clear
@@ -4536,6 +4565,7 @@ interface Highlight
     method keys
     method values
     setter priority
+    setter type
 interface HighlightRegistry
     attribute @@toStringTag
     getter size
@@ -4915,6 +4945,7 @@ interface KeyframeEffect : AnimationEffect
 interface LargestContentfulPaint : PerformanceEntry
     attribute @@toStringTag
     getter element
+    getter firstAnimatedFrameTime
     getter id
     getter loadTime
     getter renderTime
@@ -4925,6 +4956,7 @@ interface LargestContentfulPaint : PerformanceEntry
 interface LaunchParams
     attribute @@toStringTag
     getter files
+    getter targetURL
     method constructor
 interface LaunchQueue
     attribute @@toStringTag
@@ -5103,11 +5135,13 @@ interface MathMLElement : Element
     getter onresize
     getter onscroll
     getter onscrollend
+    getter onsecuritypolicyviolation
     getter onseeked
     getter onseeking
     getter onselect
     getter onselectionchange
     getter onselectstart
+    getter onslotchange
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -5205,11 +5239,13 @@ interface MathMLElement : Element
     setter onresize
     setter onscroll
     setter onscrollend
+    setter onsecuritypolicyviolation
     setter onseeked
     setter onseeking
     setter onselect
     setter onselectionchange
     setter onselectstart
+    setter onslotchange
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -6381,6 +6417,7 @@ interface PeriodicWave
     method constructor
 interface PermissionStatus : EventTarget
     attribute @@toStringTag
+    getter name
     getter onchange
     getter state
     method constructor
@@ -7227,11 +7264,13 @@ interface SVGElement : Element
     getter onresize
     getter onscroll
     getter onscrollend
+    getter onsecuritypolicyviolation
     getter onseeked
     getter onseeking
     getter onselect
     getter onselectionchange
     getter onselectstart
+    getter onslotchange
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -7331,11 +7370,13 @@ interface SVGElement : Element
     setter onresize
     setter onscroll
     setter onscrollend
+    setter onsecuritypolicyviolation
     setter onseeked
     setter onseeking
     setter onselect
     setter onselectionchange
     setter onselectstart
+    setter onslotchange
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -8173,6 +8214,15 @@ interface Screen
     method dispatchEvent
     method removeEventListener
     setter onchange
+interface ScreenDetails : EventTarget
+    attribute @@toStringTag
+    getter currentScreen
+    getter oncurrentscreenchange
+    getter onscreenschange
+    getter screens
+    method constructor
+    setter oncurrentscreenchange
+    setter onscreenschange
 interface ScreenOrientation : EventTarget
     attribute @@toStringTag
     getter angle
@@ -8182,15 +8232,6 @@ interface ScreenOrientation : EventTarget
     method lock
     method unlock
     setter onchange
-interface Screens : EventTarget
-    attribute @@toStringTag
-    getter currentScreen
-    getter oncurrentscreenchange
-    getter onscreenschange
-    getter screens
-    method constructor
-    setter oncurrentscreenchange
-    setter onscreenschange
 interface ScriptProcessorNode : AudioNode
     attribute @@toStringTag
     getter bufferSize
@@ -8248,6 +8289,10 @@ interface Selection
     method setBaseAndExtent
     method setPosition
     method toString
+interface SelectorDirective : Directive
+    attribute @@toStringTag
+    method constructor
+    method getMatchingRange
 interface Sensor : EventTarget
     attribute @@toStringTag
     getter activated
@@ -8345,6 +8390,7 @@ interface ShadowRoot : DocumentFragment
     getter host
     getter innerHTML
     getter mode
+    getter onslotchange
     getter pictureInPictureElement
     getter pointerLockElement
     getter slotAssignment
@@ -8358,6 +8404,7 @@ interface ShadowRoot : DocumentFragment
     setter adoptedStyleSheets
     setter fullscreenElement
     setter innerHTML
+    setter onslotchange
 interface SharedStorage
     attribute @@toStringTag
     getter worklet
@@ -8613,6 +8660,13 @@ interface TextDetector
     attribute @@toStringTag
     method constructor
     method detect
+interface TextDirective : SelectorDirective
+    attribute @@toStringTag
+    getter prefix
+    getter suffix
+    getter textEnd
+    getter textStart
+    method constructor
 interface TextEncoder
     attribute @@toStringTag
     getter encoding
@@ -11417,11 +11471,13 @@ namespace CSS
     getter onscroll
     getter onscrollend
     getter onsearch
+    getter onsecuritypolicyviolation
     getter onseeked
     getter onseeking
     getter onselect
     getter onselectionchange
     getter onselectstart
+    getter onslotchange
     getter onstalled
     getter onstorage
     getter onsubmit
@@ -11501,7 +11557,7 @@ namespace CSS
     method getComputedStyle
     method getDigitalGoodsService
     method getLockScreenData
-    method getScreens
+    method getScreenDetails
     method getSelection
     method matchMedia
     method moveBy
@@ -11632,11 +11688,13 @@ namespace CSS
     setter onscroll
     setter onscrollend
     setter onsearch
+    setter onsecuritypolicyviolation
     setter onseeked
     setter onseeking
     setter onselect
     setter onselectionchange
     setter onselectstart
+    setter onslotchange
     setter onstalled
     setter onstorage
     setter onsubmit

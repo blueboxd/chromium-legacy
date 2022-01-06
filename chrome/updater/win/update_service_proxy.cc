@@ -13,12 +13,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_post_task.h"
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/logging.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -29,6 +29,8 @@
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util.h"
+#include "chrome/updater/win/win_constants.h"
+#include "chrome/updater/win/wrl_module_initializer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
@@ -44,6 +46,7 @@ static constexpr base::TaskTraits kComClientTraits = {
 // Creates an instance of IUpdater in the COM STA apartment.
 HRESULT CreateUpdater(UpdaterScope scope,
                       Microsoft::WRL::ComPtr<IUpdater>& updater) {
+  ::Sleep(kCreateUpdaterInstanceDelayMs);
   Microsoft::WRL::ComPtr<IUnknown> server;
   HRESULT hr = ::CoCreateInstance(
       scope == UpdaterScope::kSystem ? __uuidof(UpdaterSystemClass)
@@ -436,11 +439,18 @@ void UpdaterCallback::OnRunOnSTA(LONG status_code) {
                              base::BindOnce(std::move(callback_), status_code));
 }
 
+scoped_refptr<UpdateService> CreateUpdateServiceProxy(
+    UpdaterScope updater_scope) {
+  return base::MakeRefCounted<UpdateServiceProxy>(updater_scope);
+}
+
 UpdateServiceProxy::UpdateServiceProxy(UpdaterScope updater_scope)
     : scope_(updater_scope),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       com_task_runner_(
-          base::ThreadPool::CreateCOMSTATaskRunner(kComClientTraits)) {}
+          base::ThreadPool::CreateCOMSTATaskRunner(kComClientTraits)) {
+  WRLModuleInitializer::Get();
+}
 
 UpdateServiceProxy::~UpdateServiceProxy() = default;
 
@@ -579,7 +589,7 @@ void UpdateServiceProxy::RegisterAppOnSTA(
 
   std::wstring app_id;
   std::wstring brand_code;
-  std::wstring tag;
+  std::wstring ap;
   std::wstring version;
   std::wstring existence_checker_path;
   if (![&]() {
@@ -591,7 +601,7 @@ void UpdateServiceProxy::RegisterAppOnSTA(
                               request.brand_code.size(), &brand_code)) {
           return false;
         }
-        if (!base::UTF8ToWide(request.tag.c_str(), request.tag.size(), &tag)) {
+        if (!base::UTF8ToWide(request.ap.c_str(), request.ap.size(), &ap)) {
           return false;
         }
         std::string version_str = request.version.GetString();
@@ -608,7 +618,7 @@ void UpdateServiceProxy::RegisterAppOnSTA(
 
   auto callback_wrapper = Microsoft::WRL::Make<UpdaterRegisterAppCallback>(
       updater, std::move(callback));
-  hr = updater->RegisterApp(app_id.c_str(), brand_code.c_str(), tag.c_str(),
+  hr = updater->RegisterApp(app_id.c_str(), brand_code.c_str(), ap.c_str(),
                             version.c_str(), existence_checker_path.c_str(),
                             callback_wrapper.Get());
   if (FAILED(hr)) {

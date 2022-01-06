@@ -4,7 +4,7 @@
 
 import {fakeCalibrationComponents} from 'chrome://shimless-rma/fake_data.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
-import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, ComponentRepairStatus, ComponentType, ErrorObserverRemote, FinalizationObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStep, RmadErrorCode, RmaState} from 'chrome://shimless-rma/shimless_rma_types.js';
+import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, ComponentRepairStatus, ComponentType, ErrorObserverRemote, FinalizationObserverRemote, FinalizationStatus, HardwareVerificationStatusObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStatus, RmadErrorCode, RmaState, WriteProtectDisableCompleteState} from 'chrome://shimless-rma/shimless_rma_types.js';
 
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 
@@ -59,45 +59,6 @@ export function fakeShimlessRmaServiceTestSuite() {
     });
   });
 
-  test('TransitionNextStateDefaultRmaNotRequired', () => {
-    return service.transitionNextState().then((state) => {
-      assertEquals(state.state, RmaState.kUnknown);
-      assertEquals(state.error, RmadErrorCode.kRmaNotRequired);
-    });
-  });
-
-  test('TransitionNextStateConfigureNetworkOk', () => {
-    let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
-    ];
-    service.setStates(states);
-
-    return service.transitionNextState().then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
-      assertEquals(state.error, RmadErrorCode.kOk);
-    });
-  });
-
-  test('TransitionNextStateConfigureNetworkTransitionFailed', () => {
-    let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-    ];
-    service.setStates(states);
-
-    return service.transitionNextState().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
-      assertEquals(state.error, RmadErrorCode.kTransitionFailed);
-    });
-  });
-
-  test('TransitionPreviousStateDefaultRmaNotRequired', () => {
-    return service.transitionPreviousState().then((state) => {
-      assertEquals(state.state, RmaState.kUnknown);
-      assertEquals(state.error, RmadErrorCode.kRmaNotRequired);
-    });
-  });
-
   test('TransitionPreviousStateWelcomeOk', () => {
     let states = [
       {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
@@ -105,7 +66,7 @@ export function fakeShimlessRmaServiceTestSuite() {
     ];
     service.setStates(states);
 
-    service.transitionNextState().then((state) => {
+    service.beginFinalization().then((state) => {
       assertEquals(state.state, RmaState.kUpdateOs);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
@@ -443,6 +404,21 @@ export function fakeShimlessRmaServiceTestSuite() {
     return service.reworkMainboard().then((state) => {
       assertEquals(state.state, RmaState.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
+    });
+  });
+
+  test('GetWriteProtectDisableCompleteStateDefaultUndefined', () => {
+    return service.getWriteProtectDisableCompleteState().then((res) => {
+      assertEquals(undefined, res);
+    });
+  });
+
+  test('SetGetWriteProtectDisableCompleteStateUpdatesState', () => {
+    service.setGetWriteProtectDisableCompleteState(
+        WriteProtectDisableCompleteState.kCompleteKeepDeviceOpen);
+    return service.getWriteProtectDisableCompleteState().then((res) => {
+      assertEquals(
+          WriteProtectDisableCompleteState.kCompleteKeepDeviceOpen, res.state);
     });
   });
 
@@ -887,17 +863,17 @@ export function fakeShimlessRmaServiceTestSuite() {
     const provisioningObserver = /** @type {!ProvisioningObserverRemote} */ ({
       /**
        * Implements ProvisioningObserverRemote.onProvisioningUpdated()
-       * @param {!ProvisioningStep} step
+       * @param {!ProvisioningStatus} status
        * @param {number} progress
        */
-      onProvisioningUpdated(step, progress) {
-        assertEquals(step, ProvisioningStep.kInProgress);
+      onProvisioningUpdated(status, progress) {
+        assertEquals(status, ProvisioningStatus.kInProgress);
         assertEquals(progress, 0.25);
       }
     });
     service.observeProvisioningProgress(provisioningObserver);
     return service.triggerProvisioningObserver(
-        ProvisioningStep.kInProgress, 0.25, 0);
+        ProvisioningStatus.kInProgress, 0.25, 0);
   });
 
   test('ObserveHardwareWriteProtectionStateChange', () => {
@@ -935,13 +911,14 @@ export function fakeShimlessRmaServiceTestSuite() {
     return service.triggerPowerCableObserver(true, 0);
   });
 
-  test('ObserveFinalizationStatus', () => {
-    /** @type {!FinalizationObserverRemote} */
-    const finalizationObserver =
-        /** @type {!FinalizationObserverRemote} */ ({
+  test('ObserveHardwareVerificationStatus', () => {
+    /** @type {!HardwareVerificationStatusObserverRemote} */
+    const observer =
+        /** @type {!HardwareVerificationStatusObserverRemote} */ ({
           /**
            * Implements
-           * FinalizationObserverRemote.onHardwareVerificationResult()
+           * HardwareVerificationStatusObserverRemote.
+           *      onHardwareVerificationResult()
            * @param {boolean} is_compliant
            * @param {string} error_message
            */
@@ -950,7 +927,27 @@ export function fakeShimlessRmaServiceTestSuite() {
             assertEquals('ok', error_message);
           }
         });
+    service.observeHardwareVerificationStatus(observer);
+    return service.triggerHardwareVerificationStatusObserver(true, 'ok', 0);
+  });
+
+  test('ObserveFinalizationStatus', () => {
+    /** @type {!FinalizationObserverRemote} */
+    const finalizationObserver =
+        /** @type {!FinalizationObserverRemote} */ ({
+          /**
+           * Implements
+           * FinalizationObserverRemote.onFinalizationUpdated()
+           * @param {!FinalizationStatus} status
+           * @param {number} progress
+           */
+          onFinalizationUpdated(status, progress) {
+            assertEquals(FinalizationStatus.kInProgress, status);
+            assertEquals(0.5, progress);
+          }
+        });
     service.observeFinalizationStatus(finalizationObserver);
-    return service.triggerFinalizationObserver(true, 'ok', 0);
+    return service.triggerFinalizationObserver(
+        FinalizationStatus.kInProgress, 0.5, 0);
   });
 }

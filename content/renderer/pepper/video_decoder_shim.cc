@@ -20,7 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/pepper/pepper_video_decoder_host.h"
@@ -82,14 +82,15 @@ VideoDecoderShim::PendingDecode::~PendingDecode() {
 struct VideoDecoderShim::PendingFrame {
   explicit PendingFrame(uint32_t decode_id);
   PendingFrame(uint32_t decode_id, scoped_refptr<media::VideoFrame> frame);
+
+  // This could be expensive to copy, so guard against that.
+  PendingFrame(const PendingFrame&) = delete;
+  PendingFrame& operator=(const PendingFrame&) = delete;
+
   ~PendingFrame();
 
   const uint32_t decode_id;
   scoped_refptr<media::VideoFrame> video_frame;
-
- private:
-  // This could be expensive to copy, so guard against that.
-  DISALLOW_COPY_AND_ASSIGN(PendingFrame);
 };
 
 VideoDecoderShim::PendingFrame::PendingFrame(uint32_t decode_id)

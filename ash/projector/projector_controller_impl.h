@@ -24,7 +24,8 @@ class ProjectorUiController;
 class ProjectorMetadataController;
 
 // A controller to handle projector functionalities.
-class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
+class ASH_EXPORT ProjectorControllerImpl : public ProjectorController,
+                                           public ProjectorSessionObserver {
  public:
   // Callback that should be executed when the screencast container directory is
   // created. `screencast_file_path_no_extension` is the path of screencast file
@@ -49,7 +50,7 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   void OnTranscriptionError() override;
   bool IsEligible() const override;
   bool CanStartNewSession() const override;
-  void OnToolSet(const chromeos::AnnotatorTool& tool) override;
+  void OnToolSet(const AnnotatorTool& tool) override;
   void OnUndoRedoAvailabilityChanged(bool undo_available,
                                      bool redo_available) override;
 
@@ -76,6 +77,11 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   void OnRecordingStarted();
   void OnRecordingEnded();
 
+  // Called by Capture Mode to notify us that a Projector-initiated recording
+  // session was aborted (i.e. recording was never started) due to e.g. user
+  // cancellation, an error, or a DLP/HDCP restriction.
+  void OnRecordingStartAborted();
+
   // Invoked when laser pointer button is pressed.
   void OnLaserPointerPressed();
   // Invoked when marker button is pressed.
@@ -91,6 +97,16 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   // Invoked when the marker color has been requested to change.
   void OnChangeMarkerColorPressed(SkColor new_color);
 
+  // Notifies the ProjectorClient if the Projector SWA can trigger a
+  // new Projector session. The preconditions are calculated in
+  // ProjectorControllerImpl::CanStartNewSession. The following are
+  // preconditions that are checked:
+  // 1. On device speech recognition availability changes.
+  // 2. Screen recording state changed( whether an active recording is already
+  // taking place or not).
+  // 3. Whether DriveFS is mounted or not.
+  void OnNewScreencastPreconditionChanged();
+
   void SetProjectorUiControllerForTest(
       std::unique_ptr<ProjectorUiController> ui_controller);
   void SetProjectorMetadataControllerForTest(
@@ -100,6 +116,9 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   ProjectorSessionImpl* projector_session() { return projector_session_.get(); }
 
  private:
+  // ProjectorSessionObserver:
+  void OnProjectorSessionActiveStateChanged(bool active) override;
+
   // Starts or stops the speech recognition session.
   void StartSpeechRecognition();
   void StopSpeechRecognition();

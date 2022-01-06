@@ -34,6 +34,12 @@ public class AwDarkMode {
     }
 
     @CalledByNative
+    private boolean isAppUsingDarkTheme() {
+        return DarkModeHelper.LightTheme.LIGHT_THEME_FALSE
+                == DarkModeHelper.getLightTheme(mContext);
+    }
+
+    @CalledByNative
     private void onNativeObjectDestroyed() {
         mNativeAwDarkMode = 0;
     }

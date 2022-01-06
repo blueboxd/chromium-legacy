@@ -8,10 +8,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.widget.PopupMenu;
@@ -31,6 +33,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FeatureList;
+import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
@@ -48,6 +51,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -57,6 +61,8 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuUiState;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.components.content_settings.ContentSettingValues;
@@ -120,6 +126,8 @@ public class AppMenuPropertiesDelegateUnitTest {
     private TabModelFilter mTabModelFilter;
     @Mock
     public WebsitePreferenceBridge.Natives mWebsitePreferenceBridgeJniMock;
+    @Mock
+    public BookmarkBridge mBookmarkBridge;
 
     private OneshotSupplierImpl<OverviewModeBehavior> mOverviewModeSupplier =
             new OneshotSupplierImpl<>();
@@ -157,6 +165,7 @@ public class AppMenuPropertiesDelegateUnitTest {
         Mockito.when(mUserPrefsJniMock.get(mProfile)).thenReturn(mPrefService);
         FeatureList.setTestCanUseDefaultsForTesting();
 
+        mBookmarkBridgeSupplier.set(mBookmarkBridge);
         mAppMenuPropertiesDelegate = Mockito.spy(new AppMenuPropertiesDelegateImpl(
                 ContextUtils.getApplicationContext(), mActivityTabProvider,
                 mMultiWindowModeStateDispatcher, mTabModelSelector, mToolbarManager, mDecorView,
@@ -477,6 +486,150 @@ public class AppMenuPropertiesDelegateUnitTest {
         mAppMenuPropertiesDelegate.prepareMenu(menu, null);
         Assert.assertEquals(
                 "Get image descriptions", menu.findItem(R.id.get_image_descriptions_id).getTitle());
+    }
+
+    @Test
+    public void updateBookmarkMenuItemShortcut() {
+        doReturn(true).when(mBookmarkBridge).isEditBookmarksEnabled();
+
+        MenuItem bookmarkMenuItemShortcut = Mockito.mock(MenuItem.class);
+        mAppMenuPropertiesDelegate.updateBookmarkMenuItemShortcut(bookmarkMenuItemShortcut, mTab);
+        verify(bookmarkMenuItemShortcut).setEnabled(true);
+    }
+
+    @Test
+    public void updateBookmarkMenuItemShortcut_NullTab() {
+        MenuItem bookmarkMenuItemShortcut = Mockito.mock(MenuItem.class);
+        mAppMenuPropertiesDelegate.updateBookmarkMenuItemShortcut(bookmarkMenuItemShortcut, null);
+        verify(bookmarkMenuItemShortcut).setEnabled(false);
+    }
+
+    @Test
+    public void updateBookmarkMenuItemShortcut_NullBookmarkBridge() {
+        mBookmarkBridgeSupplier.set(null);
+
+        MenuItem bookmarkMenuItemShortcut = Mockito.mock(MenuItem.class);
+        mAppMenuPropertiesDelegate.updateBookmarkMenuItemShortcut(bookmarkMenuItemShortcut, mTab);
+        verify(bookmarkMenuItemShortcut).setEnabled(false);
+    }
+
+    private void enableBookmarkItemRow() {
+        TestValues bookmarkItemRowTestValues = new TestValues();
+        bookmarkItemRowTestValues.addFeatureFlagOverride(ChromeFeatureList.BOOKMARKS_REFRESH, true);
+        bookmarkItemRowTestValues.addFieldTrialParamOverride(
+                ChromeFeatureList.BOOKMARKS_REFRESH, "bookmark_in_app_menu", "true");
+        FeatureList.setTestValues(bookmarkItemRowTestValues);
+    }
+
+    @Test
+    public void updateBookmarkMenuItemRow() {
+        enableBookmarkItemRow();
+        doReturn(true).when(mBookmarkBridge).isEditBookmarksEnabled();
+
+        MenuItem bookmarkMenuItemAdd = Mockito.mock(MenuItem.class);
+        MenuItem bookmarkMenuItemEdit = Mockito.mock(MenuItem.class);
+        mAppMenuPropertiesDelegate.updateBookmarkMenuItemRow(
+                bookmarkMenuItemAdd, bookmarkMenuItemEdit, mTab);
+        verify(bookmarkMenuItemAdd).setVisible(true);
+        verify(bookmarkMenuItemAdd).setEnabled(true);
+    }
+
+    @Test
+    public void updateBookmarkMenuItemRow_NullTab() {
+        enableBookmarkItemRow();
+
+        MenuItem bookmarkMenuItemAdd = Mockito.mock(MenuItem.class);
+        MenuItem bookmarkMenuItemEdit = Mockito.mock(MenuItem.class);
+        mAppMenuPropertiesDelegate.updateBookmarkMenuItemRow(
+                bookmarkMenuItemAdd, bookmarkMenuItemEdit, null);
+        verify(bookmarkMenuItemAdd).setVisible(false);
+        verify(bookmarkMenuItemEdit).setVisible(false);
+    }
+
+    @Test
+    public void updateBookmarkMenuItemRow_NullBookmarkBridge() {
+        enableBookmarkItemRow();
+        mBookmarkBridgeSupplier.set(null);
+
+        MenuItem bookmarkMenuItemAdd = Mockito.mock(MenuItem.class);
+        MenuItem bookmarkMenuItemEdit = Mockito.mock(MenuItem.class);
+        mAppMenuPropertiesDelegate.updateBookmarkMenuItemRow(
+                bookmarkMenuItemAdd, bookmarkMenuItemEdit, null);
+        verify(bookmarkMenuItemAdd).setVisible(false);
+        verify(bookmarkMenuItemEdit).setVisible(false);
+    }
+
+    private void enableReadingListItemRow() {
+        ReadingListUtils.setReadingListSupportedForTesting(true);
+        TestValues bookmarkItemRowTestValues = new TestValues();
+        bookmarkItemRowTestValues.addFeatureFlagOverride(ChromeFeatureList.READ_LATER, true);
+        bookmarkItemRowTestValues.addFieldTrialParamOverride(
+                ChromeFeatureList.READ_LATER, "reading_list_in_app_menu", "true");
+        FeatureList.setTestValues(bookmarkItemRowTestValues);
+    }
+
+    @Test
+    public void updateReadingListMenuItemRow() {
+        enableReadingListItemRow();
+        doReturn(true).when(mBookmarkBridge).isEditBookmarksEnabled();
+
+        MenuItem readingListMenuItemAdd = Mockito.mock(MenuItem.class);
+        MenuItem readingListMenuItemDelete = Mockito.mock(MenuItem.class);
+        mAppMenuPropertiesDelegate.updateReadingListMenuItemRow(
+                readingListMenuItemAdd, readingListMenuItemDelete, mTab);
+        verify(readingListMenuItemAdd).setVisible(true);
+        verify(readingListMenuItemDelete).setEnabled(true);
+    }
+
+    @Test
+    public void updateReadingListMenuItemRow_NullTab() {
+        enableReadingListItemRow();
+
+        MenuItem readingListMenuItemAdd = Mockito.mock(MenuItem.class);
+        MenuItem readingListMenuItemDelete = Mockito.mock(MenuItem.class);
+        mAppMenuPropertiesDelegate.updateReadingListMenuItemRow(
+                readingListMenuItemAdd, readingListMenuItemDelete, null);
+        verify(readingListMenuItemAdd).setVisible(false);
+        verify(readingListMenuItemDelete).setVisible(false);
+    }
+
+    @Test
+    public void updateReadingListMenuItemRow_NullBookmarkBridge() {
+        enableReadingListItemRow();
+        mBookmarkBridgeSupplier.set(null);
+
+        MenuItem readingListMenuItemAdd = Mockito.mock(MenuItem.class);
+        MenuItem readingListMenuItemDelete = Mockito.mock(MenuItem.class);
+        mAppMenuPropertiesDelegate.updateReadingListMenuItemRow(
+                readingListMenuItemAdd, readingListMenuItemDelete, null);
+        verify(readingListMenuItemAdd).setVisible(false);
+        verify(readingListMenuItemDelete).setVisible(false);
+    }
+
+    @Test
+    public void shouldCheckBookmarkStar() {
+        BookmarkId id = new BookmarkId(0, BookmarkType.NORMAL);
+        doReturn(id).when(mBookmarkBridge).getUserBookmarkIdForTab(mTab);
+        Assert.assertTrue(mAppMenuPropertiesDelegate.shouldCheckBookmarkStar(mTab));
+    }
+
+    @Test
+    public void shouldCheckBookmarkStar_ReadingListTypeSwapping() {
+        TestValues bookmarkItemRowTestValues = new TestValues();
+        bookmarkItemRowTestValues.addFeatureFlagOverride(ChromeFeatureList.READ_LATER, true);
+        bookmarkItemRowTestValues.addFieldTrialParamOverride(
+                ChromeFeatureList.READ_LATER, "allow_bookmark_type_swapping", "true");
+        FeatureList.setTestValues(bookmarkItemRowTestValues);
+
+        BookmarkId id = new BookmarkId(0, BookmarkType.READING_LIST);
+        doReturn(id).when(mBookmarkBridge).getUserBookmarkIdForTab(mTab);
+        Assert.assertTrue(mAppMenuPropertiesDelegate.shouldCheckBookmarkStar(mTab));
+    }
+
+    @Test
+    public void shouldCheckBookmarkStar_NullBookmarkBridge() {
+        mBookmarkBridgeSupplier.set(null);
+        Assert.assertFalse(mAppMenuPropertiesDelegate.shouldCheckBookmarkStar(mTab));
     }
 
     private void setUpMocksForPageMenu() {

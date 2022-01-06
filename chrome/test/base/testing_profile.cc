@@ -17,8 +17,8 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -545,23 +545,6 @@ TestingProfile::~TestingProfile() {
   }
 }
 
-bool TestingProfile::CreateHistoryService() {
-  // Should never be created multiple times.
-  DCHECK(!HistoryServiceFactory::GetForProfileWithoutCreating(this));
-
-  // This will create and init the history service.
-  history::HistoryService* history_service =
-      static_cast<history::HistoryService*>(
-          HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              this, HistoryServiceFactory::GetDefaultFactory()));
-  if (!history_service) {
-    HistoryServiceFactory::GetInstance()->SetTestingFactory(
-        this, BrowserContextKeyedServiceFactory::TestingFactory());
-    return false;
-  }
-  return true;
-}
-
 void TestingProfile::CreateWebDataService() {
   WebDataServiceFactory::GetInstance()->SetTestingFactory(
       this, base::BindRepeating(&BuildWebDataService));
@@ -624,8 +607,13 @@ bool TestingProfile::IsOffTheRecord() const {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 bool TestingProfile::IsMainProfile() const {
-  return false;
+  return is_main_profile_;
 }
+
+void TestingProfile::SetIsMainProfile(bool is_main_profile) {
+  is_main_profile_ = is_main_profile;
+}
+
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 const Profile::OTRProfileID& TestingProfile::GetOTRProfileID() const {

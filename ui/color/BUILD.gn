@@ -11,6 +11,7 @@ source_set("color_headers") {
   sources = [
     "color_id.h",
     "color_id_macros.inc",
+    "color_id_map_macros.inc",
     "color_mixer.h",
     "color_provider.h",
     "color_provider_manager.h",
@@ -76,6 +77,7 @@ test("color_unittests") {
     "color_provider_manager_unittest.cc",
     "color_provider_source_observer_unittest.cc",
     "color_provider_unittest.cc",
+    "color_provider_utils_unittest.cc",
     "color_recipe_unittest.cc",
     "color_transform_unittest.cc",
     "run_all_unittests.cc",

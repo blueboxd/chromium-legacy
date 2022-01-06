@@ -19,6 +19,11 @@
 namespace app_list {
 namespace {
 
+using testing::ElementsAre;
+using testing::FloatNear;
+using testing::Pair;
+using testing::UnorderedElementsAre;
+
 constexpr float kEps = 1e-3f;
 
 }  // namespace
@@ -29,10 +34,11 @@ class MrfuCacheTest : public testing::Test {
 
   base::FilePath GetPath() { return temp_dir_.GetPath().Append("proto"); }
 
-  MrfuCache::Params TestingParams() {
+  MrfuCache::Params TestingParams(float half_life = 10.0f,
+                                  float boost_factor = 5.0f) {
     MrfuCache::Params params;
-    params.half_life = 10.0f;
-    params.boost_factor = 5.0f;
+    params.half_life = half_life;
+    params.boost_factor = boost_factor;
     params.max_items = 3u;
     params.min_score = 0.01f;
     params.write_delay = base::Seconds(0);
@@ -74,6 +80,21 @@ TEST_F(MrfuCacheTest, UnusedItemHasScoreZero) {
   EXPECT_FLOAT_EQ(cache.Get("A"), 0.0f);
 }
 
+TEST_F(MrfuCacheTest, CheckInitializeEmptyAndSize) {
+  MrfuCache cache(GetPath(), TestingParams());
+  EXPECT_FALSE(cache.initialized());
+  EXPECT_EQ(cache.size(), 0u);
+  EXPECT_TRUE(cache.empty());
+  Wait();
+  EXPECT_TRUE(cache.initialized());
+  EXPECT_EQ(cache.size(), 0u);
+  EXPECT_TRUE(cache.empty());
+
+  cache.Use("A");
+  EXPECT_EQ(cache.size(), 1u);
+  EXPECT_FALSE(cache.empty());
+}
+
 TEST_F(MrfuCacheTest, UseAndGetOneItem) {
   MrfuCache cache(GetPath(), TestingParams());
   Wait();
@@ -104,12 +125,11 @@ TEST_F(MrfuCacheTest, GetNormalized) {
   MrfuCache cache(GetPath(), TestingParams());
   Wait();
 
-  cache.Use("A");
-  cache.Use("B");
-  cache.Use("A");
-  cache.Use("A");
-  cache.Use("B");
-  cache.Use("C");
+  EXPECT_FLOAT_EQ(cache.GetNormalized("A"), 0.0f);
+
+  for (std::string item : {"A", "B", "A", "A", "B", "C"}) {
+    cache.Use(item);
+  }
   float a = cache.Get("A");
   float b = cache.Get("B");
   float c = cache.Get("C");
@@ -118,6 +138,43 @@ TEST_F(MrfuCacheTest, GetNormalized) {
   EXPECT_NEAR(cache.GetNormalized("A"), a / total, kEps);
   EXPECT_NEAR(cache.GetNormalized("B"), b / total, kEps);
   EXPECT_NEAR(cache.GetNormalized("C"), c / total, kEps);
+}
+
+TEST_F(MrfuCacheTest, GetAll) {
+  MrfuCache cache(GetPath(),
+                  TestingParams(/*half_life=*/1.0f, /*boost_factor=*/1.0f));
+  EXPECT_TRUE(cache.GetAll().empty());
+  Wait();
+  EXPECT_TRUE(cache.GetAll().empty());
+
+  for (std::string item : {"A", "B", "C"}) {
+    cache.Use(item);
+  }
+
+  // These are hand-calculated scores.
+  EXPECT_THAT(cache.GetAll(),
+              UnorderedElementsAre(Pair("A", FloatNear(0.166f, kEps)),
+                                   Pair("B", FloatNear(0.333f, kEps)),
+                                   Pair("C", FloatNear(0.666f, kEps))));
+}
+
+TEST_F(MrfuCacheTest, GetAllNormalized) {
+  MrfuCache cache(GetPath(),
+                  TestingParams(/*half_life=*/1.0f, /*boost_factor=*/1.0f));
+  EXPECT_TRUE(cache.GetAll().empty());
+  Wait();
+  EXPECT_TRUE(cache.GetAll().empty());
+
+  for (std::string item : {"A", "B", "C"}) {
+    cache.Use(item);
+  }
+
+  // These are hand-calculate scores.
+  float total = 0.1666f + 0.333f + 0.666f;
+  EXPECT_THAT(cache.GetAllNormalized(),
+              UnorderedElementsAre(Pair("A", FloatNear(0.166f / total, kEps)),
+                                   Pair("B", FloatNear(0.333f / total, kEps)),
+                                   Pair("C", FloatNear(0.666f / total, kEps))));
 }
 
 TEST_F(MrfuCacheTest, CorrectBoostCoeffApproximation) {
@@ -130,8 +187,12 @@ TEST_F(MrfuCacheTest, CorrectBoostCoeffApproximation) {
   EXPECT_NEAR(boost_coeff(cache), kExpected, 0.001f);
 }
 
-TEST_F(MrfuCacheTest, UseIgnoredBeforeInitComplete) {
+TEST_F(MrfuCacheTest, GetAndUseBeforeInitComplete) {
   MrfuCache cache(GetPath(), TestingParams());
+
+  // Get calls should return default values because init is incomplete.
+  EXPECT_FLOAT_EQ(cache.Get("A"), 0.0f);
+  EXPECT_FLOAT_EQ(cache.GetNormalized("A"), 0.0f);
 
   // The proto hasn't finished initializing from disk yet, so this use should be
   // ignored.
@@ -139,7 +200,10 @@ TEST_F(MrfuCacheTest, UseIgnoredBeforeInitComplete) {
 
   // Now the class is finished initializing.
   Wait();
+
+  // Get calls should return default values because the Use call was ignored.
   EXPECT_FLOAT_EQ(cache.Get("A"), 0.0f);
+  EXPECT_FLOAT_EQ(cache.GetNormalized("A"), 0.0f);
 }
 
 TEST_F(MrfuCacheTest, CleanupOnTooManyItems) {
@@ -217,6 +281,33 @@ TEST_F(MrfuCacheTest, ReadFromDisk) {
   Wait();
   EXPECT_FLOAT_EQ(cache.Get("A"), 0.5f);
   EXPECT_FLOAT_EQ(cache.Get("B"), 0.6f);
+}
+
+TEST_F(MrfuCacheTest, Sort) {
+  MrfuCache::Items items = {{"A", 0.5f}, {"B", 0.3f}, {"C", 0.4f}};
+  MrfuCache::Sort(items);
+  EXPECT_THAT(items,
+              ElementsAre(Pair("A", 0.5f), Pair("C", 0.4f), Pair("B", 0.3f)));
+}
+
+TEST_F(MrfuCacheTest, ResetWithItems) {
+  {
+    MrfuCache cache(GetPath(), TestingParams());
+    Wait();
+
+    cache.Use("A");
+    cache.ResetWithItems({{"B", 0.5f}, {"C", 0.6f}});
+    EXPECT_THAT(cache.GetAll(),
+                UnorderedElementsAre(Pair("B", 0.5f), Pair("C", 0.6f)));
+    Wait();
+  }
+
+  // Check that the cache wrote to disk after the reset, and correctly set the
+  // update count and total score.
+  MrfuCacheProto proto = ReadFromDisk();
+  EXPECT_EQ(proto.items_size(), 2);
+  EXPECT_EQ(proto.update_count(), 0);
+  EXPECT_FLOAT_EQ(proto.total_score(), 1.1f);
 }
 
 }  // namespace app_list

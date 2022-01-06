@@ -98,6 +98,9 @@ class GpuBenchmarkingContext {
         frame_widget_(frame->GetLocalRootWebFrameWidget()),
         layer_tree_host_(frame_widget_->LayerTreeHost()) {}
 
+  GpuBenchmarkingContext(const GpuBenchmarkingContext&) = delete;
+  GpuBenchmarkingContext& operator=(const GpuBenchmarkingContext&) = delete;
+
   WebLocalFrame* web_frame() const {
     DCHECK(web_frame_ != nullptr);
     return web_frame_;
@@ -117,8 +120,6 @@ class GpuBenchmarkingContext {
   WebView* web_view_;
   WebFrameWidget* frame_widget_;
   cc::LayerTreeHost* layer_tree_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuBenchmarkingContext);
 };
 
 }  // namespace blink
@@ -162,7 +163,7 @@ class SkPictureSerializer {
   // in the given directory.
   void Serialize(const cc::Layer* root_layer) {
     for (auto* layer : *root_layer->layer_tree_host()) {
-      sk_sp<SkPicture> picture = layer->GetPicture();
+      sk_sp<const SkPicture> picture = layer->GetPicture();
       if (!picture)
         continue;
 
@@ -227,6 +228,9 @@ class CallbackAndContext : public base::RefCounted<CallbackAndContext> {
     context_.Reset(isolate_, context);
   }
 
+  CallbackAndContext(const CallbackAndContext&) = delete;
+  CallbackAndContext& operator=(const CallbackAndContext&) = delete;
+
   v8::Isolate* isolate() { return isolate_; }
 
   v8::Local<v8::Function> GetCallback() {
@@ -248,7 +252,6 @@ class CallbackAndContext : public base::RefCounted<CallbackAndContext> {
   v8::Isolate* isolate_;
   v8::Persistent<v8::Function> callback_;
   v8::Persistent<v8::Context> context_;
-  DISALLOW_COPY_AND_ASSIGN(CallbackAndContext);
 };
 
 void OnMicroBenchmarkCompleted(CallbackAndContext* callback_and_context,
@@ -543,7 +546,6 @@ static void PrintDocumentTofile(v8::Isolate* isolate,
 }
 
 void OnSwapCompletedHelper(CallbackAndContext* callback_and_context,
-                           blink::WebSwapResult,
                            base::TimeTicks) {
   RunCallbackHelper(callback_and_context);
 }
@@ -1428,10 +1430,8 @@ bool GpuBenchmarking::AddSwapCompletionEventListener(gin::Arguments* args) {
 
   auto callback_and_context = base::MakeRefCounted<CallbackAndContext>(
       args->isolate(), callback, context.web_frame()->MainWorldScriptContext());
-  context.web_frame()->FrameWidget()->NotifySwapAndPresentationTime(
-      base::NullCallback(),
-      base::BindOnce(&OnSwapCompletedHelper,
-                     base::RetainedRef(callback_and_context)));
+  context.web_frame()->FrameWidget()->NotifyPresentationTime(base::BindOnce(
+      &OnSwapCompletedHelper, base::RetainedRef(callback_and_context)));
   // Request a begin frame explicitly, as the test-api expects a 'swap' to
   // happen for the above queued swap promise even if there is no actual update.
   context.layer_tree_host()->SetNeedsAnimateIfNotInsideMainFrame();

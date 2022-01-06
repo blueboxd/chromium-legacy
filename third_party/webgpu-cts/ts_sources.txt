@@ -26,8 +26,10 @@ src/common/internal/test_suite_listing.ts
 src/common/internal/util.ts
 src/common/internal/tree.ts
 src/common/internal/file_loader.ts
+src/common/util/navigator_gpu.ts
 src/common/runtime/helper/sys.ts
 src/common/runtime/cmdline.ts
+src/common/runtime/server.ts
 src/common/runtime/helper/test_worker.ts
 src/common/runtime/standalone.ts
 src/common/runtime/wpt.ts
@@ -39,6 +41,7 @@ src/common/tools/gen_listings.ts
 src/common/tools/gen_wpt_cts_html.ts
 src/common/tools/version.ts
 src/common/util/collect_garbage.ts
+src/common/util/colors.ts
 src/common/util/data_tables.ts
 src/common/util/preprocessor.ts
 src/unittests/unit_test.ts
@@ -60,7 +63,6 @@ src/webgpu/util/buffer.ts
 src/webgpu/util/conversion.ts
 src/webgpu/util/check_contents.ts
 src/webgpu/util/command_buffer_maker.ts
-src/webgpu/util/navigator_gpu.ts
 src/webgpu/util/device_pool.ts
 src/webgpu/util/texture/texel_data.ts
 src/webgpu/gpu_test.ts
@@ -100,6 +102,7 @@ src/unittests/getStackTrace.spec.ts
 src/unittests/listing.ts
 src/unittests/loaders_and_trees.spec.ts
 src/unittests/logger.spec.ts
+src/unittests/maths.spec.ts
 src/unittests/params_builder_and_utils.spec.ts
 src/unittests/params_builder_toplevel.spec.ts
 src/unittests/preprocessor.spec.ts
@@ -146,9 +149,11 @@ src/webgpu/api/operation/render_pipeline/entry_point_name.spec.ts
 src/webgpu/api/operation/render_pipeline/pipeline_output_targets.spec.ts
 src/webgpu/api/operation/render_pipeline/primitive_topology.spec.ts
 src/webgpu/api/operation/render_pipeline/sample_mask.spec.ts
+src/webgpu/api/operation/render_pipeline/vertex_only_render_pipeline.spec.ts
 src/webgpu/api/operation/rendering/basic.spec.ts
 src/webgpu/api/operation/rendering/blending.spec.ts
 src/webgpu/api/operation/rendering/depth.spec.ts
+src/webgpu/api/operation/rendering/depth_clip_clamp.spec.ts
 src/webgpu/api/operation/rendering/draw.spec.ts
 src/webgpu/api/operation/rendering/indirect_draw.spec.ts
 src/webgpu/api/operation/resource_init/buffer.spec.ts
@@ -242,9 +247,16 @@ src/webgpu/shader/execution/robust_access_vertex.spec.ts
 src/webgpu/shader/execution/zero_init.spec.ts
 src/webgpu/shader/execution/builtin/builtin.ts
 src/webgpu/shader/execution/builtin/abs.spec.ts
+src/webgpu/shader/execution/builtin/all.spec.ts
+src/webgpu/shader/execution/builtin/ceil.spec.ts
+src/webgpu/shader/execution/builtin/float_built_functions.spec.ts
+src/webgpu/shader/execution/builtin/integer_built_in_functions.spec.ts
 src/webgpu/shader/execution/builtin/logical_built_in_functions.spec.ts
+src/webgpu/shader/execution/builtin/value_testing_built_in_functions.spec.ts
+src/webgpu/shader/execution/shader_io/compute_builtins.spec.ts
 src/webgpu/shader/validation/shader_validation_test.ts
 src/webgpu/shader/validation/variable_and_const.spec.ts
+src/webgpu/shader/validation/shader_io/locations.spec.ts
 src/webgpu/shader/validation/wgsl/basic.spec.ts
 src/webgpu/util/copy_to_texture.ts
 src/webgpu/util/texture/texel_data.spec.ts

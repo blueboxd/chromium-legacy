@@ -218,6 +218,10 @@
   [self.actionSheetCoordinator start];
 }
 
+- (void)showPasswordDetailsInEditModeWithoutAuthentication {
+  [self.viewController showEditViewWithoutAuthentication];
+}
+
 #pragma mark - Private
 
 // Notifies delegate about password deletion and records metric if needed.

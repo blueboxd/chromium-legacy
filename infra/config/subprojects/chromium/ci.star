@@ -4,7 +4,8 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builders.star", "cpu", "goma", "os", "sheriff_rotations", "xcode")
-load("//lib/ci.star", "ci", "rbe_instance")
+load("//lib/builder_config.star", "builder_config")
+load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
 load("//lib/consoles.star", "consoles")
 load("//console-header.star", "HEADER")
 load("//project.star", "settings")
@@ -15,7 +16,6 @@ def main_console_if_on_branch():
 ci.defaults.set(
     bucket = "ci",
     build_numbers = True,
-    configure_kitchen = True,
     cores = 8,
     cpu = cpu.X86_64,
     executable = "recipe:chromium",
@@ -24,7 +24,6 @@ ci.defaults.set(
     pool = "luci.chromium.ci",
     project_trigger_overrides = {"chromium": settings.project} if not settings.is_main else None,
     service_account = "chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
-    swarming_tags = ["vpython:native-python-wrapper"],
     triggered_by = ["chromium-gitiles-trigger"],
     # TODO(crbug.com/1129723): set default goma_backend here.
 )
@@ -53,7 +52,7 @@ luci.bucket(
         ),
         acl.entry(
             roles = acl.BUILDBUCKET_OWNER,
-            groups = "project-chromium-admins",
+            groups = "google/luci-task-force@google.com",
         ),
         acl.entry(
             roles = acl.SCHEDULER_TRIGGERER,
@@ -286,9 +285,8 @@ consoles.console_view(
         "*type*": consoles.ordering(short_names = ["rel", "dbg", "exp"]),
         "*cpu*": consoles.ordering(short_names = ["x86"]),
         "Windows": "*builder*",
-        "Windows|Builder": ["Release", "dEQP", "dx12vk", "Debug"],
+        "Windows|Builder": ["Release", "dx12vk", "Debug"],
         "Windows|Builder|Release": "*cpu*",
-        "Windows|Builder|dEQP": "*cpu*",
         "Windows|Builder|dx12vk": "*type*",
         "Windows|Builder|Debug": "*cpu*",
         "Windows|10|x64|Intel": "*type*",
@@ -304,7 +302,7 @@ consoles.console_view(
         "Linux|Builder": "*type*",
         "Linux|Intel": "*type*",
         "Linux|Nvidia": "*type*",
-        "Android": ["L32", "M64", "N64", "P32", "vk", "dqp", "skgl", "skv"],
+        "Android": ["L32", "M64", "N64", "P32", "vk", "skgl", "skv"],
         "Android|M64": ["QCOM"],
     },
 )
@@ -498,15 +496,6 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = "Android WebView L (dbg)",
-    console_view_entry = consoles.console_view_entry(
-        category = "tester|webview",
-        short_name = "L",
-    ),
-    triggered_by = ["ci/Android arm Builder (dbg)"],
-)
-
-ci.android_builder(
     name = "Android WebView M (dbg)",
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
@@ -590,7 +579,7 @@ ci.android_builder(
         short_name = "64",
     ),
     cq_mirrors_console_view = "mirrors",
-    execution_timeout = 5 * time.hour,
+    execution_timeout = 7 * time.hour,
     main_console_view = main_console_if_on_branch(),
 )
 
@@ -602,7 +591,7 @@ ci.android_builder(
         short_name = "32",
     ),
     cq_mirrors_console_view = "mirrors",
-    execution_timeout = 4 * time.hour,
+    execution_timeout = 6 * time.hour,
     main_console_view = main_console_if_on_branch(),
 )
 
@@ -643,30 +632,6 @@ ci.android_builder(
     execution_timeout = 6 * time.hour,
     notifies = ["Deterministic Android"],
     tree_closing = True,
-)
-
-ci.android_builder(
-    name = "Lollipop Phone Tester",
-    console_view_entry = consoles.console_view_entry(
-        category = "tester|phone",
-        short_name = "L",
-    ),
-    # We have limited phone capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 6 * time.hour,
-    triggered_by = ["ci/Android arm Builder (dbg)"],
-)
-
-ci.android_builder(
-    name = "Lollipop Tablet Tester",
-    console_view_entry = consoles.console_view_entry(
-        category = "tester|tablet",
-        short_name = "L",
-    ),
-    # We have limited tablet capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 20 * time.hour,
-    triggered_by = ["ci/Android arm Builder (dbg)"],
 )
 
 ci.android_builder(
@@ -745,12 +710,15 @@ ci.android_builder(
 
 ci.android_builder(
     name = "android-binary-size-generator",
+    builderless = False,
     executable = "recipe:binary_size_generator_tot",
+    cores = 32,
     console_view_entry = consoles.console_view_entry(
         category = "builder|other",
         short_name = "size",
     ),
     os = os.LINUX_BIONIC_REMOVE,
+    ssd = True,
 )
 
 ci.android_builder(
@@ -863,7 +831,7 @@ ci.android_builder(
     notifies = ["cronet"],
 )
 
-ci.android_fyi_builder(
+ci.android_builder(
     name = "android-cronet-x86-dbg-oreo-tests",
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
@@ -873,7 +841,7 @@ ci.android_fyi_builder(
     triggered_by = ["android-cronet-x86-dbg"],
 )
 
-ci.android_fyi_builder(
+ci.android_builder(
     name = "android-cronet-x86-dbg-pie-tests",
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
@@ -893,7 +861,7 @@ ci.android_builder(
     triggered_by = ["android-cronet-x86-dbg"],
 )
 
-ci.android_fyi_builder(
+ci.android_builder(
     name = "android-cronet-x86-dbg-11-tests",
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
@@ -1070,8 +1038,6 @@ ci.android_fyi_builder(
     execution_timeout = 5 * time.hour,
     main_console_view = main_console_if_on_branch(),
     reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     schedule = "triggered",  # triggered manually via Scheduler UI
 )
@@ -1087,8 +1053,6 @@ ci.android_fyi_builder(
     execution_timeout = 4 * time.hour,
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 150,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     schedule = "triggered",  # triggered manually via Scheduler UI
 )
@@ -1225,6 +1189,15 @@ ci.android_fyi_builder(
     # TODO(crbug.com/1229245): Look into ways to improve the compile time.
     execution_timeout = 6 * time.hour,
     os = os.LINUX_BIONIC_REMOVE,
+)
+
+ci.android_fyi_builder(
+    name = "android-annotator-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "network|traffic|annotations",
+        short_name = "and",
+    ),
+    notifies = ["annotator-rel"],
 )
 
 ci.angle_linux_builder(
@@ -1451,23 +1424,6 @@ ci.angle_thin_tester(
     triggered_by = ["win-angle-x64-builder"],
 )
 
-ci.angle_windows_builder(
-    name = "win-angle-x86-builder",
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Builder|ANGLE",
-        short_name = "x86",
-    ),
-)
-
-ci.angle_thin_tester(
-    name = "win7-angle-x86-amd",
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Win7-AMD|ANGLE",
-        short_name = "x86",
-    ),
-    triggered_by = ["win-angle-x86-builder"],
-)
-
 ci.chromium_builder(
     name = "android-archive-dbg",
     # Bump to 32 if needed.
@@ -1490,6 +1446,17 @@ ci.chromium_builder(
     cores = 32,
     main_console_view = "main",
     os = os.LINUX_BIONIC_REMOVE,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "android-archive-rel.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -1557,6 +1524,17 @@ ci.chromium_builder(
     main_console_view = "main",
     notifies = ["linux-archive-rel"],
     os = os.LINUX_BIONIC_REMOVE,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "linux-archive-rel.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -1607,7 +1585,7 @@ ci.chromium_builder(
                     ],
                     "dirs": ["ClearKeyCdm", "locales", "resources"],
                     "gcs_bucket": "chromium-browser-versioned",
-                    "gcs_path": "experimental/Linux_x64_Tagged/{$chromium_version%}/chrome-linux.zip",
+                    "gcs_path": "experimental/Linux_x64_Tagged/{%chromium_version%}/chrome-linux.zip",
                     "archive_type": "ARCHIVE_TYPE_ZIP",
                 },
                 {
@@ -1615,7 +1593,7 @@ ci.chromium_builder(
                         "chromedriver",
                     ],
                     "gcs_bucket": "chromium-browser-versioned",
-                    "gcs_path": "experimental/Linux_x64_Tagged/{$chromium_version%}/chromedriver_linux64.zip",
+                    "gcs_path": "experimental/Linux_x64_Tagged/{%chromium_version%}/chromedriver_linux64.zip",
                     "archive_type": "ARCHIVE_TYPE_ZIP",
                 },
             ],
@@ -1656,8 +1634,20 @@ ci.chromium_builder(
         category = "mac",
         short_name = "rel",
     ),
+    cores = 12,
     main_console_view = "main",
     os = os.MAC_DEFAULT,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "mac-archive-rel.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -1706,6 +1696,17 @@ ci.chromium_builder(
     main_console_view = "main",
     cores = 12,
     os = os.MAC_DEFAULT,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "mac-arm64-archive-rel.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -1774,6 +1775,17 @@ ci.chromium_builder(
     cores = 32,
     main_console_view = "main",
     os = os.WINDOWS_DEFAULT,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "win-archive-rel.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -1839,6 +1851,17 @@ ci.chromium_builder(
     cores = 32,
     main_console_view = "main",
     os = os.WINDOWS_DEFAULT,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "win32-archive-rel.json",
+            ],
+        },
+    },
 )
 
 ci.chromium_builder(
@@ -1923,6 +1946,17 @@ ci.chromiumos_builder(
         short_name = "ful",
     ),
     main_console_view = "main",
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "linux-chromiumos-full.json",
+            ],
+        },
+    },
 )
 
 ci.chromiumos_builder(
@@ -2271,11 +2305,10 @@ ci.cipd_builder(
                 "sdk_package_name": "sources;android-30",
                 "cipd_yaml": "third_party/android_sdk/cipd/sources/android-30.yaml",
             },
-            # TODO(crbug.com/1223110): Enable once S is released to AOSP.
-            # {
-            #     "sdk_package_name": "sources;android-31",
-            #     "cipd_yaml": "third_party/android_sdk/cipd/sources/android-31.yaml",
-            # },
+            {
+                "sdk_package_name": "sources;android-31",
+                "cipd_yaml": "third_party/android_sdk/cipd/sources/android-31.yaml",
+            },
             {
                 "sdk_package_name": "system-images;android-23;google_apis;x86",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-23/google_apis/x86.yaml",
@@ -2424,6 +2457,22 @@ ci.clang_builder(
     console_view_entry = consoles.console_view_entry(
         category = "ToT Android",
         short_name = "off",
+    ),
+)
+
+ci.clang_builder(
+    name = "ToTChromeOS",
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT ChromeOS",
+        short_name = "rel",
+    ),
+)
+
+ci.clang_builder(
+    name = "ToTChromeOS (dbg)",
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT ChromeOS",
+        short_name = "dbg",
     ),
 )
 
@@ -2976,6 +3025,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -2998,6 +3050,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 5,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -3020,6 +3075,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -3064,6 +3122,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -3075,6 +3136,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -3114,6 +3178,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -3125,6 +3192,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 3,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -3136,6 +3206,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -3147,6 +3220,9 @@ ci.fuzz_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
     ),
+    goma_backend = None,
+    reclient_jobs = 250,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fuzz_builder(
@@ -3370,17 +3446,6 @@ ci.fyi_builder(
     notifies = ["chrome-memory-safety"],
 )
 
-# TODO(crbug.com/1189748): Remove this builder once flaky DCHECKs have been
-# resolved and DCHECKs are enabled on the CQ bot.
-ci.fyi_builder(
-    name = "chromeos-amd64-generic-rel-dchecks",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "chromeos|dcheck",
-        short_name = "cros",
-    ),
-)
-
 ci.fyi_builder(
     name = "fuchsia-fyi-arm64-dbg",
     console_view_entry = [
@@ -3566,26 +3631,6 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = "linux-chromium-tests-staging-builder",
-    console_view_entry = consoles.console_view_entry(
-        category = "recipe|staging|linux",
-        short_name = "bld",
-    ),
-    experiments = {
-        "chromium.chromium_tests.use_gitiles_trigger": 100,
-    },
-)
-
-ci.fyi_builder(
-    name = "linux-chromium-tests-staging-tests",
-    console_view_entry = consoles.console_view_entry(
-        category = "recipe|staging|linux",
-        short_name = "tst",
-    ),
-    triggered_by = ["linux-chromium-tests-staging-builder"],
-)
-
-ci.fyi_builder(
     name = "linux-example-builder",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
@@ -3699,6 +3744,7 @@ ci.fyi_builder(
         category = "linux",
         short_name = "hdls",
     ),
+    notifies = ["headless-owners"],
 )
 
 ci.updater_builder(
@@ -4061,31 +4107,6 @@ ci.fyi_builder(
     reclient_cache_silo = "Comparison Linux - cache siloed",
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 250,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "Linux TSan Builder (goma cache silo)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "tgc",
-    ),
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "Linux Builder (deps-cache) (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "re",
-    ),
-    goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = 500,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
@@ -4101,43 +4122,73 @@ ci.fyi_builder(
     },
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 500,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     schedule = "triggered",
 )
 
+# Start - Reclient migration, phase 2, block 1 shadow builders
 ci.fyi_builder(
-    name = "Linux Builder (j-500) (g-ip) (reclient)",
+    name = "Linux ASan LSan Builder (reclient shadow)",
+    branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "reg",
+        category = "linux|asan lsan",
+        short_name = "bld",
     ),
+    cq_mirrors_console_view = "mirrors",
+    os = os.LINUX_BIONIC,
+    ssd = True,
     goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = 500,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-    schedule = "triggered",
 )
 
 ci.fyi_builder(
-    name = "Linux Builder (j-500) (n2) (reclient)",
+    name = "Linux Builder (dbg) (reclient shadow)",
+    branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "re",
+        category = "debug|builder",
+        short_name = "64",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "Linux Builder (dbg)(32) (reclient shadow)",
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|builder",
+        short_name = "32",
     ),
     goma_backend = None,
-    reclient_rewrapper_env = {
-        "RBE_platform": "container-image=docker://gcr.io/cloud-marketplace/google/rbe-ubuntu16-04@sha256:b4dad0bfc4951d619229ab15343a311f2415a16ef83bcaa55b44f4e2bf1cf635,pool=linux-n2-standard",
-    },
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = 500,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-    schedule = "triggered",
+)
+
+ci.fyi_builder(
+    name = "Linux CFI (reclient shadow)",
+    console_view_entry = consoles.console_view_entry(
+        category = "cfi",
+        short_name = "lnx",
+    ),
+    cores = 32,
+    # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
+    execution_timeout = 5 * time.hour,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "Linux MSan Builder (reclient shadow)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux|msan",
+        short_name = "bld",
+    ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.fyi_builder(
@@ -4147,199 +4198,59 @@ ci.fyi_builder(
         short_name = "tre",
     ),
     goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
-    reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
-    name = "TSAN Debug (reclient)",
+    name = "WebKit Linux ASAN (reclient shadow)",
     console_view_entry = consoles.console_view_entry(
-        category = "linux tsan",
-        short_name = "dre",
-    ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 1,
+        category = "linux|webkit",
+        short_name = "asn",
     ),
     goma_backend = None,
-    reclient_jobs = 250,
+    reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
-    reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.fyi_builder(
-    name = "TSAN Release (deps-cache) (reclient)",
+    name = "WebKit Linux Leak (reclient shadow)",
     console_view_entry = consoles.console_view_entry(
-        category = "linux tsan",
-        short_name = "rre",
-    ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 3,
+        category = "linux|webkit",
+        short_name = "lk",
     ),
     goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
-    reclient_rewrapper_env = {"RBE_cache_silo": "TSAN Release (deps-cache) (reclient)"},
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.fyi_builder(
-    name = "TSAN Release (j-250) (reclient)",
+    name = "WebKit Linux MSAN (reclient shadow)",
     console_view_entry = consoles.console_view_entry(
-        category = "linux tsan",
-        short_name = "rre",
+        category = "linux|webkit",
+        short_name = "msn",
     ),
     goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = 250,
-    reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-    schedule = "triggered",  # triggered manually via Scheduler UI
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.fyi_builder(
-    name = "TSAN Release (g-ip) (reclient)",
+    name = "Mojo Linux (reclient shadow)",
     console_view_entry = consoles.console_view_entry(
-        category = "linux tsan",
-        short_name = "rreg",
+        short_name = "lnx",
     ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 1,
-    ),
+    # From mojo_builder
+    execution_timeout = 10 * time.hour,
     goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
-    reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
-
-ci.fyi_builder(
-    name = "TSAN Release (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux tsan",
-        short_name = "rre",
-    ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 1,
-    ),
-    goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
-    reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "ASAN Debug (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux asan",
-        short_name = "dbg",
-    ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 1,
-    ),
-    goma_backend = None,
-    reclient_jobs = 250,
-    reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "ASAN Release (reclient shadow)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux asan",
-        short_name = "rel",
-    ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 5,
-    ),
-    goma_backend = None,
-    reclient_jobs = 250,
-    reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "ASAN Release Media (reclient shadow)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux asan",
-        short_name = "med",
-    ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
-    goma_backend = None,
-    reclient_jobs = 250,
-    reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "MSAN Release (chained origins) (reclient shadow)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux msan",
-        short_name = "org",
-    ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
-    goma_backend = None,
-    reclient_jobs = 250,
-    reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "MSAN Release (no origins) (reclient shadow)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux msan",
-        short_name = "rel",
-    ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
-    goma_backend = None,
-    reclient_jobs = 250,
-    reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "UBSan Release (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux UBSan",
-        short_name = "rel",
-    ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 1,
-    ),
-    goma_backend = None,
-    reclient_jobs = 250,
-    reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
+# End - Reclient migration, phase 2, block 1 shadow builders
 
 ci.fyi_builder(
     name = "VR Linux (reclient)",
@@ -4351,8 +4262,6 @@ ci.fyi_builder(
     goma_backend = None,
     reclient_jobs = 250,
     reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
@@ -4365,8 +4274,6 @@ ci.fyi_windows_builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -4381,8 +4288,6 @@ ci.fyi_windows_builder(
     reclient_instance = rbe_instance.DEFAULT,
     reclient_profiler_service = "reclient-win",
     reclient_publish_trace = True,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -4396,9 +4301,22 @@ ci.fyi_mac_builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    description_html = "experiment reclient on mac. removed after the migration. crbug.com/1244441",
+    description_html = "experiment reclient on mac. should be removed after the migration. crbug.com/1244441",
+)
+
+ci.fyi_mac_builder(
+    name = "Mac Builder (reclient compare)",
+    builderless = True,
+    cores = None,  # crbug.com/1245114
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+        short_name = "cmp",
+    ),
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_rewrapper_env = {"RBE_compare": "true"},
+    reclient_ensure_verified = True,
+    description_html = "verify artifacts. should be removed after the migration. crbug.com/1260232",
 )
 
 ci.fyi_mac_builder(
@@ -4414,9 +4332,7 @@ ci.fyi_mac_builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    description_html = "experiment reclient on mac-arm. removed after the migration. crbug.com/1252626",
+    description_html = "experiment reclient on mac-arm. should be removed after the migration. crbug.com/1252626",
 )
 
 ci.fyi_builder(
@@ -4435,8 +4351,6 @@ ci.fyi_builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_REMOVE,
     reclient_rewrapper_env = {"RBE_cache_silo": "chromeos-amd64-generic-rel (reclient)"},
 )
@@ -4450,12 +4364,10 @@ ci.fyi_builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_REMOVE,
     reclient_rewrapper_env = {"RBE_compare": "true"},
     reclient_ensure_verified = True,
-    description_html = "verify artifacts. removed after the migration. crbug.com/1235218",
+    description_html = "verify artifacts. should be removed after the migration. crbug.com/1235218",
 )
 
 ci.fyi_builder(
@@ -4474,8 +4386,6 @@ ci.fyi_builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_REMOVE,
     reclient_rewrapper_env = {"RBE_cache_silo": "lacros-amd64-generic-rel (reclient)"},
 )
@@ -4496,8 +4406,6 @@ ci.fyi_builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_REMOVE,
     reclient_rewrapper_env = {"RBE_cache_silo": "linux-lacros-builder-rel (reclient)"},
 )
@@ -4672,8 +4580,6 @@ ci.fyi_ios_builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
     description_html = "experiment reclient for ios. remove after the migration. crbug.com/1254986",
 )
 
@@ -4704,7 +4610,7 @@ ci.fyi_ios_builder(
     ),
     schedule = "0 1-23/6 * * *",
     triggered_by = [],
-    xcode = xcode.x12e262wk,
+    xcode = xcode.x13wk,
 )
 
 ci.fyi_ios_builder(
@@ -5027,14 +4933,6 @@ ci.gpu_fyi_linux_builder(
 )
 
 ci.gpu_fyi_linux_builder(
-    name = "Android FYI Release (Nexus 6)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Android|L32",
-        short_name = "N6",
-    ),
-)
-
-ci.gpu_fyi_linux_builder(
     name = "Android FYI Release (Nexus 9)",
     console_view_entry = consoles.console_view_entry(
         category = "Android|M64|NVDA",
@@ -5071,14 +4969,6 @@ ci.gpu_fyi_linux_builder(
     console_view_entry = consoles.console_view_entry(
         category = "Android|skv|P32",
         short_name = "P2",
-    ),
-)
-
-ci.gpu_fyi_linux_builder(
-    name = "Android FYI dEQP Release (Nexus 5X)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Android|dqp|M64",
-        short_name = "N5X",
     ),
 )
 
@@ -5122,14 +5012,6 @@ ci.gpu_fyi_linux_builder(
     console_view_entry = consoles.console_view_entry(
         category = "Linux|Builder",
         short_name = "dbg",
-    ),
-)
-
-ci.gpu_fyi_linux_builder(
-    name = "GPU FYI Linux dEQP Builder",
-    console_view_entry = consoles.console_view_entry(
-        category = "Linux|Builder",
-        short_name = "dqp",
     ),
 )
 
@@ -5282,24 +5164,6 @@ ci.gpu_fyi_thin_tester(
         short_name = "skv",
     ),
     triggered_by = ["GPU FYI Linux Builder"],
-)
-
-ci.gpu_fyi_thin_tester(
-    name = "Linux FYI dEQP Release (Intel HD 630)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Linux|Intel",
-        short_name = "dqp",
-    ),
-    triggered_by = ["GPU FYI Linux dEQP Builder"],
-)
-
-ci.gpu_fyi_thin_tester(
-    name = "Linux FYI dEQP Release (NVIDIA)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Linux|Nvidia",
-        short_name = "dqp",
-    ),
-    triggered_by = ["GPU FYI Linux dEQP Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
@@ -5948,103 +5812,6 @@ ci.linux_builder(
 )
 
 ci.linux_builder(
-    name = "linux-ozone-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        category = "release",
-        short_name = "ozo",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    main_console_view = "main",
-    # Set tree_closing to false to disable the defaualt tree closer, which
-    # filters by step name, and instead enable tree closing for any step
-    # failure.
-    tree_closing = False,
-    extra_notifies = ["linux-ozone-rel", "close-on-any-step-failure"],
-)
-
-ci.linux_builder(
-    name = "Linux Ozone Tester (Headless)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        console_view = "chromium.fyi",
-        category = "linux",
-        short_name = "loh",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    main_console_view = main_console_if_on_branch(),
-    triggered_by = ["ci/linux-ozone-rel"],
-)
-
-ci.linux_builder(
-    name = "Linux Ozone Tester (Wayland)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        console_view = "chromium.fyi",
-        category = "linux",
-        short_name = "low",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    main_console_view = main_console_if_on_branch(),
-    triggered_by = ["ci/linux-ozone-rel"],
-)
-
-ci.linux_builder(
-    name = "Linux Ozone Tester (X11)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        console_view = "chromium.fyi",
-        category = "linux",
-        short_name = "lox",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    main_console_view = main_console_if_on_branch(),
-    triggered_by = ["ci/linux-ozone-rel"],
-)
-
-ci.linux_builder(
-    # CI tester for Ozone/Headless
-    name = "Linux Tester (Ozone Headless)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        category = "release|ozone",
-        short_name = "ltoh",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    triggered_by = ["ci/linux-ozone-rel"],
-    tree_closing = False,
-)
-
-ci.linux_builder(
-    # CI tester for Ozone/Wayland
-    name = "Linux Tester (Ozone Wayland)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        category = "release|ozone",
-        short_name = "ltow",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    triggered_by = ["ci/linux-ozone-rel"],
-    tree_closing = False,
-)
-
-ci.linux_builder(
-    # CI tester for Ozone/X11
-    name = "Linux Tester (Ozone X11)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        category = "release|ozone",
-        short_name = "ltox",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    triggered_by = ["ci/linux-ozone-rel"],
-    tree_closing = False,
-)
-
-ci.linux_builder(
     name = "linux-bionic-rel",
     console_view_entry = consoles.console_view_entry(
         category = "release",
@@ -6089,6 +5856,17 @@ ci.linux_builder(
 ci.infra_builder(
     name = "linux-bootstrap",
     bootstrap = True,
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "bootstrap|linux",
         short_name = "bld",
@@ -6100,11 +5878,23 @@ ci.infra_builder(
 ci.infra_builder(
     name = "linux-bootstrap-tests",
     bootstrap = True,
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        parent = "ci/linux-bootstrap",
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "bootstrap|linux",
         short_name = "tst",
     ),
-    triggered_by = ["ci/linux-bootstrap"],
 )
 
 ci.infra_builder(
@@ -6240,7 +6030,9 @@ ci.mac_thin_tester(
 
 ci.mac_thin_tester(
     name = "Mac11 Tests",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    # TODO(crbug.com/1206401): Reenable on the branches when we have
+    # sufficient capacity.
+    # branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "11",
@@ -6250,11 +6042,11 @@ ci.mac_thin_tester(
 )
 
 ci.mac_thin_tester(
-    name = "Mac11 Tests (dbg)",
+    name = "Mac10.15 Tests (dbg)",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "debug",
-        short_name = "11",
+        short_name = "15",
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",

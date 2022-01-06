@@ -166,12 +166,12 @@ struct CORE_EXPORT PaintLayerRareData final
   // If the layer paints into its own backings, this keeps track of the
   // backings.  It's nullptr if the layer is not composited or paints into
   // grouped backing.
-  std::unique_ptr<CompositedLayerMapping> composited_layer_mapping;
+  Member<CompositedLayerMapping> composited_layer_mapping;
 
   // If the layer paints into grouped backing (i.e. squashed), this points to
   // the grouped CompositedLayerMapping. It's null if the layer is not
   // composited or paints into its own backing.
-  CompositedLayerMapping* grouped_mapping;
+  Member<CompositedLayerMapping> grouped_mapping;
 
   Member<PaintLayerResourceInfo> resource_info;
 
@@ -318,7 +318,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // testing, intersection observer). Most other cases should use the unsnapped
   // offset from LayoutBox (for layout) or the source offset from the
   // ScrollableArea.
-  IntPoint PixelSnappedScrolledContentOffset() const;
+  gfx::Vector2d PixelSnappedScrolledContentOffset() const;
 
   // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
   // fails in some tests, for example, fast/repaint/clipped-relative.html.
@@ -1164,7 +1164,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   bool KnownToClipSubtree() const;
 
-  void Trace(Visitor*) const;
+  void Trace(Visitor*) const override;
 
  private:
   PhysicalRect LocalBoundingBoxForCompositingOverlapTest() const;
@@ -1443,7 +1443,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   bool is_destroyed_ = false;
 #endif
 
-  const WeakMember<LayoutBoxModelObject> layout_object_;
+  const Member<LayoutBoxModelObject> layout_object_;
 
   Member<PaintLayer> parent_;
   Member<PaintLayer> previous_;

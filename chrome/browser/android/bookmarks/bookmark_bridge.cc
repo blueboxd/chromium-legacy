@@ -70,8 +70,6 @@ using content::BrowserThread;
 
 namespace {
 
-const int kInvalidId = -1;
-
 class BookmarkTitleComparer {
  public:
   explicit BookmarkTitleComparer(BookmarkBridge* bookmark_bridge,
@@ -169,7 +167,8 @@ static jlong JNI_BookmarkBridge_Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(bridge);
 }
 
-jlong BookmarkBridge::GetBookmarkIdForWebContents(
+base::android::ScopedJavaLocalRef<jobject>
+BookmarkBridge::GetBookmarkIdForWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents,
@@ -178,7 +177,7 @@ jlong BookmarkBridge::GetBookmarkIdForWebContents(
 
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
   if (!web_contents)
-    return kInvalidId;
+    return nullptr;
 
   // TODO(https://crbug.com/1023759): We currently don't have a separate tab
   // model for incognito CCTs and incognito Tabs. So for incognito CCTs, the
@@ -197,7 +196,8 @@ jlong BookmarkBridge::GetBookmarkIdForWebContents(
   if (reading_list_manager_->IsLoaded()) {
     const auto* node = reading_list_manager_->Get(url);
     if (node)
-      return node->id();
+      return JavaBookmarkIdCreateBookmarkId(env, node->id(),
+                                            GetBookmarkType(node));
   }
 
   // Get all the nodes for |url| and sort them by date added.
@@ -214,10 +214,11 @@ jlong BookmarkBridge::GetBookmarkIdForWebContents(
   for (const auto* node : nodes) {
     if (only_editable && !managed->CanBeEditedByUser(node))
       continue;
-    return node->id();
+    return JavaBookmarkIdCreateBookmarkId(env, node->id(),
+                                          GetBookmarkType(node));
   }
 
-  return kInvalidId;
+  return nullptr;
 }
 
 jboolean BookmarkBridge::IsEditBookmarksEnabled(JNIEnv* env) {
@@ -345,6 +346,16 @@ void BookmarkBridge::GetTopLevelFolderIDs(
   }
 }
 
+base::android::ScopedJavaLocalRef<jobject> BookmarkBridge::GetReadingListFolder(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const BookmarkNode* root_node = reading_list_manager_->GetRoot();
+  ScopedJavaLocalRef<jobject> folder_id_obj = JavaBookmarkIdCreateBookmarkId(
+      env, root_node->id(), GetBookmarkType(root_node));
+  return folder_id_obj;
+}
+
 void BookmarkBridge::GetAllFoldersWithDepths(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -445,6 +456,19 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::GetPartnerFolderId(
   ScopedJavaLocalRef<jobject> folder_id_obj = JavaBookmarkIdCreateBookmarkId(
       env, partner_node->id(), GetBookmarkType(partner_node));
   return folder_id_obj;
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+BookmarkBridge::GetBookmarkGuidByIdForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jlong id,
+    jint type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const BookmarkNode* node = GetNodeByID(id, type);
+  DCHECK(node) << "Bookmark with id " << id << " doesn't exist.";
+  return base::android::ConvertUTF8ToJavaString(
+      env, node->guid().AsLowercaseString());
 }
 
 jint BookmarkBridge::GetChildCount(JNIEnv* env,
@@ -748,6 +772,7 @@ void BookmarkBridge::SearchBookmarks(JNIEnv* env,
                                      const JavaParamRef<jobject>& j_list,
                                      const JavaParamRef<jstring>& j_query,
                                      const JavaParamRef<jobjectArray>& j_tags,
+                                     jint type,
                                      jint max_results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(bookmark_model_->loaded());
@@ -763,6 +788,9 @@ void BookmarkBridge::SearchBookmarks(JNIEnv* env,
       base::android::AppendJavaStringArrayToStringVector(env, j_tags,
                                                          &query.tags);
     }
+
+    if (type >= 0)
+      query.type = static_cast<power_bookmarks::PowerBookmarkType>(type);
 
     power_bookmarks::GetBookmarksMatchingProperties(bookmark_model_, query,
                                                     max_results, &results);
@@ -1114,10 +1142,14 @@ const BookmarkNode* BookmarkBridge::GetParentNode(const BookmarkNode* node) {
 }
 
 int BookmarkBridge::GetBookmarkType(const BookmarkNode* node) {
-  if (partner_bookmarks_shim_->IsPartnerBookmark(node))
+  // TODO(crbug.com/1150559) return the wrong type when the backend is not
+  // loaded?
+  if (partner_bookmarks_shim_->IsLoaded() &&
+      partner_bookmarks_shim_->IsPartnerBookmark(node))
     return BookmarkType::BOOKMARK_TYPE_PARTNER;
 
-  if (reading_list_manager_->IsReadingListBookmark(node))
+  if (reading_list_manager_->IsLoaded() &&
+      reading_list_manager_->IsReadingListBookmark(node))
     return BookmarkType::BOOKMARK_TYPE_READING_LIST;
 
   return BookmarkType::BOOKMARK_TYPE_NORMAL;

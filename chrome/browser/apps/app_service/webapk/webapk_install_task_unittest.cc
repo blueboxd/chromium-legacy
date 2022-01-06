@@ -21,9 +21,9 @@
 #include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/mojom/webapk.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/arc/test/fake_webapk_instance.h"
 #include "components/webapk/webapk.pb.h"
 #include "content/public/test/browser_task_environment.h"
@@ -224,6 +224,8 @@ TEST_F(WebApkInstallTaskTest, SuccessfulInstall) {
                                apps::WebApkInstallStatus::kSuccess, 1);
   histograms.ExpectBucketCount(apps::kWebApkArcInstallResultHistogram,
                                arc::mojom::WebApkInstallResult::kSuccess, 1);
+  histograms.ExpectBucketCount(apps::kWebApkMinterErrorCodeHistogram,
+                               net::HTTP_OK, 1);
 }
 
 TEST_F(WebApkInstallTaskTest, ShareTarget) {
@@ -290,6 +292,8 @@ TEST_F(WebApkInstallTaskTest, FailedServerCall) {
   ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0);
   histograms.ExpectBucketCount(apps::kWebApkInstallResultHistogram,
                                apps::WebApkInstallStatus::kNetworkError, 1);
+  histograms.ExpectBucketCount(apps::kWebApkMinterErrorCodeHistogram,
+                               net::HTTP_BAD_REQUEST, 1);
 }
 
 TEST_F(WebApkInstallTaskTest, FailedArcInstall) {

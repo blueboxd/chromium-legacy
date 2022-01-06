@@ -24,7 +24,9 @@ class AccountManagerFactory;
 class ChromeSessionManager;
 class ChromeUserManager;
 class InSessionPasswordChangeManager;
+class KernelFeatureManager;
 class ProfileHelper;
+class TimeZoneResolver;
 
 namespace system {
 class AutomaticRebootManager;
@@ -36,9 +38,7 @@ class SystemClock;
 }  // namespace ash
 
 namespace chromeos {
-class KernelFeatureManager;
 class SchedulerConfigurationManager;
-class TimeZoneResolver;
 }  // namespace chromeos
 
 namespace policy {
@@ -113,7 +113,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
     return scheduler_configuration_manager_.get();
   }
 
-  chromeos::KernelFeatureManager* kernel_feature_manager() {
+  ash::KernelFeatureManager* kernel_feature_manager() {
     return kernel_feature_manager_.get();
   }
 
@@ -128,10 +128,11 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   ash::system::TimeZoneResolverManager* GetTimezoneResolverManager();
 
-  chromeos::TimeZoneResolver* GetTimezoneResolver();
+  ash::TimeZoneResolver* GetTimezoneResolver();
 
   // Overridden from BrowserProcessPlatformPartBase:
   void StartTearDown() override;
+  void AttemptExit(bool try_to_quit_application) override;
 
   ash::system::SystemClock* GetSystemClock();
   void DestroySystemClock();
@@ -187,7 +188,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   std::unique_ptr<ash::system::TimeZoneResolverManager>
       timezone_resolver_manager_;
-  std::unique_ptr<chromeos::TimeZoneResolver> timezone_resolver_;
+  std::unique_ptr<ash::TimeZoneResolver> timezone_resolver_;
 
   std::unique_ptr<ash::system::SystemClock> system_clock_;
 
@@ -208,7 +209,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   std::unique_ptr<chromeos::SchedulerConfigurationManager>
       scheduler_configuration_manager_;
-  std::unique_ptr<chromeos::KernelFeatureManager> kernel_feature_manager_;
+  std::unique_ptr<ash::KernelFeatureManager> kernel_feature_manager_;
 
   BrowserRestoreObserver browser_restore_observer;
 

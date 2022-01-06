@@ -11,7 +11,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
-#include "components/browsing_data/content/appcache_helper.h"
 #include "components/browsing_data/content/cache_storage_helper.h"
 #include "components/browsing_data/content/canonical_cookie_hash.h"
 #include "components/browsing_data/content/cookie_helper.h"
@@ -44,11 +43,10 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
 
 LocalSharedObjectsContainer::LocalSharedObjectsContainer(
     content::BrowserContext* browser_context,
+    bool ignore_empty_localstorage,
     const std::vector<storage::FileSystemType>& additional_file_system_types,
     browsing_data::CookieHelper::IsDeletionDisabledCallback callback)
-    : appcaches_(base::MakeRefCounted<CannedAppCacheHelper>(
-          browser_context->GetDefaultStoragePartition()->GetAppCacheService())),
-      cookies_(base::MakeRefCounted<CannedCookieHelper>(
+    : cookies_(base::MakeRefCounted<CannedCookieHelper>(
           browser_context->GetDefaultStoragePartition(),
           std::move(callback))),
       databases_(base::MakeRefCounted<CannedDatabaseHelper>(browser_context)),
@@ -58,8 +56,9 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(
           browser_context->GetDefaultStoragePartition()->GetNativeIOContext())),
       indexed_dbs_(base::MakeRefCounted<CannedIndexedDBHelper>(
           browser_context->GetDefaultStoragePartition())),
-      local_storages_(
-          base::MakeRefCounted<CannedLocalStorageHelper>(browser_context)),
+      local_storages_(base::MakeRefCounted<CannedLocalStorageHelper>(
+          browser_context,
+          /*update_ignored_empty_keys_on_fetch=*/ignore_empty_localstorage)),
       service_workers_(base::MakeRefCounted<CannedServiceWorkerHelper>(
           browser_context->GetDefaultStoragePartition()
               ->GetServiceWorkerContext())),
@@ -67,14 +66,14 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(
           browser_context->GetDefaultStoragePartition())),
       cache_storages_(base::MakeRefCounted<CannedCacheStorageHelper>(
           browser_context->GetDefaultStoragePartition())),
-      session_storages_(
-          base::MakeRefCounted<CannedLocalStorageHelper>(browser_context)) {}
+      session_storages_(base::MakeRefCounted<CannedLocalStorageHelper>(
+          browser_context,
+          /*update_ignored_empty_keys_on_fetch=*/false)) {}
 
 LocalSharedObjectsContainer::~LocalSharedObjectsContainer() = default;
 
 size_t LocalSharedObjectsContainer::GetObjectCount() const {
   size_t count = 0;
-  count += appcaches()->GetCount();
   count += cookies()->GetCookieCount();
   count += databases()->GetCount();
   count += file_systems()->GetCount();
@@ -161,12 +160,6 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
       ++count;
   }
 
-  // Count the AppCache manifest files for the domain of the given |origin|.
-  for (const auto& storage_origin : appcaches()->GetOrigins()) {
-    if (SameDomainOrHost(origin, storage_origin.GetURL()))
-      ++count;
-  }
-
   return count;
 }
 
@@ -207,9 +200,6 @@ size_t LocalSharedObjectsContainer::GetDomainCount() const {
   for (const auto& origin : databases()->GetOrigins())
     hosts.insert(origin.host());
 
-  for (const auto& origin : appcaches()->GetOrigins())
-    hosts.insert(origin.host());
-
   std::set<std::string> domains;
   for (const base::StringPiece& host : hosts) {
     std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
@@ -222,8 +212,12 @@ size_t LocalSharedObjectsContainer::GetDomainCount() const {
   return domains.size();
 }
 
+void LocalSharedObjectsContainer::UpdateIgnoredEmptyStorageKeys(
+    base::OnceClosure done) const {
+  local_storages_->UpdateIgnoredEmptyKeys(std::move(done));
+}
+
 void LocalSharedObjectsContainer::Reset() {
-  appcaches_->Reset();
   cookies_->Reset();
   databases_->Reset();
   file_systems_->Reset();

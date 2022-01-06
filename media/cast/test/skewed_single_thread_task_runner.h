@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_pending_task.h"
 
@@ -23,6 +23,10 @@ class SkewedSingleThreadTaskRunner final : public base::SingleThreadTaskRunner {
  public:
   explicit SkewedSingleThreadTaskRunner(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+
+  SkewedSingleThreadTaskRunner(const SkewedSingleThreadTaskRunner&) = delete;
+  SkewedSingleThreadTaskRunner& operator=(const SkewedSingleThreadTaskRunner&) =
+      delete;
 
   // Set the delay multiplier to |skew|.
   void SetSkew(double skew);
@@ -45,8 +49,6 @@ class SkewedSingleThreadTaskRunner final : public base::SingleThreadTaskRunner {
  private:
   double skew_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(SkewedSingleThreadTaskRunner);
 };
 
 }  // namespace test

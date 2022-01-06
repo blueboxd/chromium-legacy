@@ -27,7 +27,6 @@
 
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
-#include "base/unguessable_token.h"
 #include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
@@ -46,6 +45,7 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/region_capture_crop_id.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -121,11 +121,8 @@ enum class ElementFlags {
   kContainsFullScreenElement = 1 << 3,
   kIsInTopLayer = 1 << 4,
   kContainsPersistentVideo = 1 << 5,
-  kDidAttachInternals = 1 << 6,
-  kShouldForceLegacyLayoutForChild = 1 << 7,
-  kStyleShouldForceLegacyLayout = 1 << 8,
-  kHasUndoStack = 1 << 9,
-  kNumberOfElementFlags = 10,  // Size of bitfield used to store the flags.
+
+  kNumberOfElementFlags = 6,  // Size of bitfield used to store the flags.
 };
 
 enum class ShadowRootType;
@@ -150,8 +147,6 @@ enum class NamedItemType {
 typedef HeapVector<Member<Attr>> AttrNodeList;
 
 typedef HashMap<AtomicString, SpecificTrustedType> AttrNameToTrustedType;
-
-typedef base::UnguessableToken RegionCaptureCropId;
 
 class CORE_EXPORT Element : public ContainerNode, public Animatable {
   DEFINE_WRAPPERTYPEINFO();
@@ -224,7 +219,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool FastAttributeLookupAllowed(const QualifiedName&) const;
 #endif
 
-#ifdef DUMP_NODE_STATISTICS
+#if DUMP_NODE_STATISTICS
   bool HasNamedNodeMap() const;
 #endif
   bool hasAttributes() const;
@@ -243,18 +238,22 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   const AtomicString& getAttributeNS(const AtomicString& namespace_uri,
                                      const AtomicString& local_name) const;
 
-  void setAttribute(const AtomicString& name,
+  void setAttribute(AtomicString name,
                     AtomicString value,
                     ExceptionState& exception_state = ASSERT_NO_EXCEPTION) {
-    SetAttributeHinted(name, WeakLowercaseIfNecessary(name), value,
+    WTF::AtomicStringTable::WeakResult weak_lowercase_name =
+        WeakLowercaseIfNecessary(name);
+    SetAttributeHinted(std::move(name), weak_lowercase_name, value,
                        exception_state);
   }
 
   // Trusted Types variant for explicit setAttribute() use.
-  void setAttribute(const AtomicString& name,
+  void setAttribute(AtomicString name,
                     const V8TrustedString* trusted_string,
                     ExceptionState& exception_state) {
-    SetAttributeHinted(name, WeakLowercaseIfNecessary(name), trusted_string,
+    WTF::AtomicStringTable::WeakResult weak_lowercase_name =
+        WeakLowercaseIfNecessary(name);
+    SetAttributeHinted(std::move(name), weak_lowercase_name, trusted_string,
                        exception_state);
   }
 
@@ -285,7 +284,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   //   If element is in the HTML namespace and its node document is an HTML
   //   document, then set qualifiedName to qualifiedName in ASCII lowercase.
   //   https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
-  AtomicString LowercaseIfNecessary(const AtomicString&) const;
+  AtomicString LowercaseIfNecessary(AtomicString) const;
   WTF::AtomicStringTable::WeakResult WeakLowercaseIfNecessary(
       const StringView&) const;
 
@@ -545,29 +544,39 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     RebuildFirstLetterLayoutTree();
     WhitespaceAttacher whitespace_attacher;
     RebuildMarkerLayoutTree(whitespace_attacher);
+    HandleSubtreeModifications();
   }
-  bool NeedsRebuildLayoutTree(
+  bool NeedsRebuildChildLayoutTrees(
       const WhitespaceAttacher& whitespace_attacher) const {
-    return NeedsReattachLayoutTree() || ChildNeedsReattachLayoutTree() ||
+    return ChildNeedsReattachLayoutTree() || NeedsWhitespaceChildrenUpdate() ||
            (whitespace_attacher.TraverseIntoDisplayContents() &&
             HasDisplayContentsStyle());
   }
+  bool NeedsRebuildLayoutTree(
+      const WhitespaceAttacher& whitespace_attacher) const {
+    return NeedsReattachLayoutTree() ||
+           NeedsRebuildChildLayoutTrees(whitespace_attacher) ||
+           NeedsLayoutSubtreeUpdate();
+  }
   void RebuildLayoutTree(WhitespaceAttacher&);
+  void HandleSubtreeModifications();
   void PseudoStateChanged(CSSSelector::PseudoType);
   void SetAnimationStyleChange(bool);
   void SetNeedsAnimationStyleRecalc();
 
   void SetNeedsCompositingUpdate();
 
-  // Generates a unique crop ID and returns the new value. Not all element
-  // types have a region capture crop id, however using it here allows access
-  // to the element rare data struct. Currently, once an element is marked for
-  // region capture it cannot be unmarked, and repeated calls to this API will
-  // return the same token.
-  RegionCaptureCropId MarkWithRegionCaptureCropId();
+  // Assigns a crop-ID to the element. It's an error to try to call this
+  // if the element already has a crop-ID attached (even if attempting to
+  // set the same crop-ID again).
+  //
+  // Not all element types have a region capture crop-ID, however using it here
+  // allows access to the element rare data struct. Currently, once an element
+  // is marked for region capture it cannot be unmarked.
+  void SetRegionCaptureCropId(std::unique_ptr<RegionCaptureCropId> crop_id);
 
-  // Returns a null token if not marked for capture.
-  RegionCaptureCropId GetRegionCaptureCropId() const;
+  // Returns a pointer to the crop-ID if one was set; nullptr otherwise.
+  const RegionCaptureCropId* GetRegionCaptureCropId() const;
 
   ShadowRoot* attachShadow(const ShadowRootInit*, ExceptionState&);
 
@@ -1230,16 +1239,16 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SynchronizeAttributeHinted(
       const AtomicString& name,
       WTF::AtomicStringTable::WeakResult hint) const;
-  void SetAttributeHinted(const AtomicString& name,
+  void SetAttributeHinted(AtomicString name,
                           WTF::AtomicStringTable::WeakResult hint,
                           const AtomicString& value,
                           ExceptionState& = ASSERT_NO_EXCEPTION);
-  void SetAttributeHinted(const AtomicString& name,
+  void SetAttributeHinted(AtomicString name,
                           WTF::AtomicStringTable::WeakResult hint,
                           const V8TrustedString* trusted_string,
                           ExceptionState& exception_state);
   std::pair<wtf_size_t, const QualifiedName> LookupAttributeQNameHinted(
-      const AtomicString& name,
+      AtomicString name,
       WTF::AtomicStringTable::WeakResult hint) const;
 
   void CancelFocusAppearanceUpdate();
@@ -1338,7 +1347,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // context, we need to force legacy layout for the entire fragmentation
   // context. LayoutNG block fragmentation and legacy block fragmentation cannot
   // cooperate within a fragmentation context.
-  void ForceLegacyLayoutInFragmentationContext(const ComputedStyle& new_style);
+  // Returns true if we need to reattach this element or any ancestor element.
+  bool ForceLegacyLayoutInFragmentationContext(const ComputedStyle& new_style);
+
   void SynchronizeContentAttributeAndElementReference(
       const QualifiedName& name);
 

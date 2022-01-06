@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "chromeos/process_proxy/process_proxy.h"
 
@@ -43,6 +43,9 @@ class COMPONENT_EXPORT(CHROMEOS_PROCESS_PROXY) ProcessProxyRegistry {
   };
 
   static ProcessProxyRegistry* Get();
+
+  ProcessProxyRegistry(const ProcessProxyRegistry&) = delete;
+  ProcessProxyRegistry& operator=(const ProcessProxyRegistry&) = delete;
 
   // Converts the id returned by OpenProcess() to the system pid.
   static int ConvertToSystemPID(const std::string& id);
@@ -93,8 +96,6 @@ class COMPONENT_EXPORT(CHROMEOS_PROCESS_PROXY) ProcessProxyRegistry {
   std::unique_ptr<base::Thread> watcher_thread_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(ProcessProxyRegistry);
 };
 
 }  // namespace chromeos

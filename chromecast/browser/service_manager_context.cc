@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -20,9 +19,10 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
 #include "base/process/process_handle.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/deferred_sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "chromecast/browser/cast_content_browser_client.h"
 #include "chromecast/browser/service_manager_connection.h"
@@ -34,7 +34,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -117,7 +117,7 @@ class ContentChildServiceProcessHost
   // service_manager::ServiceProcessHost:
   mojo::PendingRemote<service_manager::mojom::Service> Launch(
       const service_manager::Identity& identity,
-      sandbox::policy::SandboxType sandbox_type,
+      sandbox::mojom::Sandbox sandbox_type,
       const std::u16string& display_name,
       LaunchCallback callback) override {
     // Start a new process for this service.
@@ -148,11 +148,11 @@ class ServiceExecutableProcessHost
   // service_manager::ServiceProcessHost:
   mojo::PendingRemote<service_manager::mojom::Service> Launch(
       const service_manager::Identity& identity,
-      sandbox::policy::SandboxType sandbox_type,
+      sandbox::mojom::Sandbox sandbox_type,
       const std::u16string& display_name,
       LaunchCallback callback) override {
     // TODO(https://crbug.com/781334): Support sandboxing.
-    return launcher_.Start(identity, sandbox::policy::SandboxType::kNoSandbox,
+    return launcher_.Start(identity, sandbox::mojom::Sandbox::kNoSandbox,
                            std::move(callback));
   }
 

@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -45,7 +46,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cookie.CommitProblem" enum="CookieCommitProblem"
-    expires_after="2021-12-19">
+    expires_after="2022-04-24">
   <owner>morlovich@chromium.org</owner>
   <summary>
     Recorded when a problem occurs trying to commit changes to the cookie store
@@ -201,6 +202,66 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Cookie.EmptyDomain.SetDomain" enum="Boolean"
+    expires_after="2022-04-21">
+  <owner>kyraseevers@chromium.org</owner>
+  <owner>bingler@chromium.org</owner>
+  <summary>
+    If a ParsedCookie's domain attribute is cleared using SetDomain().
+
+    This metric is recorded whenever a parsed cookie has its domain attribute
+    set to the empty string via ParsedCookie::SetDomain().
+  </summary>
+</histogram>
+
+<histogram name="Cookie.EmptyDomain.SetupAttributes.Multiple" enum="Boolean"
+    expires_after="2022-04-21">
+  <owner>kyraseevers@chromium.org</owner>
+  <owner>bingler@chromium.org</owner>
+  <summary>
+    If a ParsedCookie is setup with more than one domain attribute and one of
+    those domain values is empty.
+
+    This metric is recorded whenever a parsed cookie encounters a cookie string
+    with more than one domain pair where at least one domain pair has a value of
+    the empty string via ParsedCookie::SetupAttributes().
+  </summary>
+</histogram>
+
+<histogram name="Cookie.EmptyDomain.SetupAttributes.Single" enum="Boolean"
+    expires_after="2022-04-21">
+  <owner>kyraseevers@chromium.org</owner>
+  <owner>bingler@chromium.org</owner>
+  <summary>
+    If a ParsedCookie is setup with a single domain attribute that has an empty
+    value.
+
+    This metric is recorded whenever a parsed cookie encounters a cookie string
+    with a single domain pair whose value is the empty string via
+    ParsedCookie::SetupAttributes().
+  </summary>
+</histogram>
+
+<histogram name="Cookie.ExpirationDuration400DaysGT" units="days"
+    expires_after="M101">
+  <owner>arichiv@chromium.org</owner>
+  <owner>bingler@chromium.org</owner>
+  <summary>
+    Number of days until a cookie expires when set (for values over the
+    rfc6265bis limit of 400 days).
+  </summary>
+</histogram>
+
+<histogram name="Cookie.ExpirationDuration400DaysLTE" units="days"
+    expires_after="M101">
+  <owner>arichiv@chromium.org</owner>
+  <owner>bingler@chromium.org</owner>
+  <summary>
+    Number of days until a cookie expires when set (for values under or equal to
+    the rfc6265bis limit of 400 days).
+  </summary>
+</histogram>
+
 <histogram name="Cookie.ExpirationDurationMinutes" units="minutes"
     expires_after="M85">
   <obsolete>
@@ -212,17 +273,46 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cookie.ExpirationDurationMinutesNonSecure" units="minutes"
-    expires_after="2022-04-17">
+    expires_after="M101">
   <owner>kaustubhag@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>Number of minutes until non-Secure cookie expires when set.</summary>
 </histogram>
 
 <histogram name="Cookie.ExpirationDurationMinutesSecure" units="minutes"
-    expires_after="2021-10-31">
+    expires_after="M101">
   <owner>kaustubhag@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>Number of minutes until Secure cookie expires when set.</summary>
+</histogram>
+
+<histogram name="Cookie.FirstPartySets.ComputeContext.Latency"
+    units="microseconds" expires_after="M105">
+  <owner>cfredric@chromium.org</owner>
+  <owner>chrome-first-party-sets@chromium.org</owner>
+  <summary>
+    This histogram records the (TimeTicks) latency of computing the
+    same-partiness of a given context.
+
+    This metric is sampled every time a SamePartyContext is computed (e.g. when
+    computing the cookies for a URL request, once per request). Only sampled for
+    users with high-resolution clocks.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.FirstPartySets.FindOwner.Latency" units="microseconds"
+    expires_after="M105">
+  <owner>cfredric@chromium.org</owner>
+  <owner>chrome-first-party-sets@chromium.org</owner>
+  <summary>
+    This histogram records the (TimeTicks) latency of computing the owner of a
+    given domain.
+
+    This metric is sampled every time an owner is computed. (E.g., a single time
+    when computing a partition key involving First-Party Sets; multiple times
+    when computing a SamePartyContext.) Only sampled for users with
+    high-resolution clocks.
+  </summary>
 </histogram>
 
 <histogram name="Cookie.FirstPartySetsContextType.{AccessMedium}.{AccessType}"
@@ -761,6 +851,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Cookie.SameSiteNoneIsSecure" enum="Boolean"
     expires_after="2021-10-25">
+  <obsolete>
+    Removed Oct 2021. No longer useful.
+  </obsolete>
   <owner>bingler@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <summary>

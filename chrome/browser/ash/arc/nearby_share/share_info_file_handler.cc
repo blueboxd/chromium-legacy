@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_url_util.h"
+#include "chrome/browser/ash/arc/nearby_share/arc_nearby_share_uma.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
@@ -102,7 +103,10 @@ ShareInfoFileHandler::ShareInfoFileHandler(
       file_config_.mime_types.emplace_back(file_info->mime_type);
       file_config_.names.emplace_back(file_info->name);
       file_config_.sizes.emplace_back(file_info->size);
-      file_config_.total_size += base::checked_cast<uint64_t>(file_info->size);
+      if (file_info->size > 0) {
+        file_config_.total_size +=
+            base::checked_cast<uint64_t>(file_info->size);
+      }
     }
     file_config_.num_files = file_config_.external_urls.size();
   }
@@ -152,6 +156,7 @@ void ShareInfoFileHandler::StartPreparingFiles(
 
   if (!g_browser_process) {
     LOG(ERROR) << "Unexpected null g_browser_process";
+    UpdateNearbyShareDataHandlingFail(DataHandlingResult::kNullGBrowserProcess);
     NotifyFileSharingCompleted(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
@@ -161,12 +166,14 @@ void ShareInfoFileHandler::StartPreparingFiles(
   if (g_browser_process->profile_manager() &&
       !g_browser_process->profile_manager()->IsValidProfile(profile_)) {
     LOG(ERROR) << "Invalid profile: " << profile_->GetProfileUserName();
+    UpdateNearbyShareDataHandlingFail(DataHandlingResult::kInvalidProfile);
     NotifyFileSharingCompleted(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   if (file_config_.directory.empty()) {
     LOG(ERROR) << "Base directory is empty.";
+    UpdateNearbyShareDataHandlingFail(DataHandlingResult::kEmptyDirectory);
     NotifyFileSharingCompleted(base::File::FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
@@ -182,6 +189,8 @@ void ShareInfoFileHandler::StartPreparingFiles(
 base::FilePath ShareInfoFileHandler::CreateShareDirectory() {
   if (!base::PathExists(file_config_.directory)) {
     LOG(ERROR) << "Base directory does not exist: " << file_config_.directory;
+    UpdateNearbyShareDataHandlingFail(
+        DataHandlingResult::kDirectoryDoesNotExist);
     return base::FilePath();
   }
 
@@ -193,6 +202,8 @@ base::FilePath ShareInfoFileHandler::CreateShareDirectory() {
       !base::PathExists(temp_dir)) {
     LOG(ERROR) << "Failed to create unique temp share directory under: "
                << file_config_.directory;
+    UpdateNearbyShareDataHandlingFail(
+        DataHandlingResult::kFailedToCreateDirectory);
     return base::FilePath();
   }
   return temp_dir;
@@ -206,6 +217,8 @@ void ShareInfoFileHandler::OnShareDirectoryPathCreated(
 
   if (share_dir.empty()) {
     LOG(ERROR) << "Failed to prepare temp share directory.";
+    UpdateNearbyShareDataHandlingFail(
+        DataHandlingResult::kFailedPrepTempDirectory);
     NotifyFileSharingCompleted(base::File::FILE_ERROR_FAILED);
     return;
   }
@@ -213,6 +226,7 @@ void ShareInfoFileHandler::OnShareDirectoryPathCreated(
   auto urls_size = file_config_.external_urls.size();
   if (!urls_size) {
     LOG(ERROR) << "External urls are empty.";
+    UpdateNearbyShareDataHandlingFail(DataHandlingResult::kEmptyExternalURL);
     NotifyFileSharingCompleted(base::File::FILE_ERROR_INVALID_URL);
     return;
   }
@@ -224,6 +238,8 @@ void ShareInfoFileHandler::OnShareDirectoryPathCreated(
 
     if (file_size < 0) {
       LOG(ERROR) << "Invalid size provided for file name: " << file_name;
+      UpdateNearbyShareDataHandlingFail(
+          DataHandlingResult::kInvalidFileNameSize);
       NotifyFileSharingCompleted(base::File::FILE_ERROR_NOT_A_FILE);
       return;
     }
@@ -250,6 +266,8 @@ base::ScopedFD ShareInfoFileHandler::CreateFileForWrite(
                        base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   if (!dest_file.IsValid() || !base::PathExists(file_path)) {
     LOG(ERROR) << "Invalid destination file at path: " << file_path;
+    UpdateNearbyShareDataHandlingFail(
+        DataHandlingResult::kInvalidDestinationFilePath);
     return base::ScopedFD();
   }
 
@@ -268,6 +286,8 @@ void ShareInfoFileHandler::OnFileDescriptorCreated(
 
   if (!dest_fd.is_valid()) {
     LOG(ERROR) << "Invalid destination file descriptor.";
+    UpdateNearbyShareDataHandlingFail(
+        DataHandlingResult::kInvalidDestinationFileDescriptor);
     NotifyFileSharingCompleted(base::File::FILE_ERROR_FAILED);
     return;
   }
@@ -282,6 +302,8 @@ void ShareInfoFileHandler::OnFileDescriptorCreated(
 
   if (!isolated_file_system.url.is_valid()) {
     LOG(ERROR) << "Invalid FileSystemURL from handle.";
+    UpdateNearbyShareDataHandlingFail(
+        DataHandlingResult::kInvalidFileSystemURL);
     NotifyFileSharingCompleted(base::File::FILE_ERROR_INVALID_URL);
     return;
   }
@@ -289,6 +311,7 @@ void ShareInfoFileHandler::OnFileDescriptorCreated(
   // Check if the obtained path providing external file URL or not.
   if (!chromeos::IsExternalFileURLType(isolated_file_system.url.type())) {
     LOG(ERROR) << "FileSystemURL is not of external file type.";
+    UpdateNearbyShareDataHandlingFail(DataHandlingResult::kNotExternalFileType);
     NotifyFileSharingCompleted(base::File::FILE_ERROR_INVALID_URL);
     return;
   }
@@ -339,6 +362,8 @@ void ShareInfoFileHandler::OnFileStreamReadCompleted(
 
   if (!result) {
     LOG(ERROR) << "Failed to stream file IO data using url: " << url_str;
+    UpdateNearbyShareDataHandlingFail(
+        DataHandlingResult::kFailedStreamFileIOData);
     NotifyFileSharingCompleted(base::File::FILE_ERROR_IO);
     return;
   }
@@ -361,6 +386,8 @@ void ShareInfoFileHandler::OnFileStreamReadCompleted(
     if (num_bytes_read_ > expected_total_bytes) {
       LOG(ERROR) << "Invalid number of bytes read: " << num_bytes_read_ << " > "
                  << expected_total_bytes;
+      UpdateNearbyShareDataHandlingFail(
+          DataHandlingResult::kInvalidNumberBytesRead);
       NotifyFileSharingCompleted(base::File::FILE_ERROR_INVALID_OPERATION);
       return;
     }
@@ -374,6 +401,7 @@ void ShareInfoFileHandler::OnFileStreamingTimeout(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   LOG(ERROR) << timeout_message;
+  UpdateNearbyShareDataHandlingFail(DataHandlingResult::kTimeout);
   NotifyFileSharingCompleted(base::File::FILE_ERROR_ABORT);
 }
 

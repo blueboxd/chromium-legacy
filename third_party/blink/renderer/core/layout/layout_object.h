@@ -32,7 +32,6 @@
 #include "base/auto_reset.h"
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
-#include "cc/base/features.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
@@ -316,6 +315,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   ALWAYS_INLINE void CheckIsNotDestroyed() const {}
 #endif
 #define NOT_DESTROYED() CheckIsNotDestroyed()
+
+#if DCHECK_IS_ON()
+  bool IsDestroyed() const { return is_destroyed_; }
+#endif
 
   // Returns the name of the layout object.
   virtual const char* GetName() const = 0;
@@ -1309,7 +1312,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // stroke-width). objectBoundingBox is returned in local coordinates and
   // always unzoomed.
   // The name objectBoundingBox is taken from the SVG 1.1 spec.
-  virtual FloatRect ObjectBoundingBox() const;
+  virtual gfx::RectF ObjectBoundingBox() const;
 
   // Returns the smallest rectangle enclosing all of the painted content
   // respecting clipping, masking, filters, opacity, stroke-width and markers.
@@ -1317,12 +1320,12 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // applies. For SVG objects defining viewports (e.g.
   // LayoutSVGViewportContainer and  LayoutSVGResourceMarker), the local SVG
   // coordinate space is the viewport space.
-  virtual FloatRect VisualRectInLocalSVGCoordinates() const;
+  virtual gfx::RectF VisualRectInLocalSVGCoordinates() const;
 
   // Like VisualRectInLocalSVGCoordinates() but does not include visual overflow
   // (name is misleading). May be zoomed (currently only for <foreignObject>,
   // which represents this via its LocalToSVGParentTransform()).
-  virtual FloatRect StrokeBoundingBox() const;
+  virtual gfx::RectF StrokeBoundingBox() const;
 
   // This returns the transform applying to the local SVG coordinate space,
   // which combines the CSS transform properties and animation motion transform.
@@ -2196,8 +2199,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   }
 
   // Flags used to mark if a descendant subtree of this object has changed.
-  void NotifyOfSubtreeChange();
-  void NotifyAncestorsOfSubtreeChange();
+
+  // Returns true if the flag did change.
+  bool NotifyOfSubtreeChange();
   bool WasNotifiedOfSubtreeChange() const {
     NOT_DESTROYED();
     return bitfields_.NotifiedOfSubtreeChange();
@@ -3138,14 +3142,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   void MarkBlockingWheelEventHandlerChanged();
   void MarkDescendantBlockingWheelEventHandlerChanged();
   bool BlockingWheelEventHandlerChanged() const {
-    // TODO(https://crbug.com/841364): This block is optimized to avoid costly
-    // checks for kWheelEventRegions. It will be simplified once
-    // kWheelEventRegions feature flag is removed.
-    if (!bitfields_.BlockingWheelEventHandlerChanged())
-      return false;
-    return base::FeatureList::IsEnabled(::features::kWheelEventRegions)
-               ? bitfields_.BlockingWheelEventHandlerChanged()
-               : false;
+    return bitfields_.BlockingWheelEventHandlerChanged();
   }
   bool DescendantBlockingWheelEventHandlerChanged() const {
     return bitfields_.DescendantBlockingWheelEventHandlerChanged();
@@ -3424,8 +3421,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   DisplayLockContext* GetDisplayLockContext() const {
     NOT_DESTROYED();
-    if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
-      return nullptr;
     auto* element = DynamicTo<Element>(GetNode());
     if (!element)
       return nullptr;

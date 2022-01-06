@@ -9,18 +9,22 @@
 
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "cc/input/touch_action.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/assistant/assistant_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/extensions/api/tabs/tabs_util.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_share_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -32,6 +36,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/tab_scrubber.h"
+#include "chrome/browser/ui/ash/window_pin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -56,6 +61,9 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/restore_data.h"
 #include "components/app_restore/window_properties.h"
+#include "components/favicon/core/favicon_service.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/device_service.h"
@@ -65,6 +73,8 @@
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
 #include "url/gurl.h"
 
 namespace {
@@ -265,6 +275,44 @@ bool ChromeShellDelegate::IsSessionRestoreInProgress() const {
   return SessionRestore::IsRestoring(profile);
 }
 
+void ChromeShellDelegate::SetUpEnvironmentForLockedFullscreen(bool locked) {
+  // Reset the clipboard and kill dev tools when entering or exiting locked
+  // fullscreen (security concerns).
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardBuffer::kCopyPaste);
+  content::DevToolsAgentHost::DetachAllClients();
+
+  // TODO(crbug/1243104): This might be interesting for DLP to change.
+  // Disable both screenshots and video screen captures via the capture mode
+  // feature.
+  ChromeCaptureModeDelegate::Get()->SetIsScreenCaptureLocked(locked);
+
+  // Get the primary profile as that's what ARC and Assistant are attached to.
+  const Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  // Commands below require profile.
+  if (!profile) {
+    return;
+  }
+
+  // Disable ARC while in the locked fullscreen mode.
+  arc::ArcSessionManager* const arc_session_manager =
+      arc::ArcSessionManager::Get();
+  if (arc_session_manager && arc::IsArcAllowedForProfile(profile)) {
+    if (locked) {
+      // Disable ARC, preserve data.
+      arc_session_manager->RequestDisable();
+    } else {
+      // Re-enable ARC if needed.
+      if (arc::IsArcPlayStoreEnabledForProfile(profile))
+        arc_session_manager->RequestEnable();
+    }
+  }
+
+  if (assistant::IsAssistantAllowedForProfile(profile) ==
+      chromeos::assistant::AssistantAllowedState::ALLOWED) {
+    ash::AssistantState::Get()->NotifyLockedFullScreenStateChanged(locked);
+  }
+}
+
 bool ChromeShellDelegate::IsUiDevToolsStarted() const {
   return ChromeBrowserMainExtraPartsViews::Get()->GetUiDevToolsServerInstance();
 }
@@ -382,9 +430,46 @@ void ChromeShellDelegate::OpenFeedbackPageForPersistentDesksBar() {
                              /*description_template=*/"#BentoBar\n\n");
 }
 
-void ChromeShellDelegate::SetPinnedFromExo(aura::Window* window,
-                                           chromeos::WindowPinType type) {
-  extensions::tabs_util::SetLockedFullscreenStateFromExo(window, type);
+desks_storage::DeskModel* ChromeShellDelegate::GetDeskModel() {
+  return DesksClient::Get()->GetDeskModel();
+}
+
+void ChromeShellDelegate::GetFaviconForUrl(
+    const std::string& page_url,
+    int desired_icon_size,
+    favicon_base::FaviconRawBitmapCallback callback,
+    base::CancelableTaskTracker* tracker) const {
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(
+          ProfileManager::GetActiveUserProfile(),
+          ServiceAccessType::EXPLICIT_ACCESS);
+
+  favicon_service->GetRawFaviconForPageURL(
+      GURL(page_url), {favicon_base::IconType::kFavicon}, desired_icon_size,
+      /*fallback_to_host=*/false, std::move(callback), tracker);
+}
+
+void ChromeShellDelegate::GetIconForAppId(
+    const std::string& app_id,
+    int desired_icon_size,
+    base::OnceCallback<void(apps::mojom::IconValuePtr icon_value)> callback)
+    const {
+  auto* app_service_proxy = apps::AppServiceProxyFactory::GetForProfile(
+      ProfileManager::GetActiveUserProfile());
+  if (!app_service_proxy) {
+    std::move(callback).Run(apps::mojom::IconValue::New());
+    return;
+  }
+
+  app_service_proxy->LoadIcon(
+      app_service_proxy->AppRegistryCache().GetAppType(app_id), app_id,
+      apps::mojom::IconType::kStandard, desired_icon_size,
+      /*allow_placeholder_icon=*/false, std::move(callback));
+}
+
+void ChromeShellDelegate::LaunchAppsFromTemplate(
+    std::unique_ptr<ash::DeskTemplate> desk_template) {
+  DesksClient::Get()->LaunchAppsFromTemplate(std::move(desk_template));
 }
 
 // static
@@ -395,8 +480,4 @@ void ChromeShellDelegate::SetDisableLoggingRedirectForTesting(bool value) {
 // static
 void ChromeShellDelegate::ResetDisableLoggingRedirectForTesting() {
   disable_logging_redirect_for_testing.reset();
-}
-
-desks_storage::DeskModel* ChromeShellDelegate::GetDeskModel() {
-  return DesksClient::Get()->GetDeskModel();
 }

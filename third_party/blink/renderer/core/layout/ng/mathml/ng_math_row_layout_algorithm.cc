@@ -51,7 +51,7 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
     LogicalSize* row_total_size) {
   const bool should_add_space =
       Node().IsMathRoot() || !GetMathMLEmbellishedOperatorProperties(Node());
-  LayoutUnit inline_offset, max_row_ascent, max_row_descent;
+  const auto baseline_type = Style().GetFontBaseline();
 
   // https://w3c.github.io/mathml-core/#dfn-algorithm-for-stretching-operators-along-the-block-axis
   const bool inherits_block_stretch_size_constraint =
@@ -68,7 +68,7 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
           NGBoxFragment fragment(
               ConstraintSpace().GetWritingDirection(),
               To<NGPhysicalBoxFragment>(result->PhysicalFragment()));
-          LayoutUnit ascent = fragment.BaselineOrSynthesize();
+          LayoutUnit ascent = fragment.BaselineOrSynthesize(baseline_type);
           stretch_sizes.ascent = std::max(stretch_sizes.ascent, ascent),
           stretch_sizes.descent =
               std::max(stretch_sizes.descent, fragment.BlockSize() - ascent);
@@ -111,6 +111,7 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
   }
 
   // Layout in-flow children in a row.
+  LayoutUnit inline_offset, max_row_ascent, max_row_descent;
   for (NGLayoutInputNode child = Node().FirstChild(); child;
        child = child.NextSibling()) {
     if (child.IsOutOfFlowPositioned()) {
@@ -148,16 +149,17 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
     LayoutUnit lspace, rspace;
     if (should_add_space)
       DetermineOperatorSpacing(To<NGBlockNode>(child), &lspace, &rspace);
-    const NGPhysicalFragment& physical_fragment =
-        child_layout_result->PhysicalFragment();
+    const auto& physical_fragment =
+        To<NGPhysicalBoxFragment>(child_layout_result->PhysicalFragment());
     NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
-                           To<NGPhysicalBoxFragment>(physical_fragment));
+                           physical_fragment);
 
     NGBoxStrut margins = ComputeMarginsFor(child_constraint_space,
                                            child.Style(), ConstraintSpace());
     inline_offset += margins.inline_start;
 
-    LayoutUnit ascent = margins.block_start + fragment.BaselineOrSynthesize();
+    LayoutUnit ascent =
+        margins.block_start + fragment.BaselineOrSynthesize(baseline_type);
     *max_row_block_baseline = std::max(*max_row_block_baseline, ascent);
 
     // TODO(crbug.com/1125136): take into account italic correction.
@@ -167,7 +169,7 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
     children->emplace_back(
         To<NGBlockNode>(child), margins,
         LogicalOffset{inline_offset, margins.block_start - ascent},
-        std::move(&physical_fragment));
+        std::move(child_layout_result));
 
     inline_offset += fragment.InlineSize() + margins.inline_end;
 
@@ -207,16 +209,18 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
   adjust_offset += LogicalOffset{center_offset, max_row_block_baseline};
   for (auto& child_data : children) {
     child_data.offset += adjust_offset;
-    container_builder_.AddChild(*child_data.fragment, child_data.offset);
+    container_builder_.AddResult(*child_data.result, child_data.offset);
     child_data.child.StoreMargins(ConstraintSpace(), child_data.margins);
   }
 
   container_builder_.SetBaseline(adjust_offset.block_offset);
 
+  auto intrinsic_block_size =
+      max_row_size.block_size + BorderScrollbarPadding().BlockSum();
   auto block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), BorderPadding(),
-      max_row_size.block_size + BorderScrollbarPadding().BlockSum(),
+      ConstraintSpace(), Style(), BorderPadding(), intrinsic_block_size,
       border_box_size.inline_size);
+  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
@@ -225,7 +229,7 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
 }
 
 MinMaxSizesResult NGMathRowLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesFloatInput&) const {
+    const MinMaxSizesFloatInput&) {
   if (auto result = CalculateMinMaxSizesIgnoringChildren(
           Node(), BorderScrollbarPadding()))
     return *result;

@@ -13,6 +13,7 @@
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/floss/floss_adapter_client.h"
 
 namespace floss {
 
@@ -96,6 +97,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
 #endif
 
   void SetName(const std::string& name);
+  void SetBondState(FlossAdapterClient::BondState bond_state);
+  void SetIsConnected(bool is_connected);
 
  protected:
   // BluetoothDevice override
@@ -128,6 +131,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
 
   // Name of this device. Can be queried later and isn't mandatory for creation.
   std::string name_;
+
+  // Whether the device is bonded/paired.
+  FlossAdapterClient::BondState bond_state_ =
+      FlossAdapterClient::BondState::kNotBonded;
+
+  // Whether the device is connected at link layer level (not profile level).
+  // Mirrors the connection state of Floss:
+  // 0 if not connected; 1 if connected and > 1 if connection is encrypted
+  // (https://android.googlesource.com/platform/system/bt/+/refs/heads/android10-c2f2-release/btif/src/btif_dm.cc#737),
+  // but squashing all connected states >= 1 as a single "connected" since it's
+  // not used in the Chrome layer.
+  bool is_connected_ = false;
 
   base::WeakPtrFactory<BluetoothDeviceFloss> weak_ptr_factory_{this};
 };

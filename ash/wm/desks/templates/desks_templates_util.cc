@@ -12,7 +12,6 @@
 #include "components/prefs/pref_service.h"
 
 namespace ash {
-
 namespace {
 
 PrefService* GetPrimaryUserPrefService() {
@@ -28,12 +27,13 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 bool AreDesksTemplatesEnabled() {
-  if (!features::AreDesksTemplatesEnabled())
-    return false;
+  // Always allow the feature to be used if it is explicitly enabled. Otherwise
+  // check the policy.
+  if (features::AreDesksTemplatesEnabled())
+    return true;
 
   PrefService* pref_service = GetPrimaryUserPrefService();
-  return pref_service &&
-         pref_service->GetBoolean(ash::prefs::kDeskTemplatesEnabled);
+  return pref_service && pref_service->GetBoolean(prefs::kDeskTemplatesEnabled);
 }
 
 }  // namespace desks_templates_util

@@ -126,6 +126,15 @@ class COMPONENT_EXPORT(UI_BASE) ElementTracker
   using Subscription = base::CallbackListSubscription;
   using ElementList = std::vector<TrackedElement*>;
 
+  // Identifier that should be used by each framework to create a
+  // TrackedElement from an element that does not alreayd have an identifier.
+  //
+  // Currently, the identifier is not removed when the code that needs the
+  // element completes, but in the future we may implement a ref-counting
+  // system for systems that use a temporary identifier so that it does not
+  // persist longer than it is needed.
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(ElementTracker, kTemporaryIdentifier);
+
   // Gets the element tracker to be used by clients to subscribe to and receive
   // events.
   static ElementTracker* GetElementTracker();
@@ -135,7 +144,7 @@ class COMPONENT_EXPORT(UI_BASE) ElementTracker
 
   // Returns either the one element matching the given `id` and `context`, or
   // null if there are none. Will generate an error if there is more than one
-  // element with `id|`in `context`. Only visible elements are returned.
+  // element with `id` in `context`. Only visible elements are returned.
   //
   // Use when you want to verify that there's only one matching element in the
   // given context.

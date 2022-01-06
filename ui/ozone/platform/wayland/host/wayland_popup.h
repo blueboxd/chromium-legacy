@@ -40,6 +40,9 @@ class WaylandPopup : public WaylandWindow {
   WaylandPopup* AsWaylandPopup() override;
   bool IsSurfaceConfigured() override;
   void SetWindowGeometry(gfx::Rect bounds) override;
+  void AckConfigure(uint32_t serial) override;
+  void UpdateVisualSize(const gfx::Size& size_px, float scale_factor) override;
+  void ApplyPendingBounds() override;
 
   // Creates a popup window, which is visible as a menu window.
   bool CreateShellPopup();
@@ -58,8 +61,6 @@ class WaylandPopup : public WaylandWindow {
   wl::Object<zaura_surface> aura_surface_;
 
   PlatformWindowShadowType shadow_type_ = PlatformWindowShadowType::kNone;
-
-  gfx::Rect pending_initial_bounds_px_;
 
   // Helps to avoid reposition itself if HandlePopupConfigure was called, which
   // resulted in calling SetBounds.

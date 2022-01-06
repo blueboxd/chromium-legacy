@@ -508,8 +508,10 @@ class HttpNetworkTransactionTest : public PlatformTest,
     request.traffic_annotation =
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-    RecordingBoundTestNetLog log;
-    session_deps_.net_log = log.bound().net_log();
+    RecordingNetLogObserver net_log_observer;
+    NetLogWithSource net_log_with_source =
+        NetLogWithSource::Make(NetLogSourceType::NONE);
+    session_deps_.net_log = NetLog::Get();
     std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
@@ -519,8 +521,8 @@ class HttpNetworkTransactionTest : public PlatformTest,
 
     TestCompletionCallback callback;
 
-    EXPECT_TRUE(log.bound().IsCapturing());
-    int rv = trans.Start(&request, callback.callback(), log.bound());
+    EXPECT_TRUE(net_log_with_source.IsCapturing());
+    int rv = trans.Start(&request, callback.callback(), net_log_with_source);
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     out.rv = callback.WaitForResult();
@@ -555,7 +557,7 @@ class HttpNetworkTransactionTest : public PlatformTest,
     rv = ReadTransaction(&trans, &out.response_data);
     EXPECT_THAT(rv, IsOk());
 
-    auto entries = log.GetEntries();
+    auto entries = net_log_observer.GetEntries();
     size_t pos = ExpectLogContainsSomewhere(
         entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_REQUEST_HEADERS,
         NetLogEventPhase::NONE);
@@ -911,10 +913,9 @@ TEST_F(HttpNetworkTransactionTest, SimpleGETHostResolutionFailure) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  RecordingTestNetLog log;
   MockHostResolver* resolver = new MockHostResolver();
   resolver->rules()->AddSimulatedTimeoutFailure("www.example.org");
-  session_deps_.net_log = &log;
+  session_deps_.net_log = net::NetLog::Get();
   session_deps_.host_resolver.reset(resolver);
   std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -1886,8 +1887,7 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Written data for successfully sending both requests.
@@ -1987,8 +1987,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
     request.upload_data_stream = &upload_data_stream;
   }
 
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   SSLSocketDataProvider ssl1(ASYNC, OK);
@@ -2464,8 +2463,7 @@ TEST_F(HttpNetworkTransactionTest, KeepAliveAfterUnreadBody) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   const char* request_data =
@@ -2888,8 +2886,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuth) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  RecordingTestNetLog log;
-  session_deps_.net_log = &log;
+  session_deps_.net_log = net::NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
@@ -2994,9 +2991,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthWithAddressChange) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  RecordingTestNetLog log;
   MockHostResolver* resolver = new MockHostResolver();
-  session_deps_.net_log = &log;
+  session_deps_.net_log = net::NetLog::Get();
   session_deps_.host_resolver.reset(resolver);
   std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -3108,8 +3104,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthForever) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  RecordingTestNetLog log;
-  session_deps_.net_log = &log;
+  session_deps_.net_log = net::NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
@@ -3228,8 +3223,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
     request.traffic_annotation =
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-    RecordingTestNetLog log;
-    session_deps_.net_log = &log;
+    session_deps_.net_log = net::NetLog::Get();
     std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
     MockWrite data_writes[] = {
@@ -3564,8 +3558,10 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  RecordingNetLogObserver net_log_observer;
+  NetLogWithSource net_log_with_source =
+      NetLogWithSource::Make(NetLogSourceType::NONE);
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
@@ -3622,12 +3618,12 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
 
   trans->SetConnectedCallback(connected_handler.Callback());
 
-  int rv = trans->Start(&request, callback1.callback(), log.bound());
+  int rv = trans->Start(&request, callback1.callback(), net_log_with_source);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  auto entries = log.GetEntries();
+  auto entries = net_log_observer.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -3711,8 +3707,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  RecordingNetLogObserver net_log_observer;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
@@ -3768,12 +3764,13 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
 
   trans->SetConnectedCallback(connected_handler.Callback());
 
-  int rv = trans->Start(&request, callback1.callback(), log.bound());
+  int rv = trans->Start(&request, callback1.callback(),
+                        NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  auto entries = log.GetEntries();
+  auto entries = net_log_observer.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -3858,8 +3855,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
     session_deps_.proxy_resolution_service =
         ConfiguredProxyResolutionService::CreateFixed(
             "myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-    RecordingBoundTestNetLog log;
-    session_deps_.net_log = log.bound().net_log();
+    RecordingNetLogObserver net_log_observer;
+    session_deps_.net_log = NetLog::Get();
     std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -3907,10 +3904,11 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
 
     TestCompletionCallback callback1;
 
-    int rv = trans.Start(&request, callback1.callback(), log.bound());
+    int rv = trans.Start(&request, callback1.callback(),
+                         NetLogWithSource::Make(NetLogSourceType::NONE));
     EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
-    auto entries = log.GetEntries();
+    auto entries = net_log_observer.GetEntries();
     size_t pos = ExpectLogContainsSomewhere(
         entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
         NetLogEventPhase::NONE);
@@ -3970,8 +3968,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     session_deps_.proxy_resolution_service =
         ConfiguredProxyResolutionService::CreateFixed(
             "myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-    RecordingBoundTestNetLog log;
-    session_deps_.net_log = log.bound().net_log();
+    RecordingNetLogObserver net_log_observer;
+    session_deps_.net_log = NetLog::Get();
     std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -4017,10 +4015,11 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
 
     TestCompletionCallback callback1;
 
-    int rv = trans.Start(&request, callback1.callback(), log.bound());
+    int rv = trans.Start(&request, callback1.callback(),
+                         NetLogWithSource::Make(NetLogSourceType::NONE));
     EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
-    auto entries = log.GetEntries();
+    auto entries = net_log_observer.GetEntries();
     size_t pos = ExpectLogContainsSomewhere(
         entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
         NetLogEventPhase::NONE);
@@ -4083,8 +4082,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  RecordingNetLogObserver net_log_observer;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
@@ -4146,10 +4145,11 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans->Start(&request, callback1.callback(), log.bound());
+  int rv = trans->Start(&request, callback1.callback(),
+                        NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
-  auto entries = log.GetEntries();
+  auto entries = net_log_observer.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -4359,8 +4359,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyMatchesServerAuthNoTunnel) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  NetLogWithSource net_log_with_source =
+      NetLogWithSource::Make(NetLogSourceType::NONE);
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   MockWrite data_writes[] = {
@@ -4419,7 +4420,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyMatchesServerAuthNoTunnel) {
 
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-  int rv = trans->Start(&request, callback.callback(), log.bound());
+  int rv = trans->Start(&request, callback.callback(), net_log_with_source);
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4469,7 +4470,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyMatchesServerAuthNoTunnel) {
   // server auth credentials and get another response.
   trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-  rv = trans->Start(&request, callback.callback(), log.bound());
+  rv = trans->Start(&request, callback.callback(), net_log_with_source);
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4513,8 +4514,10 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  NetLogWithSource net_log_with_source =
+      NetLogWithSource::Make(NetLogSourceType::NONE);
+
+  session_deps_.net_log = NetLog::Get();
   session_deps_.key_auth_cache_server_entries_by_network_isolation_key = true;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -4614,7 +4617,7 @@ TEST_F(HttpNetworkTransactionTest,
 
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-  int rv = trans->Start(&request, callback.callback(), log.bound());
+  int rv = trans->Start(&request, callback.callback(), net_log_with_source);
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4677,7 +4680,7 @@ TEST_F(HttpNetworkTransactionTest,
   request.network_isolation_key = kNetworkIsolationKey2;
   trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-  rv = trans->Start(&request, callback.callback(), log.bound());
+  rv = trans->Start(&request, callback.callback(), net_log_with_source);
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4731,7 +4734,7 @@ TEST_F(HttpNetworkTransactionTest,
   request.network_isolation_key = kNetworkIsolationKey1;
   trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-  rv = trans->Start(&request, callback.callback(), log.bound());
+  rv = trans->Start(&request, callback.callback(), net_log_with_source);
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4764,8 +4767,9 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "HTTPS myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  NetLogWithSource net_log_with_source =
+      NetLogWithSource::Make(NetLogSourceType::NONE);
+  session_deps_.net_log = NetLog::Get();
   session_deps_.key_auth_cache_server_entries_by_network_isolation_key = true;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -4885,7 +4889,7 @@ TEST_F(HttpNetworkTransactionTest,
 
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-  int rv = trans->Start(&request, callback.callback(), log.bound());
+  int rv = trans->Start(&request, callback.callback(), net_log_with_source);
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4948,7 +4952,7 @@ TEST_F(HttpNetworkTransactionTest,
   request.network_isolation_key = kNetworkIsolationKey2;
   trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-  rv = trans->Start(&request, callback.callback(), log.bound());
+  rv = trans->Start(&request, callback.callback(), net_log_with_source);
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -5002,7 +5006,7 @@ TEST_F(HttpNetworkTransactionTest,
   request.network_isolation_key = kNetworkIsolationKey1;
   trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-  rv = trans->Start(&request, callback.callback(), log.bound());
+  rv = trans->Start(&request, callback.callback(), net_log_with_source);
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -5136,8 +5140,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsServerRequestsProxyAuthThroughProxy) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  RecordingNetLogObserver net_log_observer;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
@@ -5169,12 +5173,13 @@ TEST_F(HttpNetworkTransactionTest, HttpsServerRequestsProxyAuthThroughProxy) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_UNEXPECTED_PROXY_AUTH));
-  auto entries = log.GetEntries();
+  auto entries = net_log_observer.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -6156,8 +6161,9 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  NetLogWithSource net_log_with_source =
+      NetLogWithSource::Make(NetLogSourceType::NONE);
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
@@ -6198,7 +6204,7 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
   auto trans1 =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans1->Start(&request1, callback1.callback(), log.bound());
+  int rv = trans1->Start(&request1, callback1.callback(), net_log_with_source);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -6220,7 +6226,7 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
   auto trans2 =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
-  rv = trans2->Start(&request2, callback2.callback(), log.bound());
+  rv = trans2->Start(&request2, callback2.callback(), net_log_with_source);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
@@ -6260,8 +6266,9 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  NetLogWithSource net_log_with_source =
+      NetLogWithSource::Make(NetLogSourceType::NONE);
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
@@ -6302,7 +6309,7 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
   auto trans1 =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans1->Start(&request1, callback1.callback(), log.bound());
+  int rv = trans1->Start(&request1, callback1.callback(), net_log_with_source);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -6324,7 +6331,7 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
   auto trans2 =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
-  rv = trans2->Start(&request2, callback2.callback(), log.bound());
+  rv = trans2->Start(&request2, callback2.callback(), net_log_with_source);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
@@ -6392,14 +6399,13 @@ TEST_F(HttpNetworkTransactionTest, ProxyHostResolutionFailure) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  RecordingTestNetLog log;
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
   MockHostResolver* resolver = new MockHostResolver();
   resolver->rules()->AddSimulatedTimeoutFailure("proxy");
-  session_deps_.net_log = &log;
+  session_deps_.net_log = net::NetLog::Get();
   session_deps_.host_resolver.reset(resolver);
   std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -6426,8 +6432,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyGet) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should use full url
@@ -6457,7 +6462,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyGet) {
 
   trans.SetConnectedCallback(connected_handler.Callback());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -6501,8 +6507,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // fetch http://www.example.org/ via SPDY
@@ -6531,7 +6536,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
 
   trans.SetConnectedCallback(connected_handler.Callback());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -6575,8 +6581,9 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  NetLogWithSource net_log_with_source =
+      NetLogWithSource::Make(NetLogSourceType::NONE);
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Fetch http://www.example.org/ through the SPDY proxy.
@@ -6605,7 +6612,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
   // Stall the hostname resolution begun by the transaction.
   session_deps_.host_resolver->set_ondemand_mode(true);
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(), net_log_with_source);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Race a session to the proxy, which completes first.
@@ -6615,7 +6622,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
                      SpdySessionKey::IsProxySession::kTrue, SocketTag(),
                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> spdy_session =
-      CreateSpdySession(session.get(), key, log.bound());
+      CreateSpdySession(session.get(), key, net_log_with_source);
 
   // Unstall the resolution begun by the transaction.
   session_deps_.host_resolver->set_ondemand_mode(true);
@@ -6647,8 +6654,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // The first request will be a bare GET, the second request will be a
@@ -6702,7 +6708,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -6745,8 +6752,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -6798,7 +6804,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
 
   TestCompletionCallback callback1;
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -6832,8 +6839,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -6889,7 +6895,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
 
   TestCompletionCallback callback1;
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Allow the SpdyProxyClientSocket's write callback to complete.
@@ -6925,8 +6932,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -6960,7 +6966,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
 
   TestCompletionCallback callback1;
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -7146,8 +7153,7 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps_));
 
@@ -7285,8 +7291,7 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps_));
 
@@ -7413,8 +7418,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps_));
 
@@ -7793,8 +7797,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should use full url
@@ -7835,7 +7838,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -7899,8 +7903,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetryNoKeepAlive) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should use full url
@@ -7951,7 +7954,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetryNoKeepAlive) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -8023,8 +8027,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetryNoKeepAliveChangeProxy) {
           "https://myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
   session_deps_.proxy_resolution_service->SetProxyDelegate(
       proxy_delegate.get());
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should use full url
@@ -8075,7 +8078,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetryNoKeepAliveChangeProxy) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -8149,8 +8153,7 @@ TEST_F(HttpNetworkTransactionTest,
           "https://myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
   session_deps_.proxy_resolution_service->SetProxyDelegate(
       proxy_delegate.get());
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should use full url
@@ -8200,7 +8203,8 @@ TEST_F(HttpNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -11259,8 +11263,7 @@ TEST_F(HttpNetworkTransactionTest, HTTPSViaHttpsProxy) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "HTTPS proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -11324,8 +11327,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "HTTPS proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   const base::TimeDelta kTimeIncrement = base::Seconds(4);
   session_deps_.host_resolver->set_ondemand_mode(true);
@@ -11392,8 +11394,7 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "HTTPS proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -11440,8 +11441,7 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromAutoDetectedPacResult(
           "HTTPS proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   HttpRequestInfo request;
   request.load_flags = LOAD_MAIN_FRAME_DEPRECATED;
@@ -11488,8 +11488,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   const base::TimeDelta kTimeIncrement = base::Seconds(4);
   session_deps_.host_resolver->set_ondemand_mode(true);
@@ -11670,8 +11669,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "HTTPS myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  RecordingNetLogObserver net_log_observer;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
@@ -11745,12 +11744,13 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans->Start(&request, callback1.callback(), log.bound());
+  int rv = trans->Start(&request, callback1.callback(),
+                        NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  auto entries = log.GetEntries();
+  auto entries = net_log_observer.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -12310,8 +12310,7 @@ TEST_F(HttpNetworkTransactionTest, SOCKS4_HTTP_GET) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "SOCKS myproxy:1080", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -12367,8 +12366,7 @@ TEST_F(HttpNetworkTransactionTest, SOCKS4_SSL_GET) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "SOCKS myproxy:1080", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -12429,8 +12427,7 @@ TEST_F(HttpNetworkTransactionTest, SOCKS4_HTTP_GET_no_PAC) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "socks4://myproxy:1080", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -12485,8 +12482,7 @@ TEST_F(HttpNetworkTransactionTest, SOCKS5_HTTP_GET) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "SOCKS5 myproxy:1080", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -12554,8 +12550,7 @@ TEST_F(HttpNetworkTransactionTest, SOCKS5_SSL_GET) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "SOCKS5 myproxy:1080", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -14711,14 +14706,12 @@ TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
   auto proxy_resolver_factory = std::make_unique<CapturingProxyResolverFactory>(
       &capturing_proxy_resolver);
 
-  RecordingTestNetLog net_log;
-
   session_deps_.proxy_resolution_service =
       std::make_unique<ConfiguredProxyResolutionService>(
           std::move(proxy_config_service), std::move(proxy_resolver_factory),
-          &net_log, /*quick_check_enabled=*/true);
+          net::NetLog::Get(), /*quick_check_enabled=*/true);
 
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   // Configure alternative service with a hostname that is not bypassed by the
   // proxy.
@@ -14798,8 +14791,7 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
           std::make_unique<CapturingProxyResolverFactory>(
               &capturing_proxy_resolver),
           nullptr, /*quick_check_enabled=*/true);
-  RecordingTestNetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = net::NetLog::Get();
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -16274,8 +16266,8 @@ TEST_F(HttpNetworkTransactionTest, SimpleCancel) {
 
   TestCompletionCallback callback;
 
-  RecordingBoundTestNetLog log;
-  int rv = trans->Start(&request, callback.callback(), log.bound());
+  int rv = trans->Start(&request, callback.callback(),
+                        NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   trans.reset();  // Cancel the transaction here.
 
@@ -16338,8 +16330,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyGet) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpRequestInfo request;
@@ -16371,7 +16362,8 @@ TEST_F(HttpNetworkTransactionTest, ProxyGet) {
   ConnectedHandler connected_handler;
   trans.SetConnectedCallback(connected_handler.Callback());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -16405,8 +16397,8 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGet) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  RecordingNetLogObserver net_log_observer;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpRequestInfo request;
@@ -16446,12 +16438,13 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGet) {
   ConnectedHandler connected_handler;
   trans.SetConnectedCallback(connected_handler.Callback());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  auto entries = log.GetEntries();
+  auto entries = net_log_observer.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -16489,8 +16482,8 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetIPv6) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  RecordingNetLogObserver net_log_observer;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpRequestInfo request;
@@ -16528,12 +16521,13 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetIPv6) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  auto entries = log.GetEntries();
+  auto entries = net_log_observer.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -16566,8 +16560,8 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  RecordingNetLogObserver net_log_observer;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpRequestInfo request;
@@ -16601,12 +16595,13 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_EMPTY_RESPONSE));
-  auto entries = log.GetEntries();
+  auto entries = net_log_observer.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -16923,8 +16918,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
 
   auto cert_request = base::MakeRefCounted<SSLCertRequestInfo>();
   cert_request->host_and_port = HostPortPair("proxy", 70);
@@ -17158,6 +17152,8 @@ TEST_F(HttpNetworkTransactionTest, CertificateRequestInRenego) {
 TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   // Set up a special HttpNetworkSession with a MockCachingHostResolver.
   session_deps_.host_resolver = std::make_unique<MockCachingHostResolver>();
+  session_deps_.host_resolver->rules()->AddRule("www.example.org", "1.2.3.4");
+  session_deps_.host_resolver->rules()->AddRule("mail.example.com", "1.2.3.4");
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   AddSSLSocketData();
@@ -17242,6 +17238,8 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
 TEST_F(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   // Set up a special HttpNetworkSession with a MockCachingHostResolver.
   session_deps_.host_resolver = std::make_unique<MockCachingHostResolver>();
+  session_deps_.host_resolver->rules()->AddRule("www.example.org", "1.2.3.4");
+  session_deps_.host_resolver->rules()->AddRule("mail.example.com", "1.2.3.4");
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   AddSSLSocketData();
@@ -17386,7 +17384,7 @@ TEST_F(HttpNetworkTransactionTest, RetryWithoutConnectionPooling) {
 
   // Preload mail.example.org into HostCache.
   int rv = session_deps_.host_resolver->LoadIntoCache(
-      HostPortPair("mail.example.com", 443), NetworkIsolationKey(),
+      HostPortPair("mail.example.org", 443), NetworkIsolationKey(),
       absl::nullopt);
   EXPECT_THAT(rv, IsOk());
 
@@ -17422,8 +17420,9 @@ TEST_F(HttpNetworkTransactionTest, RetryWithoutConnectionPooling) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
 
-  RecordingBoundTestNetLog log;
-  rv = trans2.Start(&request2, callback.callback(), log.bound());
+  RecordingNetLogObserver net_log_observer;
+  rv = trans2.Start(&request2, callback.callback(),
+                    NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsOk());
@@ -17437,7 +17436,7 @@ TEST_F(HttpNetworkTransactionTest, RetryWithoutConnectionPooling) {
   ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 
-  auto entries = log.GetEntries();
+  auto entries = net_log_observer.GetEntries();
   ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_RESTART_MISDIRECTED_REQUEST,
       NetLogEventPhase::NONE);
@@ -17512,7 +17511,7 @@ TEST_F(HttpNetworkTransactionTest, ReturnHTTP421OnRetry) {
 
   // Preload mail.example.org into HostCache.
   int rv = session_deps_.host_resolver->LoadIntoCache(
-      HostPortPair("mail.example.com", 443), NetworkIsolationKey(),
+      HostPortPair("mail.example.org", 443), NetworkIsolationKey(),
       absl::nullopt);
   EXPECT_THAT(rv, IsOk());
 
@@ -17548,8 +17547,8 @@ TEST_F(HttpNetworkTransactionTest, ReturnHTTP421OnRetry) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
 
-  RecordingBoundTestNetLog log;
-  rv = trans2.Start(&request2, callback.callback(), log.bound());
+  rv = trans2.Start(&request2, callback.callback(),
+                    NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsOk());
@@ -17572,6 +17571,8 @@ TEST_F(HttpNetworkTransactionTest,
   // Set up HostResolver to invalidate cached entries after 1 cached resolve.
   session_deps_.host_resolver =
       std::make_unique<MockCachingHostResolver>(1 /* cache_invalidation_num */);
+  session_deps_.host_resolver->rules()->AddRule("www.example.org", "1.2.3.4");
+  session_deps_.host_resolver->rules()->AddRule("mail.example.com", "1.2.3.4");
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   AddSSLSocketData();
@@ -18067,8 +18068,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "HTTPS proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingTestNetLog log;
-  session_deps_.net_log = &log;
+  session_deps_.net_log = net::NetLog::Get();
   SSLSocketDataProvider ssl1(ASYNC, OK);  // to the proxy
   ssl1.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
@@ -20178,8 +20178,7 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
   session_deps_.proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  RecordingBoundTestNetLog log;
-  session_deps_.net_log = log.bound().net_log();
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpRequestInfo request;
@@ -20221,7 +20220,8 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
   TestCompletionCallback callback1;
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  int rv = trans.Start(&request, callback1.callback(), log.bound());
+  int rv = trans.Start(&request, callback1.callback(),
+                       NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
@@ -20843,7 +20843,7 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
 
   // Preload mail.example.org into HostCache.
   int rv = session_deps_.host_resolver->LoadIntoCache(
-      HostPortPair("mail.example.com", 443), NetworkIsolationKey(),
+      HostPortPair("mail.example.org", 443), NetworkIsolationKey(),
       absl::nullopt);
   EXPECT_THAT(rv, IsOk());
 
@@ -20883,8 +20883,8 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
   auto trans2 =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
-  RecordingBoundTestNetLog log;
-  rv = trans2->Start(&request2, callback.callback(), log.bound());
+  rv = trans2->Start(&request2, callback.callback(),
+                     NetLogWithSource::Make(NetLogSourceType::NONE));
   EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   response = trans2->GetResponseInfo();
@@ -23546,10 +23546,8 @@ TEST_F(HttpNetworkTransactionTest, RequestWithDnsAliases) {
 
   // Add a rule with DNS aliases to the host resolver.
   std::vector<std::string> aliases({"alias1", "alias2", "www.example.org"});
-  auto* rules = session_deps_.host_resolver->rules();
-  rules->AddIPLiteralRuleWithDnsAliases("www.example.org", "127.0.0.1",
-                                        std::move(aliases));
-  session_deps_.host_resolver->set_rules(rules);
+  session_deps_.host_resolver->rules()->AddIPLiteralRuleWithDnsAliases(
+      "www.example.org", "127.0.0.1", std::move(aliases));
 
   // Create a HttpNetworkSession.
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -23602,13 +23600,8 @@ TEST_F(HttpNetworkTransactionTest, RequestWithNoAdditionalDnsAliases) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  // Add a rule without DNS aliases to the host resolver. The parameter is an
-  // empty vector.
-  std::vector<std::string> aliases;
-  auto* rules = session_deps_.host_resolver->rules();
-  rules->AddIPLiteralRuleWithDnsAliases("www.example.org", "127.0.0.1",
-                                        std::move(aliases));
-  session_deps_.host_resolver->set_rules(rules);
+  // Add a rule without DNS aliases to the host resolver.
+  session_deps_.host_resolver->rules()->AddRule("www.example.org", "127.0.0.1");
 
   // Create a HttpNetworkSession.
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));

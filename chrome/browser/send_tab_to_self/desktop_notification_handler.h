@@ -59,7 +59,7 @@ class DesktopNotificationHandler : public NotificationHandler,
   void DisplayFailureMessage(const GURL& url);
 
   // Retrieves the Profile for which this Handler will manage notifications.
-  const Profile* profile() const override;
+  const Profile* GetProfile() const;
 
  protected:
   Profile* const profile_;

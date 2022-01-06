@@ -9,6 +9,10 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace gfx {
 class Rect;
 }  // namespace gfx
@@ -45,15 +49,28 @@ class ASH_EXPORT CaptureModeTestApi {
   // starts video recording immediately.
   void PerformCapture();
 
+  // Returns true if there is a video recording currently in progress.
+  bool IsVideoRecordingInProgress() const;
+
   // Stops the video recording. Can only be called if a video recording was
   // in progress.
   void StopVideoRecording();
 
-  // Sets a callback that will be triggered once the captured file (of an
-  // image or a video) is saved, providing its path. It will never be
-  // triggered if capture failed to save a file.
+  // Sets a callback that will be triggered once the captured file (of an image
+  // or a video) is saved, providing its path. It will never be triggered if
+  // capture failed to save a file.
   using OnFileSavedCallback = base::OnceCallback<void(const base::FilePath&)>;
   void SetOnCaptureFileSavedCallback(OnFileSavedCallback callback);
+
+  // Sets a callback that will be triggered once the captured file (of an image
+  // or a video) is deleted as a result of user action at the end of the video
+  // (e.g. clicking the "Delete" button in the notification, or in the DLP
+  // warning dialog). The callback is provided with the file path, and whether
+  // the deletion was successful or not.
+  using OnFileDeletedCallback =
+      base::OnceCallback<void(const base::FilePath& path,
+                              bool delete_successful)>;
+  void SetOnCaptureFileDeletedCallback(OnFileDeletedCallback callback);
 
   // Sets whether or not audio will be recorded when capturing a video. Should
   // only be called before recording starts, otherwise it has no effect.
@@ -71,6 +88,14 @@ class ASH_EXPORT CaptureModeTestApi {
   // Returns the |RecordingOverlayController| which hosts the overlay widget.
   // Can only be called while recording is in progress for a Projector session.
   RecordingOverlayController* GetRecordingOverlayController();
+
+  // Simulates the flow taken by users to open the folder selection dialog from
+  // the settings menu, and waits until this dialog gets added.
+  void SimulateOpeningFolderSelectionDialog();
+
+  // Returns a pointer to the folder selection dialog window or nullptr if no
+  // such window exists.
+  aura::Window* GetFolderSelectionDialogWindow();
 
  private:
   // Sets the capture mode type to a video capture if |for_video| is true, or

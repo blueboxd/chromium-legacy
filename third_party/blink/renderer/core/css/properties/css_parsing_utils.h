@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
-#include "third_party/blink/renderer/platform/geometry/length.h"  // For ValueRange
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -80,30 +79,31 @@ bool ConsumeNumberRaw(CSSParserTokenRange&,
                       double& result);
 CSSPrimitiveValue* ConsumeNumber(CSSParserTokenRange&,
                                  const CSSParserContext&,
-                                 ValueRange);
+                                 CSSPrimitiveValue::ValueRange);
 CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange&,
                                  const CSSParserContext&,
-                                 ValueRange,
+                                 CSSPrimitiveValue::ValueRange,
                                  UnitlessQuirk = UnitlessQuirk::kForbid);
 CSSPrimitiveValue* ConsumePercent(CSSParserTokenRange&,
                                   const CSSParserContext&,
-                                  ValueRange);
+                                  CSSPrimitiveValue::ValueRange);
 
 // Any percentages are converted to numbers.
 CSSPrimitiveValue* ConsumeNumberOrPercent(CSSParserTokenRange&,
                                           const CSSParserContext&,
-                                          ValueRange);
+                                          CSSPrimitiveValue::ValueRange);
 
 CSSPrimitiveValue* ConsumeAlphaValue(CSSParserTokenRange&,
                                      const CSSParserContext&);
 CSSPrimitiveValue* ConsumeLengthOrPercent(
     CSSParserTokenRange&,
     const CSSParserContext&,
-    ValueRange,
+    CSSPrimitiveValue::ValueRange,
     UnitlessQuirk = UnitlessQuirk::kForbid);
-CSSPrimitiveValue* ConsumeSVGGeometryPropertyLength(CSSParserTokenRange&,
-                                                    const CSSParserContext&,
-                                                    ValueRange);
+CSSPrimitiveValue* ConsumeSVGGeometryPropertyLength(
+    CSSParserTokenRange&,
+    const CSSParserContext&,
+    CSSPrimitiveValue::ValueRange);
 
 CORE_EXPORT CSSPrimitiveValue* ConsumeAngle(
     CSSParserTokenRange&,
@@ -117,9 +117,9 @@ CORE_EXPORT CSSPrimitiveValue* ConsumeAngle(
     double maximum_value);
 CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange&,
                                const CSSParserContext&,
-                               ValueRange);
+                               CSSPrimitiveValue::ValueRange);
 CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange&);
-
+CSSValue* ConsumeRatio(CSSParserTokenRange&, const CSSParserContext&);
 CSSIdentifierValue* ConsumeIdent(CSSParserTokenRange&);
 CSSIdentifierValue* ConsumeIdentRange(CSSParserTokenRange&,
                                       CSSValueID lower,
@@ -378,7 +378,8 @@ CSSValueList* ConsumeFontFamily(CSSParserTokenRange&);
 CSSValue* ConsumeGenericFamily(CSSParserTokenRange&);
 CSSValue* ConsumeFamilyName(CSSParserTokenRange&);
 String ConcatenateFamilyName(CSSParserTokenRange&);
-CSSIdentifierValue* ConsumeFontStretchKeywordOnly(CSSParserTokenRange&);
+CSSIdentifierValue* ConsumeFontStretchKeywordOnly(CSSParserTokenRange&,
+                                                  const CSSParserContext&);
 CSSValue* ConsumeFontStretch(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeFontStyle(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeFontWeight(CSSParserTokenRange&, const CSSParserContext&);
@@ -544,7 +545,21 @@ CSSValue* ConsumePositionLonghand(CSSParserTokenRange& range,
     return CSSNumericLiteralValue::Create(
         percent, CSSPrimitiveValue::UnitType::kPercentage);
   }
-  return ConsumeLengthOrPercent(range, context, kValueRangeAll);
+  return ConsumeLengthOrPercent(range, context,
+                                CSSPrimitiveValue::ValueRange::kAll);
+}
+
+inline bool AtIdent(const CSSParserToken& token, const char* ident) {
+  return token.GetType() == kIdentToken &&
+         EqualIgnoringASCIICase(token.Value(), ident);
+}
+
+template <typename T>
+bool ConsumeIfIdent(T& range_or_stream, const char* ident) {
+  if (!AtIdent(range_or_stream.Peek(), ident))
+    return false;
+  range_or_stream.ConsumeIncludingWhitespace();
+  return true;
 }
 
 }  // namespace css_parsing_utils

@@ -41,6 +41,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_owner.h"
@@ -186,7 +187,6 @@ class NavigationURLLoaderImplTest : public testing::Test {
             absl::nullopt /* initiator_frame_token */, headers,
             net::LOAD_NORMAL, false /* skip_service_worker */,
             blink::mojom::RequestContextType::LOCATION,
-            network::mojom::RequestDestination::kDocument,
             blink::mojom::MixedContentContextType::kBlockable,
             false /* is_form_submission */,
             false /* was_initiated_by_link_click */,
@@ -204,6 +204,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
     common_params->initiator_origin = url::Origin::Create(url);
     common_params->method = method;
     common_params->download_policy = download_policy;
+    common_params->request_destination =
+        network::mojom::RequestDestination::kDocument;
     url::Origin origin = url::Origin::Create(url);
 
     std::unique_ptr<NavigationRequestInfo> request_info(
@@ -233,7 +235,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
     return std::make_unique<NavigationURLLoaderImpl>(
         browser_context_.get(), browser_context_->GetDefaultStoragePartition(),
         std::move(request_info), nullptr /* navigation_ui_data */,
-        nullptr /* service_worker_handle */, nullptr /* appcache_handle */,
+        nullptr /* service_worker_handle */,
         nullptr /* prefetched_signed_exchange_cache */, delegate,
         mojo::NullRemote() /* cookie_access_obsever */,
         mojo::NullRemote() /* url_loader_network_observer */,
@@ -255,8 +257,9 @@ class NavigationURLLoaderImplTest : public testing::Test {
     TestNavigationURLLoaderDelegate delegate;
     std::unique_ptr<NavigationURLLoader> loader = CreateTestLoader(
         redirect_url,
-        base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
-                           redirect_url.GetOrigin().spec().c_str()),
+        base::StringPrintf(
+            "%s: %s", net::HttpRequestHeaders::kOrigin,
+            redirect_url.DeprecatedGetOriginAsURL().spec().c_str()),
         request_method, &delegate);
     loader->Start();
     delegate.WaitForRequestRedirected();
@@ -295,7 +298,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
     std::unique_ptr<NavigationURLLoader> loader = CreateTestLoader(
         url,
         base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
-                           url.GetOrigin().spec().c_str()),
+                           url.DeprecatedGetOriginAsURL().spec().c_str()),
         "GET", &delegate, blink::NavigationDownloadPolicy(),
         true /*is_main_frame*/, upgrade_if_insecure);
     loader->Start();
@@ -328,7 +331,7 @@ TEST_F(NavigationURLLoaderImplTest, IsolationInfoOfMainFrameNavigation) {
   std::unique_ptr<NavigationURLLoader> loader = CreateTestLoader(
       url,
       base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
-                         url.GetOrigin().spec().c_str()),
+                         url.DeprecatedGetOriginAsURL().spec().c_str()),
       "GET", &delegate, blink::NavigationDownloadPolicy(),
       true /*is_main_frame*/, false /*upgrade_if_insecure*/);
   loader->Start();
@@ -352,7 +355,8 @@ TEST_F(NavigationURLLoaderImplTest,
   const GURL final_url = http_test_server_.GetURL("/echo");
   const url::Origin origin = url::Origin::Create(url);
 
-  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET",
+                               url.DeprecatedGetOriginAsURL().spec());
 
   ASSERT_TRUE(most_recent_resource_request_->trusted_params);
   EXPECT_TRUE(
@@ -370,7 +374,8 @@ TEST_F(NavigationURLLoaderImplTest, Redirect301Tests) {
   const GURL https_redirect_url =
       http_test_server_.GetURL("/redirect301-to-https");
 
-  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null", true);
   HTTPRedirectOriginHeaderTest(url, "POST", "GET", std::string());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET", std::string(),
@@ -384,7 +389,8 @@ TEST_F(NavigationURLLoaderImplTest, Redirect302Tests) {
   const GURL https_redirect_url =
       http_test_server_.GetURL("/redirect302-to-https");
 
-  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null", true);
   HTTPRedirectOriginHeaderTest(url, "POST", "GET", std::string());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET", std::string(),
@@ -398,7 +404,8 @@ TEST_F(NavigationURLLoaderImplTest, Redirect303Tests) {
   const GURL https_redirect_url =
       http_test_server_.GetURL("/redirect303-to-https");
 
-  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null", true);
   HTTPRedirectOriginHeaderTest(url, "POST", "GET", std::string());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET", std::string(),
@@ -412,9 +419,11 @@ TEST_F(NavigationURLLoaderImplTest, Redirect307Tests) {
   const GURL https_redirect_url =
       http_test_server_.GetURL("/redirect307-to-https");
 
-  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null", true);
-  HTTPRedirectOriginHeaderTest(url, "POST", "POST", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "POST", "POST",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "POST", "null",
                                true);
 }
@@ -426,9 +435,11 @@ TEST_F(NavigationURLLoaderImplTest, Redirect308Tests) {
   const GURL https_redirect_url =
       http_test_server_.GetURL("/redirect308-to-https");
 
-  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null", true);
-  HTTPRedirectOriginHeaderTest(url, "POST", "POST", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(url, "POST", "POST",
+                               url.DeprecatedGetOriginAsURL().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "POST", "null",
                                true);
 }

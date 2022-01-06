@@ -23,17 +23,17 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/arc_icon_once_loader.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/app_service/arc_icon_once_loader.h"
 #include "chrome/browser/apps/app_service/publishers/arc_apps.h"
 #include "chrome/browser/apps/app_service/publishers/arc_apps_factory.h"
 #include "chrome/browser/ash/arc/arc_optin_uma.h"
@@ -70,11 +70,11 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/mojom/compatibility_mode.mojom.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
@@ -406,7 +406,7 @@ MATCHER_P(ArcPackageInfoIs, package, "") {
 void RemoveNonArcApps(Profile* profile,
                       FakeAppListModelUpdater* model_updater,
                       bool flush) {
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   if (flush)
     proxy->FlushMojoCallsForTesting();
@@ -498,7 +498,8 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   void CreateBuilder() {
     ResetBuilder();  // Destroy any existing builder in the correct order.
 
-    model_updater_ = std::make_unique<FakeAppListModelUpdater>();
+    model_updater_ = std::make_unique<FakeAppListModelUpdater>(
+        /*profile=*/nullptr, /*reorder_delegate=*/nullptr);
     controller_ = std::make_unique<test::TestAppListControllerDelegate>();
     builder_ = std::make_unique<AppServiceAppModelBuilder>(controller_.get());
     builder_->Initialize(nullptr, profile_.get(), model_updater_.get());
@@ -2612,7 +2613,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderWithBadIcon) {
   // could load the icon by calling ArcAppIcon, so override the icon loader
   // temporarily to avoid calling ArcAppIcon. Otherwise, it might affect
   // the test result when calling AppServiceAppIconLoader to load the icon.
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_.get());
   apps::StubIconLoader stub_icon_loader;
   apps::IconLoader* old_icon_loader =
@@ -2817,7 +2818,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderCompressed) {
   base::RunLoop run_loop;
   base::RepeatingClosure quit = run_loop.QuitClosure();
 
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_.get());
   ASSERT_NE(nullptr, proxy);
 

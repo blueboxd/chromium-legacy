@@ -47,22 +47,22 @@ DisclosureOrientation GetDisclosureOrientation(const ComputedStyle& style,
                                         : DisclosureOrientation::kUp;
 }
 
-Path CreatePath(const FloatPoint* path) {
+Path CreatePath(const gfx::PointF* path) {
   Path result;
-  result.MoveTo(FloatPoint(path[0].X(), path[0].Y()));
+  result.MoveTo(gfx::PointF(path[0].x(), path[0].y()));
   for (int i = 1; i < 4; ++i)
-    result.AddLineTo(FloatPoint(path[i].X(), path[i].Y()));
+    result.AddLineTo(gfx::PointF(path[i].x(), path[i].y()));
   return result;
 }
 
 Path GetCanonicalDisclosurePath(const ComputedStyle& style, bool is_open) {
-  constexpr FloatPoint kLeftPoints[4] = {
+  constexpr gfx::PointF kLeftPoints[4] = {
       {1.0f, 0.0f}, {0.14f, 0.5f}, {1.0f, 1.0f}, {1.0f, 0.0f}};
-  constexpr FloatPoint kRightPoints[4] = {
+  constexpr gfx::PointF kRightPoints[4] = {
       {0.0f, 0.0f}, {0.86f, 0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f}};
-  constexpr FloatPoint kUpPoints[4] = {
+  constexpr gfx::PointF kUpPoints[4] = {
       {0.0f, 0.93f}, {0.5f, 0.07f}, {1.0f, 0.93f}, {0.0f, 0.93f}};
-  constexpr FloatPoint kDownPoints[4] = {
+  constexpr gfx::PointF kDownPoints[4] = {
       {0.0f, 0.07f}, {0.5f, 0.93f}, {1.0f, 0.07f}, {0.0f, 0.07f}};
 
   switch (GetDisclosureOrientation(style, is_open)) {
@@ -111,7 +111,7 @@ void ListMarkerPainter::PaintSymbol(const PaintInfo& paint_info,
   } else if (type == "disclosure-open" || type == "disclosure-closed") {
     Path path = GetCanonicalDisclosurePath(style, type == "disclosure-open");
     path.Transform(AffineTransform().Scale(marker.Width(), marker.Height()));
-    path.Translate(FloatSize(marker.X(), marker.Y()));
+    path.Translate(gfx::Vector2dF(marker.X(), marker.Y()));
     context.FillPath(path, auto_dark_mode);
   } else {
     NOTREACHED();
@@ -196,8 +196,8 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
     marker.MoveBy(-box_origin);
     marker = marker.TransposedRect();
     marker.MoveBy(
-        IntPoint(RoundToInt(box.X()),
-                 RoundToInt(box.Y() - layout_list_marker_.LogicalHeight())));
+        gfx::Point(RoundToInt(box.X()),
+                   RoundToInt(box.Y() - layout_list_marker_.LogicalHeight())));
     state_saver.Save();
     context.Translate(marker.X(), marker.MaxY());
     context.Rotate(Deg2rad(90.0f));

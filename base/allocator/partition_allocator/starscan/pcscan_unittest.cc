@@ -8,7 +8,6 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-#include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/starscan/stack/stack.h"
 #include "base/logging.h"
@@ -18,6 +17,13 @@
 #if defined(PA_ALLOW_PCSCAN)
 
 namespace base {
+
+#define EXPECT_PEQ(ptr1, ptr2) \
+  { EXPECT_EQ(memory::UnmaskPtr(ptr1), memory::UnmaskPtr(ptr2)); }
+
+#define EXPECT_PNE(ptr1, ptr2) \
+  { EXPECT_NE(memory::UnmaskPtr(ptr1), memory::UnmaskPtr(ptr2)); }
+
 namespace internal {
 
 namespace {
@@ -52,7 +58,10 @@ class PartitionAllocPCScanTest : public testing::Test {
                      PartitionOptions::Quarantine::kAllowed,
                      PartitionOptions::Cookie::kDisallowed,
                      PartitionOptions::BackupRefPtr::kDisabled,
-                     PartitionOptions::UseConfigurablePool::kNo});
+                     PartitionOptions::UseConfigurablePool::kNo,
+                     PartitionOptions::LazyCommit::kEnabled});
+    allocator_.root()->UncapEmptySlotSpanMemoryForTesting();
+
     PCScan::RegisterScannableRoot(allocator_.root());
   }
   ~PartitionAllocPCScanTest() override {
@@ -124,8 +133,8 @@ FullSlotSpanAllocation GetFullSlotSpan(ThreadSafePartitionRoot& root,
   EXPECT_EQ(SlotSpan::FromSlotStartPtr(first),
             SlotSpan::FromSlotStartPtr(last));
   if (bucket.num_system_pages_per_slot_span == NumSystemPagesPerPartitionPage())
-    EXPECT_EQ(reinterpret_cast<size_t>(first) & PartitionPageBaseMask(),
-              reinterpret_cast<size_t>(last) & PartitionPageBaseMask());
+    EXPECT_PEQ(reinterpret_cast<size_t>(first) & PartitionPageBaseMask(),
+               reinterpret_cast<size_t>(last) & PartitionPageBaseMask());
   EXPECT_EQ(num_slots, static_cast<size_t>(
                            bucket.active_slot_spans_head->num_allocated_slots));
   EXPECT_EQ(nullptr, bucket.active_slot_spans_head->freelist_head);
@@ -138,6 +147,7 @@ FullSlotSpanAllocation GetFullSlotSpan(ThreadSafePartitionRoot& root,
 }
 
 bool IsInFreeList(void* slot_start) {
+  slot_start = memory::RemaskPtr(slot_start);
   auto* slot_span = SlotSpan::FromSlotStartPtr(slot_start);
   for (auto* entry = slot_span->freelist_head; entry;
        entry = entry->GetNext(slot_span->bucket->slot_size)) {
@@ -447,14 +457,18 @@ TEST_F(PartitionAllocPCScanTest, DanglingInterPartitionReference) {
        PartitionOptions::Quarantine::kAllowed,
        PartitionOptions::Cookie::kAllowed,
        PartitionOptions::BackupRefPtr::kDisabled,
-       PartitionOptions::UseConfigurablePool::kNo});
+       PartitionOptions::UseConfigurablePool::kNo,
+       PartitionOptions::LazyCommit::kEnabled});
+  source_root.UncapEmptySlotSpanMemoryForTesting();
   ThreadSafePartitionRoot value_root(
       {PartitionOptions::AlignedAlloc::kDisallowed,
        PartitionOptions::ThreadCache::kDisabled,
        PartitionOptions::Quarantine::kAllowed,
        PartitionOptions::Cookie::kAllowed,
        PartitionOptions::BackupRefPtr::kDisabled,
-       PartitionOptions::UseConfigurablePool::kNo});
+       PartitionOptions::UseConfigurablePool::kNo,
+       PartitionOptions::LazyCommit::kEnabled});
+  value_root.UncapEmptySlotSpanMemoryForTesting();
 
   PCScan::RegisterScannableRoot(&source_root);
   PCScan::RegisterScannableRoot(&value_root);
@@ -476,14 +490,18 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceToNonScannablePartition) {
        PartitionOptions::Quarantine::kAllowed,
        PartitionOptions::Cookie::kAllowed,
        PartitionOptions::BackupRefPtr::kDisabled,
-       PartitionOptions::UseConfigurablePool::kNo});
+       PartitionOptions::UseConfigurablePool::kNo,
+       PartitionOptions::LazyCommit::kEnabled});
+  source_root.UncapEmptySlotSpanMemoryForTesting();
   ThreadSafePartitionRoot value_root(
       {PartitionOptions::AlignedAlloc::kDisallowed,
        PartitionOptions::ThreadCache::kDisabled,
        PartitionOptions::Quarantine::kAllowed,
        PartitionOptions::Cookie::kAllowed,
        PartitionOptions::BackupRefPtr::kDisabled,
-       PartitionOptions::UseConfigurablePool::kNo});
+       PartitionOptions::UseConfigurablePool::kNo,
+       PartitionOptions::LazyCommit::kEnabled});
+  value_root.UncapEmptySlotSpanMemoryForTesting();
 
   PCScan::RegisterScannableRoot(&source_root);
   PCScan::RegisterNonScannableRoot(&value_root);
@@ -505,14 +523,18 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceFromNonScannablePartition) {
        PartitionOptions::Quarantine::kAllowed,
        PartitionOptions::Cookie::kAllowed,
        PartitionOptions::BackupRefPtr::kDisabled,
-       PartitionOptions::UseConfigurablePool::kNo});
+       PartitionOptions::UseConfigurablePool::kNo,
+       PartitionOptions::LazyCommit::kEnabled});
+  source_root.UncapEmptySlotSpanMemoryForTesting();
   ThreadSafePartitionRoot value_root(
       {PartitionOptions::AlignedAlloc::kDisallowed,
        PartitionOptions::ThreadCache::kDisabled,
        PartitionOptions::Quarantine::kAllowed,
        PartitionOptions::Cookie::kAllowed,
        PartitionOptions::BackupRefPtr::kDisabled,
-       PartitionOptions::UseConfigurablePool::kNo});
+       PartitionOptions::UseConfigurablePool::kNo,
+       PartitionOptions::LazyCommit::kEnabled});
+  value_root.UncapEmptySlotSpanMemoryForTesting();
 
   PCScan::RegisterNonScannableRoot(&source_root);
   PCScan::RegisterScannableRoot(&value_root);
@@ -706,6 +728,55 @@ TEST_F(PartitionAllocPCScanTest, TwoDanglingPointersToSameObject) {
   const auto& quarantine =
       PCScan::scheduler().scheduling_backend().GetQuarantineData();
   EXPECT_EQ(slot_span_metadata->bucket->slot_size, quarantine.current_size);
+}
+
+TEST_F(PartitionAllocPCScanTest, DanglingPointerToInaccessibleArea) {
+  static const size_t kObjectSizeForSlotSpanConsistingOfMultiplePartitionPages =
+      static_cast<size_t>(PartitionPageSize() * 1.25);
+
+  FullSlotSpanAllocation full_slot_span = GetFullSlotSpan(
+      root(), root().AdjustSizeForExtrasSubtract(
+                  kObjectSizeForSlotSpanConsistingOfMultiplePartitionPages));
+
+  // Assert that number of allocatable bytes for this bucket is smaller than all
+  // allocated partition pages.
+  auto* bucket = full_slot_span.slot_span->bucket;
+  ASSERT_LT(bucket->get_bytes_per_span(),
+            bucket->get_pages_per_slot_span() * PartitionPageSize());
+
+  // Let the first object point past the end of the last one + some random
+  // offset.
+  static constexpr size_t kOffsetPastEnd = 7;
+  *reinterpret_cast<uint8_t**>(full_slot_span.first) =
+      reinterpret_cast<uint8_t*>(full_slot_span.last) +
+      kObjectSizeForSlotSpanConsistingOfMultiplePartitionPages + kOffsetPastEnd;
+
+  // Destroy the last object and put it in quarantine.
+  root().Free(full_slot_span.last);
+  EXPECT_TRUE(IsInQuarantine(full_slot_span.last));
+
+  // Run PCScan. After it, the quarantined object should not be promoted.
+  RunPCScan();
+  EXPECT_FALSE(IsInQuarantine(full_slot_span.last));
+}
+
+TEST_F(PartitionAllocPCScanTest, DanglingPointerOutsideUsablePart) {
+  using ValueList = List<kMaxBucketed - 4096>;
+  using SourceList = List<64>;
+
+  auto* value = ValueList::Create(root());
+  auto* slot_span = SlotSpanMetadata<ThreadSafe>::FromSlotInnerPtr(value);
+  ASSERT_TRUE(slot_span->CanStoreRawSize());
+
+  auto* source = SourceList::Create(root());
+
+  // Let the |source| object point to the unused area of |value| and expect
+  // |value| to be nevertheless marked during scanning.
+  static constexpr size_t kOffsetPastEnd = 7;
+  source->next = reinterpret_cast<ListBase*>(
+      reinterpret_cast<uint8_t*>(value + 1) + kOffsetPastEnd);
+
+  TestDanglingReference(*this, source, value);
 }
 
 }  // namespace internal

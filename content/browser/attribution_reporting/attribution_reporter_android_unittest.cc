@@ -4,8 +4,9 @@
 
 #include "content/browser/attribution_reporting/attribution_reporter_android.h"
 
-#include "content/browser/attribution_reporting/conversion_manager.h"
-#include "content/browser/attribution_reporting/conversion_test_utils.h"
+#include "base/time/time.h"
+#include "content/browser/attribution_reporting/attribution_manager.h"
+#include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/common/url_utils.h"
 #include "content/public/common/content_client.h"
@@ -34,18 +35,33 @@ class AttributionReporterTest : public ::testing::Test {
   void TearDown() override {}
 
  protected:
-  TestConversionManager test_manager_;
+  TestAttributionManager test_manager_;
 
  private:
   url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
 TEST_F(AttributionReporterTest, ValidImpression_Allowed) {
+  base::Time time = base::Time::Now() - base::Hours(1);
   attribution_reporter_android::ReportAppImpression(
       test_manager_, nullptr, kPackageName, kEventId, kConversionUrl,
-      kReportToUrl, 56789);
+      kReportToUrl, 56789, time);
 
-  EXPECT_EQ(1u, test_manager_.num_impressions());
+  EXPECT_EQ(1u, test_manager_.num_sources());
+
+  EXPECT_EQ(OriginFromAndroidPackageName(kPackageName),
+            test_manager_.last_impression_origin());
+  EXPECT_EQ(StorableSource::SourceType::kEvent,
+            test_manager_.last_impression_source_type());
+  EXPECT_EQ(time, test_manager_.last_impression_time());
+}
+
+TEST_F(AttributionReporterTest, ValidImpression_Allowed_NoOptionals) {
+  attribution_reporter_android::ReportAppImpression(
+      test_manager_, nullptr, kPackageName, kEventId, kConversionUrl, "", 0,
+      base::Time::Now());
+
+  EXPECT_EQ(1u, test_manager_.num_sources());
 
   EXPECT_EQ(OriginFromAndroidPackageName(kPackageName),
             test_manager_.last_impression_origin());
@@ -54,16 +70,16 @@ TEST_F(AttributionReporterTest, ValidImpression_Allowed) {
 }
 
 TEST_F(AttributionReporterTest, ValidImpression_Disallowed) {
-  ConversionDisallowingContentBrowserClient browser_client;
+  AttributionDisallowingContentBrowserClient browser_client;
 
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&browser_client);
 
   attribution_reporter_android::ReportAppImpression(
       test_manager_, nullptr, kPackageName, kEventId, kConversionUrl,
-      kReportToUrl, 56789);
+      kReportToUrl, 56789, base::Time::Now());
 
-  EXPECT_EQ(0u, test_manager_.num_impressions());
+  EXPECT_EQ(0u, test_manager_.num_sources());
 
   SetBrowserClientForTesting(old_browser_client);
 }
@@ -71,9 +87,9 @@ TEST_F(AttributionReporterTest, ValidImpression_Disallowed) {
 TEST_F(AttributionReporterTest, InvalidImpression) {
   attribution_reporter_android::ReportAppImpression(
       test_manager_, nullptr, kPackageName, kEventId, kInvalidUrl, kReportToUrl,
-      56789);
+      56789, base::Time::Now());
 
-  EXPECT_EQ(0u, test_manager_.num_impressions());
+  EXPECT_EQ(0u, test_manager_.num_sources());
 }
 
 }  // namespace content

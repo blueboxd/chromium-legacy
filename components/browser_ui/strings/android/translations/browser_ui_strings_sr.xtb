@@ -29,6 +29,7 @@
 <translation id="1743802530341753419">Питај пре него што дозволиш сајтовима да се повезују са уређајем (препоручено)</translation>
 <translation id="1779089405699405702">Декодер слика</translation>
 <translation id="1818308510395330587">Да бисте дозволили да <ph name="APP_NAME" /> користи ПР, укључите и камеру у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
+<translation id="1864927262126810325">Извор: <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Приступ локацији је искључен за овај уређај. Укључите га у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Огласи</translation>
 <translation id="1919950603503897840">Изаберите контакте</translation>
@@ -116,7 +117,6 @@
 <translation id="4008040567710660924">Омогућава колачиће за одређени сајт.</translation>
 <translation id="4046123991198612571">Следећа песма</translation>
 <translation id="4165986682804962316">Подешавања сајта</translation>
-<translation id="4176463684765177261">Онемогућено</translation>
 <translation id="4200726100658658164">Отворите подешавања локације</translation>
 <translation id="4226663524361240545">Уређај ће вибрирати када примате обавештења</translation>
 <translation id="4259722352634471385">Навигација је блокирана: <ph name="URL" /></translation>
@@ -185,7 +185,6 @@
 <translation id="5876056640971328065">Паузирај видео</translation>
 <translation id="5887687176710214216">Последња посета: јуче</translation>
 <translation id="5916664084637901428">Укључено</translation>
-<translation id="59174027418879706">Омогућено</translation>
 <translation id="5922853908706496913">Дели се екран</translation>
 <translation id="5939518447894949180">Ресетуј</translation>
 <translation id="5975083100439434680">Умањивање</translation>
@@ -238,6 +237,7 @@
 <translation id="7016516562562142042">Дозвољено је за актуелни претраживач</translation>
 <translation id="7053983685419859001">Блокирај</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Изабрано: 1}one{Изабрано: #}few{Изабрано: #}other{Изабрано: #}}</translation>
+<translation id="7070090581017165256">О овом сајту</translation>
 <translation id="7087918508125750058">Изабрали сте <ph name="ITEM_COUNT" />. Опције су доступне при врху екрана</translation>
 <translation id="7141896414559753902">Блокирај приказивање искачућих прозора и преусмеравања на сајтовима (препоручено)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>

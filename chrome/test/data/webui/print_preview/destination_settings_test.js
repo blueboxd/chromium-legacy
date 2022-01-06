@@ -7,8 +7,8 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS, isLacros, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {eventToPromise, fakeDataBind, waitBeforeNextRender} from '../test_util.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {eventToPromise, fakeDataBind, waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
 
 import {CloudPrintInterfaceStub} from './cloud_print_interface_stub.js';
 // <if expr="chromeos or lacros">
@@ -511,7 +511,9 @@ suite(destination_settings_test.suiteName, function() {
           const whenDestinationSelect = eventToPromise(
               DestinationStoreEventType.DESTINATION_SELECT,
               destinationSettings.getDestinationStoreForTest());
-          dropdown.fire('selected-option-change', 'Save as PDF/local/');
+          dropdown.dispatchEvent(new CustomEvent(
+              'selected-option-change',
+              {bubbles: true, composed: true, detail: 'Save as PDF/local/'}));
 
           // Ensure this fires the destination select event.
           return whenDestinationSelect;
@@ -573,7 +575,11 @@ suite(destination_settings_test.suiteName, function() {
               const whenDestinationSelect = eventToPromise(
                   DestinationStoreEventType.DESTINATION_SELECT,
                   destinationSettings.getDestinationStoreForTest());
-              dropdown.fire('selected-option-change', driveDestinationKey);
+              dropdown.dispatchEvent(new CustomEvent('selected-option-change', {
+                bubbles: true,
+                composed: true,
+                detail: driveDestinationKey,
+              }));
               return whenDestinationSelect;
             })
             .then(() => {
@@ -623,8 +629,11 @@ suite(destination_settings_test.suiteName, function() {
               const whenDestinationSelect = eventToPromise(
                   DestinationStoreEventType.DESTINATION_SELECT,
                   destinationSettings.getDestinationStoreForTest());
-              dropdown.fire(
-                  'selected-option-change', makeLocalDestinationKey('ID2'));
+              dropdown.dispatchEvent(new CustomEvent('selected-option-change', {
+                bubbles: true,
+                composed: true,
+                detail: makeLocalDestinationKey('ID2'),
+              }));
               return whenDestinationSelect;
             })
             .then(() => {
@@ -662,7 +671,9 @@ suite(destination_settings_test.suiteName, function() {
           }
           assertDropdownItems(dropdownItems);
 
-          dropdown.fire('selected-option-change', 'seeMore');
+          dropdown.dispatchEvent(new CustomEvent(
+              'selected-option-change',
+              {bubbles: true, composed: true, detail: 'seeMore'}));
           return waitBeforeNextRender(destinationSettings);
         })
         .then(() => {
@@ -732,7 +743,9 @@ suite(destination_settings_test.suiteName, function() {
               }
 
               assertDropdownItems(dropdownItems);
-              dropdown.fire('selected-option-change', 'seeMore');
+              dropdown.dispatchEvent(new CustomEvent(
+                  'selected-option-change',
+                  {bubbles: true, composed: true, detail: 'seeMore'}));
               return waitBeforeNextRender(destinationSettings);
             })
             .then(() => {
@@ -746,7 +759,9 @@ suite(destination_settings_test.suiteName, function() {
                   DestinationStoreEventType.DESTINATIONS_INSERTED,
                   destinationSettings.getDestinationStoreForTest());
               // Simulate setting a new account.
-              dialog.fire('account-change', account2);
+              dialog.dispatchEvent(new CustomEvent(
+                  'account-change',
+                  {bubbles: true, composed: true, detail: account2}));
               flush();
               return whenAdded;
             })
@@ -825,6 +840,8 @@ suite(destination_settings_test.suiteName, function() {
               nativeLayer.resetResolver('getPrinterCapabilities');
               destinationSettings.shadowRoot.querySelector('#destinationSelect')
                   .dispatchEvent(new CustomEvent('selected-option-change', {
+                    bubbles: true,
+                    composed: true,
                     detail: 'Save as PDF/local/',
                   }));
               flush();

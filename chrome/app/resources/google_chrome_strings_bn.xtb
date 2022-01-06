@@ -51,7 +51,6 @@
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />বর্তমান সেটিংস<ph name="END_LINK" />-এর রিপোর্ট করে Chrome-কে আরও ভাল করে তুলতে সাহায্য করুন</translation>
 <translation id="2151406531797534936">এখনই Chrome রিস্টার্ট করুন</translation>
 <translation id="2189289170880510015">Chrome এর কিছু সবচেয়ে গুরুত্বপূর্ণ গোপনীয়তা বিকল্প কাস্টমাইজ করুন</translation>
-<translation id="2246246234298806438">বিলট-ইন PDF viewer অনুপস্থিত থাকার সময়ে Google Chrome প্রিন্ট প্রিভিউ দেখাতে পারে না৷</translation>
 <translation id="2290014774651636340">Google এপিআই কীগুলি অনুপস্থিত৷ Google Chrome-এর কিছু বৈশিষ্ট্য নিষ্ক্রিয় হয়ে যাবে৷</translation>
 <translation id="2290095356545025170">আপনি কি Google Chrome আনইনস্টল করার ব্যাপারে নিষ্চিত ?</translation>
 <translation id="2309047409763057870">এটা Google Chrome-এর সেকেন্ডারি ইনস্টলেশন এবং একে আপনার ডিফল্ট ব্রাউজার করা যাবে না।</translation>
@@ -62,7 +61,6 @@
 <translation id="2429317896000329049">আপনার ডোমেনে সিঙ্ক উপলভ্য না থাকার কারণে Google Chrome সিঙ্ক করতে পারেনি৷</translation>
 <translation id="2467438592969358367">Google Chrome আপনার পাসওয়ার্ড এক্সপোর্ট করতে চাইছে। অনুমতি দিতে Windows এর পাসওয়ার্ড টাইপ করুন।</translation>
 <translation id="2485422356828889247">আনইনস্টল</translation>
-<translation id="2518751521812750372">আপনি Chrome বন্ধ করলে, আপনি যেসব পৃষ্ঠা ভিজিট করেছেন সেগুলি থেকে অটোমেটিক কুকি ও সাইট ডেটা মুছে ফেলে</translation>
 <translation id="2534507159460261402">Google Pay (Chrome এ কপি করা হয়েছে)</translation>
 <translation id="2574930892358684005"><ph name="EXISTING_USER" /> আগে থেকেই এই Chrome প্রোফাইলে সাইন-ইন করে আছেন। আপনার ব্রাউজিং আলাদা করতে, Chrome আপনার জন্য প্রোফাইল তৈরি করে দিতে পারে।</translation>
 <translation id="2580411288591421699">বর্তমানে Google Chrome-এর যে ভার্সনটি চলছে সেটি ইনস্টল করা যায় না৷ অনুগ্রহ করে Google Chrome বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
@@ -91,6 +89,7 @@
 <translation id="3037838751736561277">Google Chrome পটভূমি মোডে রয়েছে।</translation>
 <translation id="3059710691562604940">'Safe Browsing'-এর সুবিধা বন্ধ করা আছে। তবে Chrome আপনাকে এটি চালু রাখার জন্য সাজেস্ট করছে।</translation>
 <translation id="3065168410429928842">Chrome ট্যাব</translation>
+<translation id="3069821012350118710">Chrome বন্ধ না করা পর্যন্ত আপনি যেসব সাইট ঘুরে দেখেন, সেগুলি আপনার তথ্য মনে রাখে</translation>
 <translation id="3080151273017101988">Google Chrome বন্ধ হলে পশ্চাদপট অ্যাপ্লিকেশানের চলা অবিরত রাখুন</translation>
 <translation id="3089968997497233615">Google Chrome-এর একটি নতুন, তুলনামূলক নিরাপদ ভার্সন উপলব্ধ৷</translation>
 <translation id="3100998948628680988">আপনার Chrome প্রোফাইলের নাম লিখুন</translation>
@@ -101,6 +100,7 @@
 <translation id="3379938682270551431">{0,plural, =0{Chrome এখন আবার লঞ্চ হবে}=1{Chrome ১ সেকেন্ডের মধ্যে আবার লঞ্চ হবে}one{Chrome # সেকেন্ডের মধ্যে আবার লঞ্চ হবে}other{Chrome # সেকেন্ডের মধ্যে আবার লঞ্চ হবে}}</translation>
 <translation id="3395323229510056640">Chrome OS বিষয়ে সাহায্য পান</translation>
 <translation id="3396977131400919238">ইনস্টলেশনের সময় অপারেটিং সিস্টেমে একটি ত্রুটি ঘটেছিল৷ অনুগ্রহ করে আবার Google Chrome ডাউনলোড করুন৷</translation>
+<translation id="3428747202529429621">সাইন-ইন করা অবস্থায় আপনাকে Chrome-এ নিরাপদ রাখতে এবং হয়ত অন্যান্য Google অ্যাপে নিরাপত্তা আরও ভাল করতে এই মোডটি ব্যবহার করা হয়</translation>
 <translation id="3434246496373299699">আপনি যখন নিজের Google অ্যাকাউন্টের মাধ্যমে সাইন-ইন করবেন, Chrome তখন আপনার পাসওয়ার্ড চেক করে দেখতে পারবে</translation>
 <translation id="3451115285585441894">Chrome-এ জোড়া হচ্ছে...</translation>
 <translation id="345171907106878721">Chrome এর সাথে নিজেকে যোগ করুন</translation>
@@ -193,6 +193,7 @@
 <translation id="5804318322022881572">Chrome লঞ্চ করা যায়নি। আবার চেষ্টা করুন।</translation>
 <translation id="5867197326698922595">Google Chrome আপনার পাসওয়ার্ড এডিট করার অনুমতি চাইছে।</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
+<translation id="5901850848447342934">Chrome বন্ধ করে দেওয়া হলে আপনাকে <ph name="BEGIN_BOLD" />বেশিরভাগ সাইট থেকে সাইন-আউট করে<ph name="END_BOLD" /> দেওয়া হবে। সিঙ্ক করার বিকল্প বন্ধ করা থাকলে আপনার অ্যাকাউন্ট <ph name="BEGIN_BOLD" />Google পরিষেবা এবং Chrome থেকে সাইন-আউট করে<ph name="END_BOLD" /> দেওয়া হবে।</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - নেটওয়ার্ক সাইন-ইন</translation>
 <translation id="5940385492829620908">আপনার ওয়েব, বুকমার্ক এবং Chrome-এর অন্যান্য জিনিস এখানে রয়েছে৷</translation>
 <translation id="5941830788786076944">Google Chrome-কে ডিফল্ট ব্রাউজার করুন</translation>
@@ -202,11 +203,11 @@
 <translation id="6145313976051292476">Chrome-এ পিডিএফ ফাইল খুলুন</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome বিটা</translation>
-<translation id="61852838583753520">&amp;Chrome OS আপডেট</translation>
 <translation id="6235018212288296708">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome এর জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="6291089322031436445">Chrome ডেভেলপার অ্যাপ</translation>
 <translation id="6291549208091401781">Google Chrome ইতোমধ্যে আপনার কম্পিউটারের সকল ব্যবহারকারীর জন্য ইনস্টল করা হয়েছে।</translation>
 <translation id="6368958679917195344">Chrome OS সম্ভবত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS" />ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_CROS_OSS" /> দিয়ে তৈরি৷</translation>
+<translation id="6412673304250309937">Chrome-এ স্টোর করা নিরাপদ নয় এমন সাইটের তালিকা থেকে সাইটগুলির ইউআরএল পরীক্ষা করে দেখে। যদি কোনও সাইট আপনার পাসওয়ার্ড চুরি করার চেষ্টা করে বা আপনি কোনও ক্ষতিকারক ফাইল ডাউনলোড করলে, Safe Browsing-এ Chrome পৃষ্ঠার কিছু কন্টেন্ট সহ ইউআরএলও হয়ত পাঠাতে পারে।</translation>
 <translation id="6418662306461808273">বর্তমান Chrome প্রোফাইলে পাল্টাতে চান?</translation>
 <translation id="6506909944137591434">আপনার আশেপাশের জায়গার একটি 3D ম্যাপ তৈরি করার জন্য Chrome-এর ক্যামেরা অ্যাক্সেসের অনুমতি প্রয়োজন</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
@@ -283,11 +284,11 @@
 <translation id="8614913330719544658">Google Chrome প্রতিক্রিয়া করছে না৷ এখনই পুনঃলঞ্চ করবেন?</translation>
 <translation id="861702415419836452">আপনার আশেপাশের 3D ম্যাপ তৈরি করতে এই সাইটটির জন্য Chrome-কে আপনার ক্যামেরা অ্যাক্সেস করার অনুমতি দিতে হবে</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome ১ মিনিটের মধ্যে আবার লঞ্চ হবে}one{Chrome # মিনিটের মধ্যে আবার লঞ্চ হবে}other{Chrome # মিনিটের মধ্যে আবার লঞ্চ হবে}}</translation>
+<translation id="8629311577791198377">আপনি সব Chrome উইন্ডো বন্ধ করে দিলে, কুকি এবং সাইট ডেটা অটোমেটিক বন্ধ হয়ে যাবে</translation>
 <translation id="8641606876632989680">কোনও চুরি যাওয়া পাসওয়ার্ড দিয়ে সাইন-ইন করলে Chrome আপনাকে তা জানাবে</translation>
 <translation id="8669527147644353129">Google Chrome সহায়তাকারী</translation>
 <translation id="8679801911857917785">আপনি Chrome শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
 <translation id="8686817260976772516">Chrome প্রোফাইলের সাহায্যে আপনি সব Chrome স্টাফ আলাদা করতে পারবেন। বন্ধু এবং পরিবারের জন্য প্রোফাইল তৈরি করুন অথবা অফিস এবং বিনোদনের প্রোফাইল আলাদা আলাদা রাখুন।</translation>
-<translation id="870251953148363156">&amp;Google Chrome আপডেট</translation>
 <translation id="873133009373065397">Google Chrome ডিফল্ট ব্রাউজার নির্ধারণ বা সেট করতে পারছে না</translation>
 <translation id="8823341990149967727">Chrome পুরানো হয়ে গেছে</translation>
 <translation id="8834965163890861871">Google Chrome আপনার পাসওয়ার্ড এডিট করার অনুমতি চাইছে। অনুমতি দিতে আপনার Windows পাসওয়ার্ড টাইপ করুন।</translation>

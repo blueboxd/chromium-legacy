@@ -207,7 +207,7 @@ void TextPainterBase::DecorationsStripeIntercepts(
     FloatRect clip_rect(
         clip_origin + FloatPoint(intercept.begin_, upper),
         FloatSize(intercept.end_ - intercept.begin_, stripe_width));
-    clip_rect.InflateX(dilation);
+    clip_rect.OutsetX(dilation);
     // We need to ensure the clip rectangle is covering the full underline
     // extent. For horizontal drawing, using enclosingIntRect would be
     // sufficient, since we can clamp to full device pixels that way. However,
@@ -215,7 +215,7 @@ void TextPainterBase::DecorationsStripeIntercepts(
     // integers-equal-device pixels assumption, so vertically inflating by 1
     // pixel makes sure we're always covering. This should only be done on the
     // clipping rectangle, not when computing the glyph intersects.
-    clip_rect.InflateY(1.0);
+    clip_rect.OutsetY(1.0);
 
     if (!clip_rect.IsFinite())
       continue;
@@ -269,9 +269,8 @@ void TextPainterBase::PaintDecorationsExceptLineThrough(
           decoration_offset.ComputeUnderlineOffset(
               underline_position, decoration_info.ComputedFontSize(),
               decoration_info.FontData(), line_offset, resolved_thickness);
-      decoration_info.SetPerLineData(
-          TextDecoration::kUnderline, paint_underline_offset,
-          TextDecorationInfo::DoubleOffsetFromThickness(resolved_thickness), 1);
+      decoration_info.SetPerLineData(TextDecoration::kUnderline,
+                                     paint_underline_offset);
       PaintDecorationUnderOrOverLine(context, decoration_info,
                                      TextDecoration::kUnderline, flags);
     }
@@ -288,10 +287,8 @@ void TextPainterBase::PaintDecorationsExceptLineThrough(
           decoration_offset.ComputeUnderlineOffsetForUnder(
               line_offset, decoration_info.ComputedFontSize(),
               decoration_info.FontData(), resolved_thickness, position);
-      decoration_info.SetPerLineData(
-          TextDecoration::kOverline, paint_overline_offset,
-          -TextDecorationInfo::DoubleOffsetFromThickness(resolved_thickness),
-          1);
+      decoration_info.SetPerLineData(TextDecoration::kOverline,
+                                     paint_overline_offset);
       PaintDecorationUnderOrOverLine(context, decoration_info,
                                      TextDecoration::kOverline, flags);
     }
@@ -330,15 +327,8 @@ void TextPainterBase::PaintDecorationsOnlyLineThrough(
       // it centered at the same origin.
       const float line_through_offset =
           2 * decoration_info.Baseline() / 3 - resolved_thickness / 2;
-      // Floor double_offset in order to avoid double-line gap to appear
-      // of different size depending on position where the double line
-      // is drawn because of rounding downstream in
-      // GraphicsContext::DrawLineForText.
-      decoration_info.SetPerLineData(
-          TextDecoration::kLineThrough, line_through_offset,
-          floorf(TextDecorationInfo::DoubleOffsetFromThickness(
-              resolved_thickness)),
-          0);
+      decoration_info.SetPerLineData(TextDecoration::kLineThrough,
+                                     line_through_offset);
       AppliedDecorationPainter decoration_painter(context, decoration_info,
                                                   TextDecoration::kLineThrough);
       // No skip: ink for line-through,
@@ -358,10 +348,10 @@ void TextPainterBase::PaintDecorationUnderOrOverLine(
       ETextDecorationSkipInk::kAuto) {
     // In order to ignore intersects less than 0.5px, inflate by -0.5.
     FloatRect decoration_bounds = decoration_info.BoundsForLine(line);
-    decoration_bounds.InflateY(-0.5);
+    decoration_bounds.OutsetY(-0.5);
     ClipDecorationsStripe(
-        decoration_info.InkSkipClipUpper(decoration_bounds.Y()),
-        decoration_bounds.Height(),
+        decoration_info.InkSkipClipUpper(decoration_bounds.y()),
+        decoration_bounds.height(),
         std::min(decoration_info.ResolvedThickness(),
                  kDecorationClipMaxDilation));
   }

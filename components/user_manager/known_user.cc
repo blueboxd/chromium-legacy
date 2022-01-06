@@ -77,7 +77,7 @@ const char kIsEphemeral[] = "is_ephemeral";
 const char kChallengeResponseKeys[] = "challenge_response_keys";
 
 const char kLastOnlineSignin[] = "last_online_singin";
-const char kOfflineSigninLimitDeprecated[] = "offline_signin_limit";
+const char kOfflineSigninLimitObsolete[] = "offline_signin_limit";
 const char kOfflineSigninLimit[] = "offline_signin_limit2";
 
 // Key of the boolean flag telling if user is enterprise managed.
@@ -135,6 +135,7 @@ const char* kReservedKeys[] = {kCanonicalEmail,
 // are now obsolete.
 const char* kObsoleteKeys[] = {
     kMinimalMigrationAttemptedObsolete,
+    kOfflineSigninLimitObsolete,
 };
 
 PrefService* GetLocalStateLegacy() {
@@ -675,14 +676,15 @@ bool KnownUser::GetAccountManager(const AccountId& account_id,
   return GetStringPref(account_id, kAccountManager, manager);
 }
 
-void KnownUser::SetUserLastLoginInputMethod(const AccountId& account_id,
-                                            const std::string& input_method) {
-  SetStringPref(account_id, kLastInputMethod, input_method);
+void KnownUser::SetUserLastLoginInputMethodId(
+    const AccountId& account_id,
+    const std::string& input_method_id) {
+  SetStringPref(account_id, kLastInputMethod, input_method_id);
 }
 
-bool KnownUser::GetUserLastInputMethod(const AccountId& account_id,
-                                       std::string* input_method) {
-  return GetStringPref(account_id, kLastInputMethod, input_method);
+bool KnownUser::GetUserLastInputMethodId(const AccountId& account_id,
+                                         std::string* input_method_id) {
+  return GetStringPref(account_id, kLastInputMethod, input_method_id);
 }
 
 void KnownUser::SetUserPinLength(const AccountId& account_id, int pin_length) {
@@ -821,35 +823,6 @@ void KnownUser::CleanObsoletePrefs() {
       continue;
     for (const std::string& key : kObsoleteKeys)
       user_entry.RemoveKey(key);
-
-    // Migrate Offline signin limit to the new logic. Old logic stored 0 when
-    // the limit was not set. New logic does not store anything when the limit
-    // is not set because 0 is a legit value.
-    const base::Value* value =
-        user_entry.FindKey(kOfflineSigninLimitDeprecated);
-    absl::optional<base::TimeDelta> new_value = base::ValueToTimeDelta(value);
-    user_entry.RemoveKey(kOfflineSigninLimitDeprecated);
-    if (new_value.has_value() && !new_value->is_zero()) {
-      user_entry.SetKey(kOfflineSigninLimit,
-                        base::TimeDeltaToValue(*new_value));
-    }
-
-    if (new_value.has_value() && new_value->is_zero()) {
-      // The old logic wrongfully treated 0 as a legit value and forced the user
-      // to sign-in online in the case that the value is set to 0. This would be
-      // cached in the "UserForceOnlineSignin" pref. Reset it once during the
-      // one-time migration to the new logic, if the value was 0.
-      // TODO(https://crbug.com/1224318) Remove this around M95.
-      const std::string* email = user_entry.FindStringKey(kCanonicalEmail);
-      if (email) {
-        // This is the same kUserForceOnlineSignin from user_manager_base.cc and
-        // it's duplicated here as a temporary workaround.
-        const char kUserForceOnlineSignin[] = "UserForceOnlineSignin";
-        DictionaryPrefUpdate force_online_update(local_state_,
-                                                 kUserForceOnlineSignin);
-        force_online_update->SetKey(*email, base::Value(false));
-      }
-    }
   }
 }
 
@@ -1259,24 +1232,24 @@ bool GetAccountManager(const AccountId& account_id, std::string* manager) {
   return KnownUser(local_state).GetAccountManager(account_id, manager);
 }
 
-void SetUserLastLoginInputMethod(const AccountId& account_id,
-                                 const std::string& input_method) {
+void SetUserLastLoginInputMethodId(const AccountId& account_id,
+                                   const std::string& input_method_id) {
   PrefService* local_state = GetLocalStateLegacy();
   // Local State may not be initialized in tests.
   if (!local_state)
     return;
   return KnownUser(local_state)
-      .SetUserLastLoginInputMethod(account_id, input_method);
+      .SetUserLastLoginInputMethodId(account_id, input_method_id);
 }
 
-bool GetUserLastInputMethod(const AccountId& account_id,
-                            std::string* input_method) {
+bool GetUserLastInputMethodId(const AccountId& account_id,
+                              std::string* input_method_id) {
   PrefService* local_state = GetLocalStateLegacy();
   // Local State may not be initialized in tests.
   if (!local_state)
     return false;
   return KnownUser(local_state)
-      .GetUserLastInputMethod(account_id, input_method);
+      .GetUserLastInputMethodId(account_id, input_method_id);
 }
 
 void SetUserPinLength(const AccountId& account_id, int pin_length) {

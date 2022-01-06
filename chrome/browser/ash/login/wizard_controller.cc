@@ -15,6 +15,9 @@
 #include <vector>
 
 #include "ash/components/audio/cras_audio_handler.h"
+#include "ash/components/geolocation/simple_geolocation_provider.h"
+#include "ash/components/timezone/timezone_provider.h"
+#include "ash/components/timezone/timezone_request.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/constants/devicetype.h"
@@ -26,10 +29,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
@@ -172,7 +174,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
@@ -182,8 +183,6 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/settings/timezone_settings.h"
-#include "chromeos/timezone/timezone_provider.h"
-#include "chromeos/timezone/timezone_request.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -242,6 +241,7 @@ const StaticOobeScreenId kResumablePostLoginScreens[] = {
     chromeos::PinSetupScreenView::kScreenId,
     chromeos::MarketingOptInScreenView::kScreenId,
     chromeos::MultiDeviceSetupScreenView::kScreenId,
+    chromeos::ConsolidatedConsentScreenView::kScreenId,
 };
 
 const StaticOobeScreenId kScreensWithHiddenStatusArea[] = {
@@ -331,13 +331,7 @@ void RecordUMAHistogramForOOBEStepCompletionTime(OobeScreenId screen,
   screen_name[0] = std::toupper(screen_name[0]);
   std::string histogram_name = "OOBE.StepCompletionTime." + screen_name;
 
-  // Equivalent to using UMA_HISTOGRAM_MEDIUM_TIMES. UMA_HISTOGRAM_MEDIUM_TIMES
-  // can not be used here, because `histogram_name` is calculated dynamically
-  // and changes from call to call.
-  base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
-      histogram_name, base::Milliseconds(10), base::Minutes(3), 50,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->AddTime(step_time);
+  base::UmaHistogramMediumTimes(histogram_name, step_time);
 
   // Use for this Histogram real screen names.
   screen_name = screen.name;
@@ -803,7 +797,7 @@ void WizardController::ShowLoginScreen() {
 
   if (!time_eula_accepted_.is_null()) {
     base::TimeDelta delta = base::TimeTicks::Now() - time_eula_accepted_;
-    UMA_HISTOGRAM_MEDIUM_TIMES("OOBE.EULAToSignInTime", delta);
+    base::UmaHistogramMediumTimes("OOBE.EULAToSignInTime", delta);
   }
   VLOG(1) << "Showing login screen.";
   UpdateStatusAreaVisibilityForScreen(GaiaView::kScreenId);
@@ -1879,10 +1873,6 @@ void WizardController::PerformOOBECompletedActions() {
     return;
   }
 
-  UMA_HISTOGRAM_COUNTS_100(
-      "HIDDetection.TimesDialogShownPerOOBECompleted",
-      GetLocalState()->GetInteger(::prefs::kTimesHIDDialogShown));
-  GetLocalState()->ClearPref(::prefs::kTimesHIDDialogShown);
   StartupUtils::MarkOobeCompleted();
   oobe_marked_completed_ = true;
 }
@@ -2075,6 +2065,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowLacrosDataMigrationScreen();
   } else if (screen_id == GuestTosScreenView::kScreenId) {
     ShowGuestTosScreen();
+  } else if (screen_id == ConsolidatedConsentScreenView::kScreenId) {
+    ShowConsolidatedConsentScreen();
   } else if (screen_id == TpmErrorView::kScreenId ||
              screen_id == GaiaPasswordChangedView::kScreenId ||
              screen_id == ActiveDirectoryPasswordChangeView::kScreenId ||

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/commerce/coupons/coupon_service.h"
+#include "chrome/browser/cart/cart_features.h"
 #include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/commerce/coupons/coupon_db_content.pb.h"
 
@@ -48,7 +49,7 @@ void CouponService::UpdateFreeListingCoupons(const CouponsMap& coupon_map) {
   DeleteAllFreeListingCoupons();
   CouponDisplayTimeMap new_time_map;
   for (const auto& entry : coupon_map) {
-    const GURL& origin(entry.first.GetOrigin());
+    const GURL& origin(entry.first.DeprecatedGetOriginAsURL());
     for (const auto& coupon : entry.second) {
       auto new_coupon = std::make_unique<autofill::AutofillOfferData>(*coupon);
       coupon_map_[origin].emplace_back(std::move(new_coupon));
@@ -65,7 +66,7 @@ void CouponService::UpdateFreeListingCoupons(const CouponsMap& coupon_map) {
 void CouponService::DeleteFreeListingCouponsForUrl(const GURL& url) {
   if (!url.is_valid())
     return;
-  const GURL& origin(url.GetOrigin());
+  const GURL& origin(url.DeprecatedGetOriginAsURL());
   coupon_map_.erase(origin);
   coupon_db_->DeleteCoupon(origin);
 }
@@ -105,7 +106,8 @@ void CouponService::RecordCouponDisplayTimestamp(
 }
 
 void CouponService::MaybeFeatureStatusChanged(bool enabled) {
-  enabled &= commerce::IsCouponWithCodeEnabled();
+  enabled &= (commerce::IsCouponWithCodeEnabled() ||
+              cart_features::IsFakeDataEnabled());
   if (enabled == features_enabled_)
     return;
   features_enabled_ = enabled;
@@ -117,7 +119,7 @@ CouponService::Coupons CouponService::GetFreeListingCouponsForUrl(
     const GURL& url) {
   if (!url.is_valid())
     return {};
-  const GURL& origin(url.GetOrigin());
+  const GURL& origin(url.DeprecatedGetOriginAsURL());
   if (coupon_map_.find(origin) == coupon_map_.end()) {
     return {};
   }
@@ -131,7 +133,7 @@ CouponService::Coupons CouponService::GetFreeListingCouponsForUrl(
 bool CouponService::IsUrlEligible(const GURL& url) {
   if (!url.is_valid())
     return false;
-  return coupon_map_.find(url.GetOrigin()) != coupon_map_.end();
+  return coupon_map_.find(url.DeprecatedGetOriginAsURL()) != coupon_map_.end();
 }
 
 CouponService::CouponService() = default;

@@ -331,11 +331,12 @@ TEST_F(WebAppDataRetrieverTest, GetIcons_WebContentsDestroyed) {
   base::RunLoop run_loop;
   WebAppDataRetriever retriever;
   retriever.GetIcons(web_contents(), icon_urls, skip_page_favicons,
-                     WebAppIconDownloader::Histogram::kForCreate,
-                     base::BindLambdaForTesting([&](IconsMap icons_map) {
-                       EXPECT_TRUE(icons_map.empty());
-                       run_loop.Quit();
-                     }));
+                     base::BindLambdaForTesting(
+                         [&](IconsDownloadedResult result, IconsMap icons_map,
+                             DownloadedIconsHttpResults icons_http_results) {
+                           EXPECT_TRUE(icons_map.empty());
+                           run_loop.Quit();
+                         }));
   DeleteContents();
   run_loop.Run();
 }
@@ -346,7 +347,7 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
   web_contents_tester()->SetTitle(kFooTitle);
 
   const GURL kFooUrl("https://foo.example/bar");
-  web_contents_tester()->NavigateAndCommit(kFooUrl.GetOrigin());
+  web_contents_tester()->NavigateAndCommit(kFooUrl.DeprecatedGetOriginAsURL());
 
   base::RunLoop run_loop;
   WebAppDataRetriever retriever;
@@ -357,7 +358,7 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
   web_contents_tester()->NavigateAndCommit(kFooUrl);
   run_loop.Run();
 
-  EXPECT_EQ(kFooUrl.GetOrigin(), web_app_info()->start_url);
+  EXPECT_EQ(kFooUrl.DeprecatedGetOriginAsURL(), web_app_info()->start_url);
   EXPECT_EQ(kFooTitle, web_app_info()->title);
 }
 

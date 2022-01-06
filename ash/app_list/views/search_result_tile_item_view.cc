@@ -363,7 +363,7 @@ void SearchResultTileItemView::OnGetContextMenuModel(
       metric_params, GetAppType(),
       base::BindOnce(&SearchResultTileItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()),
-      view_delegate_->GetSearchModel()->tablet_mode());
+      view_delegate_->IsInTabletMode());
   context_menu_->Run(anchor_rect, views::MenuAnchorPosition::kBubbleRight,
                      views::MenuRunner::HAS_MNEMONICS |
                          views::MenuRunner::USE_TOUCHABLE_LAYOUT |
@@ -409,8 +409,8 @@ void SearchResultTileItemView::ActivateResult(int event_flags,
 
   LogAppLaunchForSuggestedApp();
 
-  RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
-                               view_delegate_->GetSearchModel());
+  RecordSearchResultOpenSource(result(), view_delegate_->GetAppListViewState(),
+                               view_delegate_->IsInTabletMode());
   view_delegate_->OpenSearchResult(result()->id(), result()->result_type(),
                                    event_flags,
                                    AppListLaunchedFrom::kLaunchedFromSearchBox,
@@ -464,9 +464,6 @@ void SearchResultTileItemView::SetTitle(const std::u16string& title) {
 }
 
 void SearchResultTileItemView::SetTitleTags(const SearchResultTags& tags) {
-  if (!app_list_features::IsLauncherQueryHighlightingEnabled())
-    return;
-
   for (const auto& tag : tags) {
     if (tag.styles & SearchResult::Tag::MATCH) {
       title_->SetTextStyleRange(AshTextStyle::STYLE_EMPHASIZED, tag.range);
@@ -505,17 +502,15 @@ void SearchResultTileItemView::SetPrice(const std::u16string& price) {
 AppListMenuModelAdapter::AppListViewAppType
 SearchResultTileItemView::GetAppType() const {
   if (IsSuggestedAppTile()) {
-    if (view_delegate_->GetModel()->state_fullscreen() ==
-        AppListViewState::kPeeking) {
+    if (view_delegate_->GetAppListViewState() == AppListViewState::kPeeking) {
       return AppListMenuModelAdapter::PEEKING_SUGGESTED;
     } else {
       return AppListMenuModelAdapter::FULLSCREEN_SUGGESTED;
     }
   } else {
-    if (view_delegate_->GetModel()->state_fullscreen() ==
-        AppListViewState::kHalf) {
+    if (view_delegate_->GetAppListViewState() == AppListViewState::kHalf) {
       return AppListMenuModelAdapter::HALF_SEARCH_RESULT;
-    } else if (view_delegate_->GetModel()->state_fullscreen() ==
+    } else if (view_delegate_->GetAppListViewState() ==
                AppListViewState::kFullscreenSearch) {
       return AppListMenuModelAdapter::FULLSCREEN_SEARCH_RESULT;
     }

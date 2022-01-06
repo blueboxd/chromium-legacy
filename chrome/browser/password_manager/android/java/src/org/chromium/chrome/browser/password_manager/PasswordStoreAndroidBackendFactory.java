@@ -31,7 +31,16 @@ public abstract class PasswordStoreAndroidBackendFactory {
      * @return A non-null implementation of the {@link PasswordStoreAndroidBackend}.
      */
     public PasswordStoreAndroidBackend createBackend() {
-        assert false : "No implementation of the backend for password store found.";
+        assert canCreateBackend() : "Ensure that prerequisites of `canCreateBackend` are met!";
         return null;
+    }
+
+    /**
+     * Returns whether a down-stream implementation can be instantiated.
+     *
+     * @return True iff all preconditions for using the down-steam implementations are fulfilled.
+     */
+    public boolean canCreateBackend() {
+        return false;
     }
 }

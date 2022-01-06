@@ -209,9 +209,6 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
   // Fire any events that need to be fired when tree nodes get deleted. For
   // example, events that fire every time "OnSubtreeWillBeDeleted" is called.
   ax_tree()->Destroy();
-  for (auto& key_value_pair : id_wrapper_map_) {
-    delete key_value_pair.second;
-  }
   delegate_ = nullptr;  // Guard against reentrancy by screen reader.
   if (last_focused_node_tree_id_ &&
       ax_tree_id_ == *last_focused_node_tree_id_) {
@@ -347,8 +344,10 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromAXNode(
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFromID(int32_t id) const {
   const auto iter = id_wrapper_map_.find(id);
-  if (iter != id_wrapper_map_.end())
-    return iter->second;
+  if (iter != id_wrapper_map_.end()) {
+    DCHECK(iter->second);
+    return iter->second.get();
+  }
 
   return nullptr;
 }
@@ -503,7 +502,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   std::vector<ui::AXEventGenerator::TargetedEvent> deferred_events;
   bool received_load_complete_event = false;
   for (const auto& targeted_event : event_generator()) {
-    BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);
+    BrowserAccessibility* event_target = GetFromID(targeted_event.node_id);
     if (!event_target)
       continue;
 
@@ -540,7 +539,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
 
   // Now fire all of the rest of the generated events we previously deferred.
   for (const auto& targeted_event : deferred_events) {
-    BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);
+    BrowserAccessibility* event_target = GetFromID(targeted_event.node_id);
     if (!event_target)
       continue;
 
@@ -1020,8 +1019,25 @@ void BrowserAccessibilityManager::HitTest(const gfx::Point& frame_point) const {
 gfx::Rect BrowserAccessibilityManager::GetViewBoundsInScreenCoordinates()
     const {
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
-  if (delegate)
-    return delegate->AccessibilityGetViewBounds();
+  if (delegate) {
+    gfx::Rect bounds = delegate->AccessibilityGetViewBounds();
+
+    // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
+    // The bounds returned by the delegate are always in device-independent
+    // pixels (DIPs), meaning physical pixels divided by device scale factor
+    // (DSF). However, if UseZoomForDSF is enabled, then Blink does not apply
+    // DSF when going from physical to screen pixels. In that case, we need to
+    // multiply DSF back in to get to Blink's notion of "screen pixels."
+    //
+    // TODO(vmpstr): This should return physical coordinates always to avoid
+    // confusion in the calling code. The calling code should be responsible
+    // for converting to whatever space necessary.
+    if (IsUseZoomForDSFEnabled() && device_scale_factor() > 0.0 &&
+        device_scale_factor() != 1.0) {
+      bounds = ScaleToEnclosingRect(bounds, device_scale_factor());
+    }
+    return bounds;
+  }
   return gfx::Rect();
 }
 
@@ -1425,9 +1441,7 @@ void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXTree* tree,
 void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
                                                 ui::AXNode* node) {
   DCHECK(node);
-  BrowserAccessibility* wrapper = BrowserAccessibility::Create();
-  id_wrapper_map_[node->id()] = wrapper;
-  wrapper->Init(this, node);
+  id_wrapper_map_[node->id()] = BrowserAccessibility::Create(this, node);
 
   if (tree->root() != node &&
       node->GetRole() == ax::mojom::Role::kRootWebArea) {
@@ -1438,24 +1452,14 @@ void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
 void BrowserAccessibilityManager::OnNodeDeleted(ui::AXTree* tree,
                                                 int32_t node_id) {
   DCHECK_NE(node_id, ui::kInvalidAXNodeID);
-  if (BrowserAccessibility* wrapper = GetFromID(node_id)) {
-    id_wrapper_map_.erase(node_id);
-    delete wrapper;
-  }
-
-  if (popup_root_ids_.find(node_id) != popup_root_ids_.end())
-    popup_root_ids_.erase(node_id);
+  id_wrapper_map_.erase(node_id);
+  popup_root_ids_.erase(node_id);
 }
 
 void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
                                                    ui::AXNode* node) {
   DCHECK(node);
-  BrowserAccessibility* wrapper = GetFromAXNode(node);
-  if (!wrapper) {
-    wrapper = BrowserAccessibility::Create();
-    id_wrapper_map_[node->id()] = wrapper;
-  }
-  wrapper->Init(this, node);
+  id_wrapper_map_[node->id()] = BrowserAccessibility::Create(this, node);
 }
 
 void BrowserAccessibilityManager::OnRoleChanged(ui::AXTree* tree,
@@ -1484,9 +1488,8 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
   for (const auto& change : changes) {
     ui::AXNode* node = change.node;
     BrowserAccessibility* wrapper = GetFromAXNode(node);
-    if (wrapper) {
+    if (wrapper)
       wrapper->OnDataChanged();
-    }
   }
 }
 

@@ -60,6 +60,10 @@ class URLLoaderInterceptor::IOState
                                         BrowserThread::DeleteOnIOThread> {
  public:
   explicit IOState(URLLoaderInterceptor* parent) : parent_(parent) {}
+
+  IOState(const IOState&) = delete;
+  IOState& operator=(const IOState&) = delete;
+
   void Initialize(
       const URLLoaderCompletionStatusCallback& completion_status_callback,
       base::OnceClosure closure);
@@ -152,8 +156,6 @@ class URLLoaderInterceptor::IOState
       subresource_wrappers_;
   std::set<std::unique_ptr<URLLoaderFactoryNavigationWrapper>>
       navigation_wrappers_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOState);
 };
 
 class URLLoaderClientInterceptor : public network::mojom::URLLoaderClient {
@@ -427,14 +429,11 @@ URLLoaderInterceptor::RequestParams::RequestParams(RequestParams&& other) =
 URLLoaderInterceptor::RequestParams& URLLoaderInterceptor::RequestParams::
 operator=(RequestParams&& other) = default;
 
-URLLoaderInterceptor::URLLoaderInterceptor(InterceptCallback callback)
-    : URLLoaderInterceptor(std::move(callback), {}, {}) {}
-
 URLLoaderInterceptor::URLLoaderInterceptor(
-    InterceptCallback callback,
+    InterceptCallback intercept_callback,
     const URLLoaderCompletionStatusCallback& completion_status_callback,
     base::OnceClosure ready_callback)
-    : callback_(std::move(callback)),
+    : callback_(std::move(intercept_callback)),
       io_thread_(base::MakeRefCounted<IOState>(this)) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -545,7 +544,8 @@ URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
   return std::make_unique<URLLoaderInterceptor>(base::BindLambdaForTesting(
       [=](content::URLLoaderInterceptor::RequestParams* params) -> bool {
         // Ignore requests for other origins.
-        if (params->url_request.url.GetOrigin() != origin.GetOrigin())
+        if (params->url_request.url.DeprecatedGetOriginAsURL() !=
+            origin.DeprecatedGetOriginAsURL())
           return false;
 
         // Remove the leading slash from the url path, so that it can be

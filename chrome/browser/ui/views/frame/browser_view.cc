@@ -24,8 +24,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -153,6 +153,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/infobars/content/content_infobar_manager.h"
@@ -206,7 +207,9 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/scrollbar_size.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/accessibility/view_accessibility_utils.h"
+#include "ui/views/background.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/separator.h"
@@ -222,8 +225,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
-#include "chromeos/ui/base/window_pin_type.h"
-#include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/wm/desks/desks_helper.h"
 #endif
 
@@ -431,28 +432,35 @@ class OverlayViewTargeterDelegate : public views::ViewTargeterDelegate {
   }
 };
 
-class ContentsSeparator : public views::Separator {
+// This class uses a solid background instead of a views::Separator. The latter
+// is not guaranteed to fill its bounds and assumes being painted on an opaque
+// background (which is why it'd be OK to only partially fill its bounds). This
+// needs to fill its bounds to have the entire BrowserView painted.
+class ContentsSeparator : public views::View {
  public:
   METADATA_HEADER(ContentsSeparator);
+
+  ContentsSeparator() {
+    // BrowserViewLayout will respect either the height or width of this,
+    // depending on orientation, not simultaneously both.
+    SetPreferredSize(
+        gfx::Size(views::Separator::kThickness, views::Separator::kThickness));
+  }
 
  private:
   // views::View:
   void OnThemeChanged() override {
-    views::Separator::OnThemeChanged();
-    UpdateColor();
-  }
-  void AddedToWidget() override { UpdateColor(); }
-
-  void UpdateColor() {
     const ui::ThemeProvider* const theme_provider = GetThemeProvider();
-    SetColor(color_utils::GetResultingPaintColor(
-        theme_provider->GetColor(
-            ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
-        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR)));
+    SetBackground(
+        views::CreateSolidBackground(color_utils::GetResultingPaintColor(
+            theme_provider->GetColor(
+                ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
+            theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR))));
+    View::OnThemeChanged();
   }
 };
 
-BEGIN_METADATA(ContentsSeparator, views::Separator)
+BEGIN_METADATA(ContentsSeparator, views::View)
 END_METADATA
 
 bool ShouldShowWindowIcon(const Browser* browser) {
@@ -562,6 +570,18 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     return browser_view_->GetWidget()->GetNativeView();
   }
 
+  bool BrowserIsSystemWebApp() const override {
+    return browser_view_->browser()->app_controller()->system_app();
+  }
+
+  bool BrowserIsWebApp() const override {
+    return browser_view_->GetIsWebAppType();
+  }
+
+  bool BrowserIsTypeApp() const override {
+    return browser_view_->browser()->is_type_app();
+  }
+
   bool BrowserIsTypeNormal() const override {
     return browser_view_->browser()->is_type_normal();
   }
@@ -603,6 +623,54 @@ class BrowserView::AccessibilityModeObserver : public ui::AXModeObserver {
   }
 
   BrowserView* const browser_view_;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView::SidePanelButtonHighlighter:
+//
+// Coordinating class that manages the button highlight.
+// TODO(pbos): This is only here because there's no coordinating SidePanel entry
+// but instead multiple SidePanels, and views::Button doesn't track multiple
+// "reasons" for being highlighted (i.e. the interface is SetHighlighted(true)
+// rather than adding/removing reasons for highlighting). Remove this once
+// SidePanel is a single entry.
+class BrowserView::SidePanelButtonHighlighter : public views::ViewObserver {
+ public:
+  SidePanelButtonHighlighter(views::Button* button,
+                             std::vector<views::View*> side_panels)
+      : button_(button), side_panels_(std::move(side_panels)) {
+    DCHECK(button_);
+    DCHECK(!side_panels_.empty());
+    for (views::View* view : side_panels_)
+      view->AddObserver(this);
+    UpdateHighlight();
+  }
+
+  ~SidePanelButtonHighlighter() override {
+    for (views::View* view : side_panels_)
+      view->RemoveObserver(this);
+  }
+
+  // views::ViewObserver:
+  void OnViewVisibilityChanged(views::View* observed_view,
+                               View* starting_from) override {
+    UpdateHighlight();
+  }
+
+ private:
+  void UpdateHighlight() {
+    bool any_panel_visible = false;
+    for (views::View* view : side_panels_) {
+      if (view->GetVisible()) {
+        any_panel_visible = true;
+        break;
+      }
+    }
+    button_->SetHighlighted(any_panel_visible);
+  }
+
+  views::Button* const button_;
+  const std::vector<views::View*> side_panels_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -685,7 +753,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   set_contents_view(contents_container_);
 
   if (base::FeatureList::IsEnabled(features::kSidePanel)) {
-    right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>());
+    right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
     right_aligned_side_panel_separator_ =
         AddChildView(std::make_unique<ContentsSeparator>());
   }
@@ -695,9 +763,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
        lens::features::kEnableSidePanelForLensImageSearch.Get()) ||
       (base::FeatureList::IsEnabled(lens::features::kLensRegionSearch) &&
        lens::features::kEnableSidePanelForLensRegionSearch.Get())) {
-    lens_side_panel_ = AddChildView(std::make_unique<SidePanel>());
-    lens_side_panel_controller_ =
-        std::make_unique<lens::LensSidePanelController>(lens_side_panel_, this);
+    lens_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
     // If the separator was not already created, create one.
     if (!right_aligned_side_panel_separator_)
       right_aligned_side_panel_separator_ =
@@ -717,7 +783,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   if (browser_->is_type_normal() &&
       (side_search_enabled ||
        base::FeatureList::IsEnabled(features::kExtensionsSidePanel))) {
-    left_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>());
+    left_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
     left_aligned_side_panel_separator_ =
         AddChildView(std::make_unique<ContentsSeparator>());
 
@@ -790,6 +856,11 @@ BrowserView::~BrowserView() {
   // TabStrip first so that it can cleanly remove the listener.
   if (tabstrip_)
     tabstrip_->parent()->RemoveChildViewT(tabstrip_);
+
+  // This highlighter refers to side-panel objects (children of this) and to
+  // children inside ToolbarView and of this, remove this observer before those
+  // children are removed.
+  side_panel_button_highlighter_.reset();
 
   // Child views maintain PrefMember attributes that point to
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
@@ -1467,20 +1538,29 @@ void BrowserView::ExitFullscreen() {
                     display::kInvalidDisplayId);
 }
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+void BrowserView::CreateLensSidePanelController() {
+  DCHECK(!lens_side_panel_controller_);
+  lens_side_panel_controller_ = std::make_unique<lens::LensSidePanelController>(
+      base::BindOnce(&BrowserView::DeleteLensSidePanelController,
+                     weak_ptr_factory_.GetWeakPtr()),
+      lens_side_panel_, this);
+}
+
+void BrowserView::DeleteLensSidePanelController() {
+  DCHECK(lens_side_panel_controller_);
+  lens_side_panel_controller_.reset();
+}
+#endif
+
 void BrowserView::UpdateExclusiveAccessExitBubbleContent(
     const GURL& url,
     ExclusiveAccessBubbleType bubble_type,
     ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
     bool force_update) {
-  bool is_trusted_pinned = false;
-#if defined(OS_CHROMEOS)
   // Trusted pinned mode does not allow to escape. So do not show the bubble.
-  auto* window = GetNativeWindow();
-  is_trusted_pinned = window
-                          ? (window->GetProperty(chromeos::kWindowPinTypeKey) ==
-                             chromeos::WindowPinType::kTrustedPinned)
-                          : false;
-#endif
+  bool is_trusted_pinned =
+      platform_util::IsBrowserLockedFullscreen(browser_.get());
 
   // Immersive mode has no exit bubble because it has a visible strip at the
   // top that gives the user a hover target. In a public session we show the
@@ -1736,6 +1816,13 @@ void BrowserView::UpdateWindowControlsOverlayEnabled() {
 
   if (frame_ && frame_->GetFrameView())
     frame_->GetFrameView()->WindowControlsOverlayEnabledChanged();
+
+  GetViewAccessibility().AnnounceText(
+      IsWindowControlsOverlayEnabled()
+          ? l10n_util::GetStringUTF16(
+                IDS_WEB_APP_WINDOW_CONTROLS_OVERLAY_ENABLED_ALERT)
+          : l10n_util::GetStringUTF16(
+                IDS_WEB_APP_WINDOW_CONTROLS_OVERLAY_DISABLED_ALERT));
 }
 
 void BrowserView::UpdateWindowControlsOverlayToggleVisible() {
@@ -1746,6 +1833,9 @@ void BrowserView::UpdateWindowControlsOverlayToggleVisible() {
       (infobar_container_ && infobar_container_->GetVisible())) {
     should_show = false;
   }
+
+  if (IsImmersiveModeEnabled())
+    should_show = false;
 
   if (should_show == should_show_window_controls_overlay_toggle_)
     return;
@@ -1775,10 +1865,6 @@ void BrowserView::FocusInactivePopupForAccessibility() {
 
   if (!infobar_container_->children().empty())
     infobar_container_->SetPaneFocusAndFocusDefault();
-}
-
-void BrowserView::FocusHelpBubble() {
-  FeaturePromoBubbleOwnerImpl::GetInstance()->ActivateBubbleForAccessibility();
 }
 
 void BrowserView::FocusAppMenu() {
@@ -1816,6 +1902,17 @@ void BrowserView::FocusWebContentsPane() {
 }
 
 bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
+  auto* const feature_bubble_owner = FeaturePromoBubbleOwnerImpl::GetInstance();
+  if (feature_bubble_owner->ToggleFocusForAccessibility()) {
+    // Record that the user successfully used the accelerator to focus the
+    // bubble, reducing the need to describe the accelerator the next time a
+    // help bubble is shown.
+    feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile())
+        ->NotifyEvent(
+            feature_engagement::events::kFocusHelpBubbleAcceleratorPressed);
+    return true;
+  }
+
   if (GetLocationBarView()->ActivateFirstInactiveBubbleForAccessibility())
     return true;
 
@@ -1825,15 +1922,17 @@ bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
   if (toolbar_ && toolbar_->app_menu_button()) {
     views::DialogDelegate* bubble =
         toolbar_->app_menu_button()->GetProperty(views::kAnchoredDialogKey);
-    if (!bubble && GetLocationBarView())
+    if ((!bubble || feature_bubble_owner->IsPromoBubble(bubble)) &&
+        GetLocationBarView())
       bubble = GetLocationBarView()->GetProperty(views::kAnchoredDialogKey);
-    if (!bubble && toolbar_button_provider_ &&
+    if ((!bubble || feature_bubble_owner->IsPromoBubble(bubble)) &&
+        toolbar_button_provider_ &&
         toolbar_button_provider_->GetAvatarToolbarButton()) {
       bubble = toolbar_button_provider_->GetAvatarToolbarButton()->GetProperty(
           views::kAnchoredDialogKey);
     }
 
-    if (bubble) {
+    if (bubble && !feature_bubble_owner->IsPromoBubble(bubble)) {
       View* focusable = bubble->GetInitiallyFocusedView();
 
       // A PermissionPromptBubbleView will explicitly return nullptr due to
@@ -1855,10 +1954,7 @@ bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
     return true;
   }
 
-  // Activate an in-product help bubble last, if there's no other bubbles to
-  // activate.
-  return FeaturePromoBubbleOwnerImpl::GetInstance()
-      ->ActivateBubbleForAccessibility();
+  return false;
 }
 
 void BrowserView::TryNotifyWindowBoundsChanged(const gfx::Rect& widget_bounds) {
@@ -3032,9 +3128,16 @@ bool BrowserView::ShouldDescendIntoChildForEventHandling(
   // mouse events that fall within the draggable region.
   web_app::AppBrowserController* controller = browser()->app_controller();
   if (IsWindowControlsOverlayEnabled() && controller &&
-      controller->draggable_region().has_value() &&
-      controller->draggable_region()->contains(location.x(), location.y())) {
-    return false;
+      controller->draggable_region().has_value()) {
+    // Draggable regions are defined relative to the web contents.
+    gfx::Point point_in_contents_web_view_coords(location);
+    views::View::ConvertPointToTarget(GetWidget()->GetRootView(),
+                                      contents_web_view_,
+                                      &point_in_contents_web_view_coords);
+
+    return !controller->draggable_region()->contains(
+        point_in_contents_web_view_coords.x(),
+        point_in_contents_web_view_coords.y());
   }
 
   return true;
@@ -3162,6 +3265,20 @@ void BrowserView::AddedToWidget() {
 #endif
 
   toolbar_->Init();
+
+  // TODO(pbos): Manage this either inside SidePanel or the corresponding button
+  // when SidePanel is singular, at least per button/side.
+  if (base::FeatureList::IsEnabled(features::kSidePanelBorder) &&
+      (lens_side_panel_ || right_aligned_side_panel_)) {
+    std::vector<View*> panels;
+    if (lens_side_panel_)
+      panels.push_back(lens_side_panel_);
+    if (right_aligned_side_panel_)
+      panels.push_back(right_aligned_side_panel_);
+    side_panel_button_highlighter_ =
+        std::make_unique<SidePanelButtonHighlighter>(
+            toolbar_->read_later_button(), panels);
+  }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // TopControlsSlideController must be initialized here in AddedToWidget()

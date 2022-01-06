@@ -262,6 +262,7 @@ target(link_target_type, "renderer") {
     "//content/common:buildflags",
     "//content/gpu:gpu_sources",
     "//content/public/child:child_sources",
+    "//content/services/shared_storage_worklet",
     "//crypto",
     "//crypto:platform",
     "//device/base/synchronization",
@@ -337,8 +338,6 @@ target(link_target_type, "renderer") {
 
   if (is_android) {
     deps += [
-      "//components/power_scheduler",
-
       # Used by Android WebView only.
       "//components/viz/service",
       "//third_party/android_ndk:cpu_features",
@@ -352,16 +351,10 @@ target(link_target_type, "renderer") {
   }
 
   if (is_fuchsia) {
-    sources += [
-      "media/fuchsia_renderer_factory.cc",
-      "media/fuchsia_renderer_factory.h",
-      "renderer_main_platform_delegate_fuchsia.cc",
-    ]
+    sources += [ "renderer_main_platform_delegate_fuchsia.cc" ]
 
     deps += [
-      "//media/fuchsia/audio",
       "//media/fuchsia/cdm/client",
-      "//media/fuchsia/mojom",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
   }

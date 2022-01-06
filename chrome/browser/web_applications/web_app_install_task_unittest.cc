@@ -12,10 +12,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
@@ -52,6 +54,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/webapps/browser/installable/installable_data.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
@@ -62,10 +65,10 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
@@ -94,11 +97,9 @@ class WebAppInstallTaskTest : public WebAppTest {
         std::make_unique<FakeWebAppRegistryController>();
     fake_registry_controller_->SetUp(profile());
 
-    auto file_utils = std::make_unique<TestFileUtils>();
-    file_utils_ = file_utils.get();
-
+    file_utils_ = base::MakeRefCounted<TestFileUtils>();
     icon_manager_ = std::make_unique<WebAppIconManager>(profile(), registrar(),
-                                                        std::move(file_utils));
+                                                        file_utils_);
 
     policy_manager_ = std::make_unique<WebAppPolicyManager>(profile());
 
@@ -230,8 +231,23 @@ class WebAppInstallTaskTest : public WebAppTest {
     return *fake_install_finalizer_;
   }
 
+  // Sets IconsMap, IconsDownloadedResult and corresponding HTTP_OK
+  // DownloadedIconsHttpResults.
   void SetIconsMapToRetrieve(IconsMap icons_map) {
     DCHECK(data_retriever_);
+
+    data_retriever_->SetIconsDownloadedResult(
+        icons_map.empty() ? IconsDownloadedResult::kPrimaryPageChanged
+                          : IconsDownloadedResult::kCompleted);
+
+    // Uses `icons_map` to infer HTTP_OK for each icon.
+    DownloadedIconsHttpResults http_results;
+    for (const auto& url_and_bitmap : icons_map)
+      http_results[url_and_bitmap.first] = net::HttpStatusCode::HTTP_OK;
+
+    data_retriever_->SetDownloadedIconsHttpResults(std::move(http_results));
+
+    // Moves `icons_map` last.
     data_retriever_->SetIcons(std::move(icons_map));
   }
 
@@ -341,9 +357,8 @@ class WebAppInstallTaskTest : public WebAppTest {
   std::unique_ptr<WebAppInstallTask> install_task_;
   std::unique_ptr<FakeWebAppUiManager> ui_manager_;
   std::unique_ptr<WebAppInstallFinalizer> install_finalizer_;
+  scoped_refptr<TestFileUtils> file_utils_;
 
-  // Owned by icon_manager_:
-  TestFileUtils* file_utils_ = nullptr;
   // Owned by install_task_:
   FakeDataRetriever* data_retriever_ = nullptr;
 
@@ -353,10 +368,15 @@ class WebAppInstallTaskTest : public WebAppTest {
   std::unique_ptr<arc::FakeIntentHelperInstance> fake_intent_helper_instance_;
 #endif
 
+  const base::HistogramTester& histogram_tester() const {
+    return histogram_tester_;
+  }
+
  private:
   std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
   std::unique_ptr<TestWebAppUrlLoader> url_loader_;
   FakeInstallFinalizer* fake_install_finalizer_ = nullptr;
+  base::HistogramTester histogram_tester_;
 };
 
 class WebAppInstallTaskWithRunOnOsLoginTest : public WebAppInstallTaskTest {
@@ -544,35 +564,6 @@ TEST_F(WebAppInstallTaskTest, WebContentsDestroyed) {
   EXPECT_TRUE(callback_called);
 }
 
-TEST_F(WebAppInstallTaskTest, InstallTaskDestroyed) {
-  const GURL url = GURL("https://example.com/path");
-  CreateDefaultDataToRetrieve(url);
-  CreateRendererAppInfo(url, "Name", "Description");
-
-  base::RunLoop run_loop;
-  bool callback_called = false;
-  const bool force_shortcut_app = false;
-
-  install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
-      base::BindOnce(test::TestAcceptDialogCallback),
-      base::BindLambdaForTesting(
-          [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kInstallTaskDestroyed, code);
-            EXPECT_EQ(AppId(), installed_app_id);
-            callback_called = true;
-            run_loop.Quit();
-          }));
-
-  // Destroy install task.
-  install_task_.reset();
-
-  run_loop.Run();
-
-  EXPECT_TRUE(callback_called);
-}
-
 TEST_F(WebAppInstallTaskTest, InstallableCheck) {
   const std::string renderer_description = "RendererDescription";
   CreateRendererAppInfo(GURL("https://renderer.com/path"), "RendererName",
@@ -663,6 +654,12 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
 
   // Generated icons are not considered part of the manifest shortcut icons.
   EXPECT_TRUE(web_app_info->shortcuts_menu_item_infos.empty());
+
+  const int http_code_class_ok = 2;  // HTTP_OK is 200.
+  histogram_tester().ExpectUniqueSample(
+      "WebApp.Icon.HttpStatusCodeClassOnCreate", http_code_class_ok, 1);
+  histogram_tester().ExpectTotalCount("WebApp.Icon.HttpStatusCodeClassOnSync",
+                                      0);
 }
 
 TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
@@ -688,6 +685,11 @@ TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
 
   // Generated icons are not considered part of the manifest shortcut icons.
   EXPECT_TRUE(web_app_info->shortcuts_menu_item_infos.empty());
+
+  histogram_tester().ExpectTotalCount("WebApp.Icon.HttpStatusCodeClassOnCreate",
+                                      0);
+  histogram_tester().ExpectTotalCount("WebApp.Icon.HttpStatusCodeClassOnSync",
+                                      0);
 }
 
 TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
@@ -775,7 +777,7 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
     EXPECT_TRUE(file_utils_->DirectoryExists(icons_dir));
 
     std::map<SquareSizePx, SkBitmap> pngs =
-        ReadPngsFromDirectory(file_utils_, icons_dir);
+        ReadPngsFromDirectory(file_utils_.get(), icons_dir);
 
     // The install does ResizeIconsAndGenerateMissing() only for ANY icons.
     if (purpose_info.purpose == IconPurpose::ANY) {
@@ -1556,9 +1558,8 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
 
     SetInstallFinalizerForTesting();
 
-    install_task_->UpdateWebAppFromInfo(
-        web_contents(), app_id, std::move(web_app_info),
-        /*redownload_app_icons=*/false,
+    fake_install_finalizer().FinalizeUpdate(
+        *web_app_info,
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        InstallResultCode code) {
           result.app_id = installed_app_id;
@@ -1774,17 +1775,15 @@ class WebAppInstallTaskTestWithFileHandlers : public WebAppInstallTaskTest {
     bool callback_called = false;
     InstallResult result;
 
-    install_task_->UpdateWebAppFromInfo(
-        web_contents(), app_id, std::move(app_info),
-        /*redownload_app_icons=*/false,
-        base::BindLambdaForTesting(
-            [&](const AppId& installed_app_id, InstallResultCode code) {
-              result.app_id = installed_app_id;
-              result.code = code;
+    install_finalizer_->FinalizeUpdate(
+        *app_info, base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                                  InstallResultCode code) {
+          result.app_id = installed_app_id;
+          result.code = code;
 
-              callback_called = true;
-              run_loop.Quit();
-            }));
+          callback_called = true;
+          run_loop.Quit();
+        }));
 
     run_loop.Run();
     EXPECT_TRUE(callback_called);

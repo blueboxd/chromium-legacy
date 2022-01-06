@@ -4,101 +4,88 @@
 
 package org.chromium.chrome.browser.incognito.reauth;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Build;
-import android.provider.Settings;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.browser.device_reauth.BiometricAuthRequester;
+import org.chromium.chrome.browser.device_reauth.ReauthenticatorBridge;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.incognito.R;
-import org.chromium.ui.text.SpanApplier;
 
 /**
- * This class is responsible for managing the reauthentication flow when the Incognito session is
- * locked.
+ * This class is responsible for managing the Incognito re-authentication flow.
  */
 public class IncognitoReauthManager {
-    @VisibleForTesting
-    private static Boolean sIsDeviceScreenLockEnabledForTesting;
-
-    @VisibleForTesting
-    private static Boolean sShouldShowSettingForTesting;
+    private static Boolean sIsIncognitoReauthFeatureAvailableForTesting;
+    private ReauthenticatorBridge mReauthenticatorBridge;
 
     /**
-     * @return A boolean indicating if the Incognito lock setting needs to be shown in the Privacy
-     *         and Security settings.
+     * A callback interface which is used for re-authentication in {@link
+     * IncognitoReauthManager#startReauthenticationFlow(IncognitoReauthCallback)}.
      */
-    public static boolean shouldShowSetting() {
-        if (sShouldShowSettingForTesting != null) {
-            return sShouldShowSettingForTesting;
-        }
-
-        // The current phase relies on using the {@link BiometricManager} API which was added in
-        // Android Version 29.
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_REAUTHENTICATION_FOR_ANDROID)
-                && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q);
+    public interface IncognitoReauthCallback {
+        // This is invoked when either the Incognito re-authentication feature is not available or
+        // the device screen lock is not setup or there's an authentication already in progress.
+        void onIncognitoReauthNotPossible();
+        // This is invoked when the Incognito re-authentication resulted in success.
+        void onIncognitoReauthSuccess();
+        // This is invoked when the Incognito re-authentication resulted in failure.
+        void onIncognitoReauthFailure();
     }
 
     /**
-     * @return A boolean indicating if the screen lock is enabled in device or not.
+     * Constructor for {@link IncognitoReauthManager}. Initialises |mReauthenticatorBridge|.
      */
-    public static boolean isDeviceScreenLockEnabled() {
-        if (sIsDeviceScreenLockEnabledForTesting != null) {
-            return sIsDeviceScreenLockEnabledForTesting;
-        }
+    public IncognitoReauthManager() {
+        mReauthenticatorBridge =
+                new ReauthenticatorBridge(BiometricAuthRequester.INCOGNITO_REAUTH_PAGE);
+    }
 
-        // TODO(crbug.com/1227656): This would be added later when the Incognito reauth MVC is in
-        // place.
-        return false;
+    @VisibleForTesting
+    public IncognitoReauthManager(ReauthenticatorBridge reauthenticatorBridge) {
+        mReauthenticatorBridge = reauthenticatorBridge;
     }
 
     /**
-     * This method returns the summary string that needs to be set in the Incognito lock setting.
-     * The content of the summary string depends on whether the screen lock is enabled on device or
-     * not.
+     * Starts the authentication flow. This is an asynchronous method call which would invoke the
+     * passed {@link IncognitoReauthCallback} parameter once executed.
      *
-     * @param activity The {@link Activity} from which the string resource must be fetched.
-     * @return A {@link CharSequence} containing the summary string for the Incognito lock setting.
+     * @param incognitoReauthCallback A {@link IncognitoReauthCallback} callback that
+     *         would be run once the authentication is executed.
      */
-    public static CharSequence getSummaryString(Activity activity) {
-        return (isDeviceScreenLockEnabled()) ? activity.getString(
-                       R.string.settings_incognito_tab_lock_summary_android_setting_on)
-                                             : buildIntentToAndroidScreenLockSettingsLink(activity);
-    }
+    public void startReauthenticationFlow(
+            @NonNull IncognitoReauthCallback incognitoReauthCallback) {
+        if (!mReauthenticatorBridge.canUseAuthentication()
+                || !isIncognitoReauthFeatureAvailable()) {
+            incognitoReauthCallback.onIncognitoReauthNotPossible();
+            return;
+        }
 
+        mReauthenticatorBridge.reauthenticate(success -> {
+            if (success) {
+                incognitoReauthCallback.onIncognitoReauthSuccess();
+            } else {
+                incognitoReauthCallback.onIncognitoReauthFailure();
+            }
+        });
+    }
     /**
-     * @return An {@link Intent} intent with the action to launch the Android security settings
-     *         page.
+     * @return A boolean indicating if the Incognito re-authentication feature is available.
      */
-    public static Intent getSystemLocationSettingsIntent() {
-        Intent i = new Intent(Settings.ACTION_SECURITY_SETTINGS);
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        return i;
+    public static boolean isIncognitoReauthFeatureAvailable() {
+        if (sIsIncognitoReauthFeatureAvailableForTesting != null) {
+            return sIsIncognitoReauthFeatureAvailableForTesting;
+        }
+        // The implementation relies on {@link BiometricManager} which was introduced in API
+        // level 29. Android Q is not supported due to a potential bug in BiometricPrompt.
+        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+                && ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.INCOGNITO_REAUTHENTICATION_FOR_ANDROID);
     }
 
     @VisibleForTesting
-    public static void setShouldShowSettingForTesting(boolean value) {
-        sShouldShowSettingForTesting = value;
-    }
-
-    @VisibleForTesting
-    public static void setIsDeviceScreenLockEnabledForTesting(boolean value) {
-        sIsDeviceScreenLockEnabledForTesting = value;
-    }
-
-    private static SpannableString buildIntentToAndroidScreenLockSettingsLink(Activity activity) {
-        int color = ApiCompatibilityUtils.getColor(
-                activity.getResources(), R.color.default_control_color_active);
-        ForegroundColorSpan linkSpan = new ForegroundColorSpan(color);
-
-        return SpanApplier.applySpans(
-                activity.getString(
-                        R.string.settings_incognito_tab_lock_summary_android_setting_off),
-                new SpanApplier.SpanInfo("<link>", "</link>", linkSpan));
+    public static void setIsIncognitoReauthFeatureAvailableForTesting(boolean isAvailable) {
+        sIsIncognitoReauthFeatureAvailableForTesting = isAvailable;
     }
 }

@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -326,10 +326,13 @@ void BluetoothAdapter::NotifyDevicePairedChanged(BluetoothDevice* device,
 #endif
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-void BluetoothAdapter::NotifyDeviceBatteryChanged(BluetoothDevice* device) {
+void BluetoothAdapter::NotifyDeviceBatteryChanged(
+    BluetoothDevice* device,
+    BluetoothDevice::BatteryType type) {
   DCHECK_EQ(device->GetAdapter(), this);
+
   for (auto& observer : observers_) {
-    observer.DeviceBatteryChanged(this, device, device->battery_percentage());
+    observer.DeviceBatteryChanged(this, device, type);
   }
 }
 #endif

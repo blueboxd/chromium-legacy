@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
-#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
@@ -163,8 +162,10 @@ LayoutUnit LayoutNGBlockFlowMixin<Base>::FirstLineBoxBaseline() const {
 template <typename Base>
 LayoutUnit LayoutNGBlockFlowMixin<Base>::InlineBlockBaseline(
     LineDirectionMode line_direction) const {
-  // Please see |Paint()| for these DCHECKs.
-  DCHECK(!Base::CanTraversePhysicalFragments() ||
+  // Please see |LayoutNGMixin<Base>::Paint()| for these DCHECKs.
+  DCHECK(Base::GetNGPaginationBreakability() ==
+             LayoutNGBlockFlow::kForbidBreaks ||
+         !Base::CanTraversePhysicalFragments() ||
          !Base::Parent()->CanTraversePhysicalFragments());
   DCHECK_LE(Base::PhysicalFragmentCount(), 1u);
 
@@ -199,11 +200,10 @@ bool LayoutNGBlockFlowMixin<Base>::NodeAtPoint(
     const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
-  // When |this| is NG block fragmented, the painter should traverse fragemnts
-  // instead of |LayoutObject|, because this function cannot handle block
-  // fragmented objects. We can come here only when |this| cannot traverse
-  // fragments, or the parent is legacy.
-  DCHECK(!Base::CanTraversePhysicalFragments() ||
+  // Please see |LayoutNGMixin<Base>::Paint()| for these DCHECKs.
+  DCHECK(Base::GetNGPaginationBreakability() ==
+             LayoutNGBlockFlow::kForbidBreaks ||
+         !Base::CanTraversePhysicalFragments() ||
          !Base::Parent()->CanTraversePhysicalFragments());
   DCHECK_LE(Base::PhysicalFragmentCount(), 1u);
 
@@ -264,8 +264,6 @@ void LayoutNGBlockFlowMixin<Base>::DirtyLinesFromChangedChild(
 
 template <typename Base>
 void LayoutNGBlockFlowMixin<Base>::UpdateNGBlockLayout() {
-  LayoutAnalyzer::BlockScope analyzer(*this);
-
   if (Base::IsOutOfFlowPositioned()) {
     LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout();
     return;

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/debug/stack_trace.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "components/power_scheduler/power_mode.h"
 #include "components/power_scheduler/power_mode_arbiter.h"
@@ -231,7 +231,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
 
   frame->metadata.frame_token = ++next_frame_token_;
 
-  const gfx::Rect bounds(size_.Width(), size_.Height());
+  const gfx::Rect bounds(size_.width(), size_.height());
   constexpr viz::CompositorRenderPassId kRenderPassId{1};
   auto pass =
       viz::CompositorRenderPass::Create(/*shared_quad_state_list_size=*/1u,
@@ -259,7 +259,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
   resources_.insert(resource_id, std::move(frame_resource));
 
   // TODO(crbug.com/869913): add unit testing for this.
-  const gfx::Size canvas_resource_size(canvas_resource->Size());
+  const gfx::Size canvas_resource_size = ToGfxSize(canvas_resource->Size());
 
   PostImageToPlaceholderIfNotBlocked(std::move(canvas_resource), resource_id);
 

@@ -49,7 +49,7 @@ class TestFontSelector : public FontSelector {
   }
 
   void WillUseFontData(const FontDescription&,
-                       const AtomicString& family_name,
+                       const FontFamily& family,
                        const String& text) override {}
   void WillUseRange(const FontDescription&,
                     const AtomicString& family_name,
@@ -116,6 +116,21 @@ Font CreateTestFont(const AtomicString& family_name,
 
   return Font(font_description, TestFontSelector::Create(font_path));
 }
+
+#if defined(OS_WIN)
+void TestFontPrewarmer::PrewarmFamily(const WebString& family_name) {
+  family_names_.push_back(family_name);
+}
+
+ScopedTestFontPrewarmer::ScopedTestFontPrewarmer()
+    : saved_(FontCache::GetFontPrewarmer()) {
+  FontCache::SetFontPrewarmer(&current_);
+}
+
+ScopedTestFontPrewarmer::~ScopedTestFontPrewarmer() {
+  FontCache::SetFontPrewarmer(saved_);
+}
+#endif
 
 }  // namespace test
 }  // namespace blink

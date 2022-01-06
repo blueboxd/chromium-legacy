@@ -7,9 +7,9 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
@@ -221,7 +221,7 @@ void ReportSyncingAccountStateMetrics(
     const std::string& sync_username,
     const std::vector<std::unique_ptr<PasswordForm>>& forms) {
   std::string signon_realm =
-      GaiaUrls::GetInstance()->gaia_url().GetOrigin().spec();
+      GaiaUrls::GetInstance()->gaia_url().DeprecatedGetOriginAsURL().spec();
   bool syncing_account_saved = base::ranges::any_of(
       forms, [&signon_realm, &sync_username](const auto& form) {
         return signon_realm == form->signon_realm &&
@@ -395,7 +395,7 @@ StoreMetricsReporter::StoreMetricsReporter(
   is_opted_in_ = features_util::IsOptedInForAccountStorage(prefs, sync_service);
 
   base::UmaHistogramBoolean(
-      "PasswordManager.Enabled",
+      "PasswordManager.Enabled2",
       prefs->GetBoolean(password_manager::prefs::kCredentialsEnableService));
 
   // May be null in tests.

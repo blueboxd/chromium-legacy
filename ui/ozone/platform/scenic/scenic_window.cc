@@ -54,8 +54,7 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
       scenic_session_(manager_->GetScenic()),
       safe_presenter_(&scenic_session_),
       view_(&scenic_session_,
-            fuchsia::ui::views::ViewToken(
-                {zx::eventpair(std::move(properties.view_token))}),
+            std::move(std::move(properties.view_token)),
             std::move(properties.view_ref_pair.control_ref),
             CloneViewRef(),
             "chromium window"),
@@ -156,16 +155,21 @@ void ScenicWindow::PrepareForShutdown() {
 }
 
 void ScenicWindow::SetCapture() {
+  // TODO(crbug.com/1231516): Use Scenic capture APIs.
   NOTIMPLEMENTED_LOG_ONCE();
+  has_capture_ = true;
 }
 
 void ScenicWindow::ReleaseCapture() {
+  // TODO(crbug.com/1231516): Use Scenic capture APIs.
   NOTIMPLEMENTED_LOG_ONCE();
+  has_capture_ = false;
 }
 
 bool ScenicWindow::HasCapture() const {
+  // TODO(crbug.com/1231516): Use Scenic capture APIs.
   NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return has_capture_;
 }
 
 void ScenicWindow::ToggleFullscreen() {

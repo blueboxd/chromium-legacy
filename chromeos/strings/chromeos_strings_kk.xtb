@@ -75,6 +75,7 @@
 <translation id="2016697457005847575">Ақауларды жою қадамдарын орындап көріңіз</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Қосымша параметрлер</translation>
+<translation id="2104796393919810494">Жөндеу аяқталды</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, <ph name="MILESTONE_VERSION" />-нұсқа</translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" />/<ph name="TOTAL_MEMORY" /> ГБ қолжетімді.</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
@@ -132,6 +133,7 @@
 <translation id="315738237743207937">Адаптивті портал анықталды.</translation>
 <translation id="3170673040743561620">Құжатты сканерге қойыңыз.</translation>
 <translation id="3188257591659621405">Файлдарым</translation>
+<translation id="3192947282887913208">Аудио файлдары</translation>
 <translation id="3199982728237701504">Құжат беруші (екі жақты)</translation>
 <translation id="3226405216343213872">Сканерлер ізделуде</translation>
 <translation id="3246869037381808805">1 күннен асқан баспа жұмыстары өшіріледі.</translation>
@@ -161,6 +163,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> пікір)</translation>
 <translation id="3748026146096797577">Қосылмаған</translation>
 <translation id="3749289110408117711">Файл атауы</translation>
+<translation id="3771294271822695279">Бейне файлдары</translation>
 <translation id="38114475217616659">Тарихты толығымен тазалау</translation>
 <translation id="3820172043799983114">PIN коды жарамсыз.</translation>
 <translation id="3838338534323494292">Жаңа құпия сөз</translation>
@@ -235,6 +238,7 @@
 <translation id="4813345808229079766">Байланыс</translation>
 <translation id="4832079907277790330">Files қолданбасында қалта таңдау...</translation>
 <translation id="4835901797422965222">Ешқандай белсенді желі жоқ.</translation>
+<translation id="4839698083503556542">Жеке фильміңізді түсіріңіз</translation>
 <translation id="484790837831576105">DNS ажыратымдылығы (Android)</translation>
 <translation id="4848429997038228357">ТЕКСЕРІЛУДЕ</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} әрекет қалды.}other{<ph name="ERROR_MESSAGE" /> {0} әрекет қалды.}}</translation>
@@ -256,6 +260,7 @@
 <translation id="5049856988445523908">SIM құлыпталған (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Топ атауы</translation>
 <translation id="5051044138948155788">Бұл — жалғыз бет. Содан кейін сканерлеуді бастау экранына өтесіз.</translation>
+<translation id="5061169534910302641">Нұсқаны жаңарту және өшіріп қосу</translation>
 <translation id="5088172560898466307">Сервер хостының атауы</translation>
 <translation id="5089810972385038852">Штат</translation>
 <translation id="5142961317498132443">Аутентификация</translation>
@@ -346,6 +351,7 @@
 <translation id="636850387210749493">Кәсіпорынды тіркеу</translation>
 <translation id="6379086450106841622">Сенсорлық экран</translation>
 <translation id="6388847657025262518">Сканердің құжат бергіші кептеліп қалды. Құжат бергішті тексеріп, әрекетті қайталаңыз.</translation>
+<translation id="6410257289063177456">Кескін файлдары</translation>
 <translation id="641081527798843608">Тақырып сәйкестігі</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Әлсіз (<ph name="SIGNAL_STRENGTH" />)</translation>

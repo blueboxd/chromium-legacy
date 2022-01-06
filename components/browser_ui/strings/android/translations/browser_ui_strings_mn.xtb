@@ -56,6 +56,7 @@
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> болон бусад <ph name="NUM_MORE" />-г зөвшөөрсөн}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> болон бусад <ph name="NUM_MORE" />-г зөвшөөрсөн}}</translation>
 <translation id="2434158240863470628">Татаж дууссан <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2442870161001914531">Үргэлж дэлгэцийн сайтын хүсэлт тавих</translation>
 <translation id="2482878487686419369">Мэдэгдэл</translation>
 <translation id="2485422356828889247">Устгах</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" />-с удирддаг</translation>
@@ -148,8 +149,10 @@
 <translation id="5048398596102334565">Сайтад хөдөлгөөн мэдрэгчид хандахыг зөвшөөрөх (санал болгосон)</translation>
 <translation id="5050380848339752099">Энэ сайт Нууцлалтай горимоос гадуур апптай мэдээлэл хуваалцах гэж байна.</translation>
 <translation id="5063480226653192405">Ашиглалт</translation>
+<translation id="509133520954049755">Дэлгэц дээр харагдах байдлаар харах хүсэлт тавих</translation>
 <translation id="5100237604440890931">Задарсан, энд дарж өргөтгөнө үү.</translation>
 <translation id="5123685120097942451">Нууцлалтай таб</translation>
+<translation id="5134599672855298214">Гар утсан дээр харагдах байдлаар харах хүсэлт тавих (санал болгосон)</translation>
 <translation id="5186036860380548585">Сонголт дэлгэцийн дээд хэсэгт байна</translation>
 <translation id="5197729504361054390">Таны сонгох харилцагчдыг <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />-тай хуваалцана.</translation>
 <translation id="5216942107514965959">Хамгийн сүүлд өнөөдөр зочилсон</translation>
@@ -201,7 +204,6 @@
 <translation id="6196640612572343990">Гуравдагч талын күүкиг блоклох</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Сонголт</translation>
 <translation id="6231752747840485235"><ph name="APP_NAME" />-г устгах уу?</translation>
-<translation id="6233545266937675277">Сайтуудын компьютер дээрх харагдах байдлын хүсэлт тавих</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> болон <ph name="PERMISSION_2" />-г блоклосон</translation>
 <translation id="6270391203985052864">Сайтууд нь танд мэдэгдэл илгээх зөвшөөрөл асуух боломжтой</translation>
 <translation id="6295158916970320988">Бүх сайт</translation>
@@ -286,7 +288,6 @@
 <translation id="8211406090763984747">Холболт аюулгүй байна</translation>
 <translation id="8249310407154411074">Дээд хэсэг рүү зөөх</translation>
 <translation id="8261506727792406068">Устгах</translation>
-<translation id="8267092878336850213">Сайтуудын мобайл дээрх харагдах байдлын хүсэлт тавих</translation>
 <translation id="8300705686683892304">Аппаар удирддаг</translation>
 <translation id="8324158725704657629">Дахиж бүү асуу</translation>
 <translation id="8372893542064058268">Тодорхой сайтад дэвсгэрт синк хийхийг зөвшөөрнө.</translation>
@@ -300,6 +301,7 @@
 <translation id="8447861592752582886">Төхөөрөмжийн зөвшөөрлийг хүчингүй болгох</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 күүки ашиглаж байна}other{# 1 күүки ашиглаж байна}}</translation>
 <translation id="8487700953926739672">Сүлжээнд холбогдоогүй байна</translation>
+<translation id="848952951823693243">Үргэлж мобайл сайтын хүсэлт тавих</translation>
 <translation id="851751545965956758">Сайтуудыг төхөөрөмжүүдэд холбогдохыг нь блоклох</translation>
 <translation id="8525306231823319788">Бүтэн дэлгэц</translation>
 <translation id="857943718398505171">Зөвшөөрөгдсөн (санал болгосон)</translation>

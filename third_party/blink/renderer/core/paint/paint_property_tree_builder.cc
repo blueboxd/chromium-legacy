@@ -927,9 +927,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild(
           object_.StyleRef().IsRunningTransformAnimationOnCompositor();
       auto effective_change_type = properties_->UpdateTransform(
           *context_.current.transform, std::move(state), animation_state);
+      // We only assume worst-case overlap testing due to animations (see:
+      // |PendingLayer::VisualRectForOverlapTesting|) so we can only use the
+      // direct transform update (which skips checking for compositing changes)
+      // when animations are present.
       if (effective_change_type ==
               PaintPropertyChangeType::kChangedOnlySimpleValues &&
-          properties_->Transform()->HasDirectCompositingReasons()) {
+          properties_->Transform()->HasActiveTransformAnimation()) {
         if (auto* paint_artifact_compositor =
                 object_.GetFrameView()->GetPaintArtifactCompositor()) {
           bool updated = paint_artifact_compositor->DirectlyUpdateTransform(
@@ -1107,9 +1111,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
           style.IsRunningTransformAnimationOnCompositor();
       auto effective_change_type = properties_->UpdateTransform(
           *context_.current.transform, std::move(state), animation_state);
+      // We only assume worst-case overlap testing due to animations (see:
+      // |PendingLayer::VisualRectForOverlapTesting|) so we can only use the
+      // direct transform update (which skips checking for compositing changes)
+      // when animations are present.
       if (effective_change_type ==
               PaintPropertyChangeType::kChangedOnlySimpleValues &&
-          properties_->Transform()->HasDirectCompositingReasons()) {
+          properties_->Transform()->HasActiveTransformAnimation()) {
         if (auto* paint_artifact_compositor =
                 object_.GetFrameView()->GetPaintArtifactCompositor()) {
           bool updated = paint_artifact_compositor->DirectlyUpdateTransform(
@@ -1419,7 +1427,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
       // doing a full rebuild.
       if (effective_change_type ==
               PaintPropertyChangeType::kChangedOnlySimpleValues &&
-          properties_->Effect()->HasDirectCompositingReasons()) {
+          properties_->Effect()->HasDirectCompositingReasons() &&
+          // TODO(crbug.com/1253797): Due to the bug, we may create multiple
+          // cc effect nodes for one blink effect node of a fragmented object,
+          // and direct update would be incomplete in the case.
+          !object_.FirstFragment().NextFragment()) {
         if (auto* paint_artifact_compositor =
                 object_.GetFrameView()->GetPaintArtifactCompositor()) {
           bool updated =

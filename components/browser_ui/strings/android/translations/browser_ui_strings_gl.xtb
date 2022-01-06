@@ -56,6 +56,7 @@
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="NUM_MORE" /> máis (permitidos)}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="NUM_MORE" /> máis (permitidos)}}</translation>
 <translation id="2434158240863470628">Completouse a descarga <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2442870161001914531">Solicitar sempre o sitio para ordenadores</translation>
 <translation id="2482878487686419369">Notificacións</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2490684707762498678">Xestionadas por <ph name="APP_NAME" /></translation>
@@ -148,8 +149,10 @@
 <translation id="5048398596102334565">Permite aos sitios acceder aos teus sensores de movemento (recomendado)</translation>
 <translation id="5050380848339752099">Neste sitio estase a piques de compartir información cunha aplicación fóra do modo de incógnito.</translation>
 <translation id="5063480226653192405">Uso</translation>
+<translation id="509133520954049755">Solicita a vista para ordenadores</translation>
 <translation id="5100237604440890931">Vista contraída (fai clic para ampliala).</translation>
 <translation id="5123685120097942451">Pestana do modo de incógnito</translation>
+<translation id="5134599672855298214">Solicita a vista para dispositivos móbiles (opción recomendada)</translation>
 <translation id="5186036860380548585">Opción dispoñible preto da parte superior da pantalla</translation>
 <translation id="5197729504361054390">Os contactos que selecciones compartiranse con <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Visitouse hoxe por última vez</translation>
@@ -201,7 +204,6 @@
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
 <translation id="6216432067784365534">Opcións de <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Queres desinstalar <ph name="APP_NAME" />?</translation>
-<translation id="6233545266937675277">Solicita a vista para ordenadores dos sitios</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> e <ph name="PERMISSION_2" /> (bloqueados)</translation>
 <translation id="6270391203985052864">Os sitios poden pedir permiso para enviar notificacións</translation>
 <translation id="6295158916970320988">Todos os sitios</translation>
@@ -286,7 +288,6 @@
 <translation id="8211406090763984747">A conexión é segura</translation>
 <translation id="8249310407154411074">Mover á parte superior</translation>
 <translation id="8261506727792406068">Eliminar</translation>
-<translation id="8267092878336850213">Solicita a vista para móbiles dos sitios</translation>
 <translation id="8300705686683892304">Sitios xestionados pola aplicación</translation>
 <translation id="8324158725704657629">Non preguntar de novo</translation>
 <translation id="8372893542064058268">Permite a sincronización en segundo plano nun sitio específico.</translation>
@@ -300,6 +301,7 @@
 <translation id="8447861592752582886">Revoga o permiso do dispositivo</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie en uso}other{# cookies en uso}}</translation>
 <translation id="8487700953926739672">Dispoñible sen conexión</translation>
+<translation id="848952951823693243">Solicitar sempre o sitio para móbiles</translation>
 <translation id="851751545965956758">Non permitir que os sitios se conecten aos dispositivos</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>

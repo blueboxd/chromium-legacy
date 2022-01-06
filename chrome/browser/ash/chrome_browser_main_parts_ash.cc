@@ -256,6 +256,10 @@
 namespace ash {
 namespace {
 
+// TODO(https://crbug.com/1164001): remove after migrating to namespace ash.
+using ::chromeos::NetworkPortalDetectorImpl;
+namespace network_health = ::chromeos::network_health;
+
 namespace startup_settings_cache = ::chromeos::startup_settings_cache;
 
 void ChromeOSVersionCallback(const std::string& version) {
@@ -1335,6 +1339,8 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   login_screen_extensions_storage_cleaner_.reset();
   debugd_notification_handler_.reset();
   shortcut_mapping_pref_service_.reset();
+  if (features::IsBluetoothRevampEnabled())
+    bluetooth_pref_state_observer_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();

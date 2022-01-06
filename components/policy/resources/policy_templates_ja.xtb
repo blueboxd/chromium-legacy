@@ -269,6 +269,13 @@
 <translation id="1352799151662469739">AC 電源での使用中、ユーザー入力が行われなくなってから画面をロックするまでの時間（ミリ秒）</translation>
 <translation id="1353416417709895349">DNS 傍受チェックと「もしかして: "http://intranetsite/"」情報バーを無効にする。</translation>
 <translation id="1354424209129232709">最大:</translation>
+<translation id="1355050231181289439"> このポリシーでは、改善された国際キーボード ショートカット マッピングを有効にするかどうかを管理します。
+      この機能では、国際キーボードのレイアウトに沿ったキーボード ショートカットを使用でき、従来のショートカットはサポートされなくなります。
+
+      このポリシーを無効に設定した場合、改善された国際キーボード ショートカットは無効になります。
+      このポリシーを有効に設定した場合、改善された国際キーボード ショートカットが有効になります。
+      未設定の場合、このポリシーは管理対象のデバイスに対して有効になり、ユーザーが所有するデバイスに対しても有効になります。
+      なお、これは管理対象のユーザーが、サポートの終了した従来のショートカットを引き続き使用できるようにするための一時的なポリシーです。このポリシーは、キーボード ショートカットのカスタマイズが可能になった時点でサポート終了となります。</translation>
 <translation id="1359553908012294236">このポリシーが true に設定されているか未設定の場合、<ph name="PRODUCT_NAME" /> ではゲストモードでのログインが可能です。ゲストモードでのログインには、すべてのウィンドウをシークレット モードで表示する <ph name="PRODUCT_NAME" /> プロフィールが適用されます。
 
 このポリシーが false に設定されている場合、ゲストモードのプロフィールで <ph name="PRODUCT_NAME" /> を使用することはできません。</translation>
@@ -692,6 +699,16 @@
 <translation id="1862267110714201519">ゴースト ウィンドウ機能を無効にする</translation>
 <translation id="1865417998205858223">キーの権限</translation>
 <translation id="186719019195685253">AC 電源での実行時、アイドル時間に到達したときに行う操作</translation>
+<translation id="1881649377321404593">
+      WebDriver が既存のポリシーのすべてに対応するようになったため、
+      このポリシーは不要になり、M80 で削除されました。
+
+      このポリシーを使用すると、WebDriver 機能のユーザーは動作を妨げる可能性のあるポリシーをオーバーライドできます。
+
+      現在、このポリシーによって SitePerProcess ポリシーと IsolateOrigins ポリシーが無効になります。
+
+      このポリシーが有効な場合、WebDriver では互換性のないポリシーをオーバーライドできます。
+      このポリシーが無効または未設定の場合、WebDriver では互換性のないポリシーをオーバーライドできません。</translation>
 <translation id="1885782360784839335">タブ全体にプロモーション コンテンツを表示する</translation>
 <translation id="1888871729456797026">パソコンでのクラウド ポリシーの登録トークン</translation>
 <translation id="1894790493260633497">背景のグラフィックの印刷モードをデフォルトで有効にする</translation>
@@ -752,6 +769,7 @@
       このポリシーを無効に設定するか未設定のままにした場合、高速切り替えは使用されません。</translation>
 <translation id="1972134432340252414">ブラウザ プロセスで従来の拡張機能ポイントをブロックする</translation>
 <translation id="1977581177449752640">このポリシーを設定した場合、リモート アクセス ホストは発行元の CN が指定されたクライアント証明書を使用して <ph name="REMOTE_ACCESS_HOST_TOKEN_VALIDATION_URL_POLICY_NAME" /> に対し認証を行います。利用可能な任意のクライアント証明書を使用するには、このポリシーを「<ph name="WILDCARD_VALUE" />」に設定します。このポリシーを空白にした場合または設定しない場合、この機能は無効になります。</translation>
+<translation id="1984423899110408165">Chrome 履歴ページに履歴クラスタを表示します</translation>
 <translation id="1986003348976870087">ログイン画面にクライアント証明書を選択するよう求めるメッセージをユーザーに表示しない</translation>
 <translation id="1988345404999458987">使用できるプリント サーバーの設定を指定します。
 
@@ -1440,6 +1458,14 @@
 <translation id="2725855586003209701">このポリシーを有効にするか、未設定のままにすると、登録済みのデバイスは最近ログインしたデバイス ユーザーのリストを報告します。
 
       このポリシーを無効に設定すると、登録済みのデバイスはユーザーのリストを報告しません。</translation>
+<translation id="2725944143509568512">このポリシーでは、Chrome 履歴ページに履歴クラスタを表示するかどうかを制御します。
+
+      このポリシーを有効に設定した場合、chrome://history/journeys に履歴クラスタが表示されます。
+
+      このポリシーを無効に設定した場合、chrome://history/journeys に履歴クラスタは表示されません。
+
+      このポリシーを未設定のままにした場合、chrome://history/journeys にデフォルトで履歴クラスタが表示され、表示するかどうかをユーザーが変更できます。
+      </translation>
 <translation id="2730419309754848345">「PDF を画像として印刷する」のデフォルト</translation>
 <translation id="2731627323327011390">ARC アプリで <ph name="PRODUCT_OS_NAME" /> の証明書を使用できないようにする</translation>
 <translation id="2742843273354638707">[新しいタブ] ページと <ph name="PRODUCT_OS_NAME" /> のアプリ ランチャーで、Chrome ウェブストア アプリとフッターのリンクを非表示にします。
@@ -2084,6 +2110,7 @@
 
       このポリシーを無効に設定するか未設定のままにした場合、DTC は無効になり、デバイスでテレメトリーおよび診断のデータの収集、処理、レポート作成を行うことはできません。</translation>
 <translation id="3450649825886735618">スペルミスの解決に Google のウェブサービスを一切使用しない</translation>
+<translation id="3451422488938880786"> 国際ショートカット キーの再マッピングを有効または無効にします</translation>
 <translation id="3451901387456196887"><ph name="PRODUCT_NAME" /> メニューに、アクセスコードを使用するか QR コードをスキャンしてキャスト デバイスを選択するオプションがユーザーに表示されます。</translation>
 <translation id="3456292544936505775"><ph name="PRODUCT_OS_NAME" /> デバイスでアップデートの自動チェックを行わない時間帯を制御します。
       このポリシーで時間帯のリストを指定した場合は、次のように処理されます。
@@ -2121,6 +2148,7 @@
        拒否リストの値が <ph name="ALL_EXTENSIONS" /> の場合、すべての拡張機能がブロック対象となり、ユーザーは許可リストに登録されている拡張機能しかインストールできません。
 
        デフォルトでは、すべての拡張機能が許可されます。ポリシーで拡張機能を禁止している場合は、許可対象の拡張機能のリストを使用してポリシーを変更できます。</translation>
+<translation id="3501606938635483637">国際キーボード ショートカットをキーボード上のキーの位置ではなく、キーのグリフにマッピングする。</translation>
 <translation id="3502555714327823858">すべての両面印刷モードを許可する</translation>
 <translation id="350443680860256679">ARC を設定する</translation>
 <translation id="350797926066071931">翻訳を有効にする</translation>
@@ -2693,6 +2721,8 @@
       <ph name="PRODUCT_NAME" /> バージョン 92 以降、このポリシーはヘッドレス モードでもサポートされるようになりました。
 
       <ph name="MS_WIN_NAME" /> では、この機能は <ph name="MS_AD_NAME" /> ドメインに追加されたインスタンス、Windows 10 Pro で実行されているインスタンス、<ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" /> に登録されているインスタンスでのみ使用できます。<ph name="MAC_OS_NAME" /> では、MDM を介して管理されるインスタンスまたは MCX を介してドメインに追加されたインスタンスでのみこの機能を使用できます。</translation>
+<translation id="4268014245533736105">Chrome はサンドボックス化された iframe 内で外部プロトコルへの移動をブロックします。https://chromestatus.com/features/5680742077038592 をご覧ください。True の場合は、該当する移動を Chrome がブロックできるようになります。False の場合は、該当する移動を Chrome がブロックするのを防ぎます。このデフォルトは True で、セキュリティ機能が有効になっています。このポリシーは、新しい制限の影響を受ける社内ウェブサイトの更新に時間がかかる場合に使用できます。このエンタープライズ ポリシーは一時的なものであり、<ph name="PRODUCT_NAME" /> バージョン 104 以降で削除される予定です。
+      </translation>
 <translation id="4268586991084547853">Microsoft IE / Edge エンタープライズ モードのサイトリストとの互換性を高める。</translation>
 <translation id="4269859918103560644">ユーザーが決定できるようにする</translation>
 <translation id="4274691295133617461">このポリシーを 3 に設定した場合、ウェブサイトは、ホスト オペレーティング システムのファイル システム内にあるファイルやディレクトリへの File System API を経由した読み取りアクセスを要求することが許可されます。このポリシーを 2 に設定した場合、アクセスは拒否されます。
@@ -3012,7 +3042,7 @@
 <translation id="4700190441681139987">どのサイトにもセンサーへのアクセスを許可しない</translation>
 <translation id="4703402283970867140">スマート消灯モデルを有効にして、画面が暗くなるまでの時間を延長する</translation>
 <translation id="4704958130749494760">USB シリアル デバイスへの接続を自動的にサイトに許可します。</translation>
-<translation id="4722122254122249791">指定した発行元に対してサイト分離を有効にする</translation>
+<translation id="4722122254122249791">指定したオリジンに対してサイト分離を有効にする</translation>
 <translation id="4723829699367336876">リモート アクセス クライアントからのファイアウォール トラバーサルを有効にする</translation>
 <translation id="4725528134735324213">Android バックアップ サービスを有効にする</translation>
 <translation id="4725801978265372736">ローカル ユーザーの名前とリモート アクセス ホストの所有者が一致していることを要件とする</translation>
@@ -3048,6 +3078,7 @@
 <translation id="4802905909524200151"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートの動作を設定する</translation>
 <translation id="4804828344300125154">ユーザーがログアウトするたびに再起動します。</translation>
 <translation id="4807950475297505572">十分な空き容量に達するまで、前回のログインから時間が経っているユーザーを順に削除する</translation>
+<translation id="4811210934875253713">chrome://history/journeys に履歴クラスタを表示する。</translation>
 <translation id="4812270373673968774">このポリシーを [常に使用] に設定した場合、<ph name="PRODUCT_OS_NAME" /> シェルフが自動的に非表示になります。このポリシーを [使用しない] に設定した場合、シェルフが非表示になることがなくなります。このポリシーを設定した場合、ユーザーは設定を変更できません。設定しない場合、シェルフが自動的に非表示になるかどうかをユーザーが指定します。</translation>
 <translation id="4812714598405913256">DeviceMinimumVersion ポリシー用の自動更新の有効期限に関するメッセージを設定する</translation>
 <translation id="4816674326202173458">企業ユーザーがメイン ユーザーとしてもセカンダリ ユーザーとしても操作できるようにする（管理対象ユーザー以外のユーザーに対するデフォルトの動作）</translation>
@@ -4014,6 +4045,12 @@
 <translation id="5997543603646547632">デフォルトで 24 時間表示を使用</translation>
 <translation id="5997846976342452720">プラグイン ファインダーを無効にするかどうかを指定する（サポート終了）</translation>
 <translation id="5998198091336830580">このポリシーは、次の最小単位グループの一部です（グループ内にある優先度の最も高いソースのポリシーのみが適用されます）。</translation>
+<translation id="6004575267180297869">
+      WebAssembly モジュールを他のウィンドウやワーカーにクロスオリジンで送信できるかどうかを指定します。クロスオリジンの WebAssembly モジュール共有は、document.domain のサポート終了にともない、同じくサポート終了となります。詳しくは https://github.com/mikewest/deprecating-document-domain　をご覧ください。このポリシーにより、クロスオリジンの WebAssembly モジュール共有を再度有効にし、サポート終了プロセスにおける移行期間を延長することができます。
+
+      True に設定した場合、サイトでは WebAssembly モジュールをクロスオリジンでも制限なく送信できます。
+
+      False に設定するか未設定のままにした場合、サイトでは WebAssembly モジュールを同じオリジンのウィンドウとワーカーにのみ送信できます。</translation>
 <translation id="6009062900206392980">このポリシーを None（なし）に設定した場合、ログイン画面で拡大鏡が無効になります。
 
        このポリシーを設定した場合、ユーザーは拡大鏡を一時的に有効または無効にできます。ログイン画面が再読み込みされるか 1 分間アイドル状態が続くと、元の状態に戻ります。
@@ -4185,6 +4222,7 @@
       このポリシーは、企業のセキュリティ ソフトウェアの設定がサンドボックス化と干渉する場合に、音声処理のサンドボックス化を無効にできるようにするためのものです。</translation>
 <translation id="624818583115864448">ポート 554（ブロックの解除は 2021 年 10 年 15 日まで可能）</translation>
 <translation id="6252773211180267325">ユーザーに対して <ph name="BOREALIS_NAME" /> の実行をブロックしない</translation>
+<translation id="6258658183356534534">User-Agent Client Hints の GREASE 更新機能を管理します。</translation>
 <translation id="6261643884958898336">マシン識別情報に関するレポートを作成</translation>
 <translation id="6265892395051519509">センサーへのアクセスを許可するサイトを指定します</translation>
 <translation id="6273015149273504999">
@@ -4265,6 +4303,13 @@
           このポリシーの値はミリ秒単位とし、アイドル待ちの時間と同じかそれより短い時間を指定できます。
 
           警告メッセージは、アイドル時の操作がログアウトかシャットダウンの場合にのみ表示されます。</translation>
+<translation id="6331943515692769234">従来の User-Agent GREASE アルゴリズムを強制的に使用する。</translation>
+<translation id="6332192586629642626">chrome://history/journeys に履歴クラスタを表示しない。</translation>
+<translation id="6332489309596092806">このポリシーでは、ユーザーに操作を求めずにサイレント インストールするウェブアプリのリストを指定します。ユーザーはこれらのウェブアプリをアンインストールすることもオフにすることもできません。
+
+      このポリシーで指定するリストの個々の項目は、必須の <ph name="URL_LABEL" />（インストールするウェブアプリの URL）と、5 つの省略可能な <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" />（ウェブアプリを開く方法、デフォルトは新しいタブ）、<ph name="CREATE_DESKTOP_SHORTCUT_LABEL" />（<ph name="LINUX_OS_NAME" /> と <ph name="MS_WIN_NAME" /> のデスクトップ ショートカットを作成する場合は True）、<ph name="FALLBACK_APP_NAME_LABEL" />（<ph name="PRODUCT_NAME" /> バージョン 90 以降では、プログレッシブ ウェブアプリ（PWA）以外のアプリ名をオーバーライドできます。また、PWA であってもインストールの完了に認証が必要な場合は、一時的にインストールされたアプリ名をオーバーライドできます。<ph name="CUSTOM_NAME_LABEL" /> と <ph name="FALLBACK_APP_NAME_LABEL" /> の両方が設定されている場合、後者は無視されます）、<ph name="OVERRIDE_APP_NAME_LABEL" />（<ph name="PRODUCT_NAME" /> バージョン 96 以降では、すべてのウェブアプリと PWA のアプリ名を完全にオーバーライドできます。現在 <ph name="PRODUCT_OS_NAME" /> でのみサポートされています）、<ph name="CUSTOM_ICON_LABEL" />（<ph name="PRODUCT_NAME" /> バージョン　96 以降では、インストールされたアプリのアプリアイコンをオーバーライドできます。アイコンは正方形でサイズを 1 MB 以内とし、jpeg、png、gif、webp、ico のいずれかの形式にする必要があります。ハッシュ値は SHA256 ハッシュのアイコン ファイルとします。現在 <ph name="PRODUCT_OS_NAME" /> でのみサポートされています）で構成されるオブジェクトとなります。
+
+      <ph name="PRODUCT_OS_NAME" /> のシェルフへのアプリの固定については、<ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> をご使用ください。</translation>
 <translation id="6332546092866098577">File System API 経由での読み取りアクセスをブロックするサイトを指定する</translation>
 <translation id="6334330017384340264">このポリシーでは、アプリごとの時間制限を適用しないアプリと URL を指定します。
         設定した許可リストは、アプリごとの時間制限が設定されているユーザーが <ph name="PRODUCT_OS_NAME" /> にインストールされているアプリを使用する場合に適用されます。
@@ -4583,6 +4628,10 @@
 
       注: このポリシーは、<ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> を使用して強制的にインストールされる拡張機能やアプリにも影響します。</translation>
 <translation id="6731757988219967594">アダルト コンテンツに基づいて最上位サイト（埋め込み iframe 以外）を除外する</translation>
+<translation id="6733851879899284032">
+      クロスオリジン分離コンテキスト以外で SharedArrayBuffers を使用できるかどうかを指定します。ウェブの互換性に関する理由から、<ph name="PRODUCT_NAME" /> 91 以降（2021-05-25）では、SharedArrayBuffers を使用する際に <ph name="PRODUCT_NAME" /> でクロスオリジン分離が必要となります。詳しくはこちらをご覧ください。https://developer.chrome.com/blog/enabling-shared-array-buffer/
+      有効に設定した場合、サイトで SharedArrayBuffers を制限なく使用できます。
+      無効に設定するか未設定のままにした場合、クロスオリジン分離されている場合のみ、サイトで SharedArrayBuffers を使用できます。</translation>
 <translation id="6735701345096330595">言語のスペルチェックを強制的に有効にする</translation>
 <translation id="6740611636377710500">このユーザーに PluginVm の実行を許可します。
 
@@ -4761,6 +4810,9 @@
 <translation id="6929746927224321095">自動入力を無効にする</translation>
 <translation id="6931242315485576290">Google とのデータの同期を無効にする</translation>
 <translation id="6940243892299228102">デスク テンプレートの使用をユーザーに許可しない</translation>
+<translation id="694071740172924905">このポリシーが有効な場合、User-Agent Client Hints の GREASE 更新機能により、User-Agent GREASE アルゴリズムに最新の仕様が適用されます。
+      最新の仕様は、リクエストに含まれる文字が制限されているウェブサイトでは、動作しない可能性があります。詳しくは仕様をご確認ください。https://wicg.github.io/ua-client-hints/#grease
+      このポリシーを有効に設定するか、未設定のままにした場合、User-Agent Client Hints の GREASE 更新機能が有効になります。このポリシーを無効に設定した場合、従来の User-Agent GREASE アルゴリズムが使用されます。</translation>
 <translation id="6943577887654905793">Mac/Linux 設定名:</translation>
 <translation id="6946652757373377924">
       このポリシーは M77 で削除されました。
@@ -5113,6 +5165,7 @@
 
       このポリシーが未設定の場合、デフォルトにより、企業の管理対象ユーザーは使用を許可されず、管理対象外のユーザーは使用を許可されます。</translation>
 <translation id="7295019613773647480">監視対象ユーザーを有効にする</translation>
+<translation id="7297476773981993405">更新された User-Agent GREASE アルゴリズムの実行を許可する。</translation>
 <translation id="7302043767260300182">画面がロックされるまでの時間（AC 電源での実行時）</translation>
 <translation id="7303902834678570827">管理対象のゲスト セッションのユーザーにデバイスのディスプレイ設定の保存を許可しない</translation>
 <translation id="731208205557053914">VPD 情報を報告する</translation>
@@ -5218,6 +5271,12 @@
 <translation id="7491720878670299691">ネットワーク データをポーリングしてイベントの有無を確認する間隔です。指定できる最小値は 1 分です。
 
       設定しない場合は、デフォルトの 1 分が適用されます。</translation>
+<translation id="7498595166686106721">
+      ディスプレイ キャプチャ許可ポリシーでは、仕様（https://www.w3.org/TR/screen-capture/#feature-policy-integration）に沿って、getDisplayMedia(), へのアクセスをゲートします。ただし、このポリシーを無効に設定した場合、この要件は適用されず、本来禁止されているコンテキストからの getDisplayMedia() の呼び出しが許可されます。このエンタープライズ ポリシーは一時的なものであり、<ph name="PRODUCT_NAME" /> バージョン 100 以降で削除される予定です。仕様を満たしていないため修正する時間が必要なアプリケーションを使用しているエンタープライズ ユーザーのブロックを解除することを目的としています。
+
+      このポリシーを有効に設定するか未設定のままにした場合、サイトはディスプレイ キャプチャ許可ポリシーで許可リストに登録されたコンテキストからのみ getDisplayMedia() を呼び出すことができます。
+
+      このポリシーを無効に設定した場合、サイトはディスプレイ キャプチャ許可ポリシーで許可リストに登録されていないコンテキストからでも getDisplayMedia() を呼び出すことができます。ただし、他の制限が適用される可能性があります。</translation>
 <translation id="7506745375479451616">このポリシーでは、<ph name="IE_PRODUCT_NAME" /> から <ph name="PRODUCT_NAME" /> に切り替えて URL を開くときに使用するコマンドを管理します。このポリシーは、実行ファイルのパスに設定するか <ph name="PRODUCT_NAME_PLACEHOLDER" /> に設定することで、<ph name="PRODUCT_NAME" /> の場所を自動検出できます。
 
       このポリシーを未設定のままにした場合、<ph name="PRODUCT_NAME" /> が Internet Explorer から起動する際に <ph name="IE_PRODUCT_NAME" /> が <ph name="PRODUCT_NAME" /> の実行パスを自動検出します。注: <ph name="IE_PRODUCT_NAME" /> の従来のブラウザをサポートするアドインがインストールされていない場合、このポリシーは無視されます。</translation>
@@ -5621,6 +5680,7 @@
 
       このポリシーを有効に設定した場合、ユーザーは <ph name="LACROS_NAME" /> ブラウザを使用できます。</translation>
 <translation id="802147957407376460">画面を 0 度回転（回転なし）</translation>
+<translation id="8025620823136567878">国際キーボード ショートカットをキーのグリフではなく、キーボード上のキーの位置にマッピングする。</translation>
 <translation id="802776363472387903"><ph name="PLUGIN_VM_NAME" /> 画像の SHA-256 ハッシュです。</translation>
 <translation id="8028814157747157754">デフォルトの検索プロバイダを有効にし、ユーザーに検索プロバイダ リストの変更を許可</translation>
 <translation id="8029201909194194377">リモート アクセス接続で許可する最長セッション継続時間</translation>
@@ -5809,6 +5869,19 @@
 <translation id="8266778278542911985">このポリシーを 3 に設定した場合、ウェブサイトによるシリアルポートへのアクセス要求が許可されます。このポリシーを 2 に設定した場合、シリアルポートへのアクセスは拒否されます。
 
       このポリシーを未設定のままにした場合、ウェブサイトによるアクセス要求は許可されますが、ユーザーはこの設定を変更できます。</translation>
+<translation id="8267887696930711948">このポリシーは M69 でサポート終了となりました。
+      代わりに OverrideSecurityRestrictionsOnInsecureOrigin を使用してください。
+
+      保護されていない発行元に関するセキュリティ制限の適用対象外となる発行元（URL）またはホスト名パターン（例: *.example.com）のリストを指定します。
+
+      このポリシーの目的は、TLS を実装できない以前のアプリケーションに対して組織で発行元を許可できるようにすること、または組織で内部ウェブ開発用のステージング サーバーをセットアップし、ステージング サーバーに TLS を実装しなくても安全なコンテキストで機能をテストできるようにすることです。また、このポリシーを設定すると、アドレスバーで発行元に「保護されていない」というラベルが表示されなくなります。
+
+      このポリシーで URL のリストを設定すると、コマンドライン フラグ「--unsafely-treat-insecure-origin-as-secure」を使って同じ URL をカンマ区切りリストで設定した場合と同じ効果が得られます。このポリシーが設定されている場合、コマンドライン フラグの指定は無視されます。
+
+      このポリシーは M69 でサポート終了となりました。代わりに OverrideSecurityRestrictionsOnInsecureOrigin を使用してください。両方のポリシーが設定されている場合は、このポリシーよりも OverrideSecurityRestrictionsOnInsecureOrigin が優先されます。
+
+      安全なコンテキストについて詳しくは、https://www.w3.org/TR/secure-contexts/ をご覧ください。
+      </translation>
 <translation id="8270320981823560179">ドライブ</translation>
 <translation id="827054846390793641">接続がアクティブなときにホスト デスクトップで接続関連の UI を有効にする</translation>
 <translation id="8274603902181597201">ユーザーの ecryptfs ホーム ディレクトリのデータをワイプして、ext4 で暗号化された新規のホーム ディレクトリから開始する。</translation>
@@ -6388,6 +6461,7 @@
 <translation id="8931555638815157255">このポリシーを有効にするか、未設定のままにすると、登録済みのデバイスは定期的に OS とファームウェアのバージョンを報告します。
 
       このポリシーを無効に設定すると、登録済みのデバイスはバージョン情報を報告しません。</translation>
+<translation id="8934618237639919190">chrome://history/journeys にデフォルトで履歴クラスタを表示し、表示するかどうかをユーザーが変更できるようにする。</translation>
 <translation id="8937282917198525844"> M81 以降、標準のフォーム コントロール要素（&lt;select&gt;、&lt;button&gt;、&lt;input type=date&gt; など）のデザインが一新され、ユーザー補助機能とプラットフォームの統一性が改善されました。このポリシーは古い「従来」のフォーム コントロール要素を復元します（M84 まで対応）。
 
       このポリシーを True に設定した場合、すべてのサイトで「従来」のフォーム コントロール要素が使用されます。
@@ -6526,11 +6600,6 @@
       このポリシーが未設定の場合、デフォルトにより、企業の管理対象ユーザーは使用を許可されず、管理対象外のユーザーは使用を許可されます。</translation>
 <translation id="9096086085182305205">認証サーバーのホワイトリスト</translation>
 <translation id="9096772739225230999">ネットワーク設定を報告しない</translation>
-<translation id="9097005000667946359">このポリシーでは、ユーザーに操作を求めずにサイレント インストールするウェブアプリのリストを指定します。ユーザーはこれらのウェブアプリをアンインストールすることもオフにすることもできません。
-
-      このポリシーで指定するリストの個々の項目は、必須の <ph name="URL_LABEL" />（インストールするウェブアプリの URL）と、5 つの省略可能な <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" />（ウェブアプリを開く方法、デフォルトは新しいタブ）、<ph name="CREATE_DESKTOP_SHORTCUT_LABEL" />（<ph name="LINUX_OS_NAME" /> と <ph name="MS_WIN_NAME" /> のデスクトップ ショートカットを作成する場合は True）、<ph name="FALLBACK_APP_NAME_LABEL" />（<ph name="PRODUCT_NAME" /> バージョン 90 以降では、プログレッシブ ウェブアプリ（PWA）以外のアプリ名をオーバーライドできます。また、PWA であってもインストールの完了に認証が必要な場合は、一時的にインストールされたアプリ名をオーバーライドできます。<ph name="CUSTOM_NAME_LABEL" /> と <ph name="FALLBACK_APP_NAME_LABEL" /> の両方が設定されている場合、後者は無視されます）、<ph name="OVERRIDE_APP_NAME_LABEL" />（<ph name="PRODUCT_NAME" /> バージョン 96 以降では、すべてのウェブアプリと PWA のアプリ名を完全にオーバーライドできます）、<ph name="CUSTOM_ICON_LABEL" />（<ph name="PRODUCT_NAME" /> バージョン 96 以降では、インストールされたアプリのアプリアイコンをオーバーライドできます。アイコンは正方形でサイズを 1 MB 以内とし、jpeg、png、gif、webp、ico のいずれかの形式にする必要があります。ハッシュ値は SHA256 ハッシュのアイコン ファイルとします）で構成されるオブジェクトとなります。
-
-      <ph name="PRODUCT_OS_NAME" /> シェルフへのアプリの固定については、<ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> ポリシーをご覧ください。</translation>
 <translation id="9098409326885953506">背面にあるウィンドウを検出して、描画を一時停止する</translation>
 <translation id="9105265795073104888">Android アプリではプロキシ設定オプションの一部のみを使用できます。プロキシを使用するかどうかは Android アプリ側の選択となります。Android アプリにプロキシの使用を強制することはできません。</translation>
 <translation id="9106865192244721694">WebUSB を許可するサイト</translation>

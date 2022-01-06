@@ -69,6 +69,7 @@
 <translation id="1354356357730355833">copier</translation>
 <translation id="135978014023467274">La version 63 de ChromeVox a été installée !</translation>
 <translation id="1360699455582016846">Cliquez sur l'élément sous la clé de routage <ph name="ROUTING_KEY_NUMBER" /></translation>
+<translation id="1376703628032300005">passer au caractère suivant</translation>
 <translation id="1377925789329510816">Il s'agit du dernier titre. Appuyez sur la touche de recherche+H pour revenir au premier titre ou sur la touche de recherche+Maj+H pour accéder au deuxième titre de cette page.</translation>
 <translation id="138218114945450791">Bleu clair</translation>
 <translation id="1383876407941801731">Rechercher</translation>
@@ -213,6 +214,7 @@
 <translation id="2450814015951372393">Case à cocher</translation>
 <translation id="2461822463642141190">Consommation actuelle</translation>
 <translation id="2462626033734746142">Groupe de cases d'option</translation>
+<translation id="2467741090055146971">désélectionner</translation>
 <translation id="2471138580042810658">Titre 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{astérisque}one{# astérisque}other{# astérisques}}</translation>
 <translation id="2490721194269245365">Marron rosé</translation>
@@ -565,6 +567,7 @@
 <translation id="4854380505292502090">Aucun widget de contenu multimédia précédent</translation>
 <translation id="4855927945655956315">Touches essentielles : Ctrl</translation>
 <translation id="4862744964787595316">Pas en gras</translation>
+<translation id="4865995900839719272">passer à la ligne précédente</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Activer l'enregistrement de la synthèse vocale dans le journal</translation>
 <translation id="4886524826165775965"><ph name="INDEX" /> sur <ph name="TOTAL" /></translation>
@@ -607,7 +610,6 @@
 <translation id="5138912041966667164">Bleu ardoise moyen</translation>
 <translation id="5140016802771803559">Violet foncé</translation>
 <translation id="5142101052131610456">Toutes les leçons</translation>
-<translation id="5152605892605507188">déplacer vers la droite</translation>
 <translation id="5158275234811857234">Couverture</translation>
 <translation id="516076699907426116">Explorez au toucher pour repérer le bouton "Leçon suivante" et appuyez deux fois dessus pour continuer.</translation>
 <translation id="5170206230005240598">Sous-titres braille activés</translation>
@@ -624,6 +626,7 @@
 <translation id="5304943142864553931"><ph name="TITLE" />, onglet</translation>
 <translation id="5308380583665731573">Connexion</translation>
 <translation id="5310788376443009632">Éléments supprimés :</translation>
+<translation id="5316825363044614340">passer à la ligne suivante</translation>
 <translation id="5320727453979144100">Mode persistant activé</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{virgule}one{# virgule}other{# virgules}}</translation>
 <translation id="532485153932049746">Mise en forme du texte
@@ -741,6 +744,7 @@
 <translation id="6034000775414344507">Gris clair</translation>
 <translation id="6036135911048686884">Explorez au toucher</translation>
 <translation id="6037602951055904232">Panoramique avant</translation>
+<translation id="604240746417122825">erreur grammaticale</translation>
 <translation id="6082768461603900813">Navigation de base</translation>
 <translation id="609281021724813947">Aucun curseur précédent</translation>
 <translation id="6100239002225743044">Monter d'une ligne</translation>
@@ -751,7 +755,6 @@
 <translation id="6142308968191113180">Titre 4</translation>
 <translation id="6150023170003443621">Vert pomme</translation>
 <translation id="6158882249329863701">ligne <ph name="TABLECELLROWINDEX" />, colonne <ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="6159796324830296161">déplacer vers la gauche</translation>
 <translation id="6164829606128959761">outil de mesure</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6166362019018438352">Sous-titres braille désactivés</translation>
@@ -844,7 +847,6 @@
 <translation id="6910969481785184048">Activer, désactiver et arrêter</translation>
 <translation id="6919104639734799681">Afficher la liste des tableaux</translation>
 <translation id="692135145298539227">supprimer</translation>
-<translation id="6935674530832500465">déplacer vers le bas</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6949846980769640811">Aigue-marine moyen</translation>
 <translation id="6951482098621102657">Aucun titre de niveau 5 suivant</translation>
@@ -904,6 +906,7 @@
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
 <translation id="7308519659008003150">Aucun champ de formulaire précédent</translation>
 <translation id="731121099745151312">tritm</translation>
+<translation id="7313717760367325059">aide</translation>
 <translation id="7317017974771324508">partiellement sélectionnée</translation>
 <translation id="7322442671176251901">Explorer au toucher</translation>
 <translation id="7344012264516629579">Vous avez également la possibilité d'accéder directement à un lien, un bouton ou une case à cocher, entre autres. Pour consulter la liste complète des commandes d'accès direct, accédez aux menus ChromeVox en appuyant sur Recherche+Point.</translation>
@@ -1042,14 +1045,12 @@
 <translation id="826825447994856889">Introduction</translation>
 <translation id="827266600368092403">Début ou fin de sélection</translation>
 <translation id="827422111966801947">Indigo</translation>
-<translation id="827496561804786391">déplacer vers le haut</translation>
 <translation id="8276439074553447000">Renvoyer à l'élément précédent pouvant être agrandi</translation>
 <translation id="8279039817939141096">Faites un geste ou appuyez sur une touche du clavier ou du clavier braille actualisable pour en connaître la fonction. Appuyez sur Ctrl+W, Espace+Z, balayez vers la gauche avec deux doigts ou appuyez sur Échap pour sortir.</translation>
 <translation id="8283603667300770666">Champ de formulaire suivant</translation>
 <translation id="8310185481635255431">Aucun lien suivant</translation>
 <translation id="831207808878314375">Définition</translation>
 <translation id="8313653172105209786">répertoire</translation>
-<translation id="8314546933558091113">tout désélectionner</translation>
 <translation id="8316881042119029234">Dentelle ancienne</translation>
 <translation id="8324974933005349667">Personnaliser les paramètres de synthèse vocale</translation>
 <translation id="8326783648485765113">Vert pelouse</translation>
@@ -1133,6 +1134,7 @@
 <translation id="9014206344398081366">Tutoriel ChromeVox</translation>
 <translation id="9040132695316389094">Titre 1</translation>
 <translation id="9061884144798498064">Sélectionner un tableau braille à huit points :</translation>
+<translation id="9063946545000394379">passer au caractère précédent</translation>
 <translation id="9065283790526219006">+pop-up</translation>
 <translation id="9065912140022662363">Aucune case d'option suivante</translation>
 <translation id="9067522039955793016">Saut de page</translation>

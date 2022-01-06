@@ -75,6 +75,7 @@
 <translation id="2016697457005847575">Испробајте кораке за решавање проблема</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Више подешавања</translation>
+<translation id="2104796393919810494">Поправка је завршена</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, верзија <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">Доступно: <ph name="AVAILABLE_MEMORY" /> GB од <ph name="TOTAL_MEMORY" /> GB</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
@@ -132,6 +133,7 @@
 <translation id="315738237743207937">Откривен је улазни портал</translation>
 <translation id="3170673040743561620">Поставите документ на скенер</translation>
 <translation id="3188257591659621405">Моје датотеке</translation>
+<translation id="3192947282887913208">Аудио датотеке</translation>
 <translation id="3199982728237701504">Увлачење документа (двострано)</translation>
 <translation id="3226405216343213872">Траже се скенери</translation>
 <translation id="3246869037381808805">Задаци штампања старији од 1 дана се уклањају</translation>
@@ -161,6 +163,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (рецензије: <ph name="AGGREGATED_COUNT" />)</translation>
 <translation id="3748026146096797577">Није повезано</translation>
 <translation id="3749289110408117711">Назив датотеке</translation>
+<translation id="3771294271822695279">Видео датотеке</translation>
 <translation id="38114475217616659">Обриши сву историју</translation>
 <translation id="3820172043799983114">Неважећи PIN.</translation>
 <translation id="3838338534323494292">Нова лозинка</translation>
@@ -235,6 +238,7 @@
 <translation id="4813345808229079766">Веза</translation>
 <translation id="4832079907277790330">Изаберите фолдер у апликацији Фајлови...</translation>
 <translation id="4835901797422965222">Нема активних мрежа</translation>
+<translation id="4839698083503556542">Направите сопствени филм</translation>
 <translation id="484790837831576105">(Android) DNS разрешавање</translation>
 <translation id="4848429997038228357">У ТОКУ</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Преостаје {0} покушај}one{<ph name="ERROR_MESSAGE" /> Преостаје {0} покушај}few{<ph name="ERROR_MESSAGE" /> Преостају {0} покушаја}other{<ph name="ERROR_MESSAGE" /> Преостаје {0} покушаја}}</translation>
@@ -256,6 +260,7 @@
 <translation id="5049856988445523908">SIM је закључан (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Назив групе</translation>
 <translation id="5051044138948155788">Ово је једина страница. Ово ће вас одвести на почетни екран за скенирање.</translation>
+<translation id="5061169534910302641">Ажурирај верзију и рестартуј</translation>
 <translation id="5088172560898466307">Име хоста сервера</translation>
 <translation id="5089810972385038852">Држава</translation>
 <translation id="5142961317498132443">Потврда идентитета</translation>
@@ -347,6 +352,7 @@
 <translation id="636850387210749493">Пријављивање за издање за предузећа</translation>
 <translation id="6379086450106841622">Додирни екран</translation>
 <translation id="6388847657025262518">Механизам за увлачење докумената на скенеру је заглављен. Проверите механизам и пробајте поново.</translation>
+<translation id="6410257289063177456">Датотеке слика</translation>
 <translation id="641081527798843608">Подударање наслова</translation>
 <translation id="6423239382391657905">Отворена VPN</translation>
 <translation id="6439505561246192797">Слаб (<ph name="SIGNAL_STRENGTH" />)</translation>

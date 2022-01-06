@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
@@ -81,6 +82,33 @@ void LayoutNGSVGText::RemoveChild(LayoutObject* child) {
   NOT_DESTROYED();
   SubtreeStructureChanged(layout_invalidation_reason::kChildChanged);
   LayoutSVGBlock::RemoveChild(child);
+}
+
+void LayoutNGSVGText::InsertedIntoTree() {
+  NOT_DESTROYED();
+  LayoutNGBlockFlowMixin<LayoutSVGBlock>::InsertedIntoTree();
+  for (LayoutBlock* cb = ContainingBlock(); cb; cb = cb->ContainingBlock())
+    cb->AddSvgTextDescendant(*this);
+
+  for (auto* ancestor = Parent(); ancestor; ancestor = ancestor->Parent()) {
+    if (auto* root = DynamicTo<LayoutSVGRoot>(ancestor)) {
+      root->AddSvgTextDescendant(*this);
+      break;
+    }
+  }
+}
+
+void LayoutNGSVGText::WillBeRemovedFromTree() {
+  NOT_DESTROYED();
+  for (LayoutBlock* cb = ContainingBlock(); cb; cb = cb->ContainingBlock())
+    cb->RemoveSvgTextDescendant(*this);
+  for (auto* ancestor = Parent(); ancestor; ancestor = ancestor->Parent()) {
+    if (auto* root = DynamicTo<LayoutSVGRoot>(ancestor)) {
+      root->RemoveSvgTextDescendant(*this);
+      break;
+    }
+  }
+  LayoutNGBlockFlowMixin<LayoutSVGBlock>::WillBeRemovedFromTree();
 }
 
 void LayoutNGSVGText::SubtreeStructureChanged(
@@ -157,7 +185,7 @@ void LayoutNGSVGText::UpdateBlockLayout(bool relayout_children) {
   // scale factor has changed, then recompute the on-screen font size. Since
   // the computation of layout attributes uses the text metrics, we need to
   // update them before updating the layout attributes.
-  if (needs_text_metrics_update_) {
+  if (needs_text_metrics_update_ || needs_transform_update_) {
     // Recompute the transform before updating font and corresponding
     // metrics. At this point our bounding box may be incorrect, so
     // any box relative transforms will be incorrect. Since the scaled
@@ -171,6 +199,7 @@ void LayoutNGSVGText::UpdateBlockLayout(bool relayout_children) {
     }
 
     UpdateFont();
+    SetNeedsCollectInlines(true);
     needs_text_metrics_update_ = false;
   }
 
@@ -181,6 +210,13 @@ void LayoutNGSVGText::UpdateBlockLayout(bool relayout_children) {
 
   gfx::RectF boundaries = ObjectBoundingBox();
   const bool bounds_changed = old_boundaries != boundaries;
+  if (bounds_changed) {
+    // Invalidate all resources of this client if our reference box changed.
+    SVGResourceInvalidator resource_invalidator(*this);
+    resource_invalidator.InvalidateEffects();
+    resource_invalidator.InvalidatePaints();
+  }
+
   // If our bounds changed, notify the parents.
   if (UpdateTransformAfterLayout(bounds_changed) || bounds_changed)
     SetNeedsBoundariesUpdate();

@@ -15,8 +15,11 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.not;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -41,11 +44,13 @@ import androidx.test.espresso.ViewAction;
 import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -54,11 +59,16 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.ApplicationTestUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
+import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo.OwnedState;
 import org.chromium.chrome.browser.firstrun.FirstRunPageDelegate;
+import org.chromium.chrome.browser.firstrun.FirstRunUtils;
+import org.chromium.chrome.browser.firstrun.FirstRunUtilsJni;
 import org.chromium.chrome.browser.firstrun.MobileFreProgress;
 import org.chromium.chrome.browser.firstrun.PolicyLoadListener;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -70,10 +80,12 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.externalauth.ExternalAuthUtils;
+import org.chromium.components.policy.PolicyService;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.test.util.FakeAccountInfoService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 /** Tests for the class {@link SigninFirstRunFragment}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -110,6 +122,10 @@ public class SigninFirstRunFragmentTest {
         }
     }
 
+    // Disable animations to reduce flakiness.
+    @Rule
+    public final DisableAnimationsTestRule mNoAnimationsRule = new DisableAnimationsTestRule();
+
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
 
@@ -122,9 +138,15 @@ public class SigninFirstRunFragmentTest {
             new ChromeTabbedActivityTestRule();
 
     @Mock
+    public EnterpriseInfo mEnterpriseInfoMock;
+    @Mock
     private ExternalAuthUtils mExternalAuthUtilsMock;
     @Mock
     private FirstRunPageDelegate mFirstRunPageDelegateMock;
+    @Mock
+    public FirstRunUtils.Natives mFirstRunUtils;
+    @Mock
+    public PolicyService mPolicyService;
     @Mock
     private PolicyLoadListener mPolicyLoadListenerMock;
     @Mock
@@ -142,12 +164,28 @@ public class SigninFirstRunFragmentTest {
     public void setUp() {
         when(mExternalAuthUtilsMock.canUseGooglePlayServices()).thenReturn(true);
         ExternalAuthUtils.setInstanceForTesting(mExternalAuthUtilsMock);
+        EnterpriseInfo.setInstanceForTest(mEnterpriseInfoMock);
+        doAnswer(AdditionalAnswers.answerVoid(
+                         (Callback<OwnedState> callback)
+                                 -> callback.onResult(new OwnedState(
+                                         /*isDeviceOwned=*/false, /*isProfileOwned=*/false))))
+                .when(mEnterpriseInfoMock)
+                .getDeviceEnterpriseInfo(any());
+        FirstRunUtils.setDisableDelayOnExitFreForTest(true);
+        FirstRunUtilsJni.TEST_HOOKS.setInstanceForTesting(mFirstRunUtils);
         SigninCheckerProvider.setForTests(mSigninCheckerMock);
         when(mPolicyLoadListenerMock.get()).thenReturn(false);
         when(mFirstRunPageDelegateMock.getPolicyLoadListener()).thenReturn(mPolicyLoadListenerMock);
+        when(mFirstRunPageDelegateMock.isLaunchedFromCct()).thenReturn(false);
         mChromeActivityTestRule.startMainActivityOnBlankPage();
         mFragment = new CustomSigninFirstRunFragment();
         mFragment.setPageDelegate(mFirstRunPageDelegateMock);
+    }
+
+    @After
+    public void tearDown() {
+        FirstRunUtils.setDisableDelayOnExitFreForTest(false);
+        EnterpriseInfo.setInstanceForTest(null);
     }
 
     @Test
@@ -595,9 +633,12 @@ public class SigninFirstRunFragmentTest {
         checkFragmentWhenLoadingNativeAndPolicyAndHideTheSpinner();
 
         when(mPolicyLoadListenerMock.get()).thenReturn(false);
-        verify(mPolicyLoadListenerMock).onAvailable(mCallbackCaptor.capture());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mCallbackCaptor.getValue().onResult(false); });
+        verify(mPolicyLoadListenerMock, atLeastOnce()).onAvailable(mCallbackCaptor.capture());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            for (Callback<Boolean> callback : mCallbackCaptor.getAllValues()) {
+                callback.onResult(false);
+            }
+        });
 
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
     }
@@ -612,6 +653,37 @@ public class SigninFirstRunFragmentTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> { mFragment.onNativeInitialized(); });
 
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
+    }
+
+    @Test
+    @MediumTest
+    public void testFragmentWithTosDialogBehaviorPolicy() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mFragment.onNativeInitialized(); });
+        CallbackHelper callbackHelper = new CallbackHelper();
+        doAnswer(invocation -> {
+            callbackHelper.notifyCalled();
+            return null;
+        })
+                .when(mFirstRunPageDelegateMock)
+                .exitFirstRun();
+        when(mFirstRunPageDelegateMock.isLaunchedFromCct()).thenReturn(true);
+        doAnswer(AdditionalAnswers.answerVoid(
+                         (Callback<OwnedState> callback)
+                                 -> callback.onResult(new OwnedState(
+                                         /*isDeviceOwned=*/true, /*isProfileOwned=*/false))))
+                .when(mEnterpriseInfoMock)
+                .getDeviceEnterpriseInfo(any());
+        doAnswer(AdditionalAnswers.answerVoid(
+                         (Callback<Boolean> callback) -> callback.onResult(true)))
+                .when(mPolicyLoadListenerMock)
+                .onAvailable(any());
+        when(mPolicyLoadListenerMock.get()).thenReturn(true);
+        when(mFirstRunUtils.getCctTosDialogEnabled()).thenReturn(false);
+        launchActivityWithFragment();
+
+        callbackHelper.waitForFirst();
+        verify(mFirstRunPageDelegateMock).acceptTermsOfService(false);
+        verify(mFirstRunPageDelegateMock).exitFirstRun();
     }
 
     private void checkFragmentWithSelectedAccount(String email, String fullName, String givenName) {
@@ -654,7 +726,7 @@ public class SigninFirstRunFragmentTest {
         onView(withText(continueAsText)).check(matches(not(isDisplayed())));
         onView(withText(R.string.signin_fre_dismiss_button)).check(matches(not(isDisplayed())));
         onView(withId(R.id.signin_fre_footer)).check(matches(not(isDisplayed())));
-        verify(mPolicyLoadListenerMock).onAvailable(notNull());
+        verify(mPolicyLoadListenerMock, atLeastOnce()).onAvailable(notNull());
     }
 
     private void checkFragmentWithChildAccount() {

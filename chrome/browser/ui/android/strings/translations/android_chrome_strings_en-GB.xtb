@@ -91,6 +91,7 @@
 <translation id="1506061864768559482">Search engine</translation>
 <translation id="1513352483775369820">Bookmarks and web history</translation>
 <translation id="1513858653616922153">Delete password</translation>
+<translation id="1518421282666914498">Emotion GIF <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="1521774566618522728">Active today</translation>
 <translation id="1538801903729528855">Get a better voice experience on the web</translation>
 <translation id="1544826120773021464">To manage your Google Account, tap the 'Manage account' button</translation>
@@ -234,6 +235,7 @@ Tap any word to search. To refine your search, touch and hold to select more or 
 <translation id="2450907520913474542">Learn about topics on websites without leaving the page. Touch to search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
 
 Touch and hold any word to search. To refine your search, select more or fewer words. To edit your search, open the panel, tap the icon to open in a new tab, and make your changes in the search box.</translation>
+<translation id="2451607499823206582">Tracking</translation>
 <translation id="2459390580524506445">Enhanced voice search</translation>
 <translation id="2461822463642141190">Current</translation>
 <translation id="247737702124049222">Image descriptions are on</translation>
@@ -253,6 +255,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="2527779675047087889">Hide clipboard contents</translation>
 <translation id="2532336938189706096">Web View</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> items deleted</translation>
+<translation id="2534582914273493287">URLs that you visit are sent to Google</translation>
 <translation id="2536728043171574184">Viewing an offline copy of this page</translation>
 <translation id="2546283357679194313">Cookies and site data</translation>
 <translation id="2561519700418191927">Video previews</translation>
@@ -372,6 +375,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="3234978181857588512">Save to device</translation>
 <translation id="3236059992281584593">1 min left</translation>
 <translation id="3244271242291266297">MM</translation>
+<translation id="3245429137663807393">If you also share Chrome usage reports, those reports include the URLs that you visit</translation>
 <translation id="3250563604907490871">Image descriptions will resume when you connect to Wi-Fi</translation>
 <translation id="3254409185687681395">Bookmark this page</translation>
 <translation id="3259831549858767975">Make everything on the page smaller</translation>
@@ -423,6 +427,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB available</translation>
 <translation id="3549657413697417275">Search your history</translation>
+<translation id="3557272988124495906">Get price drop notifications</translation>
 <translation id="3557336313807607643">Add to contacts</translation>
 <translation id="3563767357928833671">Clipboard contents shown</translation>
 <translation id="3566923219790363270">Chrome is still preparing for VR. Restart Chrome later.</translation>
@@ -570,6 +575,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4532845899244822526">Choose folder</translation>
 <translation id="4538018662093857852">Turn on Lite mode</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> tab}other{<ph name="TAB_COUNT_MANY" /> tabs, <ph name="TAB_COUNT_INCOGNITO" /> incognito}}</translation>
+<translation id="4549903594034243526">chrome_emotion_gif_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="4550003330909367850">To view or copy your password here, set screen lock on this device.</translation>
 <translation id="4554077758708533499">Connected with USB cable</translation>
 <translation id="4557685098773234337">To get here quicker, add this page to your home screen</translation>
@@ -600,12 +606,14 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4696983787092045100">Send text to Your Devices</translation>
 <translation id="4699172675775169585">Cached images and files</translation>
 <translation id="4714588616299687897">Save up to 60% of your data</translation>
+<translation id="471759387343966120">By continuing, you agree to the <ph name="BEGIN_TOS_LINK" />Terms of Service<ph name="END_TOS_LINK" /> and <ph name="BEGIN_PRIVACY_LINK" />Privacy\u00A0Policy<ph name="END_PRIVACY_LINK" />.\nTo help improve the app, Chrome sends usage and crash data to Google. <ph name="BEGIN_UMA_LINK" />Manage<ph name="END_UMA_LINK" /></translation>
 <translation id="4719927025381752090">Offer to translate</translation>
 <translation id="4720023427747327413">Open in <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Help improve Chrome. <ph name="BEGIN_LINK" />Take survey<ph name="END_LINK" /></translation>
 <translation id="47217992755561375">See your top sites</translation>
 <translation id="4732120983431207637">Stack unwinder</translation>
 <translation id="4738836084190194332">Last synced: <ph name="WHEN" /></translation>
+<translation id="4741753828624614066">You’ll get improved suggestions in the address bar</translation>
 <translation id="4742970037960872810">Remove highlight</translation>
 <translation id="4749960740855309258">Open a new tab</translation>
 <translation id="4758061975920522644">Share image only</translation>
@@ -920,6 +928,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6532866250404780454">Sites that you visit in Chrome won't show. All site timers will be deleted.</translation>
 <translation id="6534565668554028783">Google took too long to respond</translation>
 <translation id="6539092367496845964">Something went wrong. Try again later.</translation>
+<translation id="6541042852576515209">Resize and rotate</translation>
 <translation id="6541983376925655882">{NUM_HOURS,plural, =1{Checked 1 hour ago}other{Checked # hours ago}}</translation>
 <translation id="6545017243486555795">Clear All Data</translation>
 <translation id="6546511553472444032">File might be harmful</translation>
@@ -1072,6 +1081,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7444811645081526538">More categories</translation>
 <translation id="7453467225369441013">Signs you out of most sites. You won't be signed out of your Google Account.</translation>
 <translation id="7454641608352164238">Not enough space</translation>
+<translation id="7468819939926272717">Choose an emotion</translation>
 <translation id="7474822150871987353">Learn about topics on websites without leaving the page. Select one or more words on the page to search for them.</translation>
 <translation id="7475192538862203634">If you’re seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD card not found. Some of your files may be missing.</translation>
@@ -1154,6 +1164,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7879130110979560610">{READING_LIST_REMINDER_NOTIFICATION_SUBTITLE,plural, =1{You have <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_ONE" /> unread page}other{You have <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_MANY" /> unread pages}}</translation>
 <translation id="7882131421121961860">No history found</translation>
 <translation id="7886917304091689118">Running in Chrome</translation>
+<translation id="7887334752153342268">Duplicate</translation>
 <translation id="789763218334337857">How to use Chrome</translation>
 <translation id="7903184275147100332">This may take a minute</translation>
 <translation id="7919123827536834358">Automatically translate these languages</translation>
@@ -1173,6 +1184,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7975379999046275268">Preview page <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Preload pages for faster browsing and searching</translation>
 <translation id="7986497153528221272">To view passwords, first set a screen lock on your device</translation>
+<translation id="799576009106109668">You’ll browse faster because content is proactively loaded based on your current web page visit</translation>
 <translation id="7998918019931843664">Re-open closed tab</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8013372441983637696">Also clear your Chrome data from this device</translation>
@@ -1199,6 +1211,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="808747664143081553">Connected to device</translation>
 <translation id="8088176524274673045">To share with people nearby, let them scan this QR code</translation>
 <translation id="8103578431304235997">Incognito Tab</translation>
+<translation id="8105613260829665809">By continuing, you agree to the <ph name="BEGIN_TOS_LINK" />Terms of Service<ph name="END_TOS_LINK" />.\nTo help improve the app, Chrome sends usage and crash data to Google. <ph name="BEGIN_UMA_LINK" />Manage<ph name="END_UMA_LINK" /></translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">To get your bookmarks on all your devices, turn on sync</translation>
 <translation id="8110024788458304985">Help improve Chrome\u2019s features and performance</translation>
@@ -1220,6 +1233,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8218052821161047641">Fast page</translation>
 <translation id="8218622182176210845">Manage your account</translation>
 <translation id="8223642481677794647">Feed card menu</translation>
+<translation id="8242868071038398515">You will be notified if the price drops on any site</translation>
 <translation id="8250920743982581267">Documents</translation>
 <translation id="825412236959742607">This page uses too much memory, so Chrome removed some content.</translation>
 <translation id="8260126382462817229">Try signing in again</translation>
@@ -1238,6 +1252,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8354977102499939946">Quickly search with your voice. To edit this shortcut, go to Settings.</translation>
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> downloads restored</translation>
 <translation id="8364299278605033898">See popular websites</translation>
+<translation id="8368001212524806591">Track price</translation>
 <translation id="8387617938027387193">Verify that it’s you</translation>
 <translation id="8393700583063109961">Send message</translation>
 <translation id="8410695015584479363">Track prices</translation>
@@ -1278,6 +1293,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8551513938758868521">Lock incognito tabs when you leave Chrome</translation>
 <translation id="8555836665334561807">On Wi-Fi</translation>
 <translation id="8559990750235505898">Offer to translate pages in other languages</translation>
+<translation id="8560560256644480257">Creating GIF <ph name="PERCENT" />%%</translation>
 <translation id="8560602726703398413">Find your reading list in Bookmarks</translation>
 <translation id="8562452229998620586">Your saved passwords will appear here.</translation>
 <translation id="856481929701340285">Request desktop site</translation>

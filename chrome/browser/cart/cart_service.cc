@@ -150,6 +150,7 @@ CartService::CartService(Profile* profile)
                                       weak_ptr_factory_.GetWeakPtr());
   pref_change_registrar_.Add(prefs::kNtpDisabledModules, callback);
   pref_change_registrar_.Add(prefs::kCartDiscountEnabled, callback);
+  pref_change_registrar_.Add(prefs::kNtpModulesVisible, callback);
 }
 
 CartService::~CartService() = default;
@@ -727,10 +728,11 @@ void CartService::SetCartHiddenStatus(
     CartDB::OperationCallback callback,
     bool success,
     std::vector<CartDB::KeyAndValue> proto_pairs) {
-  if (!success) {
+  DCHECK(success);
+  DCHECK_EQ(1U, proto_pairs.size());
+  if (!success || proto_pairs.size() != 1) {
     return;
   }
-  DCHECK_EQ(1U, proto_pairs.size());
   CartDB::KeyAndValue proto_pair = proto_pairs[0];
   proto_pair.second.set_is_hidden(isHidden);
   cart_db_->AddCart(
@@ -744,10 +746,11 @@ void CartService::SetCartRemovedStatus(
     CartDB::OperationCallback callback,
     bool success,
     std::vector<CartDB::KeyAndValue> proto_pairs) {
-  if (!success) {
+  DCHECK(success);
+  DCHECK_EQ(1U, proto_pairs.size());
+  if (!success || proto_pairs.size() != 1) {
     return;
   }
-  DCHECK_EQ(1U, proto_pairs.size());
   CartDB::KeyAndValue proto_pair = proto_pairs[0];
   proto_pair.second.set_is_removed(isRemoved);
   cart_db_->AddCart(
@@ -830,17 +833,19 @@ void CartService::OnAddCart(const std::string& domain,
     // cart if not included already.
     if (!has_product_image) {
       DCHECK_EQ(1, proto.product_infos().size());
-      auto new_product_info = std::move(proto.product_infos().at(0));
-      bool is_included = false;
-      for (auto product_proto : existing_proto.product_infos()) {
-        is_included |=
-            (product_proto.product_id() == new_product_info.product_id());
-        if (is_included)
-          break;
-      }
-      if (!is_included) {
-        auto* added_product = existing_proto.add_product_infos();
-        *added_product = std::move(new_product_info);
+      if (proto.product_infos().size() == 1) {
+        auto new_product_info = std::move(proto.product_infos().at(0));
+        bool is_included = false;
+        for (auto product_proto : existing_proto.product_infos()) {
+          is_included |=
+              (product_proto.product_id() == new_product_info.product_id());
+          if (is_included)
+            break;
+        }
+        if (!is_included) {
+          auto* added_product = existing_proto.add_product_infos();
+          *added_product = std::move(new_product_info);
+        }
       }
     } else {
       *(existing_proto.mutable_product_infos()) =
@@ -968,10 +973,7 @@ void CartService::CleanUpDiscounts(cart_db::ChromeCartContentProto proto) {
 
 void CartService::OnDeleteCart(bool success,
                                std::vector<CartDB::KeyAndValue> proto_pairs) {
-  if (proto_pairs.empty())
-    return;
-  DCHECK_EQ(1U, proto_pairs.size());
-  if (proto_pairs[0].second.is_removed())
+  if (proto_pairs.size() != 1 || proto_pairs[0].second.is_removed())
     return;
   cart_db_->DeleteCart(proto_pairs[0].first,
                        base::BindOnce(&CartService::OnOperationFinished,
@@ -987,7 +989,8 @@ bool CartService::IsCartAndDiscountEnabled() {
   if (list && base::Contains(list->GetList(), base::Value(kCartPrefsKey))) {
     return false;
   }
-  return profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountEnabled);
+  return profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountEnabled) &&
+         profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesVisible);
 }
 
 void CartService::SetCartDiscountLinkFetcherForTesting(

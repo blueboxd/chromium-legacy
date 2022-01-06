@@ -48,6 +48,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1239161794459865856">La fonctionnalité <ph name="FEATURE_NAME" /> est connectée.</translation>
 <translation id="1246890715821376239">Applications non prises en charge</translation>
 <translation id="1247372569136754018">Microphone (interne)</translation>
+<translation id="1247519845643687288">Applications récentes</translation>
 <translation id="1252999807265626933">Recharge à partir de <ph name="POWER_SOURCE" /> en cours</translation>
 <translation id="1255033239764210633">Quel temps fait-il?</translation>
 <translation id="1266097335951928626">Démarrer l'appareil photo pour égoportrait</translation>
@@ -61,6 +62,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1289185460362160437">Reviens <ph name="COME_BACK_DAY_OF_WEEK" /> à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Signal faible</translation>
 <translation id="1293264513303784526">Appareil USB-C (port de gauche)</translation>
+<translation id="1293556467332435079">Fichiers</translation>
 <translation id="1294929383540927798">Modifier les paramètres de notification de l'écran de verrouillage</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Afficher les paramètres Bluetooth. <ph name="STATE_TEXT" /></translation>
@@ -79,6 +81,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1419738280318246476">Déverrouillez l'appareil pour effectuer l'action de la notification</translation>
 <translation id="1420408895951708260">Activer ou désactiver le mode Éclairage nocturne. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Oui</translation>
+<translation id="1438357537418863713">La diffusion d'application est maintenant configurée. Lorsque vous commencerez à l'utiliser, les applications récemment lancées s'afficheront ici.</translation>
 <translation id="144853431011121127">Recevez les notifications de votre téléphone sur votre <ph name="DEVICE_TYPE" /></translation>
 <translation id="1455242230282523554">Afficher les paramètres de langue</translation>
 <translation id="1460620680449458626">Le volume est désactivé.</translation>
@@ -246,6 +249,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="2778650143428714839">Ce <ph name="DEVICE_TYPE" /> est géré par <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">Quitter le mode de capture</translation>
 <translation id="2792498699870441125">Alt + Recherche</translation>
+<translation id="2805756323405976993">Applications</translation>
 <translation id="2814448776515246190">Capture partielle</translation>
 <translation id="2819276065543622893">Vous allez maintenant être déconnecté.</translation>
 <translation id="28232023175184696">Impossible de se connecter à Internet. Cliquez pour réessayer.</translation>
@@ -301,7 +305,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="316086887565479535">Applications non prises en charge dans le modèle</translation>
 <translation id="3181441307743005334">Le redémarrage peut prendre un certain temps</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connecté à un appareil}one{Connecté à # appareil}other{Connecté à # appareils}}</translation>
-<translation id="320207200541803018">Règle une minuterie</translation>
+<translation id="320207200541803018">Règler une minuterie</translation>
 <translation id="3203405173652969239">Switch Access est activé</translation>
 <translation id="3207953481422525583">Paramètres de l'utilisateur</translation>
 <translation id="3217205077783620295">Le son est activé et peut être coupé en cliquant sur le bouton de volume.</translation>
@@ -322,6 +326,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="334252345105450327">Prendre une capture d'écran</translation>
 <translation id="3351879221545518001">Vous diffusez actuellement l'écran.</translation>
 <translation id="3364721542077212959">Outils de stylet</translation>
+<translation id="3365977133351922112">Votre téléphone est trop loin. Rapprochez votre téléphone.</translation>
 <translation id="3368922792935385530">Connecté</translation>
 <translation id="3371140690572404006">Appareil USB-C (port avant-droit)</translation>
 <translation id="3375634426936648815">Fonctionnalité connectée</translation>
@@ -374,6 +379,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3665889125180354336">Enregistrement avec le microphone</translation>
 <translation id="3680908746918359504">Effacer tous les marqueurs</translation>
 <translation id="36813544980941320">Les réseaux Wi-Fi seront partagés entre votre téléphone et votre <ph name="DEVICE_NAME" /></translation>
+<translation id="3694122362646626770">Sites Web</translation>
 <translation id="3701206655856637070">Vous pouvez maintenant modifier l'endroit où les captures d'écran sont enregistrées</translation>
 <translation id="3702809606464356667">Affichage des fenêtres du bureau actuel. Appuyez sur la flèche vers le haut pour afficher les fenêtres de tous les bureaux.</translation>
 <translation id="3702846122927433391">Quelle est la population du Nigéria?</translation>
@@ -535,6 +541,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4774338217796918551">Reviens demain à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Mot de passe pour <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4777825441726637019">Play Store</translation>
 <translation id="4778095205580009397">L'Assistant Google n'est pas disponible dans une session de démonstration.</translation>
 <translation id="4782311465517282004">Obtenez des définitions, des traductions ou des conversions d'unités lorsque vous faites un clic droit ou que vous maintenez le doigt sur le texte</translation>
 <translation id="479989351350248267">chercher</translation>
@@ -590,11 +597,13 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="5136175204352732067">Autre clavier branché</translation>
 <translation id="5147567197700016471">Déverrouillé</translation>
 <translation id="5155897006997040331">Vitesse de lecture</translation>
+<translation id="5166007464919321363">Enregistrer le bureau comme modèle</translation>
 <translation id="5166918508782100047">Paramètres des réponses rapides</translation>
 <translation id="5168181903108465623">Appareils de diffusion disponibles</translation>
 <translation id="5170568018924773124">Afficher dans le dossier</translation>
 <translation id="5176318573511391780">Enregistrer une partie de l'écran</translation>
 <translation id="5199367439331364630">Pour vous connecter à votre Chromebook, entrez votre mot de passe</translation>
+<translation id="5206028654245650022"><ph name="APP_NAME" />, <ph name="NOTIFICATION_TITLE" /> : <ph name="MESSAGE" />, <ph name="PHONE_NAME" /></translation>
 <translation id="5206057955438543357">{NUM_NOTIFICATIONS,plural, =1{1 autre notification}one{# autre notification}other{# autres notifications}}</translation>
 <translation id="5207949376430453814">Mettre le point d'insertion de texte en surbrillance</translation>
 <translation id="5208059991603368177">Activé</translation>
@@ -799,6 +808,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="6777216307882431711">Alimente des appareils connectés par USB-C</translation>
 <translation id="6790428901817661496">Jouer</translation>
 <translation id="6803622936009808957">La mise en miroir n'a pas été possible faute de résolutions prises en charge. Le mode de bureau étendu a plutôt été sélectionné.</translation>
+<translation id="6811454077060061666">Google Disque pour ordinateur de bureau n'est pas accessible</translation>
 <translation id="6816797338148849397">Des renseignements concernant votre sélection sont accessibles. Servez-vous de la touche de flèche vers le haut pour y accéder.</translation>
 <translation id="6818242057446442178">Déplacer un mot vers l'arrière</translation>
 <translation id="6820676911989879663">Prenez une pause!</translation>
@@ -876,6 +886,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="7398254312354928459">Changement de connexion réseau</translation>
 <translation id="7405710164030118432">Pour déverrouiller l'appareil, entrez votre code d'accès parental Family Link</translation>
 <translation id="7406608787870898861">Terminer la configuration de votre réseau cellulaire</translation>
+<translation id="740790383907119240">Raccourcis des applications</translation>
 <translation id="741244894080940828">conversion</translation>
 <translation id="7413851974711031813">Appuyez sur Échap pour fermer la fenêtre</translation>
 <translation id="742594950370306541">La caméra est en cours d'utilisation.</translation>
@@ -933,6 +944,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="7796353162336583443">Touchez le bouton du stylet sur l'étagère pour créer une note, pour prendre une capture d'écran ou pour utiliser l'Assistant Google, le pointeur laser ou la loupe.</translation>
 <translation id="7798302898096527229">Appuyez sur Recherche ou Majuscule pour le désactiver.</translation>
 <translation id="780301667611848630">Non merci</translation>
+<translation id="7807067443225230855">Recherche et Assistant Google</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> et <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Signal fort</translation>
 <translation id="7837740436429729974">Temps écoulé</translation>
@@ -977,6 +989,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="8061464966246066292">Contraste élevé</translation>
 <translation id="8098591350844501178">Arrêter la diffusion de l'écran sur <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Activées, toutes applis</translation>
+<translation id="8120151603115102514">Votre téléphone n'a pas d'écran de verrouillage. Pour déverrouiller votre Chromebook, entrez votre mot de passe.</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8132487352815776550">Fermer les sous-titres</translation>
@@ -997,6 +1010,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" />, pile du téléphone <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Appuyez sur Entrée pour déverrouiller l'appareil pour <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Supprimer</translation>
+<translation id="8281279285293265212">Échec de l'enregistrement de la vidéocapture d'écran</translation>
 <translation id="8284362522226889623">Balayez vers la gauche avec quatre doigts pour passer au bureau précédent</translation>
 <translation id="828708037801473432">Désactivé</translation>
 <translation id="8297006494302853456">Faible</translation>
@@ -1024,6 +1038,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> a <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Appuyez sur Alt + Recherche ou Majuscule pour le désactiver.</translation>
 <translation id="8492573885090281069">L'écran <ph name="DISPLAY_NAME" /> ne prend pas en charge la résolution de <ph name="SPECIFIED_RESOLUTION" />. La résolution a été changée à <ph name="FALLBACK_RESOLUTION" />. Cliquez sur Confirmer pour garder les changements. Les paramètres précédents seront restaurés dans <ph name="TIMEOUT_SECONDS" />.</translation>
+<translation id="85123341071060231">Le Bluetooth de votre Chromebook est désactivé. Pour déverrouiller votre Chromebook, entrez votre mot de passe.</translation>
 <translation id="8513108775083588393">Rotation auto</translation>
 <translation id="851458219935658693">Afficher les fenêtres du bureau actuel, bouton radio sélectionné</translation>
 <translation id="8517041960877371778">Il est possible que votre <ph name="DEVICE_TYPE" /> ne se charge pas lorsqu’il est allumé.</translation>
@@ -1101,6 +1116,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="9070640332319875144">Paramètres de l'Assistant</translation>
 <translation id="9072519059834302790">Il reste <ph name="TIME_LEFT" /> avant que la pile soit complètement épuisée.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9077404278023321866">Modèles</translation>
 <translation id="9077515519330855811">Commandes multimédias, en cours de lecture : <ph name="MEDIA_TITLE" /></translation>
 <translation id="9079731690316798640">Wi-Fi : <ph name="ADDRESS" /></translation>
 <translation id="9080132581049224423">Balayez l'écran vers le haut pour accéder à l'écran d'accueil</translation>

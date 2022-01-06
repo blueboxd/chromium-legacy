@@ -62,6 +62,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1289185460362160437">Volte <ph name="COME_BACK_DAY_OF_WEEK" />, neste horário: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Sinal fraco</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porta da esquerda)</translation>
+<translation id="1293556467332435079">Arquivos</translation>
 <translation id="1294929383540927798">Alterar as configurações de notificação da tela de bloqueio</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Mostrar configurações de Bluetooth. <ph name="STATE_TEXT" /></translation>
@@ -248,6 +249,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> gerenciado por <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">Sair do modo de captura</translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
+<translation id="2805756323405976993">Apps</translation>
 <translation id="2814448776515246190">Captura parcial</translation>
 <translation id="2819276065543622893">Você sairá agora.</translation>
 <translation id="28232023175184696">Não é possível se conectar à Internet. Clique para tentar novamente.</translation>
@@ -324,6 +326,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="334252345105450327">Fazer uma captura de tela</translation>
 <translation id="3351879221545518001">Você está transmitindo a tela.</translation>
 <translation id="3364721542077212959">Ferramentas da stylus</translation>
+<translation id="3365977133351922112">Seu smartphone está muito longe. Aproxime os dispositivos.</translation>
 <translation id="3368922792935385530">Conectado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal da direita)</translation>
 <translation id="3375634426936648815">Conectado</translation>
@@ -376,6 +379,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="3665889125180354336">Gravar microfone</translation>
 <translation id="3680908746918359504">Limpar todos os marcadores</translation>
 <translation id="36813544980941320">Redes Wi-Fi serão compartilhadas entre seu smartphone e o <ph name="DEVICE_NAME" /></translation>
+<translation id="3694122362646626770">Websites</translation>
 <translation id="3701206655856637070">Agora, é possível mudar onde as capturas de tela são salvas</translation>
 <translation id="3702809606464356667">Mostrando janelas do espaço de trabalho atual. Pressione a tecla de seta para cima para mostrar as de todos os espaços de trabalho</translation>
 <translation id="3702846122927433391">População da Nigéria</translation>
@@ -537,6 +541,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4774338217796918551">Volte amanhã, neste horário: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Senha para <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4777825441726637019">Play Store</translation>
 <translation id="4778095205580009397">O Google Assistente não está disponível para uma sessão de demonstração.</translation>
 <translation id="4782311465517282004">Veja definições, traduções ou conversões de unidades ao clicar com o botão direito do mouse no texto ou tocar nele e mantê-lo pressionado</translation>
 <translation id="479989351350248267">pesquisar</translation>
@@ -598,6 +603,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="5170568018924773124">Mostrar na pasta</translation>
 <translation id="5176318573511391780">Gravar tela parcial</translation>
 <translation id="5199367439331364630">Para fazer login no Chromebook, digite sua senha</translation>
+<translation id="5206028654245650022"><ph name="APP_NAME" />, <ph name="NOTIFICATION_TITLE" />: <ph name="MESSAGE" />, <ph name="PHONE_NAME" /></translation>
 <translation id="5206057955438543357">{NUM_NOTIFICATIONS,plural, =1{Mais 1 notificação}one{Mais # notificação}other{Mais # notificações}}</translation>
 <translation id="5207949376430453814">Destacar cursor de texto</translation>
 <translation id="5208059991603368177">Ativado</translation>
@@ -880,6 +886,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="7398254312354928459">Conexão de rede alterada</translation>
 <translation id="7405710164030118432">Para desbloquear o dispositivo, insira seu código de acesso do familiar responsável do Family Link</translation>
 <translation id="7406608787870898861">Termine de configurar sua rede móvel</translation>
+<translation id="740790383907119240">Atalhos de apps</translation>
 <translation id="741244894080940828">conversão</translation>
 <translation id="7413851974711031813">Pressione "Esc" para fechar</translation>
 <translation id="742594950370306541">A câmera está em uso.</translation>
@@ -937,6 +944,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="7796353162336583443">Toque no botão da stylus na estante para criar uma nota, uma captura de tela, usar o Google Assistente, o apontador laser ou a lupa.</translation>
 <translation id="7798302898096527229">Pressione Pesquisar ou Shift para cancelar.</translation>
 <translation id="780301667611848630">Não</translation>
+<translation id="7807067443225230855">Pesquisa e Assistente</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinal forte</translation>
 <translation id="7837740436429729974">Tempo esgotado</translation>
@@ -981,6 +989,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="8061464966246066292">Alto contraste</translation>
 <translation id="8098591350844501178">Parar de transmitir tela para <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Ativ. nos apps</translation>
+<translation id="8120151603115102514">Seu smartphone não tem uma tela de bloqueio. Para desbloquear o Chromebook, digite sua senha</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8132487352815776550">Interromper closed captions</translation>
@@ -1029,6 +1038,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> o recurso <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Pressione Alt+Pesquisar ou Shift para cancelar.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> não é compatível com <ph name="SPECIFIED_RESOLUTION" />. A resolução foi modificada para <ph name="FALLBACK_RESOLUTION" />. Clique em "Confirmar" para manter as mudanças. As configurações anteriores serão restauradas em <ph name="TIMEOUT_SECONDS" />.</translation>
+<translation id="85123341071060231">O Bluetooth do Chromebook está desativado. Para desbloquear, digite sua senha.</translation>
 <translation id="8513108775083588393">Girar automat.</translation>
 <translation id="851458219935658693">Mostrar janelas do espaço de trabalho atual, botão de opção selecionado</translation>
 <translation id="8517041960877371778">Seu <ph name="DEVICE_TYPE" /> pode não ser carregado enquanto estiver ligado.</translation>

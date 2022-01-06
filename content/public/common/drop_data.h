@@ -115,6 +115,7 @@ struct CONTENT_EXPORT DropData {
 
   // User is dragging an image out of the WebView.
   std::string file_contents;
+  bool file_contents_image_accessible = false;
   GURL file_contents_source_url;
   base::FilePath::StringType file_contents_filename_extension;
   std::string file_contents_content_disposition;

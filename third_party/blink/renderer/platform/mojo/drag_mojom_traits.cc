@@ -130,6 +130,13 @@ mojo_base::BigBuffer StructTraits<
 }
 
 // static
+bool StructTraits<blink::mojom::DragItemBinaryDataView,
+                  blink::WebDragData::Item>::
+    is_image_accessible(const blink::WebDragData::Item& item) {
+  return item.binary_data_image_accessible;
+}
+
+// static
 blink::KURL
 StructTraits<blink::mojom::DragItemBinaryDataView, blink::WebDragData::Item>::
     source_url(const blink::WebDragData::Item& item) {
@@ -169,6 +176,7 @@ bool StructTraits<
   item.binary_data =
       blink::WebData(reinterpret_cast<const char*>(file_contents.data().data()),
                      file_contents.data().size());
+  item.binary_data_image_accessible = data.is_image_accessible();
   item.binary_data_source_url = source_url;
   item.binary_data_filename_extension =
       blink::FilePathToWebString(filename_extension);

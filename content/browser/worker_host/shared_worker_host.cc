@@ -13,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
+#include "content/browser/broadcast_channel/broadcast_channel_service.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
@@ -166,6 +167,8 @@ SharedWorkerHost::~SharedWorkerHost() {
   // Send any final reports and allow the reporting configuration to be
   // removed.
   if (site_instance_->HasProcess()) {
+    // Note that the RenderProcessHost and the associated StoragePartition
+    // outlives `this`.
     GetProcessHost()
         ->GetStoragePartition()
         ->GetNetworkContext()
@@ -234,9 +237,11 @@ void SharedWorkerHost::Start(
         break;
     }
 
+    auto* storage_partition = static_cast<StoragePartitionImpl*>(
+        GetProcessHost()->GetStoragePartition());
     // Create a COEP reporter with worker's policy.
     coep_reporter_ = std::make_unique<CrossOriginEmbedderPolicyReporter>(
-        GetProcessHost()->GetStoragePartition(), final_response_url,
+        storage_partition->GetWeakPtr(), final_response_url,
         worker_cross_origin_embedder_policy_->reporting_endpoint,
         worker_cross_origin_embedder_policy_->report_only_reporting_endpoint,
         GetReportingSource(), GetNetworkIsolationKey());
@@ -463,10 +468,11 @@ void SharedWorkerHost::CreateBroadcastChannelProvider(
   auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
       GetProcessHost()->GetStoragePartition());
 
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<BroadcastChannelProvider>(
-          storage_partition_impl->GetBroadcastChannelService(),
-          GetStorageKey()),
+  auto* broadcast_channel_service =
+      storage_partition_impl->GetBroadcastChannelService();
+  broadcast_channel_service->AddReceiver(
+      std::make_unique<BroadcastChannelProvider>(broadcast_channel_service,
+                                                 GetStorageKey()),
       std::move(receiver));
 }
 

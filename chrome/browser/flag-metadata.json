@@ -1486,6 +1486,11 @@
     "expiry_milestone": 98
   },
   {
+    "name": "enable-automatic-snooze",
+    "owners": [ "shaktisahu", "haileywang" ],
+    "expiry_milestone": 101
+  },
+  {
     "name": "enable-background-blur",
     "owners": [ "newcomer" ],
     "expiry_milestone": 86
@@ -4566,6 +4571,11 @@
     "expiry_milestone": 99
   },
   {
+    "name": "reading-list-time-to-read",
+    "owners": [ "thegreenfrog@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "record-snapshot-size",
     "owners": ["edchin","bling-flags@google.com"],
     "expiry_milestone": 91
@@ -4633,6 +4643,11 @@
     // This is required by test teams to verify functionality on dev/beta
     // channels on devices which have no access to commandline flags.
     "expiry_milestone": -1
+  },
+  {
+    "name": "remove-extra-ntps",
+    "owners": [ "thegreenfrog@chromium.org", "bling-team@google.org" ],
+    "expiry_milestone": 105
   },
   {
     "name": "request-desktop-site-for-tablets",

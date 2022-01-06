@@ -75,6 +75,7 @@
 <translation id="2016697457005847575">Probeer de stappen voor probleemoplossing</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Meer instellingen</translation>
+<translation id="2104796393919810494">Reparatie afgerond</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versie <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB van <ph name="TOTAL_MEMORY" /> GB beschikbaar</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
@@ -132,6 +133,7 @@
 <translation id="315738237743207937">Captive portal waargenomen</translation>
 <translation id="3170673040743561620">Leg je document op de scanner</translation>
 <translation id="3188257591659621405">Mijn bestanden</translation>
+<translation id="3192947282887913208">Audiobestanden</translation>
 <translation id="3199982728237701504">Documentfeeder (dubbelzijdig)</translation>
 <translation id="3226405216343213872">Zoeken naar scanners</translation>
 <translation id="3246869037381808805">Afdruktaken ouder dan 1 dag worden verwijderd</translation>
@@ -161,6 +163,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> reviews)</translation>
 <translation id="3748026146096797577">Niet verbonden</translation>
 <translation id="3749289110408117711">Bestandsnaam</translation>
+<translation id="3771294271822695279">Videobestanden</translation>
 <translation id="38114475217616659">Alle geschiedenis wissen</translation>
 <translation id="3820172043799983114">Ongeldige pincode.</translation>
 <translation id="3838338534323494292">Nieuw wachtwoord</translation>
@@ -235,6 +238,7 @@
 <translation id="4813345808229079766">Verbinding</translation>
 <translation id="4832079907277790330">Map selecteren in de app Bestanden...</translation>
 <translation id="4835901797422965222">Geen actieve netwerken</translation>
+<translation id="4839698083503556542">Je eigen film maken</translation>
 <translation id="484790837831576105">(Android) DNS-omzetting</translation>
 <translation id="4848429997038228357">ACTIEF</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Nog {0} poging}other{<ph name="ERROR_MESSAGE" /> Nog {0} pogingen}}</translation>
@@ -256,6 +260,7 @@
 <translation id="5049856988445523908">Simkaart vergrendeld (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Groepsnaam</translation>
 <translation id="5051044138948155788">Dit is de enige pagina. Hierna kom je op het startscherm voor scannen.</translation>
+<translation id="5061169534910302641">Versie updaten en opnieuw opstarten</translation>
 <translation id="5088172560898466307">Hostnaam van server</translation>
 <translation id="5089810972385038852">Staat</translation>
 <translation id="5142961317498132443">Verificatie</translation>
@@ -347,6 +352,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="636850387210749493">Aanmelding voor Enterprise</translation>
 <translation id="6379086450106841622">Touchscreen</translation>
 <translation id="6388847657025262518">De documentinvoer van de scanner is vastgelopen. Check de invoer en probeer het opnieuw.</translation>
+<translation id="6410257289063177456">Afbeeldingsbestanden</translation>
 <translation id="641081527798843608">Overeenkomst van onderwerp</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Zwak (<ph name="SIGNAL_STRENGTH" />)</translation>

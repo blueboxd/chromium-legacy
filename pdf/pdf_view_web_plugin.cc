@@ -81,6 +81,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/skia_conversions.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -393,10 +394,21 @@ void PdfViewWebPlugin::Paint(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
     return;
   }
 
+  // Layer translate is independent of scaling, so apply first.
+  if (!total_translate_.IsZero())
+    canvas->translate(total_translate_.x(), total_translate_.y());
+
   if (device_to_css_scale_ != 1.0f)
     canvas->scale(device_to_css_scale_, device_to_css_scale_);
 
-  canvas->drawImage(snapshot_, plugin_rect().x(), plugin_rect().y());
+  // Position layer at plugin origin before layer scaling.
+  if (!plugin_rect().origin().IsOrigin())
+    canvas->translate(plugin_rect().x(), plugin_rect().y());
+
+  if (snapshot_scale_ != 1.0f)
+    canvas->scale(snapshot_scale_, snapshot_scale_);
+
+  canvas->drawImage(snapshot_, 0, 0);
 }
 
 void PdfViewWebPlugin::UpdateGeometry(const gfx::Rect& window_rect,
@@ -769,6 +781,32 @@ void PdfViewWebPlugin::UpdateSnapshot(sk_sp<SkImage> snapshot) {
     InvalidatePluginContainer();
 }
 
+void PdfViewWebPlugin::UpdateScaledValues() {
+  total_translate_ = snapshot_translate_;
+
+  // Scale translate to compensate for use-zoom-for-DSF.
+  if (viewport_to_dip_scale_ != 1.0f)
+    total_translate_.Scale(1.0f / viewport_to_dip_scale_);
+}
+
+void PdfViewWebPlugin::UpdateScale(float scale) {
+  if (client_->IsUseZoomForDSFEnabled()) {
+    viewport_to_dip_scale_ = scale;
+    device_to_css_scale_ = 1.0f;
+  } else {
+    viewport_to_dip_scale_ = 1.0f;
+    device_to_css_scale_ = scale;
+  }
+  UpdateScaledValues();
+}
+
+void PdfViewWebPlugin::UpdateLayerTransform(float scale,
+                                            const gfx::Vector2dF& translate) {
+  snapshot_translate_ = translate;
+  snapshot_scale_ = scale;
+  UpdateScaledValues();
+}
+
 void PdfViewWebPlugin::EnableAccessibility() {
   PdfViewPluginBase::EnableAccessibility();
 }
@@ -813,9 +851,9 @@ void PdfViewWebPlugin::SetFormTextFieldInFocus(bool in_focus) {
 
 void PdfViewWebPlugin::SetAccessibilityDocInfo(
     const AccessibilityDocInfo& doc_info) {
-  if (!pdf_accessibility_data_handler_)
-    return;
-  pdf_accessibility_data_handler_->SetAccessibilityDocInfo(doc_info);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&PdfViewWebPlugin::OnSetAccessibilityDocInfo,
+                                weak_factory_.GetWeakPtr(), doc_info));
 }
 
 void PdfViewWebPlugin::SetAccessibilityPageInfo(
@@ -823,16 +861,15 @@ void PdfViewWebPlugin::SetAccessibilityPageInfo(
     std::vector<AccessibilityTextRunInfo> text_runs,
     std::vector<AccessibilityCharInfo> chars,
     AccessibilityPageObjects page_objects) {
-  if (!pdf_accessibility_data_handler_)
-    return;
-  pdf_accessibility_data_handler_->SetAccessibilityPageInfo(
-      page_info, text_runs, chars, page_objects);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&PdfViewWebPlugin::OnSetAccessibilityPageInfo,
+                                weak_factory_.GetWeakPtr(),
+                                std::move(page_info), std::move(text_runs),
+                                std::move(chars), std::move(page_objects)));
 }
 
 void PdfViewWebPlugin::SetAccessibilityViewportInfo(
     const AccessibilityViewportInfo& viewport_info) {
-  // The accessibility tree cannot be updated within the scope of
-  // `UpdateGeometry`.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&PdfViewWebPlugin::OnSetAccessibilityViewportInfo,
@@ -930,22 +967,13 @@ void PdfViewWebPlugin::OnViewportChanged(
     const gfx::Rect& plugin_rect_in_css_pixel,
     float new_device_scale) {
   css_plugin_rect_ = plugin_rect_in_css_pixel;
-  float css_to_device_pixel_scale;
-  if (client_->IsUseZoomForDSFEnabled()) {
-    viewport_to_dip_scale_ = 1.0f / new_device_scale;
-    device_to_css_scale_ = 1.0f;
-    css_to_device_pixel_scale = 1.0f;
-  } else {
-    viewport_to_dip_scale_ = 1.0f;
-    device_to_css_scale_ = 1.0f / new_device_scale;
-    css_to_device_pixel_scale = new_device_scale;
-  }
 
   // `plugin_rect_in_css_pixel` needs to be converted to device pixels before
   // getting passed into PdfViewPluginBase::UpdateGeometryOnPluginRectChanged().
   UpdateGeometryOnPluginRectChanged(
-      gfx::ScaleToEnclosingRectSafe(plugin_rect_in_css_pixel,
-                                    css_to_device_pixel_scale),
+      gfx::ScaleToEnclosingRectSafe(
+          plugin_rect_in_css_pixel,
+          client_->IsUseZoomForDSFEnabled() ? 1.0f : new_device_scale),
       new_device_scale);
 }
 
@@ -1023,11 +1051,32 @@ void PdfViewWebPlugin::OnInvokePrintDialog(int32_t /*result*/) {
   client_->Print(Container()->GetElement());
 }
 
+void PdfViewWebPlugin::OnSetAccessibilityDocInfo(
+    AccessibilityDocInfo doc_info) {
+  if (!pdf_accessibility_data_handler_)
+    return;
+  pdf_accessibility_data_handler_->SetAccessibilityDocInfo(doc_info);
+  // `this` may be deleted. Don't do anything else.
+}
+
+void PdfViewWebPlugin::OnSetAccessibilityPageInfo(
+    AccessibilityPageInfo page_info,
+    std::vector<AccessibilityTextRunInfo> text_runs,
+    std::vector<AccessibilityCharInfo> chars,
+    AccessibilityPageObjects page_objects) {
+  if (!pdf_accessibility_data_handler_)
+    return;
+  pdf_accessibility_data_handler_->SetAccessibilityPageInfo(
+      page_info, text_runs, chars, page_objects);
+  // `this` may be deleted. Don't do anything else.
+}
+
 void PdfViewWebPlugin::OnSetAccessibilityViewportInfo(
-    const AccessibilityViewportInfo& viewport_info) {
+    AccessibilityViewportInfo viewport_info) {
   if (!pdf_accessibility_data_handler_)
     return;
   pdf_accessibility_data_handler_->SetAccessibilityViewportInfo(viewport_info);
+  // `this` may be deleted. Don't do anything else.
 }
 
 pdf::mojom::PdfService* PdfViewWebPlugin::GetPdfService() {

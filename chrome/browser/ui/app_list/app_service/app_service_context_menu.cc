@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -31,6 +32,8 @@
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/services/app_service/public/cpp/types_util.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_menu_params.h"
 #include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -57,6 +60,49 @@ apps::mojom::WindowMode ConvertUseLaunchTypeCommandToWindowMode(
     default:
       return apps::mojom::WindowMode::kUnknown;
   }
+}
+
+void CreateNewWindow(bool incognito, bool post_task) {
+  if (post_task) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(CreateNewWindow, incognito, /*post_task=*/false));
+    return;
+  }
+
+  ash::NewWindowDelegate::GetInstance()->NewWindow(
+      incognito, /*should_trigger_session_restore=*/false);
+}
+
+void ShowOptionsPage(AppListControllerDelegate* controller,
+                     Profile* profile,
+                     const std::string& app_id,
+                     bool post_task) {
+  DCHECK(controller);
+  DCHECK(profile);
+
+  if (post_task) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(ShowOptionsPage, controller, profile, app_id,
+                                  /*post_task=*/false));
+    return;
+  }
+
+  controller->ShowOptionsPage(profile, app_id);
+}
+
+void ExecuteLaunchCommand(app_list::AppContextMenuDelegate* delegate,
+                          int event_flags,
+                          bool post_task) {
+  DCHECK(delegate);
+  if (post_task) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(ExecuteLaunchCommand, delegate, event_flags,
+                                  /*post_task=*/false));
+    return;
+  }
+
+  delegate->ExecuteLaunchCommand(event_flags);
 }
 
 }  // namespace
@@ -117,7 +163,7 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
       controller()->GetAppListDisplayId());
   switch (command_id) {
     case ash::LAUNCH_NEW:
-      delegate()->ExecuteLaunchCommand(event_flags);
+      ExecuteLaunchCommand(delegate(), event_flags, /*post_task=*/true);
       ash::full_restore::FullRestoreService::MaybeCloseNotification(profile());
       break;
 
@@ -127,7 +173,7 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
       break;
 
     case ash::OPTIONS:
-      controller()->ShowOptionsPage(profile(), app_id());
+      ShowOptionsPage(controller(), profile(), app_id(), /*post_task=*/true);
       ash::full_restore::FullRestoreService::MaybeCloseNotification(profile());
       break;
 
@@ -148,11 +194,13 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW: {
       const bool is_incognito =
           command_id == ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW;
-      if (app_type_ == apps::mojom::AppType::kStandaloneBrowser)
+      if (app_type_ == apps::mojom::AppType::kStandaloneBrowser) {
         crosapi::BrowserManager::Get()->NewWindow(is_incognito);
-      else
-        controller()->CreateNewWindow(is_incognito,
-                                      /*should_trigger_session_restore=*/false);
+      } else {
+        // Create browser asynchronously to prevent this AppServiceContextMenu
+        // object to be deleted when the browser window is shown.
+        CreateNewWindow(is_incognito, /*post_task=*/true);
+      }
       ash::full_restore::FullRestoreService::MaybeCloseNotification(profile());
       break;
     }

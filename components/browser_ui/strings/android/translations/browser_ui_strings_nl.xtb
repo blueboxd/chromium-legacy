@@ -56,6 +56,7 @@
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> en nog <ph name="NUM_MORE" /> toegestaan}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> en nog <ph name="NUM_MORE" /> toegestaan}}</translation>
 <translation id="2434158240863470628">Download voltooid <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2442870161001914531">Altijd desktopsite aanvragen</translation>
 <translation id="2482878487686419369">Meldingen</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
 <translation id="2490684707762498678">Beheerd door <ph name="APP_NAME" /></translation>
@@ -148,8 +149,10 @@
 <translation id="5048398596102334565">Sites toegang geven tot bewegingssensoren (aanbevolen)</translation>
 <translation id="5050380848339752099">Deze site staat op het punt buiten de incognitomodus informatie met een app te delen.</translation>
 <translation id="5063480226653192405">Gebruik</translation>
+<translation id="509133520954049755">Desktopweergave opvragen</translation>
 <translation id="5100237604440890931">Samengevouwen; klik om uit te vouwen.</translation>
 <translation id="5123685120097942451">Incognitotabblad</translation>
+<translation id="5134599672855298214">Mobiele weergave opvragen (aanbevolen)</translation>
 <translation id="5186036860380548585">Optie beschikbaar boven aan het scherm</translation>
 <translation id="5197729504361054390">De contacten die je selecteert, worden gedeeld met <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Laatst bezocht: vandaag</translation>
@@ -201,7 +204,6 @@
 <translation id="6196640612572343990">Cookies van derden blokkeren</translation>
 <translation id="6216432067784365534">Opties voor <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235"><ph name="APP_NAME" /> verwijderen?</translation>
-<translation id="6233545266937675277">De desktopweergave van sites standaard aanvragen</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> en <ph name="PERMISSION_2" /> geblokkeerd</translation>
 <translation id="6270391203985052864">Sites kunnen vragen of ze je meldingen mogen sturen</translation>
 <translation id="6295158916970320988">Alle sites</translation>
@@ -214,7 +216,7 @@
 <translation id="6545864417968258051">Bluetooth-scannen</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> en nog <ph name="NUM_MORE" /> geblokkeerd}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> en nog <ph name="NUM_MORE" /> geblokkeerd}}</translation>
 <translation id="6554732001434021288">Laatst bezocht: <ph name="NUM_DAYS" /> dagen geleden</translation>
-<translation id="6561560012278703671">Stillere meldingen gebruiken (zorgt ervoor dat je niet wordt gestoord door meldingprompts)</translation>
+<translation id="6561560012278703671">Stillere berichten gebruiken (zorgt ervoor dat je niet wordt gestoord door meldingprompts)</translation>
 <translation id="6593061639179217415">Desktopsite</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Beschermde content</translation>
@@ -286,7 +288,6 @@
 <translation id="8211406090763984747">Verbinding is beveiligd</translation>
 <translation id="8249310407154411074">Bovenaan zetten</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
-<translation id="8267092878336850213">De mobiele weergave van sites standaard aanvragen</translation>
 <translation id="8300705686683892304">Beheerd door app</translation>
 <translation id="8324158725704657629">Niet meer vragen</translation>
 <translation id="8372893542064058268">Synchronisatie op de achtergrond toestaan voor een specifieke site.</translation>
@@ -300,6 +301,7 @@
 <translation id="8447861592752582886">Rechten voor apparaat intrekken</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie in gebruik}other{# cookies in gebruik}}</translation>
 <translation id="8487700953926739672">Offline beschikbaar</translation>
+<translation id="848952951823693243">Altijd mobiele site aanvragen</translation>
 <translation id="851751545965956758">Voorkomen dat sites verbinding maken met apparaten</translation>
 <translation id="8525306231823319788">Volledig scherm</translation>
 <translation id="857943718398505171">Toegestaan (aanbevolen)</translation>

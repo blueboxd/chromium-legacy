@@ -63,16 +63,27 @@ uploading your change for review.  These are checked by presubmit scripts.
 
 <enum name="AboutThisSiteStatus">
   <summary>Tracks status of AboutThisSite queries.</summary>
-  <int value="0" label="kValid">kValid</int>
-  <int value="1" label="kNoResult">kNoResult</int>
-  <int value="2" label="kMissingSiteInfo">kMissingSiteInfo</int>
-  <int value="3" label="kEmptySiteData">kEmptySiteData</int>
-  <int value="4" label="kIncompleteDescription">kIncompleteDescription</int>
-  <int value="5" label="kIncompleteSource">kIncompleteSource</int>
-  <int value="6" label="kInvalidSource">kInvalidSource</int>
-  <int value="7" label="kIncompleteTimeStamp">kIncompleteTimeStamp</int>
-  <int value="8" label="kInvalidTimeStamp">kInvalidTimeStamp</int>
-  <int value="9" label="kUnknown">kUnknown</int>
+  <int value="0" label="kValid">A valid response.</int>
+  <int value="1" label="kNoResult">No result received.</int>
+  <int value="2" label="kMissingSiteInfo">SiteInfo is missing.</int>
+  <int value="3" label="kEmptySiteInfo">SiteInfo is empty.</int>
+  <int value="4" label="kIncompleteDescription (deprecated)">
+    kIncompleteDescription - deprecated.
+  </int>
+  <int value="5" label="kIncompleteSource">Source is incomplete.</int>
+  <int value="6" label="kInvalidSource">Source URL is invalid.</int>
+  <int value="7" label="kIncompleteTimeStamp">Timestamp is incomplete.</int>
+  <int value="8" label="kInvalidTimeStamp">Timestamp is invalid.</int>
+  <int value="9" label="kUnknown">
+    User has not opted in to Optimization guide.
+  </int>
+  <int value="10" label="kMissingDescription">Description is missing.</int>
+  <int value="11" label="kMissingDescriptionDescription">
+    Description field in description is missing.
+  </int>
+  <int value="12" label="kMissingDescriptionName">Name is missing.</int>
+  <int value="13" label="kMissingDescriptionLang">Lang is missing.</int>
+  <int value="14" label="kMissingDescriptionSource">Source is missing.</int>
 </enum>
 
 <enum name="AcceleratedFixedRootBackground">
@@ -3804,6 +3815,18 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Forwarded to a normal tab"/>
 </enum>
 
+<enum name="ArcDataRestoreStatus">
+  <summary>
+    Tracks status of SELinux contexts restore flows of Android /data for ARC++ P
+    container. This also means ARC++ container boot delay.
+  </summary>
+  <int value="0" label="NotNeeded">
+    SELinux data restoration was not needed.
+  </int>
+  <int value="1" label="Success">SELinux data restoration succeeded.</int>
+  <int value="2" label="Failed">SELinux data restoration failed.</int>
+</enum>
+
 <enum name="ArcEnableState">
   <int value="0" label="Enabled not managed"/>
   <int value="1" label="Disabled not managed"/>
@@ -6688,6 +6711,37 @@ others/histograms.xml -->
              response"/>
 </enum>
 
+<enum name="AutofillPopupHidingReason">
+  <int value="0" label="A suggestion was accepted."/>
+  <int value="1" label="An interstitial page displaces the popup."/>
+  <int value="2"
+      label="A field isn't edited anymore but remains focused for now."/>
+  <int value="3" label="Focus removed from field. Follows kEndEditing."/>
+  <int value="4"
+      label="Scrolling or zooming into the page displaces the popup."/>
+  <int value="5" label="A navigation on the page or frame level."/>
+  <int value="6" label="The popup is or would become empty."/>
+  <int value="7" label="The renderer explicitly requested closing the popup."/>
+  <int value="8"
+      label="The tab with the popup is destroyed, hidden or has become
+             inactive."/>
+  <int value="9" label="The popup contains stale data."/>
+  <int value="10"
+      label="The user explicitly dismissed the popup (e.g. ESC key)."/>
+  <int value="11"
+      label="The popup view (or its controller) goes out of scope."/>
+  <int value="12" label="The platform-native UI changed (e.g. window resize)."/>
+  <int value="13"
+      label="Not enough space in the content area to display at least one row
+             of the popup within the bounds of the content area."/>
+  <int value="14"
+      label="The popup would overlap with another open prompt, and may hide
+             sensitive information in the prompt."/>
+  <int value="15"
+      label="The anchor element for which the popup would be shown is not
+             visible in the content area."/>
+</enum>
+
 <enum name="AutofillPredictionSource">
   <int value="0" label="PREDICTION_SOURCE_UNKNOWN"/>
   <int value="1" label="PREDICTION_SOURCE_HEURISTIC"/>
@@ -7390,6 +7444,7 @@ others/histograms.xml -->
   <int value="131082" label="kContent-kMediaSession"/>
   <int value="131083" label="kContent-kMediaSessionService"/>
   <int value="131084" label="kContent-kMediaPlay"/>
+  <int value="131085" label="kContent-kScreenReader"/>
   <int value="196608" label="kEmbedder-kUnknown"/>
   <int value="196609" label="kEmbedder-kPopupBlockerTabHelper"/>
   <int value="196610" label="kEmbedder-kSafeBrowsingTriggeredPopupBlocker"/>
@@ -9799,6 +9854,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Known"/>
 </enum>
 
+<enum name="BooleanLabeledRendererTask">
+  <int value="0" label="Unlabeled renderer task"/>
+  <int value="1" label="Labeled renderer task"/>
+</enum>
+
 <enum name="BooleanLargeAllocationFromFreelist">
   <int value="0" label="Allocated via IPC"/>
   <int value="1" label="Allocated via Freelist"/>
@@ -11468,6 +11528,11 @@ not CDM specific. See media/base/cdm_promise.h. -->
   <int value="8"
       label="Ignored Differing Path After Reverifying With Trial Chain"/>
   <int value="9" label="Ignored Locally Trusted Leaf Cert"/>
+  <int value="10" label="Ignored Configuration Changed"/>
+  <int value="11" label="Ignored SHA-1 Signature Present"/>
+  <int value="12" label="Ignored Windows Rev Checking Enabled"/>
+  <int value="13" label="Ignored Authority Invalid"/>
+  <int value="14" label="Ignored Known Root"/>
 </enum>
 
 <enum name="ChangePasswordUrlFetchResult">
@@ -14693,6 +14758,11 @@ Called by update_net_error_codes.py.-->
     button on the alert. This is a subset of &quot;Waiting alert popped
     up&quot;.
   </int>
+  <int value="6" label="URL copied">
+    Recorded when image data format is not recognized and the URL of the image
+    is copied instead of its data. This is a subset of &quot;Try copying fetched
+    image&quot;.
+  </int>
 </enum>
 
 <enum name="ContextMenuIOSGetImageDataByJsResult">
@@ -17168,6 +17238,15 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 <enum name="CredentialPhishedStatus">
   <int value="0" label="Marked as phished"/>
   <int value="1" label="Site marked as legitimate"/>
+</enum>
+
+<enum name="CreditCardSeamlessFill">
+  <int value="0" label=":-D Full fill"/>
+  <int value="1" label=":-) Optional name missing"/>
+  <int value="2" label=":-) Optional CVC missing"/>
+  <int value="3" label=":-) Optional name and CVC missing"/>
+  <int value="4" label=":-| Full fill but exp. date missing"/>
+  <int value="5" label=":-( Partial fill"/>
 </enum>
 
 <enum name="CreditCardUploadDisallowedNetwork">
@@ -20477,6 +20556,7 @@ Called by update_debug_scenarios.py.-->
   <int value="57" label="CorsIssue::NoCorsRedirectModeNotFollow"/>
   <int value="58" label="QuirksModeIssue::QuirksMode"/>
   <int value="59" label="QuirksModeIssue::LimitedQuirksMode"/>
+  <int value="60" label="DeprecationIssue"/>
 </enum>
 
 <enum name="DevToolsIssuesPanelIssueExpanded">
@@ -35269,6 +35349,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="4072" label="WebCodecsVideoFrameFromBuffer"/>
   <int value="4073" label="OpenWebDatabaseInsecureContext"/>
   <int value="4074" label="ScriptWebBundle"/>
+  <int value="4077" label="FileSystemUrlNavigation"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41329,6 +41410,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
              gpu_info.can_lose_context=True"/>
 </enum>
 
+<enum name="GridTabSwitcherMessageDisableReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="User taps the primary button on message"/>
+  <int value="2" label="User dismisses the message"/>
+  <int value="3" label="User ignores the message many times"/>
+</enum>
+
 <enum name="GridTabSwitcherThumbnailFetchingResult">
   <summary>The result of thumbnail fetching in the Grid Tab Switcher.</summary>
   <int value="0" label="Got JPEG thumbnail"/>
@@ -43736,7 +43824,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="Canceled"/>
 </enum>
 
-<enum name="InProductHelp.SnoozeAction">
+<enum name="InProductHelpSnoozeAction">
   <int value="0" label="Unknown"/>
   <int value="1" label="Snooze"/>
   <int value="2" label="Dismiss"/>
@@ -47228,6 +47316,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="undefined"/>
   <int value="1" label="no"/>
   <int value="2" label="yes"/>
+</enum>
+
+<enum name="LightweightReactionsFunnel">
+  <int value="0" label="LR dialog opened"/>
+  <int value="1" label="Editing done (tapped Next)"/>
+  <int value="2" label="GIF generated"/>
+  <int value="3" label="GIF shared"/>
 </enum>
 
 <enum name="LinkGenerationCopiedLinkType">
@@ -50824,6 +50919,7 @@ from previous Chrome versions.
   <int value="-221649438" label="AllowTouchpadHapticClickSettings:disabled"/>
   <int value="-220599034" label="UsePdfCompositorServiceForPrint:enabled"/>
   <int value="-220298483" label="ImeOptionsInSettings:enabled"/>
+  <int value="-217930860" label="EnableAutomaticSnooze:disabled"/>
   <int value="-217885320" label="CdmFactoryDaemon:disabled"/>
   <int value="-216219963" label="ash-shelf-color-scheme"/>
   <int value="-216189310"
@@ -53831,6 +53927,7 @@ from previous Chrome versions.
   <int value="2047503404" label="FilesSWA:enabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
+  <int value="2049674680" label="EnableAutomaticSnooze:enabled"/>
   <int value="2050985807" label="AllowPopupsDuringPageUnload:enabled"/>
   <int value="2051403297" label="ShowBluetoothDeviceBattery:disabled"/>
   <int value="2051886966" label="PwaInstallUseBottomSheet:enabled"/>
@@ -61617,6 +61714,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Background customization unavailable due to theme"/>
   <int value="3"
       label="Background customization unavailable due to search provider"/>
+</enum>
+
+<enum name="NTPBrokenViewHierarchyRelationship">
+  <int value="0" label="ELM collection containing Content Suggestions fixed"/>
+  <int value="1" label="Discover feed containing ELM collection fixed"/>
+  <int value="2" label="Discover feed wrapper containing Discover feed fixed"/>
+  <int value="3" label="NTP containing Discover feed wrapper fixed"/>
+  <int value="4"
+      label="Content suggestions view controller not cleaned up on restart"/>
 </enum>
 
 <enum name="NTPCustomizeAction">
@@ -77104,6 +77210,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="11" label="Passwords, manage weak passwords"/>
 </enum>
 
+<enum name="SettingsSearchEnginesInteractions">
+  <int value="0" label="Search engine activated"/>
+  <int value="1" label="Search engine deactivated"/>
+  <int value="2" label="Keyboard shortcut switched to Tab only"/>
+  <int value="3" label="Keyboard shortcut switched to Space or Tab"/>
+</enum>
+
 <enum name="SettingsSections">
   <summary>
     A collection of sections from chrome://settings. Used for metrics about
@@ -90242,6 +90355,8 @@ Called by update_scheduler_enums.py.-->
   <int value="25" label="Chooser object deleted"/>
   <int value="26" label="Reset certificate decisions clicked"/>
   <int value="27" label="Store info clicked"/>
+  <int value="28" label="AboutThisSite section clicked"/>
+  <int value="29" label="AboutThisSite source link clicked"/>
 </enum>
 
 <enum name="WebSiteSettingsAllSitesAction">
@@ -90259,6 +90374,8 @@ Called by update_scheduler_enums.py.-->
   <int value="4" label="Clear Site Group Data"/>
   <int value="5" label="Clear Origin Data"/>
   <int value="6" label="Enter Site Details"/>
+  <int value="7" label="Remove Site Group"/>
+  <int value="8" label="Remove Origin"/>
 </enum>
 
 <enum name="WebsiteSettingsDiscoverabilityAction">

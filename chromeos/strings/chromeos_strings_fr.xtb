@@ -75,6 +75,7 @@
 <translation id="2016697457005847575">Essayer la procédure de dépannage</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Plus de paramètres</translation>
+<translation id="2104796393919810494">Réparation terminée</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, version <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">Espace disponible : <ph name="AVAILABLE_MEMORY" />/<ph name="TOTAL_MEMORY" /> Go</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" /> %</translation>
@@ -132,6 +133,7 @@
 <translation id="315738237743207937">Portail captif détecté</translation>
 <translation id="3170673040743561620">Placez votre document sur le scanner</translation>
 <translation id="3188257591659621405">Mes fichiers</translation>
+<translation id="3192947282887913208">Fichiers audio</translation>
 <translation id="3199982728237701504">Chargeur de document (recto verso)</translation>
 <translation id="3226405216343213872">Recherche de scanners…</translation>
 <translation id="3246869037381808805">Les tâches d'impression de plus d'un jour seront supprimées</translation>
@@ -161,6 +163,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> avis)</translation>
 <translation id="3748026146096797577">Non connecté</translation>
 <translation id="3749289110408117711">Nom du fichier</translation>
+<translation id="3771294271822695279">Fichiers vidéo</translation>
 <translation id="38114475217616659">Effacer tout l'historique</translation>
 <translation id="3820172043799983114">Code incorrect.</translation>
 <translation id="3838338534323494292">Nouveau mot de passe</translation>
@@ -235,6 +238,7 @@
 <translation id="4813345808229079766">Connexion</translation>
 <translation id="4832079907277790330">Sélectionner un dossier dans l'application Fichiers…</translation>
 <translation id="4835901797422965222">Aucun réseau actif</translation>
+<translation id="4839698083503556542">Créez votre propre film</translation>
 <translation id="484790837831576105">(Android) Résolution DNS</translation>
 <translation id="4848429997038228357">EN COURS</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} tentative restante}one{<ph name="ERROR_MESSAGE" /> {0} tentative restante}other{<ph name="ERROR_MESSAGE" /> {0} tentatives restantes}}</translation>
@@ -256,6 +260,7 @@
 <translation id="5049856988445523908">SIM bloquée (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Nom du groupe</translation>
 <translation id="5051044138948155788">C'est la seule page. Vous allez revenir à l'écran où commencer à scanner.</translation>
+<translation id="5061169534910302641">Mettre à jour la version et redémarrer</translation>
 <translation id="5088172560898466307">Nom d'hôte du serveur</translation>
 <translation id="5089810972385038852">État</translation>
 <translation id="5142961317498132443">Authentification</translation>
@@ -347,6 +352,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="636850387210749493">Inscription d'entreprise</translation>
 <translation id="6379086450106841622">Écran tactile</translation>
 <translation id="6388847657025262518">Le chargeur de document du scanner est bloqué. Vérifiez le chargeur, puis réessayez.</translation>
+<translation id="6410257289063177456">Fichiers image</translation>
 <translation id="641081527798843608">Correspondance d'objet</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Faible (<ph name="SIGNAL_STRENGTH" />)</translation>

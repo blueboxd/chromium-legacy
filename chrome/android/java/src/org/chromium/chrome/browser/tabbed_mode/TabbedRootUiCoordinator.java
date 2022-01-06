@@ -235,6 +235,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
      * @param snackbarManagerSupplier Supplies the {@link SnackbarManager}.
      * @param activityType The {@link ActivityType} for the activity.
      * @param isInOverviewModeSupplier Supplies whether the app is in overview mode.
+     * @param shouldShowOverviewPageOnStartSupplier Supplies whether the overview page should be
+     *         shown on start.
      * @param isWarmOnResumeSupplier Supplies whether the app was warm on resume.
      * @param appMenuDelegate The app menu delegate.
      * @param statusBarColorProvider Provides the status bar color.
@@ -276,6 +278,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             @NonNull OneshotSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             @NonNull Supplier<SnackbarManager> snackbarManagerSupplier,
             @ActivityType int activityType, @NonNull Supplier<Boolean> isInOverviewModeSupplier,
+            @NonNull Supplier<Boolean> shouldShowOverviewPageOnStartSupplier,
             @NonNull Supplier<Boolean> isWarmOnResumeSupplier,
             @NonNull AppMenuDelegate appMenuDelegate,
             @NonNull StatusBarColorProvider statusBarColorProvider,
@@ -296,8 +299,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 supportsFindInPage, tabCreatorManagerSupplier, fullscreenManager,
                 compositorViewHolderSupplier, tabContentManagerSupplier,
                 overviewModeBehaviorSupplier, snackbarManagerSupplier, activityType,
-                isInOverviewModeSupplier, isWarmOnResumeSupplier, appMenuDelegate,
-                statusBarColorProvider, intentRequestTracker, tabReparentingControllerSupplier,
+                isInOverviewModeSupplier, shouldShowOverviewPageOnStartSupplier,
+                isWarmOnResumeSupplier, appMenuDelegate, statusBarColorProvider,
+                intentRequestTracker, tabReparentingControllerSupplier,
                 initializeUiWithIncognitoColors);
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
         mControlContainerHeightResource = controlContainerHeightResource;
@@ -347,6 +351,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         }
 
         if (mRootUiTabObserver != null) mRootUiTabObserver.destroy();
+
+        if (mAddToHomescreenIPHController != null) mAddToHomescreenIPHController.destroy();
 
         if (mAppBannerInProductHelpController != null) {
             AppBannerInProductHelpControllerFactory.detach(mAppBannerInProductHelpController);
@@ -417,6 +423,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
      * Show navigation history sheet.
      */
     public void showFullHistorySheet() {
+        if (mActivity == null) return;
         Tab tab = mActivityTabProvider.get();
         if (tab == null || tab.getWebContents() == null || !tab.isUserInteractable()) return;
         Profile profile = Profile.fromWebContents(tab.getWebContents());
@@ -451,7 +458,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 mActivityLifecycleDispatcher, mCompositorViewHolderSupplier.get(),
                 mCallbackController.makeCancelable(
                         () -> mLayoutManager.getActiveLayout().requestUpdate()),
-                mActivityTabProvider, mInsetObserverViewSupplier.get(), new BackActionDelegate() {
+                mActivityTabProvider, mInsetObserverViewSupplier.get(),
+                new BackActionDelegate() {
                     @Override
                     public @ActionType int getBackActionType(Tab tab) {
                         if (isShowingStartSurfaceHomepage()) return ActionType.EXIT_APP;
@@ -476,7 +484,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                     public boolean isNavigable() {
                         return isShowingStartSurfaceHomepage();
                     }
-                }, mCompositorViewHolderSupplier.get()::addTouchEventObserver, mLayoutManager);
+                },
+                mCompositorViewHolderSupplier.get()::addTouchEventObserver,
+                mCompositorViewHolderSupplier.get()::removeTouchEventObserver, mLayoutManager);
         mGestureNavLayoutObserver = new LayoutStateProvider.LayoutStateObserver() {
             @Override
             public void onStartedShowing(int layoutType, boolean showToolbar) {

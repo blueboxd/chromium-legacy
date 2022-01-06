@@ -32,6 +32,21 @@ public class SigninFirstRunCoordinator {
          * @param state FRE state to record.
          */
         void recordFreProgressHistogram(@MobileFreProgress int state);
+
+        /**
+         * Opens google terms of service page in a CCT.
+         */
+        void openTermsOfService();
+
+        /**
+         * Opens google privacy policy page in a CCT.
+         */
+        void openPrivacyPolicy();
+
+        /**
+         * Opens a dialog to get consent for recording UMA data.
+         */
+        void openUmaDialog();
     }
 
     private final SigninFirstRunMediator mMediator;

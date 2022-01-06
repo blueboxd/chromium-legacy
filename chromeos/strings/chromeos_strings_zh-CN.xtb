@@ -75,6 +75,7 @@
 <translation id="2016697457005847575">尝试问题排查步骤</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">更多设置</translation>
+<translation id="2104796393919810494">已修复完毕</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />，版本 <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">可用内存为 <ph name="AVAILABLE_MEMORY" /> GB，总共 <ph name="TOTAL_MEMORY" /> GB</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
@@ -132,6 +133,7 @@
 <translation id="315738237743207937">检测到强制门户</translation>
 <translation id="3170673040743561620">将您的文件放置在扫描仪上</translation>
 <translation id="3188257591659621405">我的文件</translation>
+<translation id="3192947282887913208">音频文件</translation>
 <translation id="3199982728237701504">文件馈送器（双面）</translation>
 <translation id="3226405216343213872">正在搜寻扫描器</translation>
 <translation id="3246869037381808805">系统会自动移除存在时长已超过 1 天的打印任务</translation>
@@ -161,6 +163,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★（<ph name="AGGREGATED_COUNT" /> 条评价）</translation>
 <translation id="3748026146096797577">未建立连接</translation>
 <translation id="3749289110408117711">文件名</translation>
+<translation id="3771294271822695279">视频文件</translation>
 <translation id="38114475217616659">清除所有打印记录</translation>
 <translation id="3820172043799983114">PIN 码无效。</translation>
 <translation id="3838338534323494292">新密码</translation>
@@ -235,6 +238,7 @@
 <translation id="4813345808229079766">连接</translation>
 <translation id="4832079907277790330">在“文件”应用中选择文件夹…</translation>
 <translation id="4835901797422965222">未连接到任何网络</translation>
+<translation id="4839698083503556542">创建您自己的影片</translation>
 <translation id="484790837831576105">(Android) DNS 解析</translation>
 <translation id="4848429997038228357">正在运行</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" />剩余尝试次数：{0}}other{<ph name="ERROR_MESSAGE" />剩余尝试次数：{0}}}</translation>
@@ -256,6 +260,7 @@
 <translation id="5049856988445523908">SIM 卡已锁定 (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">群组名称</translation>
 <translation id="5051044138948155788">这是目前仅有的一个页面了。此操作会将您转到扫描开始屏幕。</translation>
+<translation id="5061169534910302641">更新版本并重启</translation>
 <translation id="5088172560898466307">服务器主机名</translation>
 <translation id="5089810972385038852">州/省/直辖市/自治区</translation>
 <translation id="5142961317498132443">身份验证</translation>
@@ -347,6 +352,7 @@
 <translation id="636850387210749493">企业注册</translation>
 <translation id="6379086450106841622">触摸屏</translation>
 <translation id="6388847657025262518">扫描仪的文件馈送器卡纸了。请检查馈送器，然后重试。</translation>
+<translation id="6410257289063177456">图片文件</translation>
 <translation id="641081527798843608">主题匹配</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">很弱 (<ph name="SIGNAL_STRENGTH" />)</translation>

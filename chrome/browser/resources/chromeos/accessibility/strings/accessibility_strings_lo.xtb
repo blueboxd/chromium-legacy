@@ -69,6 +69,7 @@
 <translation id="1354356357730355833">ສຳເນົາ</translation>
 <translation id="135978014023467274">ທ່ານໄດ້ອັບເດດເປັນ ChromeVox 63 ແລ້ວ!</translation>
 <translation id="1360699455582016846">ຄລິກລາຍການຢູ່ກ້ອງປຸ່ມກຳນົດເສັ້ນທາງ <ph name="ROUTING_KEY_NUMBER" /></translation>
+<translation id="1376703628032300005">ຍ້າຍໄປຕົວອັກສອນຕໍ່ໄປ</translation>
 <translation id="1377925789329510816">ນີ້ແມ່ນຫົວຂໍ້ສຸດທ້າຍ. ກົດ Search+H ເພື່ອກັບຄືນໄປຫົວຂໍ້ທຳອິດ ຫຼື Search+Shift+H ເພື່ອໄປຫາຫົວຂໍ້ທີສອງໃນໜ້ານີ້.</translation>
 <translation id="138218114945450791">ສີຟ້າອ່ອນ</translation>
 <translation id="1383876407941801731">ຊອກຫາ</translation>
@@ -213,6 +214,7 @@
 <translation id="2450814015951372393">ກ່ອງໝາຍຕິກ</translation>
 <translation id="2461822463642141190">ປັດຈຸບັນ</translation>
 <translation id="2462626033734746142">ກຸ່ມ​ປຸ່ມ​ວິ​ທະ​ຍຸ</translation>
+<translation id="2467741090055146971">ບໍ່ເລືອກ</translation>
 <translation id="2471138580042810658">ຫົວ​ຂໍ້ 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{ ເຄື່ອງໝາຍດອກຈັນ}other{# ເຄື່ອງໝາຍດອກຈັນ}}</translation>
 <translation id="2490721194269245365">ສີນໍ້າຕານໂຣຊີບຣາວ</translation>
@@ -565,6 +567,7 @@
 <translation id="4854380505292502090">ບໍ່ມີວິກເຈັດສື່ກ່ອນໜ້າ</translation>
 <translation id="4855927945655956315">ປຸ່ມສຳຄັນ: ຄວບຄຸມ</translation>
 <translation id="4862744964787595316">ບໍ່ເປັນໂຕໜາ</translation>
+<translation id="4865995900839719272">ຍ້າຍໄປແຖວກ່ອນໜ້າ</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">ເປີດໃຊ້ງານການບັນທຶກ TTS</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
@@ -607,7 +610,6 @@
 <translation id="5138912041966667164">ສີຟ້າສະເລດປານກາງ</translation>
 <translation id="5140016802771803559">ສີມ່ວງຣີເບກາ</translation>
 <translation id="5142101052131610456">ບົດຮຽນທັງໝົດ</translation>
-<translation id="5152605892605507188">ຍ້າຍໄປຂວາ</translation>
 <translation id="5158275234811857234">ໜ້າປົກ</translation>
 <translation id="516076699907426116">ເພື່ອສືບຕໍ່, ໃຫ້ສຳຫຼວດໂດຍການສຳຜັດເພື່ອຊອກຫາປຸ່ມບົດຮຽນຕໍ່ໄປ. ຈາກນັ້ນແຕະສອງເທື່ອເພື່ອສືບຕໍ່.</translation>
 <translation id="5170206230005240598">ເປີດການນຳໃຊ້ຄຳອະທິບາຍອັກສອນນູນແລ້ວ</translation>
@@ -624,6 +626,7 @@
 <translation id="5304943142864553931"><ph name="TITLE" />, ແຖບ</translation>
 <translation id="5308380583665731573">​ເຊື່ອມ​ຕໍ່</translation>
 <translation id="5310788376443009632">ເອົາອອກໄປແລ້ວ:</translation>
+<translation id="5316825363044614340">ຍ້າຍໄປແຖວຕໍ່ໄປ</translation>
 <translation id="5320727453979144100">ໂໝດ Sticky ເປີດໃຊ້ງານແລ້ວ</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{ ໝາຍຈຸດ}other{ # ໝາຍ​ຈຸດ}}</translation>
 <translation id="532485153932049746">ການຈັດຮູບແບບຂໍ້ຄວາມ
@@ -752,7 +755,6 @@
 <translation id="6142308968191113180">ຫົວ​ຂໍ້ 4</translation>
 <translation id="6150023170003443621">ສີຂຽວອົມເຫຼືອງ</translation>
 <translation id="6158882249329863701">ແຖວ <ph name="TABLECELLROWINDEX" /> ຖັນ <ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="6159796324830296161">ຍ້າຍໄປຊ້າຍ</translation>
 <translation id="6164829606128959761">ແມັດ</translation>
 <translation id="6165508094623778733">ສຶກສາ​ເພີ່ມ​ເຕີມ</translation>
 <translation id="6166362019018438352">ປິດການນຳໃຊ້ຄຳອະທິບາຍອັກສອນນູນແລ້ວ</translation>
@@ -845,7 +847,6 @@
 <translation id="6910969481785184048">ເປີດ, ປິດ ແລະ ຢຸດ</translation>
 <translation id="6919104639734799681">ສະ​ແດງລາາຍຊື່​ຕາ​ຕະ​ລາງ</translation>
 <translation id="692135145298539227">ລຶບ</translation>
-<translation id="6935674530832500465">ຍ້າຍລົງ</translation>
 <translation id="6945221475159498467">ເລືອກ</translation>
 <translation id="6949846980769640811">ສີຂຽວອະຄົວມາຣີນປານກາງ</translation>
 <translation id="6951482098621102657">ບໍ່ມີຫົວຂໍ້ລະດັບ 5 ຖັດໄປ</translation>
@@ -905,6 +906,7 @@
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
 <translation id="7308519659008003150">ບໍ່ມີຊ່ອງຂໍ້ມູນແບບຟອມກ່ອນໜ້າ</translation>
 <translation id="731121099745151312">tritm</translation>
+<translation id="7313717760367325059">ຊ່ວຍເຫຼືອ</translation>
 <translation id="7317017974771324508">ເລືອກບາງສ່ວນ</translation>
 <translation id="7322442671176251901">ສຳຫຼວດໂດຍການສຳຜັດ</translation>
 <translation id="7344012264516629579">ຄຳສັ່ງຂ້າມເພີ່ມເຕີມຮວມມີການຂ້າມລິ້ງ, ປຸ່ມ ແລະ ກ່ອງໝາຍ ເປັນຕົ້ນ. ສາມາດເບິ່ງລາຍຊື່ເຕັມຂອງຄຳສັ່ງຂ້າມໄດ້ໃນເມນູ ChromeVox, ເຊິ່ງສາມາດເປີດໄດ້ໂດຍການກົດຊອກຫາ + ໝາຍຈຸດ.</translation>
@@ -1042,14 +1044,12 @@
 <translation id="826825447994856889">ການນໍາສະເໜີ</translation>
 <translation id="827266600368092403">ເລີ່ມຕົ້ນ ຫຼື ສິ້ນສຸດການເລືອກ</translation>
 <translation id="827422111966801947">ສີຄາມ</translation>
-<translation id="827496561804786391">ຍ້າຍຂຶ້ນ</translation>
 <translation id="8276439074553447000">ໂດດໄປຫາລາຍການທີ່ສາມາດໂຟກັສໄດ້ຜ່ານມາ</translation>
 <translation id="8279039817939141096">ກົດປຸ່ມ qwerty, ປຸ່ມອັກສອນນູນແບບໂຫຼດຂໍ້ມູນຄືນໃໝ່ໄດ້ ຫຼື ແຕະທ່າທາງເພື່ອຮຽນຮູ້ຟັງຊັນຂອງມັນ. ກົດ control ກັບ w, ຍະຫວ່າງກັບ Z, ປັດຊ້າຍດ້ວຍສອງນິ້ວ ຫຼື ກົດ escape ເພື່ອອອກ.</translation>
 <translation id="8283603667300770666">ບ່ອນໃສ່ຟອມ​ຕໍ່ໄປ​</translation>
 <translation id="8310185481635255431">ບໍ່ມີລິ້ງຖັດໄປ</translation>
 <translation id="831207808878314375">ຄໍາ​ນິ​ຍາມ</translation>
 <translation id="8313653172105209786">ໄດເຣັກຕໍຣີ</translation>
-<translation id="8314546933558091113">ບໍ່ເລືອກທັງໝົດ</translation>
 <translation id="8316881042119029234">ສີສົ້ມໂອນເລດ</translation>
 <translation id="8324974933005349667">ປັບແຕ່ງການຕັ້ງຄ່າການປ່ຽນຂໍ້ຄວາມເປັນສຽງເວົ້າ</translation>
 <translation id="8326783648485765113">ສີຂຽວໃບຫຍ້າ</translation>
@@ -1133,6 +1133,7 @@
 <translation id="9014206344398081366">ການສອນການນຳໃຊ້ ChromeVox</translation>
 <translation id="9040132695316389094">ຫົວ​ຂໍ້ 1</translation>
 <translation id="9061884144798498064">ເລືອກຕາຕະລາງໜັງສືໂພງ 8 ຈຸດ:</translation>
+<translation id="9063946545000394379">ຍ້າຍໄປຕົວອັກສອນກ່ອນໜ້າ</translation>
 <translation id="9065283790526219006">+ປັອບອັບ</translation>
 <translation id="9065912140022662363">ບໍ່ມີປຸ່ມວິທະຍຸຖັດໄປ</translation>
 <translation id="9067522039955793016">ແບ່ງໜ້າ</translation>

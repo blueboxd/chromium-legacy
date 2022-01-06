@@ -1610,51 +1610,6 @@ TEST_P(DesksTest, DragWindowToNonMiniViewPoints) {
   EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
 }
 
-TEST_F(DesksTest, DragWindowAtZeroStateToExpandDesksBarView) {
-  auto* controller = DesksController::Get();
-  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-
-  ASSERT_EQ(1u, controller->desks().size());
-  auto* overview_controller = Shell::Get()->overview_controller();
-  EnterOverview();
-
-  ASSERT_TRUE(overview_controller->InOverviewSession());
-  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  const auto* desks_bar_view = overview_grid->desks_bar_view();
-  ASSERT_TRUE(desks_bar_view);
-
-  // Since we only have one desk, there should be 0 desk mini view and the zero
-  // state default desk button and new desk button should be visible.
-  ASSERT_EQ(0u, desks_bar_view->mini_views().size());
-  auto* zero_state_default_desk_button =
-      desks_bar_view->zero_state_default_desk_button();
-  auto* zero_state_new_desk_button =
-      desks_bar_view->zero_state_new_desk_button();
-  auto* expanded_state_new_desks_button =
-      desks_bar_view->expanded_state_new_desk_button();
-  EXPECT_TRUE(zero_state_default_desk_button->GetVisible());
-  EXPECT_TRUE(zero_state_new_desk_button->GetVisible());
-  EXPECT_FALSE(expanded_state_new_desks_button->GetVisible());
-
-  auto* event_generator = GetEventGenerator();
-
-  // Start dragging the overview item for |win1| without dropping it. This will
-  // lead |desks_bar_view| changing from zero state to expanded state.
-  DragItemToPoint(overview_grid->GetOverviewItemContaining(win1.get()),
-                  zero_state_new_desk_button->GetBoundsInScreen().CenterPoint(),
-                  event_generator, /*by_touch_gestures=*/false, /*drop=*/false);
-  EXPECT_FALSE(zero_state_default_desk_button->GetVisible());
-  EXPECT_FALSE(zero_state_new_desk_button->GetVisible());
-  EXPECT_TRUE(desks_bar_view->expanded_state_new_desk_button()->GetVisible());
-
-  // Now release the drop. This action should not end overview and
-  // |desks_bar_view| should be still at expanded state with one desk mini view.
-  event_generator->ReleaseLeftButton();
-  EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(expanded_state_new_desks_button->GetVisible());
-  EXPECT_EQ(1u, desks_bar_view->mini_views().size());
-}
-
 TEST_F(DesksTest, MruWindowTracker) {
   // Create two desks with two windows in each.
   auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
@@ -5579,6 +5534,42 @@ TEST_F(DesksTest, RemoveDeskWhileDragging) {
 
   // Exiting overview will not have any issue.
   ExitOverview();
+}
+
+// Regression test for the asan failure at https://crbug.com/1274641.
+TEST_F(DesksTest, DragMiniViewWhileRemoving) {
+  NewDesk();
+  NewDesk();
+
+  EnterOverview();
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  const auto* desks_bar_view =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow())->desks_bar_view();
+
+  auto* event_generator = GetEventGenerator();
+
+  // Cache the center point of the desk preview that is about to be removed.
+  auto* mini_view = desks_bar_view->mini_views().back();
+  const gfx::Point desk_preview_center =
+      mini_view->GetPreviewBoundsInScreen().CenterPoint();
+
+  {
+    // This test requires animation to repro the asan failure.
+    ui::ScopedAnimationDurationScaleMode animation_scale(
+        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+    // This will trigger the mini view removal animation, and the miniview won't
+    // be removed immediately.
+    CloseDeskFromMiniView(mini_view, event_generator);
+
+    // Drag the mini view that is being animated to be removed, and expect drag
+    // not to start, nor trigger a crash or an asan failure.
+    event_generator->set_current_screen_location(desk_preview_center);
+    event_generator->PressLeftButton();
+    event_generator->MoveMouseBy(0, 50);
+    EXPECT_FALSE(desks_bar_view->IsDraggingDesk());
+  }
 }
 
 // Tests that the right desk containers are visible when switching between desks

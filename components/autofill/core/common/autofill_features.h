@@ -108,6 +108,12 @@ extern const base::Feature kAutofillLabelAffixRemoval;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillCenterAlignedSuggestions;
 COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<int>
+    kAutofillMaximumPixelsToMoveSuggestionopupToCenter;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<int>
+    kAutofillMaxiumWidthPercentageToMoveSuggestionPopupToCenter;
+COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillParsingPatternsFromRemote;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillParsingPatternsLanguageDetection;
@@ -123,6 +129,8 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillProfileImportFromUnfocusableFields;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillProfileServerValidation;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillRecordMetricsOfUnownedForms;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillRetrieveOverallPredictionsFromCache;
 COMPONENT_EXPORT(AUTOFILL) extern const base::Feature kAutofillSaveAndFillVPA;

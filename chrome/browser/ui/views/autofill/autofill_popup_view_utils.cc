@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "ui/base/interaction/element_tracker.h"
@@ -21,6 +22,10 @@
 using views::BubbleBorder;
 
 namespace {
+
+// The minimum number of pixels the bubble should be distanced from the edge of
+// the content area.
+constexpr int kMinimalBubbleDistanceToContentAreaEdge = 8;
 
 // Returns true if the arrow is either located on top or on the bottom of the
 // bubble.
@@ -350,14 +355,17 @@ int GetAvailableHorizontalSpaceOnSideOfElement(
   // bubble is located on.
   switch (side) {
     case views::BubbleArrowSide::kRight:
-      return element_bounds.x() - content_area_bounds.x();
+      return element_bounds.x() - content_area_bounds.x() -
+             kMinimalBubbleDistanceToContentAreaEdge;
 
     case views::BubbleArrowSide::kLeft:
-      return content_area_bounds.right() - element_bounds.right();
+      return content_area_bounds.right() - element_bounds.right() -
+             kMinimalBubbleDistanceToContentAreaEdge;
 
     case views::BubbleArrowSide::kTop:
     case views::BubbleArrowSide::kBottom:
-      return content_area_bounds.width();
+      return content_area_bounds.width() -
+             2 * kMinimalBubbleDistanceToContentAreaEdge;
   }
 }
 
@@ -408,7 +416,8 @@ BubbleBorder::Arrow GetOptimalBubblePlacement(
     const gfx::Size& bubble_preferred_size,
     bool right_to_left,
     int scrollbar_width,
-    int maximum_offset_to_center,
+    int maximum_pixel_offset_to_center,
+    int maximum_width_percentage_to_center,
     gfx::Rect& bubble_bounds) {
   // Determine the best side of the element to put the bubble and get a
   // corresponding arrow.
@@ -422,34 +431,80 @@ BubbleBorder::Arrow GetOptimalBubblePlacement(
       GetExpandedBubbleSize(content_area_bounds, element_bounds,
                             bubble_preferred_size, scrollbar_width, side));
 
-  // Move the anchor position of |element_bounds| corresponding to |arrow|.
+  // Move the origin of the bubble to the anchor position on the element
+  // corresponding to |arrow|.
+  //                   ------------------
+  //  For TOP_LEFT    |      element     |
+  //  anchor_point ->  ==============----
+  //                  |              |
+  //                  |    bubble    |
+  //                  |              |
+  //                  |              |
+  //                   --------------
   bubble_bounds += views::GetContentBoundsOffsetToArrowAnchorPoint(
       bubble_bounds, arrow,
       views::GetArrowAnchorPointFromAnchorRect(arrow, element_bounds));
 
   if (!IsVerticalArrowSide(side)) {
-    // For an horizontal arrow, move the bubble to the top if it leaves the
+    // For a horizontal arrow, move the bubble to the top if it leaves the
     // lower part of the screen. Note, that by default, the bubble's top is
     // aligned with the field.
+    // The bubble top can never go above the content area since the bubble size
+    // computed to fit in the screen by GetExpandedBubbleSize.
     bubble_bounds.Offset(0, -1 * std::max(0, bubble_bounds.bottom() -
                                                  content_area_bounds.bottom()));
     return arrow;
   }
 
-  // Move the content bounds towards to center of the field.
+  // The horizontal offset is the minimum of a fixed number of pixels
+  // |maximum_pixel_offset_to_center| and a percentage of the element width.
+  int horizontal_offset_pixels = std::min(
+      maximum_pixel_offset_to_center,
+      maximum_width_percentage_to_center * element_bounds.width() / 100);
+
+  // In addition, the offset is shifted by the distance of the bubble's arrow to
+  // the bubble's edge. By this, the arrow of the bubble is aligned with the
+  // targeted pixel and not the edge of the bubble.
+  horizontal_offset_pixels -=
+      (BubbleBorder::kVisibleArrowBuffer + BubbleBorder::kVisibleArrowRadius);
+
+  // Give the offset a direction.
+  int horizontal_offset = horizontal_offset_pixels * (right_to_left ? -1 : 1);
+
+  // Move the bubble bounds towards to center of the field.
   // Note that for |right_to_left|, this will be a negative value.
-  bubble_bounds.Offset(
-      std::min(maximum_offset_to_center, element_bounds.width() / 2) *
-          (right_to_left ? -1 : 1),
-      0);
+  //              ------------------
+  //             |      element     |
+  //              ----------========-------
+  //                       |               |
+  //             |---------|    bubble     |
+  //   horizontal offset   |               |
+  //                       |               |
+  //                        ---------------
+  bubble_bounds.Offset(horizontal_offset, 0);
 
   // In case the bubble the exceeds the right edge of the view port, move it
   // back until it completely fits.
+  //              ------------------   |---| shift back
+  //             |      element     |  |
+  //              ----------========---+---
+  //                       |           |   |
+  //                       |    bubble |   |
+  //                       |           |   |
+  //                       |           |   |
+  //                        -----------+---
+  //                                   |
+  //                          content_area.right()
   bubble_bounds.Offset(
-      std::max(0,
-               std::min(bubble_bounds.x() - content_area_bounds.x(),
-                        bubble_bounds.right() - content_area_bounds.right())),
+      std::min(0, content_area_bounds.right() - bubble_bounds.right() -
+                      kMinimalBubbleDistanceToContentAreaEdge),
       0);
+
+  // Analogously, make move the bubble to the right if it exceeds the left edge
+  // of the content area.
+  bubble_bounds.Offset(std::max(0, content_area_bounds.x() - bubble_bounds.x() +
+                                       kMinimalBubbleDistanceToContentAreaEdge),
+                       0);
 
   return arrow;
 }

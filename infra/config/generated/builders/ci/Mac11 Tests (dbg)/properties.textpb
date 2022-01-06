@@ -1,12 +1,8 @@
 {
   "$build/chromium_tests": {
     "project_trigger_overrides": {
-      "chromium": "chromium-m96"
+      "chromium": "chromium-m97"
     }
-  },
-  "$kitchen": {
-    "devshell": true,
-    "git_auth": true
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

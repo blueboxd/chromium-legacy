@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/discover_feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/context_menu/link_preview/link_preview_coordinator.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
@@ -64,6 +65,15 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Kill switch guarding a fix an NTP/discover memory leak fix. Behind a feature
+// flag so we can validate the impact, as well as safety for a stable respin.
+const base::Feature kUpdateNTPForFeedFix{"UpdateNTPForFeedFix",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+}  // namespace
 
 @interface NewTabPageCoordinator () <BooleanObserver,
                                      DiscoverFeedDelegate,
@@ -221,6 +231,9 @@
                                   self.browser, self.webState)
       voiceSearchAvailability:&_voiceSearchAvailability];
   self.ntpMediator.browser = self.browser;
+  self.ntpMediator.NTPMetrics = [[NTPHomeMetrics alloc]
+      initWithBrowserState:self.browser->GetBrowserState()];
+  self.ntpMediator.NTPMetrics.webState = self.webState;
 
   self.contentSuggestionsCoordinator = [[ContentSuggestionsCoordinator alloc]
       initWithBaseViewController:nil
@@ -408,6 +421,14 @@
 
 #pragma mark - Public Methods
 
+- (void)setWebState:(web::WebState*)webState {
+  if (_webState == webState) {
+    return;
+  }
+  self.ntpMediator.webState = webState;
+  _webState = webState;
+}
+
 - (void)dismissModals {
   [self.contentSuggestionsCoordinator dismissModals];
 }
@@ -442,6 +463,9 @@
 }
 
 - (void)reload {
+  if (self.browser->GetBrowserState()->IsOffTheRecord()) {
+    return;
+  }
   ios::GetChromeBrowserProvider().GetDiscoverFeedProvider()->RefreshFeed();
   [self reloadContentSuggestions];
 }
@@ -470,6 +494,12 @@
 #pragma mark - NewTabPageCommands
 
 - (void)updateNTPForDiscoverFeed {
+  static bool update_ntp_for_feed_fix =
+      base::FeatureList::IsEnabled(kUpdateNTPForFeedFix);
+  if (update_ntp_for_feed_fix && !self.started) {
+    return;
+  }
+
   [self stop];
   [self start];
   [self updateDiscoverFeedLayout];

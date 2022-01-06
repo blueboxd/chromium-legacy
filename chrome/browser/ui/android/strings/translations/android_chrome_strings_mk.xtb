@@ -91,6 +91,7 @@
 <translation id="1506061864768559482">Пребарувач</translation>
 <translation id="1513352483775369820">Обележувачи и веб-историја</translation>
 <translation id="1513858653616922153">Избриши ја лозинката</translation>
+<translation id="1518421282666914498">GIF-емоција <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="1521774566618522728">Активен денес</translation>
 <translation id="1538801903729528855">Добијте подобро гласовно доживување на интернет</translation>
 <translation id="1544826120773021464">За да управувате со сметката на Google, допрете на копчето „Управувајте со сметката“</translation>
@@ -462,7 +463,6 @@
 <translation id="3775705724665058594">Испратете до вашите уреди</translation>
 <translation id="3778956594442850293">Додадено на почетен екран</translation>
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{1 картичка}one{# картичка}other{# картички}}</translation>
-<translation id="3803783897442799486">Ако продолжите, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење<ph name="END_LINK1" />.\nЗа да се подобри апликацијата, Chrome испраќа податоци за користењето и падовите во Google. <ph name="BEGIN_LINK2" />Управувајте<ph name="END_LINK2" /></translation>
 <translation id="3803784507854318295">Управувајте со автоматска репродукција</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Управувај</translation>
@@ -533,7 +533,7 @@
 <translation id="4250229828105606438">Слика од екран</translation>
 <translation id="4256782883801055595">Лиценци за отворен код</translation>
 <translation id="4263656433980196874">Корисничкиот интерфејс за согласност за гласовно пребарување со „Помошникот“ е отворен на цел екран</translation>
-<translation id="4269820728363426813">Копирај адреса на врска</translation>
+<translation id="4269820728363426813">Копирај ја адресата на линкот</translation>
 <translation id="4290281343757112331">Да се преземе подоцна?</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Вклучете го заклучувањето на екранот во поставките за Android<ph name="END_LINK" /></translation>
 <translation id="4296252229500326964">Нова картичка „Инкогнито“</translation>
@@ -575,6 +575,7 @@
 <translation id="4532845899244822526">Избери папка</translation>
 <translation id="4538018662093857852">Вклучи „Лесен режим“</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> картичка}one{<ph name="TAB_COUNT_MANY" /> картичка, <ph name="TAB_COUNT_INCOGNITO" /> инкогнито}other{<ph name="TAB_COUNT_MANY" /> картички, <ph name="TAB_COUNT_INCOGNITO" /> инкогнито}}</translation>
+<translation id="4549903594034243526">chrome_emotion_gif_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="4550003330909367850">За прикажување или копирање на лозинката тука, поставете заклучување екран на уредов.</translation>
 <translation id="4554077758708533499">Поврзано со USB-кабел</translation>
 <translation id="4557685098773234337">За побрз пристап до страницава, додајте ја на почетниот екран</translation>
@@ -605,6 +606,7 @@
 <translation id="4696983787092045100">Испратете SMS до вашите уреди</translation>
 <translation id="4699172675775169585">Кеширани слики и датотеки</translation>
 <translation id="4714588616299687897">Заштедете до 60% од сообраќајот</translation>
+<translation id="471759387343966120">Ако продолжите, се согласувате со <ph name="BEGIN_TOS_LINK" />Условите за користење<ph name="END_TOS_LINK" /> и <ph name="BEGIN_PRIVACY_LINK" />Политикатa за приватност<ph name="END_PRIVACY_LINK" />.\nЗа да се подобри апликацијата, Chrome испраќа податоци за користењето и падовите во Google. <ph name="BEGIN_UMA_LINK" />Управувајте<ph name="END_UMA_LINK" /></translation>
 <translation id="4719927025381752090">Понудувај превод</translation>
 <translation id="4720023427747327413">Отвори во <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Помогнете да се подобри Chrome. <ph name="BEGIN_LINK" />Учествувајте во анкетата<ph name="END_LINK" /></translation>
@@ -926,6 +928,7 @@
 <translation id="6532866250404780454">Сајтовите што ги посетувате во Chrome нема да се прикажуваат. Сите тајмери за сајтови ќе се избришат.</translation>
 <translation id="6534565668554028783">На Google му требаше премногу време да одговори</translation>
 <translation id="6539092367496845964">Нешто тргна наопаку. Обидете се повторно подоцна.</translation>
+<translation id="6541042852576515209">Промени ја големината и ротирај</translation>
 <translation id="6541983376925655882">{NUM_HOURS,plural, =1{Проверено пред 1 час}one{Проверено пред # час}other{Проверено пред # часа}}</translation>
 <translation id="6545017243486555795">Избриши ги сите податоци</translation>
 <translation id="6546511553472444032">Датотеката може да е штетна</translation>
@@ -1078,6 +1081,7 @@
 <translation id="7444811645081526538">Повеќе категории</translation>
 <translation id="7453467225369441013">Ќе ве одјави од повеќето сајтови. Нема да се одјавите од вашата сметка на Google.</translation>
 <translation id="7454641608352164238">Нема доволно простор</translation>
+<translation id="7468819939926272717">Изберете емоција</translation>
 <translation id="7474822150871987353">Дознајте повеќе за темите на веб-сајтовите без да ја напуштите страницата. Изберете еден или повеќе зборови на страницата за да ги пребарате.</translation>
 <translation id="7475192538862203634">Ако често го гледате ова, обидете се со овие <ph name="BEGIN_LINK" />предлози<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD-картичката не е најдена. Дел од вашите датотеки може да недостасуваат.</translation>
@@ -1160,6 +1164,7 @@
 <translation id="7879130110979560610">{READING_LIST_REMINDER_NOTIFICATION_SUBTITLE,plural, =1{Имате <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_ONE" /> непрочитана страница}one{Имате <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_MANY" /> непрочитана страница}other{Имате <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_MANY" /> непрочитани страници}}</translation>
 <translation id="7882131421121961860">Не е најдена историја</translation>
 <translation id="7886917304091689118">Се извршува во Chrome</translation>
+<translation id="7887334752153342268">Направи дупликат</translation>
 <translation id="789763218334337857">Како да го користите Chrome</translation>
 <translation id="7903184275147100332">Ова може да потрае малку</translation>
 <translation id="7919123827536834358">Автоматски преведувај ги овие јазици</translation>
@@ -1206,6 +1211,7 @@
 <translation id="808747664143081553">Поврзано со уредот</translation>
 <translation id="8088176524274673045">За да споделувате со луѓе во близина, дозволете им да го скенираат QR-кодов</translation>
 <translation id="8103578431304235997">Инкогнито-картичка</translation>
+<translation id="8105613260829665809">Ако продолжите, се согласувате со <ph name="BEGIN_TOS_LINK" />Условите за користење<ph name="END_TOS_LINK" />.\nЗа да се подобри апликацијата, Chrome испраќа податоци за користењето и падовите во Google. <ph name="BEGIN_UMA_LINK" />Управувајте<ph name="END_UMA_LINK" /></translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">За да ги добиете обележувачите на сите ваши уреди, вклучете ја синхронизацијата</translation>
 <translation id="8110024788458304985">Помогнете да се подобрат функциите и изведбата на Chrome</translation>
@@ -1290,6 +1296,7 @@
 <translation id="8551513938758868521">Заклучувај ги картичките „Инкогнито“ кога ќе го напуштам Chrome</translation>
 <translation id="8555836665334561807">Преку Wi-Fi</translation>
 <translation id="8559990750235505898">Понудувај превод на страниците на други јазици</translation>
+<translation id="8560560256644480257">Се создава GIF <ph name="PERCENT" /> %%</translation>
 <translation id="8560602726703398413">Најдете го списокот за читање во „Обележувачи“</translation>
 <translation id="8562452229998620586">Зачуваните лозинки ќе се појават тука.</translation>
 <translation id="856481929701340285">Барај лок. на раб. пов.</translation>

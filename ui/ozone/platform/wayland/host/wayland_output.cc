@@ -87,10 +87,8 @@ float WaylandOutput::GetUIScaleFactor() const {
 }
 
 void WaylandOutput::TriggerDelegateNotifications() {
-  DCHECK(!rect_in_physical_pixels_.IsEmpty());
-  // If zxdg_output protocol is used, calculate scale factor using logical
-  // size.
-  if (xdg_output_) {
+  if (xdg_output_ && connection_->surface_submission_in_pixel_coordinates()) {
+    DCHECK(!rect_in_physical_pixels_.IsEmpty());
     const gfx::Size logical_size = xdg_output_->logical_size();
     if (!logical_size.IsEmpty()) {
       if (logical_size.width() >= logical_size.height()) {
@@ -101,8 +99,6 @@ void WaylandOutput::TriggerDelegateNotifications() {
                         static_cast<float>(logical_size.height());
       }
     }
-    if (!connection_->surface_submission_in_pixel_coordinates())
-      scale_factor_ = ceil(scale_factor_);
   }
   delegate_->OnOutputHandleMetrics(output_id_, rect_in_physical_pixels_,
                                    scale_factor_, transform_);

@@ -3,6 +3,7 @@
 <translationbundle lang="nl">
 <translation id="1113173431709655881">Cameramodus</translation>
 <translation id="1175958423215084756">Link gevonden. <ph name="HOSTNAME" /></translation>
+<translation id="1258009455399840361">90 graden rechtsom draaien</translation>
 <translation id="1276998909102132017">Galerij-afbeeldingen</translation>
 <translation id="1300209025925956156">Je document scannen</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Zoeken + pijl-links om ze te openen.</translation>
@@ -26,6 +27,7 @@
 <translation id="2064538373111010176"><ph name="CAMERA" /> actief</translation>
 <translation id="2144806332417375165">Aangepaste videoparameters</translation>
 <translation id="2175927920773552910">QR-code</translation>
+<translation id="2271433936731426666">Videomomentopname op volledig formaat aanzetten</translation>
 <translation id="229579744168541441">Exporteren naar schijf</translation>
 <translation id="2320741269052147773">Naar links schuiven</translation>
 <translation id="2501278716633472235">Terug</translation>
@@ -54,6 +56,7 @@
 <translation id="3517926952904427380">Kan geen portretfoto maken</translation>
 <translation id="3569311554794739032">Weet je zeker dat je <ph name="FILE" /> wilt verwijderen?</translation>
 <translation id="3573890771273113519">Overschakelen naar scanmodus</translation>
+<translation id="3789724198583203151">90 graden linksom draaien</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Streepjescode scannen</translation>
 <translation id="3892148308691398805">Tekst kopiëren</translation>

@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
+#include "content/browser/broadcast_channel/broadcast_channel_service.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/worker_devtools_agent_host.h"
@@ -111,7 +112,8 @@ DedicatedWorkerHost::~DedicatedWorkerHost() {
   // the observed render process host (`worker_process_host_`) is destroyed.
 
   // Send any final reports and allow the reporting configuration to be
-  // removed.
+  // removed. Note that the RenderProcessHost and the associated
+  // StoragePartition outlives `this`.
   worker_process_host_->GetStoragePartition()
       ->GetNetworkContext()
       ->SendReportsAndRemoveSource(reporting_source_);
@@ -335,9 +337,11 @@ void DedicatedWorkerHost::DidStartScriptLoad(
         final_response_url, main_script_load_params->response_head.get());
   }
 
+  auto* storage_partition = static_cast<StoragePartitionImpl*>(
+      worker_process_host_->GetStoragePartition());
   // Create a COEP reporter with worker's policy.
   coep_reporter_ = std::make_unique<CrossOriginEmbedderPolicyReporter>(
-      worker_process_host_->GetStoragePartition(), final_response_url,
+      storage_partition->GetWeakPtr(), final_response_url,
       worker_cross_origin_embedder_policy_->reporting_endpoint,
       worker_cross_origin_embedder_policy_->report_only_reporting_endpoint,
       reporting_source_, isolation_info_.network_isolation_key());
@@ -614,10 +618,11 @@ void DedicatedWorkerHost::CreateBroadcastChannelProvider(
   auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
       GetProcessHost()->GetStoragePartition());
 
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<BroadcastChannelProvider>(
-          storage_partition_impl->GetBroadcastChannelService(),
-          GetStorageKey()),
+  auto* broadcast_channel_service =
+      storage_partition_impl->GetBroadcastChannelService();
+  broadcast_channel_service->AddReceiver(
+      std::make_unique<BroadcastChannelProvider>(broadcast_channel_service,
+                                                 GetStorageKey()),
       std::move(receiver));
 }
 

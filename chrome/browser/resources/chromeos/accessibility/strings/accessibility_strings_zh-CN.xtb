@@ -69,6 +69,7 @@
 <translation id="1354356357730355833">复制</translation>
 <translation id="135978014023467274">您已更新至 ChromeVox 63！</translation>
 <translation id="1360699455582016846">点击路由键 <ph name="ROUTING_KEY_NUMBER" /> 下面的项</translation>
+<translation id="1376703628032300005">移到下一个字符</translation>
 <translation id="1377925789329510816">这是最后一个标题。按 Search+H 组合键可跳回至第一个标题，按 Search+Shift+H 组合键则可转到此页面上的第二个标题。</translation>
 <translation id="138218114945450791">浅蓝色</translation>
 <translation id="1383876407941801731">搜索</translation>
@@ -213,6 +214,7 @@
 <translation id="2450814015951372393">复选框</translation>
 <translation id="2461822463642141190">电流</translation>
 <translation id="2462626033734746142">单选按钮组</translation>
+<translation id="2467741090055146971">取消选择</translation>
 <translation id="2471138580042810658">6 级标题</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{1个星号}other{#个星号}}</translation>
 <translation id="2490721194269245365">玫瑰褐色</translation>
@@ -565,6 +567,7 @@
 <translation id="4854380505292502090">没有上一个媒体微件</translation>
 <translation id="4855927945655956315">基础键：Ctrl</translation>
 <translation id="4862744964787595316">非粗体</translation>
+<translation id="4865995900839719272">移到上一行</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">启用TTS日志记录</translation>
 <translation id="4886524826165775965">第<ph name="INDEX" />项，共<ph name="TOTAL" />项</translation>
@@ -607,7 +610,6 @@
 <translation id="5138912041966667164">中岩蓝色</translation>
 <translation id="5140016802771803559">瑞贝卡紫</translation>
 <translation id="5142101052131610456">所有课程</translation>
-<translation id="5152605892605507188">右移</translation>
 <translation id="5158275234811857234">封面</translation>
 <translation id="516076699907426116">若要继续，请使用“触摸浏览”功能找到“下一课”按钮。然后，点按两次以继续。</translation>
 <translation id="5170206230005240598">已启用盲文字幕</translation>
@@ -624,6 +626,7 @@
 <translation id="5304943142864553931">切换到名为“<ph name="TITLE" />”的标签页</translation>
 <translation id="5308380583665731573">连接</translation>
 <translation id="5310788376443009632">已移除：</translation>
+<translation id="5316825363044614340">移到下一行</translation>
 <translation id="5320727453979144100">已启用粘滞模式</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{1个英文逗号}other{#个英文逗号}}</translation>
 <translation id="532485153932049746">设置文本格式
@@ -741,6 +744,7 @@
 <translation id="6034000775414344507">浅灰色</translation>
 <translation id="6036135911048686884">触摸浏览</translation>
 <translation id="6037602951055904232">向前平移</translation>
+<translation id="604240746417122825">语法错误</translation>
 <translation id="6082768461603900813">基本导航操作</translation>
 <translation id="609281021724813947">没有上一个滑块</translation>
 <translation id="6100239002225743044">上移 1 行</translation>
@@ -751,7 +755,6 @@
 <translation id="6142308968191113180">4 级标题标记</translation>
 <translation id="6150023170003443621">黄绿色</translation>
 <translation id="6158882249329863701">第 <ph name="TABLECELLROWINDEX" /> 行，第 <ph name="TABLECELLCOLUMNINDEX" /> 列</translation>
-<translation id="6159796324830296161">左移</translation>
 <translation id="6164829606128959761">计量条</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6166362019018438352">已停用盲文字幕</translation>
@@ -844,7 +847,6 @@
 <translation id="6910969481785184048">开启、关闭和停止</translation>
 <translation id="6919104639734799681">显示表格列表</translation>
 <translation id="692135145298539227">删除</translation>
-<translation id="6935674530832500465">下移</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6949846980769640811">中碧蓝色</translation>
 <translation id="6951482098621102657">没有下一个 5 级标题</translation>
@@ -904,6 +906,7 @@
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
 <translation id="7308519659008003150">没有上一个表单字段</translation>
 <translation id="731121099745151312">tritm</translation>
+<translation id="7313717760367325059">帮助</translation>
 <translation id="7317017974771324508">部分选定</translation>
 <translation id="7322442671176251901">触摸浏览</translation>
 <translation id="7344012264516629579">其他跳转命令包括通过链接跳转、通过按钮跳转、通过复选框跳转，等等。跳转命令的完整列表位于 ChromeVox 菜单（可通过按搜索键 + 句点键打开）中。</translation>
@@ -1042,14 +1045,12 @@
 <translation id="826825447994856889">简介</translation>
 <translation id="827266600368092403">开始或结束选择</translation>
 <translation id="827422111966801947">靛青色</translation>
-<translation id="827496561804786391">上移</translation>
 <translation id="8276439074553447000">跳转到上一个可设置为焦点的项</translation>
 <translation id="8279039817939141096">如需了解该模式的功能，请按 QWERTY 键盘上的某个键或按某个可刷新式盲文键，或者使用触摸手势。若要退出，请按 Ctrl + W 或按空格键 + Z 或按 Esc 键，或者用 2 根手指向左滑动。</translation>
 <translation id="8283603667300770666">下一个表单字段</translation>
 <translation id="8310185481635255431">没有下一个链接</translation>
 <translation id="831207808878314375">定义</translation>
 <translation id="8313653172105209786">目录</translation>
-<translation id="8314546933558091113">取消全选</translation>
 <translation id="8316881042119029234">旧蕾丝色</translation>
 <translation id="8324974933005349667">个性化文字转语音设置</translation>
 <translation id="8326783648485765113">草绿色</translation>
@@ -1133,6 +1134,7 @@
 <translation id="9014206344398081366">ChromeVox 教程</translation>
 <translation id="9040132695316389094">1 级标题标记</translation>
 <translation id="9061884144798498064">请选择一个 8 点式盲文表：</translation>
+<translation id="9063946545000394379">移到上一个字符</translation>
 <translation id="9065283790526219006">含弹出项</translation>
 <translation id="9065912140022662363">没有下一个单选按钮</translation>
 <translation id="9067522039955793016">分页符</translation>

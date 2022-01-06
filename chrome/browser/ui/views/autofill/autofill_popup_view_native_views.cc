@@ -1010,7 +1010,10 @@ void AutofillPopupFooterView::CreateContent() {
 void AutofillPopupFooterView::RefreshStyle() {
   AutofillPopupItemView::RefreshStyle();
   SetBorder(views::CreateSolidSidedBorder(
-      /*top=*/views::MenuConfig::instance().separator_thickness,
+      // If the footer is the first item, do not draw a separator line.
+      /*top=*/GetLineNumber() == 0
+          ? 0
+          : views::MenuConfig::instance().separator_thickness,
       /*left=*/0,
       /*bottom=*/0,
       /*right=*/0,
@@ -1473,20 +1476,8 @@ bool AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
                             element_bounds, controller_->IsRTL(),
                             &popup_bounds);
   } else {
-    // Deduce the arrow and the position.
-    BubbleBorder::Arrow arrow = GetOptimalBubblePlacement(
-        content_area_bounds, element_bounds, preferred_size,
-        controller_->IsRTL(), scroll_width, 120, popup_bounds);
-
-    // Those values are not supported for adding an arrow.
-    // Currenrly, they can not be returned by GetOptimalBubblePlacement().
-    DCHECK(arrow != BubbleBorder::Arrow::NONE);
-    DCHECK(arrow != BubbleBorder::Arrow::FLOAT);
-
-    // Set the arrow position to the border.
-    bubble_border_->set_arrow(arrow);
-    bubble_border_->AddArrowToBubbleCornerAndPointTowardsAnchor(
-        element_bounds, /*move_bubble_to_add_arrow=*/true, popup_bounds);
+    popup_bounds = GetOptionalPositionAndPlaceArrowOnBubble(
+        element_bounds, content_area_bounds, preferred_size);
   }
 
   if (BoundsOverlapWithAnyOpenPrompt(popup_bounds,
@@ -1511,19 +1502,6 @@ bool AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
 
   SchedulePaint();
   return true;
-}
-
-std::unique_ptr<views::Border> AutofillPopupViewNativeViews::CreateBorder() {
-  BubbleBorder::Arrow arrow = BubbleBorder::Arrow::TOP_LEFT;
-  auto border = std::make_unique<BubbleBorder>(
-      arrow, BubbleBorder::STANDARD_SHADOW, SK_ColorWHITE);
-  border->SetCornerRadius(GetCornerRadius());
-  border->set_md_shadow_elevation(
-      ChromeLayoutProvider::Get()->GetShadowElevationMetric(
-          views::Emphasis::kMedium));
-  border->set_visible_arrow(true);
-  bubble_border_ = border.get();
-  return border;
 }
 
 BEGIN_METADATA(AutofillPopupViewNativeViews, AutofillPopupBaseView)

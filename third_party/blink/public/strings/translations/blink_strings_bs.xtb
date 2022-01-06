@@ -176,6 +176,7 @@
 <translation id="4912536737030637138">unos bibliografije</translation>
 <translation id="4915360478455618802">Prikaz birača vremena</translation>
 <translation id="492244087561876220">komentar</translation>
+<translation id="4924138096460353083">neodređeno</translation>
 <translation id="4950364064308314478">Prikaz birača lokalnog datuma i vremena</translation>
 <translation id="4971739861736909480">Odabran je račun <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947">Odabrano <ph name="SELECTED_COUNT" /></translation>
@@ -272,7 +273,7 @@
 <translation id="6696580792574109116">birač mjeseca</translation>
 <translation id="6709093583001123835">Vrijednost mora biti <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Slab kvalitet reprodukcije</translation>
-<translation id="6755330956360078551">savjet u vezi s alatom</translation>
+<translation id="6755330956360078551">skočni opis</translation>
 <translation id="6790428901817661496">Pokreni</translation>
 <translation id="6820355525329141109">Učitavanje dodatka nije uspjelo.</translation>
 <translation id="6820615603175220800">bibliografska referenca</translation>

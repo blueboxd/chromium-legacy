@@ -75,6 +75,7 @@
 <translation id="2016697457005847575">להוראות לפתרון בעיות</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">הגדרות נוספות</translation>
+<translation id="2104796393919810494">התיקון הושלם</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, גרסה <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">‏הנפח הזמין: GB<ph name="AVAILABLE_MEMORY" /> מתוך GB<ph name="TOTAL_MEMORY" /></translation>
 <translation id="2141644705054017895">‎<ph name="PERCENTAGE_VALUE" />%‎</translation>
@@ -132,6 +133,7 @@
 <translation id="315738237743207937">זוהה פורטל שבוי</translation>
 <translation id="3170673040743561620">צריך להניח את המסמך על הסורק</translation>
 <translation id="3188257591659621405">הקבצים שלי</translation>
+<translation id="3192947282887913208">קובצי אודיו</translation>
 <translation id="3199982728237701504">הכנסת מסמכים (שני צדדים)</translation>
 <translation id="3226405216343213872">מתבצע חיפוש אחר סורקים</translation>
 <translation id="3246869037381808805">משימות הדפסה בנות יותר מיום אחד יוסרו</translation>
@@ -161,6 +163,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> ביקורות)</translation>
 <translation id="3748026146096797577">לא מחובר</translation>
 <translation id="3749289110408117711">שם קובץ</translation>
+<translation id="3771294271822695279">קובצי וידאו</translation>
 <translation id="38114475217616659">ניקוי כל ההיסטוריה</translation>
 <translation id="3820172043799983114">‏PIN לא חוקי.</translation>
 <translation id="3838338534323494292">סיסמה חדשה</translation>
@@ -235,6 +238,7 @@
 <translation id="4813345808229079766">התקשרות</translation>
 <translation id="4832079907277790330">בחירת תיקייה מהאפליקציה 'קבצים'…</translation>
 <translation id="4835901797422965222">אין רשתות פעילות</translation>
+<translation id="4839698083503556542">ליצירת סרט משלך</translation>
 <translation id="484790837831576105">‏רזולוציית DNS ‏(Android)</translation>
 <translation id="4848429997038228357">הבדיקה מתבצעת</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" />. נותר ניסיון אחד ({0})}two{<ph name="ERROR_MESSAGE" />. נותרו {0} ניסיונות}many{<ph name="ERROR_MESSAGE" />. נותרו {0} ניסיונות}other{<ph name="ERROR_MESSAGE" />. נותרו {0} ניסיונות}}</translation>
@@ -256,6 +260,7 @@
 <translation id="5049856988445523908">‏כרטיס ה-SIM נעול (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">שם הקבוצה</translation>
 <translation id="5051044138948155788">זהו הדף היחיד. פעולה זו תעביר אותך אל מסך ההתחלה של הסריקה.</translation>
+<translation id="5061169534910302641">עדכון הגרסה והפעלה מחדש</translation>
 <translation id="5088172560898466307">שם מארח של שרת</translation>
 <translation id="5089810972385038852">מדינה</translation>
 <translation id="5142961317498132443">אימות</translation>
@@ -347,6 +352,7 @@
 <translation id="636850387210749493">‏הרשמה ל-Enterprise</translation>
 <translation id="6379086450106841622">מסך מגע</translation>
 <translation id="6388847657025262518">מזין המסמכים של הסורק תקוע. יש לבדוק אותו ולנסות שוב.</translation>
+<translation id="6410257289063177456">קובצי תמונה</translation>
 <translation id="641081527798843608">התאמת נושא</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">חלש (<ph name="SIGNAL_STRENGTH" />)</translation>

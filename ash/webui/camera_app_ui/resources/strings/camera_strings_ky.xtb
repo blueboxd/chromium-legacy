@@ -3,6 +3,7 @@
 <translationbundle lang="ky">
 <translation id="1113173431709655881">Камера режими</translation>
 <translation id="1175958423215084756">Шилтеме аныкталды. <ph name="HOSTNAME" /></translation>
+<translation id="1258009455399840361">Сааттын жебеси боюнча 90 градуска буруу</translation>
 <translation id="1276998909102132017">Галерея сүрөттөрү</translation>
 <translation id="1300209025925956156">Документиңизди скандоо</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Кирүү үчүн Search + солго жебени басыңыз.</translation>
@@ -26,6 +27,7 @@
 <translation id="2064538373111010176"><ph name="CAMERA" /> жигердүү</translation>
 <translation id="2144806332417375165">Жеке видеонун параметрлери</translation>
 <translation id="2175927920773552910">QR коду</translation>
+<translation id="2271433936731426666">Толук экрандагы видеону жаздыруу учурунда тартылып алынган сүрөттү иштетүү</translation>
 <translation id="229579744168541441">Дискке өткөрүү</translation>
 <translation id="2320741269052147773">Солго жылдырып кароо</translation>
 <translation id="2501278716633472235">Артка кайтуу</translation>
@@ -54,6 +56,7 @@
 <translation id="3517926952904427380">Сүрөткө тигинен тартылбай жатат</translation>
 <translation id="3569311554794739032">"<ph name="FILE" />" файлын чын эле өчүрөсүзбү?</translation>
 <translation id="3573890771273113519">Скандоо режимине которулуу</translation>
+<translation id="3789724198583203151">Сааттын жебесине каршы 90 градуска буруу</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3838931309141338733">Штрихкодду скандоо</translation>
 <translation id="3892148308691398805">Текстти көчүрүү</translation>

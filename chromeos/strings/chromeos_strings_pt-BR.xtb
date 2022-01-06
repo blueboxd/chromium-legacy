@@ -75,6 +75,7 @@
 <translation id="2016697457005847575">Testar etapas de solução de problemas</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Mais definições</translation>
+<translation id="2104796393919810494">Reparo concluído</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versão <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB de <ph name="TOTAL_MEMORY" /> GB disponíveis</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
@@ -132,6 +133,7 @@
 <translation id="315738237743207937">Portal cativo detectado</translation>
 <translation id="3170673040743561620">Coloque o documento no scanner</translation>
 <translation id="3188257591659621405">Meus arquivos</translation>
+<translation id="3192947282887913208">Arquivos de áudio</translation>
 <translation id="3199982728237701504">Alimentador de documentos (frente e verso)</translation>
 <translation id="3226405216343213872">Procurando scanners</translation>
 <translation id="3246869037381808805">Trabalhos de impressão enviados há mais de 1 dia serão removidos</translation>
@@ -161,6 +163,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> avaliações)</translation>
 <translation id="3748026146096797577">Não conectado</translation>
 <translation id="3749289110408117711">Nome do arquivo</translation>
+<translation id="3771294271822695279">Arquivos de vídeo</translation>
 <translation id="38114475217616659">Limpar todo o histórico</translation>
 <translation id="3820172043799983114">PIN inválido.</translation>
 <translation id="3838338534323494292">Nova senha</translation>
@@ -235,6 +238,7 @@
 <translation id="4813345808229079766">Conexão</translation>
 <translation id="4832079907277790330">Selecionar a pasta no app Arquivos…</translation>
 <translation id="4835901797422965222">Não há redes ativas</translation>
+<translation id="4839698083503556542">Crie seu próprio filme</translation>
 <translation id="484790837831576105">(Android) Resolução de DNS</translation>
 <translation id="4848429997038228357">EM EXECUÇÃO</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} tentativa restante}one{<ph name="ERROR_MESSAGE" /> {0} tentativa restante}other{<ph name="ERROR_MESSAGE" /> {0} tentativas restantes}}</translation>
@@ -256,6 +260,7 @@
 <translation id="5049856988445523908">Chip bloqueado (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Nome do grupo</translation>
 <translation id="5051044138948155788">Essa é a única página. Se você removê-la, a tela inicial de digitalização será aberta.</translation>
+<translation id="5061169534910302641">Atualizar versão e reiniciar</translation>
 <translation id="5088172560898466307">Nome do host do servidor</translation>
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5142961317498132443">Autenticação</translation>
@@ -347,6 +352,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="636850387210749493">Registro da empresa</translation>
 <translation id="6379086450106841622">Tela touchscreen</translation>
 <translation id="6388847657025262518">O alimentador de documentos do scanner está obstruído. Verifique-o e tente novamente.</translation>
+<translation id="6410257289063177456">Arquivos de imagem</translation>
 <translation id="641081527798843608">Correspondência de assunto</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Fraco (<ph name="SIGNAL_STRENGTH" />)</translation>

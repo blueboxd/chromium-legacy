@@ -25,8 +25,10 @@ static const char kSubresourceFilterActionMetric[] =
 
 class MockAdsBlockedDialog : public AdsBlockedDialogBase {
  public:
-  MOCK_METHOD(void, Show, (), (override));
+  MOCK_METHOD(void, Show, (bool should_post_dialog), (override));
   MOCK_METHOD(void, Dismiss, (), (override));
+  MOCK_METHOD(void, Destroy, ());
+  ~MockAdsBlockedDialog() override { Destroy(); }
 };
 
 class AdsBlockedMessageDelegateTest
@@ -152,6 +154,9 @@ AdsBlockedMessageDelegateTest::CreateAdsBlockedDialog(
   allow_ads_clicked_callback_ = std::move(allow_ads_clicked_callback);
   learn_more_clicked_callback_ = std::move(learn_more_clicked_callback);
   dialog_dismissed_callback_ = std::move(dialog_dismissed_callback);
+  // PrepareAdsBlockedDialog() should always be invoked before the dialog is
+  // constructed.
+  EXPECT_TRUE(mock_ads_blocked_dialog_);
   return std::move(mock_ads_blocked_dialog_);
 }
 
@@ -207,7 +212,7 @@ TEST_F(AdsBlockedMessageDelegateTest, DialogTriggered_OnManageClicked) {
 
   ExpectDismissMessageCall();
   MockAdsBlockedDialog* mock_dialog = PrepareAdsBlockedDialog();
-  EXPECT_CALL(*mock_dialog, Show);
+  EXPECT_CALL(*mock_dialog, Show(false));
   TriggerMessageManageClicked();
   EXPECT_EQ(GetMessageWrapper(), nullptr);
 
@@ -224,7 +229,7 @@ TEST_F(AdsBlockedMessageDelegateTest, MetricsRecorded_OnLearnMoreClicked) {
 
   ExpectDismissMessageCall();
   MockAdsBlockedDialog* mock_dialog = PrepareAdsBlockedDialog();
-  EXPECT_CALL(*mock_dialog, Show);
+  EXPECT_CALL(*mock_dialog, Show(false));
   TriggerMessageManageClicked();
   EXPECT_EQ(GetMessageWrapper(), nullptr);
 
@@ -244,7 +249,7 @@ TEST_F(AdsBlockedMessageDelegateTest, RestoreDialog_OnLearnMoreClicked) {
 
   ExpectDismissMessageCall();
   MockAdsBlockedDialog* mock_dialog = PrepareAdsBlockedDialog();
-  EXPECT_CALL(*mock_dialog, Show);
+  EXPECT_CALL(*mock_dialog, Show(false));
   TriggerMessageManageClicked();
   EXPECT_EQ(GetMessageWrapper(), nullptr);
   EXPECT_FALSE(GetDelegate()->reprompt_required_flag_for_testing());
@@ -254,8 +259,27 @@ TEST_F(AdsBlockedMessageDelegateTest, RestoreDialog_OnLearnMoreClicked) {
   TriggerDialogDismissedCallback();
   EXPECT_TRUE(GetDelegate()->reprompt_required_flag_for_testing());
 
+  // Prepare the dialog to be re-shown on navigation back to the original tab.
+  mock_dialog = PrepareAdsBlockedDialog();
+  EXPECT_CALL(*mock_dialog, Show(true));
   OnWebContentsFocused();
   EXPECT_FALSE(GetDelegate()->reprompt_required_flag_for_testing());
+}
+
+// Tests that the AdsBlockedDialog destructor is invoked when the
+// AdsBlockedMessageDelegate is destroyed.
+TEST_F(AdsBlockedMessageDelegateTest, DismissDialog_OnDelegateDestroyed) {
+  EnqueueMessage();
+
+  ExpectDismissMessageCall();
+  MockAdsBlockedDialog* mock_dialog = PrepareAdsBlockedDialog();
+  EXPECT_CALL(*mock_dialog, Show(false));
+  TriggerMessageManageClicked();
+
+  // Verify that the AdsBlockedDialog destructor is invoked when the
+  // AdsBlockedMessageDelegate is destroyed.
+  EXPECT_CALL(*mock_dialog, Destroy());
+  web_contents()->RemoveUserData(AdsBlockedMessageDelegate::UserDataKey());
 }
 
 }  // namespace subresource_filter

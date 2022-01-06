@@ -440,18 +440,18 @@ void VideoEncoder::UpdateEncoderLog(std::string encoder_name,
       is_hw_accelerated);
 }
 
-std::unique_ptr<media::VideoEncoder> CreateAcceleratedVideoEncoder(
+std::unique_ptr<media::VideoEncoder>
+VideoEncoder::CreateAcceleratedVideoEncoder(
     media::VideoCodecProfile profile,
     const media::VideoEncoder::Options& options,
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   if (!IsAcceleratedConfigurationSupported(profile, options, gpu_factories))
     return nullptr;
 
-  auto task_runner = Thread::Current()->GetTaskRunner();
   return std::make_unique<
       media::AsyncDestroyVideoEncoder<media::VideoEncodeAcceleratorAdapter>>(
-      std::make_unique<media::VideoEncodeAcceleratorAdapter>(
-          gpu_factories, std::move(task_runner)));
+      std::make_unique<media::VideoEncodeAcceleratorAdapter>(gpu_factories,
+                                                             callback_runner_));
 }
 
 std::unique_ptr<media::VideoEncoder> CreateVpxVideoEncoder() {
@@ -652,10 +652,17 @@ void VideoEncoder::ProcessEncode(Request* request) {
       // HasPendingActivity() keeps the VideoEncoder alive long enough.
       auto blit_done_callback = [](VideoEncoder* self, bool keyframe,
                                    uint32_t reset_count,
+                                   base::TimeDelta timestamp,
+                                   media::VideoFrameMetadata metadata,
                                    media::VideoEncoder::StatusCB done_callback,
                                    scoped_refptr<media::VideoFrame> frame) {
         if (!self || self->reset_count_ != reset_count || !frame)
           return;
+
+        // CopyRGBATextureToVideoFrame() operates on mailboxes and not frames,
+        // so we must manually copy over properties relevant to the encoder.
+        frame->set_timestamp(timestamp);
+        frame->set_metadata(metadata);
 
         DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
         --self->requested_encodes_;
@@ -696,7 +703,7 @@ void VideoEncoder::ProcessEncode(Request* request) {
               format, frame->coded_size(), frame->ColorSpace(), origin,
               frame->mailbox_holder(0), dst_color_space,
               WTF::Bind(blit_done_callback, WrapWeakPersistent(this), keyframe,
-                        reset_count_,
+                        reset_count_, frame->timestamp(), frame->metadata(),
                         ConvertToBaseOnceCallback(CrossThreadBindOnce(
                             done_callback, WrapCrossThreadWeakPersistent(this),
                             WrapCrossThreadPersistent(request)))))) {
@@ -726,8 +733,7 @@ void VideoEncoder::ProcessEncode(Request* request) {
     if (!frame) {
       auto status = media::Status(media::StatusCode::kEncoderFailedEncode,
                                   "Can't readback frame textures.");
-      auto task_runner = Thread::Current()->GetTaskRunner();
-      task_runner->PostTask(
+      callback_runner_->PostTask(
           FROM_HERE,
           ConvertToBaseOnceCallback(CrossThreadBindOnce(
               done_callback, WrapCrossThreadWeakPersistent(this),

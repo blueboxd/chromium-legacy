@@ -75,6 +75,7 @@
 <translation id="2016697457005847575">Provo hapat e zgjidhjes së problemeve</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Cilësime të tjera</translation>
+<translation id="2104796393919810494">Riparimi përfundoi</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versioni <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB nga <ph name="TOTAL_MEMORY" /> GB të disponueshme</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
@@ -132,6 +133,7 @@
 <translation id="315738237743207937">U zbulua portal izolues</translation>
 <translation id="3170673040743561620">Vendos dokumentin tënd në skaner</translation>
 <translation id="3188257591659621405">Skedarët e mi</translation>
+<translation id="3192947282887913208">Skedarët audio</translation>
 <translation id="3199982728237701504">Furnizuesi i dokumentit (dy anë)</translation>
 <translation id="3226405216343213872">Po kërkon për skanerë</translation>
 <translation id="3246869037381808805">Printimet më të vjetra se 1 ditë do të hiqen</translation>
@@ -161,6 +163,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> komente)</translation>
 <translation id="3748026146096797577">Nuk është i lidhur</translation>
 <translation id="3749289110408117711">Emri i skedarit</translation>
+<translation id="3771294271822695279">Skedarët video</translation>
 <translation id="38114475217616659">Fshi të gjithë historikun</translation>
 <translation id="3820172043799983114">Kodi PIN i pavlefshëm</translation>
 <translation id="3838338534323494292">Fjalëkalimi i ri</translation>
@@ -235,6 +238,7 @@
 <translation id="4813345808229079766">Lidhja</translation>
 <translation id="4832079907277790330">Zgjidh dosjen në aplikacionin "Skedarët"...</translation>
 <translation id="4835901797422965222">Nuk ka asnjë rrjet aktiv</translation>
+<translation id="4839698083503556542">Krijo filmin tënd</translation>
 <translation id="484790837831576105">(Android) Zgjidhja e DNS-së</translation>
 <translation id="4848429997038228357">NË EKZEKUTIM</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} përpjekje e mbetur}other{<ph name="ERROR_MESSAGE" /> {0} përpjekje të mbetura}}</translation>
@@ -256,6 +260,7 @@
 <translation id="5049856988445523908">Karta SIM e kyçur (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Emri i grupit</translation>
 <translation id="5051044138948155788">Kjo është faqja e vetme. Kjo do të të çojë tek ekrani i fillimit të skanimit.</translation>
+<translation id="5061169534910302641">Përditëso versionin dhe rinise</translation>
 <translation id="5088172560898466307">Emri i strehuesit të serverit</translation>
 <translation id="5089810972385038852">Shteti</translation>
 <translation id="5142961317498132443">Vërtetimi</translation>
@@ -346,6 +351,7 @@
 <translation id="636850387210749493">Regjistrimi i ndërmarrjes</translation>
 <translation id="6379086450106841622">Ekrani me prekje</translation>
 <translation id="6388847657025262518">Furnizuesi i dokumenteve i skanerit është bllokuar. Kontrollo furnizuesin dhe provo përsëri.</translation>
+<translation id="6410257289063177456">Skedarët e imazheve</translation>
 <translation id="641081527798843608">Përputhja e subjektit</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">I dobët (<ph name="SIGNAL_STRENGTH" />)</translation>

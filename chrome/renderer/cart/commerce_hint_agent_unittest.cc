@@ -214,6 +214,7 @@ const char* kVisitCart[] = {
     "https://www.wayfair.com/session/public/basket.php",
     "https://www.wayfair.com/v/checkout/basket/add_and_show",
     "https://www.wayfair.com/v/checkout/basket/show",
+    "https://www.webstaurantstore.com/viewcart.cfm",
     "https://www.weightwatchers.com/us/shop/checkout/cart",
     "https://www.westelm.com/shoppingcart/",
     "https://www.wiley.com/en-us/cart",
@@ -775,6 +776,19 @@ TEST(CommerceHintAgentTest, IsAddToCart) {
   for (auto* str : kNotAddToCart) {
     EXPECT_FALSE(CommerceHintAgent::IsAddToCart(str)) << str;
   }
+}
+
+TEST(CommerceHintAgentTest, IsAddToCart_SkipLengthLimit) {
+  std::string str = "a";
+  for (int i = 0; i < 12; ++i) {
+    str += str;
+  }
+  // This is equal to length limit in CommerceHintAgent.
+  EXPECT_EQ(str.size(), 4096U);
+
+  str += "/add-to-cart";
+  EXPECT_FALSE(CommerceHintAgent::IsAddToCart(str));
+  EXPECT_TRUE(CommerceHintAgent::IsAddToCart(str, true));
 }
 
 TEST(CommerceHintAgentTest, IsVisitCart) {

@@ -4,7 +4,11 @@
 
 package org.chromium.chrome.browser.ui.signin.fre;
 
+import android.text.method.LinkMovementMethod;
+import android.transition.TransitionManager;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
@@ -40,7 +44,9 @@ class SigninFirstRunViewBinder {
                     .setEnabled(!isSelectedAccountSupervised);
             updateVisibility(view, model);
         } else if (propertyKey == SigninFirstRunProperties.ARE_NATIVE_AND_POLICY_LOADED) {
-            // TODO(https://crbug.com/1248931): Add a transition animation for the spinner
+            // Add a transition animation between the view changes.
+            final ViewGroup freContent = (ViewGroup) view.findViewById(R.id.signin_fre_content);
+            TransitionManager.beginDelayedTransition(freContent);
             updateVisibility(view, model);
         } else if (propertyKey == SigninFirstRunProperties.FRE_POLICY) {
             view.findViewById(R.id.fre_browser_managed_by_organization)
@@ -53,6 +59,10 @@ class SigninFirstRunViewBinder {
                 button.setText(R.string.continue_button);
                 updateVisibility(view, model);
             }
+        } else if (propertyKey == SigninFirstRunProperties.FOOTER_STRING) {
+            final TextView footerView = view.findViewById(R.id.signin_fre_footer);
+            footerView.setText(model.get(SigninFirstRunProperties.FOOTER_STRING));
+            footerView.setMovementMethod(LinkMovementMethod.getInstance());
         } else {
             throw new IllegalArgumentException("Unknown property key:" + propertyKey);
         }

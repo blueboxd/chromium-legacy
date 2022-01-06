@@ -75,6 +75,7 @@
 <translation id="2016697457005847575">Thử các bước khắc phục vấn đề</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Chế độ cài đặt khác</translation>
+<translation id="2104796393919810494">Đã hoàn tất quá trình sửa chữa</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, phiên bản <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">Còn <ph name="AVAILABLE_MEMORY" /> GB/<ph name="TOTAL_MEMORY" /> GB</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
@@ -132,6 +133,7 @@
 <translation id="315738237743207937">Đã phát hiện thấy trang xác thực</translation>
 <translation id="3170673040743561620">Đặt tài liệu của bạn lên máy quét</translation>
 <translation id="3188257591659621405">Tệp của tôi</translation>
+<translation id="3192947282887913208">Tệp âm thanh</translation>
 <translation id="3199982728237701504">Khay nạp tài liệu (2 mặt)</translation>
 <translation id="3226405216343213872">Đang tìm máy quét</translation>
 <translation id="3246869037381808805">Các lệnh in quá 1 ngày sẽ bị xóa</translation>
@@ -161,6 +163,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> bài đánh giá)</translation>
 <translation id="3748026146096797577">Chưa được kết nối</translation>
 <translation id="3749289110408117711">Tên tệp</translation>
+<translation id="3771294271822695279">Tệp video</translation>
 <translation id="38114475217616659">Xóa toàn bộ lịch sử</translation>
 <translation id="3820172043799983114">Mã PIN không hợp lệ.</translation>
 <translation id="3838338534323494292">Mật khẩu mới</translation>
@@ -235,6 +238,7 @@
 <translation id="4813345808229079766">Kết nối</translation>
 <translation id="4832079907277790330">Chọn thư mục trong ứng dụng Files...</translation>
 <translation id="4835901797422965222">Không có mạng nào đang hoạt động</translation>
+<translation id="4839698083503556542">Tạo phim của riêng bạn</translation>
 <translation id="484790837831576105">(Android) Quá trình phân giải DNS</translation>
 <translation id="4848429997038228357">ĐANG CHẠY</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Bạn còn {0} lần thử}other{<ph name="ERROR_MESSAGE" /> Bạn còn {0} lần thử}}</translation>
@@ -256,6 +260,7 @@
 <translation id="5049856988445523908">Đã khóa SIM (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Tên nhóm</translation>
 <translation id="5051044138948155788">Đây là trang duy nhất. Thao tác này sẽ đưa bạn đến màn hình bắt đầu quét.</translation>
+<translation id="5061169534910302641">Cập nhật phiên bản và khởi động lại</translation>
 <translation id="5088172560898466307">Tên máy chủ</translation>
 <translation id="5089810972385038852">Tỉnh</translation>
 <translation id="5142961317498132443">Xác thực</translation>
@@ -347,6 +352,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="636850387210749493">Đăng ký doanh nghiệp</translation>
 <translation id="6379086450106841622">Màn hình cảm ứng</translation>
 <translation id="6388847657025262518">Khay nạp tài liệu của máy quét bị kẹt. Hãy kiểm tra khay nạp rồi thử lại.</translation>
+<translation id="6410257289063177456">Tệp hình ảnh</translation>
 <translation id="641081527798843608">Khớp với chủ đề</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Yếu (<ph name="SIGNAL_STRENGTH" />)</translation>

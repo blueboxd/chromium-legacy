@@ -75,6 +75,7 @@
 <translation id="2016697457005847575">Probar los pasos para solucionar el problema</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Más opciones de configuración</translation>
+<translation id="2104796393919810494">Se completó la reparación</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versión <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB de <ph name="TOTAL_MEMORY" /> GB de memoria disponible</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
@@ -132,6 +133,7 @@
 <translation id="315738237743207937">Se detectó un portal cautivo.</translation>
 <translation id="3170673040743561620">Coloca tu documento en el escáner.</translation>
 <translation id="3188257591659621405">Mis archivos</translation>
+<translation id="3192947282887913208">Archivos de audio</translation>
 <translation id="3199982728237701504">Alimentador de documentos (dos caras)</translation>
 <translation id="3226405216343213872">Buscando escáneres</translation>
 <translation id="3246869037381808805">Se quitarán los trabajos de impresión que tengan más de 1 día</translation>
@@ -161,6 +163,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> opiniones)</translation>
 <translation id="3748026146096797577">Sin conexión</translation>
 <translation id="3749289110408117711">Nombre del archivo</translation>
+<translation id="3771294271822695279">Archivos de video</translation>
 <translation id="38114475217616659">Borrar todo el historial</translation>
 <translation id="3820172043799983114">PIN no válido</translation>
 <translation id="3838338534323494292">Nueva contraseña</translation>
@@ -235,6 +238,7 @@
 <translation id="4813345808229079766">Conexión</translation>
 <translation id="4832079907277790330">Seleccionar carpeta en la app de Archivos…</translation>
 <translation id="4835901797422965222">No hay redes activas</translation>
+<translation id="4839698083503556542">Crea tu propia película</translation>
 <translation id="484790837831576105">(Android) resolución de DNS</translation>
 <translation id="4848429997038228357">EN EJECUCIÓN</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Queda {0} intento.}other{<ph name="ERROR_MESSAGE" /> Quedan {0} intentos.}}</translation>
@@ -256,6 +260,7 @@
 <translation id="5049856988445523908">SIM bloqueado (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Nombre del grupo</translation>
 <translation id="5051044138948155788">Esta es la única página. Esta acción te llevará a la pantalla de inicio de escaneo.</translation>
+<translation id="5061169534910302641">Actualizar versión y reiniciar</translation>
 <translation id="5088172560898466307">Nombre de host del servidor</translation>
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5142961317498132443">Autenticación</translation>
@@ -347,6 +352,7 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="636850387210749493">Registro de empresa</translation>
 <translation id="6379086450106841622">Pantalla táctil</translation>
 <translation id="6388847657025262518">Se atascó el alimentador de documentos del escáner. Revisa el alimentador y vuelve a intentarlo.</translation>
+<translation id="6410257289063177456">Archivos de imagen</translation>
 <translation id="641081527798843608">Coincidencia de asunto</translation>
 <translation id="6423239382391657905">VPN abierto</translation>
 <translation id="6439505561246192797">Débil (<ph name="SIGNAL_STRENGTH" />)</translation>

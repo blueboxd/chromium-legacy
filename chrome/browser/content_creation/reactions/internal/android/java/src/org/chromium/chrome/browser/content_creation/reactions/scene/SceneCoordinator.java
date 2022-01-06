@@ -42,6 +42,13 @@ public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDe
     private ReactionLayout mActiveReaction;
     private RelativeLayout mSceneBackground;
 
+    private int mNbReactionsAdded;
+    private int mNbTypeChange;
+    private int mNbRotateScale;
+    private int mNbDuplicate;
+    private int mNbDelete;
+    private int mNbMove;
+
     /**
      * Constructs a new {@link SceneCoordinator}.
      *
@@ -51,6 +58,13 @@ public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDe
         mActivity = activity;
         mMediator = mediator;
         mReactionLayouts = new HashSet<>();
+
+        mNbReactionsAdded = 0;
+        mNbTypeChange = 0;
+        mNbRotateScale = 0;
+        mNbDuplicate = 0;
+        mNbDelete = 0;
+        mNbMove = 0;
     }
 
     public void setSceneBackground(RelativeLayout sceneBackground) {
@@ -59,6 +73,7 @@ public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDe
     }
 
     public void addReactionInDefaultLocation(ReactionMetadata reaction) {
+        ++mNbReactionsAdded;
         mMediator.getGifForUrl(reaction.assetUrl, (baseGifImage) -> {
             if (mSceneBackground == null) {
                 return;
@@ -69,7 +84,7 @@ public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDe
 
             ReactionLayout reactionLayout = (ReactionLayout) LayoutInflaterUtils.inflate(
                     mActivity, R.layout.reaction_layout, null);
-            reactionLayout.init(drawable, this);
+            reactionLayout.init(drawable, this, reaction.localizedName);
 
             int reactionSizePx = ViewUtils.dpToPx(mActivity, DEFAULT_REACTION_SIZE_DP);
             RelativeLayout.LayoutParams lp =
@@ -161,19 +176,49 @@ public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDe
         markActiveStatus(mActiveReaction, false);
     }
 
-    private void replaceActiveReaction(ReactionMetadata reaction) {
-        assert mActiveReaction != null;
-        mMediator.getGifForUrl(reaction.assetUrl,
-                (baseGifImage)
-                        -> mActiveReaction.setDrawable(new ReactionGifDrawable(
-                                reaction, baseGifImage, Bitmap.Config.ARGB_8888)));
+    /**
+     * Returns the total number of times (across all reactions) that the user added a new reaction
+     * to the scene.
+     */
+    public int getNbReactionsAdded() {
+        return mNbReactionsAdded;
     }
 
-    private void addReactionLayoutToScene(
-            ReactionLayout reactionLayout, RelativeLayout.LayoutParams layoutParams) {
-        mSceneBackground.addView(reactionLayout, layoutParams);
-        mReactionLayouts.add(reactionLayout);
-        markActiveStatus(reactionLayout, true);
+    /**
+     * Returns the total number of times (across all reactions) that the user changed an existing
+     * reaction's type.
+     */
+    public int getNbTypeChange() {
+        return mNbTypeChange;
+    }
+
+    /**
+     * Returns the total number of times (across all reactions) that the user scaled or rotated a
+     * reaction.
+     */
+    public int getNbRotateScale() {
+        return mNbRotateScale;
+    }
+
+    /**
+     * Returns the total number of times (across all reactions) that the user duplicated a reaction.
+     */
+    public int getNbDuplicate() {
+        return mNbDuplicate;
+    }
+
+    /**
+     * Returns the total number of times (across all reactions) that the user deleted a reaction.
+     */
+    public int getNbDelete() {
+        return mNbDelete;
+    }
+
+    /**
+     * Returns the total number of times (across all reactions) that the user moved a reaction.
+     */
+    public int getNbMove() {
+        return mNbMove;
     }
 
     // SceneEditorDelegate implementation.
@@ -184,32 +229,39 @@ public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDe
 
     @Override
     public void duplicateReaction(ReactionLayout reactionLayout) {
-        ReactionLayout newReactionLayout = (ReactionLayout) LayoutInflaterUtils.inflate(
-                mActivity, R.layout.reaction_layout, null);
-        newReactionLayout.init(reactionLayout.getReaction(), this);
+        ++mNbDuplicate;
+        ReactionMetadata reaction = reactionLayout.getReaction().getMetadata();
+        mMediator.getGifForUrl(reaction.assetUrl, (baseGifImage) -> {
+            ReactionLayout newReactionLayout = (ReactionLayout) LayoutInflaterUtils.inflate(
+                    mActivity, R.layout.reaction_layout, null);
+            ReactionGifDrawable drawable =
+                    new ReactionGifDrawable(reaction, baseGifImage, Bitmap.Config.ARGB_8888);
+            newReactionLayout.init(drawable, this, reaction.localizedName);
 
-        RelativeLayout.LayoutParams oldLayoutParams =
-                (RelativeLayout.LayoutParams) reactionLayout.getLayoutParams();
-        RelativeLayout.LayoutParams newLayoutParams =
-                new RelativeLayout.LayoutParams(reactionLayout.getLayoutParams());
-        int offsetPx = ViewUtils.dpToPx(mActivity, REACTION_OFFSET_DP);
-        newLayoutParams.leftMargin = oldLayoutParams.leftMargin + offsetPx;
-        newLayoutParams.topMargin = oldLayoutParams.topMargin + offsetPx;
-        newLayoutParams.rightMargin = oldLayoutParams.rightMargin + offsetPx;
-        newLayoutParams.bottomMargin = oldLayoutParams.bottomMargin + offsetPx;
-        newReactionLayout.setRotation(reactionLayout.getRotation());
+            RelativeLayout.LayoutParams oldLayoutParams =
+                    (RelativeLayout.LayoutParams) reactionLayout.getLayoutParams();
+            RelativeLayout.LayoutParams newLayoutParams =
+                    new RelativeLayout.LayoutParams(reactionLayout.getLayoutParams());
+            int offsetPx = ViewUtils.dpToPx(mActivity, REACTION_OFFSET_DP);
+            newLayoutParams.leftMargin = oldLayoutParams.leftMargin + offsetPx;
+            newLayoutParams.topMargin = oldLayoutParams.topMargin + offsetPx;
+            newLayoutParams.rightMargin = oldLayoutParams.rightMargin + offsetPx;
+            newLayoutParams.bottomMargin = oldLayoutParams.bottomMargin + offsetPx;
+            newReactionLayout.setRotation(reactionLayout.getRotation());
 
-        if (isOutOfBoundsToTheBottomRight(newLayoutParams, reactionLayout.getRotation())) {
-            newLayoutParams.leftMargin = oldLayoutParams.leftMargin - offsetPx;
-            newLayoutParams.topMargin = oldLayoutParams.topMargin - offsetPx;
-            newLayoutParams.rightMargin = oldLayoutParams.rightMargin - offsetPx;
-            newLayoutParams.bottomMargin = oldLayoutParams.bottomMargin - offsetPx;
-        }
-        addReactionLayoutToScene(newReactionLayout, newLayoutParams);
+            if (isOutOfBoundsToTheBottomRight(newLayoutParams, reactionLayout.getRotation())) {
+                newLayoutParams.leftMargin = oldLayoutParams.leftMargin - offsetPx;
+                newLayoutParams.topMargin = oldLayoutParams.topMargin - offsetPx;
+                newLayoutParams.rightMargin = oldLayoutParams.rightMargin - offsetPx;
+                newLayoutParams.bottomMargin = oldLayoutParams.bottomMargin - offsetPx;
+            }
+            addReactionLayoutToScene(newReactionLayout, newLayoutParams);
+        });
     }
 
     @Override
     public void removeReaction(ReactionLayout reactionLayout) {
+        ++mNbDelete;
         markActiveStatus(reactionLayout, false);
         mSceneBackground.removeView(reactionLayout);
         mReactionLayouts.remove(reactionLayout);
@@ -223,10 +275,21 @@ public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDe
             }
             reactionLayout.setActive(true);
             mActiveReaction = reactionLayout;
+            mActiveReaction.bringToFront();
         } else if (mActiveReaction != null) {
             mActiveReaction.setActive(false);
             mActiveReaction = null;
         }
+    }
+
+    @Override
+    public void reactionWasMoved() {
+        ++mNbMove;
+    }
+
+    @Override
+    public void reactionWasAdjusted() {
+        ++mNbRotateScale;
     }
 
     // ToolbarReactionsDelegate implementation.
@@ -236,6 +299,43 @@ public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDe
             replaceActiveReaction(reaction);
         } else {
             addReactionInDefaultLocation(reaction);
+        }
+    }
+
+    private void replaceActiveReaction(ReactionMetadata reaction) {
+        assert mActiveReaction != null;
+        ++mNbTypeChange;
+        mMediator.getGifForUrl(reaction.assetUrl, (baseGifImage) -> {
+            mActiveReaction.setDrawable(
+                    new ReactionGifDrawable(reaction, baseGifImage, Bitmap.Config.ARGB_8888),
+                    reaction.localizedName);
+            resetReactions(mActiveReaction);
+        });
+    }
+
+    private void addReactionLayoutToScene(
+            ReactionLayout reactionLayout, RelativeLayout.LayoutParams layoutParams) {
+        mSceneBackground.addView(reactionLayout, layoutParams);
+        mReactionLayouts.add(reactionLayout);
+        markActiveStatus(reactionLayout, true);
+        resetReactions(reactionLayout);
+    }
+
+    private void resetReactions(ReactionLayout layoutToExclude) {
+        for (ReactionLayout rl : mReactionLayouts) {
+            if (rl != layoutToExclude) {
+                rl.getReaction().resetAnimation();
+            }
+        }
+    }
+
+    /**
+     * Starts all of the {@link ReactionLayout} animations on the scene.
+     */
+    public void startAnimations() {
+        for (ReactionLayout rl : mReactionLayouts) {
+            rl.getReaction().setSteppingEnabled(false);
+            rl.getReaction().start();
         }
     }
 

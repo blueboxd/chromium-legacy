@@ -3,6 +3,7 @@
 <translationbundle lang="zh-CN">
 <translation id="1113173431709655881">相机模式</translation>
 <translation id="1175958423215084756">检测到链接。<ph name="HOSTNAME" /></translation>
+<translation id="1258009455399840361">顺时针旋转 90 度</translation>
 <translation id="1276998909102132017">图库图片</translation>
 <translation id="1300209025925956156">扫描您的文件</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />。按搜索键 + 向左键即可访问。</translation>
@@ -26,6 +27,7 @@
 <translation id="2064538373111010176">已切换到<ph name="CAMERA" /></translation>
 <translation id="2144806332417375165">自定义视频参数</translation>
 <translation id="2175927920773552910">二维码</translation>
+<translation id="2271433936731426666">启用完整尺寸的视频快照</translation>
 <translation id="229579744168541441">导出到磁盘</translation>
 <translation id="2320741269052147773">向左平移</translation>
 <translation id="2501278716633472235">返回</translation>
@@ -54,6 +56,7 @@
 <translation id="3517926952904427380">无法拍摄纵向照片</translation>
 <translation id="3569311554794739032">确定要移除“<ph name="FILE" />”吗？</translation>
 <translation id="3573890771273113519">切换到扫描模式</translation>
+<translation id="3789724198583203151">逆时针旋转 90 度</translation>
 <translation id="3810838688059735925">视频</translation>
 <translation id="3838931309141338733">扫描条形码</translation>
 <translation id="3892148308691398805">复制文字</translation>

@@ -192,22 +192,28 @@ TEST(AutofillPopupViewUtilsTest, GetAvailableHorizontalSpaceOnSideOfElement) {
   gfx::Rect content_area_bounds(100, 200, 700, 600);
   gfx::Rect element_bounds(220, 350, 200, 100);
 
+  // The minimum number of pixels the bubble should be distanced from the edge
+  // of the content area.
+  constexpr int kMinimalBubbleDistanceToContentAreaEdge = 8;
+
   EXPECT_EQ(
       GetAvailableHorizontalSpaceOnSideOfElement(
           content_area_bounds, element_bounds, views::BubbleArrowSide::kLeft),
-      380);
+      380 - kMinimalBubbleDistanceToContentAreaEdge);
   EXPECT_EQ(
       GetAvailableHorizontalSpaceOnSideOfElement(
           content_area_bounds, element_bounds, views::BubbleArrowSide::kRight),
-      120);
+      120 - kMinimalBubbleDistanceToContentAreaEdge);
   EXPECT_EQ(
       GetAvailableHorizontalSpaceOnSideOfElement(
           content_area_bounds, element_bounds, views::BubbleArrowSide::kTop),
-      content_area_bounds.width());
+      content_area_bounds.width() -
+          2 * kMinimalBubbleDistanceToContentAreaEdge);
   EXPECT_EQ(
       GetAvailableHorizontalSpaceOnSideOfElement(
           content_area_bounds, element_bounds, views::BubbleArrowSide::kBottom),
-      content_area_bounds.width());
+      content_area_bounds.width() -
+          2 * kMinimalBubbleDistanceToContentAreaEdge);
 }
 
 TEST(AutofillPopupViewUtilsTest, IsBubblePlaceableOnSideOfElement) {
@@ -260,10 +266,14 @@ TEST(AutofillPopupViewUtilsTest, GetOptimalBubbleArrowSide) {
 
 TEST(AutofillPopupViewUtilsTest, GetOptimalBubblePlacement) {
   // For this test, the content area bounds and preferred bubble size is fixed.
-  gfx::Rect content_area_bounds = {0, 0, 800, 800};
-  gfx::Size preferred_bubble_size = {200, 300};
-  int scrollbar_width = 10;
-  int maximum_offset_to_center = 120;
+  const gfx::Rect kContentsAreaBounds = {0, 0, 800, 800};
+  const gfx::Size kPreferredBubbleSize = {200, 300};
+  const int kScrollbarWidth = 10;
+  const int kMaximumPixelOffsetTowardsCenter = 120;
+  const int kMaximumWidthPercentageTowardsCenter = 50;
+  const int kHoriztontalPlacementOffsetToAlignArrow =
+      views::BubbleBorder::kVisibleArrowBuffer +
+      views::BubbleBorder::kVisibleArrowRadius;
 
   struct TestCase {
     bool right_to_left;
@@ -272,29 +282,39 @@ TEST(AutofillPopupViewUtilsTest, GetOptimalBubblePlacement) {
     views::BubbleBorder::Arrow expected_arrow;
 
   } test_cases[]{
-      // The element is placed in the top corner and the bubble should be shown
-      // below the element, are displaced by half the field width.
+      // The element is placed in the top left corner and the bubble should be
+      // shown
+      // below the element is displaced by half the field width.
       {false,
        {0, 0, 100, 20},
-       {50, 20, 200, 300},
+       {50 - kHoriztontalPlacementOffsetToAlignArrow, 20, 200, 300},
+       views::BubbleBorder::Arrow::TOP_LEFT},
+      // The element is placed in the top right corner and the bubble needs to
+      // be moved back into the view port honoring the minimal distance to the
+      // content area edge.
+      {false,
+       {760, 0, 100, 20},
+       {592, 20, 200, 300},
        views::BubbleBorder::Arrow::TOP_LEFT},
       // The element is placed in the top corner and the bubble should be shown
       // below the element, displaced by maximum of 120 pixels.
       {false,
        {0, 0, 300, 20},
-       {maximum_offset_to_center, 20, 200, 300},
+       {kMaximumPixelOffsetTowardsCenter -
+            kHoriztontalPlacementOffsetToAlignArrow,
+        20, 200, 300},
        views::BubbleBorder::Arrow::TOP_LEFT},
       // The element is placed in the lower left corner which should create a
       // bubble on top of the element.
       {false,
        {0, 780, 100, 20},
-       {50, 480, 200, 300},
+       {50 - kHoriztontalPlacementOffsetToAlignArrow, 480, 200, 300},
        views::BubbleBorder::Arrow::BOTTOM_LEFT},
       // Test a basic right website with an element placed on the upper
       // right corner. The bubble should be displaced to the left.
       {true,
        {700, 0, 100, 20},
-       {550, 20, 200, 300},
+       {550 + kHoriztontalPlacementOffsetToAlignArrow, 20, 200, 300},
        views::BubbleBorder::Arrow::TOP_RIGHT},
       // Test a field that is barely visible. This should create a bubble on the
       // side.
@@ -309,9 +329,10 @@ TEST(AutofillPopupViewUtilsTest, GetOptimalBubblePlacement) {
 
     EXPECT_EQ(test_case.expected_arrow,
               GetOptimalBubblePlacement(
-                  content_area_bounds, test_case.element_bounds,
-                  preferred_bubble_size, test_case.right_to_left,
-                  scrollbar_width, maximum_offset_to_center, popup_bounds));
+                  kContentsAreaBounds, test_case.element_bounds,
+                  kPreferredBubbleSize, test_case.right_to_left,
+                  kScrollbarWidth, kMaximumPixelOffsetTowardsCenter,
+                  kMaximumWidthPercentageTowardsCenter, popup_bounds));
 
     EXPECT_EQ(popup_bounds, test_case.expected_popup_bounds);
   }

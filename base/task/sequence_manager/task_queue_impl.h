@@ -200,48 +200,7 @@ class BASE_EXPORT TaskQueueImpl {
   // |delayed_work_queue|. Must be called from the main thread.
   void MoveReadyDelayedTasksToWorkQueue(LazyNow* lazy_now);
 
-  // Enqueues |task| on the |delayed_work_queue|. Called during wake-ups to
-  // queue delayed tasks in order of delayed run time across multiple task
-  // queues. Must be called from the main thread.
-  void MoveReadyDelayedTaskToWorkQueue(std::unique_ptr<Task> task);
-
-  // RAII handle created at the start of a wake-up for a given task queue. This
-  // finishes the wake-up for that task queue when the object goes out of scope.
-  class WakeUpHandle {
-   public:
-    WakeUpHandle(TaskQueueImpl* queue, LazyNow* lazy_now);
-    WakeUpHandle(WakeUpHandle&&);
-    ~WakeUpHandle();
-
-    TaskQueueImpl* GetTaskQueue() { return task_queue_; }
-
-   private:
-    TaskQueueImpl* task_queue_;
-    LazyNow* lazy_now_;
-  };
-  // Called at the start of a wake-up by TimeDomain. This is expected to clear
-  // the current wake-up. Must be called from the main thread.
-  WakeUpHandle OnStartWakeUp(LazyNow& lazy_now);
-
-  // Wrapper around a ready delayed task and its task queue used for ordering
-  // tasks across task queues by delayed run time during wake-ups.
-  struct ReadyDelayedTask {
-    ReadyDelayedTask(TaskQueueImpl* queue, std::unique_ptr<Task> task);
-    ~ReadyDelayedTask();
-    ReadyDelayedTask(ReadyDelayedTask&&);
-    ReadyDelayedTask& operator=(ReadyDelayedTask&&);
-
-    // Used for sorting.
-    bool operator<(const ReadyDelayedTask& other) const;
-
-    TaskQueueImpl* task_queue;
-    std::unique_ptr<Task> task;
-  };
-
-  // Called during wake-ups to move all delayed task whose delays expire before
-  // |lazy_now| into |tasks|. Must be called from the main thread.
-  void TakeReadyDelayedTasks(LazyNow& lazy_now,
-                             std::vector<ReadyDelayedTask>& tasks);
+  void OnWakeUp(LazyNow* lazy_now);
 
   HeapHandle heap_handle() const { return main_thread_only().heap_handle; }
 
@@ -373,11 +332,11 @@ class BASE_EXPORT TaskQueueImpl {
     DelayedIncomingQueue& operator=(const DelayedIncomingQueue&) = delete;
     ~DelayedIncomingQueue();
 
-    void push(std::unique_ptr<Task> task);
-    std::unique_ptr<Task> pop();
+    void push(Task task);
+    void pop();
     bool empty() const { return queue_.empty(); }
     size_t size() const { return queue_.size(); }
-    const Task& top() const { return *queue_.top(); }
+    const Task& top() const { return queue_.top(); }
     void swap(DelayedIncomingQueue* other);
 
     bool has_pending_high_resolution_tasks() const {
@@ -390,17 +349,8 @@ class BASE_EXPORT TaskQueueImpl {
     Value AsValue(TimeTicks now) const;
 
    private:
-    struct Comparator {
-      bool operator()(const std::unique_ptr<Task>& task1,
-                      const std::unique_ptr<Task>& task2) {
-        return *task1 > *task2;
-      }
-    };
-
     struct PQueue
-        : public std::priority_queue<std::unique_ptr<Task>,
-                                     std::vector<std::unique_ptr<Task>>,
-                                     DelayedIncomingQueue::Comparator> {
+        : public std::priority_queue<Task, std::vector<Task>, std::greater<>> {
       // Removes all cancelled tasks from the queue. Returns the number of
       // removed high resolution tasks (which could be lower than the total
       // number of removed tasks).
@@ -482,16 +432,15 @@ class BASE_EXPORT TaskQueueImpl {
 
   // Push the task onto the |delayed_incoming_queue|. Lock-free main thread
   // only fast path.
-  void PushOntoDelayedIncomingQueueFromMainThread(
-      std::unique_ptr<Task> pending_task,
-      TimeTicks now,
-      bool notify_task_annotator);
+  void PushOntoDelayedIncomingQueueFromMainThread(Task pending_task,
+                                                  TimeTicks now,
+                                                  bool notify_task_annotator);
 
   // Push the task onto the |delayed_incoming_queue|.  Slow path from other
   // threads.
-  void PushOntoDelayedIncomingQueue(std::unique_ptr<Task> pending_task);
+  void PushOntoDelayedIncomingQueue(Task pending_task);
 
-  void ScheduleDelayedWorkTask(std::unique_ptr<Task> pending_task);
+  void ScheduleDelayedWorkTask(Task pending_task);
 
   void MoveReadyImmediateTasksToImmediateWorkQueueLocked()
       EXCLUSIVE_LOCKS_REQUIRED(any_thread_lock_);
@@ -539,14 +488,6 @@ class BASE_EXPORT TaskQueueImpl {
 
   // Invoked when the queue becomes enabled and not blocked by a fence.
   void OnQueueUnblocked();
-
-  // Update task state in preparation to move |task| to the delayed work queue.
-  void UpdateTaskOnDelayExpired(Task& task);
-
-  // Called at the end of a wake-up when a WakeUpHandle goes out of scope. This
-  // is expected to update the throttling state and set the next desired
-  // wake-up. Must be called from the main thread.
-  void OnFinishWakeUp(LazyNow& lazy_now);
 
   const char* name_;
   SequenceManagerImpl* const sequence_manager_;

@@ -922,6 +922,30 @@ bool IsOptedInFencedFrame(const net::HttpResponseHeaders& http_headers) {
                         network::mojom::LoadingMode::kFencedFrame);
 }
 
+// If the response does not contain an Accept-CH header, then remove the
+// Sec-CH-UA-Reduced client hint from the Accept-CH cache, if it exists, for the
+// response origin.  The `client_hints` vector also has kUaReduced removed from
+// it if the Accept-CH response header doesn't exist.
+void RemoveUaReducedFromAcceptCH(
+    const GURL& url,
+    ClientHintsControllerDelegate* delegate,
+    const network::mojom::URLResponseHead* response,
+    std::vector<network::mojom::WebClientHintsType>& client_hints) {
+  if (response && !response->parsed_headers->accept_ch &&
+      base::Contains(client_hints,
+                     network::mojom::WebClientHintsType::kUAReduced)) {
+    // For Chrome to continue to send Sec-CH-UA-Reduced, the server must
+    // continue replying with:
+    //  - a valid Origin Trial token.
+    //  - Accept-CH header with Sec-CH-UA-Reduced as a value.
+    //
+    // Here, it did not. So it gets removed from the persisted client hints
+    // for the next request.
+    base::Erase(client_hints, network::mojom::WebClientHintsType::kUAReduced);
+    PersistAcceptCH(url, delegate, client_hints, /*persist_duration=*/nullptr);
+  }
+}
+
 }  // namespace
 
 NavigationRequest::PrerenderActivationNavigationState::
@@ -1125,7 +1149,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
               blink::mojom::
                   AppHistoryEntryPtr>() /* app_history_forward_entries */,
           /*early_hints_preloaded_resources=*/
-          std::vector<GURL>());
+          std::vector<GURL>(),
+          // This timestamp will be populated when the commit IPC is sent.
+          base::TimeTicks() /* commit_sent */);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1249,7 +1275,9 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           std::vector<
               blink::mojom::
                   AppHistoryEntryPtr>() /* app_history_forward_entries */,
-          std::vector<GURL>() /* early_hints_preloaded_resources */);
+          std::vector<GURL>() /* early_hints_preloaded_resources */,
+          // This timestamp will be populated when the commit IPC is sent.
+          base::TimeTicks() /* commit_sent */);
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -2309,8 +2337,8 @@ void NavigationRequest::CreateCoepReporter(
   DCHECK(!isolation_info_for_subresources_.IsEmpty());
 
   coep_reporter_ = std::make_unique<CrossOriginEmbedderPolicyReporter>(
-      storage_partition, common_params_->url,
-      cross_origin_embedder_policy_.reporting_endpoint,
+      static_cast<StoragePartitionImpl*>(storage_partition)->GetWeakPtr(),
+      common_params_->url, cross_origin_embedder_policy_.reporting_endpoint,
       cross_origin_embedder_policy_.report_only_reporting_endpoint,
       render_frame_host_->GetFrameToken().value(),
       isolation_info_for_subresources_.network_isolation_key());
@@ -3902,11 +3930,26 @@ void NavigationRequest::OnRedirectChecksComplete(
       browser_context->GetClientHintsControllerDelegate();
   if (client_hints_delegate) {
     net::HttpRequestHeaders client_hints_extra_headers;
+    const GURL& source_url = commit_params_->redirects.back();
+    const network::mojom::URLResponseHead* response_head =
+        commit_params_->redirect_response.back().get();
     ParseAndPersistAcceptCHForNavigation(
-        commit_params_->redirects.back(),
-        commit_params_->redirect_response.back()->parsed_headers,
-        commit_params_->redirect_response.back()->headers.get(),
+        source_url, response_head->parsed_headers, response_head->headers.get(),
         browser_context, client_hints_delegate, frame_tree_node_);
+    // CriticalClientHintsThrottle issues a 307 internal redirect without the
+    // original headers, and we don't want to remove Sec-CH-UA-Reduced when
+    // Critical-CH is set.  This means that if the site sends a 307 (instead of
+    // a 301 or 302), Sec-CH-UA-Reduced will *not* be removed from the Accept-CH
+    // cache if the Accept-CH header is missing from the redirect response.
+    if (response_head->headers && response_head->headers->response_code() !=
+                                      net::HTTP_TEMPORARY_REDIRECT) {
+      std::vector<network::mojom::WebClientHintsType> client_hints =
+          LookupAcceptCHForCommit(source_url, client_hints_delegate,
+                                  frame_tree_node_);
+      RemoveUaReducedFromAcceptCH(source_url, client_hints_delegate,
+                                  response_head, client_hints);
+    }
+
     AddNavigationRequestClientHintsHeaders(
         common_params_->url, &client_hints_extra_headers, browser_context,
         client_hints_delegate, is_overriding_user_agent(), frame_tree_node_,
@@ -4310,24 +4353,9 @@ void NavigationRequest::CommitNavigation() {
     }
     commit_params_->enabled_client_hints = LookupAcceptCHForCommit(
         common_params_->url, client_hints_delegate, frame_tree_node_);
-
-    if (frame_tree_node_->IsMainFrame() && response() &&
-        !response()->parsed_headers->accept_ch &&
-        base::Contains(commit_params_->enabled_client_hints,
-                       network::mojom::WebClientHintsType::kUAReduced)) {
-      // For Chrome to continue to send Sec-CH-UA-Reduced, the server must
-      // continue replying with:
-      //  - a valid Origin Trial token.
-      //  - Accept-CH header with Sec-CH-UA-Reduced as a value.
-      //
-      // Here, it did not. So it gets removed from the persisted client hints
-      // for the next request.
-      base::Erase(commit_params_->enabled_client_hints,
-                  network::mojom::WebClientHintsType::kUAReduced);
-      PersistAcceptCH(common_params_->url, client_hints_delegate,
-                      commit_params_->enabled_client_hints,
-                      /*persist_duration=*/nullptr);
-    }
+    RemoveUaReducedFromAcceptCH(common_params_->url, client_hints_delegate,
+                                response(),
+                                commit_params_->enabled_client_hints);
 
     // We may need to add hints that were parsed this time in case they were
     // not permitted to persist in legacy accept-ch-lifetime mode.
@@ -4402,8 +4430,19 @@ void NavigationRequest::CommitNavigation() {
   // Give SpareRenderProcessHostManager a heads-up about the most recently used
   // BrowserContext.  This is mostly needed to make sure the spare is warmed-up
   // if it wasn't done in RenderProcessHostImpl::GetProcessHostForSiteInstance.
-  RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
-      render_frame_host_->GetSiteInstance()->GetBrowserContext());
+#if defined(OS_ANDROID)
+  // If we're in the experiment to always create a spare renderer on Android
+  // don't start it right away since the system is busy; this will happen when
+  // the page stops loading.
+  bool should_notify_spare_manager =
+      !base::FeatureList::IsEnabled(features::kSpareRenderer);
+#else
+  bool should_notify_spare_manager = true;
+#endif
+  if (should_notify_spare_manager) {
+    RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
+        render_frame_host_->GetSiteInstance()->GetBrowserContext());
+  }
 
   SendDeferredConsoleMessages();
 }

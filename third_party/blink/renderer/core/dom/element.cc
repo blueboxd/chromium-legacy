@@ -36,6 +36,7 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
+#include "third_party/blink/public/web/web_autofill_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_get_inner_html_options.h"
@@ -123,6 +124,7 @@
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_controls_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_menu_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
@@ -1562,6 +1564,13 @@ double Element::scrollTop() {
     return 0;
   }
 
+  // Don't disclose scroll position in preview state. See crbug.com/1261689.
+  auto* select_element = DynamicTo<HTMLSelectElement>(this);
+  if (select_element && !select_element->UsesMenuList() &&
+      select_element->GetAutofillState() == WebAutofillState::kPreviewed) {
+    return 0;
+  }
+
   LayoutBox* box = GetLayoutBoxForScrolling();
   if (!box)
     return 0;
@@ -2836,6 +2845,10 @@ void Element::DetachLayoutTree(bool performing_reattach) {
     if (InActiveChain())
       GetDocument().ActiveChainNodeDetached(*this);
     GetDocument().UserActionElements().DidDetach(*this);
+  }
+
+  if (auto* context = GetDisplayLockContext()) {
+    context->DetachLayoutTree();
   }
 }
 

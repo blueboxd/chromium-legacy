@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.firstrun;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import android.accounts.Account;
 import android.app.Activity;
@@ -20,6 +21,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 
+import androidx.annotation.IdRes;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -72,8 +74,10 @@ import org.chromium.chrome.browser.signin.SigninFirstRunFragment;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.policy.AbstractAppRestrictionsProvider;
 import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChildAccountStatus.Status;
@@ -81,6 +85,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
@@ -113,11 +118,17 @@ public class FirstRunIntegrationTest {
     public JniMocker mJniMocker = new JniMocker();
 
     @Mock
+    private ExternalAuthUtils mExternalAuthUtilsMock;
+    @Mock
     public FirstRunAppRestrictionInfo mMockAppRestrictionInfo;
     @Mock
     public EnterpriseInfo mEnterpriseInfo;
     @Mock
     private AccountManagerFacade mAccountManagerFacade;
+    @Mock
+    private TemplateUrlService mTemplateUrlService;
+
+    private List<Runnable> mTemplateUrlServiceWhenLoadedRunnables = new ArrayList<>();
 
     private TestFirstRunFlowSequencerDelegate mDelegate;
 
@@ -136,6 +147,8 @@ public class FirstRunIntegrationTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(mExternalAuthUtilsMock.canUseGooglePlayServices()).thenReturn(false);
+        ExternalAuthUtils.setInstanceForTesting(mExternalAuthUtilsMock);
         FirstRunStatus.setFirstRunSkippedByPolicy(false);
         FirstRunUtils.setDisableDelayOnExitFreForTest(true);
         FirstRunActivity.setObserverForTest(mTestObserver);
@@ -213,6 +226,28 @@ public class FirstRunIntegrationTest {
                 .when(mEnterpriseInfo)
                 .getDeviceEnterpriseInfo(any());
         EnterpriseInfo.setInstanceForTest(mEnterpriseInfo);
+    }
+
+    private void setTemplateUrlServiceForMock() {
+        Mockito.doAnswer(invocation -> {
+                   mTemplateUrlServiceWhenLoadedRunnables.add(invocation.getArgument(0));
+                   return null;
+               })
+                .when(mTemplateUrlService)
+                .runWhenLoaded(any());
+        TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
+    }
+
+    private void replaceMockTemplateUrlServiceWithInitReal() {
+        CriteriaHelper.pollUiThread(() -> {
+            Assert.assertEquals(TemplateUrlServiceFactory.get(), mTemplateUrlService);
+            TemplateUrlServiceFactory.setInstanceForTesting(null);
+            TemplateUrlServiceFactory.get().runWhenLoaded(() -> {
+                for (Runnable runnable : mTemplateUrlServiceWhenLoadedRunnables) {
+                    runnable.run();
+                }
+            });
+        });
     }
 
     private void skipTosDialogViaPolicy() {
@@ -551,6 +586,30 @@ public class FirstRunIntegrationTest {
                 .skipSigninPromo();
 
         waitForActivity(ChromeTabbedActivity.class);
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Remove({ChromeSwitches.FORCE_DISABLE_SIGNIN_FRE})
+    @CommandLineFlags.Add({ChromeSwitches.FORCE_ENABLE_SIGNIN_FRE})
+    public void testSigninFirstRunPages_WithCctPolicy_AbsenceOfPromos() throws Exception {
+        runFirstRunPagesTest(new FirstRunPagesTestCase().withCctTosDisabled());
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Remove({ChromeSwitches.FORCE_DISABLE_SIGNIN_FRE})
+    @CommandLineFlags.Add({ChromeSwitches.FORCE_ENABLE_SIGNIN_FRE})
+    public void testSigninFirstRunPages_WithCctPolicy_SearchPromo() throws Exception {
+        runFirstRunPagesTest(new FirstRunPagesTestCase().withCctTosDisabled().withSearchPromo());
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Remove({ChromeSwitches.FORCE_DISABLE_SIGNIN_FRE})
+    @CommandLineFlags.Add({ChromeSwitches.FORCE_ENABLE_SIGNIN_FRE})
+    public void testSigninFirstRunPages_WithCctPolicy_SigninPromo() throws Exception {
+        runFirstRunPagesTest(new FirstRunPagesTestCase().withCctTosDisabled().withSigninPromo());
     }
 
     private void runFirstRunPagesTest(FirstRunPagesTestCase testCase) throws Exception {
@@ -1254,6 +1313,27 @@ public class FirstRunIntegrationTest {
         waitForActivity(ChromeTabbedActivity.class);
     }
 
+    @Test
+    @MediumTest
+    public void testSlowToInitTemplateUrlService() throws Exception {
+        setTemplateUrlServiceForMock();
+        initializePreferences(new FirstRunPagesTestCase().withSearchPromo());
+
+        FirstRunActivity firstRunActivity = launchFirstRunActivity();
+        FirstRunNavigationHelper navigationHelper = new FirstRunNavigationHelper(firstRunActivity)
+                                                            .ensureHasPages()
+                                                            .ensureTermsOfServiceIsCurrentPage();
+
+        navigationHelper.clickBlockedTermsOfService();
+        navigationHelper.ensureTermsOfServiceIsCurrentPage();
+
+        replaceMockTemplateUrlServiceWithInitReal();
+        navigationHelper.ensureDefaultSearchEnginePromoIsCurrentPage();
+
+        navigationHelper.selectDefaultSearchEngine();
+        waitForActivity(ChromeTabbedActivity.class);
+    }
+
     private void clickButton(final Activity activity, final int id, final String message) {
         CriteriaHelper.pollUiThread(() -> {
             View view = activity.findViewById(id);
@@ -1355,6 +1435,18 @@ public class FirstRunIntegrationTest {
             mScopedObserverData = getObserverData(mFirstRunActivity);
         }
 
+        protected FirstRunNavigationHelper ensureNativeInitialized() throws Exception {
+            CriteriaHelper.pollUiThread(()
+                                                -> mFirstRunActivity.getLifecycleDispatcher()
+                                                           .isNativeInitializationFinished());
+            return this;
+        }
+
+        protected FirstRunNavigationHelper ensureHasPages() throws Exception {
+            CriteriaHelper.pollUiThread(() -> mFirstRunActivity.hasPages());
+            return this;
+        }
+
         protected FirstRunNavigationHelper ensurePagesCreationSucceeded() throws Exception {
             mScopedObserverData.createPostNativeAndPoliciesPageSequenceCallback.waitForCallback(
                     "Failed to finalize the flow and create subsequent pages", 0);
@@ -1410,11 +1502,31 @@ public class FirstRunIntegrationTest {
             int jumpCallCount = mScopedObserverData.jumpToPageCallback.getCallCount();
             int acceptCallCount = mScopedObserverData.acceptTermsOfServiceCallback.getCallCount();
 
-            clickButton(mFirstRunActivity, R.id.terms_accept, "Failed to accept ToS");
+            clickButton(mFirstRunActivity, getTermsOfServiceButtonIdRes(), "Failed to accept ToS");
             mScopedObserverData.jumpToPageCallback.waitForCallback(
                     "Failed to try moving to the next screen", jumpCallCount);
             mScopedObserverData.acceptTermsOfServiceCallback.waitForCallback(
                     "Failed to accept the ToS", acceptCallCount);
+
+            return this;
+        }
+
+        protected FirstRunNavigationHelper clickBlockedTermsOfService() throws Exception {
+            ensureTermsOfServiceIsCurrentPage();
+            int jumpCallCount = mScopedObserverData.jumpToPageCallback.getCallCount();
+            int acceptCallCount = mScopedObserverData.acceptTermsOfServiceCallback.getCallCount();
+
+            clickButton(mFirstRunActivity, getTermsOfServiceButtonIdRes(), "Failed to accept ToS");
+            // Cannot wait for a callback to be called, instead we want to verify the absence of
+            // callbacks. Verify native is at least initialized, which includes a bounce to the UI
+            // thread. This seems to be good enough to give things a chance to go wrong if they're
+            // going to.
+            ensureNativeInitialized();
+            Assert.assertEquals("Unexpected move to next screen", jumpCallCount,
+                    mScopedObserverData.jumpToPageCallback.getCallCount());
+            Assert.assertEquals("Unexpected accept of the ToS", acceptCallCount,
+                    mScopedObserverData.acceptTermsOfServiceCallback.getCallCount());
+
             return this;
         }
 
@@ -1468,6 +1580,13 @@ public class FirstRunIntegrationTest {
                             -> matcher.matches(mFirstRunActivity.getCurrentFragmentForTesting()),
                     failureReason);
             return this;
+        }
+
+        private @IdRes int getTermsOfServiceButtonIdRes() {
+            return Matchers.instanceOf(SigninFirstRunFragment.class)
+                            .matches(mFirstRunActivity.getCurrentFragmentForTesting())
+                    ? R.id.signin_fre_continue_button
+                    : R.id.terms_accept;
         }
     }
 

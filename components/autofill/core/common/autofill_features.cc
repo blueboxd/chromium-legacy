@@ -276,6 +276,24 @@ extern const base::Feature kAutofillLabelAffixRemoval{
 extern const base::Feature kAutofillCenterAlignedSuggestions{
     "AutofillCenterAlignedSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls the maximum pixels the popup is shifted towards the center.
+// TODO(crbug/1248339): Remove once experiment is finished.
+extern const base::FeatureParam<int>
+    kAutofillMaximumPixelsToMoveSuggestionopupToCenter{
+        &kAutofillCenterAlignedSuggestions,
+        "maximum_pixels_to_move_the_suggestion_popup__towards_the_fields_"
+        "center",
+        120};
+
+// Controls the width percentage to move the popup towards the center.
+// TODO(crbug/1248339): Remove once experiment is finished.
+extern const base::FeatureParam<int>
+    kAutofillMaxiumWidthPercentageToMoveSuggestionPopupToCenter{
+        &kAutofillCenterAlignedSuggestions,
+        "width_percentage_to_shift_the_suggestion_popup_towards_the_center_of_"
+        "fields",
+        50};
+
 // When enabled, Autofill will load remote patterns via the component updater.
 // TODO(crbug/1121990): Remove once launched.
 extern const base::Feature kAutofillParsingPatternsFromRemote{
@@ -318,6 +336,11 @@ const base::Feature kAutofillProfileImportFromUnfocusableFields{
 // with invalid data are not suggested.
 const base::Feature kAutofillProfileServerValidation{
     "AutofillProfileServerValidation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls if the heuristic field parsing utilizes shared labels.
+// TODO(crbug/1275772): Remove if no negative consequences observed.
+const base::Feature kAutofillRecordMetricsOfUnownedForms{
+    "AutofillRecordMetricsOfUnownedForms", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether or not overall prediction are retrieved from the cache.
 const base::Feature kAutofillRetrieveOverallPredictionsFromCache{

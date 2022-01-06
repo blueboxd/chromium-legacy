@@ -75,6 +75,7 @@
 <translation id="2016697457005847575">トラブルシューティングの手順を試す</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">詳細設定</translation>
+<translation id="2104796393919810494">修復を完了しました</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />、バージョン <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB / <ph name="TOTAL_MEMORY" /> GB 使用可能</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
@@ -132,6 +133,7 @@
 <translation id="315738237743207937">キャプティブ ポータルが検出されました</translation>
 <translation id="3170673040743561620">スキャナにドキュメントを置いてください</translation>
 <translation id="3188257591659621405">マイファイル</translation>
+<translation id="3192947282887913208">音声ファイル</translation>
 <translation id="3199982728237701504">ドキュメント フィーダー（両面）</translation>
 <translation id="3226405216343213872">スキャナを検索しています</translation>
 <translation id="3246869037381808805">昨日より前の印刷ジョブは削除されます</translation>
@@ -161,6 +163,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★（<ph name="AGGREGATED_COUNT" /> 件のレビュー）</translation>
 <translation id="3748026146096797577">接続されていません</translation>
 <translation id="3749289110408117711">ファイル名</translation>
+<translation id="3771294271822695279">動画ファイル</translation>
 <translation id="38114475217616659">履歴をすべて消去</translation>
 <translation id="3820172043799983114">無効な PIN です。</translation>
 <translation id="3838338534323494292">新しいパスワード</translation>
@@ -235,6 +238,7 @@
 <translation id="4813345808229079766">接続</translation>
 <translation id="4832079907277790330">ファイルアプリ内のフォルダを選択...</translation>
 <translation id="4835901797422965222">有効なネットワークがありません</translation>
+<translation id="4839698083503556542">オリジナルの動画を作成しましょう</translation>
 <translation id="484790837831576105">（Android）DNS の解決</translation>
 <translation id="4848429997038228357">実行中</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" />あと {0} 回試行できます}other{<ph name="ERROR_MESSAGE" />あと {0} 回試行できます}}</translation>
@@ -256,6 +260,7 @@
 <translation id="5049856988445523908">SIM はロックされています（<ph name="LOCK_TYPE" />）</translation>
 <translation id="5050042263972837708">グループ名</translation>
 <translation id="5051044138948155788">これは存在する唯一のページです。削除すると、スキャンのスタート画面に戻ります。</translation>
+<translation id="5061169534910302641">バージョンを更新して再起動</translation>
 <translation id="5088172560898466307">サーバーのホスト名</translation>
 <translation id="5089810972385038852">都道府県 / 州</translation>
 <translation id="5142961317498132443">認証</translation>
@@ -347,6 +352,7 @@
 <translation id="636850387210749493">企業の登録</translation>
 <translation id="6379086450106841622">タッチスクリーン</translation>
 <translation id="6388847657025262518">スキャナの給紙トレイが詰まっています。トレイを確認してから、もう一度お試しください。</translation>
+<translation id="6410257289063177456">画像ファイル</translation>
 <translation id="641081527798843608">件名の一致</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">弱い（<ph name="SIGNAL_STRENGTH" />）</translation>

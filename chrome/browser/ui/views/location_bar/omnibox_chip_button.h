@@ -37,6 +37,7 @@ class OmniboxChipButton : public views::MdTextButton {
       base::RepeatingCallback<void()> callback);
   bool is_fully_collapsed() const { return fully_collapsed_; }
   bool is_animating() const { return animation_->is_animating(); }
+  gfx::SlideAnimation* animation_for_testing() { return animation_.get(); }
 
   // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;
@@ -45,6 +46,7 @@ class OmniboxChipButton : public views::MdTextButton {
   // views::MdTextButton:
   gfx::Size CalculatePreferredSize() const override;
   void OnThemeChanged() override;
+  void UpdateBackgroundColor() override;
 
   // Set the button theme.
   void SetTheme(Theme theme);
@@ -61,20 +63,8 @@ class OmniboxChipButton : public views::MdTextButton {
   // the theme.
   void UpdateIconAndColors();
 
-  // Returns the primary theme color.
-  SkColor GetMainColor();
+  SkColor GetTextAndIconColor();
 
-  // Returns the color that is used for the prominent button's text and icon, or
-  // the non-prominent button's background. The return color matches the toolbar
-  // color.
-  SkColor GetNeutralColor();
-
-  // Get the color for the text and icon.
-  SkColor GetForegroundColor();
-
-  // If button is prominent, the background will be filled in theme color,
-  // otherwise the background will have the neutral color with a theme-colored
-  // border stroke.
   SkColor GetBackgroundColor();
 
   // An animation used for expanding and collapsing the chip.

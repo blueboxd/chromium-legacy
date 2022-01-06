@@ -49,12 +49,15 @@ AdsBlockedDialog::AdsBlockedDialog(
 }
 
 AdsBlockedDialog::~AdsBlockedDialog() {
-  DCHECK(java_ads_blocked_dialog_.is_null());
+  // When the owning class is destroyed, ensure that any active dialog
+  // associated with the class is dismissed.
+  if (java_ads_blocked_dialog_)
+    Dismiss();
 }
 
-void AdsBlockedDialog::Show() {
+void AdsBlockedDialog::Show(bool should_post_dialog) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AdsBlockedDialog_show(env, java_ads_blocked_dialog_);
+  Java_AdsBlockedDialog_show(env, java_ads_blocked_dialog_, should_post_dialog);
 }
 
 void AdsBlockedDialog::Dismiss() {

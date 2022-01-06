@@ -77,15 +77,19 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 // User sign-in state when the coordinator starts. This is used as the
 // state to revert to in case the user is interrupted during sign-in.
 @property(nonatomic, assign) IdentitySigninState signinStateOnStart;
+// Sign-in identity when the coordiantor starts. This is used as the
+// identity to revert to in case the user is interrupted during sign-in.
+@property(nonatomic, strong) ChromeIdentity* signinIdentityOnStart;
 // Account manager service to retrieve Chrome identities.
 @property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
+// YES if the user tapped on the managed, learn more link.
+@property(nonatomic, assign) BOOL managedLearnMoreLinkWasTapped;
 
 @end
 
 @implementation UserSigninCoordinator
 
 @synthesize baseNavigationController = _baseNavigationController;
-@synthesize signinStateOnStart = _signinStateOnStart;
 
 #pragma mark - Public
 
@@ -133,12 +137,17 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
   self.signinStateOnStart =
       signin::GetPrimaryIdentitySigninState(self.browser->GetBrowserState());
+  self.signinIdentityOnStart =
+      authenticationService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
 
   // Setup mediator.
   self.mediator = [[UserSigninMediator alloc]
       initWithAuthenticationService:authenticationService
                     identityManager:IdentityManagerFactory::GetForBrowserState(
                                         self.browser->GetBrowserState())
+              accountManagerService:ChromeAccountManagerServiceFactory::
+                                        GetForBrowserState(
+                                            self.browser->GetBrowserState())
                      consentAuditor:ConsentAuditorFactory::GetForBrowserState(
                                         self.browser->GetBrowserState())
               unifiedConsentService:UnifiedConsentServiceFactory::
@@ -249,6 +258,13 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   [self startSigninFlow];
 }
 
+- (void)unifiedConsentCoordinatorDidTapLearnMoreLink:
+    (UnifiedConsentCoordinator*)coordinator {
+  DCHECK(!self.managedLearnMoreLinkWasTapped);
+  self.managedLearnMoreLinkWasTapped = YES;
+  [self cancelSignin];
+}
+
 - (void)unifiedConsentCoordinatorDidReachBottom:
     (UnifiedConsentCoordinator*)coordinator {
   DCHECK_EQ(self.unifiedConsentCoordinator, coordinator);
@@ -335,7 +351,9 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
           ? self.unifiedConsentCoordinator.selectedIdentity
           : nil;
   SigninCompletionAction completionAction = SigninCompletionActionNone;
-  if (self.unifiedConsentCoordinator.settingsLinkWasTapped) {
+  if (self.managedLearnMoreLinkWasTapped) {
+    completionAction = SigninCompletionActionShowManagedLearnMore;
+  } else if (self.unifiedConsentCoordinator.settingsLinkWasTapped) {
     // Sign-in is finished but the advanced settings link was tapped.
     [self displayAdvancedSettings];
     return;
@@ -380,6 +398,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
 - (void)userSigninMediatorSigninFailed {
   [self.unifiedConsentCoordinator resetSettingLinkTapped];
+  DCHECK(!self.managedLearnMoreLinkWasTapped);
   self.unifiedConsentCoordinator.uiDisabled = NO;
   [self.viewController signinDidStop];
   [self.viewController updatePrimaryActionButtonStyle];
@@ -414,6 +433,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
   [self.unifiedConsentCoordinator stop];
   self.unifiedConsentCoordinator = nil;
+  [self.mediator disconnect];
   self.mediator = nil;
   self.viewController = nil;
 
@@ -553,26 +573,35 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   };
   switch (action) {
     case SigninCoordinatorInterruptActionNoDismiss: {
-      [self.mediator cancelAndDismissAuthenticationFlowAnimated:NO];
-      runCompletionCallback();
+      [self.mediator
+          cancelAndDismissAuthenticationFlowAnimated:NO
+                                          completion:runCompletionCallback];
       break;
     }
     case SigninCoordinatorInterruptActionDismissWithAnimation: {
       // The first run is in charge to dismiss the sign-in view controller.
       DCHECK_NE(UserSigninIntentFirstRun, self.signinIntent);
-      [self.mediator cancelAndDismissAuthenticationFlowAnimated:YES];
-      [self.viewController.presentingViewController
-          dismissViewControllerAnimated:YES
-                             completion:runCompletionCallback];
+      ProceduralBlock dismissViewController = ^() {
+        [weakSelf.viewController.presentingViewController
+            dismissViewControllerAnimated:YES
+                               completion:runCompletionCallback];
+      };
+      [self.mediator
+          cancelAndDismissAuthenticationFlowAnimated:YES
+                                          completion:dismissViewController];
       break;
     }
     case SigninCoordinatorInterruptActionDismissWithoutAnimation: {
       // The first run is in charge to dismiss the sign-in view controller.
       DCHECK_NE(UserSigninIntentFirstRun, self.signinIntent);
-      [self.mediator cancelAndDismissAuthenticationFlowAnimated:NO];
-      [self.viewController.presentingViewController
-          dismissViewControllerAnimated:NO
-                             completion:runCompletionCallback];
+      ProceduralBlock dismissViewController = ^() {
+        [weakSelf.viewController.presentingViewController
+            dismissViewControllerAnimated:NO
+                               completion:runCompletionCallback];
+      };
+      [self.mediator
+          cancelAndDismissAuthenticationFlowAnimated:NO
+                                          completion:dismissViewController];
       break;
     }
   }
@@ -628,6 +657,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   [self.advancedSettingsSigninCoordinator stop];
   self.advancedSettingsSigninCoordinator = nil;
   [self.unifiedConsentCoordinator resetSettingLinkTapped];
+  DCHECK(!self.managedLearnMoreLinkWasTapped);
   self.unifiedConsentCoordinator.uiDisabled = NO;
 }
 

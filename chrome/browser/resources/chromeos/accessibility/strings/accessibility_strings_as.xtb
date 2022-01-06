@@ -69,6 +69,7 @@
 <translation id="1354356357730355833">প্ৰতিলিপি কৰক</translation>
 <translation id="135978014023467274">আপোনাক ChromeVox 63লৈ আপডে'ট কৰা হ'ল!</translation>
 <translation id="1360699455582016846">ৰাউটিং কী <ph name="ROUTING_KEY_NUMBER" />ৰ তলৰ বস্তুত ক্লিক কৰক</translation>
+<translation id="1376703628032300005">পৰৱৰ্তী বৰ্ণলৈ নিয়ক</translation>
 <translation id="1377925789329510816">এইটো শেষ শিৰোনাম। প্ৰথম শিৰোনামলৈ যাবলৈ Search+H টিপক বা এই পৃষ্ঠাৰ দ্বিতীয় শিৰোনামলৈ যাবলৈ Search+Shift+H টিপক।</translation>
 <translation id="138218114945450791">পাতল নীলা</translation>
 <translation id="1383876407941801731">Search</translation>
@@ -213,6 +214,7 @@
 <translation id="2450814015951372393">চ্চেক বাকচ</translation>
 <translation id="2461822463642141190">বৰ্তমান</translation>
 <translation id="2462626033734746142">ৰেডিঅ’ বুটামৰ গোট</translation>
+<translation id="2467741090055146971">বাছনিৰ পৰা আঁতৰাওক</translation>
 <translation id="2471138580042810658">শিৰোনাম ৬</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{তৰাচিহ্ন}one{#টা তৰাচিহ্ন}other{#টা তৰাচিহ্ন}}</translation>
 <translation id="2490721194269245365">গুলপীয়া মুগা</translation>
@@ -565,6 +567,7 @@
 <translation id="4854380505292502090">কোনো পূৰ্বৱৰ্তী মিডিয়া ৱিজেট নাই</translation>
 <translation id="4855927945655956315">অত্যাৱশ্যকীয় কী: কণ্ট্ৰ’ল</translation>
 <translation id="4862744964787595316">ব’ল্ড নহয়</translation>
+<translation id="4865995900839719272">পূর্বৱর্তী ৰেখালৈ নিয়ক</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS লগ ইন সক্ষম কৰক</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
@@ -607,7 +610,6 @@
 <translation id="5138912041966667164">মধ্যমীয়া স্লে’ট ব্লু</translation>
 <translation id="5140016802771803559">ৰেবেকা পাৰ্পল</translation>
 <translation id="5142101052131610456">সকলো অনুশীলনী</translation>
-<translation id="5152605892605507188">সোঁফাললৈ নিয়ক</translation>
 <translation id="5158275234811857234">ক'ভাৰ</translation>
 <translation id="516076699907426116">অব্যাহত ৰাখিবৰ বাবে পৰৱৰ্তী পাঠৰ বুটামটো বিচাৰিবলৈ স্পৰ্শৰ দ্বাৰা অন্বেষণ কৰক। তাৰ পাছত অব্যাহত ৰাখিবলৈ দুবাৰ টিপক।</translation>
 <translation id="5170206230005240598">ব্ৰেইল কেপশ্বনসমূহ সক্ষম কৰা আছে</translation>
@@ -624,6 +626,7 @@
 <translation id="5304943142864553931"><ph name="TITLE" />, টেব</translation>
 <translation id="5308380583665731573">সংযোগ কৰক</translation>
 <translation id="5310788376443009632">আঁতৰোৱা হ’ল:</translation>
+<translation id="5316825363044614340">পৰৱৰ্তী ৰেখালৈ নিয়ক</translation>
 <translation id="5320727453979144100">ষ্টিকি ম’ড সক্ষম কৰা হ’ল</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{ক’মা}one{#টা ক’মা}other{#টা ক’মা}}</translation>
 <translation id="532485153932049746">পাঠৰ ফৰ্মেটিং
@@ -752,7 +755,6 @@
 <translation id="6142308968191113180">শিৰোনাম ৪</translation>
 <translation id="6150023170003443621">হালধীয়া সেউজীয়া</translation>
 <translation id="6158882249329863701">শাৰী <ph name="TABLECELLROWINDEX" /> স্তম্ভ<ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="6159796324830296161">বাওঁফাললৈ নিয়ক</translation>
 <translation id="6164829606128959761">মিটাৰ</translation>
 <translation id="6165508094623778733">অধিক জানক</translation>
 <translation id="6166362019018438352">ব্ৰেইল কেপশ্বন অক্ষম কৰা আছে</translation>
@@ -845,7 +847,6 @@
 <translation id="6910969481785184048">অন কৰা, অফ কৰা আৰু বন্ধ কৰা</translation>
 <translation id="6919104639734799681">তালিকাৰ সূচী দেখুৱাওক</translation>
 <translation id="692135145298539227">মচক</translation>
-<translation id="6935674530832500465">তললৈ নিয়ক</translation>
 <translation id="6945221475159498467">বাছনি কৰক</translation>
 <translation id="6949846980769640811">মধ্যম একুৱা মেৰিণ</translation>
 <translation id="6951482098621102657">কোনো পৰৱর্তী স্তৰ ৫ৰ শিৰোনাম নাই</translation>
@@ -905,6 +906,7 @@
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
 <translation id="7308519659008003150">কোনো পূৰ্বৱৰ্তী ফৰ্মৰ ক্ষেত্ৰ নাই</translation>
 <translation id="731121099745151312">tritm</translation>
+<translation id="7313717760367325059">সহায়</translation>
 <translation id="7317017974771324508">আংশিকভাৱে বাছনি কৰা হৈছে</translation>
 <translation id="7322442671176251901">স্পৰ্শৰ দ্বাৰা অন্বেষণ কৰক</translation>
 <translation id="7344012264516629579">অতিৰিক্ত পোনপটীয়াকৈ যোৱাৰ নিৰ্দেশনাসমূহত লিংক, বুটাম আৰু চেকবক্সেৰে পোনপটীয়াকৈ যোৱা অন্তৰ্ভুক্ত বুলিব পাৰি। ChromeVox মেনুত পোনপটীয়াকৈ যোৱাৰ নিৰ্দেশনাসমূহৰ এখন সম্পূৰ্ণ সূচী পাব পাৰি, যিখন ছাৰ্চ + পিৰিয়ড টিপি খুলিব পৰা যায়।</translation>
@@ -1043,14 +1045,12 @@
 <translation id="826825447994856889">পাতনি</translation>
 <translation id="827266600368092403">বাছনি আৰম্ভ অথবা সমাপ্ত কৰক</translation>
 <translation id="827422111966801947">ইণ্ডিগ'</translation>
-<translation id="827496561804786391">ওপৰলৈ নিয়ক</translation>
 <translation id="8276439074553447000">ফ’কাছ কৰিব পৰা পূর্বৰ বস্তুলৈ যাওক</translation>
 <translation id="8279039817939141096">ইয়াৰ কাৰ্যকাৰিতাসমূহৰ বিষয়ে জানিবলৈ এটা qwerty কী অথবা ৰিফ্ৰেশ্ব কৰিব পৰা ব্ৰেইল কী টিপক অথবা নিৰ্দেশত স্পৰ্শ কৰক। wৰ সৈতে কণ্ট্ৰ’ল আৰু Zৰ সৈতে স্পেচ টিপক, দুটা আঙুলিৰে বাওঁফালে ছোৱাইপ কৰক অথবা বাহিৰ হ'বলৈ এস্কে’প টিপক।</translation>
 <translation id="8283603667300770666">ফর্মৰ পৰৱর্তী ক্ষেত্ৰ</translation>
 <translation id="8310185481635255431">কোনো পৰৱৰ্তী লিংক নাই</translation>
 <translation id="831207808878314375">সংজ্ঞা</translation>
 <translation id="8313653172105209786">dir</translation>
-<translation id="8314546933558091113">বাছনিৰ পৰা আটাইবোৰ আঁতৰাওক</translation>
 <translation id="8316881042119029234">অ'ল্ড লেচ</translation>
 <translation id="8324974933005349667">’পাঠৰ পৰা কথন’-ৰ ছেটিং ব্যক্তিগতকৰণ কৰক</translation>
 <translation id="8326783648485765113">ঘাঁহনিৰ দৰে সেউজীয়া</translation>
@@ -1134,6 +1134,7 @@
 <translation id="9014206344398081366">ChromeVox টিউট’ৰিয়েল</translation>
 <translation id="9040132695316389094">শিৰোনাম ১</translation>
 <translation id="9061884144798498064">কোনো ৮-বিন্দুৰ ব্ৰেইল তালিকা বাছনি কৰক:</translation>
+<translation id="9063946545000394379">পূর্বৱর্তী বৰ্ণলৈ নিয়ক</translation>
 <translation id="9065283790526219006">+পপআপ</translation>
 <translation id="9065912140022662363">কোনো পৰৱৰ্তী ৰেডিঅ’ বুটাম নাই</translation>
 <translation id="9067522039955793016">পৃষ্ঠা বিচ্ছেদ</translation>

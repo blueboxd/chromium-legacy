@@ -514,6 +514,8 @@ public final class ChromePreferenceKeys {
     public static final String HOMEPAGE_ENABLED = "homepage";
     public static final String HOMEPAGE_USE_CHROME_NTP = "Chrome.Homepage.UseNTP";
     public static final String HOMEPAGE_USE_DEFAULT_URI = "homepage_partner_enabled";
+    public static final String HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_URI =
+            "Chrome.Homepage.PartnerCustomizedDefaultUri";
 
     /**
      * Key used to save homepage location set by enterprise policy
@@ -695,6 +697,13 @@ public final class ChromePreferenceKeys {
             "Chrome.OfflineIndicatorV2.HasPersistentOfflineContent";
 
     /**
+     * Save the timestamp of the last time that we record metrics on whether user enables the price
+     * tracking annotations.
+     */
+    public static final String PRICE_TRACKING_ANNOTATIONS_ENABLED_METRICS_TIMESTAMP =
+            "Chrome.PriceTracking.AnnotationsEnabledMetricsTimestamp";
+
+    /**
      * Whether the PriceAlertsMessageCard is enabled.
      */
     public static final String PRICE_TRACKING_PRICE_ALERTS_MESSAGE_CARD =
@@ -778,6 +787,9 @@ public final class ChromePreferenceKeys {
     public static final String OPEN_RECENT_TABS_COUNT = "Chrome.StartSurface.OpenRecentTabCount";
     public static final String SHOW_START_SEGMENTATION_RESULT =
             "Chrome.StartSurface.ShowSegmentationResult";
+
+    public static final String REGULAR_TAB_COUNT = "Chrome.StartSurface.RegularTabCount";
+    public static final String INCOGNITO_TAB_COUNT = "Chrome.StartSurface.IncognitoTabCount";
 
     /**
      * Contains a trial group that was used to determine whether the reached code profiler should be
@@ -1070,8 +1082,10 @@ public final class ChromePreferenceKeys {
                 FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
                 HOMEPAGE_LOCATION_POLICY,
                 HOMEPAGE_USE_CHROME_NTP,
+                HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_URI,
                 IMAGE_DESCRIPTIONS_JUST_ONCE_COUNT,
                 IMAGE_DESCRIPTIONS_DONT_ASK_AGAIN,
+                INCOGNITO_TAB_COUNT,
                 ISOLATED_SPLITS_DEX_COMPILE_VERSION,
                 LAST_SESSION_BROWSER_PID,
                 LAST_SESSION_APPLICATION_STATE,
@@ -1102,6 +1116,7 @@ public final class ChromePreferenceKeys {
                 OPEN_RECENT_TABS_COUNT,
                 OPTIMIZATION_GUIDE_PUSH_NOTIFICATION_CACHE.pattern(),
                 PERSISTENT_OFFLINE_CONTENT_AVAILABILITY_STATUS,
+                PRICE_TRACKING_ANNOTATIONS_ENABLED_METRICS_TIMESTAMP,
                 PRICE_TRACKING_PRICE_ALERTS_MESSAGE_CARD,
                 PRICE_TRACKING_PRICE_ALERTS_MESSAGE_CARD_SHOW_COUNT,
                 PRICE_TRACKING_PRICE_WELCOME_MESSAGE_CARD,
@@ -1114,6 +1129,7 @@ public final class ChromePreferenceKeys {
                 QUERY_TILES_NUM_RECENT_MV_TILE_CLICKS,
                 QUERY_TILES_NUM_RECENT_QUERY_TILE_CLICKS,
                 QUERY_TILES_SHOW_ON_NTP,
+                REGULAR_TAB_COUNT,
                 SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,
                 SHARING_LAST_SHARED_COMPONENT_NAME,

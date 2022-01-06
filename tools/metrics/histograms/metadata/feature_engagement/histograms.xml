@@ -391,12 +391,30 @@ chromium-metrics-reviews@google.com.
   <token key="IPHFeature" variants="IPHFeature"/>
 </histogram>
 
+<histogram name="InProductHelp.SnoozeAction" enum="InProductHelpSnoozeAction"
+    expires_after="2022-10-01">
+  <owner>haileywang@chromium.org</owner>
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    Records the action taken by the user on a snoozable in-product help bubble.
+  </summary>
+</histogram>
+
 <histogram name="InProductHelp.TextBubble.ShownTime" units="ms"
     expires_after="2022-10-01">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
     The time duration for which the in-product help bubble is shown.
+  </summary>
+</histogram>
+
+<histogram name="InProductHelp.TextBubble.ShowSnooze" enum="BooleanShown"
+    expires_after="2022-10-01">
+  <owner>haileywang@chromium.org</owner>
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    Records if the snooze button was shown on an in-product help bubble.
   </summary>
 </histogram>
 

@@ -50,6 +50,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
+#include "content/browser/broadcast_channel/broadcast_channel_service.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
@@ -8322,9 +8323,11 @@ void RenderFrameHostImpl::CreateBroadcastChannelProvider(
   auto* storage_partition_impl =
       static_cast<StoragePartitionImpl*>(GetStoragePartition());
 
-  mojo::MakeSelfOwnedAssociatedReceiver(
-      std::make_unique<BroadcastChannelProvider>(
-          storage_partition_impl->GetBroadcastChannelService(), storage_key()),
+  auto* broadcast_channel_service =
+      storage_partition_impl->GetBroadcastChannelService();
+  broadcast_channel_service->AddAssociatedReceiver(
+      std::make_unique<BroadcastChannelProvider>(broadcast_channel_service,
+                                                 storage_key()),
       std::move(receiver));
 }
 
@@ -8689,6 +8692,16 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
     return;
 
   ui::AXMode ax_mode = delegate_->GetAccessibilityMode();
+
+  // Disable BackForwardCache if ScreenReader is on.
+  // TODO(crbug.com/1271450): Screen readers do not recognize a navigation when
+  // the page is served from bfcache.
+  if (ax_mode.has_mode(ui::AXMode::kScreenReader)) {
+    BackForwardCache::DisableForRenderFrameHost(
+        this, BackForwardCacheDisable::DisabledReason(
+                  BackForwardCacheDisable::DisabledReasonId::kScreenReader));
+  }
+
   if (!ax_mode.has_mode(ui::AXMode::kWebContents)) {
     // Resetting the Remote signals the renderer to shutdown accessibility
     // in the renderer.
@@ -9858,8 +9871,10 @@ RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
   // We don't switch the COEP reporter on same-document navigations, so create
   // one only for cross-document navigations.
   if (!is_same_document) {
+    auto* storage_partition =
+        static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition());
     coep_reporter = std::make_unique<CrossOriginEmbedderPolicyReporter>(
-        GetProcess()->GetStoragePartition(), url,
+        storage_partition->GetWeakPtr(), url,
         cross_origin_embedder_policy_.reporting_endpoint,
         cross_origin_embedder_policy_.report_only_reporting_endpoint,
         GetReportingSource(), isolation_info.network_isolation_key());
@@ -10920,6 +10935,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
       }
     }
   }
+  commit_params->commit_sent = base::TimeTicks::Now();
   navigation_client->CommitNavigation(
       std::move(common_params), std::move(commit_params),
       std::move(response_head), std::move(response_body),

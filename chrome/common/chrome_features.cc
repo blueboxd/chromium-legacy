@@ -908,10 +908,6 @@ const base::Feature kScrollCapture{"ScrollCapture",
 
 // Controls whether SCT audit reports are queued and the rate at which they
 // should be sampled. Default sampling rate is 1/10,000 certificates.
-<<<<<<< HEAD
-const base::Feature kSCTAuditing{"SCTAuditing",
-                                 base::FEATURE_ENABLED_BY_DEFAULT};
-=======
 #if defined(OS_ANDROID)
 const base::Feature kSCTAuditing{"SCTAuditing",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
@@ -919,7 +915,6 @@ const base::Feature kSCTAuditing{"SCTAuditing",
 const base::Feature kSCTAuditing{"SCTAuditing",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
->>>>>>> 038cd96142d384c0d2238973f1cb277725a62eba
 constexpr base::FeatureParam<double> kSCTAuditingSamplingRate{
     &kSCTAuditing, "sampling_rate", 0.0001};
 

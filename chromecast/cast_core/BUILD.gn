@@ -354,8 +354,6 @@ cast_executable("core_runtime_simple") {
     "//chromecast:chromecast_locales_pak",
     "//chromecast/base:default_create_sys_info",
     "//chromecast/browser:simple_main_parts",
-    "//chromecast:cast_shell_pak",
-    "//chromecast:chromecast_locales_pak",
     "//chromecast/utility:simple_client",
     "//content/public/app",
   ]

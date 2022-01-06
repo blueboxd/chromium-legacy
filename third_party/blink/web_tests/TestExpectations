@@ -690,8 +690,6 @@ crbug.com/1175040 external/wpt/css/css-backgrounds/background-repeat-space-5.htm
 crbug.com/1175040 external/wpt/css/css-backgrounds/background-repeat-space-6.html [ Failure ]
 crbug.com/1175040 external/wpt/css/css-backgrounds/background-repeat-space-7.html [ Failure ]
 
-crbug.com/667006 external/wpt/css/css-backgrounds/background-attachment-fixed-inside-transform-1.html [ Failure ]
-
 # Bug accidentally masked by using square mask geometry.
 crbug.com/1155161 svg/masking/mask-of-root.html [ Failure ]
 
@@ -1740,6 +1738,7 @@ crbug.com/1158554 external/wpt/css/css-conditional/at-supports-046.html [ Failur
 
 # @container
 crbug.com/1273913 external/wpt/css/css-contain/container-queries/pseudo-elements-002.tentative.html [ Failure ]
+crbug.com/1284918 external/wpt/css/css-contain/container-queries/table-inside-container-changing-display.html [ Failure ]
 
 # CSS Scrollbars
 crbug.com/891944 external/wpt/css/css-scrollbars/textarea-scrollbar-width-none.html [ Failure ]
@@ -3016,6 +3015,17 @@ crbug.com/626703 [ Linux ] external/wpt/url/url-constructor.any.html [ Failure ]
 crbug.com/626703 [ Mac11 ] external/wpt/css/css-flexbox/abspos/flex-abspos-staticpos-align-self-006.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-writing-modes/caption-side-vrl-002.xht [ Crash Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-writing-modes/float-vrl-002.xht [ Crash Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-writing-modes/margin-collapse-vlr-037.xht [ Crash Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-writing-modes/margin-collapse-vrl-008.xht [ Crash Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-writing-modes/text-align-vrl-012.xht [ Crash Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/filter-effects/backdrop-filters-sepia.html [ Crash Failure ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/not-site-per-process/external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Crash ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/offsetparent-old-behavior/external/wpt/css/css-contain/content-visibility/content-visibility-042.html [ Crash ]
+crbug.com/626703 [ Mac11-arm64 ] wpt_internal/bluetooth/characteristic/getDescriptors/blocklisted-descriptors-not-present.https.html [ Crash Failure ]
+crbug.com/626703 [ Mac11-arm64 ] wpt_internal/css/css-transforms/raster-scale-perspective-001.html [ Crash Failure ]
+crbug.com/626703 [ Mac11-arm64 ] wpt_internal/css/selectors/focus-visible-select-001.html [ Crash Failure ]
 crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/parse-input-arguments-012.https.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-constructor-error.https.html [ Failure ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-022.html [ Crash Failure ]
@@ -6847,11 +6857,6 @@ crbug.com/1199522 http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Fai
 # Failing css-transforms-2 web platform tests.
 crbug.com/847356 external/wpt/css/css-transforms/transform-box/view-box-mutation-001.html [ Failure ]
 
-crbug.com/1261900 external/wpt/css/css-transforms/transform-fixed-bg-002.html [ Failure ]
-crbug.com/1261900 external/wpt/css/css-transforms/transform-fixed-bg-004.html [ Failure ]
-crbug.com/1261900 external/wpt/css/css-transforms/transform-fixed-bg-005.html [ Failure ]
-crbug.com/1261900 external/wpt/css/css-transforms/transform-fixed-bg-006.html [ Failure ]
-crbug.com/1261900 external/wpt/css/css-transforms/transform-fixed-bg-007.html [ Failure ]
 # Started failing after rolling new version of check-layout-th.js
 css3/flexbox/perpendicular-writing-modes-inside-flex-item.html [ Failure ]
 

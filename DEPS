@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '82e20e42afa5bcfe80c939f543ab715bc7c6d634',
+  'v8_revision': '09e91f429ec411bb79d9748e90baeb979b2ead37',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -312,7 +312,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '50fc55b0b6873adaf24886cea42a52966d7b3cf6',
+  'catapult_revision': 'aa0e8d05643953c9f7f84bdd7ee3ca4ee3772d41',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'a1b16a4194d0ad27b1f45ba5f413787461fddfd7',
+  'devtools_frontend_revision': '59f34330172c34bedddf528964bbd633845988f2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'b4a4d3fd59a0006330c9b86b81644e0ee7e4d5f7',
+  'dawn_revision': '04d9fc87a1de6cd2615a57675390ae429470633b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -408,7 +408,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    '6a10e3e97c45505615d35dea94f588b5f86045dc',
+  'libunwind_revision':    '4bf418ebaf3ea28ffa0bbdc3361e667ac0bff9a7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -722,7 +722,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'HZFIzEg73fyXn3PT8ANFZiCjpNXG3wNza3GZNAv_K0YC',
+          'version': 'xX3VPCe9E9oTxNq-0hh3eMKuQGDqiZIaRsEZNUqteUYC',
         },
       ],
       'dep_type': 'cipd',
@@ -733,7 +733,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'nj9qYCdjBO4VQ2EgkpYLAKSW07xpPXqvINZUVsDPHaIC',
+          'version': 'vSnyGD-lDffy5fyC4ygQkpau2epL-9TGMnjIunp0W7UC',
         },
       ],
       'dep_type': 'cipd',
@@ -744,7 +744,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'JzjZI3xnSTQWDAjJXDRxfg0V7wED1RRwquKmzyU_FQgC',
+          'version': 'Dlcmpgi1yMknK9l9x-2j-f82qa-zbeiUD0K-ZKf7qKIC',
         },
       ],
       'dep_type': 'cipd',
@@ -805,7 +805,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'd6y2A3hWDqa5lqFVNM1-Ka1hDz9j-P_pTyjGCSiJgz4C',
+          'version': 'DS2oVG_8omhucqoDfFOdnuJTVfPDL-jgFYHhVo1xNpoC',
       },
     ],
     'condition': 'checkout_android',
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@43e5523cd8ba247a592893dafa7705200c81c2ef',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4c884ffecfa67d38bdfdfba3aad4560c6d463d55',
     'condition': 'checkout_src_internal',
   },
 
@@ -1782,7 +1782,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'qki7FFASojKNGXO3gBN1xtUp8ev25Jo80vs1jWzwSm4C',
+        'version': 'mb7CztOm9eOO_zhv70UJPRSZC3CDEPA7d7CUnS6ifGkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

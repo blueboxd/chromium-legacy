@@ -438,6 +438,11 @@
     "expiry_milestone": 102
   },
   {
+    "name": "autofill-enable-update-virtual-card-enrollment",
+    "owners": [ "siyua", "jsaul@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "autofill-enable-virtual-card",
     "owners": [ "siyua", "jsaul@google.com", "aneeshali@google.com" ],
     "expiry_milestone": 100
@@ -2187,7 +2192,7 @@
   {
     "name": "enable-input-in-diagnostics-app",
     "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 104
   },
   {
     "name": "enable-input-noise-cancellation-ui",
@@ -3030,7 +3035,7 @@
   {
     "name": "enhanced_clipboard_screenshot_nudge",
     "owners":["anasalazar@chromium.org", "gzadina@google.com"],
-    "expiry_milestone": 94
+    "expiry_milestone": 101
   },
   {
     "name": "enhanced-network-voices",
@@ -5602,8 +5607,8 @@
   },
   {
     "name": "use-search-click-for-right-click",
-    "owners": [ "zentaro", "cros-peripherals@google.com" ],
-    "expiry_milestone": 95
+    "owners": [ "zentaro", "jimmyxgong", "cros-peripherals@google.com" ],
+    "expiry_milestone": 105
   },
   {
     "name": "use-sf-symbols-samples",
@@ -5664,6 +5669,12 @@
     "name": "username-first-flow-filling",
     "owners": [ "kazinova@google.com", "kolos" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "verbose-logging-in-nacl",
+    "owners": [ "fabiansommer", "native-client-dev@googlegroups.com" ],
+    // This flag is useful for debugging NaCl-related issues.
+    "expiry_milestone": 128
   },
   {
     "name": "vertical-snap",

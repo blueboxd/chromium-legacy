@@ -140,7 +140,7 @@ void BlinkGCPluginConsumer::HandleTranslationUnit(ASTContext& context) {
     json_ = 0;
   }
 
-  FindBadPatterns(context, reporter_);
+  FindBadPatterns(context, reporter_, options_);
 }
 
 void BlinkGCPluginConsumer::ParseFunctionTemplates(TranslationUnitDecl* decl) {
@@ -259,7 +259,7 @@ void BlinkGCPluginConsumer::CheckClass(RecordInfo* info) {
     }
 
     {
-      CheckGCRootsVisitor visitor;
+      CheckGCRootsVisitor visitor(options_);
       if (visitor.ContainsGCRoots(info))
         reporter_.ClassContainsGCRoots(info, visitor.gc_roots());
     }

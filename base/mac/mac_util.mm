@@ -31,8 +31,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 
-namespace base {
-namespace mac {
+namespace base::mac {
 
 namespace {
 
@@ -493,5 +492,4 @@ std::string GetPlatformSerialNumber() {
   return base::SysCFStringRefToUTF8(serial_number_cfstring);
 }
 
-}  // namespace mac
-}  // namespace base
+}  // namespace base::mac

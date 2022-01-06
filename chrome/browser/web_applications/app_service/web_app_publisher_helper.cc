@@ -558,7 +558,8 @@ void WebAppPublisherHelper::UninstallWebApp(
                              },
                              base::Unretained(profile())),
                          origin, kClearCookies, kClearStorage, kClearCache,
-                         kAvoidClosingConnections, base::DoNothing());
+                         kAvoidClosingConnections,
+                         net::CookiePartitionKey::Todo(), base::DoNothing());
 }
 
 apps::mojom::IconKeyPtr WebAppPublisherHelper::MakeIconKey(
@@ -1186,7 +1187,7 @@ void WebAppPublisherHelper::OnRequestUpdate(
   }
 
   absl::optional<AppId> app_id =
-      FindInstalledAppWithUrlInScope(profile(), web_contents->GetURL(),
+      FindInstalledAppWithUrlInScope(profile(), web_contents->GetVisibleURL(),
                                      /*window_only=*/false);
   if (!app_id.has_value()) {
     return;

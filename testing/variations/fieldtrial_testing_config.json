@@ -2174,6 +2174,7 @@
                 {
                     "name": "CandidateB",
                     "params": {
+                        "MaxSigninPromoImpressions": "5",
                         "hide_switch_when_no_incognito_tabs": "true",
                         "open_ntp_instead_of_start": "true",
                         "show_last_active_tab_only": "true",
@@ -2185,6 +2186,7 @@
                         "tab_switcher_on_return_time_ms": "3600000"
                     },
                     "enable_features": [
+                        "EnhancedProtectionPromoCard",
                         "StartSurfaceAndroid",
                         "TabSwitcherOnReturn"
                     ]
@@ -2898,9 +2900,8 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_with_OOPR_Canvas",
+                    "name": "Enabled_20220104",
                     "enable_features": [
-                        "CanvasOopRasterization",
                         "DefaultPassthroughCommandDecoder"
                     ]
                 }
@@ -3699,10 +3700,11 @@
             ]
         }
     ],
-    "FilesSystemWebApp": [
+    "FilesSWA": [
         {
             "platforms": [
-                "chromeos"
+                "chromeos",
+                "chromeos_lacros"
             ],
             "experiments": [
                 {
@@ -4850,6 +4852,21 @@
             ]
         }
     ],
+    "LongMessageDurationIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enable_14s_20220104",
+                    "enable_features": [
+                        "EnableLongMessageDuration"
+                    ]
+                }
+            ]
+        }
+    ],
     "MacCAOverlayQuads": [
         {
             "platforms": [
@@ -5690,6 +5707,27 @@
                     "name": "Enabled_20211116",
                     "enable_features": [
                         "OptimizeLookalikeUrlNavigationThrottle"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OptimizeUpdateLoadInfo": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OptimizeUpdateLoadInfo"
                     ]
                 }
             ]
@@ -6673,19 +6711,12 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_IPH",
-                    "enable_features": [
-                        "IPH_ReadingListMessages",
-                        "ReadingListMessages"
-                    ]
-                },
-                {
-                    "name": "Enabled_NO_IPH",
+                    "name": "Enabled",
+                    "params": {
+                        "javascript_only": "true"
+                    },
                     "enable_features": [
                         "ReadingListMessages"
-                    ],
-                    "disable_features": [
-                        "IPH_ReadingListMessages"
                     ]
                 }
             ]
@@ -8049,21 +8080,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UpdateHistoryEntryPointsInIncognito"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UseFluentLanguageModel": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseFluentLanguageModel"
                     ]
                 }
             ]

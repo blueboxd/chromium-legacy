@@ -45,11 +45,31 @@
       </label>
       <div class="input-holder">
         <cr-input id="serialNumber" placeholder="Enter Serial Number"
-            value="{{serialNumber_}}" aria-labelledby="serialNumberLabel">
+            value="{{serialNumber_}}" aria-labelledby="serialNumberLabel"
+            disabled="[[allButtonsDisabled]]">
         </cr-input>
         <cr-button id="resetSerialNumber"
             on-click="onResetSerialNumberButtonClicked_"
             disabled="[[disableResetSerialNumber_]]">
+          [[i18n('confirmDeviceInfoResetButtonLabel')]]
+        </cr-button>
+      </div>
+    </div>
+    <div class="input-row">
+      <label id="dramPartNumberLabel" class="cr-form-field-label">
+        [[i18n('confirmDeviceInfoDramPartNumberLabel')]]
+      </label>
+      <div class="input-holder">
+        <cr-input
+            id="dramPartNumber"
+            placeholder=
+                "[[i18n('confirmDeviceInfoDramPartNumberPlaceholderLabel')]]"
+            value="{{dramPartNumber_}}"
+            aria-labelledby="dramPartNumberLabel">
+        </cr-input>
+        <cr-button id="resetDramPartNumber"
+            on-click="onResetDramPartNumberButtonClicked_"
+            disabled="[[disableResetDramPartNumber_]]">
           [[i18n('confirmDeviceInfoResetButtonLabel')]]
         </cr-button>
       </div>
@@ -60,7 +80,8 @@
       </label>
       <div class="input-holder">
         <select id="regionSelect" class="md-select"
-            on-change="onSelectedRegionChange_" aria-labelledby="regionLabel">
+            on-change="onSelectedRegionChange_" aria-labelledby="regionLabel"
+            disabled="[[allButtonsDisabled]]">
           <template is="dom-repeat" items="[[regions_]]" as="region">
             <option value="[[region]]">
               [[region]]
@@ -98,7 +119,8 @@
       </label>
       <div class="input-holder">
         <select id="skuSelect" class="md-select"
-            on-change="onSelectedSkuChange_" aria-labelledby="skuLabel">
+            on-change="onSelectedSkuChange_" aria-labelledby="skuLabel"
+            disabled="[[allButtonsDisabled]]">
           <template is="dom-repeat" items="[[skus_]]" as="sku">
             <option value="[[sku]]">
               [[sku]]

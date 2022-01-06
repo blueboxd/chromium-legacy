@@ -747,6 +747,28 @@ const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(ENABLE_NACL)
+// Note: This needs to be kept in sync with parsing in
+// content/common/zygote/zygote_communication_linux.cc
+const FeatureEntry::Choice kVerboseLoggingInNaclChoices[] = {
+    {flag_descriptions::kVerboseLoggingInNaclChoiceDefault, "", ""},
+    {flag_descriptions::kVerboseLoggingInNaclChoiceLow,
+     switches::kVerboseLoggingInNacl, switches::kVerboseLoggingInNaclChoiceLow},
+    {flag_descriptions::kVerboseLoggingInNaclChoiceMedium,
+     switches::kVerboseLoggingInNacl,
+     switches::kVerboseLoggingInNaclChoiceMedium},
+    {flag_descriptions::kVerboseLoggingInNaclChoiceHigh,
+     switches::kVerboseLoggingInNacl,
+     switches::kVerboseLoggingInNaclChoiceHigh},
+    {flag_descriptions::kVerboseLoggingInNaclChoiceHighest,
+     switches::kVerboseLoggingInNacl,
+     switches::kVerboseLoggingInNaclChoiceHighest},
+    {flag_descriptions::kVerboseLoggingInNaclChoiceDisabled,
+     switches::kVerboseLoggingInNacl,
+     switches::kVerboseLoggingInNaclChoiceDisabled},
+};
+#endif  // ENABLE_NACL
+
 const FeatureEntry::Choice kEnableUseZoomForDSFChoices[] = {
     {flag_descriptions::kEnableUseZoomForDsfChoiceDefault, "", ""},
     {flag_descriptions::kEnableUseZoomForDsfChoiceEnabled,
@@ -2792,6 +2814,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-nacl", flag_descriptions::kNaclName,
      flag_descriptions::kNaclDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableNaCl)},
+    {"verbose-logging-in-nacl", flag_descriptions::kVerboseLoggingInNaclName,
+     flag_descriptions::kVerboseLoggingInNaclDescription, kOsAll,
+     MULTI_VALUE_TYPE(kVerboseLoggingInNaclChoices)},
 #endif  // ENABLE_NACL
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {"extensions-on-chrome-urls",
@@ -4214,8 +4239,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalAccessibilityDictationExtensionName,
      flag_descriptions::kExperimentalAccessibilityDictationExtensionDescription,
      kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ::switches::kEnableExperimentalAccessibilityDictationExtension)},
+     FEATURE_VALUE_TYPE(
+         features::kExperimentalAccessibilityDictationExtension)},
     {"enable-experimental-accessibility-dictation-offline",
      flag_descriptions::kExperimentalAccessibilityDictationOfflineName,
      flag_descriptions::kExperimentalAccessibilityDictationOfflineDescription,
@@ -6605,7 +6630,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-bluetooth-spp-in-serial-api",
      flag_descriptions::kEnableBluetoothSerialPortProfileInSerialApiName,
      flag_descriptions::kEnableBluetoothSerialPortProfileInSerialApiDescription,
-     kOsAll,
+     kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableBluetoothSerialPortProfileInSerialApi)},
 
     {"add-passwords-in-settings",
@@ -6959,15 +6984,17 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfManageDevicesLinkDescription, kOsAll,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfManageDevicesLink)},
 
+#if defined(OS_ANDROID)
     {"send-tab-to-self-v2", flag_descriptions::kSendTabToSelfV2Name,
-     flag_descriptions::kSendTabToSelfV2Description, kOsAll,
+     flag_descriptions::kSendTabToSelfV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfV2)},
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
     {"raw-audio-capture", flag_descriptions::kRawAudioCaptureName,
      flag_descriptions::kRawAudioCaptureDescription, kOsWin,
      FEATURE_VALUE_TYPE(media::kWasapiRawAudioCapture)},
-#endif  // defined(OS_MAC)
+#endif  // defined(OS_WIN)
 
     {"enable-managed-configuration-web-api",
      flag_descriptions::kEnableManagedConfigurationWebApiName,
@@ -7748,7 +7775,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"link-capturing-ui-update", flag_descriptions::kLinkCapturingUiUpdateName,
      flag_descriptions::kLinkCapturingUiUpdateDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kLinkCapturingUiUpdate)}
+     FEATURE_VALUE_TYPE(features::kLinkCapturingUiUpdate)},
 #endif
 
 #if defined(OS_ANDROID)
@@ -7761,8 +7788,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"use-ulp-languages-in-chrome",
      flag_descriptions::kUseULPLanguagesInChromeName,
      flag_descriptions::kUseULPLanguagesInChromeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(language::kUseULPLanguagesInChrome)}
+     FEATURE_VALUE_TYPE(language::kUseULPLanguagesInChrome)},
 #endif
+
+    {"autofill-enable-update-virtual-card-enrollment",
+     flag_descriptions::kAutofillEnableUpdateVirtualCardEnrollmentName,
+     flag_descriptions::kAutofillEnableUpdateVirtualCardEnrollmentDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableUpdateVirtualCardEnrollment)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -1391,7 +1391,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     int tabToBeClobberedIndex = TabModelUtils.getTabIndexByUrl(tabModel, url);
                     Tab tabToBeClobbered = tabModel.getTabAt(tabToBeClobberedIndex);
                     if (tabToBeClobbered != null) {
-                        TabModelUtils.setIndex(tabModel, tabToBeClobberedIndex);
+                        TabModelUtils.setIndex(tabModel, tabToBeClobberedIndex, false);
                         tabToBeClobbered.reload();
                     } else {
                         launchIntent(loadUrlParams, externalAppId, true, intent);
@@ -1413,13 +1413,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         tabIndex = TabModelUtils.getTabIndexById(otherModel, tabIdToBringToFront);
                         if (tabIndex != TabModel.INVALID_TAB_INDEX) {
                             getTabModelSelector().selectModel(otherModel.isIncognito());
-                            TabModelUtils.setIndex(otherModel, tabIndex);
+                            TabModelUtils.setIndex(otherModel, tabIndex, false);
                         } else {
                             Log.e(TAG, "Failed to bring tab to front because it doesn't exist.");
                             return;
                         }
                     } else {
-                        TabModelUtils.setIndex(tabModel, tabIndex);
+                        TabModelUtils.setIndex(tabModel, tabIndex, false);
                     }
                     break;
                 case TabOpenType.CLOBBER_CURRENT_TAB:
@@ -1448,7 +1448,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                             if (tab.getUrl().getSpec().equals(url)
                                     || tab.getUrl().getSpec().equals(IntentUtils.safeGetStringExtra(
                                             intent, TabOpenType.REUSE_TAB_ORIGINAL_URL_STRING))) {
-                                tabModel.setIndex(matchingTabIndex, TabSelectionType.FROM_USER);
+                                tabModel.setIndex(
+                                        matchingTabIndex, TabSelectionType.FROM_USER, false);
                                 tab.loadUrl(loadUrlParams);
                                 loaded = true;
                             }
@@ -1707,10 +1708,14 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);
 
         assert getActivityTabStartupMetricsTracker() != null;
+        boolean shouldShowOverviewPageOnStart = shouldShowOverviewPageOnStart();
+        if (shouldShowOverviewPageOnStart) {
+            StartSurfaceUserData.getInstance().setUnusedTabRestoredAtStartup(true);
+        }
         if (StartupPaintPreviewHelper.isEnabled()) {
             StartupPaintPreviewHelper paintPreviewHelper = new StartupPaintPreviewHelper(
                     getWindowAndroid(), getOnCreateTimestampMs(), getBrowserControlsManager(),
-                    getTabModelSelector(), shouldShowOverviewPageOnStart(), () -> {
+                    getTabModelSelector(), shouldShowOverviewPageOnStart, () -> {
                         return getToolbarManager() == null
                                 ? null
                                 : getToolbarManager().getProgressBarCoordinator();

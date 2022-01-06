@@ -932,17 +932,27 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInMulticol(
           static_position,
           inline_container,
           /* needs_block_offset_adjustment */ false,
-          NGContainingBlock<LogicalOffset>(containing_block_offset,
-                                           containing_block_rel_offset,
-                                           containing_block_fragment),
-          NGContainingBlock<LogicalOffset>(fixedpos_containing_block_offset,
-                                           fixedpos_containing_block_rel_offset,
-                                           fixedpos_containing_block_fragment)};
+          NGContainingBlock<LogicalOffset>(
+              containing_block_offset, containing_block_rel_offset,
+              containing_block_fragment,
+              descendant.containing_block.is_inside_column_spanner),
+          NGContainingBlock<LogicalOffset>(
+              fixedpos_containing_block_offset,
+              fixedpos_containing_block_rel_offset,
+              fixedpos_containing_block_fragment,
+              descendant.fixedpos_containing_block.is_inside_column_spanner)};
       oof_nodes_to_layout.push_back(node);
     }
     previous_multicol_break_token = break_token;
   }
-  DCHECK(!oof_nodes_to_layout.IsEmpty());
+  // When an OOF's CB is a spanner (or a descendant of a spanner), we will lay
+  // out the OOF at the next fragmentation context root ancestor. As such, we
+  // remove any such OOF nodes from the nearest multicol's list of OOF
+  // descendants during OOF node propagation, which may cause
+  // |oof_nodes_to_layout| to be empty. Return early if this is the case.
+  if (oof_nodes_to_layout.IsEmpty())
+    return;
+
   DCHECK(!limited_multicol_container_builder
               .HasOutOfFlowFragmentainerDescendants());
 
@@ -1268,11 +1278,26 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutOOFNode(
       PaintLayerScrollableArea::FreezeScrollbarsRootScope freezer(
           *node_info.node.GetLayoutBox(), freeze_horizontal, freeze_vertical);
 
-      // The offset itself does not need to be recalculated. However, the
-      // |node_dimensions| and |initial_layout_result| may need to be updated,
-      // so recompute the OffsetInfo.
-      offset_info = CalculateOffset(node_info, only_layout,
-                                    /* is_first_run */ false);
+      if (!IsResumingLayout(oof_node_to_layout.break_token)) {
+        // The offset itself does not need to be recalculated. However, the
+        // |node_dimensions| and |initial_layout_result| may need to be updated,
+        // so recompute the OffsetInfo.
+        //
+        // Only do this if we're currently building the first fragment of the
+        // OOF. If we're resuming after a fragmentainer break, we can't update
+        // our intrinsic inline-size. First of all, the intrinsic inline-size
+        // should be the same across all fragments [1], and besides, this
+        // operation would lead to performing a non-fragmented layout pass (to
+        // measure intrinsic block-size; see IntrinsicBlockSizeFunc in
+        // ComputeOutOfFlowBlockDimensions()), which in turn would overwrite the
+        // result of the first fragment entry in LayoutBox without a break
+        // token, causing major confusion everywhere.
+        //
+        // [1] https://drafts.csswg.org/css-break/#varying-size-boxes
+        offset_info = CalculateOffset(node_info, only_layout,
+                                      /* is_first_run */ false);
+      }
+
       layout_result =
           Layout(oof_node_to_layout, fragmentainer_constraint_space);
 

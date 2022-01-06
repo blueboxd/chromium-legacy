@@ -26,7 +26,6 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
-#include "net/cookies/same_party_context.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
@@ -649,13 +648,13 @@ void URLRequest::StartJob(std::unique_ptr<URLRequestJob> job) {
   DCHECK(!is_pending_);
   DCHECK(!job_);
 
-  set_same_party_context(
+  set_first_party_set_metadata(
       context()->cookie_store()
-          ? cookie_util::ComputeSamePartyContext(
+          ? cookie_util::ComputeFirstPartySetMetadata(
                 SchemefulSite(url()), isolation_info(),
                 context()->cookie_store()->cookie_access_delegate(),
                 force_ignore_top_frame_party_for_cookies())
-          : SamePartyContext());
+          : FirstPartySetMetadata());
   privacy_mode_ = DeterminePrivacyMode();
 
   net_log_.BeginEvent(NetLogEventType::URL_REQUEST_START_JOB, [&] {
@@ -824,7 +823,18 @@ bool URLRequest::failed() const {
 
 int URLRequest::NotifyConnected(const TransportInfo& info,
                                 CompletionOnceCallback callback) {
-  return delegate_->OnConnected(this, info, std::move(callback));
+  OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_CONNECTED);
+  int result = delegate_->OnConnected(
+      this, info,
+      base::BindOnce(
+          [](URLRequest* request, CompletionOnceCallback callback, int result) {
+            request->OnCallToDelegateComplete(result);
+            std::move(callback).Run(result);
+          },
+          this, std::move(callback)));
+  if (result != ERR_IO_PENDING)
+    OnCallToDelegateComplete(result);
+  return result;
 }
 
 void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
@@ -1104,7 +1114,7 @@ PrivacyMode URLRequest::DeterminePrivacyMode() const {
   if (network_delegate()) {
     enable_privacy_mode = network_delegate()->ForcePrivacyMode(
         url(), site_for_cookies_, isolation_info_.top_frame_origin(),
-        same_party_context().context_type());
+        first_party_set_metadata().context().context_type());
   }
   return enable_privacy_mode ? PRIVACY_MODE_ENABLED : PRIVACY_MODE_DISABLED;
 }
@@ -1175,13 +1185,13 @@ void URLRequest::OnCallToDelegate(NetLogEventType type) {
   net_log_.BeginEvent(type);
 }
 
-void URLRequest::OnCallToDelegateComplete() {
+void URLRequest::OnCallToDelegateComplete(int error) {
   // This should have been cleared before resuming the request.
   DCHECK(blocked_by_.empty());
   if (!calling_delegate_)
     return;
   calling_delegate_ = false;
-  net_log_.EndEvent(delegate_event_type_);
+  net_log_.EndEventWithNetErrorCode(delegate_event_type_, error);
   delegate_event_type_ = NetLogEventType::FAILED;
 }
 

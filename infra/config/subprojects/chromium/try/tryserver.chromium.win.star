@@ -101,14 +101,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "win10_chromium_x64_20h2_fyi_rel_ng",
-    builderless = False,
-    use_clang_coverage = True,
-    coverage_test_types = ["unit", "overall"],
-    os = os.WINDOWS_10_20h2,
-)
-
-try_.builder(
     name = "win10_chromium_x64_dbg_ng",
     os = os.WINDOWS_10,
 )
@@ -129,8 +121,8 @@ try_.orchestrator_pair_builders(
     compilator_cores = 32,
     compilator_goma_jobs = goma.jobs.J300,
     compilator_name = "win10_chromium_x64_rel_ng-compilator",
-    # TODO (crbug/1271287): Revert when root issue is fixed
-    compilator_grace_period = 3 * time.minute,
+    # TODO (crbug.com/1245171): Revert when root issue is fixed
+    compilator_grace_period = 4 * time.minute,
 )
 
 try_.builder(

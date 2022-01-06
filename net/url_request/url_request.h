@@ -25,6 +25,7 @@
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_error_details.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
 #include "net/base/privacy_mode.h"
@@ -32,7 +33,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/same_party_context.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/filter/source_stream.h"
@@ -278,13 +279,13 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   }
   const IsolationInfo& isolation_info() const { return isolation_info_; }
 
-  // The party_context_ of this leg of the request. This gets updated on
-  // redirects.
-  const SamePartyContext& same_party_context() const {
-    return same_party_context_;
+  // The First-Party Set metadata of this leg of the request. This gets updated
+  // on redirects.
+  const FirstPartySetMetadata& first_party_set_metadata() const {
+    return first_party_set_metadata_;
   }
-  void set_same_party_context(const SamePartyContext& context) {
-    same_party_context_ = context;
+  void set_first_party_set_metadata(FirstPartySetMetadata metadata) {
+    first_party_set_metadata_ = std::move(metadata);
   }
 
   // Indicate whether SameSite cookies should be attached even though the
@@ -907,8 +908,10 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // e.g. NetLogEventType::NETWORK_DELEGATE_AUTH_REQUIRED.
   void OnCallToDelegate(NetLogEventType type);
   // Called when the delegate lets a request continue.  Also called on
-  // cancellation.
-  void OnCallToDelegateComplete();
+  // cancellation. `error` is an optional error code associated with
+  // completion. It's only for logging purposes, and will not directly cancel
+  // the request if it's a value other than OK.
+  void OnCallToDelegateComplete(int error = OK);
 
   // Records the referrer policy of the given request, bucketed by
   // whether the request is same-origin or not. To save computation,
@@ -932,7 +935,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   IsolationInfo isolation_info_;
 
-  SamePartyContext same_party_context_;
+  FirstPartySetMetadata first_party_set_metadata_;
 
   bool force_ignore_site_for_cookies_;
   bool force_ignore_top_frame_party_for_cookies_;

@@ -928,8 +928,7 @@ TEST_F(CookieManagerTest, GetCookieListSameParty) {
     // included, and non-SameParty cookies should be excluded based on SameSite
     // value.
     options.set_same_party_context(
-        net::SamePartyContext(net::SamePartyContext::Type::kSameParty,
-                              net::FirstPartySetsContextType::kUnknown));
+        net::SamePartyContext(net::SamePartyContext::Type::kSameParty));
     EXPECT_THAT(service_wrapper()->GetCookieList(
                     cookie_url, options, net::CookiePartitionKeyCollection()),
                 UnorderedElementsAre(
@@ -990,8 +989,7 @@ TEST_F(CookieManagerTest, GetCookieListSameParty) {
 
     // Same-party, cross-site.
     options.set_same_party_context(
-        net::SamePartyContext(net::SamePartyContext::Type::kSameParty,
-                              net::FirstPartySetsContextType::kUnknown));
+        net::SamePartyContext(net::SamePartyContext::Type::kSameParty));
     EXPECT_THAT(
         service_wrapper()->GetCookieList(cookie_url, options,
                                          net::CookiePartitionKeyCollection()),
@@ -2723,6 +2721,10 @@ TEST_F(FlushableCookieManagerTest, DeletionFilterToInfo) {
   filter_ptr->url = GURL("https://www.example.com");
   filter_ptr->session_control =
       mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
+  filter_ptr->cookie_partition_key_collection =
+      net::CookiePartitionKeyCollection(
+          net::CookiePartitionKey::FromURLForTesting(
+              GURL("https://www.foo.com")));
 
   delete_info = DeletionFilterToInfo(std::move(filter_ptr));
   EXPECT_EQ(base::Time::FromDoubleT(kTestStartEpoch),
@@ -2748,6 +2750,12 @@ TEST_F(FlushableCookieManagerTest, DeletionFilterToInfo) {
   EXPECT_NE(delete_info.domains_and_ips_to_ignore.find("twelve.com"),
             delete_info.domains_and_ips_to_ignore.end());
   EXPECT_FALSE(delete_info.value_for_testing.has_value());
+  EXPECT_FALSE(delete_info.cookie_partition_key_collection.ContainsAllKeys());
+  EXPECT_EQ(1u,
+            delete_info.cookie_partition_key_collection.PartitionKeys().size());
+  EXPECT_EQ(
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://www.foo.com")),
+      delete_info.cookie_partition_key_collection.PartitionKeys()[0]);
 }
 
 // A test class having cookie store with a persistent backing store. The cookie

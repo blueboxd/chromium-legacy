@@ -22,6 +22,7 @@
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace app_list {
 namespace {
@@ -29,6 +30,8 @@ namespace {
 // TODO(crbug.com/1258415): Since we have a lot of class fakes now, we should
 // generalize them and split them into a test utils directory.
 
+using testing::ElementsAreArray;
+using testing::UnorderedElementsAreArray;
 using Category = ash::AppListSearchResultCategory;
 using Result = ash::AppListSearchResultType;
 
@@ -191,8 +194,25 @@ class SearchControllerImplNewTest : public testing::Test {
   void ExpectIdOrder(std::vector<std::string> expected_ids) {
     const auto& actual_results = model_updater_.search_results();
     ASSERT_EQ(actual_results.size(), expected_ids.size());
-    for (size_t i = 0; i < actual_results.size(); ++i)
-      EXPECT_EQ(actual_results[i]->id(), expected_ids[i]);
+    std::vector<std::string> actual_ids;
+    std::transform(actual_results.begin(), actual_results.end(),
+                   std::back_inserter(actual_ids),
+                   [](const ChromeSearchResult* res) -> const std::string& {
+                     return res->id();
+                   });
+    EXPECT_THAT(actual_ids, ElementsAreArray(expected_ids));
+  }
+
+  void ExpectIdsToBurnInIterations(std::vector<std::pair<std::string, int>>
+                                       expected_ids_to_burnin_iteration) {
+    const auto& actual_ids_to_burnin_iteration =
+        std::vector<std::pair<std::string, int>>(
+            search_controller_->ids_to_burnin_iteration_.begin(),
+            search_controller_->ids_to_burnin_iteration_.end());
+    ASSERT_EQ(actual_ids_to_burnin_iteration.size(),
+              expected_ids_to_burnin_iteration.size());
+    EXPECT_THAT(actual_ids_to_burnin_iteration,
+                UnorderedElementsAreArray(expected_ids_to_burnin_iteration));
   }
 
   void Wait() { task_environment_.RunUntilIdle(); }
@@ -257,13 +277,63 @@ TEST_F(SearchControllerImplNewTest, BestMatchesOrderedAboveOtherResults) {
   ExpectIdOrder({"a", "c", "d", "b"});
 }
 
-TEST_F(SearchControllerImplNewTest, SetResultsPreAndPostBurnIn) {
+TEST_F(SearchControllerImplNewTest,
+       BurnInIterationNumbersTrackedInQuerySearch) {
+  // This test focuses on the book-keeping of burn-in iteration numbers, and
+  // ignores the effect that these numbers can have on final sorting of the
+  // results list.
+
+  ranker_delegate_->SetCategoryRanks({{Category::kFiles, 0.1}});
+
+  // Set up some results from two different providers.
+  auto file_results = MakeResults({"a"}, {Category::kFiles}, {false}, {0.9});
+  auto app_results = MakeResults({"b"}, {Category::kApps}, {false}, {0.1});
+
+  // Set up results from a third different provider. This provider will first
+  // return one set of results, then later return an updated set of results.
+  auto web_results_first_arrival = MakeResults(
+      {"c", "d"}, {Category::kWeb, Category::kWeb}, {false, false}, {0.2, 0.1});
+  auto web_results_second_arrival = MakeResults(
+      {"c", "d", "e"}, {Category::kWeb, Category::kWeb, Category::kWeb},
+      {false, false, false}, {0.2, 0.1, 0.4});
+
+  // Simulate starting a search.
+  search_controller_->StartSearch(u"abc");
+
+  // Simulate providers returning results within the burn-in period.
+  search_controller_->SetResults(SimpleProvider(Result::kFileSearch),
+                                 std::move(file_results));
+  ExpectIdsToBurnInIterations({{"a", 0}});
+  search_controller_->SetResults(SimpleProvider(Result::kInstalledApp),
+                                 std::move(app_results));
+  ExpectIdsToBurnInIterations({{"a", 0}, {"b", 0}});
+
+  // Simulate a provider returning results after the burn-in period.
+  ElapseBurnInPeriod();
+  search_controller_->SetResults(SimpleProvider(Result::kOmnibox),
+                                 std::move(web_results_first_arrival));
+  ExpectIdsToBurnInIterations({{"a", 0}, {"b", 0}, {"c", 1}, {"d", 1}});
+
+  // Simulate a provider returning for a second time. The burn-in iteration
+  // number for previously seen results is preserved, while that of newly seen
+  // results is incremented.
+  search_controller_->SetResults(SimpleProvider(Result::kOmnibox),
+                                 std::move(web_results_second_arrival));
+  ExpectIdsToBurnInIterations(
+      {{"a", 0}, {"b", 0}, {"c", 1}, {"d", 1}, {"e", 2}});
+}
+
+TEST_F(SearchControllerImplNewTest,
+       SetResultsPreAndPostBurnIn_OneProviderReturnPerCategory) {
+  // When there is only a single provider return per final category, we do not
+  // expect there to be any effect from sorting by burn-in iteration number.
+
   ranker_delegate_->SetCategoryRanks(
       {{Category::kFiles, 0.3}, {Category::kWeb, 0.2}, {Category::kApps, 0.1}});
   auto file_results = MakeResults({"a"}, {Category::kFiles}, {false}, {0.9});
   auto web_results = MakeResults(
       {"c", "d", "b"}, {Category::kWeb, Category::kWeb, Category::kWeb},
-      {false, false, false}, {0.2, 0.1, 0.4});
+      {false, false, false}, {0.3, 0.2, 0.4});
   auto app_results = MakeResults({"e"}, {Category::kApps}, {false}, {0.1});
 
   // Simulate starting a search.
@@ -285,6 +355,87 @@ TEST_F(SearchControllerImplNewTest, SetResultsPreAndPostBurnIn) {
   search_controller_->SetResults(SimpleProvider(Result::kFileSearch),
                                  std::move(file_results));
   ExpectIdOrder({"a", "b", "c", "d", "e"});
+}
+
+TEST_F(SearchControllerImplNewTest,
+       SetResultsPreAndPostBurnIn_SingleProviderReturnsMultipleTimes) {
+  ranker_delegate_->SetCategoryRanks({{Category::kWeb, 0.2}});
+  auto web_results_1 = MakeResults(
+      {"b", "c", "a"}, {Category::kWeb, Category::kWeb, Category::kWeb},
+      {false, false, false}, {0.2, 0.1, 0.3});
+
+  auto web_results_2 = MakeResults(
+      {"b", "c", "a", "d"},
+      {Category::kWeb, Category::kWeb, Category::kWeb, Category::kWeb},
+      {false, false, false}, {0.2, 0.1, 0.3, 0.4});
+
+  auto web_results_3 =
+      MakeResults({"b", "c", "a", "d", "e"},
+                  {Category::kWeb, Category::kWeb, Category::kWeb,
+                   Category::kWeb, Category::kWeb},
+                  {false, false, false}, {0.2, 0.1, 0.3, 0.4, 0.5});
+
+  // Simulate starting a search.
+  search_controller_->StartSearch(u"abc");
+
+  // Simulate the provider returning results within the burn-in period.
+  search_controller_->SetResults(SimpleProvider(Result::kOmnibox),
+                                 std::move(web_results_1));
+  ExpectIdOrder({});
+
+  // Expect results to appear after burn-in period has elapsed.
+  ElapseBurnInPeriod();
+  ExpectIdOrder({"a", "b", "c"});
+
+  // When a single provider returns multiple times for a category, sorting by
+  // burn-in iteration number takes precedence over sorting by result score.
+  //
+  // Simulate the provider returning results twice after the burn-in period.
+  search_controller_->SetResults(SimpleProvider(Result::kOmnibox),
+                                 std::move(web_results_2));
+  ExpectIdOrder({"a", "b", "c", "d"});
+  search_controller_->SetResults(SimpleProvider(Result::kOmnibox),
+                                 std::move(web_results_3));
+  ExpectIdOrder({"a", "b", "c", "d", "e"});
+}
+
+TEST_F(SearchControllerImplNewTest,
+       SetResultsPreAndPostBurnIn_MultipleProvidersReturnToSingleCategory) {
+  ranker_delegate_->SetCategoryRanks({{Category::kWeb, 0.2}});
+
+  auto installed_app_results = MakeResults(
+      {"b", "c", "a"}, {Category::kApps, Category::kApps, Category::kApps},
+      {false, false, false}, {0.3, 0.2, 0.4});
+
+  auto play_store_app_results =
+      MakeResults({"e", "d"}, {Category::kApps, Category::kApps},
+                  {false, false}, {0.1, 0.5});
+
+  auto internal_app_results =
+      MakeResults({"f"}, {Category::kApps}, {false}, {0.9});
+
+  // Simulate starting a search.
+  search_controller_->StartSearch(u"abc");
+
+  // Simulate a provider returning results within the burn-in period.
+  search_controller_->SetResults(SimpleProvider(Result::kInstalledApp),
+                                 std::move(installed_app_results));
+  ExpectIdOrder({});
+
+  // Expect results to appear after burn-in period has elapsed.
+  ElapseBurnInPeriod();
+  ExpectIdOrder({"a", "b", "c"});
+
+  // When there are multiple providers returning for a category, sorting by
+  // burn-in iteration number takes precedence over sorting by result score.
+  //
+  // Simulate two other providers returning results after the burn-in period.
+  search_controller_->SetResults(SimpleProvider(Result::kPlayStoreApp),
+                                 std::move(play_store_app_results));
+  ExpectIdOrder({"a", "b", "c", "d", "e"});
+  search_controller_->SetResults(SimpleProvider(Result::kInternalApp),
+                                 std::move(internal_app_results));
+  ExpectIdOrder({"a", "b", "c", "d", "e", "f"});
 }
 
 TEST_F(SearchControllerImplNewTest, FirstSearchResultsNotShownInSecondSearch) {

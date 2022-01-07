@@ -227,13 +227,13 @@ class HostContentSettingsMap : public content_settings::Observer,
 
   // Sets a rule to apply the |value| for all sites matching |pattern|,
   // |content_type| applying any provided |constraints|. Setting the value to
-  // null removes the given pattern pair. Unless adding a custom-scoped setting,
+  // NONE removes the given pattern pair. Unless adding a custom-scoped setting,
   // most developers will want to use SetWebsiteSettingDefaultScope() instead.
   void SetWebsiteSettingCustomScope(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
-      std::unique_ptr<base::Value> value,
+      base::Value value,
       const content_settings::ContentSettingConstraints& constraints = {});
 
   // Check if a call to SetNarrowestContentSetting would succeed or if it would
@@ -378,7 +378,7 @@ class HostContentSettingsMap : public content_settings::Observer,
 
   // Returns the single content setting |value| with a toggle for if it
   // takes the global on/off switch into account.
-  std::unique_ptr<base::Value> GetWebsiteSettingInternal(
+  base::Value GetWebsiteSettingInternal(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
@@ -390,7 +390,7 @@ class HostContentSettingsMap : public content_settings::Observer,
       const GURL& secondary_url,
       ContentSettingsType type) const;
 
-  static std::unique_ptr<base::Value> GetContentSettingValueAndPatterns(
+  static base::Value GetContentSettingValueAndPatterns(
       const content_settings::ProviderInterface* provider,
       const GURL& primary_url,
       const GURL& secondary_url,
@@ -400,7 +400,7 @@ class HostContentSettingsMap : public content_settings::Observer,
       ContentSettingsPattern* secondary_pattern,
       content_settings::SessionModel* session_model);
 
-  static std::unique_ptr<base::Value> GetContentSettingValueAndPatterns(
+  static base::Value GetContentSettingValueAndPatterns(
       content_settings::RuleIterator* rule_iterator,
       const GURL& primary_url,
       const GURL& secondary_url,
@@ -425,7 +425,7 @@ class HostContentSettingsMap : public content_settings::Observer,
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
-      base::Value* value);
+      const base::Value& value);
 
 #ifndef NDEBUG
   // This starts as the thread ID of the thread that constructs this

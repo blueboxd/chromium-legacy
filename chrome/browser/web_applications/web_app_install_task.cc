@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -266,6 +267,8 @@ void UpdateFinalizerClientData(
       options->chromeos_data->show_in_management = params->add_to_management;
       options->chromeos_data->is_disabled = params->is_disabled;
       options->chromeos_data->oem_installed = params->oem_installed;
+      options->chromeos_data->handles_file_open_intents =
+          params->handles_file_open_intents;
     }
     if (params->system_app_type.has_value()) {
       options->system_web_app_data.emplace();
@@ -765,10 +768,7 @@ void WebAppInstallTask::OnIconsRetrieved(
   PopulateProductIcons(web_app_info.get(), &icons_map);
   PopulateOtherIcons(web_app_info.get(), icons_map);
 
-  // TODO(crbug.com/1238622): Report `IconsDownloadedResult`and
-  // `DownloadedIconsHttpResults` in UMAs.
-  RecordDownloadedIconsHttpResultsCodeClassForSyncOrCreate(result,
-                                                           icons_http_results);
+  RecordDownloadedIconsResultAndHttpStatusCodes(result, icons_http_results);
   LogDownloadedIconsErrors(*web_app_info, result, icons_map,
                            icons_http_results);
 
@@ -791,10 +791,7 @@ void WebAppInstallTask::OnIconsRetrievedShowDialog(
   PopulateProductIcons(web_app_info.get(), &icons_map);
   PopulateOtherIcons(web_app_info.get(), icons_map);
 
-  // TODO(crbug.com/1238622): Report `IconsDownloadedResult`and
-  // `DownloadedIconsHttpResults` in UMAs.
-  RecordDownloadedIconsHttpResultsCodeClassForSyncOrCreate(result,
-                                                           icons_http_results);
+  RecordDownloadedIconsResultAndHttpStatusCodes(result, icons_http_results);
   LogDownloadedIconsErrors(*web_app_info, result, icons_map,
                            icons_http_results);
 
@@ -972,15 +969,24 @@ void WebAppInstallTask::OnOsHooksCreated(DisplayMode user_display_mode,
   CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
 }
 
-void WebAppInstallTask::
-    RecordDownloadedIconsHttpResultsCodeClassForSyncOrCreate(
-        IconsDownloadedResult result,
-        const DownloadedIconsHttpResults& icons_http_results) {
-  RecordDownloadedIconsHttpResultsCodeClass(
-      (install_source_ == webapps::WebappInstallSource::SYNC
-           ? "WebApp.Icon.HttpStatusCodeClassOnSync"
-           : "WebApp.Icon.HttpStatusCodeClassOnCreate"),
-      result, icons_http_results);
+void WebAppInstallTask::RecordDownloadedIconsResultAndHttpStatusCodes(
+    IconsDownloadedResult result,
+    const DownloadedIconsHttpResults& icons_http_results) {
+  if (install_source_ == webapps::WebappInstallSource::SYNC) {
+    RecordDownloadedIconsHttpResultsCodeClass(
+        "WebApp.Icon.HttpStatusCodeClassOnSync", result, icons_http_results);
+
+    UMA_HISTOGRAM_ENUMERATION("WebApp.Icon.DownloadedResultOnSync", result);
+    RecordDownloadedIconHttpStatusCodes(
+        "WebApp.Icon.DownloadedHttpStatusCodeOnSync", icons_http_results);
+  } else {
+    RecordDownloadedIconsHttpResultsCodeClass(
+        "WebApp.Icon.HttpStatusCodeClassOnCreate", result, icons_http_results);
+
+    UMA_HISTOGRAM_ENUMERATION("WebApp.Icon.DownloadedResultOnCreate", result);
+    RecordDownloadedIconHttpStatusCodes(
+        "WebApp.Icon.DownloadedHttpStatusCodeOnCreate", icons_http_results);
+  }
 }
 
 void WebAppInstallTask::LogHeaderIfLogEmpty(const std::string& url) {

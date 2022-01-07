@@ -1400,12 +1400,6 @@
     "expiry_milestone": 90
   },
   {
-    // See: https://crbug.com/993569.
-    "name": "dynamic-tcmalloc-tuning",
-    "owners": [ "bgeffon" ],
-    "expiry_milestone": 89
-  },
-  {
     "name": "eche-phone-hub-permissions-onboarding",
     "owners": [ "dhnishi" ],
     "expiry_milestone": 101
@@ -2213,6 +2207,11 @@
   {
     "name": "enable-jxl",
     "owners": [ "deymo", "firsching", "lode" ],
+    "expiry_milestone": 105
+  },
+  {
+    "name": "enable-keyboard-backlight-toggle",
+    "owners": [ "rtinkoff" ],
     "expiry_milestone": 105
   },
   {
@@ -5594,6 +5593,11 @@
     "name": "use-multiple-overlays",
     "owners": [ "khaslett", "//components/viz/OWNERS" ],
     "expiry_milestone": 104
+  },
+  {
+    "name": "use-new-popup-menu",
+    "owners": [ "gambard", "bling-flags@google.com" ],
+    "expiry_milestone": 108
   },
   {
     "name": "use-passthrough-command-decoder",

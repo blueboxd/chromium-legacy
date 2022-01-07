@@ -17,7 +17,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
-#include "components/signin/internal/identity_manager/primary_account_policy_manager.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_client.h"
@@ -30,13 +29,10 @@ using signin::PrimaryAccountChangeEvent;
 PrimaryAccountManager::PrimaryAccountManager(
     SigninClient* client,
     ProfileOAuth2TokenService* token_service,
-    AccountTrackerService* account_tracker_service,
-    std::unique_ptr<PrimaryAccountPolicyManager> policy_manager)
+    AccountTrackerService* account_tracker_service)
     : client_(client),
       token_service_(token_service),
-      account_tracker_service_(account_tracker_service),
-      initialized_(false),
-      policy_manager_(std::move(policy_manager)) {
+      account_tracker_service_(account_tracker_service) {
   DCHECK(client_);
   DCHECK(account_tracker_service_);
 }
@@ -119,9 +115,6 @@ void PrimaryAccountManager::Initialize(PrefService* local_state) {
     SetPrimaryAccountInternal(account_info, consented);
   }
 
-  if (policy_manager_) {
-    policy_manager_->InitializePolicy(local_state, this);
-  }
   // It is important to only load credentials after starting to observe the
   // token service.
   token_service_->AddObserver(this);
@@ -145,18 +138,34 @@ CoreAccountId PrimaryAccountManager::GetPrimaryAccountId(
   return GetPrimaryAccountInfo(consent_level).account_id;
 }
 
-void PrimaryAccountManager::SetUnconsentedPrimaryAccountInfo(
-    const CoreAccountInfo& account_info) {
+void PrimaryAccountManager::SetPrimaryAccountInfo(
+    const CoreAccountInfo& account_info,
+    signin::ConsentLevel consent_level) {
   if (HasPrimaryAccount(signin::ConsentLevel::kSync)) {
-    DCHECK_EQ(account_info, GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
+    DCHECK_EQ(account_info, GetPrimaryAccountInfo(signin::ConsentLevel::kSync))
+        << "Changing the primary sync account is not allowed.";
     return;
   }
+  DCHECK(!account_info.account_id.empty());
+  DCHECK(!account_info.gaia.empty());
+  DCHECK(!account_info.email.empty());
+  DCHECK(!account_tracker_service_->GetAccountInfo(account_info.account_id)
+              .IsEmpty())
+      << "Account must be seeded before being set as primary account";
 
-  bool account_changed = account_info != primary_account_info();
   PrimaryAccountChangeEvent::State previous_state = GetPrimaryAccountState();
-  SetPrimaryAccountInternal(account_info, /*consented_to_sync=*/false);
-  if (account_changed)
-    FirePrimaryAccountChanged(previous_state);
+  switch (consent_level) {
+    case signin::ConsentLevel::kSync:
+      SetSyncPrimaryAccountInternal(account_info);
+      FirePrimaryAccountChanged(previous_state);
+      return;
+    case signin::ConsentLevel::kSignin:
+      bool account_changed = account_info != primary_account_info();
+      SetPrimaryAccountInternal(account_info, /*consented_to_sync=*/false);
+      if (account_changed)
+        FirePrimaryAccountChanged(previous_state);
+      return;
+  }
 }
 
 void PrimaryAccountManager::SetSyncPrimaryAccountInternal(
@@ -224,28 +233,6 @@ bool PrimaryAccountManager::HasPrimaryAccount(
     case signin::ConsentLevel::kSync:
       return consented_pref;
   }
-}
-
-void PrimaryAccountManager::SetSyncPrimaryAccountInfo(
-    const CoreAccountInfo& account_info) {
-#if DCHECK_IS_ON()
-  DCHECK(!account_info.account_id.empty());
-  DCHECK(!account_info.gaia.empty());
-  DCHECK(!account_info.email.empty());
-  DCHECK(!account_tracker_service_->GetAccountInfo(account_info.account_id)
-              .IsEmpty())
-      << "Account should have been seeded before being set as primary account";
-#endif
-  if (HasPrimaryAccount(signin::ConsentLevel::kSync)) {
-    DCHECK_EQ(account_info.account_id,
-              GetPrimaryAccountId(signin::ConsentLevel::kSync))
-        << "Changing the primary sync account is not allowed.";
-    return;
-  }
-
-  PrimaryAccountChangeEvent::State previous_state = GetPrimaryAccountState();
-  SetSyncPrimaryAccountInternal(account_info);
-  FirePrimaryAccountChanged(previous_state);
 }
 
 void PrimaryAccountManager::UpdatePrimaryAccountInfo() {

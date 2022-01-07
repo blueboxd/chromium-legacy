@@ -3658,11 +3658,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrostiniVirtualKeyboardSupportName,
      flag_descriptions::kCrostiniVirtualKeyboardSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniVirtualKeyboardSupport)},
-#if BUILDFLAG(USE_TCMALLOC)
-    {"dynamic-tcmalloc-tuning", flag_descriptions::kDynamicTcmallocName,
-     flag_descriptions::kDynamicTcmallocDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(performance_manager::features::kDynamicTcmallocTuning)},
-#endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if (defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_ANDROID)) && \
     !defined(OS_NACL)
@@ -7256,6 +7251,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableInputNoiseCancellationUiName,
      flag_descriptions::kEnableInputNoiseCancellationUiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableInputNoiseCancellationUi)},
+
+    {"enable-keyboard-backlight-toggle",
+     flag_descriptions::kEnableKeyboardBacklightToggleName,
+     flag_descriptions::kEnableKeyboardBacklightToggleDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEnableKeyboardBacklightToggle)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"update-history-entry-points-in-incognito",

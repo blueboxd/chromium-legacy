@@ -72,7 +72,7 @@ class MockUserModifiableProvider
                bool(const ContentSettingsPattern&,
                     const ContentSettingsPattern&,
                     ContentSettingsType,
-                    std::unique_ptr<base::Value>&&,
+                    base::Value&&,
                     const content_settings::ContentSettingConstraints&));
 
   MOCK_METHOD1(ClearAllContentSettingsRules, void(ContentSettingsType));
@@ -1447,8 +1447,8 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
   host_content_settings_map->SetWebsiteSettingCustomScope(
       pattern2, ContentSettingsPattern::Wildcard(),
       ContentSettingsType::APP_BANNER,
-      base::Value::ToUniquePtrValue(
-          base::Value(base::Value::Type::DICTIONARY)));
+
+      base::Value(base::Value::Type::DICTIONARY));
 
   // First, test that we clear only COOKIES (not APP_BANNER), and pattern2.
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
@@ -1920,7 +1920,7 @@ TEST_F(HostContentSettingsMapTest, IncognitoChangesDoNotPersist) {
     base::Value incognito_value = new_value.Clone();
     incognito_map->SetWebsiteSettingCustomScope(
         pattern, ContentSettingsPattern::Wildcard(), info->type(),
-        base::Value::ToUniquePtrValue(std::move(new_value)));
+        std::move(new_value));
 
     // Ensure incognito mode value is changed.
     EXPECT_EQ(incognito_value, *incognito_map->GetWebsiteSetting(

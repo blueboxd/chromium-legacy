@@ -2605,6 +2605,9 @@ extern const char kEnableInputInDiagnosticsAppDescription[];
 extern const char kEnableInputNoiseCancellationUiName[];
 extern const char kEnableInputNoiseCancellationUiDescription[];
 
+extern const char kEnableKeyboardBacklightToggleName[];
+extern const char kEnableKeyboardBacklightToggleDescription[];
+
 extern const char kEnableLauncherSearchNormalizationName[];
 extern const char kEnableLauncherSearchNormalizationDescription[];
 
@@ -3126,10 +3129,6 @@ extern const char kDesktopDetailedLanguageSettingsDescription[];
         // (OS_FUCHSIA)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-#if BUILDFLAG(USE_TCMALLOC)
-extern const char kDynamicTcmallocName[];
-extern const char kDynamicTcmallocDescription[];
-#endif  // BUILDFLAG(USE_TCMALLOC)
 
 extern const char kImproveAccessibilityTreeUsingLocalMLName[];
 extern const char kImproveAccessibilityTreeUsingLocalMLDescription[];

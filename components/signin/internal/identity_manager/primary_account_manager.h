@@ -18,8 +18,6 @@
 #ifndef COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PRIMARY_ACCOUNT_MANAGER_H_
 #define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PRIMARY_ACCOUNT_MANAGER_H_
 
-#include <memory>
-
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -33,7 +31,6 @@
 class AccountTrackerService;
 class PrefRegistrySimple;
 class PrefService;
-class PrimaryAccountPolicyManager;
 class ProfileOAuth2TokenService;
 
 namespace signin_metrics {
@@ -59,11 +56,9 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
     kRemoveAllAccounts,
   };
 
-  PrimaryAccountManager(
-      SigninClient* client,
-      ProfileOAuth2TokenService* token_service,
-      AccountTrackerService* account_tracker_service,
-      std::unique_ptr<PrimaryAccountPolicyManager> policy_manager);
+  PrimaryAccountManager(SigninClient* client,
+                        ProfileOAuth2TokenService* token_service,
+                        AccountTrackerService* account_tracker_service);
 
   PrimaryAccountManager(const PrimaryAccountManager&) = delete;
   PrimaryAccountManager& operator=(const PrimaryAccountManager&) = delete;
@@ -99,15 +94,12 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   // convenience wrapper over GetPrimaryAccountInfo().account_id.
   CoreAccountId GetPrimaryAccountId(signin::ConsentLevel consent_level) const;
 
-  // Signs a user in. PrimaryAccountManager assumes that |username| can be used
-  // to look up the corresponding account_id and gaia_id for this email.
-  void SetSyncPrimaryAccountInfo(const CoreAccountInfo& account_info);
-
-  // Sets the unconsented primary account. The unconsented primary account can
-  // only be changed if the user has not consented for sync If the user has
-  // consented for sync already, then use ClearPrimaryAccount() or RevokeSync()
-  // instead.
-  void SetUnconsentedPrimaryAccountInfo(const CoreAccountInfo& account_info);
+  // Sets the primary account with the required consent level. The primary
+  // account can only be changed if the user has not consented for sync. If the
+  // user has consented for sync already, then use ClearPrimaryAccount() or
+  // RevokeSync() instead.
+  void SetPrimaryAccountInfo(const CoreAccountInfo& account_info,
+                             signin::ConsentLevel consent_level);
 
   // Updates the primary account information from AccountTrackerService.
   void UpdatePrimaryAccountInfo();
@@ -187,7 +179,6 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   // this field.
   CoreAccountInfo primary_account_info_;
 
-  std::unique_ptr<PrimaryAccountPolicyManager> policy_manager_;
   base::ObserverList<Observer> observers_;
 };
 

@@ -4538,6 +4538,12 @@ const char kEnableInputNoiseCancellationUiDescription[] =
     "Enable toggling input noise cancellation through the Quick Settings. By "
     "default, this flag is disabled.";
 
+const char kEnableKeyboardBacklightToggleName[] =
+    "Enable Keyboard Backlight Toggle.";
+const char kEnableKeyboardBacklightToggleDescription[] =
+    "Enable toggling of the keyboard backlight. By "
+    "default, this flag is enabled.";
+
 const char kEnableLauncherSearchNormalizationName[] =
     "Enable normalization of launcher search results";
 const char kEnableLauncherSearchNormalizationDescription[] =
@@ -5386,12 +5392,6 @@ const char kDesktopDetailedLanguageSettingsDescription[] =
         // defined(OS_FUCHSIA)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-#if BUILDFLAG(USE_TCMALLOC)
-const char kDynamicTcmallocName[] = "Dynamic Tcmalloc Tuning";
-const char kDynamicTcmallocDescription[] =
-    "Allows tcmalloc to dynamically adjust tunables based on system resource "
-    "utilization.";
-#endif  // BUILDFLAG(USE_TCMALLOC)
 const char kImproveAccessibilityTreeUsingLocalMLName[] =
     "Enable improving accessibility tree using local machine learning library.";
 const char kImproveAccessibilityTreeUsingLocalMLDescription[] =

@@ -1997,7 +1997,7 @@ static void AssertLayoutTreeUpdated(Node& root,
           (allow_dirty_container_subtrees && element->GetLayoutObject() &&
            element->GetLayoutObject()
                ->StyleRef()
-               .IsContainerForContainerQueries())) {
+               .IsContainerForContainerQueries(*element))) {
         node = FlatTreeTraversal::NextSkippingChildren(*node);
         continue;
       }
@@ -5896,7 +5896,7 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
                     break;
                   case mojom::blink::PermissionStatus::DENIED:
                     document->expressly_denied_storage_access_ = true;
-                    FALLTHROUGH;
+                    [[fallthrough]];
                   case mojom::blink::PermissionStatus::ASK:
                   default:
                     FireRequestStorageAccessHistogram(
@@ -7239,15 +7239,14 @@ Node* EventTargetNodeForDocument(Document* doc) {
   return node;
 }
 
-void Document::AdjustFloatQuadsForScrollAndAbsoluteZoom(
-    Vector<FloatQuad>& quads,
+void Document::AdjustQuadsForScrollAndAbsoluteZoom(
+    Vector<gfx::QuadF>& quads,
     const LayoutObject& layout_object) const {
   if (!View())
     return;
 
-  for (wtf_size_t i = 0; i < quads.size(); ++i) {
-    AdjustForAbsoluteZoom::AdjustFloatQuad(quads[i], layout_object);
-  }
+  for (auto& quad : quads)
+    AdjustForAbsoluteZoom::AdjustQuad(quad, layout_object);
 }
 
 void Document::AdjustRectForScrollAndAbsoluteZoom(

@@ -222,16 +222,18 @@ class LayerTreeHostTilesTestRasterColorSpace
 std::vector<RasterTestConfig> const kTestCases = {
     {viz::RendererType::kSoftware, TestRasterType::kBitmap},
 #if BUILDFLAG(ENABLE_GL_BACKEND_TESTS)
+#if BUILDFLAG(ENABLE_GL_RENDERER_TESTS)
     {viz::RendererType::kGL, TestRasterType::kOneCopy},
     {viz::RendererType::kGL, TestRasterType::kGpu},
+#endif  // BUILDFLAG(ENABLE_GL_RENDERER_TESTS)
     {viz::RendererType::kSkiaGL, TestRasterType::kOneCopy},
     {viz::RendererType::kSkiaGL, TestRasterType::kGpu},
 #endif  // BUILDFLAG(ENABLE_GL_BACKEND_TESTS)
 #if BUILDFLAG(ENABLE_VULKAN_BACKEND_TESTS)
-    {viz::RendererType::kSkiaVk, TestRasterType::kOop},
+    {viz::RendererType::kSkiaVk, TestRasterType::kGpu},
 #endif  // BUILDFLAG(ENABLE_VULKAN_BACKEND_TESTS)
 #if BUILDFLAG(ENABLE_DAWN_BACKEND_TESTS)
-    {viz::RendererType::kSkiaDawn, TestRasterType::kOop},
+    {viz::RendererType::kSkiaDawn, TestRasterType::kGpu},
 #endif  // BUILDFLAG(ENABLE_DAWN_BACKEND_TESTS)
 };
 
@@ -263,16 +265,18 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidation, FullRaster) {
 
 std::vector<RasterTestConfig> const kTestCasesMultiThread = {
 #if BUILDFLAG(ENABLE_GL_BACKEND_TESTS)
+#if BUILDFLAG(ENABLE_GL_RENDERER_TESTS)
     {viz::RendererType::kGL, TestRasterType::kOneCopy},
+#endif  // BUILDFLAG(ENABLE_GL_RENDERER_TESTS)
     {viz::RendererType::kSkiaGL, TestRasterType::kOneCopy},
 #endif  // BUILDFLAG(ENABLE_GL_BACKEND_TESTS)
 #if BUILDFLAG(ENABLE_VULKAN_BACKEND_TESTS)
     // TODO(rivr): Switch this to one copy raster once is is supported for
     // Vulkan in these tests.
-    {viz::RendererType::kSkiaVk, TestRasterType::kOop},
+    {viz::RendererType::kSkiaVk, TestRasterType::kGpu},
 #endif  // BUILDFLAG(ENABLE_VULKAN_BACKEND_TESTS)
 #if BUILDFLAG(ENABLE_DAWN_BACKEND_TESTS)
-    {viz::RendererType::kSkiaDawn, TestRasterType::kOop},
+    {viz::RendererType::kSkiaDawn, TestRasterType::kGpu},
 #endif  // BUILDFLAG(ENABLE_DAWN_BACKEND_TESTS)
 };
 
@@ -370,13 +374,11 @@ class LayerTreeHostTilesTestPartialInvalidationLowBitDepth
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
-    ::testing::Values(
-        RasterTestConfig{viz::RendererType::kSkiaGL, TestRasterType::kGpu},
-        RasterTestConfig{viz::RendererType::kGL, TestRasterType::kGpu}),
-    ::testing::PrintToStringParamName());
+INSTANTIATE_TEST_SUITE_P(All,
+                         LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
+                         ::testing::Values(RasterTestConfig{
+                             viz::RendererType::kSkiaGL, TestRasterType::kGpu}),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
        DISABLED_PartialRaster) {

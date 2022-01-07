@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_socket.h"
 
 namespace ash {
 namespace quick_pair {
@@ -151,6 +152,32 @@ void RecordWriteAccountKeyCharacteristicResult(bool success);
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordWriteAccountKeyGattError(
     device::BluetoothGattService::GattErrorCode error);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordWriteAccountKeyTime(base::TimeDelta write_time);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordTotalDataEncryptorCreateTime(base::TimeDelta total_create_time);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordMessageStreamReceiveResult(bool success);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordMessageStreamReceiveError(
+    device::BluetoothSocket::ErrorReason error);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordMessageStreamConnectToServiceResult(bool success);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordMessageStreamConnectToServiceError(const std::string& error);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordMessageStreamConnectToServiceTime(
+    base::TimeDelta total_connect_time);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordDeviceMetadataFetchResult(bool success);
 
 }  // namespace quick_pair
 }  // namespace ash

@@ -333,6 +333,13 @@ bool ShouldShowProfilePickerAtProcessLaunch(
     return false;
   }
 #endif  // defined(OS_WIN)
+
+  // Don't show the picker if Chrome should be launched without window. This
+  // will also cause a profile to be loaded which Chrome needs for performing
+  // background activity.
+  if (StartupBrowserCreator::ShouldLoadProfileWithoutWindow(command_line))
+    return false;
+
   return ProfilePicker::ShouldShowAtLaunch();
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
@@ -360,10 +367,6 @@ bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return profile->GetPrefs()->GetBoolean(
       prefs::kStartupBrowserWindowLaunchSuppressed);
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto* service = chromeos::LacrosService::Get();
-  return service && service->init_params()->initial_browser_action ==
-                        crosapi::mojom::InitialBrowserAction::kDoNotOpenWindow;
 #else
   return false;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -784,6 +787,30 @@ void StartupBrowserCreator::MaybeHandleProfileAgnosticUrls(
                      is_first_run));
 }
 #endif  // defined(OS_MAC)
+
+// static
+bool StartupBrowserCreator::ShouldLoadProfileWithoutWindow(
+    const base::CommandLine& command_line) {
+  // Don't open any browser windows if starting up in "background mode".
+  if (command_line.HasSwitch(switches::kNoStartupWindow))
+    return true;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Don't open any browser windows if Ash requested that Lacros not do so.
+    // The implicit assumption is that some other code is responsible for
+    // keeping Lacros running in the background.
+    // Temporarily remove this logic to deal with https://crbug.com/1278549.
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // If Lacros is the primary web browser, do not open the browser window
+  // on Chrome OS session login.
+  if (crosapi::browser_util::IsLacrosPrimaryBrowser())
+    return true;
+#endif
+
+  return false;
+}
 
 bool StartupBrowserCreator::ProcessCmdLineImpl(
     const base::CommandLine& command_line,

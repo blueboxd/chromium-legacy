@@ -1999,7 +1999,7 @@ gfx::Rect Element::BoundsInViewport() const {
   if (!view)
     return gfx::Rect();
 
-  Vector<FloatQuad> quads;
+  Vector<gfx::QuadF> quads;
 
   // TODO(pdr): Unify the quad/bounds code with Element::ClientQuads.
 
@@ -2014,7 +2014,7 @@ gfx::Rect Element::BoundsInViewport() const {
     // TODO(pdr): This should include stroke.
     if (IsA<SVGGraphicsElement>(svg_element)) {
       quads.push_back(GetLayoutObject()->LocalToAbsoluteQuad(
-          FloatQuad(GetLayoutObject()->ObjectBoundingBox())));
+          gfx::QuadF(GetLayoutObject()->ObjectBoundingBox())));
     }
   } else {
     // Get the bounding rectangle from the box model.
@@ -2025,11 +2025,11 @@ gfx::Rect Element::BoundsInViewport() const {
   if (quads.IsEmpty())
     return gfx::Rect();
 
-  gfx::Rect result = quads[0].EnclosingBoundingBox();
-  for (wtf_size_t i = 1; i < quads.size(); ++i)
-    result.Union(quads[i].EnclosingBoundingBox());
+  gfx::RectF result;
+  for (auto& quad : quads)
+    result.Union(quad.BoundingBox());
 
-  return view->FrameToViewport(result);
+  return view->FrameToViewport(gfx::ToEnclosingRect(result));
 }
 
 Vector<gfx::Rect> Element::OutlineRectsInVisualViewport(
@@ -2107,7 +2107,7 @@ gfx::Rect Element::VisibleBoundsInVisualViewport() const {
   return visible_rect;
 }
 
-void Element::ClientQuads(Vector<FloatQuad>& quads) const {
+void Element::ClientQuads(Vector<gfx::QuadF>& quads) const {
   LayoutObject* element_layout_object = GetLayoutObject();
   if (!element_layout_object)
     return;
@@ -2125,7 +2125,7 @@ void Element::ClientQuads(Vector<FloatQuad>& quads) const {
     // If stroke is desired, we can update this to use AbsoluteQuads, below.
     if (IsA<SVGGraphicsElement>(svg_element)) {
       quads.push_back(element_layout_object->LocalToAbsoluteQuad(
-          FloatQuad(element_layout_object->ObjectBoundingBox())));
+          gfx::QuadF(element_layout_object->ObjectBoundingBox())));
     }
     return;
   }
@@ -2139,27 +2139,27 @@ void Element::ClientQuads(Vector<FloatQuad>& quads) const {
 DOMRectList* Element::getClientRects() {
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kJavaScript);
-  Vector<FloatQuad> quads;
+  Vector<gfx::QuadF> quads;
   ClientQuads(quads);
   if (quads.IsEmpty())
     return MakeGarbageCollected<DOMRectList>();
 
   LayoutObject* element_layout_object = GetLayoutObject();
   DCHECK(element_layout_object);
-  GetDocument().AdjustFloatQuadsForScrollAndAbsoluteZoom(
-      quads, *element_layout_object);
+  GetDocument().AdjustQuadsForScrollAndAbsoluteZoom(quads,
+                                                    *element_layout_object);
   return MakeGarbageCollected<DOMRectList>(quads);
 }
 
 gfx::RectF Element::GetBoundingClientRectNoLifecycleUpdate() const {
-  Vector<FloatQuad> quads;
+  Vector<gfx::QuadF> quads;
   ClientQuads(quads);
   if (quads.IsEmpty())
     return gfx::RectF();
 
-  gfx::RectF result = quads[0].BoundingBox();
-  for (wtf_size_t i = 1; i < quads.size(); ++i)
-    result.Union(quads[i].BoundingBox());
+  gfx::RectF result;
+  for (auto& quad : quads)
+    result.Union(quad.BoundingBox());
 
   LayoutObject* element_layout_object = GetLayoutObject();
   DCHECK(element_layout_object);
@@ -2340,13 +2340,6 @@ void Element::setAttribute(const QualifiedName& name,
   setAttribute(name, AtomicString(string));
 }
 
-static inline AtomicString MakeIdForStyleResolution(const AtomicString& value,
-                                                    bool in_quirks_mode) {
-  if (in_quirks_mode)
-    return value.LowerASCII();
-  return value;
-}
-
 DISABLE_CFI_PERF
 void Element::AttributeChanged(const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
@@ -2362,8 +2355,10 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
                                        params.new_value);
 
   if (name == html_names::kIdAttr) {
-    AtomicString new_id = MakeIdForStyleResolution(
-        params.new_value, GetDocument().InQuirksMode());
+    AtomicString lowercase_id;
+    if (GetDocument().InQuirksMode() && !params.new_value.IsLowerASCII())
+      lowercase_id = params.new_value.LowerASCII();
+    const AtomicString& new_id = lowercase_id ? lowercase_id : params.new_value;
     if (new_id != GetElementData()->IdForStyleResolution()) {
       AtomicString old_id = GetElementData()->SetIdForStyleResolution(new_id);
       GetDocument().GetStyleEngine().IdChangedForElement(old_id, new_id, *this);
@@ -2895,7 +2890,7 @@ void Element::ReattachLayoutTreeChildren(base::PassKey<HTMLFieldSetElement>) {
   DCHECK(ChildNeedsReattachLayoutTree());
   DCHECK(!GetShadowRoot());
   DCHECK(GetLayoutObject());
-  DCHECK(GetLayoutObject()->StyleRef().IsContainerForContainerQueries());
+  DCHECK(GetLayoutObject()->StyleRef().IsContainerForContainerQueries(*this));
 
   constexpr bool performing_reattach = true;
 
@@ -3109,7 +3104,7 @@ void Element::RecalcStyle(const StyleRecalcChange change,
 
   if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled()) {
     if (const ComputedStyle* style = GetComputedStyle()) {
-      if (style->IsContainerForContainerQueries()) {
+      if (style->IsContainerForContainerQueries(*this)) {
         if (RuntimeEnabledFeatures::CSSContainerSkipStyleRecalcEnabled()) {
           if (change.IsSuppressed()) {
             // IsSuppressed() means we are at the root of a container subtree
@@ -3197,7 +3192,7 @@ static ContainerQueryEvaluator* ComputeContainerQueryEvaluator(
     Element& element,
     const ComputedStyle* old_style,
     const ComputedStyle& new_style) {
-  if (!new_style.IsContainerForContainerQueries())
+  if (!new_style.IsContainerForContainerQueries(element))
     return nullptr;
   // If we're switching to display:contents, any existing results cached on
   // ContainerQueryEvaluator are no longer valid, since any style recalc
@@ -4803,13 +4798,7 @@ bool Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
           needs_reattach = true;
       }
     }
-    // Even if we also previously forced legacy layout, we may need to introduce
-    // forced legacy layout in the ancestry, e.g. if this element no longer
-    // establishes a new formatting context.
-    if (ForceLegacyLayoutInFormattingContext(new_style))
-      needs_reattach = true;
-
-    // If we're inside an NG fragmentation context, we also need the entire
+    // If we're inside an NG fragmentation context, we need the entire
     // fragmentation context to fall back to legacy layout. Note that once this
     // has happened, the fragmentation context will be locked to legacy layout,
     // even if all the reasons for requiring it in the first place disappear
@@ -4817,6 +4806,12 @@ bool Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
     // still be using legacy layout).
     if (new_style.InsideFragmentationContextWithNondeterministicEngine()) {
       if (ForceLegacyLayoutInFragmentationContext(new_style))
+        needs_reattach = true;
+    } else {
+      // Note that even if we also previously forced legacy layout, we may need
+      // to introduce forced legacy layout in the ancestry, e.g. if this element
+      // no longer establishes a new formatting context.
+      if (ForceLegacyLayoutInFormattingContext(new_style))
         needs_reattach = true;
     }
   } else if (old_force) {
@@ -4858,7 +4853,7 @@ bool Element::ForceLegacyLayoutInFormattingContext(
     // CSSContainerQueries rely on LayoutNG being fully shipped before shipping.
     // In the meantime, make sure we do not mark containers for re-attachment
     // since we might be in the process of laying out the container.
-    if (style->IsContainerForContainerQueries())
+    if (style->IsContainerForContainerQueries(*this))
       break;
 
     found_fc = DefinitelyNewFormattingContext(*ancestor, *style);
@@ -4882,43 +4877,35 @@ bool Element::ForceLegacyLayoutInFragmentationContext(
   // block of the table is on the outside of the fragmentation context, we're
   // still going to fall back to legacy.
 
-  bool found_outer_relevant_fragmentation_context = false;
   Element* parent;
-  for (Element* walker = this; walker; walker = parent) {
-    parent = DynamicTo<Element>(LayoutTreeBuilderTraversal::Parent(*walker));
-    if (walker->ShouldForceLegacyLayoutForChild())
+  Element* legacy_root;
+  for (legacy_root = this;; legacy_root = parent) {
+    parent =
+        DynamicTo<Element>(LayoutTreeBuilderTraversal::Parent(*legacy_root));
+    if (legacy_root->ShouldForceLegacyLayoutForChild())
       return false;
 
-    if (parent && !parent->GetComputedStyle()
-                       ->InsideFragmentationContextWithNondeterministicEngine())
-      found_outer_relevant_fragmentation_context = true;
-
-    // When we have found the outermost fragmentation context candidate, we need
-    // to make sure to keep walking all the way up to the element that we can
-    // tell for sure will establish a new formatting context.
-    //
-    // E.g. <span style="columns:1;"> will trigger legacy layout fallback (false
-    // positive). When this happens, we need to walk all the way up to the
-    // ancestor that establishes a formatting context, and this is the subtree
-    // that will force legacy layout.
-    if (found_outer_relevant_fragmentation_context &&
-        DefinitelyNewFormattingContext(*walker, *walker->GetComputedStyle())) {
-      walker->SetShouldForceLegacyLayoutForChild(true);
-      walker->SetNeedsReattachLayoutTree();
-      return true;
-    }
+    if (!parent ||
+        !parent->GetComputedStyle()
+             ->InsideFragmentationContextWithNondeterministicEngine())
+      break;
   }
 
-  if (GetDocument().Printing()) {
-    // Force legacy layout on the entire document, since we're printing, and
-    // there's some fragmentable box that needs legacy layout inside somewhere.
-    Element* root = GetDocument().documentElement();
-    root->SetShouldForceLegacyLayoutForChild(true);
-    root->SetNeedsReattachLayoutTree();
-    return true;
-  }
+  legacy_root->SetShouldForceLegacyLayoutForChild(true);
+  legacy_root->SetNeedsReattachLayoutTree();
 
-  return false;
+  // When we have found the outermost fragmentation context candidate, we need
+  // to make sure to mark for legacy all the way up to the element that we can
+  // tell for sure will establish a new formatting context.
+  //
+  // E.g. <span style="columns:1;"> will trigger legacy layout fallback (false
+  // positive). When this happens, we need to walk all the way up to the
+  // ancestor that establishes a formatting context, and this is the subtree
+  // that will force legacy layout.
+  legacy_root->ForceLegacyLayoutInFormattingContext(
+      *legacy_root->GetComputedStyle());
+
+  return true;
 }
 
 bool Element::IsFocusedElementInDocument() const {
@@ -5461,7 +5448,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
     ancestors.pop_back();
     const ComputedStyle* style =
         ancestor->EnsureOwnComputedStyle(style_recalc_context, kPseudoIdNone);
-    if (style->IsContainerForContainerQueries())
+    if (style->IsContainerForContainerQueries(*this))
       style_recalc_context.container = ancestor;
   }
 
@@ -5532,7 +5519,7 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
 
   StyleRecalcContext child_recalc_context = style_recalc_context;
   if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled() &&
-      element_style->IsContainerForContainerQueries()) {
+      element_style->IsContainerForContainerQueries(*this)) {
     child_recalc_context.container = this;
   }
 

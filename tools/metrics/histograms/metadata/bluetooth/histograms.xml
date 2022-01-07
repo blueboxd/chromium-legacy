@@ -188,6 +188,25 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram
+    name="Bluetooth.ChromeOS.FastPair.AccountKey.Failure.{FastPairPairingProtocol}"
+    enum="FastPairAccountKeyFailure" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Breaks down why a account key write attempt to a device failed (see
+    'Bluetooth.ChromeOS.FastPair.AccountKey.Result'). Suffixed by FastPair
+    pairing protocol type. Emitted on the OnWriteAccountKey event in the Fast
+    Pair flow.
+  </summary>
+  <token key="FastPairPairingProtocol">
+    <variant name="InitialPairingProtocol" summary="initial pairing protocol"/>
+    <variant name="RetroactivePairingProtocol"
+        summary="retroactive pairing protocol"/>
+  </token>
+</histogram>
+
 <histogram name="Bluetooth.ChromeOS.FastPair.AccountKey.Write.GattErrorReason"
     enum="BluetoothDeviceConnectErrorCode" expires_after="2022-09-20">
   <owner>shanefitz@google.com</owner>
@@ -202,6 +221,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Bluetooth.ChromeOS.FastPair.AccountKey.Write.Result"
     enum="BooleanSuccess" expires_after="2022-06-20">
+  <obsolete>
+    Removed 2022/01/06 to add dimmensions for different pairing scenarios. See
+    `Bluetooth.ChromeOS.FastPair.AccountKey.Write.Result.{FastPairPairingProtocol}`
+  </obsolete>
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -213,8 +236,47 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="Bluetooth.ChromeOS.FastPair.AccountKey.Write.Result.{FastPairPairingProtocol}"
+    enum="BooleanSuccess" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records success or failure of writing an account key to a device. Emitted on
+    the OnPairFailure event and the OnDevicePaired event in the Fast Pair flow.
+  </summary>
+  <token key="FastPairPairingProtocol">
+    <variant name="InitialPairingProtocol" summary="initial pairing protocol"/>
+    <variant name="RetroactivePairingProtocol"
+        summary="retroactive pairing protocol"/>
+    <variant name="SubsequentPairingProtocol"
+        summary="subsequent pairing protocol"/>
+  </token>
+</histogram>
+
+<histogram name="Bluetooth.ChromeOS.FastPair.AccountKey.Write.TotalTime"
+    units="ms" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the total time it takes to write the account key gatt characteristic
+    of a device. Time is calculated as the difference between when the write to
+    characteristic occurs and when the OnAccountKeyWrite event is fired in the
+    GattServiceClient during the pairing protocol. Emitted when the
+    OnAccountKeyWrite event fires. If the account key write fails, then no value
+    is logged to this metric.
+  </summary>
+</histogram>
+
+<histogram
     name="Bluetooth.ChromeOS.FastPair.AccountKeyFailure.{FastPairPairingProtocol}"
     enum="FastPairAccountKeyFailure" expires_after="2022-09-20">
+  <obsolete>
+    Renamed to
+    'Bluetooth.ChromeOS.FastPair.AccountKey.Failure.{FastPairPairingProtocol}'
+    for consistency among metrics related to AccountKey. Removed 2022/01/05.
+  </obsolete>
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -234,6 +296,11 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Bluetooth.ChromeOS.FastPair.AccountKeyWrite.Result.{FastPairPairingProtocol}"
     enum="BooleanSuccess" expires_after="2022-09-20">
+  <obsolete>
+    Renamed to
+    'Bluetooth.ChromeOS.FastPair.AccountKey.Write.Result.{FastPairPairingProtocol}'
+    for consistency among metrics related to AccountKey. Removed 2022/01/05.
+  </obsolete>
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -248,6 +315,17 @@ chromium-metrics-reviews@google.com.
     <variant name="SubsequentPairingProtocol"
         summary="subsequent pairing protocol"/>
   </token>
+</histogram>
+
+<histogram name="Bluetooth.ChromeOS.FastPair.DeviceMetadataFetcher.Result"
+    enum="BooleanSuccess" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of fetching device metadata from the
+    repository. This metric is emitted when the metadata is fetched.
+  </summary>
 </histogram>
 
 <histogram
@@ -282,6 +360,26 @@ chromium-metrics-reviews@google.com.
     the device discovery, before the user elects to begin the pairing process.
     Emitted in the FastPair handshake (key exchange with the device) following
     the async call to create the data encryptor.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.ChromeOS.FastPair.FastPairDataEncryptor.CreateTime"
+    units="ms" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the total time it takes for a successful async creation of a
+    FastPairDataEncryptor (see
+    'Bluetooth.ChromeOS.FastPair.FastPairDataEncryptor.CreateResult'). The time
+    is calculated as the difference between the start of the call to create the
+    data encryptor, and when the callback is invoked. If the creation is
+    unsuccessful, then no value is logged to this metric. Emitted in the
+    FastPairHandshake on the OnDataEncryptorCreateAsync callback call. This
+    metric helps us understand how much time in the flow is being sunk into the
+    creation of the data encryptor, who's construction is responsible for
+    creating the secret key using ECDH (see
+    'Bluetooth.ChromeOS.FastPair.KeyGenerationResult').
   </summary>
 </histogram>
 
@@ -395,6 +493,72 @@ chromium-metrics-reviews@google.com.
     Records success or failure of key pair generation during the Fast Pair
     pairing encryption process. Emitted following the creation of the data
     encryptor.
+  </summary>
+</histogram>
+
+<histogram
+    name="Bluetooth.ChromeOS.FastPair.MessageStream.ConnectToService.ErrorReason"
+    enum="BluetoothSocketErrorReason" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the error reason that caused the failure of creating a RFCOMM
+    channel (creating the MessageStream). This metric is emitted after the
+    channel is failed to be created in the MessageStreamLookup in the
+    OnConnectError callback.
+  </summary>
+</histogram>
+
+<histogram
+    name="Bluetooth.ChromeOS.FastPair.MessageStream.ConnectToService.Result"
+    enum="BooleanSuccess" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of attempted to create an RFCOMM channel to
+    the device (creating the MessageStream). The metric is emitted in the
+    success/failure callbacks.
+  </summary>
+</histogram>
+
+<histogram
+    name="Bluetooth.ChromeOS.FastPair.MessageStream.ConnectToService.TotalConnectTime"
+    units="ms" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the total time it takes to create a successful RFCOMM channel
+    connection to the device. This metric is emitted after the channel is
+    successfully created, and it is not emitted on failure.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.ChromeOS.FastPair.MessageStream.Receive.ErrorReason"
+    enum="BluetoothConnectToServiceError" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the error reason that caused the failure of receiving data from a
+    socket in the Fast Pair MessageStream opened to the device. This metric is
+    emitted following an error to receive data from a socket, and no metric is
+    emitted on success.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.ChromeOS.FastPair.MessageStream.Receive.Result"
+    enum="BooleanSuccess" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of receiving data from a socket in the Fast
+    Pair MessageStream opened to the device. This metric is emitted after the
+    socket is attempted to be receive to in the MessageStream, either
+    ReceiveDataSuccess or ReceiveDataError callbacks.
   </summary>
 </histogram>
 

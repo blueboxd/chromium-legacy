@@ -11,6 +11,39 @@
 
 namespace {
 
+// Error strings should be kept in sync with the strings reflected in
+// device/bluetooth/bluez/bluetooth_socket_bluez.cc.
+const char kAcceptFailedString[] = "Failed to accept connection.";
+const char kInvalidUUIDString[] = "Invalid UUID";
+const char kSocketNotListeningString[] = "Socket is not listening.";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. This enum should be kept in sync
+// with the BluetoothConnectToServiceError enum in
+// src/tools/metrics/histograms/enums.xml.
+enum class ConnectToServiceError {
+  kUnknownError = 0,
+  kAcceptFailed = 1,
+  kInvalidUUID = 2,
+  kSocketNotListening = 3,
+  kMaxValue = kSocketNotListening,
+};
+
+ConnectToServiceError GetConnectToServiceError(const std::string& error) {
+  if (error == kAcceptFailedString)
+    return ConnectToServiceError::kAcceptFailed;
+
+  if (error == kInvalidUUIDString)
+    return ConnectToServiceError::kInvalidUUID;
+
+  if (error == kSocketNotListeningString)
+    return ConnectToServiceError::kSocketNotListening;
+
+  DCHECK(error != kSocketNotListeningString && error != kInvalidUUIDString &&
+         error != kAcceptFailedString);
+  return ConnectToServiceError::kUnknownError;
+}
+
 const char kEngagementFlowInitialMetric[] =
     "Bluetooth.ChromeOS.FastPair.EngagementFunnel.Steps.InitialPairingProtocol";
 const char kEngagementFlowSubsequentMetric[] =
@@ -44,19 +77,20 @@ const char kFastPairPairResultSubsequentMetric[] =
 const char kFastPairPairResultRetroactiveMetric[] =
     "Bluetooth.ChromeOS.FastPair.Pairing.Result.RetroactivePairingProtocol";
 const char kFastPairAccountKeyWriteResultInitialMetric[] =
-    "Bluetooth.ChromeOS.FastPair.AccountKeyWrite.Result.InitialPairingProtocol";
+    "Bluetooth.ChromeOS.FastPair.AccountKey.Write.Result."
+    "InitialPairingProtocol";
 const char kFastPairAccountKeyWriteResultSubsequentMetric[] =
-    "Bluetooth.ChromeOS.FastPair.AccountKeyWrite.Result."
+    "Bluetooth.ChromeOS.FastPair.AccountKey.Write.Result."
     "SubsequentPairingProtocol";
 const char kFastPairAccountKeyWriteResultRetroactiveMetric[] =
-    "Bluetooth.ChromeOS.FastPair.AccountKeyWrite.Result."
+    "Bluetooth.ChromeOS.FastPair.AccountKey.Write.Result."
     "RetroactivePairingProtocol";
 const char kFastPairAccountKeyWriteFailureInitialMetric[] =
-    "Bluetooth.ChromeOS.FastPair.AccountKeyFailure.InitialPairingProtocol";
+    "Bluetooth.ChromeOS.FastPair.AccountKey.Failure.InitialPairingProtocol";
 const char kFastPairAccountKeyWriteFailureSubsequentMetric[] =
-    "Bluetooth.ChromeOS.FastPair.AccountKeyFailure.SubsequentPairingProtocol";
+    "Bluetooth.ChromeOS.FastPair.AccountKey.Failure.SubsequentPairingProtocol";
 const char kFastPairAccountKeyWriteFailureRetroactiveMetric[] =
-    "Bluetooth.ChromeOS.FastPair.AccountKeyFailure.RetroactivePairingProtocol";
+    "Bluetooth.ChromeOS.FastPair.AccountKey.Failure.RetroactivePairingProtocol";
 const char kKeyGenerationResultMetric[] =
     "Bluetooth.ChromeOS.FastPair.KeyGenerationResult";
 const char kDataEncryptorCreateResultMetric[] =
@@ -89,6 +123,23 @@ const char kWriteAccountKeyCharacteristicResult[] =
     "Bluetooth.ChromeOS.FastPair.AccountKey.Write.Result";
 const char kWriteAccountKeyCharacteristicGattError[] =
     "Bluetooth.ChromeOS.FastPair.AccountKey.Write.GattErrorReason";
+const char kWriteAccountKeyTime[] =
+    "Bluetooth.ChromeOS.FastPair.AccountKey.Write.TotalTime";
+const char kTotalDataEncryptorCreateTime[] =
+    "Bluetooth.ChromeOS.FastPair.FastPairDataEncryptor.CreateTime";
+const char kMessageStreamReceiveResult[] =
+    "Bluetooth.ChromeOS.FastPair.MessageStream.Receive.Result";
+const char kMessageStreamReceiveError[] =
+    "Bluetooth.ChromeOS.FastPair.MessageStream.Receive.ErrorReason";
+const char kMessageStreamConnectToServiceError[] =
+    "Bluetooth.ChromeOS.FastPair.MessageStream.ConnectToService.ErrorReason";
+const char kMessageStreamConnectToServiceResult[] =
+    "Bluetooth.ChromeOS.FastPair.MessageStream.ConnectToService.Result";
+const char kMessageStreamConnectToServiceTime[] =
+    "Bluetooth.ChromeOS.FastPair.MessageStream.ConnectToService."
+    "TotalConnectTime";
+const char kDeviceMetadataFetchResult[] =
+    "Bluetooth.ChromeOS.FastPair.DeviceMetadataFetcher.Result";
 
 }  // namespace
 
@@ -295,8 +346,43 @@ void RecordWriteAccountKeyCharacteristicResult(bool success) {
 
 void RecordWriteAccountKeyGattError(
     device::BluetoothGattService::GattErrorCode error) {
-  base::UmaHistogramSparse(kWriteAccountKeyCharacteristicGattError,
-                           static_cast<int>(error));
+  base::UmaHistogramEnumeration(kWriteAccountKeyCharacteristicGattError, error);
+}
+
+void RecordWriteAccountKeyTime(base::TimeDelta write_time) {
+  base::UmaHistogramTimes(kWriteAccountKeyTime, write_time);
+}
+
+void RecordTotalDataEncryptorCreateTime(base::TimeDelta total_create_time) {
+  base::UmaHistogramTimes(kTotalDataEncryptorCreateTime, total_create_time);
+}
+
+void RecordMessageStreamReceiveResult(bool success) {
+  base::UmaHistogramBoolean(kMessageStreamReceiveResult, success);
+}
+
+void RecordMessageStreamReceiveError(
+    device::BluetoothSocket::ErrorReason error) {
+  base::UmaHistogramEnumeration(kMessageStreamReceiveError, error);
+}
+
+void RecordMessageStreamConnectToServiceResult(bool success) {
+  base::UmaHistogramBoolean(kMessageStreamConnectToServiceResult, success);
+}
+
+void RecordMessageStreamConnectToServiceError(const std::string& error) {
+  base::UmaHistogramEnumeration(kMessageStreamConnectToServiceError,
+                                GetConnectToServiceError(error));
+}
+
+void RecordMessageStreamConnectToServiceTime(
+    base::TimeDelta total_connect_time) {
+  base::UmaHistogramTimes(kMessageStreamConnectToServiceTime,
+                          total_connect_time);
+}
+
+void RecordDeviceMetadataFetchResult(bool success) {
+  base::UmaHistogramBoolean(kDeviceMetadataFetchResult, success);
 }
 
 }  // namespace quick_pair

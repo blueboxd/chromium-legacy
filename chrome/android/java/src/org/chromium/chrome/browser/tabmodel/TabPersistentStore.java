@@ -41,16 +41,15 @@ import org.chromium.chrome.browser.tab.HistoricalTabSaver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabIdManager;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateAttributes;
 import org.chromium.chrome.browser.tab.TabStateExtractor;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tab.state.FilePersistedTabDataStorage;
 import org.chromium.chrome.browser.tab.state.PersistedTabData;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.browser.tabpersistence.TabStateFileManager;
-import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -131,6 +130,9 @@ public class TabPersistentStore {
         new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
             public void onNavigationEntriesDeleted(Tab tab) {
+                if (!tab.isDestroyed()) {
+                    TabStateAttributes.from(tab).setIsTabStateDirty(true);
+                }
                 addTabToSaveQueue(tab);
             }
 
@@ -142,6 +144,20 @@ public class TabPersistentStore {
             @Override
             public void onRootIdChanged(Tab tab, int newRootId) {
                 addTabToSaveQueue(tab);
+            }
+
+            @Override
+            public void onPageLoadFinished(Tab tab, GURL url) {
+                if (!tab.isDestroyed()) {
+                    TabStateAttributes.from(tab).setIsTabStateDirty(true);
+                }
+            }
+
+            @Override
+            public void onTitleUpdated(Tab tab) {
+                if (!tab.isDestroyed()) {
+                    TabStateAttributes.from(tab).setIsTabStateDirty(true);
+                }
             }
         };
 
@@ -718,8 +734,8 @@ public class TabPersistentStore {
             boolean wasIncognitoTabModelSelected = mTabModelSelector.isIncognitoSelected();
             int selectedModelTabCount = mTabModelSelector.getCurrentModel().getCount();
 
-            TabModelUtils.setIndex(model, TabModelUtils.getTabIndexById(model, tabId),
-                    StartSurfaceUserData.getInstance().getUnusedTabRestoredAtStartup());
+            // TODO(hanxi): Sets the correct value for skipLoadingTab.
+            TabModelUtils.setIndex(model, TabModelUtils.getTabIndexById(model, tabId), false);
             boolean isIncognitoTabModelSelected = mTabModelSelector.isIncognitoSelected();
 
             // Setting the index will cause the tab's model to be selected. Set it back to the model
@@ -809,8 +825,8 @@ public class TabPersistentStore {
     }
 
     private void addTabToSaveQueueIfApplicable(Tab tab) {
-        if (tab == null) return;
-        if (mTabsToSave.contains(tab) || !((TabImpl) tab).isTabStateDirty()
+        if (tab == null || tab.isDestroyed()) return;
+        if (mTabsToSave.contains(tab) || !TabStateAttributes.from(tab).isTabStateDirty()
                 || isTabUrlContentScheme(tab)) {
             return;
         }
@@ -1251,7 +1267,9 @@ public class TabPersistentStore {
         protected void onPostExecute(Void v) {
             if (mDestroyed || isCancelled()) return;
             if (mStateSaved) {
-                ((TabImpl) mTab).setIsTabStateDirty(false);
+                if (!mTab.isDestroyed()) {
+                    TabStateAttributes.from(mTab).setIsTabStateDirty(false);
+                }
                 mTab.setIsTabSaveEnabled(isCriticalPersistedTabDataEnabled());
             }
             mSaveTabTask = null;

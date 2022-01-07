@@ -8085,7 +8085,9 @@ void RenderFrameHostImpl::CommitNavigation(
     GetContentClient()
         ->browser()
         ->RegisterNonNetworkSubresourceURLLoaderFactories(
-            GetProcess()->GetID(), routing_id_, &non_network_factories);
+            GetProcess()->GetID(), routing_id_,
+            subresource_loader_factories_config.origin(),
+            &non_network_factories);
 
     for (auto& factory : non_network_factories) {
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -9806,8 +9808,7 @@ void RenderFrameHostImpl::GetFileSystemAccessManager(
 
 void RenderFrameHostImpl::CreateLockManager(
     mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
-  GetProcess()->CreateLockManager(GetRoutingID(), GetLastCommittedOrigin(),
-                                  std::move(receiver));
+  GetProcess()->CreateLockManager(storage_key(), std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateIDBFactory(

@@ -325,9 +325,10 @@
       'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
       'fuchsia-fyi-arm64-femu': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
+      'fuchsia-fyi-x64-asan': 'asan_bot_fuchsia',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
-      'fuchsia-fyi-x64-asan': 'asan_bot_fuchsia',
+      'fuchsia-fyi-x64-wst': 'fuchsia_workstation_bot',
       'ios14-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios14-sdk-simulator': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios15-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
@@ -464,14 +465,6 @@
     'chromium.gpu.fyi': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
       'ANGLE GPU Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
-      'Android FYI Release (Nexus 5)': 'gpu_tests_android_release_trybot_reclient',
-      'Android FYI Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64_reclient',
-      'Android FYI Release (Nexus 9)': 'gpu_tests_android_release_trybot_arm64_reclient',
-      'Android FYI Release (NVIDIA Shield TV)': 'gpu_tests_android_release_trybot_arm64',
-      'Android FYI Release (Pixel 2)': 'gpu_tests_android_release_trybot_reclient',
-      'Android FYI Release (Pixel 4)': 'gpu_tests_android_release_trybot_reclient',
-      'Android FYI SkiaRenderer GL (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64_reclient',
-      'Android FYI SkiaRenderer Vulkan (Pixel 2)': 'gpu_tests_android_release_trybot_reclient',
       'ChromeOS FYI Release (amd64-generic)': 'gpu_tests_chromeos_amd64_release_trybot_dcheck_off_no_symbols',
       'ChromeOS FYI Release (kevin)': 'gpu_tests_chromeos_kevin_release_trybot_dcheck_off_no_symbols',
       'GPU FYI Android arm Builder': 'gpu_tests_android_release_trybot_reclient',
@@ -846,7 +839,6 @@
       'android-binary-size': 'android_binary_size',
       'android_blink_rel': 'android_release_trybot',
       'android_cfi_rel_ng': 'android_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
-      'android_clang_dbg_recipe': 'android_clang_asan_debug_trybot_compile_only_fastbuild',
       'android_compile_dbg': 'android_debug_trybot_compile_only',
       'android_compile_x64_dbg': 'android_debug_trybot_compile_only_x64',
       'android_compile_x86_dbg': 'android_debug_trybot_compile_only_x86',
@@ -1272,11 +1264,6 @@
 
     'android_clang_asan_debug_bot_reclient': [
       'android', 'clang', 'asan', 'debug_bot_reclient', 'strip_debug_info',
-    ],
-
-    'android_clang_asan_debug_trybot_compile_only_fastbuild': [
-      'android', 'clang', 'asan', 'debug_bot', 'compile_only',
-      'android_fastbuild',
     ],
 
     'android_clang_asan_release_bot': [
@@ -2217,6 +2204,10 @@
       'official_optimize_goma_trybot', 'fuchsia',
     ],
 
+    'fuchsia_workstation_bot': [
+      'release_bot', 'fuchsia', 'fuchsia_include_workstation_image',
+    ],
+
     'gpu_fyi_tests_debug_trybot': [
       'gpu_fyi_tests', 'debug_bot', 'disable_nacl',
     ],
@@ -2760,7 +2751,7 @@
     ],
 
     'official_goma_fuchsia_arm64_perf': [
-      'official', 'goma', 'minimal_symbols', 'fuchsia', 'fuchsia_include_all_images', 'arm64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator'
+      'official', 'goma', 'minimal_symbols', 'fuchsia', 'fuchsia_include_sd_images', 'arm64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator'
     ],
 
     'official_goma_linux_pgo': [
@@ -3362,7 +3353,7 @@
       'mixins': ['cronet_common'],
       'gn_args': ('use_partition_alloc=false enable_reporting=true '
                   'use_hashed_jni_names=true '
-                  'default_min_sdk_version=16 '
+                  'default_min_sdk_version=19 '
                   'clang_use_default_sample_profile=false '
                   'media_use_ffmpeg = false'
                   'use_thin_lto=false '  # https://crbug.com/1136963
@@ -3519,8 +3510,12 @@
       'gn_args': 'fuchsia_code_coverage=true',
     },
 
-    'fuchsia_include_all_images': {
+    'fuchsia_include_sd_images': {
       'gn_args': 'fuchsia_additional_boot_images=["//third_party/fuchsia-sdk/images-internal/astro-release/","//third_party/fuchsia-sdk/images-internal/sherlock-release/"]',
+    },
+
+    'fuchsia_include_workstation_image': {
+      'gn_args': 'fuchsia_additional_boot_images=["//third_party/fuchsia-sdk/images/qemu-x64-release/"]',
     },
 
     'full_symbols': {

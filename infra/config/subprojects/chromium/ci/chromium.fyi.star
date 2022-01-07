@@ -239,6 +239,24 @@ ci.builder(
 )
 
 ci.builder(
+    name = "fuchsia-fyi-x64-wst",
+    console_view_entry = [
+        consoles.console_view_entry(
+            category = "fuchsia|x64",
+            short_name = "wst",
+        ),
+        consoles.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.fuchsia",
+            category = "fyi",
+            short_name = "wst",
+        ),
+    ],
+    notifies = ["cr-fuchsia"],
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.builder(
     name = "lacros-amd64-generic-rel-fyi",
     console_view_entry = consoles.console_view_entry(
         category = "lacros",
@@ -582,6 +600,7 @@ ci.builder(
 
 ci.builder(
     name = "Comparison Windows",
+    builderless = True,
     console_view_entry = consoles.console_view_entry(
         category = "win",
         short_name = "re",
@@ -626,6 +645,7 @@ ci.builder(
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     reclient_jobs = 400,
     reclient_instance = rbe_instance.DEFAULT,
+    reclient_ensure_verified = True,
 )
 # End - Reclient migration, phase 2, block 1 shadow builders
 

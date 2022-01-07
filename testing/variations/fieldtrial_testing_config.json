@@ -1812,7 +1812,8 @@
         {
             "platforms": [
                 "android",
-                "windows"
+                "windows",
+                "mac"
             ],
             "experiments": [
                 {
@@ -6601,6 +6602,18 @@
                     ]
                 },
                 {
+                    "name": "EnabledContextMenuWithRootAsDefault_20211206",
+                    "params": {
+                        "use_root_bookmark_as_default": "true"
+                    },
+                    "enable_features": [
+                        "ReadLater"
+                    ],
+                    "disable_features": [
+                        "BookmarkBottomSheet"
+                    ]
+                },
+                {
                     "name": "EnabledDedicatedSaveFlow",
                     "params": {
                         "autodismiss_enabled": "true",
@@ -8559,21 +8572,6 @@
                         "Vulkan"
                     ],
                     "min_os_version": "10.0.0"
-                }
-            ]
-        }
-    ],
-    "WebApkInstallCompleteNotification": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WebApkInstallCompleteNotification"
-                    ]
                 }
             ]
         }

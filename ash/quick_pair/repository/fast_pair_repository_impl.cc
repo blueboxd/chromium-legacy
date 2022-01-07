@@ -4,9 +4,12 @@
 
 #include "ash/quick_pair/repository/fast_pair_repository_impl.h"
 
+#include "ash/quick_pair/common/fast_pair/fast_pair_metrics.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/proto/fastpair.pb.h"
 #include "ash/quick_pair/proto/fastpair_data.pb.h"
+#include "ash/quick_pair/repository/fast_pair/device_id_map.h"
+#include "ash/quick_pair/repository/fast_pair/device_image_store.h"
 #include "ash/quick_pair/repository/fast_pair/device_metadata_fetcher.h"
 #include "ash/quick_pair/repository/fast_pair/fast_pair_image_decoder.h"
 #include "ash/quick_pair/repository/fast_pair/footprints_fetcher.h"
@@ -27,6 +30,8 @@ FastPairRepositoryImpl::FastPairRepositoryImpl()
       footprints_fetcher_(std::make_unique<FootprintsFetcher>()),
       image_decoder_(std::make_unique<FastPairImageDecoder>(
           std::unique_ptr<image_fetcher::ImageFetcher>())),
+      device_id_map_(std::make_unique<DeviceIdMap>()),
+      device_image_store_(std::make_unique<DeviceImageStore>()),
       saved_device_registry_(std::make_unique<SavedDeviceRegistry>()),
       footprints_last_updated_(base::Time::UnixEpoch()) {
   // TODO(crbug/1270534): Determine the best place to make this call.
@@ -57,6 +62,8 @@ void FastPairRepositoryImpl::OnMetadataFetched(
     const std::string& normalized_model_id,
     DeviceMetadataCallback callback,
     absl::optional<nearby::fastpair::GetObservedDeviceResponse> response) {
+  RecordDeviceMetadataFetchResult(/*success=*/response.has_value());
+
   if (!response) {
     std::move(callback).Run(nullptr);
     return;

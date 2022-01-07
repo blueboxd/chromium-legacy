@@ -893,6 +893,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return NO;
 }
 
+#if !TARGET_OS_MACCATALYST
 - (web::PermissionState)stateForPermission:(web::Permission)permission {
   WKMediaCaptureState captureState;
   switch (permission) {
@@ -937,6 +938,17 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       break;
   }
 }
+#else
+// Stub getter implementation for mac catalyst build.
+- (web::PermissionState)stateForPermission:(web::Permission)permission {
+  return web::PermissionState::NOT_ACCESSIBLE;
+}
+
+// Stub setter implementation for mac catalyst build.
+- (void)setState:(web::PermissionState)state
+    forPermission:(web::Permission)permission {
+}
+#endif
 
 - (NSData*)sessionStateData {
   if (@available(iOS 15, *)) {

@@ -2669,14 +2669,17 @@ const FeatureEntry::FeatureVariation kSnoopingProtectionVariations[] = {
 
 const FeatureEntry::FeatureParam kQuickDim120s[] = {{"quick_dim_ms", "120000"}};
 
-const FeatureEntry::FeatureParam kQuickDim30s[] = {{"quick_dim_ms", "30000"}};
+const FeatureEntry::FeatureParam kQuickDim45s[] = {{"quick_dim_ms", "45000"}};
+
+const FeatureEntry::FeatureParam kQuickDim10s[] = {{"quick_dim_ms", "10000"}};
 
 const FeatureEntry::FeatureParam kQuickDimInstantly[] = {
     {"quick_dim_ms", "1000"}};
 
 const FeatureEntry::FeatureVariation kQuickDimVariations[] = {
     {"QuickDim120s", kQuickDim120s, base::size(kQuickDim120s), nullptr},
-    {"QuickDim30s", kQuickDim30s, base::size(kQuickDim30s), nullptr},
+    {"QuickDim45s", kQuickDim45s, base::size(kQuickDim45s), nullptr},
+    {"QuickDim10s", kQuickDim10s, base::size(kQuickDim10s), nullptr},
     {"QuickDimInstantly", kQuickDimInstantly, base::size(kQuickDimInstantly),
      nullptr}};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -5676,13 +5679,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"file-handling-icons", flag_descriptions::kFileHandlingIconsName,
      flag_descriptions::kFileHandlingIconsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kFileHandlingIcons)},
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-assistant-launcher-integration",
-     flag_descriptions::kEnableAssistantLauncherIntegrationName,
-     flag_descriptions::kEnableAssistantLauncherIntegrationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableAssistantSearch)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"strict-origin-isolation", flag_descriptions::kStrictOriginIsolationName,
      flag_descriptions::kStrictOriginIsolationDescription, kOsAll,

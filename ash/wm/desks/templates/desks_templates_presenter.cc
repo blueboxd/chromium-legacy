@@ -28,10 +28,6 @@ namespace {
 
 DesksTemplatesPresenter* g_instance = nullptr;
 
-// The amount of time for which the launch template toasts will remain
-// displayed.
-constexpr int kLaunchTemplateToastDurationMs = 6 * 1000;
-
 // Toast name.
 constexpr char kMaximumDeskLaunchTemplateToastName[] =
     "MaximumDeskLaunchTemplateToast";
@@ -142,9 +138,7 @@ void DesksTemplatesPresenter::LaunchDeskTemplate(
         /*text=*/
         l10n_util::GetStringFUTF16(
             IDS_ASH_DESKS_TEMPLATES_REACH_MAXIMUM_DESK_TOAST,
-            base::FormatNumber(desks_util::kMaxNumberOfDesks)),
-        kLaunchTemplateToastDurationMs,
-        /*dismiss_text=*/absl::nullopt};
+            base::FormatNumber(desks_util::kMaxNumberOfDesks))};
     ToastManager::Get()->Show(toast_data);
     return;
   }
@@ -173,6 +167,9 @@ void DesksTemplatesPresenter::SaveOrUpdateDeskTemplate(
   auto desk_template_clone = desk_template->Clone();
 
   weak_ptr_factory_.InvalidateWeakPtrs();
+
+  if (!is_update)
+    RecordWindowAndTabCountHistogram(desk_template.get());
 
   // Save or update `desk_template_clone` as an entry in DeskModel.
   GetDeskModel()->AddOrUpdateEntry(
@@ -227,6 +224,7 @@ void DesksTemplatesPresenter::OnDeleteEntry(
     return;
 
   RecordDeleteTemplateHistogram();
+  RecordUserTemplateCountHistogram(GetEntryCount(), GetMaxEntryCount());
   GetAllEntries();
 }
 
@@ -276,8 +274,10 @@ void DesksTemplatesPresenter::OnAddOrUpdateEntry(
   for (auto& overview_grid : grid_list)
     overview_grid->UpdateSaveDeskAsTemplateButton();
 
-  if (!was_update)
+  if (!was_update) {
     RecordNewTemplateHistogram();
+    RecordUserTemplateCountHistogram(GetEntryCount(), GetMaxEntryCount());
+  }
 }
 
 }  // namespace ash

@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
+#include "content/browser/interest_group/ad_auction_result_metrics.h"
 #include "content/browser/interest_group/auction_runner.h"
 #include "content/browser/interest_group/interest_group_manager.h"
 #include "content/browser/renderer_host/page_impl.h"
@@ -93,7 +94,7 @@ void FetchReport(network::mojom::URLLoaderFactory* url_loader_factory,
   network::SimpleURLLoader* simple_url_loader_ptr = simple_url_loader.get();
   // Pass simple_url_loader to keep it alive until the request fails or succeeds
   // to prevent cancelling the request.
-  // TODO(qingxin): time out these requests if they take too long.
+  simple_url_loader_ptr->SetTimeoutDuration(base::Seconds(30));
   simple_url_loader_ptr->DownloadHeadersOnly(
       url_loader_factory,
       base::BindOnce([](std::unique_ptr<network::SimpleURLLoader>,
@@ -139,22 +140,28 @@ bool IsAuctionValid(const blink::mojom::AuctionAdConfig& config) {
     return false;
   }
 
-  if (!config.interest_group_buyers ||
-      config.interest_group_buyers->is_all_buyers()) {
+  const auto& shareable_config = config.shareable_auction_ad_config;
+  // This isn't marked as optional in the Mojo struct, so Mojo should make sure
+  // it is non-null.
+  DCHECK(shareable_config);
+
+  if (!shareable_config->interest_group_buyers ||
+      shareable_config->interest_group_buyers->is_all_buyers()) {
     return false;
   }
-  DCHECK(config.interest_group_buyers->is_buyers());
+  DCHECK(shareable_config->interest_group_buyers->is_buyers());
 
   // All interest group owners must be HTTPS.
-  for (const url::Origin& buyer : config.interest_group_buyers->get_buyers()) {
+  for (const url::Origin& buyer :
+       shareable_config->interest_group_buyers->get_buyers()) {
     if (buyer.scheme() != url::kHttpsScheme)
       return false;
   }
 
   // All buyer signals must be for listed buyers.
-  if (config.per_buyer_signals) {
-    for (const auto& it : config.per_buyer_signals.value()) {
-      if (!base::Contains(config.interest_group_buyers->get_buyers(),
+  if (shareable_config->per_buyer_signals) {
+    for (const auto& it : shareable_config->per_buyer_signals.value()) {
+      if (!base::Contains(shareable_config->interest_group_buyers->get_buyers(),
                           it.first)) {
         return false;
       }
@@ -294,7 +301,8 @@ void AdAuctionServiceImpl::RunAdAuction(blink::mojom::AuctionAdConfigPtr config,
 
   // Filter out buyers for whom the interest group API is not allowed.
   std::vector<url::Origin> filtered_buyers;
-  const auto& buyers = config->interest_group_buyers->get_buyers();
+  const auto& buyers =
+      config->shareable_auction_ad_config->interest_group_buyers->get_buyers();
   std::copy_if(
       buyers.begin(), buyers.end(), std::back_inserter(filtered_buyers),
       [browser_context, &frame_origin](const url::Origin& buyer) {
@@ -429,10 +437,15 @@ void AdAuctionServiceImpl::OnAuctionComplete(
         base::StrCat({"Worklet error: ", error}));
   }
 
+  auto* auction_result_metrics = AdAuctionResultMetrics::GetOrCreateForPage(
+      render_frame_host()->GetPage());
+
   if (!render_url) {
     DCHECK(!bidder_report_url);
     DCHECK(!seller_report_url);
     std::move(callback).Run(absl::nullopt);
+    auction_result_metrics->ReportAuctionResult(
+        AdAuctionResultMetrics::AuctionResult::kFailed);
     return;
   }
 
@@ -452,6 +465,8 @@ void AdAuctionServiceImpl::OnAuctionComplete(
   DCHECK(render_url->is_valid());
 
   std::move(callback).Run(render_url);
+  auction_result_metrics->ReportAuctionResult(
+      AdAuctionResultMetrics::AuctionResult::kSucceeded);
 
   network::mojom::URLLoaderFactory* factory = GetTrustedURLLoaderFactory();
   if (bidder_report_url) {

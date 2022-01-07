@@ -87,11 +87,13 @@ const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
 
-  [notificationCenter
-      addObserver:self
-         selector:@selector(notifyUpdateWebContentsVisibility)
-             name:NSApplicationDidChangeOcclusionStateNotification
-           object:nil];
+  if(@available(macOS 10.9, *)) {
+    [notificationCenter
+        addObserver:self
+           selector:@selector(notifyUpdateWebContentsVisibility)
+               name:NSApplicationDidChangeOcclusionStateNotification
+             object:nil];
+  }
   [notificationCenter addObserver:self
                          selector:@selector(windowWillMove:)
                              name:NSWindowWillMoveNotification
@@ -112,10 +114,12 @@ const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
                          selector:@selector(windowWillEndLiveResize)
                              name:NSWindowDidEndLiveResizeNotification
                            object:nil];
-  [notificationCenter addObserver:self
-                         selector:@selector(windowChangedOcclusionState:)
-                             name:NSWindowDidChangeOcclusionStateNotification
-                           object:nil];
+  if(@available(macOS 10.9, *)) {
+    [notificationCenter addObserver:self
+                           selector:@selector(windowChangedOcclusionState:)
+                               name:NSWindowDidChangeOcclusionStateNotification
+                             object:nil];
+  }
   [notificationCenter addObserver:self
                          selector:@selector(windowWillClose:)
                              name:NSWindowWillCloseNotification
@@ -283,11 +287,13 @@ const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
     return remote_cocoa::mojom::Visibility::kHidden;
   }
 
-  BOOL windowOccluded =
-      !([window occlusionState] & NSWindowOcclusionStateVisible);
-  if (windowOccluded) {
-    // If macOS says the window is occluded, take that answer.
-    return remote_cocoa::mojom::Visibility::kOccluded;
+  if(@available(macOS 10.9, *)) {
+    BOOL windowOccluded =
+        !([window occlusionState] & NSWindowOcclusionStateVisible);
+    if (windowOccluded) {
+      // If macOS says the window is occluded, take that answer.
+      return remote_cocoa::mojom::Visibility::kOccluded;
+    }
   }
 
   // If manual occlusion detection is disabled in the experiement, return the

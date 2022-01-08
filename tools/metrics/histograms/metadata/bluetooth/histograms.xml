@@ -383,6 +383,58 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.ChromeOS.FastPair.FastPairRepository.Cache.Result"
+    enum="Boolean" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records whether or not device metadata we retrieve is in the cache in the
+    repository. Records true when the metadata is in the cache, and false when
+    the metadata is not in the cache. Emitted in the FastPairRepository on a
+    GetDeviceMetadata request.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.ChromeOS.FastPair.FootprintsFetcher.Delete.Result"
+    enum="BooleanSuccess" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of a Delete request in the FootprintsFetcher.
+    A failure is considered no response from the server. A success is considered
+    a response that is able to be parsed. Emitted when the HTTP response is
+    received from the Footprints server.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.ChromeOS.FastPair.FootprintsFetcher.Get.Result"
+    enum="BooleanSuccess" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of a Get request in the FootprintsFetcher. A
+    failure is considered either no response, or a response that is unable to be
+    parsed. A success is considered a response that is able to be parsed.
+    Emitted when the HTTP response is received from the Footprints server.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.ChromeOS.FastPair.FootprintsFetcher.Post.Result"
+    enum="BooleanSuccess" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of a Post request in the FootprintsFetcher. A
+    failure is considered no response from the server. A success is considered a
+    response that is able to be parsed. Emitted when the HTTP response is
+    received from the Footprints server.
+  </summary>
+</histogram>
+
 <histogram name="Bluetooth.ChromeOS.FastPair.GattConnection.ErrorReason"
     enum="BluetoothDeviceConnectErrorCode" expires_after="2022-09-20">
   <owner>shanefitz@google.com</owner>
@@ -404,6 +456,32 @@ chromium-metrics-reviews@google.com.
     Records success or failure of creating a Gatt connection during the Fast
     Pair pairing protocol. Emitted following the attempted creation of the Gatt
     service client during the key based pairing exchange.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.ChromeOS.FastPair.Handshake.FailureReason"
+    enum="FastPairHandshakeFailureReason" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records reason behind the failure of the big picture Fast Pair Handshake
+    with a device (see 'Bluetooth.ChromeOS.FastPair.Handshake.Result'). Emitted
+    on Handshake failure.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.ChromeOS.FastPair.Handshake.Result"
+    enum="BooleanSuccess" expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of the big picture Fast Pair Handshake with a
+    device. Possible failures include : creating a Gatt connection, creating the
+    data encryptor, writing to the device, parsing the response bytes from the
+    device. Success is considered when we receive a valid response from the
+    device. Emitted when the Handshake reaches a terminal point.
   </summary>
 </histogram>
 

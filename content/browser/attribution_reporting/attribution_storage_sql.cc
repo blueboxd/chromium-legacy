@@ -5,7 +5,9 @@
 #include "content/browser/attribution_reporting/attribution_storage_sql.h"
 
 #include <stdint.h>
+
 #include <string>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,7 +17,6 @@
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
-#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -923,6 +924,21 @@ absl::optional<base::Time> AttributionStorageSql::GetNextReportTime(
   return absl::nullopt;
 }
 
+std::vector<EventAttributionReport> AttributionStorageSql::GetReports(
+    const std::vector<EventAttributionReport::Id>& ids) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
+    return {};
+
+  std::vector<EventAttributionReport> reports;
+  for (EventAttributionReport::Id id : ids) {
+    absl::optional<EventAttributionReport> report = GetReport(id);
+    if (report.has_value())
+      reports.push_back(std::move(*report));
+  }
+  return reports;
+}
+
 absl::optional<EventAttributionReport> AttributionStorageSql::GetReport(
     EventAttributionReport::Id conversion_id) {
   static constexpr char kGetReportSql[] =
@@ -1697,7 +1713,7 @@ void AttributionStorageSql::DatabaseErrorCallback(int extended_error,
     // or hardware issues, not coding errors at the client level, so displaying
     // the error would probably lead to confusion.  The ignored call signals the
     // test-expectation framework that the error was handled.
-    ignore_result(sql::Database::IsExpectedSqliteError(extended_error));
+    std::ignore = sql::Database::IsExpectedSqliteError(extended_error);
     return;
   }
 

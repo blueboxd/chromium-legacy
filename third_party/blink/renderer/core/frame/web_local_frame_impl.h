@@ -218,6 +218,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool SelectAroundCaret(mojom::blink::SelectionGranularity granularity,
                          bool should_show_handle,
                          bool should_show_context_menu);
+  EphemeralRange GetWordSelectionRangeAroundCaret() const;
   void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
   void SelectRange(const WebRange&,
                    HandleVisibilityBehavior,
@@ -335,7 +336,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void UpdateCurrentHistoryItem() override;
   PageState CurrentHistoryItemToPageState() override;
   const WebHistoryItem& GetCurrentHistoryItem() const override;
-  bool ServiceWorkerSubresourceFilterEnabled() override;
   void SetLocalStorageArea(
       CrossVariantMojoRemote<mojom::StorageAreaInterfaceBase>
           local_storage_area) override;

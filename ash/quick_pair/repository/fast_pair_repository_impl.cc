@@ -16,8 +16,11 @@
 #include "ash/quick_pair/repository/fast_pair/proto_conversions.h"
 #include "ash/quick_pair/repository/fast_pair/saved_device_registry.h"
 #include "ash/services/quick_pair/public/cpp/account_key_filter.h"
+#include "base/callback_helpers.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "chromeos/services/bluetooth_config/public/cpp/device_image_info.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "device/bluetooth/bluetooth_device.h"
 
@@ -33,12 +36,7 @@ FastPairRepositoryImpl::FastPairRepositoryImpl()
       device_id_map_(std::make_unique<DeviceIdMap>()),
       device_image_store_(std::make_unique<DeviceImageStore>()),
       saved_device_registry_(std::make_unique<SavedDeviceRegistry>()),
-      footprints_last_updated_(base::Time::UnixEpoch()) {
-  // TODO(crbug/1270534): Determine the best place to make this call.
-  // footprints_fetcher_->GetUserDevices(
-  //     base::BindOnce(&FastPairRepositoryImpl::UpdateUserDevicesCache,
-  //                    weak_ptr_factory_.GetWeakPtr()));
-}
+      footprints_last_updated_(base::Time::UnixEpoch()) {}
 
 FastPairRepositoryImpl::~FastPairRepositoryImpl() = default;
 
@@ -48,10 +46,12 @@ void FastPairRepositoryImpl::GetDeviceMetadata(
   std::string normalized_id = base::ToUpperASCII(hex_model_id);
   if (metadata_cache_.contains(normalized_id)) {
     QP_LOG(VERBOSE) << __func__ << ": Data already in cache.";
+    RecordFastPairRepositoryCacheResult(/*success=*/true);
     std::move(callback).Run(metadata_cache_[normalized_id].get());
     return;
   }
   QP_LOG(VERBOSE) << __func__ << ": Not cached, fetching from web service.";
+  RecordFastPairRepositoryCacheResult(/*success=*/false);
   device_metadata_fetcher_->LookupHexDeviceId(
       normalized_id, base::BindOnce(&FastPairRepositoryImpl::OnMetadataFetched,
                                     weak_ptr_factory_.GetWeakPtr(),
@@ -240,6 +240,63 @@ bool FastPairRepositoryImpl::DeleteAssociatedDevice(
                                         base::DoNothing());
   // TODO(jonmann): Handle saving pending update to disk + retries.
   return true;
+}
+
+void FastPairRepositoryImpl::FetchDeviceImages(scoped_refptr<Device> device) {
+  QP_LOG(INFO) << __func__ << ": Fetching device images for model ID "
+               << device->metadata_id;
+  // Save a record of the device ID -> model ID for this device so that we can
+  // display images for device objects that lack a model ID, such as
+  // device::BluetoothDevice.
+  device_id_map_->SaveModelIdForDevice(device);
+
+  GetDeviceMetadata(
+      device->metadata_id,
+      base::BindOnce(&FastPairRepositoryImpl::CompleteFetchDeviceImages,
+                     weak_ptr_factory_.GetWeakPtr(), device->metadata_id));
+}
+
+void FastPairRepositoryImpl::CompleteFetchDeviceImages(
+    const std::string& hex_model_id,
+    DeviceMetadata* device_metadata) {
+  QP_LOG(INFO) << __func__
+               << ": Completing fetching device images for model ID "
+               << hex_model_id;
+  device_image_store_->SaveDeviceImages(hex_model_id, device_metadata,
+                                        base::DoNothing());
+}
+
+bool FastPairRepositoryImpl::PersistDeviceImages(scoped_refptr<Device> device) {
+  QP_LOG(INFO) << __func__ << ": Persisting device images for model ID "
+               << device->metadata_id;
+  device_id_map_->PersistRecordsForDevice(device);
+  return device_image_store_->PersistDeviceImages(device->metadata_id);
+}
+
+bool FastPairRepositoryImpl::EvictDeviceImages(
+    const device::BluetoothDevice* device) {
+  const std::string device_id = device->GetIdentifier();
+  absl::optional<const std::string> hex_model_id =
+      device_id_map_->GetModelIdForDeviceId(device_id);
+  if (!hex_model_id)
+    return false;
+  device_id_map_->EvictDeviceIdRecord(device_id);
+
+  // Before evicting images, check if other device IDs map to this model ID.
+  if (device_id_map_->HasPersistedRecordsForModelId(hex_model_id.value()))
+    return false;
+
+  return device_image_store_->EvictDeviceImages(hex_model_id.value());
+}
+
+absl::optional<const chromeos::bluetooth_config::DeviceImageInfo>
+FastPairRepositoryImpl::GetImagesForDevice(const std::string& device_id) {
+  absl::optional<const std::string> hex_model_id =
+      device_id_map_->GetModelIdForDeviceId(device_id);
+  if (!hex_model_id)
+    return absl::nullopt;
+
+  return device_image_store_->GetImagesForDeviceModel(hex_model_id.value());
 }
 
 }  // namespace quick_pair

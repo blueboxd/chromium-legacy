@@ -38,6 +38,7 @@ consoles.console_view(
             "network",
             "viz",
             "win10",
+            "win11",
             "win32",
             "paeverywhere",
             "backuprefptr",
@@ -86,7 +87,10 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "viz",
     ),
+    goma_backend = None,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -646,6 +650,7 @@ ci.builder(
     reclient_jobs = 400,
     reclient_instance = rbe_instance.DEFAULT,
     reclient_ensure_verified = True,
+    reclient_rewrapper_env = {"RBE_compare": "true"},
 )
 # End - Reclient migration, phase 2, block 1 shadow builders
 
@@ -1140,6 +1145,18 @@ ci.builder(
     ),
     os = os.WINDOWS_10,
     notifies = ["Win 10 Fast Ring"],
+)
+
+ci.builder(
+    name = "Win11 Tests x64",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win11",
+    ),
+    goma_backend = None,
+    main_console_view = None,
+    os = os.WINDOWS_10,
+    triggered_by = ["ci/Win x64 Builder"],
 )
 
 ci.builder(

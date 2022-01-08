@@ -52,6 +52,11 @@ const base::Feature kAllowTouchpadHapticClickSettings{
 const base::Feature kAlwaysReinstallSystemWebApps{
     "ReinstallSystemWebApps", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
+const base::Feature kAnonymousUpdateChecks{"AnonymousUpdateChecks",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Controls whether web apps can be installed via APKs on Chrome OS.
 const base::Feature kApkWebAppInstalls{"ApkWebAppInstalls",
@@ -322,6 +327,15 @@ const base::Feature kDesktopPWAsTabStripSettings{
 // Adds support for web bundles, making web apps able to be launched offline.
 const base::Feature kDesktopPWAsWebBundles{"DesktopPWAsWebBundles",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Tries disabling the HTTP disk cache.
+const base::Feature kDisableHttpDiskCache{"DisableHttpDiskCache",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// The size of the memory cache when the HTTP disk cache is disabled. 0 uses the
+// default size.
+const base::FeatureParam<int> kDisableHttpDiskCacheMemoryCacheSizeParam{
+    &kDisableHttpDiskCache, "MemoryCacheSize", 0};
 
 // Enable DNS over HTTPS (DoH).
 const base::Feature kDnsOverHttps {

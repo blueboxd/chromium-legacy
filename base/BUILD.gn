@@ -1395,7 +1395,6 @@ mixed_component("base") {
     "//build:branding_buildflags",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
-    "//build:os_buildflags",
     "//build/config/compiler:compiler_buildflags",
     "//third_party/modp_b64",
   ]
@@ -2230,6 +2229,7 @@ mixed_component("base") {
       "files/file_util_mac.mm",
       "mac/backup_util.h",
       "mac/backup_util.mm",
+      "mac/bridging.h",
       "mac/bundle_locations.h",
       "mac/bundle_locations.mm",
       "mac/call_with_eh_frame.cc",
@@ -3345,7 +3345,6 @@ test("base_unittests") {
     "//base/third_party/dynamic_annotations",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
-    "//build:os_buildflags",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",

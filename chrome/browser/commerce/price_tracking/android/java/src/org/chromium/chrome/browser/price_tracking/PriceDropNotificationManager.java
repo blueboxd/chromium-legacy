@@ -193,6 +193,20 @@ public class PriceDropNotificationManager {
      * @param actionId the id used to identify certain action.
      * @param url of the tab which triggered the notification.
      * @param offerId the id of the offer associated with this notification.
+     * @param recordMetrics Whether to record metrics using {@link NotificationUmaTracker}. Only
+     *         Chime notification code path should set this to true.
+     */
+    public void onNotificationActionClicked(
+            String actionId, String url, @Nullable String offerId, boolean recordMetrics) {
+        onNotificationActionClicked(actionId, url, offerId, null, recordMetrics);
+    }
+
+    /**
+     * Handles the notification action click events.
+     *
+     * @param actionId the id used to identify certain action.
+     * @param url of the tab which triggered the notification.
+     * @param offerId the id of the offer associated with this notification.
      * @param clusterId The id of the cluster associated with the product notification.
      * @param recordMetrics Whether to record metrics using {@link NotificationUmaTracker}. Only
      *         Chime notification code path should set this to true.
@@ -264,6 +278,17 @@ public class PriceDropNotificationManager {
      * @param actionId the id used to identify certain action.
      * @param url of the tab which triggered the notification.
      * @param offerId The offer id of the product.
+     */
+    public Intent getNotificationActionClickIntent(String actionId, String url, String offerId) {
+        return getNotificationActionClickIntent(actionId, url, offerId, null);
+    }
+
+    /**
+     * Gets the notification action click intents.
+     *
+     * @param actionId the id used to identify certain action.
+     * @param url of the tab which triggered the notification.
+     * @param offerId The offer id of the product.
      * @param clusterId The cluster id of the product.
      */
     public Intent getNotificationActionClickIntent(
@@ -274,7 +299,7 @@ public class PriceDropNotificationManager {
             intent.putExtra(EXTRA_DESTINATION_URL, url);
             intent.putExtra(EXTRA_ACTION_ID, actionId);
             intent.putExtra(EXTRA_OFFER_ID, offerId);
-            intent.putExtra(EXTRA_PRODUCT_CLUSTER_ID, clusterId);
+            if (clusterId != null) intent.putExtra(EXTRA_PRODUCT_CLUSTER_ID, clusterId);
             return intent;
         }
         return null;

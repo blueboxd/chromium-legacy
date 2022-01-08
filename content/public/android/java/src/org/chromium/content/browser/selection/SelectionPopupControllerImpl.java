@@ -1424,6 +1424,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         if (mWebContents == null || !isActionModeSupported()) return;
         mWebContents.collapseSelection();
         mClassificationResult = null;
+        mHasSelection = false;
     }
 
     private PopupController getPopupController() {
@@ -1501,10 +1502,11 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     }
 
     @CalledByNative
-    private void onSelectAroundCaretSuccess(int extendedStartAdjust, int extendedEndAdjust) {
+    private void onSelectAroundCaretSuccess(int extendedStartAdjust, int extendedEndAdjust,
+            int wordStartAdjust, int wordEndAdjust) {
         if (mSelectionClient != null) {
-            SelectAroundCaretResult result =
-                    new SelectAroundCaretResult(extendedStartAdjust, extendedEndAdjust);
+            SelectAroundCaretResult result = new SelectAroundCaretResult(
+                    extendedStartAdjust, extendedEndAdjust, wordStartAdjust, wordEndAdjust);
             mSelectionClient.selectAroundCaretAck(result);
         }
     }

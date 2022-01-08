@@ -81,6 +81,7 @@ build_recipe = _recipe_for_package(
 
 build_recipe(
     name = "recipe:android/androidx_packager",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -109,10 +110,6 @@ build_recipe(
 build_recipe(
     name = "recipe:binary_size_trybot",
     use_python3 = True,
-)
-
-build_recipe(
-    name = "recipe:binary_size_cast_trybot",
 )
 
 build_recipe(
@@ -176,9 +173,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_libfuzzer_trybot",
-    experiments = {
-        "luci.recipes.use_python3": 25,
-    },
+    use_python3 = True,
 )
 
 build_recipe(

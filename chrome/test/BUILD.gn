@@ -1071,7 +1071,6 @@ if (!is_android && !is_fuchsia) {
       "//base/test:test_support",
       "//build:branding_buildflags",
       "//build:chromeos_buildflags",
-      "//build:os_buildflags",
       "//chrome:packed_resources",
       "//chrome:resources",
       "//chrome:strings",
@@ -4135,6 +4134,7 @@ if (is_chromeos_lacros) {
 
     data = [
       "data/media/",
+      "data/extensions/api_test/login_screen_apis/",
       "data/extensions/platform_apps/minimal/",
     ]
 
@@ -4824,7 +4824,6 @@ test("unit_tests") {
     "../browser/signin/chrome_signin_proxying_url_loader_factory_unittest.cc",
     "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc",
     "../browser/signin/chrome_signin_url_loader_throttle_unittest.cc",
-    "../browser/signin/primary_account_policy_manager_unittest.cc",
     "../browser/signin/reauth_tab_helper_unittest.cc",
     "../browser/signin/reauth_util_unittest.cc",
     "../browser/signin/signin_profile_attributes_updater_unittest.cc",
@@ -6313,6 +6312,7 @@ test("unit_tests") {
       "//components/services/app_service/public/cpp:unit_tests",
       "//components/signin/public/base:signin_buildflags",
       "//components/sync:test_support",
+      "//services/device/hid:test_support",
       "//services/metrics/public/cpp:ukm_builders",
       "//third_party/libaddressinput",
       "//third_party/zxcvbn-cpp",

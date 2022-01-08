@@ -53,6 +53,11 @@ extern const base::Feature kAllowTouchpadHapticClickSettings;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAlwaysReinstallSystemWebApps;
 
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAnonymousUpdateChecks;
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kApkWebAppInstalls;
@@ -217,6 +222,11 @@ extern const base::Feature kDesktopPWAsTabStripSettings;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsWebBundles;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDisableHttpDiskCache;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<int> kDisableHttpDiskCacheMemoryCacheSizeParam;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDnsOverHttps;

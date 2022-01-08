@@ -140,6 +140,17 @@ const char kMessageStreamConnectToServiceTime[] =
     "TotalConnectTime";
 const char kDeviceMetadataFetchResult[] =
     "Bluetooth.ChromeOS.FastPair.DeviceMetadataFetcher.Result";
+const char kFootprintsFetcherDeleteResult[] =
+    "Bluetooth.ChromeOS.FastPair.FootprintsFetcher.Delete.Result";
+const char kFootprintsFetcherPostResult[] =
+    "Bluetooth.ChromeOS.FastPair.FootprintsFetcher.Post.Result";
+const char kFootprintsFetcherGetResult[] =
+    "Bluetooth.ChromeOS.FastPair.FootprintsFetcher.Get.Result";
+const char kFastPairRepositoryCacheResult[] =
+    "Bluetooth.ChromeOS.FastPair.FastPairRepository.Cache.Result";
+const char kHandshakeResult[] = "Bluetooth.ChromeOS.FastPair.Handshake.Result";
+const char kHandshakeFailureReason[] =
+    "Bluetooth.ChromeOS.FastPair.Handshake.FailureReason";
 
 }  // namespace
 
@@ -383,6 +394,29 @@ void RecordMessageStreamConnectToServiceTime(
 
 void RecordDeviceMetadataFetchResult(bool success) {
   base::UmaHistogramBoolean(kDeviceMetadataFetchResult, success);
+}
+
+void RecordFootprintsFetcherDeleteResult(bool success) {
+  base::UmaHistogramBoolean(kFootprintsFetcherDeleteResult, success);
+}
+
+void RecordFootprintsFetcherPostResult(bool success) {
+  base::UmaHistogramBoolean(kFootprintsFetcherPostResult, success);
+}
+
+void RecordFootprintsFetcherGetResult(bool success) {
+  base::UmaHistogramBoolean(kFootprintsFetcherGetResult, success);
+}
+
+void RecordFastPairRepositoryCacheResult(bool success) {
+  base::UmaHistogramBoolean(kFastPairRepositoryCacheResult, success);
+}
+
+void RecordHandshakeResult(bool success) {
+  base::UmaHistogramBoolean(kHandshakeResult, success);
+}
+void RecordHandshakeFailureReason(HandshakeFailureReason failure_reason) {
+  base::UmaHistogramEnumeration(kHandshakeFailureReason, failure_reason);
 }
 
 }  // namespace quick_pair

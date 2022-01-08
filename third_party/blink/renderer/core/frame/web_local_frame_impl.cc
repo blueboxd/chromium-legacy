@@ -1429,6 +1429,11 @@ bool WebLocalFrameImpl::SelectAroundCaret(
                                : ContextMenuVisibility ::kNotVisible);
 }
 
+EphemeralRange WebLocalFrameImpl::GetWordSelectionRangeAroundCaret() const {
+  TRACE_EVENT0("blink", "WebLocalFrameImpl::getWordSelectionRangeAroundCaret");
+  return GetFrame()->Selection().GetWordSelectionRangeAroundCaret();
+}
+
 void WebLocalFrameImpl::SelectRange(const gfx::Point& base_in_viewport,
                                     const gfx::Point& extent_in_viewport) {
   MoveRangeSelection(base_in_viewport, extent_in_viewport);
@@ -2892,14 +2897,6 @@ void WebLocalFrameImpl::ScrollFocusedEditableElementIntoRect(
 
 void WebLocalFrameImpl::ResetHasScrolledFocusedEditableIntoView() {
   has_scrolled_focused_editable_node_into_rect_ = false;
-}
-
-bool WebLocalFrameImpl::ServiceWorkerSubresourceFilterEnabled() {
-  if (GetFrame() && GetFrame()->GetDocument()) {
-    return RuntimeEnabledFeatures::ServiceWorkerSubresourceFilterEnabled(
-        GetFrame()->GetDocument()->GetExecutionContext());
-  }
-  return false;
 }
 
 }  // namespace blink

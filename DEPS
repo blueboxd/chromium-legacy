@@ -245,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '93e0041c6ca7e2e9fa8047ef67ed3804f2ccbef9',
+  'skia_revision': 'fdbc37f4d82bc38bef536b042a846823f3f96fd5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '12fd8c477eaa4b2e3551a8a973c99f241d057963',
+  'devtools_frontend_revision': '20631a8928b9ce71bac1c164733964c4812c7891',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -722,7 +722,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'u3jRlIASgrfCpfYWpBgCpPPZPJJwWRUIC7ozGGV8-LIC',
+          'version': '2f4xgLZNEF_vLqjVgHGILrXCgRxjQQ_kVizKzGWhZqEC',
         },
       ],
       'dep_type': 'cipd',
@@ -733,7 +733,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'Po3vHugnlC6y2Sz7gHUxAZIPJdGGCV0xAUWnM9sRjJoC',
+          'version': 'JSxqGgZySiUIwnoTmlR0pp2v53jYH7HlNQU0uJmJ0ZkC',
         },
       ],
       'dep_type': 'cipd',
@@ -744,7 +744,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'Cc9yhNT3JDOMGHVIw2DBwrSXyj9pJbfdz557Xevy6hQC',
+          'version': 'CPBtF_qieM5GGsI5wilCYlsS8pJyJshDI0LfN31FalgC',
         },
       ],
       'dep_type': 'cipd',
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6bdf1306a80c9adeaacbf6cdcc85297c030e803a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@57af757f8747af8aae7bfeb6214059f91dcd9efb',
     'condition': 'checkout_src_internal',
   },
 
@@ -1782,7 +1782,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'mbTJjAKKLqdLoJYCiMMDFqytzfykZPMvgm2_gASxhRMC',
+        'version': 'sNz5xKgOP8jR2UzmAGi4aDvNxnBK8FIyABM2ejNOGlgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

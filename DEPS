@@ -805,7 +805,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'mZDSnVEjFdMnVisTPg2aMOV97laQRf6q3babg8f7KQgC',
+          'version': '72KhrVPMAimIlLbSf4qfoMjnvI2FmvCxSBB-rUtxn8UC',
       },
     ],
     'condition': 'checkout_android',
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@64f441dd47df70dc1fa3d6b150d93d37ffe16870',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6bdf1306a80c9adeaacbf6cdcc85297c030e803a',
     'condition': 'checkout_src_internal',
   },
 

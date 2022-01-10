@@ -4637,7 +4637,6 @@ crbug.com/990240 external/wpt/css/css-multicol/multicol-breaking-005.html [ Fail
 crbug.com/990240 external/wpt/css/css-multicol/multicol-breaking-nobackground-000.html [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-breaking-nobackground-001.html [ Failure ]
 crbug.com/481431 external/wpt/css/css-multicol/multicol-breaking-nobackground-004.html [ Failure ]
-crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-017.html [ Failure ]
 crbug.com/829028 [ Mac ] external/wpt/css/css-multicol/multicol-list-item-004.html [ Failure ]
 crbug.com/829028 [ Mac ] external/wpt/css/css-multicol/multicol-list-item-005.html [ Failure ]
 crbug.com/792435 external/wpt/css/css-multicol/multicol-rule-004.xht [ Failure ]
@@ -6522,9 +6521,6 @@ crbug.com/1144171 http/tests/devtools/report-API-errors.js [ Skip ]
 crbug.com/1157861 http/tests/devtools/extensions/extensions-resources.js [ Failure Pass ]
 crbug.com/1157861 http/tests/devtools/console/paintworklet-console-selector.js [ Failure Pass ]
 
-# Temporarily disabled to land crrev.com/c/3358537
-crbug.com/1282837 http/tests/devtools/console/console-format-style.js [ Skip ]
-
 # Wpt importer Sheriff 2020-12-11
 crbug.com/626703 [ Linux ] wpt_internal/storage/estimate-usage-details-filesystem.https.tentative.any.html [ Failure Pass ]
 
@@ -7918,7 +7914,6 @@ crbug.com/1284572 [ Linux ] virtual/threaded/http/tests/devtools/isolated-code-c
 # Sheriff 2022-01-07
 crbug.com/1285348 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/hidpi/canvas-transform.https.html [ Failure Pass ]
 crbug.com/1285350 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/parse-input-arguments-011.https.html [ Failure Pass ]
-crbug.com/1285373 [ Linux ] fast/multicol/dynamic/insert-block-before-spanner-before-content.html [ Crash Failure Pass ]
 crbug.com/1285426 [ Mac ] virtual/controls-refresh-hc/fast/forms/color-scheme/week-picker/week-picker-appearance-highlight-es.html [ Crash Pass ]
 crbug.com/1285438 fast/layers/clip-rects-transformed.html [ Failure Pass ]
 crbug.com/1285431 [ Mac ] virtual/backface-visibility-interop/compositing/overflow/transform-should-update-absolute-clip-rects.html [ Crash Failure Pass ]

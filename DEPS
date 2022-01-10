@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '20631a8928b9ce71bac1c164733964c4812c7891',
+  'devtools_frontend_revision': '0f04721d0b29c31fc2f003107001fd4cf9c7d3db',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1730,7 +1730,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@57af757f8747af8aae7bfeb6214059f91dcd9efb',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@03d8409d7abf16771c2d2467194c13a9043863c9',
     'condition': 'checkout_src_internal',
   },
 
@@ -1760,7 +1760,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': '_wtH0hbALFICxns_NITKbFpllowsRsdP3rE5n4nw3MMC',
+        'version': 'vpGiXiWnrVMhHPErgqfY6iKTMSxlZUYgIxHRFmbQBEwC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1771,7 +1771,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '1LsbIXX2IYIx1zj-bOQgHwT3Nhjn3GZD3LIeKNOm34UC',
+        'version': '9182keYpYybgZHn2nP9gpYD1sSyjqCrjRvDM-4V7Eg0C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

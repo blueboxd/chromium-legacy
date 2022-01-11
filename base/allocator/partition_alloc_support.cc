@@ -137,43 +137,45 @@ void RegisterPCScanStatsReporter() {
 
 namespace {
 
-bool g_memory_reclaimer_running = false;
-
-void DelayedPurgeActionForThreadCache(OnceClosure task, base::TimeDelta delay) {
+void RunThreadCachePeriodicPurge() {
+  TRACE_EVENT0("memory", "PeriodicPurge");
+  auto& instance = internal::ThreadCacheRegistry::Instance();
+  instance.RunPeriodicPurge();
+  TimeDelta delay =
+      Microseconds(instance.GetPeriodicPurgeNextIntervalInMicroseconds());
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      BindOnce(
-          [](OnceClosure task) {
-            TRACE_EVENT0("memory", "PeriodicPurge");
-            std::move(task).Run();
-          },
-          std::move(task)),
-      delay);
+      FROM_HERE, BindOnce(RunThreadCachePeriodicPurge), delay);
 }
 
-base::RepeatingTimer& GetTimer() {
-  static base::NoDestructor<base::RepeatingTimer> timer;
-  return *timer.get();
-}
-
-void ReclaimPeriodically() {
+void RunPartitionAllocMemoryReclaimer(
+    scoped_refptr<SequencedTaskRunner> task_runner) {
   TRACE_EVENT0("base", "PartitionAllocMemoryReclaimer::Reclaim()");
-  PartitionAllocMemoryReclaimer::Instance()->ReclaimNormal();
+  auto* instance = PartitionAllocMemoryReclaimer::Instance();
+  instance->ReclaimNormal();
+  TimeDelta delay =
+      Microseconds(instance->GetRecommendedReclaimIntervalInMicroseconds());
+  task_runner->PostDelayedTask(
+      FROM_HERE, BindOnce(RunPartitionAllocMemoryReclaimer, task_runner),
+      delay);
 }
 
 }  // namespace
 
 void StartThreadCachePeriodicPurge() {
-  internal::ThreadCacheRegistry::Instance().StartPeriodicPurge(
-      DelayedPurgeActionForThreadCache);
+  auto& instance = internal::ThreadCacheRegistry::Instance();
+  TimeDelta delay =
+      Microseconds(instance.GetPeriodicPurgeNextIntervalInMicroseconds());
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, BindOnce(RunThreadCachePeriodicPurge), delay);
 }
 
 void StartMemoryReclaimer(scoped_refptr<SequencedTaskRunner> task_runner) {
   // Can be called several times.
-  if (g_memory_reclaimer_running)
+  static bool is_memory_reclaimer_running = false;
+  if (is_memory_reclaimer_running)
     return;
+  is_memory_reclaimer_running = true;
 
-  g_memory_reclaimer_running = true;
   // The caller of the API fully controls where running the reclaim.
   // However there are a few reasons to recommend that the caller runs
   // it on the main thread:
@@ -189,11 +191,12 @@ void StartMemoryReclaimer(scoped_refptr<SequencedTaskRunner> task_runner) {
   // seconds is useful. Since this is meant to run during idle time only, it is
   // a reasonable starting point balancing effectivenes vs cost. See
   // crbug.com/942512 for details and experimental results.
-  GetTimer().SetTaskRunner(task_runner);
-  GetTimer().Start(FROM_HERE,
-                   PartitionAllocMemoryReclaimer::Instance()
-                       ->GetRecommendedReclaimInterval(),
-                   BindRepeating(&ReclaimPeriodically));
+  auto* instance = PartitionAllocMemoryReclaimer::Instance();
+  TimeDelta delay =
+      Microseconds(instance->GetRecommendedReclaimIntervalInMicroseconds());
+  task_runner->PostDelayedTask(
+      FROM_HERE, BindOnce(RunPartitionAllocMemoryReclaimer, task_runner),
+      delay);
 }
 
 std::map<std::string, std::string> ProposeSyntheticFinchTrials(

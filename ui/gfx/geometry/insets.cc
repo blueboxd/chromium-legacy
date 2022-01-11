@@ -4,41 +4,29 @@
 
 #include "ui/gfx/geometry/insets.h"
 
-#include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/insets_conversions.h"
 #include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace gfx {
 
-std::string Insets::ToString() const {
-  // Print members in the same order of the constructor parameters.
-  return base::StringPrintf("%d,%d,%d,%d", top(),  left(), bottom(), right());
-}
-
 void Insets::Offset(const gfx::Vector2d& vector) {
-  Set(base::ClampAdd(top(), vector.y()), base::ClampAdd(left(), vector.x()),
-      base::ClampSub(bottom(), vector.y()),
-      base::ClampSub(right(), vector.x()));
-}
-
-void Insets::SetToMax(const gfx::Insets& other) {
-  top_ = std::max(top_, other.top_);
-  left_ = std::max(left_, other.left_);
-  bottom_ = std::max(bottom_, other.bottom_);
-  right_ = std::max(right_, other.right_);
+  set_left_right(base::ClampAdd(left(), vector.x()),
+                 base::ClampSub(right(), vector.x()));
+  set_top_bottom(base::ClampAdd(top(), vector.y()),
+                 base::ClampSub(bottom(), vector.y()));
 }
 
 Insets ScaleToCeiledInsets(const Insets& insets, float x_scale, float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)
     return insets;
-  return ToCeiledInsets(ScaleInsets(gfx::InsetsF(insets), x_scale, y_scale));
+  return ToCeiledInsets(ScaleInsets(InsetsF(insets), x_scale, y_scale));
 }
 
 Insets ScaleToCeiledInsets(const Insets& insets, float scale) {
   if (scale == 1.f)
     return insets;
-  return ToCeiledInsets(ScaleInsets(gfx::InsetsF(insets), scale));
+  return ToCeiledInsets(ScaleInsets(InsetsF(insets), scale));
 }
 
 Insets ScaleToFlooredInsets(const Insets& insets,
@@ -46,13 +34,13 @@ Insets ScaleToFlooredInsets(const Insets& insets,
                             float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)
     return insets;
-  return ToFlooredInsets(ScaleInsets(gfx::InsetsF(insets), x_scale, y_scale));
+  return ToFlooredInsets(ScaleInsets(InsetsF(insets), x_scale, y_scale));
 }
 
 Insets ScaleToFlooredInsets(const Insets& insets, float scale) {
   if (scale == 1.f)
     return insets;
-  return ToFlooredInsets(ScaleInsets(gfx::InsetsF(insets), scale));
+  return ToFlooredInsets(ScaleInsets(InsetsF(insets), scale));
 }
 
 Insets ScaleToRoundedInsets(const Insets& insets,
@@ -60,13 +48,13 @@ Insets ScaleToRoundedInsets(const Insets& insets,
                             float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)
     return insets;
-  return ToRoundedInsets(ScaleInsets(gfx::InsetsF(insets), x_scale, y_scale));
+  return ToRoundedInsets(ScaleInsets(InsetsF(insets), x_scale, y_scale));
 }
 
 Insets ScaleToRoundedInsets(const Insets& insets, float scale) {
   if (scale == 1.f)
     return insets;
-  return ToRoundedInsets(ScaleInsets(gfx::InsetsF(insets), scale));
+  return ToRoundedInsets(ScaleInsets(InsetsF(insets), scale));
 }
 
 }  // namespace gfx

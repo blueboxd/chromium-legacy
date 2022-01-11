@@ -36,8 +36,7 @@ gfx::QuadF GetQuadForTraceEvent(const LocalFrameView& frame_view,
 
 bool FramePainter::in_paint_contents_ = false;
 
-void FramePainter::Paint(GraphicsContext& context,
-                         const GlobalPaintFlags global_paint_flags) {
+void FramePainter::Paint(GraphicsContext& context, PaintFlags paint_flags) {
   Document* document = GetFrameView().GetFrame().GetDocument();
 
   if (GetFrameView().ShouldThrottleRendering() || !document->IsActive())
@@ -75,11 +74,6 @@ void FramePainter::Paint(GraphicsContext& context,
 
   FontCachePurgePreventer font_cache_purge_preventer;
 
-  PaintLayerFlags root_layer_paint_flags = 0;
-  // This will prevent clipping the root PaintLayer to its visible content rect.
-  if (document->IsPrintingOrPaintingPreview())
-    root_layer_paint_flags = kPaintLayerPaintingOverflowContents;
-
   PaintLayer* root_layer = layout_view->Layer();
 
 #if DCHECK_IS_ON()
@@ -94,7 +88,7 @@ void FramePainter::Paint(GraphicsContext& context,
       root_layer->GetLayoutObject().GetFrame());
   context.SetDeviceScaleFactor(device_scale_factor);
 
-  layer_painter.Paint(context, global_paint_flags, root_layer_paint_flags);
+  layer_painter.Paint(context, paint_flags);
 
   // Regions may have changed as a result of the visibility/z-index of element
   // changing.

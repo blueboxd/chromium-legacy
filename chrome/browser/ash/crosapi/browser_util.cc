@@ -239,10 +239,6 @@ const base::Feature kLacrosDisableChromeApps{"LacrosDisableChromeApps",
 const base::Feature kLacrosGooglePolicyRollout{
     "LacrosGooglePolicyRollout", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Emergency switch to turn off profile migration via Finch.
-const base::Feature kLacrosProfileMigrationForceOff{
-    "LacrosProfileMigrationForceOff", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const Channel kLacrosDefaultChannel = Channel::DEV;
 
 const char kLacrosStabilitySwitch[] = "lacros-stability";
@@ -355,9 +351,8 @@ bool IsLacrosEnabled(Channel channel) {
 bool IsProfileMigrationEnabled(const AccountId& account_id) {
   // Emergency switch to turn off profile migration. Turn this on via Finch in
   // case profile migration needs to be turned off after launch.
-  if (base::FeatureList::IsEnabled(kLacrosProfileMigrationForceOff)) {
-    LOG(WARNING)
-        << "Profile migration is turned off by kLacrosProfileMigrationForceOff";
+  if (base::FeatureList::IsEnabled(
+          ash::features::kLacrosProfileMigrationForceOff)) {
     return false;
   }
 
@@ -567,7 +562,7 @@ void RecordDataVer(PrefService* local_state,
                    const std::string& user_id_hash,
                    const base::Version& version) {
   DCHECK(version.IsValid());
-  DictionaryPrefUpdate update(local_state, kDataVerPref);
+  DictionaryPrefUpdateDeprecated update(local_state, kDataVerPref);
   base::DictionaryValue* dict = update.Get();
   dict->SetString(user_id_hash, version.GetString());
 }
@@ -734,16 +729,16 @@ bool IsProfileMigrationCompletedForUser(PrefService* local_state,
 
 void SetProfileMigrationCompletedForUser(PrefService* local_state,
                                          const std::string& user_id_hash) {
-  DictionaryPrefUpdate update(local_state,
-                              kProfileMigrationCompletedForUserPref);
+  DictionaryPrefUpdateDeprecated update(local_state,
+                                        kProfileMigrationCompletedForUserPref);
   base::DictionaryValue* dict = update.Get();
   dict->SetBoolKey(user_id_hash, true);
 }
 
 void ClearProfileMigrationCompletedForUser(PrefService* local_state,
                                            const std::string& user_id_hash) {
-  DictionaryPrefUpdate update(local_state,
-                              kProfileMigrationCompletedForUserPref);
+  DictionaryPrefUpdateDeprecated update(local_state,
+                                        kProfileMigrationCompletedForUserPref);
   base::DictionaryValue* dict = update.Get();
   dict->RemoveKey(user_id_hash);
 }

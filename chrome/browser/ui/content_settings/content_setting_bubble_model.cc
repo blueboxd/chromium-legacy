@@ -64,7 +64,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/page.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/weak_document_ptr.h"
@@ -222,9 +222,8 @@ ContentSettingSimpleBubbleModel::AsSimpleBubbleModel() {
 }
 
 void ContentSettingSimpleBubbleModel::SetTitle() {
-  // TODO(https://crbug.com/1103176): Plumb the actual frame reference here
   PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
 
   static const ContentSettingsTypeIdEntry kBlockedTitleIDs[] = {
       {ContentSettingsType::COOKIES, IDS_BLOCKED_COOKIES_TITLE},
@@ -260,7 +259,7 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
 
 void ContentSettingSimpleBubbleModel::SetMessage() {
   PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
 
   // TODO(https://crbug.com/978882): Make the two arrays below static again once
   // we no longer need to check base::FeatureList.
@@ -377,7 +376,7 @@ void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
   if (mixed_content_settings) {
     // Update browser side settings to allow active mixed content.
     mixed_content_settings->AllowRunningOfInsecureContent(
-        *web_contents()->GetMainFrame());
+        GetPage().GetMainDocument());
   }
 
   // Update renderer side settings to allow active mixed content.
@@ -551,7 +550,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   std::u16string display_host = url_formatter::FormatUrlForSecurityDisplay(url);
 
   PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
   bool allowed = !content_settings->IsContentBlocked(content_type());
 
   // For the frame busting case the content is blocked but its content type is
@@ -820,7 +819,7 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
   radio_item_setting_[1] = CONTENT_SETTING_BLOCK;
 
   PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
   state_ = content_settings->GetMicrophoneCameraState();
   DCHECK(CameraAccessed() || MicrophoneAccessed());
 
@@ -956,7 +955,7 @@ void ContentSettingMediaStreamBubbleModel::SetMessage() {
 
 void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
   GURL url = content_settings->media_stream_access_origin();
   RadioGroup radio_group;
   radio_group.url = url;
@@ -994,7 +993,7 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
     permissions::PermissionResult pan_tilt_zoom_permission =
         permission_manager->GetPermissionStatusForFrame(
             ContentSettingsType::CAMERA_PAN_TILT_ZOOM,
-            web_contents()->GetMainFrame(), url);
+            &GetPage().GetMainDocument(), url);
     bool has_pan_tilt_zoom_permission_granted =
         pan_tilt_zoom_permission.content_setting == CONTENT_SETTING_ALLOW;
     if (MicrophoneAccessed() && CameraAccessed()) {
@@ -1035,7 +1034,7 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
 void ContentSettingMediaStreamBubbleModel::UpdateSettings(
     ContentSetting setting) {
   PageSpecificContentSettings* page_content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
   // The same urls must be used as in other places (e.g. the infobar) in
   // order to override the existing rule. Otherwise a new rule is created.
   // TODO(markusheintz): Extract to a helper so that there is only a single
@@ -1135,7 +1134,7 @@ void ContentSettingMediaStreamBubbleModel::UpdateDefaultDeviceForType(
 
 void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
   PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
   const std::string& requested_microphone =
       content_settings->media_stream_requested_audio_device();
   const std::string& requested_camera =
@@ -1205,7 +1204,7 @@ void ContentSettingMediaStreamBubbleModel::SetManageText() {
 
 void ContentSettingMediaStreamBubbleModel::SetCustomLink() {
   PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
   if (content_settings->IsMicrophoneCameraStateChanged()) {
     set_custom_link(
         l10n_util::GetStringUTF16(IDS_MEDIASTREAM_SETTING_CHANGED_MESSAGE));
@@ -1238,7 +1237,7 @@ ContentSettingGeolocationBubbleModel::ContentSettingGeolocationBubbleModel(
   SetCustomLink();
 #if defined(OS_MAC)
   PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+      PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
   if (!content_settings)
     return;
 
@@ -1313,7 +1312,7 @@ void ContentSettingGeolocationBubbleModel::SetCustomLink() {
       web_contents()->GetBrowserContext());
   SettingInfo info;
   const GURL url =
-      web_contents()->GetMainFrame()->GetLastCommittedOrigin().GetURL();
+      GetPage().GetMainDocument().GetLastCommittedOrigin().GetURL();
   map->GetWebsiteSetting(url, url, ContentSettingsType::GEOLOCATION, &info);
   if (info.session_model == SessionModel::OneTime)
     set_custom_link(l10n_util::GetStringUTF16(IDS_GEOLOCATION_WILL_ASK_AGAIN));

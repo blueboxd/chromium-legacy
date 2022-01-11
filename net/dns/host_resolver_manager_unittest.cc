@@ -2644,7 +2644,7 @@ TEST_F(HostResolverManagerTest, IncludeCanonicalName) {
       testing::Optional(testing::UnorderedElementsAre(ExpectEndpointResult(
           testing::ElementsAre(CreateExpected("192.168.1.42", 80))))));
   EXPECT_THAT(response.request()->GetDnsAliasResults(),
-              testing::Optional(testing::ElementsAre("canon.name")));
+              testing::Pointee(testing::UnorderedElementsAre("canon.name")));
 
   EXPECT_THAT(response_no_flag.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
 }
@@ -2674,7 +2674,7 @@ TEST_F(HostResolverManagerTest, IncludeCanonicalNameButNotReceived) {
       response.request()->GetEndpointResults(),
       testing::Optional(testing::UnorderedElementsAre(ExpectEndpointResult(
           testing::ElementsAre(CreateExpected("192.168.1.42", 80))))));
-  EXPECT_EQ(response.request()->GetDnsAliasResults(), absl::nullopt);
+  EXPECT_FALSE(response.request()->GetDnsAliasResults());
 
   EXPECT_THAT(response_no_flag.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
 }
@@ -2708,7 +2708,7 @@ TEST_F(HostResolverManagerTest, IncludeCanonicalNameSkipsUrlCanonicalization) {
       testing::Optional(testing::UnorderedElementsAre(ExpectEndpointResult(
           testing::ElementsAre(CreateExpected("192.168.1.42", 80))))));
   EXPECT_THAT(response.request()->GetDnsAliasResults(),
-              testing::Optional(testing::ElementsAre("CANON.name")));
+              testing::Pointee(testing::UnorderedElementsAre("CANON.name")));
 
   EXPECT_THAT(response_no_flag.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
 }
@@ -7491,8 +7491,9 @@ TEST_F(HostResolverManagerDnsTest, CanonicalName) {
 
   EXPECT_EQ(response.request()->GetAddressResults().value().GetCanonicalName(),
             "canonical");
-  EXPECT_THAT(response.request()->GetDnsAliasResults(),
-              testing::Optional(testing::ElementsAre("canonical", "alias")));
+  EXPECT_THAT(
+      response.request()->GetDnsAliasResults(),
+      testing::Pointee(testing::UnorderedElementsAre("canonical", "alias")));
 }
 
 TEST_F(HostResolverManagerDnsTest, CanonicalName_PreferV6) {
@@ -7520,7 +7521,7 @@ TEST_F(HostResolverManagerDnsTest, CanonicalName_PreferV6) {
 
   // GetDnsAliasResults() includes all aliases from all families.
   EXPECT_THAT(response.request()->GetDnsAliasResults(),
-              testing::Optional(
+              testing::Pointee(
                   testing::UnorderedElementsAre("correct", "alias", "wrong")));
 }
 
@@ -7541,8 +7542,9 @@ TEST_F(HostResolverManagerDnsTest, CanonicalName_V4Only) {
   ASSERT_THAT(response.result_error(), IsOk());
   EXPECT_EQ(response.request()->GetAddressResults().value().GetCanonicalName(),
             "correct");
-  EXPECT_THAT(response.request()->GetDnsAliasResults(),
-              testing::Optional(testing::ElementsAre("correct", "alias")));
+  EXPECT_THAT(
+      response.request()->GetDnsAliasResults(),
+      testing::Pointee(testing::UnorderedElementsAre("correct", "alias")));
 }
 
 // Test that responses containing CNAME records but no address results are fine
@@ -7576,7 +7578,7 @@ TEST_F(HostResolverManagerDnsTest, CanonicalNameWithoutResults) {
       resolve_context_->host_cache()));
 
   ASSERT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
-  EXPECT_EQ(response.request()->GetDnsAliasResults(), absl::nullopt);
+  EXPECT_FALSE(response.request()->GetDnsAliasResults());
 
   // Underlying error should be the typical no-results error
   // (ERR_NAME_NOT_RESOLVED), not anything more exotic like
@@ -7651,7 +7653,7 @@ TEST_F(HostResolverManagerDnsTest, CanonicalNameForcesProc) {
   EXPECT_EQ(response.request()->GetAddressResults().value().GetCanonicalName(),
             "canonical");
   EXPECT_THAT(response.request()->GetDnsAliasResults(),
-              testing::Optional(testing::ElementsAre("canonical")));
+              testing::Pointee(testing::UnorderedElementsAre("canonical")));
 }
 
 TEST_F(HostResolverManagerDnsTest, DnsAliases) {
@@ -7696,7 +7698,7 @@ TEST_F(HostResolverManagerDnsTest, DnsAliases) {
                                    "first.test"));
 
   EXPECT_THAT(response.request()->GetDnsAliasResults(),
-              testing::Optional(testing::ElementsAre(
+              testing::Pointee(testing::UnorderedElementsAre(
                   "fourth.test", "third.test", "second.test", "first.test")));
 }
 
@@ -7742,9 +7744,9 @@ TEST_F(HostResolverManagerDnsTest, DnsAliasesAreFixedUp) {
             "localhost");
   EXPECT_THAT(response.request()->GetAddressResults().value().dns_aliases(),
               testing::ElementsAre("localhost", "HOST2.test", "host.test"));
-  EXPECT_THAT(
-      response.request()->GetDnsAliasResults(),
-      testing::Optional(testing::ElementsAre("host2.test", "host.test")));
+  EXPECT_THAT(response.request()->GetDnsAliasResults(),
+              testing::Pointee(
+                  testing::UnorderedElementsAre("host2.test", "host.test")));
 }
 
 TEST_F(HostResolverManagerDnsTest, NoAdditionalDnsAliases) {
@@ -7773,7 +7775,7 @@ TEST_F(HostResolverManagerDnsTest, NoAdditionalDnsAliases) {
   EXPECT_THAT(response.request()->GetAddressResults().value().dns_aliases(),
               testing::ElementsAre("first.test"));
   EXPECT_THAT(response.request()->GetDnsAliasResults(),
-              testing::Optional(testing::ElementsAre("first.test")));
+              testing::Pointee(testing::UnorderedElementsAre("first.test")));
 }
 
 TEST_F(HostResolverManagerDnsTest, SortsAndDeduplicatesAddresses) {
@@ -13941,11 +13943,15 @@ class HostResolverManagerBootstrapTest : public HostResolverManagerDnsTest {
   base::test::ScopedFeatureList features;
 };
 
-std::vector<IPAddress> IPAddresses(const AddressList& addresses) {
+std::vector<IPAddress> IPAddresses(const std::vector<IPEndPoint>& endpoints) {
   std::vector<IPAddress> ip_addresses;
-  base::ranges::transform(addresses, std::back_inserter(ip_addresses),
+  base::ranges::transform(endpoints, std::back_inserter(ip_addresses),
                           &IPEndPoint::address);
   return ip_addresses;
+}
+
+std::vector<IPAddress> IPAddresses(const AddressList& addresses) {
+  return IPAddresses(addresses.endpoints());
 }
 
 MATCHER_P(AddressesMatch, expected, "Matches addresses between AddressLists") {
@@ -13965,6 +13971,9 @@ TEST_F(HostResolverManagerBootstrapTest, BlankSlate) {
   EXPECT_THAT(bootstrap_response.result_error(), IsOk());
   EXPECT_THAT(bootstrap_response.request()->GetAddressResults(),
               Optional(AddressesMatch(kRemoteAddrs)));
+  EXPECT_THAT(bootstrap_response.request()->GetEndpointResults(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kRemoteAddrs)))));
 }
 
 TEST_F(HostResolverManagerBootstrapTest, InsecureCacheEntry) {
@@ -13980,6 +13989,9 @@ TEST_F(HostResolverManagerBootstrapTest, InsecureCacheEntry) {
   EXPECT_THAT(bootstrap_response.result_error(), IsOk());
   EXPECT_THAT(bootstrap_response.request()->GetAddressResults(),
               Optional(AddressesMatch(kCacheAddrs)));
+  EXPECT_THAT(bootstrap_response.request()->GetEndpointResults(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kCacheAddrs)))));
 }
 
 TEST_F(HostResolverManagerBootstrapTest, SecureCacheEntry) {
@@ -13995,6 +14007,9 @@ TEST_F(HostResolverManagerBootstrapTest, SecureCacheEntry) {
   EXPECT_THAT(bootstrap_response.result_error(), IsOk());
   EXPECT_THAT(bootstrap_response.request()->GetAddressResults(),
               Optional(AddressesMatch(kCacheAddrs)));
+  EXPECT_THAT(bootstrap_response.request()->GetEndpointResults(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kCacheAddrs)))));
 }
 
 TEST_F(HostResolverManagerBootstrapTest, OnlyBootstrap) {
@@ -14010,6 +14025,9 @@ TEST_F(HostResolverManagerBootstrapTest, OnlyBootstrap) {
   EXPECT_THAT(bootstrap_response.result_error(), IsOk());
   EXPECT_THAT(bootstrap_response.request()->GetAddressResults(),
               Optional(AddressesMatch(kBootstrapAddrs)));
+  EXPECT_THAT(bootstrap_response.request()->GetEndpointResults(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kBootstrapAddrs)))));
 
   // Run the followup query.
   RunUntilIdle();
@@ -14018,7 +14036,7 @@ TEST_F(HostResolverManagerBootstrapTest, OnlyBootstrap) {
   const auto* secure_result = resolve_context_->host_cache()->Lookup(
       MakeCacheKey(/*secure=*/true), GetMockTickClock()->NowTicks());
   ASSERT_THAT(secure_result, testing::NotNull());
-  EXPECT_THAT(secure_result->second.addresses(),
+  EXPECT_THAT(secure_result->second.legacy_addresses(),
               Optional(AddressesMatch(kRemoteAddrs)));
 }
 
@@ -14038,6 +14056,9 @@ TEST_F(HostResolverManagerBootstrapTest, BootstrapAndInsecureCache) {
   EXPECT_THAT(bootstrap_response.result_error(), IsOk());
   EXPECT_THAT(bootstrap_response.request()->GetAddressResults(),
               Optional(AddressesMatch(kBootstrapAddrs)));
+  EXPECT_THAT(bootstrap_response.request()->GetEndpointResults(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kBootstrapAddrs)))));
 
   // Run the followup query.
   RunUntilIdle();
@@ -14046,7 +14067,7 @@ TEST_F(HostResolverManagerBootstrapTest, BootstrapAndInsecureCache) {
   const auto* secure_result = resolve_context_->host_cache()->Lookup(
       MakeCacheKey(/*secure=*/true), GetMockTickClock()->NowTicks());
   ASSERT_THAT(secure_result, testing::NotNull());
-  EXPECT_THAT(secure_result->second.addresses(),
+  EXPECT_THAT(secure_result->second.legacy_addresses(),
               Optional(AddressesMatch(kRemoteAddrs)));
 }
 
@@ -14066,6 +14087,9 @@ TEST_F(HostResolverManagerBootstrapTest, BootstrapAndSecureCacheEntry) {
   EXPECT_THAT(bootstrap_response.result_error(), IsOk());
   EXPECT_THAT(bootstrap_response.request()->GetAddressResults(),
               Optional(AddressesMatch(kCacheAddrs)));
+  EXPECT_THAT(bootstrap_response.request()->GetEndpointResults(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kCacheAddrs)))));
 }
 
 TEST_F(HostResolverManagerBootstrapTest, BlankSlateFailure) {
@@ -14097,6 +14121,9 @@ TEST_F(HostResolverManagerBootstrapTest, BootstrapFollowupFailure) {
   EXPECT_THAT(bootstrap_response.result_error(), IsOk());
   EXPECT_THAT(bootstrap_response.request()->GetAddressResults(),
               Optional(AddressesMatch(kBootstrapAddrs)));
+  EXPECT_THAT(bootstrap_response.request()->GetEndpointResults(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kBootstrapAddrs)))));
 
   // Run the followup query.
   RunUntilIdle();
@@ -14147,6 +14174,9 @@ TEST_F(HostResolverManagerBootstrapTest, BootstrapAfterFollowup) {
   EXPECT_THAT(bootstrap_response2.result_error(), IsOk());
   EXPECT_THAT(bootstrap_response2.request()->GetAddressResults(),
               Optional(AddressesMatch(kRemoteAddrs)));
+  EXPECT_THAT(bootstrap_response2.request()->GetEndpointResults(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kRemoteAddrs)))));
 }
 
 TEST_F(HostResolverManagerBootstrapTest, BootstrapFollowupFailureTwice) {
@@ -14169,6 +14199,9 @@ TEST_F(HostResolverManagerBootstrapTest, BootstrapFollowupFailureTwice) {
   EXPECT_THAT(bootstrap_response2.result_error(), IsOk());
   EXPECT_THAT(bootstrap_response2.request()->GetAddressResults(),
               Optional(AddressesMatch(kBootstrapAddrs)));
+  EXPECT_THAT(bootstrap_response2.request()->GetEndpointResults(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kBootstrapAddrs)))));
 
   // Run the followup query again.
   RunUntilIdle();
@@ -14192,6 +14225,9 @@ TEST_F(HostResolverManagerBootstrapTest, OnlyBootstrapTwice) {
   EXPECT_THAT(bootstrap_response1.result_error(), IsOk());
   EXPECT_THAT(bootstrap_response1.request()->GetAddressResults(),
               Optional(AddressesMatch(kBootstrapAddrs)));
+  EXPECT_THAT(bootstrap_response1.request()->GetEndpointResults(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kBootstrapAddrs)))));
 
   ResolveHostResponseHelper bootstrap_response2(resolver_->CreateRequest(
       kEndpoint, kIsolationKey, NetLogWithSource(), bootstrap_params(),
@@ -14201,6 +14237,9 @@ TEST_F(HostResolverManagerBootstrapTest, OnlyBootstrapTwice) {
   EXPECT_THAT(bootstrap_response2.result_error(), IsOk());
   EXPECT_THAT(bootstrap_response2.request()->GetAddressResults(),
               Optional(AddressesMatch(kBootstrapAddrs)));
+  EXPECT_THAT(bootstrap_response2.request()->GetEndpointResults(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kBootstrapAddrs)))));
 
   // Run the followup query.
   RunUntilIdle();
@@ -14209,7 +14248,7 @@ TEST_F(HostResolverManagerBootstrapTest, OnlyBootstrapTwice) {
   const auto* secure_result = resolve_context_->host_cache()->Lookup(
       MakeCacheKey(/*secure=*/true), GetMockTickClock()->NowTicks());
   ASSERT_THAT(secure_result, testing::NotNull());
-  EXPECT_THAT(secure_result->second.addresses(),
+  EXPECT_THAT(secure_result->second.legacy_addresses(),
               Optional(AddressesMatch(kRemoteAddrs)));
 }
 

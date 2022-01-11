@@ -166,6 +166,23 @@
             ]
         }
     ],
+    "AndroidDynamicPerformanceFramework": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "Adpf"
+                    ],
+                    "min_os_version": "12.0.0"
+                }
+            ]
+        }
+    ],
     "AndroidDynamicWideColorGamut": [
         {
             "platforms": [
@@ -602,6 +619,21 @@
                     "name": "Disabled",
                     "disable_features": [
                         "PictureInPictureAPI"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AndroidRDSGlobal": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RequestDesktopSiteGlobal"
                     ]
                 }
             ]
@@ -2539,34 +2571,6 @@
             ]
         }
     ],
-    "ConsumeCodeCacheOffThread": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ConsumeCodeCacheOffThread"
-                    ]
-                },
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "ConsumeCodeCacheOffThread"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContentCaptureExperiment": [
         {
             "platforms": [
@@ -2758,7 +2762,7 @@
             ]
         }
     ],
-    "CriticalPersistedTabData_V2": [
+    "CriticalPersistedTabDataV2": [
         {
             "platforms": [
                 "android"
@@ -5287,6 +5291,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "NavigationNetworkResponseQueue"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NavigationRequestPreconnect": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NavigationRequestPreconnect"
                     ]
                 }
             ]

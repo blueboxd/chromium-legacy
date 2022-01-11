@@ -70,12 +70,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     kHTTPVersion_2_0
   };
 
-  enum CTPolicyCompliance {
-    kCTPolicyComplianceDetailsNotAvailable,
-    kCTPolicyComplies,
-    kCTPolicyDoesNotComply
-  };
-
   ResourceResponse();
   explicit ResourceResponse(const KURL& current_request_url);
   ResourceResponse(const ResourceResponse&);
@@ -195,11 +189,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetHasMajorCertificateErrors(bool has_major_certificate_errors) {
     has_major_certificate_errors_ = has_major_certificate_errors;
   }
-
-  CTPolicyCompliance GetCTPolicyCompliance() const {
-    return ct_policy_compliance_;
-  }
-  void SetCTPolicyCompliance(CTPolicyCompliance);
 
   bool IsLegacyTLSVersion() const { return is_legacy_tls_version_; }
   void SetIsLegacyTLSVersion(bool value) { is_legacy_tls_version_ = value; }
@@ -448,10 +437,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   network::mojom::IPAddressSpace address_space_ =
       network::mojom::IPAddressSpace::kUnknown;
 
-  // The Certificate Transparency policy compliance status of the resource.
-  CTPolicyCompliance ct_policy_compliance_ =
-      kCTPolicyComplianceDetailsNotAvailable;
-
   bool was_cached_ : 1;
   bool connection_reused_ : 1;
   bool is_null_ : 1;
@@ -606,8 +591,8 @@ class PLATFORM_EXPORT ResourceResponse final {
   absl::optional<base::UnguessableToken> recursive_prefetch_token_;
 
   // Any DNS aliases for the requested URL, as read from CNAME records.
-  // The alias chain order is preserved in reverse, from canonical name (i.e.
-  // address record name) through to query name.
+  // Includes all known aliases, e.g. from A, AAAA, or HTTPS, not just from the
+  // address used for the connection, in no particular order.
   Vector<String> dns_aliases_;
 
   // The URL of WebBundle this response was loaded from. This value is only

@@ -1387,7 +1387,7 @@
   {
     "name": "drive-fs-bidirectional-native-messaging",
     "owners": [ "austinct@chromium.org", "simmonsjosh@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 104
   },
   {
       "name": "dynamic-color-android",
@@ -2811,6 +2811,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-unicorn-account-support",
+    "owners": [ "fernandex" ],
+    "expiry_milestone": 106
+  },
+  {
     "name": "enable-universal-links",
     "owners": [ "avi", "olivierli" ],
     "expiry_milestone": 101
@@ -3994,6 +3999,11 @@
     "name": "nearby-sharing-background-scanning",
     "owners": [ "hansenmichael@google.com", "cvandermerwe@google.com", "chromeos-cross-device-eng@google.com" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "nearby-sharing-one-page-onboarding",
+    "owners": [ "pushi@google.com", "chromeos-cross-device-eng@google.com" ],
+    "expiry_milestone": 103
   },
   {
     "name": "new-canvas-2d-api",

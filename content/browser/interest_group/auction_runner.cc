@@ -192,9 +192,9 @@ void AuctionRunner::OnInterestGroupRead(
     for (auto bidder = std::make_move_iterator(interest_groups.begin());
          bidder != std::make_move_iterator(interest_groups.end()); ++bidder) {
       // Ignore interest groups with no bidding script or no ads.
-      if (!bidder->bidding_group->group.bidding_url)
+      if (!bidder->interest_group.bidding_url)
         continue;
-      if (bidder->bidding_group->group.ads->empty())
+      if (bidder->interest_group.ads->empty())
         continue;
       bid_states_.emplace_back(BidState());
       bid_states_.back().bidder = std::move(*bidder);
@@ -288,7 +288,7 @@ void AuctionRunner::OnSellerWorkletProcessReceived() {
     if (interest_group_manager_->auction_process_manager()
             .RequestWorkletService(
                 AuctionProcessManager::WorkletType::kBidder,
-                bid_state.bidder.bidding_group->group.owner,
+                bid_state.bidder.interest_group.owner,
                 bid_state.process_handle.get(),
                 base::BindOnce(&AuctionRunner::OnBidderWorkletProcessReceived,
                                base::Unretained(this), &bid_state))) {
@@ -303,22 +303,35 @@ void AuctionRunner::OnBidderWorkletProcessReceived(BidState* bid_state) {
   bid_state->state = BidState::State::kGeneratingBid;
   LoadBidderWorklet(*bid_state,
                     /*disconnect_handler=*/base::BindOnce(
-                        &AuctionRunner::OnGenerateBidCrashed,
+                        &AuctionRunner::OnBidderWorkletDisconnected,
                         base::Unretained(this), bid_state));
+  const blink::InterestGroup& interest_group = bid_state->bidder.interest_group;
   bid_state->bidder_worklet->GenerateBid(
+      auction_worklet::mojom::BidderWorkletNonSharedParams::New(
+          interest_group.name, interest_group.trusted_bidding_signals_keys,
+          interest_group.user_bidding_signals, interest_group.ads,
+          interest_group.ad_components),
       auction_config_->shareable_auction_ad_config->auction_signals,
-      PerBuyerSignals(bid_state), browser_signals_->top_frame_origin,
-      browser_signals_->seller, auction_start_time_,
+      PerBuyerSignals(bid_state), browser_signals_->seller,
+      bid_state->bidder.bidding_browser_signals.Clone(), auction_start_time_,
       base::BindOnce(&AuctionRunner::OnGenerateBidComplete,
                      base::Unretained(this), bid_state));
 }
 
-void AuctionRunner::OnGenerateBidCrashed(BidState* state) {
-  OnGenerateBidComplete(
-      state, auction_worklet::mojom::BidderWorkletBidPtr(),
-      std::vector<std::string>{
-          base::StrCat({state->bidder.bidding_group->group.bidding_url->spec(),
-                        " crashed while trying to run generateBid()."})});
+void AuctionRunner::OnBidderWorkletDisconnected(
+    BidState* state,
+    uint32_t custom_reason,
+    const std::string& description) {
+  std::vector<std::string> errors;
+  if (description.empty()) {
+    errors.emplace_back(
+        base::StrCat({state->bidder.interest_group.bidding_url->spec(),
+                      " crashed while trying to run generateBid()."}));
+  } else {
+    errors.push_back(description);
+  }
+  OnGenerateBidComplete(state, auction_worklet::mojom::BidderWorkletBidPtr(),
+                        errors);
 }
 
 void AuctionRunner::OnGenerateBidComplete(
@@ -338,8 +351,7 @@ void AuctionRunner::OnGenerateBidComplete(
 
   // Ignore invalid bids.
   if (bid) {
-    state->bid_ad =
-        ValidateBidAndGetAd(*bid, state->bidder.bidding_group->group);
+    state->bid_ad = ValidateBidAndGetAd(*bid, state->bidder.interest_group);
     if (!state->bid_ad)
       bid.reset();
   }
@@ -402,7 +414,7 @@ void AuctionRunner::ScoreBid(BidState* state) {
   seller_worklet_->ScoreAd(
       state->bid_result->ad, state->bid_result->bid,
       auction_config_->shareable_auction_ad_config.Clone(),
-      state->bidder.bidding_group->group.owner, state->bid_result->render_url,
+      state->bidder.interest_group.owner, state->bid_result->render_url,
       state->bid_result->ad_components ? *state->bid_result->ad_components
                                        : std::vector<GURL>(),
       state->bid_result->bid_duration.InMilliseconds(),
@@ -426,15 +438,12 @@ void AuctionRunner::OnBidScored(BidState* state,
   state->state = BidState::State::kScoringComplete;
   errors_.insert(errors_.end(), errors.begin(), errors.end());
 
-  if (score <= 0) {
-    // If the worklet didn't bid, destroy the worklet.
-    state->ClosePipes();
-  } else {
-    bool replace_top_bidder = false;
+  // A score <= 0 means the seller rejected the bid.
+  if (score > 0) {
     if (!top_bidder_ || score > top_bidder_->seller_score) {
       // If there's no previous top bidder, or the bidder has the highest score,
       // need to replace the previous top bidder.
-      replace_top_bidder = true;
+      top_bidder_ = state;
       num_top_bidders_ = 1;
     } else if (score == top_bidder_->seller_score) {
       // If there's a tie, replace the top-bidder with 1-in-`num_top_bidders_`
@@ -442,15 +451,7 @@ void AuctionRunner::OnBidScored(BidState* state,
       // storage problem.
       ++num_top_bidders_;
       if (1 == base::RandInt(1, num_top_bidders_))
-        replace_top_bidder = true;
-    }
-
-    if (replace_top_bidder) {
-      if (top_bidder_)
-        top_bidder_->ClosePipes();
-      top_bidder_ = state;
-    } else {
-      state->ClosePipes();
+        top_bidder_ = state;
     }
   }
 
@@ -462,8 +463,8 @@ absl::optional<std::string> AuctionRunner::PerBuyerSignals(
   const auto& per_buyer_signals =
       auction_config_->shareable_auction_ad_config->per_buyer_signals;
   if (per_buyer_signals.has_value()) {
-    auto it = per_buyer_signals.value().find(
-        state->bidder.bidding_group->group.owner);
+    auto it =
+        per_buyer_signals.value().find(state->bidder.interest_group.owner);
     if (it != per_buyer_signals.value().end())
       return it->second;
   }
@@ -487,8 +488,8 @@ void AuctionRunner::MaybeCompleteAuction() {
     if (bid_state.bid_result) {
       some_bidder_bid = true;
       interest_group_manager_->RecordInterestGroupBid(
-          bid_state.bidder.bidding_group->group.owner,
-          bid_state.bidder.bidding_group->group.name);
+          bid_state.bidder.interest_group.owner,
+          bid_state.bidder.interest_group.name);
     }
   }
 
@@ -510,7 +511,7 @@ void AuctionRunner::ReportSellerResult() {
 
   seller_worklet_->ReportResult(
       auction_config_->shareable_auction_ad_config.Clone(),
-      top_bidder_->bidder.bidding_group->group.owner,
+      top_bidder_->bidder.interest_group.owner,
       top_bidder_->bid_result->render_url, top_bidder_->bid_result->bid,
       top_bidder_->seller_score,
       base::BindOnce(&AuctionRunner::OnReportSellerResultComplete,
@@ -545,7 +546,7 @@ void AuctionRunner::LoadBidderWorkletToReportBidWin(
       std::make_unique<AuctionProcessManager::ProcessHandle>();
   if (interest_group_manager_->auction_process_manager().RequestWorkletService(
           AuctionProcessManager::WorkletType::kBidder,
-          top_bidder_->bidder.bidding_group->group.owner,
+          top_bidder_->bidder.interest_group.owner,
           top_bidder_->process_handle.get(),
           base::BindOnce(&AuctionRunner::ReportBidWin, base::Unretained(this),
                          signals_for_winner))) {
@@ -571,18 +572,15 @@ void AuctionRunner::ReportBidWin(
 
   // Load the script for the top-scoring bidder worklet again, and invoke its
   // ReportWin() method.
-  LoadBidderWorklet(
-      *top_bidder_, /*disconnect_handler=*/base::BindOnce(
-          &AuctionRunner::FailAuction, base::Unretained(this),
-          AuctionResult::kWinningBidderWorkletCrashed,
-          base::StrCat(
-              {top_bidder_->bidder.bidding_group->group.bidding_url->spec(),
-               " crashed while trying to run reportWin()."})));
+  LoadBidderWorklet(*top_bidder_, /*disconnect_handler=*/base::BindOnce(
+                        &AuctionRunner::WinningBidderWorkletDisconnected,
+                        base::Unretained(this)));
   top_bidder_->bidder_worklet->ReportWin(
+      top_bidder_->bidder.interest_group.name,
       auction_config_->shareable_auction_ad_config->auction_signals,
-      PerBuyerSignals(top_bidder_), browser_signals_->top_frame_origin,
-      signals_for_winner_arg, top_bidder_->bid_result->render_url,
-      top_bidder_->bid_result->bid, auction_config_->seller,
+      PerBuyerSignals(top_bidder_), signals_for_winner_arg,
+      top_bidder_->bid_result->render_url, top_bidder_->bid_result->bid,
+      auction_config_->seller,
       base::BindOnce(&AuctionRunner::OnReportBidWinComplete,
                      base::Unretained(this)));
 }
@@ -599,6 +597,24 @@ void AuctionRunner::OnReportBidWinComplete(
   bidder_report_url_ = bidder_report_url;
   errors_.insert(errors_.end(), errors.begin(), errors.end());
   ReportSuccess();
+}
+
+void AuctionRunner::WinningBidderWorkletDisconnected(
+    uint32_t custom_reason,
+    const std::string& description) {
+  std::vector<std::string> errors;
+  if (description.empty()) {
+    // Empty `description` means the process crashed.
+    FailAuction(
+        AuctionResult::kWinningBidderWorkletCrashed,
+        {base::StrCat({top_bidder_->bidder.interest_group.bidding_url->spec(),
+                       " crashed while trying to run reportWin()."})});
+  } else {
+    // Non-empty `description` means there was a different error (e.g., script
+    // failed to load). This currently does not fail the auction.
+    errors_.push_back(description);
+    ReportSuccess();
+  }
 }
 
 void AuctionRunner::ReportSuccess() {
@@ -622,8 +638,8 @@ void AuctionRunner::ReportSuccess() {
   }
 
   interest_group_manager_->RecordInterestGroupWin(
-      top_bidder_->bidder.bidding_group->group.owner,
-      top_bidder_->bidder.bidding_group->group.name, ad_metadata);
+      top_bidder_->bidder.interest_group.owner,
+      top_bidder_->bidder.interest_group.name, ad_metadata);
 
   std::move(callback_).Run(this, top_bidder_->bid_result->render_url,
                            top_bidder_->bid_result->ad_components,
@@ -669,14 +685,13 @@ void AuctionRunner::RecordResult(AuctionResult result) const {
   }
 }
 
-void AuctionRunner::LoadBidderWorklet(BidState& bid_state,
-                                      base::OnceClosure disconnect_handler) {
-  auction_worklet::mojom::BiddingInterestGroup* bidder =
-      bid_state.bidder.bidding_group.get();
+void AuctionRunner::LoadBidderWorklet(
+    BidState& bid_state,
+    mojo::ConnectionErrorWithReasonCallback disconnect_handler) {
+  const blink::InterestGroup& interest_group = bid_state.bidder.interest_group;
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
-  GURL bidding_url =
-      bid_state.bidder.bidding_group->group.bidding_url.value_or(GURL());
+  GURL bidding_url = interest_group.bidding_url.value_or(GURL());
   bid_state.url_loader_factory = std::make_unique<AuctionURLLoaderFactoryProxy>(
       url_loader_factory.InitWithNewPipeAndPassReceiver(),
       // BidderWorklets don't need frame URLLoaderFactories.
@@ -685,8 +700,8 @@ void AuctionRunner::LoadBidderWorklet(BidState& bid_state,
                           base::Unretained(delegate_)),
       browser_signals_->top_frame_origin, frame_origin_,
       /*is_for_seller=*/false, delegate_->GetClientSecurityState(), bidding_url,
-      bid_state.bidder.bidding_group->group.bidding_wasm_helper_url,
-      bidder->group.trusted_bidding_signals_url);
+      bid_state.bidder.interest_group.bidding_wasm_helper_url,
+      interest_group.trusted_bidding_signals_url);
 
   mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
       worklet_receiver = bid_state.bidder_worklet.BindNewPipeAndPassReceiver();
@@ -697,8 +712,11 @@ void AuctionRunner::LoadBidderWorklet(BidState& bid_state,
   bid_state.process_handle->GetService()->LoadBidderWorklet(
       std::move(worklet_receiver),
       bid_state.bidder_worklet_debug->should_pause_on_start(),
-      std::move(url_loader_factory), bidder->Clone());
-  bid_state.bidder_worklet.set_disconnect_handler(
+      std::move(url_loader_factory), *interest_group.bidding_url,
+      interest_group.bidding_wasm_helper_url,
+      interest_group.trusted_bidding_signals_url,
+      browser_signals_->top_frame_origin);
+  bid_state.bidder_worklet.set_disconnect_with_reason_handler(
       std::move(disconnect_handler));
 }
 

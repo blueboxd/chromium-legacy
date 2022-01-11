@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_low_energy_scan_session.h"
 #include "device/bluetooth/bluetooth_socket.h"
 
 namespace ash {
@@ -71,6 +72,15 @@ enum class COMPONENT_EXPORT(QUICK_PAIR_COMMON) HandshakeFailureReason {
   kFailedDecryptResponse = 3,
   kFailedIncorrectResponseType = 4,
   kMaxValue = kFailedIncorrectResponseType,
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. This enum should be kept in sync
+// with the FastPairVersion enum in src/tools/metrics/histograms/enums.xml.
+enum class COMPONENT_EXPORT(QUICK_PAIR_COMMON) FastPairVersion {
+  kVersion1 = 0,
+  kVersion2 = 1,
+  kMaxValue = kVersion2,
 };
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
@@ -204,11 +214,23 @@ void RecordFootprintsFetcherGetResult(bool success);
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordFastPairRepositoryCacheResult(bool success);
 
-COMPONENT_EXPORT(QUICK_PAIR_COMMON)
-void RecordHandshakeResult(bool success);
+COMPONENT_EXPORT(QUICK_PAIR_COMMON) void RecordHandshakeResult(bool success);
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordHandshakeFailureReason(HandshakeFailureReason failure_reason);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordBluetoothLowEnergyScannerStartSessionResult(bool success);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordBluetoothLowEnergyScannerStartSessionErrorReason(
+    device::BluetoothLowEnergyScanSession::ErrorCode error_code);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordBluetoothLowEnergyScanFilterResult(bool success);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordFastPairDiscoveredVersion(FastPairVersion version);
 
 }  // namespace quick_pair
 }  // namespace ash

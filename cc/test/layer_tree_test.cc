@@ -106,11 +106,10 @@ class SynchronousLayerTreeFrameSink : public TestLayerTreeFrameSink {
     InvalidateIfPossible();
   }
   void SubmitCompositorFrame(viz::CompositorFrame frame,
-                             bool hit_test_data_changed,
-                             bool show_hit_test_borders) override {
+                             bool hit_test_data_changed) override {
     frame_ack_pending_ = true;
-    TestLayerTreeFrameSink::SubmitCompositorFrame(
-        std::move(frame), hit_test_data_changed, show_hit_test_borders);
+    TestLayerTreeFrameSink::SubmitCompositorFrame(std::move(frame),
+                                                  hit_test_data_changed);
   }
   void DidReceiveCompositorFrameAck(
       std::vector<viz::ReturnedResource> resources) override {
@@ -662,7 +661,7 @@ LayerTreeTest::LayerTreeTest(viz::RendererType renderer_type)
     // SwiftShader is a multi-threaded renderer and TSAN takes a lot longer to
     // run tests when using SwiftShader
     timeout_seconds_ = 35;
-#elif defined(OS_WIN) && defined(_DEBUG)
+#elif BUILDFLAG(IS_WIN) && defined(_DEBUG)
     // Debug builds on Windows are much slower than on other platforms, possibly
     // because Windows uses separate debug versions of the C Run-Time Library
     // for debug builds, whereas other platforms use the same system libraries
@@ -694,9 +693,9 @@ LayerTreeTest::LayerTreeTest(viz::RendererType renderer_type)
     init_vulkan = true;
   } else if (renderer_type_ == viz::RendererType::kSkiaDawn) {
     scoped_feature_list_.InitAndEnableFeature(features::kSkiaDawn);
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     init_vulkan = true;
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
     // TODO(rivr): Initialize D3D12 for Windows.
 #else
     NOTREACHED();

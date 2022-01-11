@@ -51,7 +51,7 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
                          params->gpu_memory_buffer_manager),
       synthetic_begin_frame_source_(
           std::move(params->synthetic_begin_frame_source)),
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       io_thread_id_(params->io_thread_id),
 #endif
       pipes_(std::move(params->pipes)),
@@ -100,7 +100,7 @@ bool AsyncLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   compositor_frame_sink_ptr_->InitializeCompositorFrameSinkType(
       viz::mojom::CompositorFrameSinkType::kLayerTree);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   std::vector<int32_t> thread_ids;
   thread_ids.push_back(base::PlatformThread::CurrentId());
   if (io_thread_id_ != base::kInvalidThreadId)
@@ -132,8 +132,7 @@ void AsyncLayerTreeFrameSink::SetLocalSurfaceId(
 
 void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
     viz::CompositorFrame frame,
-    bool hit_test_data_changed,
-    bool show_hit_test_borders) {
+    bool hit_test_data_changed) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(compositor_frame_sink_ptr_);
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
@@ -156,9 +155,6 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
 
   absl::optional<viz::HitTestRegionList> hit_test_region_list =
       client_->BuildHitTestData();
-
-  if (show_hit_test_borders && hit_test_region_list)
-    hit_test_region_list->flags |= viz::HitTestRegionFlags::kHitTestDebug;
 
   // If |hit_test_data_changed| was set or local_surface_id has been updated,
   // we always send hit-test data; otherwise we check for equality with the

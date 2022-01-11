@@ -11,8 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
-#include "content/browser/attribution_reporting/event_attribution_report.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "sql/database.h"
 #include "sql/statement.h"
@@ -38,7 +38,7 @@ class RateLimitTableTest : public testing::Test {
     table_ = std::make_unique<RateLimitTable>(delegate_.get());
   }
 
-  EventAttributionReport NewConversionReport(
+  AttributionReport NewConversionReport(
       url::Origin impression_origin,
       url::Origin conversion_origin,
       StorableSource::Id impression_id = StorableSource::Id(0),
@@ -50,7 +50,7 @@ class RateLimitTableTest : public testing::Test {
                              .SetImpressionId(impression_id)
                              .SetSourceType(source_type)
                              .Build())
-        .SetConversionTime(base::Time::Now())
+        .SetTriggerTime(base::Time::Now())
         .SetReportTime(base::Time::Now())
         .Build();
   }

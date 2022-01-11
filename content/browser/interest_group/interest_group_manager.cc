@@ -142,6 +142,12 @@ void InterestGroupManager::ClaimInterestGroupsForUpdate(
       .Then(std::move(callback));
 }
 
+void InterestGroupManager::GetAllInterestGroupJoiningOrigins(
+    base::OnceCallback<void(std::vector<url::Origin>)> callback) {
+  impl_.AsyncCall(&InterestGroupStorage::GetAllInterestGroupJoiningOrigins)
+      .Then(std::move(callback));
+}
+
 void InterestGroupManager::DeleteInterestGroupData(
     base::RepeatingCallback<bool(const url::Origin&)> origin_matcher) {
   impl_.AsyncCall(&InterestGroupStorage::DeleteInterestGroupData)
@@ -157,16 +163,15 @@ void InterestGroupManager::GetLastMaintenanceTimeForTesting(
 void InterestGroupManager::DidUpdateInterestGroupsOfOwnerDbLoad(
     url::Origin owner,
     network::mojom::ClientSecurityStatePtr client_security_state,
-    std::vector<StorageInterestGroup> interest_groups) {
+    std::vector<StorageInterestGroup> storage_groups) {
   net::IsolationInfo per_update_isolation_info =
       net::IsolationInfo::CreateTransient();
 
-  for (auto& interest_group : interest_groups) {
-    if (!interest_group.bidding_group->group.update_url)
+  for (auto& storage_group : storage_groups) {
+    if (!storage_group.interest_group.update_url)
       continue;
     auto resource_request = std::make_unique<network::ResourceRequest>();
-    resource_request->url =
-        interest_group.bidding_group->group.update_url.value();
+    resource_request->url = storage_group.interest_group.update_url.value();
     resource_request->redirect_mode = network::mojom::RedirectMode::kError;
     resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
     resource_request->request_initiator = owner;
@@ -187,7 +192,7 @@ void InterestGroupManager::DidUpdateInterestGroupsOfOwnerDbLoad(
             base::BindOnce(
                 &InterestGroupManager::DidUpdateInterestGroupsOfOwnerNetFetch,
                 weak_factory_.GetWeakPtr(), simple_url_loader_it, owner,
-                interest_group.bidding_group->group.name),
+                storage_group.interest_group.name),
             kMaxUpdateSize);
   }
 }

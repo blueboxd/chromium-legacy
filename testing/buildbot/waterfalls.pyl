@@ -1139,7 +1139,7 @@
           'walleye',
         ],
         'test_suites': {
-          'isolated_scripts': 'android_wpt_scripts',
+          'isolated_scripts': 'system_webview_wpt',
         },
         'use_swarming': True,
         'os_type': 'android',
@@ -2590,7 +2590,7 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests_no_nacl',
+          'gtest_tests': 'chromium_mac_gtests_no_nacl_no_nocompile',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         }
       },
@@ -4083,6 +4083,20 @@
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_pixel4_telemetry_tests',
           'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
+        },
+      },
+      'Android FYI Release (Pixel 6)': {
+        'browser_config': 'android-chromium',
+        'os_type': 'android',
+        'skip_merge_script': True,
+        'mixins': [
+          'android_s',
+          'has_native_resultdb_integration',
+          'oriole',
+          'gpu-swarming-pool',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test'
         },
       },
       'Android FYI SkiaRenderer GL (Nexus 5X)': {

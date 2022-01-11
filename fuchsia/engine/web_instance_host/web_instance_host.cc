@@ -604,8 +604,7 @@ zx_status_t WebInstanceHost::CreateInstanceForContext(
   if (params.has_remote_debugging_port()) {
     if ((features & fuchsia::web::ContextFeatureFlags::NETWORK) !=
         fuchsia::web::ContextFeatureFlags::NETWORK) {
-      LOG(ERROR) << "Enabling remote debugging port requires NETWORK feature.";
-      return ZX_ERR_INVALID_ARGS;
+      LOG(WARNING) << "Enabling remote debugging requires NETWORK feature.";
     }
     launch_args.AppendSwitchNative(
         switches::kRemoteDebuggingPort,

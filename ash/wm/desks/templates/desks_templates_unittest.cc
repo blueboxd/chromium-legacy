@@ -1606,6 +1606,12 @@ TEST_F(DesksTemplatesTest, EditTemplateName) {
   WaitForDesksTemplatesUI();
   name_view = GetItemViewFromTemplatesGrid(0)->name_view();
   EXPECT_EQ(u"abc", name_view->GetText());
+
+  // There was a bug where a relayout could cause a revert of the name changes,
+  // and lead to a crash if the name view had highlight focus. This is a
+  // regression test for that. See https://crbug.com/1285113 for more details.
+  GetItemViewFromTemplatesGrid(0)->SetBoundsRect(gfx::Rect(150, 40));
+  EXPECT_EQ(u"abc", GetItemViewFromTemplatesGrid(0)->name_view()->GetText());
 }
 
 // Tests for checking that certain conditions will revert the template name to
@@ -1811,6 +1817,36 @@ TEST_F(DesksTemplatesTest, SaveDeskAsTemplateRecordsMetric) {
       kAddOrUpdateTemplateStatusHistogramName,
       static_cast<int>(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk),
       kExpectedNewTemplates);
+}
+
+// Tests that UnsupportedAppDialogShow metric is recorded when the unsupported
+// app dialog is shown.
+TEST_F(DesksTemplatesTest, UnsupportedAppDialogRecordsMetric) {
+  // For asserting histogram was captured.
+  base::HistogramTester histogram_tester;
+
+  // Create a crostini window.
+  auto crostini_window = CreateAppWindow();
+  crostini_window->SetProperty(aura::client::kAppType,
+                               static_cast<int>(AppType::CROSTINI_APP));
+
+  // Create a normal window.
+  auto test_window = CreateAppWindow();
+
+  // Open overview and click on the save template button. The unsupported apps
+  // dialog should show up.
+  auto* root = Shell::Get()->GetPrimaryRootWindow();
+  ToggleOverview();
+  WaitForDesksTemplatesUI();
+  views::Widget* save_template = GetSaveDeskAsTemplateButtonForRoot(root);
+  ASSERT_TRUE(save_template->IsVisible());
+  ClickOnView(save_template->GetContentsView());
+  EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
+
+  // Now we assert that we've recorded the metric.
+  constexpr int kExpectedDialogShows = 1;
+  histogram_tester.ExpectTotalCount(kUnsupportedAppDialogShowHistogramName,
+                                    kExpectedDialogShows);
 }
 
 // Tests to verify that clicking the spacebar doesn't cause the name view to

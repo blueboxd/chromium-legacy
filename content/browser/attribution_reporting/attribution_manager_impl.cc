@@ -18,10 +18,10 @@
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_network_sender_impl.h"
 #include "content/browser/attribution_reporting/attribution_policy.h"
+#include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate_impl.h"
 #include "content/browser/attribution_reporting/attribution_storage_sql.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
-#include "content/browser/attribution_reporting/event_attribution_report.h"
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/storable_trigger.h"
@@ -102,22 +102,25 @@ ConversionReportSendOutcome ConvertToConversionReportSendOutcome(
 }
 
 // Called when |report| is to be sent over network, for logging metrics.
-void LogMetricsOnReportSend(const EventAttributionReport& report,
-                            base::Time now) {
+void LogMetricsOnReportSend(const AttributionReport& report, base::Time now) {
   // Use a large time range to capture users that might not open the browser for
   // a long time while a conversion report is pending. Revisit this range if it
   // is non-ideal for real world data.
   base::Time original_report_time =
-      ComputeReportTime(report.source(), report.conversion_time());
+      ComputeReportTime(report.source(), report.trigger_time());
   base::TimeDelta time_since_original_report_time = now - original_report_time;
   base::UmaHistogramCustomTimes(
       "Conversions.ExtraReportDelay2", time_since_original_report_time,
       base::Seconds(1), base::Days(24), /*buckets=*/100);
 
   base::TimeDelta time_from_conversion_to_report_send =
-      report.report_time() - report.conversion_time();
+      report.report_time() - report.trigger_time();
   UMA_HISTOGRAM_COUNTS_1000("Conversions.TimeFromConversionToReportSend",
                             time_from_conversion_to_report_send.InHours());
+}
+
+bool IsOffline() {
+  return content::GetNetworkConnectionTracker()->IsOffline();
 }
 
 }  // namespace
@@ -140,7 +143,6 @@ AttributionManagerImpl::AttributionManagerImpl(
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy)
     : AttributionManagerImpl(
           storage_partition,
-          content::GetNetworkConnectionTracker(),
           user_data_directory,
           std::make_unique<AttributionPolicy>(
               base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -149,13 +151,11 @@ AttributionManagerImpl::AttributionManagerImpl(
 
 AttributionManagerImpl::AttributionManagerImpl(
     StoragePartitionImpl* storage_partition,
-    network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& user_data_directory,
     std::unique_ptr<AttributionPolicy> policy,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     std::unique_ptr<NetworkSender> network_sender)
     : storage_partition_(storage_partition),
-      network_connection_tracker_(network_connection_tracker),
       attribution_storage_(base::SequenceBound<AttributionStorageSql>(
           g_storage_task_runner.Get(),
           user_data_directory,
@@ -170,17 +170,16 @@ AttributionManagerImpl::AttributionManagerImpl(
                                 storage_partition)),
       weak_factory_(this) {
   DCHECK(storage_partition_);
-  DCHECK(network_connection_tracker_);
   DCHECK(attribution_policy_);
   DCHECK(network_sender_);
 
-  network_connection_tracker_->AddNetworkConnectionObserver(this);
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 
   OnConnectionChanged(network::mojom::ConnectionType::CONNECTION_UNKNOWN);
 }
 
 AttributionManagerImpl::~AttributionManagerImpl() {
-  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 
   // Browser contexts are not required to have a special storage policy.
   if (!special_storage_policy_ ||
@@ -283,13 +282,13 @@ void AttributionManagerImpl::GetActiveSourcesForWebUI(
 }
 
 void AttributionManagerImpl::GetPendingReportsForWebUI(
-    base::OnceCallback<void(std::vector<EventAttributionReport>)> callback) {
+    base::OnceCallback<void(std::vector<AttributionReport>)> callback) {
   GetAndHandleReports(std::move(callback),
                       /*max_report_time=*/base::Time::Max(), /*limit=*/1000);
 }
 
 void AttributionManagerImpl::SendReportsForWebUI(
-    const std::vector<EventAttributionReport::Id>& ids,
+    const std::vector<AttributionReport::Id>& ids,
     base::OnceClosure done) {
   attribution_storage_.AsyncCall(&AttributionStorage::GetReports)
       .WithArgs(ids)
@@ -324,7 +323,7 @@ void AttributionManagerImpl::ClearData(
 
 void AttributionManagerImpl::OnConnectionChanged(
     network::mojom::ConnectionType connection_type) {
-  if (network_connection_tracker_->IsOffline()) {
+  if (IsOffline()) {
     get_reports_to_send_timer_.Stop();
   } else if (absl::optional<AttributionPolicy::OfflineReportDelayConfig> delay =
                  attribution_policy_->GetOfflineReportDelayConfig()) {
@@ -354,7 +353,7 @@ void AttributionManagerImpl::GetAndHandleReports(
 
 void AttributionManagerImpl::UpdateGetReportsToSendTimer(
     absl::optional<base::Time> time) {
-  if (!time.has_value() || network_connection_tracker_->IsOffline())
+  if (!time.has_value() || IsOffline())
     return;
 
   if (!get_reports_to_send_timer_.IsRunning() ||
@@ -365,7 +364,7 @@ void AttributionManagerImpl::UpdateGetReportsToSendTimer(
 }
 
 void AttributionManagerImpl::StartGetReportsToSendTimer() {
-  if (network_connection_tracker_->IsOffline())
+  if (IsOffline())
     return;
 
   attribution_storage_.AsyncCall(&AttributionStorage::GetNextReportTime)
@@ -375,7 +374,7 @@ void AttributionManagerImpl::StartGetReportsToSendTimer() {
 }
 
 void AttributionManagerImpl::GetReportsToSend() {
-  DCHECK(!network_connection_tracker_->IsOffline());
+  DCHECK(!IsOffline());
 
   // We only get the next report time strictly after now, because if we are
   // sending a report now but haven't finished doing so and it is still present
@@ -392,8 +391,8 @@ void AttributionManagerImpl::GetReportsToSend() {
 }
 
 void AttributionManagerImpl::OnGetReportsToSend(
-    std::vector<EventAttributionReport> reports) {
-  if (reports.empty() || network_connection_tracker_->IsOffline())
+    std::vector<AttributionReport> reports) {
+  if (reports.empty() || IsOffline())
     return;
 
   // Shuffle new reports to provide plausible deniability on the ordering of
@@ -409,14 +408,14 @@ void AttributionManagerImpl::OnGetReportsToSend(
 
 void AttributionManagerImpl::OnGetReportsToSendFromWebUI(
     base::OnceClosure done,
-    std::vector<EventAttributionReport> reports) {
-  if (reports.empty() || network_connection_tracker_->IsOffline()) {
+    std::vector<AttributionReport> reports) {
+  if (reports.empty() || IsOffline()) {
     std::move(done).Run();
     return;
   }
 
   base::Time now = base::Time::Now();
-  for (EventAttributionReport& report : reports) {
+  for (AttributionReport& report : reports) {
     report.set_report_time(now);
   }
 
@@ -424,12 +423,11 @@ void AttributionManagerImpl::OnGetReportsToSendFromWebUI(
   SendReports(std::move(reports), /*log_metrics=*/false, std::move(barrier));
 }
 
-void AttributionManagerImpl::SendReports(
-    std::vector<EventAttributionReport> reports,
-    bool log_metrics,
-    base::RepeatingClosure done) {
+void AttributionManagerImpl::SendReports(std::vector<AttributionReport> reports,
+                                         bool log_metrics,
+                                         base::RepeatingClosure done) {
   const base::Time now = base::Time::Now();
-  for (EventAttributionReport& report : reports) {
+  for (AttributionReport& report : reports) {
     DCHECK(report.report_id().has_value());
     DCHECK_LE(report.report_time(), now);
 
@@ -470,13 +468,13 @@ void AttributionManagerImpl::SendReports(
 }
 
 void AttributionManagerImpl::MarkReportCompleted(
-    EventAttributionReport::Id report_id) {
+    AttributionReport::Id report_id) {
   size_t num_removed = reports_being_sent_.erase(report_id);
   DCHECK_EQ(num_removed, 1u);
 }
 
 void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
-                                          EventAttributionReport report,
+                                          AttributionReport report,
                                           SendResult info) {
   DCHECK(report.report_id().has_value());
 
@@ -507,7 +505,7 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
         .Then(base::BindOnce(
             [](base::OnceClosure done,
                base::WeakPtr<AttributionManagerImpl> manager,
-               EventAttributionReport::Id report_id, base::Time new_report_time,
+               AttributionReport::Id report_id, base::Time new_report_time,
                bool success) {
               std::move(done).Run();
 
@@ -526,7 +524,7 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
         .Then(base::BindOnce(
             [](base::OnceClosure done,
                base::WeakPtr<AttributionManagerImpl> manager,
-               EventAttributionReport::Id report_id, bool success) {
+               AttributionReport::Id report_id, bool success) {
               std::move(done).Run();
               RecordDeleteEvent(success ? DeleteEvent::kSucceeded
                                         : DeleteEvent::kFailed);

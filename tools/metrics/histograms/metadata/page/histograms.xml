@@ -2181,6 +2181,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PageLoad.Internal.ClientRedirect.FirstPaintToNavigation"
     units="ms" expires_after="M77">
+  <obsolete>
+    Removed 12/2021.
+  </obsolete>
   <owner>bmcquade@chromium.org</owner>
   <summary>
     The delay between first paint and a client-side redirect navigation, for
@@ -2193,6 +2196,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PageLoad.Internal.ClientRedirect.NavigationWithoutPaint"
     enum="Boolean" expires_after="2021-08-09">
+  <obsolete>
+    Removed 12/2021.
+  </obsolete>
   <owner>bmcquade@chromium.org</owner>
   <summary>
     Counts how often a client-side redirect was initiated from a page that did
@@ -2220,6 +2226,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PageLoad.Internal.OutOfOrderInterFrameTiming" units="ms"
     expires_after="M77">
+  <obsolete>
+    Removed 12/2021.
+  </obsolete>
   <owner>bmcquade@chromium.org</owner>
   <summary>
     The difference in magnitude between existing and updated timing, for
@@ -2333,6 +2342,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PageLoad.Internal.Prerender" enum="BooleanHit"
     expires_after="M77">
+  <obsolete>
+    Removed 12/2021.
+  </obsolete>
   <owner>bmcquade@chromium.org</owner>
   <summary>
     Counts the number of prerender navigations. Only logs true values.
@@ -2352,6 +2364,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PageLoad.Internal.ProvisionalAbortChainSize.ForwardBack"
     units="length" expires_after="2018-08-30">
+  <obsolete>
+    Removed 01/2022.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     This histogram counts the number of provisional loads aborted by other
@@ -2361,6 +2376,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PageLoad.Internal.ProvisionalAbortChainSize.NewNavigation"
     units="length" expires_after="M77">
+  <obsolete>
+    Removed 01/2022.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     This histogram counts the number of provisional loads aborted by new
@@ -2370,6 +2388,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PageLoad.Internal.ProvisionalAbortChainSize.NoCommit"
     units="length" expires_after="2018-08-30">
+  <obsolete>
+    Removed 01/2022.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     This histogram counts the number of provisional loads aborted by new
@@ -2380,6 +2401,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PageLoad.Internal.ProvisionalAbortChainSize.Reload"
     units="length" expires_after="2018-08-30">
+  <obsolete>
+    Removed 01/2022.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     This histogram counts the number of provisional loads aborted by other
@@ -2389,6 +2413,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PageLoad.Internal.ProvisionalAbortChainSize.SameURL"
     units="length" expires_after="2018-08-30">
+  <obsolete>
+    Removed 01/2022.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     This histogram counts the number of consecutive provisional loads aborted by

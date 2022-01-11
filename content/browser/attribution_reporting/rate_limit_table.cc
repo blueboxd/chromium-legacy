@@ -6,7 +6,7 @@
 
 #include "base/check.h"
 #include "base/time/time.h"
-#include "content/browser/attribution_reporting/event_attribution_report.h"
+#include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/sql_utils.h"
 #include "net/base/schemeful_site.h"
 #include "sql/database.h"
@@ -114,7 +114,7 @@ bool RateLimitTable::CreateTable(sql::Database* db) {
 }
 
 bool RateLimitTable::AddRateLimit(sql::Database* db,
-                                  const EventAttributionReport& report) {
+                                  const AttributionReport& report) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(report.source().impression_id().has_value());
 
@@ -125,7 +125,7 @@ bool RateLimitTable::AddRateLimit(sql::Database* db,
                 SerializeOrigin(report.source().impression_origin()),
                 report.source().ConversionDestination().Serialize(),
                 SerializeOrigin(report.source().conversion_origin()),
-                report.conversion_time(),
+                report.trigger_time(),
                 // Rate limits for the event-level API do not have a bucket.
                 /*bucket=*/"",
                 // By supplying 1 here, rate limits for the event-level API act
@@ -177,7 +177,7 @@ bool RateLimitTable::AddRow(
 
 AttributionAllowedStatus RateLimitTable::AttributionAllowed(
     sql::Database* db,
-    const EventAttributionReport& report,
+    const AttributionReport& report,
     base::Time now) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

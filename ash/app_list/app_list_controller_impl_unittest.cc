@@ -92,7 +92,7 @@ AppListModel* GetAppListModel() {
 }
 
 AppListView* GetAppListView() {
-  return Shell::Get()->app_list_controller()->presenter()->GetView();
+  return Shell::Get()->app_list_controller()->fullscreen_presenter()->GetView();
 }
 
 ContentsView* GetContentsView() {
@@ -119,13 +119,13 @@ PagedAppsGridView* GetAppsGridView() {
 }
 
 void ShowAppListNow(AppListViewState state) {
-  Shell::Get()->app_list_controller()->presenter()->Show(
+  Shell::Get()->app_list_controller()->fullscreen_presenter()->Show(
       state, display::Screen::GetScreen()->GetPrimaryDisplay().id(),
       base::TimeTicks::Now(), /*show_source*/ absl::nullopt);
 }
 
 void DismissAppListNow() {
-  Shell::Get()->app_list_controller()->presenter()->Dismiss(
+  Shell::Get()->app_list_controller()->fullscreen_presenter()->Dismiss(
       base::TimeTicks::Now());
 }
 
@@ -223,7 +223,7 @@ TEST_F(AppListControllerImplTest, AppListHiddenWhenShelfAlignmentChanges) {
     ShowAppListNow(AppListViewState::kPeeking);
     EXPECT_TRUE(Shell::Get()
                     ->app_list_controller()
-                    ->presenter()
+                    ->fullscreen_presenter()
                     ->IsVisibleDeprecated());
     shelf->SetAlignment(alignment);
     EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
@@ -480,6 +480,13 @@ TEST_F(AppListControllerImplTest,
 // Verifies that in tablet mode, the AppListView has correct bounds when the
 // virtual keyboard is dismissed (see https://crbug.com/944133).
 TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
+  // This isn't relevant with ProductivityLauncher, which uses separate widgets
+  // in clamshell versus tablet mode. See bug above. Also, the clamshell
+  // launcher closes when transitioning into tablet mode. This test can be
+  // deleted when ProductivityLauncher is the default.
+  if (features::IsProductivityLauncherEnabled())
+    return;
+
   Shell::Get()->keyboard_controller()->SetEnableFlag(
       keyboard::KeyboardEnableFlag::kShelfEnabled);
 
@@ -673,6 +680,12 @@ TEST_F(AppListControllerImplTest,
 // closed.
 TEST_F(AppListControllerImplTest,
        CloseAppListShownFromOverviewAfterTabletExit) {
+  // This test is not relevant for ProductivityLauncher because it uses separate
+  // widgets in clamshell and tablet mode. This test can be deleted when
+  // ProductivityLauncher is the default.
+  if (features::IsProductivityLauncherEnabled())
+    return;
+
   auto* shell = Shell::Get();
   auto* tablet_mode_controller = shell->tablet_mode_controller();
   // Move to tablet mode and back.
@@ -1132,6 +1145,11 @@ class AppListControllerImplMetricsTest : public AshTestBase {
 // Write this test case for precaution (https://crbug.com/947105).
 TEST_F(AppListControllerImplMetricsTest,
        PresentationMetricsForTabletNotRecordedInClamshell) {
+  // ProductivityLauncher does not support app list dragging. This test can be
+  // deleted when ProductivityLauncher is the default.
+  if (features::IsProductivityLauncherEnabled())
+    return;
+
   // Wait until the construction of TabletModeController finishes.
   base::RunLoop().RunUntilIdle();
 

@@ -540,6 +540,13 @@
           'has_native_resultdb_integration',
         ],
       },
+      'variations_smoke_tests': {
+        'isolate_name': 'variations_smoke_tests',
+        'resultdb': {
+          'enable': True,
+          'result_format': 'single'
+        },
+      },
     },
 
     'chrome_public_tests': {
@@ -563,8 +570,12 @@
 
     'chrome_public_wpt': {
       'chrome_public_wpt': {
+        'args': [
+          '--log-wptreport',
+          '--processes=2',
+        ],
         'swarming': {
-          'shards': 15,
+          'shards': 18,
           'expiration': 18000,
           'hard_timeout': 14400,
         },
@@ -1660,6 +1671,7 @@
       'boringssl_ssl_tests': {},
       'capture_unittests': {},
       'color_unittests': {},
+      'components_browsertests': {},
       'components_unittests': {
         'swarming': {
           'shards': 2,
@@ -1760,7 +1772,6 @@
     },
 
     'fuchsia_experimental_gtests': {
-      'components_browsertests': {},
       'content_browsertests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_browsertests.filter',
@@ -5125,7 +5136,7 @@
     'system_webview_wpt': {
       'system_webview_wpt': {
         'swarming': {
-          'shards': 15,
+          'shards': 18,
           'expiration': 18000,
           'hard_timeout': 14400,
         },
@@ -5313,6 +5324,16 @@
       'upload_trace_processor': {},
     },
 
+    'variations_smoke_tests': {
+      'variations_smoke_tests': {
+        'isolate_name': 'variations_smoke_tests',
+        'resultdb': {
+          'enable': True,
+          'result_format': 'single'
+        },
+      },
+    },
+
     # Not applicable for android x86 & x64 since the targets here assert
     # "enable_vr" in GN which is only true for android arm & arm64.
     # For details, see the following files:
@@ -5403,8 +5424,11 @@
 
     'weblayer_shell_wpt': {
       'weblayer_shell_wpt': {
+        'args': [
+          '--processes=2',
+        ],
         'swarming': {
-          'shards': 15,
+          'shards': 18,
           'expiration': 18000,
           'hard_timeout': 14400,
         },
@@ -5983,11 +6007,6 @@
       'weblayer_gtests',
       'webview_64_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
-    ],
-
-    'android_wpt_scripts': [
-      'system_webview_wpt',
-      'weblayer_shell_wpt',
     ],
 
     'backuprefptr_gtests': [

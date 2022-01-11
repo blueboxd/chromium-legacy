@@ -174,7 +174,7 @@ class MockSafeSeedManager : public SafeSeedManager {
   }
 };
 
-// TODO(crbug.com/1167566): Remove when fake VariationsServiceClient created.
+// TODO(crbug/1167566): Remove when fake VariationsServiceClient created.
 class TestVariationsServiceClient : public VariationsServiceClient {
  public:
   TestVariationsServiceClient() = default;
@@ -296,15 +296,14 @@ class TestVariationsFieldTrialCreator : public VariationsFieldTrialCreator {
 
   // A convenience wrapper around SetUpFieldTrials() which passes default values
   // for uninteresting params.
-  bool SetUpFieldTrials(bool extend_variations_safe_mode = true) {
+  bool SetUpFieldTrials() {
     TestPlatformFieldTrials platform_field_trials;
     return VariationsFieldTrialCreator::SetUpFieldTrials(
         /*variation_ids=*/std::vector<std::string>(),
         std::vector<base::FeatureList::FeatureOverrideInfo>(),
         /*low_entropy_provider=*/nullptr, std::make_unique<base::FeatureList>(),
         metrics_state_manager_.get(), &platform_field_trials,
-        safe_seed_manager_, /*low_entropy_source_value=*/absl::nullopt,
-        extend_variations_safe_mode);
+        safe_seed_manager_, /*low_entropy_source_value=*/absl::nullopt);
   }
 
   TestVariationsSeedStore* seed_store() { return &seed_store_; }
@@ -404,6 +403,16 @@ struct StartupVisibilityTestParams {
 class FieldTrialCreatorTestWithStartupVisibility
     : public FieldTrialCreatorSafeModeExperimentTest,
       public ::testing::WithParamInterface<StartupVisibilityTestParams> {};
+
+struct ChannelTestParams {
+  const std::string test_name;
+  version_info::Channel channel;
+  bool should_experiment_be_active;
+};
+
+class SafeModeExperimentTestByChannel
+    : public FieldTrialCreatorSafeModeExperimentTest,
+      public ::testing::WithParamInterface<ChannelTestParams> {};
 
 // Verify that unexpired seeds are used.
 TEST_F(FieldTrialCreatorTest, SetUpFieldTrials_ValidSeed_NotExpired) {
@@ -679,7 +688,7 @@ TEST_F(FieldTrialCreatorTest,
 }
 
 // Verify that Chrome applies the regular variations seed when Chrome should run
-// in variations safe mode but the safe seed is empty.
+// in Variations Safe Mode but the safe seed is empty.
 TEST_F(FieldTrialCreatorTest, SetUpFieldTrials_EmptySafeSeed_UsesRegularSeed) {
   DisableTestingConfig();
 
@@ -718,7 +727,7 @@ TEST_F(FieldTrialCreatorTest, SetUpFieldTrials_EmptySafeSeed_UsesRegularSeed) {
 }
 
 // Verify that Chrome does not apply a variations seed when Chrome should run in
-// variations safe mode and a safe seed cannot be loaded.
+// Variations Safe Mode and a safe seed cannot be loaded.
 TEST_F(FieldTrialCreatorTest,
        SetUpFieldTrials_CorruptedSafeSeed_DoesNotUseSeed) {
   DisableTestingConfig();
@@ -914,31 +923,35 @@ TEST_F(FieldTrialCreatorTest, ClientFilterableState_HardwareClass) {
 }
 #endif  // defined(OS_ANDROID)
 
+// Verify that providing an empty user data directory opts the client out of the
+// Extended Variations Safe Mode experiment.
 TEST_F(FieldTrialCreatorSafeModeExperimentTest, OptOutOfExperiment) {
   // Ensure that variations safe mode is not triggered.
   NiceMock<MockSafeSeedManager> safe_seed_manager(local_state());
   ON_CALL(safe_seed_manager, ShouldRunInSafeMode())
       .WillByDefault(Return(false));
 
+  // Specify a channel on which the Extended Variations Safe Mode experiment is
+  // running.
   version_info::Channel channel = version_info::Channel::DEV;
   NiceMock<MockVariationsServiceClient> variations_service_client;
   ON_CALL(variations_service_client, GetChannel())
       .WillByDefault(Return(channel));
 
   TestVariationsFieldTrialCreator field_trial_creator(
-      local_state(), &variations_service_client, &safe_seed_manager, channel);
+      local_state(), &variations_service_client, &safe_seed_manager, channel,
+      base::FilePath());
 
   base::HistogramTester histogram_tester;
-  ASSERT_TRUE(field_trial_creator.SetUpFieldTrials(
-      /*extend_variations_safe_mode=*/false));
+  ASSERT_TRUE(field_trial_creator.SetUpFieldTrials());
 
-  // Verify that the experiment is not active and that the WritePrefsTime metric
-  // was not recorded.
+  // Verify that the experiment is not active and that Variations Safe Mode was
+  // not extended.
   EXPECT_FALSE(base::FieldTrialList::IsTrialActive(kExtendedSafeModeTrial));
+  EXPECT_FALSE(
+      field_trial_creator.was_maybe_extend_variations_safe_mode_called());
   histogram_tester.ExpectTotalCount(
       "Variations.ExtendedSafeMode.WritePrefsTime", 0);
-
-  base::FeatureList::ClearInstanceForTesting();
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -963,7 +976,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(FieldTrialCreatorTestWithStartupVisibility,
        SkipExperimentInBackgroundSessions) {
-  // Ensure that variations safe mode is not triggered.
+  // Ensure that Variations Safe Mode is not triggered.
   NiceMock<MockSafeSeedManager> safe_seed_manager(local_state());
   ON_CALL(safe_seed_manager, ShouldRunInSafeMode())
       .WillByDefault(Return(false));
@@ -976,9 +989,13 @@ TEST_P(FieldTrialCreatorTestWithStartupVisibility,
   StartupVisibilityTestParams params = GetParam();
   TestVariationsFieldTrialCreator field_trial_creator(
       local_state(), &variations_service_client, &safe_seed_manager, channel,
-      base::FilePath(), params.startup_visibility);
-  ASSERT_TRUE(field_trial_creator.SetUpFieldTrials());
+      user_data_dir_path(), params.startup_visibility);
 
+  // Verify that the Extended Variations Safe Mode experiment is active to be
+  // certain that Safe Mode is (or isn't) extended due to the StartupVisibility.
+  ASSERT_TRUE(base::FieldTrialList::IsTrialActive(kExtendedSafeModeTrial));
+
+  ASSERT_TRUE(field_trial_creator.SetUpFieldTrials());
   // Verify that MaybeExtendVariationsSafeMode() was (or wasn't) called.
   EXPECT_EQ(field_trial_creator.was_maybe_extend_variations_safe_mode_called(),
             params.extend_safe_mode);
@@ -986,54 +1003,65 @@ TEST_P(FieldTrialCreatorTestWithStartupVisibility,
   base::FeatureList::ClearInstanceForTesting();
 }
 
-// TODO(b/184937096): Update this test if and when the extended variations safe
-// mode experiment is rolled out to beta or stable.
-TEST_F(FieldTrialCreatorSafeModeExperimentTest,
-       DisableExperimentOnSelectChannels) {
-  // Ensure that variations safe mode is not triggered.
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SafeModeExperimentTestByChannel,
+    ::testing::Values(
+        ChannelTestParams{.test_name = "Unknown",
+                          .channel = version_info::Channel::UNKNOWN,
+                          .should_experiment_be_active = true},
+        ChannelTestParams{.test_name = "Canary",
+                          .channel = version_info::Channel::CANARY,
+                          .should_experiment_be_active = true},
+        ChannelTestParams{.test_name = "Dev",
+                          .channel = version_info::Channel::DEV,
+                          .should_experiment_be_active = true},
+        ChannelTestParams{.test_name = "Beta",
+                          .channel = version_info::Channel::BETA,
+                          .should_experiment_be_active = true},
+        ChannelTestParams{.test_name = "Stable",
+                          .channel = version_info::Channel::STABLE,
+                          .should_experiment_be_active = false}),
+    [](const ::testing::TestParamInfo<ChannelTestParams>& params) {
+      return params.param.test_name;
+    });
+
+// Verify that the Extended Variations Safe Mode experiment is active on
+// pre-stable channels and disabled on stable.
+//
+// TODO(crbug/1269139): Update this test as the Extended Variations Safe Mode
+// experiment is rolled out.
+TEST_P(SafeModeExperimentTestByChannel, FieldTrialActivationIsValid) {
+  // Ensure that Variations Safe Mode is not triggered.
   NiceMock<MockSafeSeedManager> safe_seed_manager(local_state());
   ON_CALL(safe_seed_manager, ShouldRunInSafeMode())
       .WillByDefault(Return(false));
 
-// For desktop and iOS, the Extended Variations Safe Mode experiment is enabled
-// on pre-stable channels; for Android Chrome, on canary and dev.
-#if defined(OS_ANDROID)
-  std::vector<version_info::Channel> channels = {version_info::Channel::BETA,
-                                                 version_info::Channel::STABLE};
-#else
-  std::vector<version_info::Channel> channels = {version_info::Channel::STABLE};
-#endif  // defined(OS_ANDROID)
+  ChannelTestParams params = GetParam();
+  NiceMock<MockVariationsServiceClient> variations_service_client;
+  ON_CALL(variations_service_client, GetChannel())
+      .WillByDefault(Return(params.channel));
 
-  for (const version_info::Channel channel : channels) {
-    NiceMock<MockVariationsServiceClient> variations_service_client;
-    ON_CALL(variations_service_client, GetChannel())
-        .WillByDefault(Return(channel));
+  TestVariationsFieldTrialCreator field_trial_creator(
+      local_state(), &variations_service_client, &safe_seed_manager,
+      params.channel, user_data_dir_path());
 
-    TestVariationsFieldTrialCreator field_trial_creator(
-        local_state(), &variations_service_client, &safe_seed_manager, channel);
-
-    base::HistogramTester histogram_tester;
-    ASSERT_TRUE(field_trial_creator.SetUpFieldTrials());
-
-    // Verify that the experiment is not active.
-    EXPECT_FALSE(base::FieldTrialList::IsTrialActive(kExtendedSafeModeTrial));
-
-    // Check metrics.
-    histogram_tester.ExpectTotalCount(
-        "Variations.ExtendedSafeMode.WritePrefsTime", 0);
-
-    base::FeatureList::ClearInstanceForTesting();
-  }
+  ASSERT_TRUE(field_trial_creator.SetUpFieldTrials());
+  // Verify that the experiment is (or is not) active.
+  EXPECT_EQ(params.should_experiment_be_active,
+            base::FieldTrialList::IsTrialActive(kExtendedSafeModeTrial));
+  EXPECT_EQ(params.should_experiment_be_active,
+            field_trial_creator.was_maybe_extend_variations_safe_mode_called());
 }
 
 TEST_F(FieldTrialCreatorSafeModeExperimentTest,
-       EnableExperimentOnCanary_ControlGroup) {
+       ControlGroupDoesNotWriteBeaconFile) {
   NiceMock<MockVariationsServiceClient> variations_service_client;
-  version_info::Channel channel = version_info::Channel::CANARY;
+  version_info::Channel channel = version_info::Channel::BETA;
   ON_CALL(variations_service_client, GetChannel())
       .WillByDefault(Return(channel));
 
-  // Ensure that variations safe mode is not triggered.
+  // Ensure that Variations Safe Mode is not triggered.
   NiceMock<MockSafeSeedManager> safe_seed_manager(local_state());
   ON_CALL(safe_seed_manager, ShouldRunInSafeMode())
       .WillByDefault(Return(false));
@@ -1043,7 +1071,8 @@ TEST_F(FieldTrialCreatorSafeModeExperimentTest,
   // desired group.
   int active_group = SetUpExtendedSafeModeExperiment(kControlGroup);
   TestVariationsFieldTrialCreator field_trial_creator(
-      local_state(), &variations_service_client, &safe_seed_manager, channel);
+      local_state(), &variations_service_client, &safe_seed_manager, channel,
+      user_data_dir_path());
 
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(field_trial_creator.SetUpFieldTrials());
@@ -1058,19 +1087,19 @@ TEST_F(FieldTrialCreatorSafeModeExperimentTest,
   histogram_tester.ExpectTotalCount(
       "Variations.ExtendedSafeMode.WritePrefsTime", 1);
 
-  // Verify that the Variations Safe Mode file does not exist.
+  // Verify that the beacon file does not exist.
   EXPECT_FALSE(base::PathExists(
       user_data_dir_path().Append(variations::kVariationsFilename)));
 }
 
 TEST_F(FieldTrialCreatorSafeModeExperimentTest,
-       EnableExperimentOnDev_SignalAndWriteViaFileUtilGroup) {
+       ExperimentGroupWritesBeaconFile) {
   NiceMock<MockVariationsServiceClient> variations_service_client;
-  version_info::Channel channel = version_info::Channel::DEV;
+  version_info::Channel channel = version_info::Channel::BETA;
   ON_CALL(variations_service_client, GetChannel())
       .WillByDefault(Return(channel));
 
-  // Ensure that variations safe mode is not triggered.
+  // Ensure that Variations Safe Mode is not triggered.
   NiceMock<MockSafeSeedManager> safe_seed_manager(local_state());
   ON_CALL(safe_seed_manager, ShouldRunInSafeMode())
       .WillByDefault(Return(false));

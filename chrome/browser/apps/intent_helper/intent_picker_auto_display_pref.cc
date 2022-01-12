@@ -9,6 +9,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 
 namespace {
 
@@ -26,9 +27,10 @@ std::unique_ptr<base::DictionaryValue> GetAutoDisplayDictForSettings(
   if (!settings)
     return std::make_unique<base::DictionaryValue>();
 
-  std::unique_ptr<base::DictionaryValue> value =
-      base::DictionaryValue::From(settings->GetWebsiteSetting(
-          origin, origin, ContentSettingsType::INTENT_PICKER_DISPLAY, nullptr));
+  std::unique_ptr<base::DictionaryValue> value = base::DictionaryValue::From(
+      content_settings::ToNullableUniquePtrValue(settings->GetWebsiteSetting(
+          origin, origin, ContentSettingsType::INTENT_PICKER_DISPLAY,
+          nullptr)));
 
   if (value.get())
     return value;
@@ -120,5 +122,5 @@ IntentPickerAutoDisplayPref::QueryPlatform() {
 void IntentPickerAutoDisplayPref::Commit() {
   settings_map_->SetWebsiteSettingDefaultScope(
       origin_, origin_, ContentSettingsType::INTENT_PICKER_DISPLAY,
-      std::move(pref_dict_));
+      content_settings::FromNullableUniquePtrValue(std::move(pref_dict_)));
 }

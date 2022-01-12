@@ -15,6 +15,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_constraints.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "url/gurl.h"
 
 namespace subresource_filter {
@@ -140,8 +141,9 @@ void SubresourceFilterContentSettingsManager::SetSiteMetadataBasedOnActivation(
 std::unique_ptr<base::DictionaryValue>
 SubresourceFilterContentSettingsManager::GetSiteMetadata(
     const GURL& url) const {
-  return base::DictionaryValue::From(settings_map_->GetWebsiteSetting(
-      url, GURL(), ContentSettingsType::ADS_DATA, nullptr));
+  return base::DictionaryValue::From(content_settings::ToNullableUniquePtrValue(
+      settings_map_->GetWebsiteSetting(
+          url, GURL(), ContentSettingsType::ADS_DATA, nullptr)));
 }
 
 void SubresourceFilterContentSettingsManager::SetSiteMetadataForTesting(
@@ -170,7 +172,9 @@ void SubresourceFilterContentSettingsManager::SetSiteMetadata(
 
   content_settings::ContentSettingConstraints constraints = {expiry_time};
   settings_map_->SetWebsiteSettingDefaultScope(
-      url, GURL(), ContentSettingsType::ADS_DATA, std::move(dict), constraints);
+      url, GURL(), ContentSettingsType::ADS_DATA,
+      content_settings::FromNullableUniquePtrValue(std::move(dict)),
+      constraints);
 }
 
 std::unique_ptr<base::DictionaryValue>

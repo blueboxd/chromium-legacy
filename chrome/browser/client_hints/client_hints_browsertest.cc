@@ -1282,9 +1282,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // Copy the client hints setting for localhost to foo.com.
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       GURL("https://foo.com/"), GURL(), ContentSettingsType::CLIENT_HINTS,
-
-      std::make_unique<base::Value>(
-          client_hints_settings.at(0).setting_value.Clone()));
+      client_hints_settings.at(0).setting_value.Clone());
 
   // Verify that client hints for the two hosts has been saved.
   host_content_settings_map =
@@ -1549,8 +1547,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTestWithThirdPartyDelegation,
 }
 
 // Flaky on all platforms. https://crbug.com/1285479.
-IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
-                       DISABLED_DelegateToFoo_MetaName) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToFoo_MetaName) {
   // Go to a page which delegates hints to `foo.com`.
   GURL gurl = meta_name_accept_ch_delegation_foo();
   SetClientHintExpectationsOnMainFrame(false);
@@ -2519,7 +2516,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
                                    std::move(client_hints_list));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       without_accept_ch_url(), GURL(), ContentSettingsType::CLIENT_HINTS,
-      std::make_unique<base::Value>(client_hints_dictionary->Clone()));
+      client_hints_dictionary->Clone());
 
   // Reading the settings should now return one setting.
   host_content_settings_map->GetSettingsForOneType(

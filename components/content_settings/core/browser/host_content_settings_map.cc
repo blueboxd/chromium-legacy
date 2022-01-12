@@ -374,9 +374,9 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
     ContentSettingsType content_type) const {
   DCHECK(content_settings::ContentSettingsRegistry::GetInstance()->Get(
       content_type));
-  std::unique_ptr<base::Value> value =
+  const base::Value value =
       GetWebsiteSetting(primary_url, secondary_url, content_type, nullptr);
-  return content_settings::ValueToContentSetting(value.get());
+  return content_settings::ValueToContentSetting(value);
 }
 
 ContentSetting HostContentSettingsMap::GetUserModifiableContentSetting(
@@ -431,7 +431,7 @@ void HostContentSettingsMap::SetWebsiteSettingDefaultScope(
     const GURL& primary_url,
     const GURL& secondary_url,
     ContentSettingsType content_type,
-    std::unique_ptr<base::Value> value,
+    base::Value value,
     const content_settings::ContentSettingConstraints& constraints) {
   content_settings::PatternPair patterns = GetPatternsForContentSettingsType(
       primary_url, secondary_url, content_type);
@@ -440,10 +440,8 @@ void HostContentSettingsMap::SetWebsiteSettingDefaultScope(
   if (!primary_pattern.IsValid() || !secondary_pattern.IsValid())
     return;
 
-  SetWebsiteSettingCustomScope(
-      primary_pattern, secondary_pattern, content_type,
-      content_settings::FromNullableUniquePtrValue(std::move(value)),
-      constraints);
+  SetWebsiteSettingCustomScope(primary_pattern, secondary_pattern, content_type,
+                               std::move(value), constraints);
 }
 
 void HostContentSettingsMap::SetWebsiteSettingCustomScope(
@@ -560,18 +558,16 @@ void HostContentSettingsMap::SetContentSettingCustomScope(
   DCHECK(content_settings::ContentSettingsRegistry::GetInstance()->Get(
       content_type));
 
-  std::unique_ptr<base::Value> value;
+  base::Value value;
   // A value of CONTENT_SETTING_DEFAULT implies deleting the content setting.
   if (setting != CONTENT_SETTING_DEFAULT) {
     DCHECK(content_settings::ContentSettingsRegistry::GetInstance()
                ->Get(content_type)
                ->IsSettingValid(setting));
-    value = std::make_unique<base::Value>(setting);
+    value = base::Value(setting);
   }
-  SetWebsiteSettingCustomScope(
-      primary_pattern, secondary_pattern, content_type,
-      content_settings::FromNullableUniquePtrValue(std::move(value)),
-      constraints);
+  SetWebsiteSettingCustomScope(primary_pattern, secondary_pattern, content_type,
+                               std::move(value), constraints);
 }
 
 void HostContentSettingsMap::SetContentSettingDefaultScope(
@@ -831,12 +827,11 @@ void HostContentSettingsMap::UsedContentSettingsProviders() const {
 #endif
 }
 
-std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(
+base::Value HostContentSettingsMap::GetWebsiteSetting(
     const GURL& primary_url,
     const GURL& secondary_url,
     ContentSettingsType content_type,
     content_settings::SettingInfo* info) const {
-
   // Check if the requested setting is allowlisted.
   // TODO(raymes): Move this into GetContentSetting. This has nothing to do with
   // website settings
@@ -854,13 +849,13 @@ std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(
           info->primary_pattern = ContentSettingsPattern::Wildcard();
           info->secondary_pattern = ContentSettingsPattern::Wildcard();
         }
-        return std::make_unique<base::Value>(CONTENT_SETTING_ALLOW);
+        return base::Value(CONTENT_SETTING_ALLOW);
       }
     }
   }
 
-  return content_settings::ToNullableUniquePtrValue(GetWebsiteSettingInternal(
-      primary_url, secondary_url, content_type, kFirstProvider, info));
+  return GetWebsiteSettingInternal(primary_url, secondary_url, content_type,
+                                   kFirstProvider, info);
 }
 
 // static

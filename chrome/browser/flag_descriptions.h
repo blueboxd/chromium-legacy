@@ -2290,9 +2290,6 @@ extern const char kAppDiscoveryForOobeDescription[];
 extern const char kAppDiscoveryRemoteUrlSearchName[];
 extern const char kAppDiscoveryRemoteUrlSearchDescription[];
 
-extern const char kAppServiceExternalProtocolName[];
-extern const char kAppServiceExternalProtocolDescription[];
-
 extern const char kArcAccountRestrictionsName[];
 extern const char kArcAccountRestrictionsDescription[];
 
@@ -2631,6 +2628,9 @@ extern const char kEnableSuggestedLocalFilesDescription[];
 
 extern const char kEnableWireGuardName[];
 extern const char kEnableWireGuardDescription[];
+
+extern const char kEnforceAshExtensionKeeplistName[];
+extern const char kEnforceAshExtensionKeeplistDescription[];
 
 extern const char kExoGamepadVibrationName[];
 extern const char kExoGamepadVibrationDescription[];

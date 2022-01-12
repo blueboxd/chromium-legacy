@@ -809,6 +809,24 @@
             ]
         }
     ],
+    "ArcLogdSizeConfig": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledGroup512K_20211210",
+                    "params": {
+                        "size": "512"
+                    },
+                    "enable_features": [
+                        "ArcGuestLogdConfig"
+                    ]
+                }
+            ]
+        }
+    ],
     "ArcVmBlockSize": [
         {
             "platforms": [
@@ -1171,7 +1189,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_2021-12-01",
+                    "name": "Enabled",
                     "enable_features": [
                         "AutofillEnableSupportForMoreStructureInAddresses"
                     ]
@@ -1208,7 +1226,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_2021-12-01",
+                    "name": "Enabled",
                     "enable_features": [
                         "AutofillEnableSupportForMoreStructureInNames"
                     ]
@@ -2160,6 +2178,25 @@
                     "enable_features": [
                         "EnableNeuralPalmDetectionFilter",
                         "EnableNeuralStylusReportFilter"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ChromeOSRawPSIMetrics": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledGroup10s_20220107",
+                    "params": {
+                        "period": "10"
+                    },
+                    "enable_features": [
+                        "ArcVmMemoryPSIReports",
+                        "MemoryPressureMetricsDetail"
                     ]
                 }
             ]
@@ -8391,6 +8428,26 @@
                     "enable_features": [
                         "V8SlowHistogramsSparkplugAndroid",
                         "V8Sparkplug"
+                    ]
+                }
+            ]
+        }
+    ],
+    "V8WasmDynamicTiering": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20211210",
+                    "enable_features": [
+                        "WebAssemblyDynamicTiering"
                     ]
                 }
             ]

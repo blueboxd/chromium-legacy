@@ -3990,10 +3990,6 @@ const char kAppDiscoveryRemoteUrlSearchName[] =
 const char kAppDiscoveryRemoteUrlSearchDescription[] =
     "Surface results from a URL in the app discovery service.";
 
-const char kAppServiceExternalProtocolName[] = "App Service External Protocol";
-const char kAppServiceExternalProtocolDescription[] =
-    "Use the App Service to provide data for external protocol dialog.";
-
 const char kArcAccountRestrictionsName[] = "Enable ARC account restrictions";
 const char kArcAccountRestrictionsDescription[] =
     "ARC account restrictions feature for multi-profile account consistency";
@@ -4590,6 +4586,12 @@ const char kEnableWireGuardName[] = "Enable WireGuard VPN";
 const char kEnableWireGuardDescription[] =
     "Enable the support of WireGuard VPN as a native VPN option. Requires a "
     "kernel version that support it.";
+
+const char kEnforceAshExtensionKeeplistName[] =
+    "Enforce Ash extension keeplist";
+const char kEnforceAshExtensionKeeplistDescription[] =
+    "Enforce the Ash extension keeplist. Only the extensions and Chrome apps on"
+    " the keeplist are enabled in Ash.";
 
 const char kESimPolicyName[] = "Enable ESim Policy";
 const char kESimPolicyDescription[] =

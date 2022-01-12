@@ -2542,18 +2542,6 @@ void Document::AttachCompositorTimeline(
                                                                  GetFrame());
 }
 
-void Document::DetachCompositorTimeline(
-    CompositorAnimationTimeline* timeline) const {
-  if (!Platform::Current()->IsThreadedAnimationEnabled() ||
-      !GetSettings()->GetAcceleratedCompositingEnabled())
-    return;
-
-  // During Document::Shutdown() the timeline needs to be unconditionally
-  // detached.
-  GetPage()->GetChromeClient().DetachCompositorAnimationTimeline(timeline,
-                                                                 GetFrame());
-}
-
 void Document::ClearFocusedElementSoon() {
   if (!clear_focused_element_timer_.IsActive())
     clear_focused_element_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
@@ -2797,7 +2785,7 @@ void Document::Shutdown() {
   CancelPendingJavaScriptUrls();
   http_refresh_scheduler_->Cancel();
 
-  DetachCompositorTimeline(Timeline().CompositorTimeline());
+  GetDocumentAnimations().DetachCompositorTimelines();
 
   if (GetFrame()->IsLocalRoot())
     GetPage()->GetChromeClient().AttachRootLayer(nullptr, GetFrame());
@@ -3500,8 +3488,6 @@ void Document::ImplicitClose() {
     return;
   }
 
-  fetcher_->ScheduleWarnUnusedPreloads();
-
   if (GetStyleEngine().HaveRenderBlockingStylesheetsLoaded())
     UpdateStyleAndLayout(DocumentUpdateReason::kUnknown);
 
@@ -3579,6 +3565,9 @@ bool Document::CheckCompletedInternal() {
   SetReadyState(kComplete);
   if (LoadEventStillNeeded())
     ImplicitClose();
+
+  DCHECK(fetcher_);
+  fetcher_->ScheduleWarnUnusedPreloads();
 
   // The readystatechanged or load event may have disconnected this frame.
   if (!GetFrame() || !GetFrame()->IsAttached())
@@ -5520,7 +5509,7 @@ void Document::SetCookieManager(
 
 const AtomicString& Document::referrer() const {
   if (Loader())
-    return Loader()->GetReferrer().referrer;
+    return Loader()->GetReferrer();
   return g_null_atom;
 }
 

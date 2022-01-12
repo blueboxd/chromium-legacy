@@ -151,6 +151,16 @@ void ProjectorControllerImpl::OnTranscriptionError() {
       EndRecordingReason::kProjectorTranscriptionError);
 }
 
+void ProjectorControllerImpl::OnSpeechRecognitionStopped() {
+  if (projector_session_->screencast_container_path()) {
+    // Finish saving the screencast if the container is available. The container
+    // might be unavailable if fail in creating the directory.
+    SaveScreencast();
+  }
+
+  projector_session_->Stop();
+}
+
 bool ProjectorControllerImpl::IsEligible() const {
   return speech_recognition_availability_ ==
              SpeechRecognitionAvailability::kAvailable ||
@@ -258,8 +268,6 @@ void ProjectorControllerImpl::OnRecordingEnded(bool is_in_projector_mode) {
 
   DCHECK(projector_session_->is_active());
 
-  StopSpeechRecognition();
-
   // TODO(b/197152209): move closing selfie cam to ProjectorUiController.
   if (client_->IsSelfieCamVisible())
     client_->CloseSelfieCam();
@@ -268,16 +276,10 @@ void ProjectorControllerImpl::OnRecordingEnded(bool is_in_projector_mode) {
   if (ui_controller_)
     ui_controller_->CloseToolbar();
 
-  if (projector_session_->screencast_container_path()) {
-    // Finish saving the screencast if the container is available. The container
-    // might be unavailable if fail in creating the directory.
-    SaveScreencast();
-  }
+  StopSpeechRecognition();
 
-  projector_session_->Stop();
-
-  // At this point, the screencast might not synced to Drive yet.  Open
-  // Projector App which showing the Gallery view by default.
+  // At this point, the screencast might not synced to Drive yet. Open
+  // Projector App which shows the Gallery view by default.
   client_->OpenProjectorApp();
 }
 
@@ -294,6 +296,8 @@ void ProjectorControllerImpl::OnRecordingStartAborted() {
   }
 
   projector_session_->Stop();
+
+  client_->OpenProjectorApp();
 }
 
 void ProjectorControllerImpl::OnLaserPointerPressed() {
@@ -362,8 +366,10 @@ void ProjectorControllerImpl::StartSpeechRecognition() {
 }
 
 void ProjectorControllerImpl::StopSpeechRecognition() {
-  if (ProjectorController::AreExtendedProjectorFeaturesDisabled())
+  if (ProjectorController::AreExtendedProjectorFeaturesDisabled()) {
+    OnSpeechRecognitionStopped();
     return;
+  }
 
   DCHECK(speech_recognition_availability_ ==
          SpeechRecognitionAvailability::kAvailable);

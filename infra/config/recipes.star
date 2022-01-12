@@ -96,10 +96,16 @@ build_recipe(
 
 build_recipe(
     name = "recipe:angle_chromium",
+    experiments = {
+        "luci.recipes.use_python3": 5,
+    },
 )
 
 build_recipe(
     name = "recipe:angle_chromium_trybot",
+    experiments = {
+        "luci.recipes.use_python3": 5,
+    },
 )
 
 build_recipe(
@@ -114,6 +120,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:binary_size_fuchsia_trybot",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -229,6 +236,10 @@ build_recipe(
 
 build_recipe(
     name = "recipe:reclient_goma_comparison",
+)
+
+build_recipe(
+    name = "recipe:requires_testing_checker",
 )
 
 build_recipe(

@@ -2633,12 +2633,16 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsWindowPlacement", IDS_SITE_SETTINGS_TYPE_WINDOW_PLACEMENT},
     {"siteSettingsWindowPlacementMidSentence",
      IDS_SITE_SETTINGS_TYPE_WINDOW_PLACEMENT_MID_SENTENCE},
+    {"siteSettingsWindowPlacementDescription",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_DESCRIPTION},
     {"siteSettingsWindowPlacementAsk",
      IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_ASK},
-    {"siteSettingsWindowPlacementAskRecommended",
-     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_ASK_RECOMMENDED},
-    {"siteSettingsWindowPlacementBlock",
-     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_BLOCK},
+    {"siteSettingsWindowPlacementBlocked",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_BLOCKED},
+    {"siteSettingsWindowPlacementAskExceptions",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_ASK_EXCEPTIONS},
+    {"siteSettingsWindowPlacementBlockedExceptions",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_BLOCKED_EXCEPTIONS},
     {"siteSettingsFontAccessMidSentence",
      IDS_SITE_SETTINGS_TYPE_FONT_ACCESS_MID_SENTENCE},
     {"siteSettingsFontAccessAsk", IDS_SETTINGS_SITE_SETTINGS_FONT_ACCESS_ASK},
@@ -2863,6 +2867,19 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
       {"securityKeysSetPinButton", IDS_SETTINGS_SECURITY_KEYS_SET_PIN_BUTTON},
       {"securityKeysSamePINAsCurrent",
        IDS_SETTINGS_SECURITY_KEYS_SAME_PIN_AS_CURRENT},
+      {"securityKeysPhoneEditDialogTitle",
+       IDS_SETTINGS_SECURITY_KEYS_PHONE_EDIT_DIALOG_TITLE},
+      {"securityKeysPhonesYourDevices",
+       IDS_SETTINGS_SECURITY_KEYS_PHONES_YOUR_DEVICES},
+      {"securityKeysPhonesSyncedDesc",
+       IDS_SETTINGS_SECURITY_KEYS_PHONES_SYNCED_DESC},
+      {"securityKeysPhonesLinkedDevices",
+       IDS_SETTINGS_SECURITY_KEYS_PHONES_LINKED_DEVICES},
+      {"securityKeysPhonesLinkedDesc",
+       IDS_SETTINGS_SECURITY_KEYS_PHONES_LINKED_DESC},
+      {"securityKeysPhonesManage", IDS_SETTINGS_SECURITY_KEYS_PHONES_MANAGE},
+      {"securityKeysPhonesManageDesc",
+       IDS_SETTINGS_SECURITY_KEYS_PHONES_MANAGE_DESC},
   };
   html_source->AddLocalizedStrings(kSecurityKeysStrings);
   bool win_native_api_available = false;
@@ -2875,6 +2892,9 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
                           !win_native_api_available);
   html_source->AddBoolean("enableSecurityKeysBioEnrollment",
                           !win_native_api_available);
+  html_source->AddBoolean(
+      "enableSecurityKeysPhonesSubpage",
+      base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
 }
 
 void AddIPHStrings(content::WebUIDataSource* html_source) {

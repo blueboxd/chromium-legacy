@@ -84,14 +84,17 @@ CONTENT_EXPORT extern const base::Feature
     kExperimentalContentSecurityPolicyFeatures;
 CONTENT_EXPORT extern const base::Feature
     kExtraSafelistedRequestHeadersForOutOfBlinkCors;
+CONTENT_EXPORT extern const base::Feature kFedCm;
+CONTENT_EXPORT extern const char kFedCmInterceptionFieldTrialParamName[];
+CONTENT_EXPORT extern const base::Feature kFirstPartySets;
+CONTENT_EXPORT extern const base::FeatureParam<bool> kFirstPartySetsIsDogfooder;
+CONTENT_EXPORT extern const base::Feature kFirstPartySetsV2ComponentFormat;
 CONTENT_EXPORT extern const base::Feature kFontManagerEarlyInit;
 CONTENT_EXPORT extern const base::Feature kFontSrcLocalMatching;
 #if !defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature
     kForwardMemoryPressureEventsToGpuProcess;
 #endif
-CONTENT_EXPORT extern const base::Feature kFedCm;
-CONTENT_EXPORT extern const char kFedCmInterceptionFieldTrialParamName[];
 CONTENT_EXPORT extern const base::Feature kFractionalScrollOffsets;
 CONTENT_EXPORT extern const base::Feature kGreaseUACH;
 CONTENT_EXPORT extern const base::Feature kHistoryPreventSandboxedNavigation;
@@ -230,6 +233,7 @@ CONTENT_EXPORT extern const base::Feature kSubresourceWebBundles;
 CONTENT_EXPORT extern const base::Feature
     kSuppressDifferentOriginSubframeJSDialogs;
 CONTENT_EXPORT extern const base::Feature kSyntheticPointerActions;
+CONTENT_EXPORT extern const base::Feature kThreadingOptimizationsOnIO;
 CONTENT_EXPORT extern const base::Feature kTouchpadAsyncPinchEvents;
 CONTENT_EXPORT extern const base::Feature kTouchpadOverscrollHistoryNavigation;
 CONTENT_EXPORT extern const base::Feature kTrustedDOMTypes;
@@ -303,14 +307,6 @@ CONTENT_EXPORT extern const base::Feature kIOSurfaceCapturer;
 CONTENT_EXPORT extern const base::Feature kMacSyscallSandbox;
 CONTENT_EXPORT extern const base::Feature kRetryGetVideoCaptureDeviceInfos;
 #endif  // defined(OS_MAC)
-
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-CONTENT_EXPORT extern const base::Feature kSendWebUIJavaScriptErrorReports;
-CONTENT_EXPORT extern const char
-    kSendWebUIJavaScriptErrorReportsSendToProductionVariation[];
-CONTENT_EXPORT extern const base::FeatureParam<bool>
-    kWebUIJavaScriptErrorReportsSendToProductionParam;
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 CONTENT_EXPORT extern const base::Feature kWebRtcPipeWireCapturer;

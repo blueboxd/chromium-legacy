@@ -361,7 +361,6 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="hintsfetcher_gethintsrequest"/>
       <traffic_annotation unique_id="optimization_guide_model"/>
       <traffic_annotation unique_id="optimization_guide_model_download"/>
-      <traffic_annotation unique_id="litepages_robots_rules"/>
     </sender>
     <sender name="Network">
       <traffic_annotation unique_id="network_time_component"/>
@@ -402,6 +401,7 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="chrome_variations_service"/>
     </sender>
     <sender name="Updates">
+      <traffic_annotation unique_id="omaha_client_android_uc"/>
       <traffic_annotation unique_id="update_client"/>
     </sender>
     <sender name="Crash Reports">

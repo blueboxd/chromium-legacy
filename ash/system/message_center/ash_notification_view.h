@@ -160,6 +160,12 @@ class ASH_EXPORT AshNotificationView
   // Update the color and icon for `app_icon_view_`.
   void UpdateAppIconView();
 
+  // Calculate the color used for the app icon and action buttons.
+  SkColor CalculateIconAndButtonsColor();
+
+  // Update the color of icon and buttons.
+  void UpdateIconAndButtonsColor();
+
   // AshNotificationView will animate its expand/collapse in the parent's
   // ChildPreferredSizeChange(). Child views are animated here.
   void PerformExpandCollapseAnimation();
@@ -170,6 +176,10 @@ class ASH_EXPORT AshNotificationView
   // Animations when toggle inline settings.
   void PerformToggleInlineSettingsAnimation(bool should_show_inline_settings);
 
+  // Calculate vertical space available on screen for the
+  // grouped_notifications_scroll_view_
+  int CalculateMaxHeightForGroupedNotifications();
+
   // Owned by views hierarchy.
   views::View* main_view_ = nullptr;
   views::View* main_right_view_ = nullptr;
@@ -179,6 +189,7 @@ class ASH_EXPORT AshNotificationView
   views::View* control_buttons_container_ = nullptr;
   views::View* left_content_ = nullptr;
   views::Label* message_view_in_expanded_state_ = nullptr;
+  views::ScrollView* grouped_notifications_scroll_view_ = nullptr;
   views::View* grouped_notifications_container_ = nullptr;
   views::View* collapsed_summary_view_ = nullptr;
   views::View* control_buttons_view_ = nullptr;

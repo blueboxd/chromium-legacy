@@ -982,6 +982,7 @@ source_set("test_support") {
     "//ipc:test_support",
     "//mojo/core/embedder",
     "//skia",
+    "//ui/accessibility",
     "//ui/base",
     "//ui/base:test_support",
     "//ui/base/clipboard:clipboard_test_support",
@@ -1038,7 +1039,6 @@ source_set("test_support") {
       "test/widget_test_aura.cc",
     ]
     deps += [
-      "//ui/accessibility",
       "//ui/aura",
       "//ui/aura:test_support",
       "//ui/wm",

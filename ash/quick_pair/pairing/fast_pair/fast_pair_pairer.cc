@@ -112,10 +112,42 @@ FastPairPairer::FastPairPairer(
     QP_LOG(INFO) << __func__
                  << ": Failed to find handshake. This is only valid if we "
                     "lost the device before this class executed.";
+    std::move(pair_failed_callback_)
+        .Run(device_, PairFailure::kPairingDeviceLost);
+    return;
+  }
+
+  device::BluetoothDevice* bt_device =
+      adapter_->GetDevice(device_->ble_address);
+
+  if (!bt_device) {
+    QP_LOG(WARNING) << __func__ << ": Could not find Bluetooth device.";
+    std::move(pair_failed_callback_)
+        .Run(device_, PairFailure::kPairingDeviceLost);
     return;
   }
 
   DCHECK(fast_pair_handshake_->completed_successfully());
+
+  fast_pair_gatt_service_client_ =
+      FastPairGattServiceClientImpl::Factory::Create(
+          bt_device, adapter_,
+          base::BindRepeating(&FastPairPairer::OnGattClientInitializedCallback,
+                              weak_ptr_factory_.GetWeakPtr()));
+}
+
+FastPairPairer::~FastPairPairer() {
+  adapter_->RemovePairingDelegate(this);
+}
+
+void FastPairPairer::OnGattClientInitializedCallback(
+    absl::optional<PairFailure> failure) {
+  if (failure) {
+    QP_LOG(WARNING) << __func__ << ": Failed to create GATT client due to: "
+                    << failure.value();
+    std::move(pair_failed_callback_).Run(device_, failure.value());
+    return;
+  }
 
   std::string device_address = device_->classic_address().value();
   device::BluetoothDevice* bt_device = adapter_->GetDevice(device_address);
@@ -158,17 +190,16 @@ FastPairPairer::FastPairPairer(
   }
 }
 
-FastPairPairer::~FastPairPairer() {
-  adapter_->RemovePairingDelegate(this);
-}
-
 void FastPairPairer::OnPairConnected(
     absl::optional<device::BluetoothDevice::ConnectErrorCode> error) {
+  RecordPairDeviceResult(/*success=*/!error.has_value());
+
   if (error) {
     QP_LOG(WARNING) << "Failed to starting pairing procedure by pairing to "
                        "device due to error: "
                     << error.value();
     std::move(pair_failed_callback_).Run(device_, PairFailure::kPairingConnect);
+    RecordPairDeviceErrorReason(error.value());
     return;
   }
   QP_LOG(VERBOSE) << "Pair to device successful.";
@@ -176,11 +207,13 @@ void FastPairPairer::OnPairConnected(
 
 void FastPairPairer::OnConnectDevice(device::BluetoothDevice* device) {
   QP_LOG(VERBOSE) << "Connect device successful.";
+  RecordConnectDeviceResult(/*success=*/true);
 }
 
 void FastPairPairer::OnConnectError() {
   QP_LOG(WARNING) << "Failed to starting pairing procedure by connecting to "
                      "device address.";
+  RecordConnectDeviceResult(/*success=*/false);
   std::move(pair_failed_callback_).Run(device_, PairFailure::kAddressConnect);
 }
 
@@ -188,7 +221,7 @@ void FastPairPairer::ConfirmPasskey(device::BluetoothDevice* device,
                                     uint32_t passkey) {
   pairing_device_address_ = device->GetAddress();
   expected_passkey_ = passkey;
-  fast_pair_handshake_->fast_pair_gatt_service_client()->WritePasskeyAsync(
+  fast_pair_gatt_service_client_->WritePasskeyAsync(
       /*message_type=*/0x02, /*passkey=*/expected_passkey_,
       fast_pair_handshake_->fast_pair_data_encryptor(),
       base::BindOnce(&FastPairPairer::OnPasskeyResponse,
@@ -274,7 +307,7 @@ void FastPairPairer::SendAccountKey() {
   RAND_bytes(account_key.data(), account_key.size());
   account_key[0] = 0x04;
 
-  fast_pair_handshake_->fast_pair_gatt_service_client()->WriteAccountKey(
+  fast_pair_gatt_service_client_->WriteAccountKey(
       account_key, fast_pair_handshake_->fast_pair_data_encryptor(),
       base::BindOnce(&FastPairPairer::OnWriteAccountKey,
                      weak_ptr_factory_.GetWeakPtr(), account_key));

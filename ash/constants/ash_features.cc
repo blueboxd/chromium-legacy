@@ -83,6 +83,14 @@ constexpr base::FeatureParam<bool> kAmbientModeRssPhotosEnabled{
 constexpr base::FeatureParam<bool> kAmbientModeStreetArtAlbumEnabled{
     &kAmbientModeFeature, "StreetArtAlbumEnabled", false};
 
+// Controls whether to launch the animated screensaver (as opposed to the
+// existing photo slideshow) when entering ambient mode. Currently, there is
+// only one animation theme available ("feel the breeze"), but a FeatureParam
+// will be introduced that allows the user to select a specific theme when more
+// become available.
+const base::Feature kAmbientModeAnimationFeature{
+    "ChromeOSAmbientModeAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to allow Dev channel to use Prod server feature.
 const base::Feature kAmbientModeDevUseProdFeature{
     "ChromeOSAmbientModeDevChannelUseProdServer",
@@ -1062,6 +1070,10 @@ const base::Feature kQuickUnlockPinAutosubmit{"QuickUnlockPinAutosubmit",
 const base::Feature kQuickUnlockPinAutosubmitBackfill{
     "QuickUnlockPinAutosubmitBackfill", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables redirect to default IdP without interstitial step.
+const base::Feature kRedirectToDefaultIdP{"RedirectToDefaultIdP",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables suppression of Displays notifications other than resolution change.
 const base::Feature kReduceDisplayNotifications{
     "ReduceDisplayNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1802,6 +1814,10 @@ bool IsQuickDimEnabled() {
 
 bool IsQuickSettingsNetworkRevampEnabled() {
   return base::FeatureList::IsEnabled(kQuickSettingsNetworkRevamp);
+}
+
+bool IsRedirectToDefaultIdPEnabled() {
+  return base::FeatureList::IsEnabled(kRedirectToDefaultIdP);
 }
 
 bool IsReduceDisplayNotificationsEnabled() {

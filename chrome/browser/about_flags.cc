@@ -2365,20 +2365,6 @@ const FeatureEntry::FeatureVariation kPasswordChangeFeatureVariations[] = {
      nullptr}};
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-const FeatureEntry::FeatureParam
-    kSendWebUIJavaScriptErrorReportsVariationSendToStaging[] = {
-        {features::kSendWebUIJavaScriptErrorReportsSendToProductionVariation,
-         "false"}};
-
-const FeatureEntry::FeatureVariation
-    kSendWebUIJavaScriptErrorReportsVariations[] = {
-        {"Send reports to staging server.",
-         kSendWebUIJavaScriptErrorReportsVariationSendToStaging,
-         base::size(kSendWebUIJavaScriptErrorReportsVariationSendToStaging),
-         nullptr}};
-#endif
-
 #if defined(OS_ANDROID)
 // The variations of --metrics-settings-android.
 const FeatureEntry::FeatureParam kMetricsSettingsAndroidAlternativeOne[] = {
@@ -2513,6 +2499,7 @@ constexpr FeatureEntry::FeatureVariation
          base::size(kPlatformProvidedTrustTokenIssuance), nullptr}};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+constexpr char kAmbientModeAnimationInternalName[] = "ambient-mode-animation";
 constexpr char kPersonalizationHubInternalName[] = "personalization-hub";
 constexpr char kWallpaperFullScreenPreviewInternalName[] =
     "wallpaper-fullscreen-preview";
@@ -2779,16 +2766,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebKioskEnableLacrosDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebKioskEnableLacros)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-    {"send-webui-javascript-error-reports",
-     flag_descriptions::kSendWebUIJavaScriptErrorReportsName,
-     flag_descriptions::kSendWebUIJavaScriptErrorReportsDescription,
-     kOsLinux | kOsCrOS,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         features::kSendWebUIJavaScriptErrorReports,
-         kSendWebUIJavaScriptErrorReportsVariations,
-         "SendWebUIJavaScriptErrorReportsVariations")},
-#endif
 #if !defined(OS_ANDROID)
     {"enable-webrtc-remote-event-log",
      flag_descriptions::kWebRtcRemoteEventLogName,
@@ -6952,7 +6929,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-first-party-sets", flag_descriptions::kEnableFirstPartySetsName,
      flag_descriptions::kEnableFirstPartySetsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(net::features::kFirstPartySets)},
+     FEATURE_VALUE_TYPE(features::kFirstPartySets)},
 
 #if defined(OS_ANDROID)
     {"autofill-enable-offers-in-clank-keyboard-accessory",
@@ -7034,6 +7011,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVaapiAV1DecoderName,
      flag_descriptions::kVaapiAV1DecoderDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(media::kVaapiAV1Decoder)},
+
+    {"default-chrome-apps-migration",
+     flag_descriptions::kDefaultChromeAppsMigrationName,
+     flag_descriptions::kDefaultChromeAppsMigrationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(policy::features::kDefaultChromeAppsMigration)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
@@ -7802,6 +7784,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableUpdateVirtualCardEnrollment)},
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {kAmbientModeAnimationInternalName,
+     flag_descriptions::kAmbientModeAnimationName,
+     flag_descriptions::kAmbientModeAnimationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kAmbientModeAnimationFeature)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -7901,8 +7890,9 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   if (!strcmp(kWallpaperFullScreenPreviewInternalName, entry.internal_name))
     return !ash::features::IsWallpaperWebUIEnabled();
 
-  // personalization-hub is only available for Unknown/Canary/Dev channels.
-  if (!strcmp(kPersonalizationHubInternalName, entry.internal_name) &&
+  // Features that are only available for Unknown/Canary/Dev channels.
+  if ((!strcmp(kPersonalizationHubInternalName, entry.internal_name) ||
+       !strcmp(kAmbientModeAnimationInternalName, entry.internal_name)) &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {

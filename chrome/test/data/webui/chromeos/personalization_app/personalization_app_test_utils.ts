@@ -7,16 +7,19 @@
  * SWA.
  */
 
+import {IFrameApi} from 'chrome://personalization/trusted/iframe_api.js';
 import {emptyState, PersonalizationState} from 'chrome://personalization/trusted/personalization_state.js';
 import {setThemeProviderForTesting} from 'chrome://personalization/trusted/theme/theme_interface_provider.js';
+import {setUserProviderForTesting} from 'chrome://personalization/trusted/user/user_interface_provider.js';
 import {setWallpaperProviderForTesting} from 'chrome://personalization/trusted/wallpaper/wallpaper_interface_provider.js';
 import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
 import {assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {flushTasks} from 'chrome://webui-test/test_util.js';
 
 import {TestPersonalizationStore} from './test_personalization_store.js';
 import {TestThemeProvider} from './test_theme_interface_provider.js';
+import {TestUserProvider} from './test_user_interface_provider.js';
 import {TestWallpaperProvider} from './test_wallpaper_interface_provider.js';
 
 /**
@@ -60,10 +63,12 @@ export function baseSetup(initialState: PersonalizationState = emptyState()) {
   setWallpaperProviderForTesting(wallpaperProvider);
   const themeProvider = new TestThemeProvider();
   setThemeProviderForTesting(themeProvider);
+  const userProvider = new TestUserProvider();
+  setUserProviderForTesting(userProvider);
   const personalizationStore = new TestPersonalizationStore(initialState);
   personalizationStore.replaceSingleton();
   document.body.innerHTML = '';
-  return {themeProvider, wallpaperProvider, personalizationStore};
+  return {themeProvider, userProvider, wallpaperProvider, personalizationStore};
 }
 
 function getDebugString(w: any) {
@@ -83,4 +88,13 @@ export function assertWindowObjectsEqual(x: object|null, y: object|null) {
       x === y,
       `Window objects are not identical: ${getDebugString(x)}, ${
           getDebugString(y)}`);
+}
+
+/**
+ * Helper function to setup a mock `IFrameApi` singleton.
+ */
+export function setupTestIFrameApi(): IFrameApi&TestBrowserProxy<IFrameApi> {
+  const testProxy = TestBrowserProxy.fromClass(IFrameApi);
+  IFrameApi.setInstance(testProxy);
+  return testProxy;
 }

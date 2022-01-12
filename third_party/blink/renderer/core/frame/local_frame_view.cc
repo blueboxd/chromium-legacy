@@ -2397,10 +2397,9 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     if (needs_to_repeat_lifecycle)
       continue;
 
-    // DocumentTransition mirrors post layout transform for shared elements to
-    // UA created elements. If the transform for a shared element was updated,
-    // the style for UA created elements will be dirtied during the notification
-    // below.
+    // DocumentTransition mutates the tree and mirrors post layout transform for
+    // shared elements to UA created elements. This may dirty style/layout
+    // requiring another lifecycle update.
     needs_to_repeat_lifecycle = RunDocumentTransitionSteps(target_state);
     if (needs_to_repeat_lifecycle)
       continue;
@@ -2453,9 +2452,6 @@ bool LocalFrameView::RunDocumentTransitionSteps(
     DocumentLifecycle::LifecycleState target_state) {
   DCHECK(frame_ && frame_->GetDocument());
 
-  // This step must be done after layout since it requires the element's
-  // transform computed during layout. But before paint since it can dirty style
-  // and trigger another style/layout update.
   if (target_state != DocumentLifecycle::kPaintClean)
     return false;
 
@@ -2464,11 +2460,7 @@ bool LocalFrameView::RunDocumentTransitionSteps(
   if (!document_transition_supplement)
     return false;
 
-  // Update the transforms for elements created for the transition to the
-  // transform on the corresponding shared element. Since this can change
-  // styles on the transition elements, it can trigger another lifecycle
-  // update.
-  document_transition_supplement->GetTransition()->UpdateTransforms();
+  document_transition_supplement->GetTransition()->RunPostLayoutSteps();
   return Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean;
 }
 
@@ -2609,9 +2601,8 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
                 layout_view->DescendantBlockingWheelEventHandlerChanged()) {
               owner->MarkDescendantBlockingWheelEventHandlerChanged();
             }
-            if (RuntimeEnabledFeatures::CullRectUpdateEnabled() &&
-                (layout_view->Layer()->NeedsCullRectUpdate() ||
-                 layout_view->Layer()->DescendantNeedsCullRectUpdate())) {
+            if (layout_view->Layer()->NeedsCullRectUpdate() ||
+                layout_view->Layer()->DescendantNeedsCullRectUpdate()) {
               layout_view->Layer()
                   ->MarkCompositingContainerChainForNeedsCullRectUpdate();
             }
@@ -2798,8 +2789,7 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
 
-  if (RuntimeEnabledFeatures::CullRectUpdateEnabled())
-    CullRectUpdater(*layout_view->Layer()).Update();
+  CullRectUpdater(*layout_view->Layer()).Update();
 
   bool debug_info_newly_enabled =
       UpdateLayerDebugInfoEnabled() && PaintDebugInfoEnabled();

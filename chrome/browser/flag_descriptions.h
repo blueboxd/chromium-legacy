@@ -91,6 +91,9 @@ extern const char kConversionMeasurementDebugModeDescription[];
 extern const char kDebugHistoryInterventionNoUserActivationName[];
 extern const char kDebugHistoryInterventionNoUserActivationDescription[];
 
+extern const char kDefaultChromeAppsMigrationName[];
+extern const char kDefaultChromeAppsMigrationDescription[];
+
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
 
@@ -2275,6 +2278,9 @@ extern const char kAllowScrollSettingsDescription[];
 extern const char kAllowTouchpadHapticClickSettingsName[];
 extern const char kAllowTouchpadHapticClickSettingsDescription[];
 
+extern const char kAmbientModeAnimationName[];
+extern const char kAmbientModeAnimationDescription[];
+
 extern const char kAmbientModeNewUrlName[];
 extern const char kAmbientModeNewUrlDescription[];
 
@@ -3179,11 +3185,6 @@ extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
-
-#if !defined(OS_WIN) && !defined(OS_FUCHSIA)
-extern const char kSendWebUIJavaScriptErrorReportsName[];
-extern const char kSendWebUIJavaScriptErrorReportsDescription[];
-#endif
 
 #if defined(OS_WIN) || defined(OS_ANDROID)
 extern const char kElasticOverscrollName[];

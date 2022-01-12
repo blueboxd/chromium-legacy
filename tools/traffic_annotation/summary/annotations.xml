@@ -135,7 +135,6 @@ Refer to README.md for content description and update process.
  <item id="intranet_redirect_detector" added_in_milestone="62" content_hash_code="03b26f7b" os_list="linux,windows,chromeos" file_path="chrome/browser/intranet_redirect_detector.cc" />
  <item id="javascript_report_error" added_in_milestone="87" content_hash_code="006e4e54" os_list="linux" file_path="chrome/browser/error_reporting/chrome_js_error_report_processor_nonchromeos.cc" />
  <item id="lib_address_input" added_in_milestone="62" content_hash_code="0374aae8" os_list="linux,windows,chromeos,android" file_path="third_party/libaddressinput/chromium/chrome_metadata_source.cc" />
- <item id="litepages_robots_rules" added_in_milestone="89" content_hash_code="04534928" os_list="linux,windows,chromeos,android" file_path="chrome/browser/subresource_redirect/origin_robots_rules.cc" />
  <item id="load_autofill_gstatic_data" added_in_milestone="78" content_hash_code="07a1e952" os_list="linux,windows,chromeos,android" file_path="chrome/browser/autofill/autofill_gstatic_reader.cc" />
  <item id="logo_service" added_in_milestone="73" content_hash_code="013550c3" os_list="linux,windows,chromeos,android" file_path="components/search_provider_logos/logo_service_impl.cc" />
  <item id="lookup_single_password_leak" added_in_milestone="78" content_hash_code="00b98558" os_list="linux,windows,chromeos,android" file_path="components/password_manager/core/browser/leak_detection/leak_detection_request.cc" />
@@ -158,6 +157,7 @@ Refer to README.md for content description and update process.
  <item id="oauth2_api_call_flow" added_in_milestone="65" type="completing" content_hash_code="067ca204" os_list="linux,windows,chromeos,android" policy_fields="-1" file_path="google_apis/gaia/oauth2_api_call_flow.cc" />
  <item id="oauth2_mint_token_flow" added_in_milestone="62" type="partial" second_id="oauth2_api_call_flow" content_hash_code="05756bf8" os_list="linux,windows,chromeos,android" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="google_apis/gaia/oauth2_mint_token_flow.cc" />
  <item id="offline_prefetch" added_in_milestone="62" content_hash_code="06ad9616" os_list="linux,windows,chromeos,android" file_path="components/offline_pages/core/prefetch/prefetch_request_fetcher.cc" />
+ <item id="omaha_client_android_uc" added_in_milestone="99" content_hash_code="0757ca45" os_list="android" file_path="chrome/android/java/src/org/chromium/chrome/browser/omaha/OmahaBase.java" />
  <item id="omnibox_documentsuggest" added_in_milestone="69" content_hash_code="07917541" os_list="linux,windows,chromeos,android" file_path="components/omnibox/browser/document_suggestions_service.cc" />
  <item id="omnibox_navigation_observer" added_in_milestone="62" content_hash_code="043a7a2f" os_list="linux,windows,chromeos" file_path="chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.cc" />
  <item id="omnibox_result_change" added_in_milestone="62" content_hash_code="017a7557" os_list="linux,windows,chromeos,android" file_path="chrome/browser/bitmap_fetcher/bitmap_fetcher_service.cc" />

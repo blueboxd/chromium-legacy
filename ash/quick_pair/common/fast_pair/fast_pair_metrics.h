@@ -232,6 +232,19 @@ void RecordBluetoothLowEnergyScanFilterResult(bool success);
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordFastPairDiscoveredVersion(FastPairVersion version);
 
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordNavigateToSettingsResult(bool success);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordConnectDeviceResult(bool success);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordPairDeviceResult(bool success);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordPairDeviceErrorReason(
+    device::BluetoothDevice::ConnectErrorCode error_code);
+
 }  // namespace quick_pair
 }  // namespace ash
 

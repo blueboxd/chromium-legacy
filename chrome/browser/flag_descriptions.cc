@@ -125,6 +125,12 @@ const char kDebugHistoryInterventionNoUserActivationDescription[] =
     "is able to work around the history intervention which is not the expected "
     "behavior";
 
+extern const char kDefaultChromeAppsMigrationName[] =
+    "Default Chrome apps policy migration";
+extern const char kDefaultChromeAppsMigrationDescription[] =
+    "Enable replacing policies to force install Chrome apps with policies to "
+    "force install PWAs";
+
 const char kDetectedSourceLanguageOptionName[] =
     "Use Detected Language string on Desktop and Android";
 const char kDetectedSourceLanguageOptionDescription[] =
@@ -3961,6 +3967,13 @@ const char kAllowTouchpadHapticClickSettingsName[] =
 const char kAllowTouchpadHapticClickSettingsDescription[] =
     "Shows settings to adjust click sensitivity for haptic touchpads.";
 
+const char kAmbientModeAnimationName[] =
+    "Launch the Lottie animated ChromeOS Screensaver";
+const char kAmbientModeAnimationDescription[] =
+    "Launches the animated screensaver (as opposed to the existing photo "
+    "slideshow) when entering ambient mode. Currently, there is only one "
+    "animation theme available (feel the breeze).";
+
 const char kAmbientModeNewUrlName[] =
     "Use new backend URL format for ChromeOS Screensaver";
 const char kAmbientModeNewUrlDescription[] =
@@ -5476,15 +5489,6 @@ const char kAutofillCreditCardUploadDescription[] =
     "to all Chrome devices.";
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
-
-#if !defined(OS_WIN) && !defined(OS_FUCHSIA)
-const char kSendWebUIJavaScriptErrorReportsName[] =
-    "Send WebUI JavaScript Error Reports";
-const char kSendWebUIJavaScriptErrorReportsDescription[] =
-    "If enabled, and if the user has consented to sending metrics to Google, "
-    "then when the JavaScript has an error on a WebUI page, an error report "
-    "will be sent to Google.";
-#endif
 
 #if defined(OS_WIN) || defined(OS_ANDROID)
 const char kElasticOverscrollName[] = "Elastic Overscroll";

@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -119,6 +120,8 @@ namespace {
 // inspector_type_builder_helper.cc.
 String IgnoredReasonName(AXIgnoredReason reason) {
   switch (reason) {
+    case kAXActiveFullscreenElement:
+      return "activeFullscreenElement";
     case kAXActiveModalDialog:
       return "activeModalDialog";
     case kAXAriaModalDialog:
@@ -461,10 +464,6 @@ static Vector<AtomicString>* CreateARIARoleNameVector() {
   }
 
   return role_name_vector;
-}
-
-HTMLDialogElement* GetActiveDialogElement(Node* node) {
-  return node->GetDocument().ActiveModalDialog();
 }
 
 void AddIntListAttributeFromObjects(ax::mojom::blink::IntListAttribute attr,
@@ -2435,14 +2434,16 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   if (IsMissingParent())
     RepairMissingParent();
 
-  cached_is_hidden_via_style = ComputeIsHiddenViaStyle();
+  const ComputedStyle* style = GetComputedStyle();
+
+  cached_is_hidden_via_style = ComputeIsHiddenViaStyle(style);
 
   // Decisions in what subtree descendants are included (each descendant's
   // cached children_) depends on the ARIA hidden state. When it changes,
   // the entire subtree needs to recompute descendants.
   // In addition, the below computations for is_ignored_but_included_in_tree is
   // dependent on having the correct new cached value.
-  bool is_inert = ComputeIsInert();
+  bool is_inert = ComputeIsInertViaStyle(style);
   bool is_aria_hidden = ComputeIsAriaHidden();
   if (cached_is_inert_ != is_inert ||
       cached_is_aria_hidden_ != is_aria_hidden) {
@@ -2554,20 +2555,15 @@ bool AXObject::IsInert() const {
   return cached_is_inert_;
 }
 
-bool AXObject::ComputeIsInert(IgnoredReasons* ignored_reasons) const {
-  if (GetNode()) {
-    if (GetNode()->IsInert()) {
+bool AXObject::ComputeIsInertViaStyle(const ComputedStyle* style,
+                                      IgnoredReasons* ignored_reasons) const {
+  if (style) {
+    if (style->IsInert()) {
       if (ignored_reasons) {
-        HTMLDialogElement* dialog = GetActiveDialogElement(GetNode());
-        if (dialog) {
-          AXObject* dialog_object = AXObjectCache().GetOrCreate(dialog);
-          if (dialog_object) {
-            ignored_reasons->push_back(
-                IgnoredReason(kAXActiveModalDialog, dialog_object));
-          } else {
-            ignored_reasons->push_back(IgnoredReason(kAXInertElement));
-          }
-        } else {
+        // The 'inert' attribute sets forced inertness, which cannot be escaped
+        // by descendants (see details in computed_style_extra_fields.json5).
+        // So we only need to check InertRoot() if inertness is forced.
+        if (style->IsForcedInert()) {
           const AXObject* inert_root_el = InertRoot();
           if (inert_root_el == this) {
             ignored_reasons->push_back(IgnoredReason(kAXInertElement));
@@ -2575,13 +2571,35 @@ bool AXObject::ComputeIsInert(IgnoredReasons* ignored_reasons) const {
             ignored_reasons->push_back(
                 IgnoredReason(kAXInertSubtree, inert_root_el));
           }
+          return true;
         }
+        // If the inertness is overridable, it must have been set by a modal
+        // dialog or a fullscreen element (see AdjustStyleForInert).
+        Document& document = GetNode()->GetDocument();
+        if (HTMLDialogElement* dialog = document.ActiveModalDialog()) {
+          if (AXObject* dialog_object = AXObjectCache().GetOrCreate(dialog)) {
+            ignored_reasons->push_back(
+                IgnoredReason(kAXActiveModalDialog, dialog_object));
+            return true;
+          }
+        } else if (Element* fullscreen =
+                       Fullscreen::FullscreenElementFrom(document)) {
+          if (AXObject* fullscreen_object =
+                  AXObjectCache().GetOrCreate(fullscreen)) {
+            ignored_reasons->push_back(
+                IgnoredReason(kAXActiveFullscreenElement, fullscreen_object));
+            return true;
+          }
+        }
+        ignored_reasons->push_back(IgnoredReason(kAXInertElement));
       }
       return true;
     } else if (IsBlockedByAriaModalDialog(ignored_reasons)) {
       return true;
     }
   } else {
+    // Either GetNode() is null, or it's locked by content-visibility, or we
+    // failed to obtain a ComputedStyle. Make a guess iterating the ancestors.
     AXObject* parent = ParentObject();
     if (parent && parent->IsInert()) {
       if (ignored_reasons)
@@ -2590,6 +2608,10 @@ bool AXObject::ComputeIsInert(IgnoredReasons* ignored_reasons) const {
     }
   }
   return false;
+}
+
+bool AXObject::ComputeIsInert(IgnoredReasons* ignored_reasons) const {
+  return ComputeIsInertViaStyle(GetComputedStyle(), ignored_reasons);
 }
 
 bool AXObject::IsAriaHidden() const {
@@ -3481,6 +3503,23 @@ String AXObject::RecursiveTextAlternative(
                                 name_from, nullptr, nullptr);
 }
 
+const ComputedStyle* AXObject::GetComputedStyle() const {
+  Node* node = GetNode();
+  if (!node)
+    return nullptr;
+
+  // content-visibility:hidden or content-visibility: auto.
+  if (DisplayLockUtilities::IsDisplayLockedPreventingPaint(node))
+    return nullptr;
+
+  // For elements with layout objects we can get their style directly.
+  if (GetLayoutObject())
+    return GetLayoutObject()->Style();
+
+  // No layout object: must ensure computed style.
+  return node->EnsureComputedStyle();
+}
+
 // There are 4 ways to use CSS to hide something:
 // * "display: none" is "destroy rendering state and don't do anything in the
 //   subtree"
@@ -3490,7 +3529,18 @@ String AXObject::RecursiveTextAlternative(
 //   work, but don't destroy the work that was already there"
 // * "content-visibility: auto" is "paint when it's scrolled into the viewport,
 //   but its layout information is not updated when it isn't"
-bool AXObject::ComputeIsHiddenViaStyle() const {
+bool AXObject::ComputeIsHiddenViaStyle(const ComputedStyle* style) const {
+  if (style) {
+    if (GetLayoutObject())
+      return style->Visibility() != EVisibility::kVisible;
+
+    // TODO(crbug.com/1286465): It's not consistent to only check
+    // IsEnsuredInDisplayNone() on layoutless elements.
+    return GetNode()->IsElementNode() &&
+           (style->IsEnsuredInDisplayNone() ||
+            style->Visibility() != EVisibility::kVisible);
+  }
+
   Node* node = GetNode();
   if (!node)
     return false;
@@ -3513,17 +3563,7 @@ bool AXObject::ComputeIsHiddenViaStyle() const {
         *node, DisplayLockActivationReason::kAccessibility);
   }
 
-  // For elements with layout objects we can get their style directly.
-  if (GetLayoutObject())
-    return GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible;
-
-  // No layout object: must ensure computed style.
-  if (Element* element = DynamicTo<Element>(node)) {
-    const ComputedStyle* style = element->EnsureComputedStyle();
-    return !style || style->IsEnsuredInDisplayNone() ||
-           style->Visibility() != EVisibility::kVisible;
-  }
-  return false;
+  return node->IsElementNode();
 }
 
 bool AXObject::IsHiddenViaStyle() const {

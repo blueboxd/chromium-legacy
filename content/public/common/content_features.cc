@@ -326,6 +326,27 @@ const base::Feature kExtraSafelistedRequestHeadersForOutOfBlinkCors{
     "ExtraSafelistedRequestHeadersForOutOfBlinkCors",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables JavaScript API to intermediate federated identity requests.
+const base::Feature kFedCm{"FedCm", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Field trial boolean parameter which indicates whether FedCM HTTP filtering is
+// enabled.
+const char kFedCmInterceptionFieldTrialParamName[] = "Interception";
+
+// Enables usage of First Party Sets to determine cookie availability.
+constexpr base::Feature kFirstPartySets{"FirstPartySets",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the client is considered a dogfooder for the FirstPartySets
+// feature.
+const base::FeatureParam<bool> kFirstPartySetsIsDogfooder{
+    &kFirstPartySets, "FirstPartySetsIsDogfooder", false};
+
+// When enabled, the client will opt in to the V2 component format for the
+// First-Party Sets component.
+const base::Feature kFirstPartySetsV2ComponentFormat{
+    "FirstPartySetsV2ComponentFormat", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Whether to initialize the font manager when the renderer starts on a
 // background thread.
 const base::Feature kFontManagerEarlyInit {
@@ -355,13 +376,6 @@ const base::Feature kForwardMemoryPressureEventsToGpuProcess {
 #endif
 };
 #endif
-
-// Enables JavaScript API to intermediate federated identity requests.
-const base::Feature kFedCm{"FedCm", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Field trial boolean parameter which indicates whether FedCM HTTP filtering is
-// enabled.
-const char kFedCmInterceptionFieldTrialParamName[] = "Interception";
 
 // Enables scrollers inside Blink to store scroll offsets in fractional
 // floating-point numbers rather than truncating to integers.
@@ -884,6 +898,11 @@ const base::Feature kSuppressDifferentOriginSubframeJSDialogs{
 const base::Feature kSyntheticPointerActions{"SyntheticPointerActions",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether optimizations controlled by kNavigationThreadingOptimizations are
+// moved to the IO thread or a separate background thread.
+const base::Feature kThreadingOptimizationsOnIO{
+    "ThreadingOptimizationsOnIO", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables async touchpad pinch zoom events. We check the ACK of the first
 // synthetic wheel event in a pinch sequence, then send the rest of the
 // synthetic wheel events of the pinch sequence as non-blocking if the first
@@ -1177,23 +1196,6 @@ const base::Feature kRetryGetVideoCaptureDeviceInfos{
     "RetryGetVideoCaptureDeviceInfos", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #endif  // defined(OS_MAC)
-
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-// If the JavaScript on a WebUI page has an error (such as an unhandled
-// exception), report that error back the crash reporting infrastructure, same
-// as we do for program crashes.
-const base::Feature kSendWebUIJavaScriptErrorReports{
-    "SendWebUIJavaScriptErrorReports", base::FEATURE_ENABLED_BY_DEFAULT};
-// Parameter: Should we send the error reports to the production server? If
-// false, we send to the staging server, which is useful for developers (doesn't
-// pollute the report database).
-const char kSendWebUIJavaScriptErrorReportsSendToProductionVariation[] =
-    "send_webui_js_errors_to_production";
-const base::FeatureParam<bool>
-    kWebUIJavaScriptErrorReportsSendToProductionParam{
-        &kSendWebUIJavaScriptErrorReports,
-        kSendWebUIJavaScriptErrorReportsSendToProductionVariation, true};
-#endif
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 // Controls whether the PipeWire support for screen capturing is enabled on the

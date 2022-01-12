@@ -668,15 +668,7 @@ static_library("test_support") {
   }
 }
 
-if (!is_android) {
-  group("telemetry_gpu_integration_test") {
-    testonly = true
-    data_deps = [
-      "//content/test:telemetry_gpu_integration_test_support",
-      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-    ]
-  }
-} else {
+if (is_android) {
   template("telemetry_gpu_integration_test_android_template") {
     forward_variables_from(invoker, [ "telemetry_target_suffix" ])
     group(target_name) {
@@ -693,6 +685,34 @@ if (!is_android) {
         "telemetry_gpu_integration_test${_target_suffix}") {
       telemetry_target_suffix = _target_suffix
     }
+  }
+} else if (is_fuchsia) {
+  group("telemetry_gpu_integration_test_fuchsia") {
+    testonly = true
+    data = [
+      "//content/test/gpu/run_gpu_integration_test_fuchsia.py",
+      "//content/test/gpu/fuchsia_util.py",
+    ]
+    data_deps = [
+      "//content/test:telemetry_gpu_integration_test_support",
+      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
+    ]
+    if (fuchsia_browser_type == "web_engine_shell") {
+      data_deps += [
+        "//fuchsia/engine:web_engine_shell",
+        "//fuchsia/engine:web_engine_with_webui_installer",
+      ]
+    } else if (fuchsia_browser_type == "chrome") {
+      data_deps += [ "//chrome/app:chrome_fuchsia" ]
+    }
+  }
+} else {
+  group("telemetry_gpu_integration_test") {
+    testonly = true
+    data_deps = [
+      "//content/test:telemetry_gpu_integration_test_support",
+      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
+    ]
   }
 }
 
@@ -1281,9 +1301,6 @@ if (!is_android && !is_fuchsia) {
       "//components/subresource_filter/core/browser",
       "//components/subresource_filter/core/browser:test_support",
       "//components/subresource_filter/core/common:test_support",
-      "//components/subresource_redirect:test_support",
-      "//components/subresource_redirect/common",
-      "//components/subresource_redirect/proto",
       "//components/sync",
       "//components/sync:test_support_model",
       "//components/sync/test/fake_server",
@@ -1532,9 +1549,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/data_saver/data_saver_browsertest.cc",
       "../browser/data_saver/data_saver_holdback_browsertest.cc",
       "../browser/data_saver/data_saver_webapis_browsertest.cc",
-      "../browser/data_saver/login_robots_src_video_browsertest.cc",
-      "../browser/data_saver/subresource_redirect_browsertest.cc",
-      "../browser/data_saver/subresource_redirect_login_robots_browsertest.cc",
       "../browser/data_use_measurement/chrome_data_use_measurement_browsertest.cc",
       "../browser/device_api/managed_configuration_api_browsertest.cc",
       "../browser/devtools/device/adb/adb_client_socket_browsertest.cc",
@@ -2107,11 +2121,6 @@ if (!is_android && !is_fuchsia) {
       "../renderer/chrome_content_renderer_client_browsertest.cc",
       "../renderer/chrome_content_settings_agent_delegate_browsertest.cc",
       "../renderer/chrome_render_frame_observer_browsertest.cc",
-      "../renderer/subresource_redirect/login_robots_decider_agent_browsertest.cc",
-      "../renderer/subresource_redirect/login_robots_url_loader_throttle_browsertest.cc",
-      "../renderer/subresource_redirect/public_image_hints_decider_agent_browsertest.cc",
-      "../renderer/subresource_redirect/robots_rules_parser_cache_browsertest.cc",
-      "../renderer/subresource_redirect/subresource_redirect_renderer_browsertest.cc",
       "../renderer/translate/per_frame_translate_agent_browsertest.cc",
       "../renderer/translate/translate_agent_browsertest.cc",
       "../renderer/translate/translate_script_browsertest.cc",
@@ -4542,7 +4551,6 @@ test("unit_tests") {
     "../browser/custom_handlers/test_protocol_handler_registry_delegate.cc",
     "../browser/custom_handlers/test_protocol_handler_registry_delegate.h",
     "../browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_unittest.cc",
-    "../browser/data_saver/subresource_redirect_login_robots_unittest.cc",
     "../browser/download/bubble/download_display_controller_unittest.cc",
     "../browser/download/chrome_download_manager_delegate_unittest.cc",
     "../browser/download/deferred_client_wrapper_unittest.cc",
@@ -4762,10 +4770,6 @@ test("unit_tests") {
     "../browser/security_events/security_event_recorder_impl_unittest.cc",
     "../browser/segmentation_platform/segmentation_platform_profile_observer_unittest.cc",
     "../browser/signin/e2e_tests/test_accounts_util_unittest.cc",
-    "../browser/subresource_redirect/https_image_compression_infobar_decider_unittest.cc",
-    "../browser/subresource_redirect/litepages_service_bypass_decider_unittest.cc",
-    "../browser/subresource_redirect/origin_robots_rules_unittest.cc",
-    "../browser/subresource_redirect/subresource_redirect_util_unit_test.cc",
     "../browser/ui/autofill/payments/offer_notification_helper_unittest.cc",
 
     # TODO(hashimoto): those tests should be componentized and moved to
@@ -4882,8 +4886,6 @@ test("unit_tests") {
     "../renderer/media/flash_embed_rewrite_unittest.cc",
     "../renderer/net/net_error_helper_core_unittest.cc",
     "../renderer/plugins/plugin_uma_unittest.cc",
-    "../renderer/subresource_redirect/robots_rules_parser_unittest.cc",
-    "../renderer/subresource_redirect/subresource_redirect_util_unittest.cc",
     "../renderer/v8_unwinder_unittest.cc",
     "../test/base/menu_model_test.cc",
     "../test/base/menu_model_test.h",
@@ -5274,6 +5276,8 @@ test("unit_tests") {
     "//components/browsing_data/core",
     "//components/captive_portal/content",
     "//components/captive_portal/core:buildflags",
+    "//components/cast_channel:cast_channel",
+    "//components/cast_channel:test_support",
     "//components/component_updater:test_support",
     "//components/content_settings/browser",
     "//components/content_settings/browser:test_support",
@@ -5418,8 +5422,6 @@ test("unit_tests") {
     "//components/strings",
     "//components/subresource_filter/core/browser",
     "//components/subresource_filter/core/browser:test_support",
-    "//components/subresource_redirect:test_support",
-    "//components/subresource_redirect/proto",
     "//components/sync:test_support",
     "//components/sync_bookmarks",
     "//components/sync_device_info:test_support",
@@ -6353,6 +6355,7 @@ test("unit_tests") {
         "//chromeos/dbus/attestation",
         "//chromeos/dbus/cicerone",
         "//chromeos/dbus/concierge",
+        "//chromeos/dbus/cros_disks",
         "//chromeos/dbus/debug_daemon",
         "//chromeos/dbus/hermes",
         "//chromeos/dbus/power",
@@ -6593,6 +6596,7 @@ test("unit_tests") {
       "../browser/nearby_sharing/payload_tracker_unittest.cc",
       "../browser/nearby_sharing/sharesheet/nearby_share_action_unittest.cc",
       "../browser/nearby_sharing/tachyon_ice_config_fetcher_unittest.cc",
+      "../browser/nearby_sharing/tcp_socket/nearby_connections_tcp_socket_factory_unittest.cc",
       "../browser/nearby_sharing/text_attachment_unittest.cc",
       "../browser/nearby_sharing/webrtc_request_builder_unittest.cc",
       "../browser/nearby_sharing/webrtc_signaling_messenger_unittest.cc",
@@ -6709,6 +6713,7 @@ test("unit_tests") {
       "//ash/public/cpp/assistant/test_support",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/resources/vector_icons",
+      "//ash/services/nearby/public/cpp:tcp_server_socket_port",
       "//ash/services/nearby/public/cpp:test_support",
       "//ash/strings",
       "//ash/webui/projector_app:test_support",
@@ -7804,8 +7809,8 @@ test("unit_tests") {
       "../browser/ui/views/tabs/tab_strip_unittest.cc",
       "../browser/ui/views/tabs/tab_unittest.cc",
       "../browser/ui/views/toolbar/chrome_labs_bubble_view_model_unittest.cc",
-      "../browser/ui/views/toolbar/chrome_labs_bubble_view_unittest.cc",
       "../browser/ui/views/toolbar/chrome_labs_button_unittest.cc",
+      "../browser/ui/views/toolbar/chrome_labs_unittest.cc",
       "../browser/ui/views/toolbar/reload_button_unittest.cc",
       "../browser/ui/views/toolbar/side_panel_toolbar_button_unittest.cc",
       "../browser/ui/views/toolbar/toolbar_action_view_unittest.cc",

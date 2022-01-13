@@ -356,6 +356,9 @@ int KeywordScoreForSufficientlyCompleteMatch();
 // Returns true if the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 
+// Returns true if the fuzzy URL suggestions feature is enabled.
+bool IsFuzzyUrlSuggestionsEnabled();
+
 // Returns true if the first batch of Pedals on Android is enabled.
 bool IsPedalsAndroidBatch1Enabled();
 
@@ -373,10 +376,6 @@ bool IsPedalsBatch3NonEnglishEnabled();
 // Returns true if the Pedals synonyms should be loaded from the translation
 // console.
 bool IsPedalsTranslationConsoleEnabled();
-
-// Returns true if the keyword button and suggestion button row features are
-// enabled.
-bool IsKeywordSearchButtonEnabled();
 
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.

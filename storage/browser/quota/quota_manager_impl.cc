@@ -1784,13 +1784,6 @@ UsageTracker* QuotaManagerImpl::GetUsageTracker(StorageType type) const {
   return nullptr;
 }
 
-std::set<StorageKey> QuotaManagerImpl::GetCachedStorageKeys(StorageType type) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  EnsureDatabaseOpened();
-  DCHECK(GetUsageTracker(type));
-  return GetUsageTracker(type)->GetCachedStorageKeys();
-}
-
 void QuotaManagerImpl::NotifyStorageAccessed(const StorageKey& storage_key,
                                              StorageType type,
                                              base::Time access_time) {
@@ -2590,9 +2583,7 @@ std::tuple<int64_t, int64_t> QuotaManagerImpl::CallGetVolumeInfo(
     LOG(WARNING) << "Create directory failed for path" << path.value();
     return std::make_tuple<int64_t, int64_t>(0, 0);
   }
-  int64_t total;
-  int64_t available;
-  std::tie(total, available) = get_volume_info_fn(path);
+  const auto [total, available] = get_volume_info_fn(path);
   if (total < 0 || available < 0) {
     LOG(WARNING) << "Unable to get volume info: " << path.value();
     return std::make_tuple<int64_t, int64_t>(0, 0);

@@ -74,12 +74,12 @@ extern const base::Feature kRichAutocompletion;
 extern const base::Feature kNtpRealboxPedals;
 extern const base::Feature kNtpRealboxSuggestionAnswers;
 extern const base::Feature kNtpRealboxTailSuggest;
+extern const base::Feature kOmniboxFuzzyUrlSuggestions;
 extern const base::Feature kOmniboxPedalsAndroidBatch1;
 extern const base::Feature kOmniboxPedalsBatch2NonEnglish;
 extern const base::Feature kOmniboxPedalsBatch3;
 extern const base::Feature kOmniboxPedalsBatch3NonEnglish;
 extern const base::Feature kOmniboxPedalsTranslationConsole;
-extern const base::Feature kOmniboxKeywordSearchButton;
 extern const base::Feature kWebUIOmniboxPopup;
 
 // Omnibox UI - these affect the UI or function of the location bar (not the

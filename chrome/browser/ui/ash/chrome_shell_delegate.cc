@@ -10,6 +10,7 @@
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
@@ -39,8 +40,6 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -59,6 +58,8 @@
 #include "content/public/browser/media_session_service.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -110,13 +111,8 @@ ChromeShellDelegate::CreateCaptureModeDelegate() const {
 }
 
 void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
-  chrome::ScopedTabbedBrowserDisplayer scoped_tabbed_browser_displayer(
-      ProfileManager::GetActiveUserProfile());
-  NavigateParams params(scoped_tabbed_browser_displayer.browser(),
-                        GURL(kKeyboardShortcutHelpPageUrl),
-                        ui::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = WindowOpenDisposition::SINGLETON_TAB;
-  Navigate(&params);
+  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+      GURL(kKeyboardShortcutHelpPageUrl), /*from_user_interaction=*/true);
 }
 
 bool ChromeShellDelegate::CanGoBack(gfx::NativeWindow window) const {
@@ -314,4 +310,25 @@ void ChromeShellDelegate::SetDisableLoggingRedirectForTesting(bool value) {
 // static
 void ChromeShellDelegate::ResetDisableLoggingRedirectForTesting() {
   disable_logging_redirect_for_testing.reset();
+}
+
+const GURL& ChromeShellDelegate::GetLastCommittedURLForWindowIfAny(
+    aura::Window* window) {
+  // Get the web content if the window is a browser window.
+  content::WebContents* contents =
+      GetActiveWebContentsForNativeBrowserWindow(window);
+
+  if (!contents) {
+    // Get the web content if the window is an app window.
+    Profile* profile = ProfileManager::GetLastUsedProfile();
+    if (profile) {
+      const extensions::AppWindow* app_window =
+          extensions::AppWindowRegistry::Get(profile)
+              ->GetAppWindowForNativeWindow(window);
+      if (app_window)
+        contents = app_window->web_contents();
+    }
+  }
+
+  return contents ? contents->GetLastCommittedURL() : GURL::EmptyGURL();
 }

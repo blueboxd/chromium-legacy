@@ -1720,7 +1720,7 @@ const char kOmniboxPreserveLongerShortcutsTextDescription[] =
 const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPName[] =
     "Omnibox Trending Zero Prefix Suggestions";
 const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPDescription[] =
-    "Enables trending zero prefix suggestions for signed-in users with no or "
+    "Enables trending zero prefix suggestions for users with no or "
     "insufficient search history.";
 
 const char kOmniboxZeroSuggestPrefetchingName[] =
@@ -2158,17 +2158,6 @@ const char kSecurePaymentConfirmationDebugDescription[] =
     "This flag removes the restriction that PaymentCredential in WebAuthn and "
     "secure payment confirmation in PaymentRequest API must use user verifying "
     "platform authenticators.";
-
-const char kSendTabToSelfWhenSignedInName[] = "Send-tab-to-self when signed in";
-const char kSendTabToSelfWhenSignedInDescription[] =
-    "Makes the tab sharing feature also available for users who have \"only\" "
-    "signed-in to their Google Account (as opposed to having enabled Sync).";
-
-const char kSendTabToSelfManageDevicesLinkName[] =
-    "Send-tab-to-self manage devices link";
-const char kSendTabToSelfManageDevicesLinkDescription[] =
-    "Shows a link to manage the user's devices below the device list when "
-    "sharing";
 
 const char kShoppingListName[] = "Shopping List";
 const char kShoppingListDescription[] = "Enable shopping list in bookmarks.";
@@ -3516,10 +3505,6 @@ const char kUserMediaScreenCapturingName[] = "Screen Capture API";
 const char kUserMediaScreenCapturingDescription[] =
     "Allows sites to request a video stream of your screen.";
 
-const char kUseULPLanguagesInChromeName[] = "Use ULP languages in Chrome";
-const char kUseULPLanguagesInChromeDescription[] =
-    "Enables use of ULP language data in Chrome";
-
 const char kVideoTutorialsName[] = "Enable video tutorials";
 const char kVideoTutorialsDescription[] = "Show video tutorials in Chrome";
 const char kVideoTutorialsInstantFetchName[] =
@@ -3734,11 +3719,6 @@ const char kOmniboxPedalsTranslationConsoleDescription[] =
     "Use translation strings sourced from Translation Console "
     "for triggering some omnibox Pedals (aka Chrome Actions).";
 
-const char kOmniboxKeywordSearchButtonName[] = "Omnibox keyword search button";
-const char kOmniboxKeywordSearchButtonDescription[] =
-    "Enable the omnibox keyword search button which offers a way to search "
-    "on specific sites from the omnibox.";
-
 const char kOmniboxShortBookmarkSuggestionsName[] =
     "Omnibox short bookmark suggestions";
 const char kOmniboxShortBookmarkSuggestionsDescription[] =
@@ -3869,11 +3849,6 @@ const char kWin10TabSearchCaptionButtonName[] =
 const char kWin10TabSearchCaptionButtonDescription[] =
     "Move the Tab Search entrypoint besides the window caption buttons on "
     "Windows 10 platforms.";
-
-const char kWin11StyleMenusName[] = "Windows 11 Style Menus";
-const char kWin11StyleMenusDescription[] =
-    "Use Windows 11 style menus where possible.";
-
 #endif  // defined(OS_WIN)
 
 // Mac -------------------------------------------------------------------------
@@ -5052,11 +5027,6 @@ const char kShowBluetoothDebugLogToggleName[] =
 const char kShowBluetoothDebugLogToggleDescription[] =
     "Enables a toggle which can enable debug (i.e., verbose) logs for "
     "Bluetooth";
-
-const char kShowFeedbackReportQuestionnaireName[] =
-    "Show feedback report questionnaire";
-const char kShowFeedbackReportQuestionnaireDescription[] =
-    "Show domain-related questionnaire in feedback report UI";
 
 const char kBluetoothSessionizedMetricsName[] =
     "Enable Bluetooth sessionized metrics";

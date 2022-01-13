@@ -1213,6 +1213,12 @@ const FeatureEntry::FeatureVariation kMaxZeroSuggestMatchesVariations[] = {
     {"15", kMaxZeroSuggestMatches15, base::size(kMaxZeroSuggestMatches15),
      nullptr}};
 
+const FeatureEntry::FeatureVariation
+    kOmniboxTrendingZeroPrefixSuggestionsOnNTPVariations[] = {
+        {"Signed-in Users", {}, 0, "t4693175"},
+        {"Signed-out Users", {}, 0, "t4693176"},
+        {"All Users", {}, 0, "t4693177"}};
+
 constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration15Secs[] =
     {{"ZeroSuggestCacheDurationSec", "15"}};
 constexpr FeatureEntry::FeatureParam
@@ -2613,16 +2619,6 @@ const FeatureEntry::Choice kDocumentTransitionSlowdownFactorChoices[] = {
     {"20", switches::kDocumentTransitionSlowdownFactor, "20"},
     {"50", switches::kDocumentTransitionSlowdownFactor, "50"}};
 
-#if defined(OS_WIN)
-const FeatureEntry::FeatureParam kWin11StyleMenusAllWindowsVersions[] = {
-    {features::kWin11StyleMenuAllWindowsVersionsName, "true"}};
-
-const FeatureEntry::FeatureVariation kWin11StyleMenusVariations[] = {
-    {" - All Windows Versions", kWin11StyleMenusAllWindowsVersions,
-     base::size(kWin11StyleMenusAllWindowsVersions), nullptr},
-};
-#endif  // defined(OS_WIN)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Possible configurations for the snooping protection feature.
 // Empty params configures the feature to apply a simple threshold to one
@@ -3253,10 +3249,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMicrophoneMuteSwitchDeviceName,
      flag_descriptions::kMicrophoneMuteSwitchDeviceDescription, kOsCrOS,
      SINGLE_VALUE_TYPE("enable-microphone-mute-switch-device")},
-    {"show-feedback-report-questionnaire",
-     flag_descriptions::kShowFeedbackReportQuestionnaireName,
-     flag_descriptions::kShowFeedbackReportQuestionnaireDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kShowFeedbackReportQuestionnaire)},
     {"wifi-connect-mac-address-randomization",
      flag_descriptions::kWifiConnectMacAddressRandomizationName,
      flag_descriptions::kWifiConnectMacAddressRandomizationDescription, kOsCrOS,
@@ -4541,7 +4533,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTrendingZeroPrefixSuggestionsOnNTPName,
      flag_descriptions::kOmniboxTrendingZeroPrefixSuggestionsOnNTPDescription,
      kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxTrendingZeroPrefixSuggestionsOnNTP)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         omnibox::kOmniboxTrendingZeroPrefixSuggestionsOnNTP,
+         kOmniboxTrendingZeroPrefixSuggestionsOnNTPVariations,
+         "OmniboxBundledExperimentV1")},
 
     {"omnibox-zero-suggest-prefetching",
      flag_descriptions::kOmniboxZeroSuggestPrefetchingName,
@@ -4579,10 +4574,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxPedalsTranslationConsoleName,
      flag_descriptions::kOmniboxPedalsTranslationConsoleDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsTranslationConsole)},
-    {"omnibox-keyword-search-button",
-     flag_descriptions::kOmniboxKeywordSearchButtonName,
-     flag_descriptions::kOmniboxKeywordSearchButtonDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxKeywordSearchButton)},
     {"omnibox-drive-suggestions",
      flag_descriptions::kOmniboxDriveSuggestionsName,
      flag_descriptions::kOmniboxDriveSuggestionsDescriptions, kOsDesktop,
@@ -6949,16 +6940,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfXfaSupport)},
 #endif  // BUILDFLAG(ENABLE_PDF)
 
-    {"send-tab-to-self-when-signed-in",
-     flag_descriptions::kSendTabToSelfWhenSignedInName,
-     flag_descriptions::kSendTabToSelfWhenSignedInDescription, kOsAll,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfWhenSignedIn)},
-
-    {"send-tab-to-self-manage-devices-link",
-     flag_descriptions::kSendTabToSelfManageDevicesLinkName,
-     flag_descriptions::kSendTabToSelfManageDevicesLinkDescription, kOsAll,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfManageDevicesLink)},
-
 #if defined(OS_ANDROID)
     {"send-tab-to-self-v2", flag_descriptions::kSendTabToSelfV2Name,
      flag_descriptions::kSendTabToSelfV2Description, kOsAndroid,
@@ -7603,14 +7584,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid, FEATURE_VALUE_TYPE(media::kUseRealColorSpaceForAndroidVideo)},
 #endif
 
-#if defined(OS_WIN)
-    {"win11-style-menus", flag_descriptions::kWin11StyleMenusName,
-     flag_descriptions::kWin11StyleMenusDescription, kOsWin,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kWin11StyleMenus,
-                                    kWin11StyleMenusVariations,
-                                    "Win11StyleMenus")},
-#endif  // defined(OS_WIN)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-desks-trackpad-swipe-improvements",
      flag_descriptions::kDesksTrackpadSwipeImprovementsName,
@@ -7768,13 +7741,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDragAndDropAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDragAndDropAndroid)},
 #endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-    {"use-ulp-languages-in-chrome",
-     flag_descriptions::kUseULPLanguagesInChromeName,
-     flag_descriptions::kUseULPLanguagesInChromeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(language::kUseULPLanguagesInChrome)},
-#endif
 
     {"autofill-enable-update-virtual-card-enrollment",
      flag_descriptions::kAutofillEnableUpdateVirtualCardEnrollmentName,

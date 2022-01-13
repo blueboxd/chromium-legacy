@@ -510,12 +510,12 @@
   {
     "name": "autofill-use-improved-label-disambiguation",
     "owners": [ "autofill-squad-muc@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 102
   },
   {
     "name": "autofill-use-mobile-label-disambiguation",
     "owners": [ "autofill-squad-muc@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 102
   },
   {
     "name": "autofill-use-renderer-ids",
@@ -620,7 +620,7 @@
   {
     "name": "button-arc-network-diagnostics",
     "owners": [ "arc-core@google.com"],
-    "expiry_milestone": 98
+    "expiry_milestone": 100
   },
   {
     "name": "bypass-app-banner-engagement-checks",
@@ -810,11 +810,6 @@
     "name": "commander",
     "owners": [ "lgrey" ],
     "expiry_milestone": 100
-  },
-  {
-    "name": "composite-after-paint",
-    "owners": [ "pdr", "wangxianzhu" ],
-    "expiry_milestone": 97
   },
   {
     "name": "compositor-threaded-scrollbar-scrolling",
@@ -1965,12 +1960,12 @@
   {
     "name": "enable-experimental-accessibility-language-detection",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 106
   },
   {
     "name": "enable-experimental-accessibility-language-detection-dynamic",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 106
   },
   {
     "name": "enable-experimental-accessibility-switch-access-multistep-automation",
@@ -2245,7 +2240,7 @@
   {
     "name": "enable-local-web-approvals",
     "owners": [ "agawronska@chromium.org", "courtneywong@chromium.org", "danan@chromium.org" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 104
   },
   {
     "name": "enable-lock-screen-notification",
@@ -2684,7 +2679,7 @@
   {
     "name": "enable-suggestions-with-substring-match",
     "owners": [ "autofill-squad-muc@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 102
   },
   {
     "name": "enable-surface-control",
@@ -2879,7 +2874,7 @@
   {
     "name": "enable-web-filter-interstitial-refresh",
     "owners": [ "agawronska@chromium.org", "courtneywong@chromium.org", "danan@chromium.org" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 104
   },
   {
     "name": "enable-web-payments-experimental-features",
@@ -3991,7 +3986,7 @@
   {
     "name": "nearby-sharing-arc",
     "owners": [ "phshah", "alanding", "cros-sharesheet@google.com", "arc-app-dev@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 99
   },
   {
     "name": "nearby-sharing-background-scanning",
@@ -4340,7 +4335,7 @@
   {
     "name": "omnibox-trending-zero-prefix-suggestions-on-ntp",
     "owners": [ "mahmadi", "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 104
   },
   {
     "name": "omnibox-trigger-for-prerender2",
@@ -5103,8 +5098,8 @@
   },
   {
     "name": "shimless-rma-flow",
-    "owners": [ "zentaro", "cros-peripherals@google.com" ],
-    "expiry_milestone": 98
+    "owners": [ "zentaro", "gavinwill", "cros-peripherals@google.com" ],
+    "expiry_milestone": 103
   },
   {
     "name": "shopping-list",
@@ -5124,11 +5119,6 @@
     // caused by specific hardware, noisy environments, etc. Thus, it should not
     // expire.
     "expiry_milestone": -1
-  },
-  {
-    "name": "show-feedback-report-questionnaire",
-    "owners": ["sonnysasaka"],
-    "expiry_milestone": 98
   },
   {
     "name": "show-metered-toggle",
@@ -5186,6 +5176,11 @@
     "name" : "side-search-state-per-tab",
     "owners": [ "chrome-cros@google.com", "tluk" ],
     "expiry_milestone" : 100
+  },
+  {
+    "name": "single-cell-content-suggestions",
+    "owners": [ "thegreenfrog@google.com", "sczs@google.com"],
+    "expiry_milestone": 106
   },
   {
     "name": "single-ntp",
@@ -5632,11 +5627,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "use-ulp-languages-in-chrome",
-    "owners": [ "chrome-language@google.com" ],
-    "expiry_milestone": 105
-  },
-  {
     "name": "use-wallpaper-staging-url",
     "owners": [ "cros-customization@google.com", "hsuregan", "khorimoto" ],
     // This flag is required for QA and dogfood testing.
@@ -5852,11 +5842,6 @@
     "name": "win-10-tab-search-caption-button",
     "owners": [ "tluk@google.com", "chrome-cros@google.com" ],
     "expiry_milestone": 99
-  },
-  {
-    "name": "win11-style-menus",
-    "owners": [ "kylixrd", "robliao" ],
-    "expiry_milestone": 97
   },
   {
     "name": "xsurface-metrics-reporting",

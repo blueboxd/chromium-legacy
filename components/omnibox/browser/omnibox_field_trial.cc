@@ -606,6 +606,10 @@ bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
 }
 
+bool OmniboxFieldTrial::IsFuzzyUrlSuggestionsEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxFuzzyUrlSuggestions);
+}
+
 bool OmniboxFieldTrial::IsPedalsAndroidBatch1Enabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxPedalsAndroidBatch1);
 }
@@ -625,10 +629,6 @@ bool OmniboxFieldTrial::IsPedalsBatch3NonEnglishEnabled() {
 bool OmniboxFieldTrial::IsPedalsTranslationConsoleEnabled() {
   return base::FeatureList::IsEnabled(
       omnibox::kOmniboxPedalsTranslationConsole);
-}
-
-bool OmniboxFieldTrial::IsKeywordSearchButtonEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxKeywordSearchButton);
 }
 
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {

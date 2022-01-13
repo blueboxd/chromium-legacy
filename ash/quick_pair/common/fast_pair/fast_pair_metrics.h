@@ -27,8 +27,12 @@ enum COMPONENT_EXPORT(QUICK_PAIR_COMMON) FastPairEngagementFlowEvent {
   kDiscoveryUiDismissed = 11,
   kDiscoveryUiConnectPressed = 12,
   kDiscoveryUiDismissedByUser = 13,
+  kDiscoveryUiLearnMorePressed = 14,
   kPairingFailed = 121,
   kPairingSucceeded = 122,
+  kDiscoveryUiConnectPressedAfterLearnMorePressed = 141,
+  kDiscoveryUiDismissedByUserAfterLearnMorePressed = 142,
+  kDiscoveryUiDismissedAfterLearnMorePressed = 143,
   kErrorUiDismissed = 1211,
   kErrorUiSettingsPressed = 1212,
   kErrorUiDismissedByUser = 1213,
@@ -214,7 +218,8 @@ void RecordFootprintsFetcherGetResult(bool success);
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordFastPairRepositoryCacheResult(bool success);
 
-COMPONENT_EXPORT(QUICK_PAIR_COMMON) void RecordHandshakeResult(bool success);
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordHandshakeResult(bool success);
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordHandshakeFailureReason(HandshakeFailureReason failure_reason);
@@ -244,6 +249,12 @@ void RecordPairDeviceResult(bool success);
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordPairDeviceErrorReason(
     device::BluetoothDevice::ConnectErrorCode error_code);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordConfirmPasskeyConfirmTime(base::TimeDelta total_confirm_time);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordConfirmPasskeyAskTime(base::TimeDelta total_ask_time);
 
 }  // namespace quick_pair
 }  // namespace ash

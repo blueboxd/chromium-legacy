@@ -384,29 +384,29 @@ class DemoSetupArcSupportedTest : public DemoSetupTestBase {
   // Verify the country names are displayed correctly. Regression test for
   // potential country code changes.
   const base::flat_map<std::string, std::string> kCountryCodeToNameMap = {
-      {"us", "United States"},
-      {"be", "Belgium"},
-      {"ca", "Canada"},
-      {"dk", "Denmark"},
-      {"fi", "Finland"},
-      {"fr", "France"},
-      {"de", "Germany"},
-      {"ie", "Ireland"},
-      {"it", "Italy"},
-      {"jp", "Japan"},
-      {"lu", "Luxembourg"},
-      {"nl", "Netherlands"},
-      {"no", "Norway"},
-      {"es", "Spain"},
-      {"se", "Sweden"},
-      {"gb", "United Kingdom"},
+      {"US", "United States"},
+      {"BE", "Belgium"},
+      {"CA", "Canada"},
+      {"DK", "Denmark"},
+      {"FI", "Finland"},
+      {"FR", "France"},
+      {"DE", "Germany"},
+      {"IE", "Ireland"},
+      {"IT", "Italy"},
+      {"JP", "Japan"},
+      {"LU", "Luxembourg"},
+      {"NL", "Netherlands"},
+      {"NO", "Norway"},
+      {"ES", "Spain"},
+      {"SE", "Sweden"},
+      {"GB", "United Kingdom"},
       {"N/A", "Please select a country"}};
 
   system::ScopedFakeStatisticsProvider statistics_provider_;
 
   void SelectFranceAndFinishSetup() {
     // Select France as the Demo Mode country.
-    test::OobeJS().SelectElementInPath("fr", kDemoPreferencesCountrySelect);
+    test::OobeJS().SelectElementInPath("FR", kDemoPreferencesCountrySelect);
     test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
     test::OobeJS().ClickOnPath(kDemoPreferencesNext);
 
@@ -520,7 +520,9 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
 
   AcceptTermsAndExpectDemoSetupProgress();
 
-  EXPECT_TRUE(DemoSetupController::GetSubOrganizationEmail().empty());
+  // Verify the email corresponds to US.
+  EXPECT_EQ("admin-us@cros-demo-mode.com",
+            DemoSetupController::GetSubOrganizationEmail());
 
   OobeScreenWaiter(GetFirstSigninScreen()).Wait();
 
@@ -546,9 +548,9 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
     EXPECT_EQ(it->second, test::OobeJS().GetString(query));
   }
 
-  // Expect active "OK" button with "us" selected as country.
+  // Expect active "OK" button with "US" selected as country.
   test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
-  test::OobeJS().ExpectElementValue("us", kDemoPreferencesCountrySelect);
+  test::OobeJS().ExpectElementValue("US", kDemoPreferencesCountrySelect);
 
   SelectFranceAndFinishSetup();
 }
@@ -1252,7 +1254,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupVariantCountryCodeRegionTest,
 
   // Expect active "OK" button when entering the preference screen.
   test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
-  test::OobeJS().ExpectElementValue("ca", kDemoPreferencesCountrySelect);
+  test::OobeJS().ExpectElementValue("CA", kDemoPreferencesCountrySelect);
   test::OobeJS().ClickOnPath(kDemoPreferencesNext);
 
   UseOnlineModeOnNetworkScreen();

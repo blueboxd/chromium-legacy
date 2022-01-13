@@ -272,6 +272,10 @@ const base::Feature kNtpRealboxSuggestionAnswers{
 const base::Feature kNtpRealboxTailSuggest{"NtpRealboxTailSuggest",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to enable URL suggestions for inputs that may contain typos.
+const base::Feature kOmniboxFuzzyUrlSuggestions{
+    "OmniboxFuzzyUrlSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable the first batch of Pedals on Android. The Pedals,
 // which will be enabled on Android, should be already enabled on desktop.
 const base::Feature kOmniboxPedalsAndroidBatch1{
@@ -296,10 +300,6 @@ const base::Feature kOmniboxPedalsBatch3NonEnglish{
 // Feature that enables loading synonyms from the translation console.
 const base::Feature kOmniboxPedalsTranslationConsole{
     "OmniboxPedalsTranslationConsole", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to enable the keyword search button.
-const base::Feature kOmniboxKeywordSearchButton{
-    "OmniboxKeywordSearchButton", enabled_by_default_desktop_only};
 
 // If enabled, uses WebUI to render the omnibox suggestions popup, similar to
 // how the NTP "realbox" is implemented.

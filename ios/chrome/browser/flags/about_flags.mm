@@ -669,15 +669,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultWebViewContextMenuName,
      flag_descriptions::kDefaultWebViewContextMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kDefaultWebViewContextMenu)},
-    {"send-tab-to-self-when-signed-in",
-     flag_descriptions::kSendTabToSelfWhenSignedInName,
-     flag_descriptions::kSendTabToSelfWhenSignedInDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfWhenSignedIn)},
-    {"send-tab-to-self-manage-devices-link",
-     flag_descriptions::kSendTabToSelfManageDevicesLinkName,
-     flag_descriptions::kSendTabToSelfManageDevicesLinkDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfManageDevicesLink)},
     {"new-overflow-menu", flag_descriptions::kNewOverflowMenuName,
      flag_descriptions::kNewOverflowMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewOverflowMenu)},
@@ -793,6 +784,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableUnicornAccountSupportDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(signin::kEnableUnicornAccountSupport)},
+    {"single-cell-content-suggestions",
+     flag_descriptions::kSingleCellContentSuggestionsName,
+     flag_descriptions::kSingleCellContentSuggestionsDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSingleCellContentSuggestions)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -931,6 +926,7 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
         base::SysUTF8ToNSString(policy::key::kNewTabPageLocation);
     [testing_policies
         addEntriesFromDictionary:@{ntp_location_key : ntp_location}];
+    [allowed_experimental_policies addObject:ntp_location_key];
   }
 
   // If any experimental policy was allowed, set the EnableExperimentalPolicies

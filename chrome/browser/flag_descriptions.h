@@ -1230,12 +1230,6 @@ extern const char kSearchHistoryLinkDescription[];
 extern const char kSecurePaymentConfirmationDebugName[];
 extern const char kSecurePaymentConfirmationDebugDescription[];
 
-extern const char kSendTabToSelfWhenSignedInName[];
-extern const char kSendTabToSelfWhenSignedInDescription[];
-
-extern const char kSendTabToSelfManageDevicesLinkName[];
-extern const char kSendTabToSelfManageDevicesLinkDescription[];
-
 extern const char kShoppingListName[];
 extern const char kShoppingListDescription[];
 
@@ -2009,9 +2003,6 @@ extern const char kUseRealColorSpaceForAndroidVideoDescription[];
 extern const char kUserMediaScreenCapturingName[];
 extern const char kUserMediaScreenCapturingDescription[];
 
-extern const char kUseULPLanguagesInChromeName[];
-extern const char kUseULPLanguagesInChromeDescription[];
-
 extern const char kVideoTutorialsName[];
 extern const char kVideoTutorialsDescription[];
 extern const char kVideoTutorialsInstantFetchName[];
@@ -2144,9 +2135,6 @@ extern const char kOmniboxPedalsBatch3NonEnglishDescription[];
 extern const char kOmniboxPedalsTranslationConsoleName[];
 extern const char kOmniboxPedalsTranslationConsoleDescription[];
 
-extern const char kOmniboxKeywordSearchButtonName[];
-extern const char kOmniboxKeywordSearchButtonDescription[];
-
 extern const char kSCTAuditingName[];
 extern const char kSCTAuditingDescription[];
 
@@ -2211,9 +2199,6 @@ extern const char kUseXpsForPrintingFromPdfDescription[];
 
 extern const char kWin10TabSearchCaptionButtonName[];
 extern const char kWin10TabSearchCaptionButtonDescription[];
-
-extern const char kWin11StyleMenusName[];
-extern const char kWin11StyleMenusDescription[];
 #endif  // defined(OS_WIN)
 
 // Mac ------------------------------------------------------------------------
@@ -2902,9 +2887,6 @@ extern const char kChromeOSSharingHubDescription[];
 
 extern const char kShowBluetoothDebugLogToggleName[];
 extern const char kShowBluetoothDebugLogToggleDescription[];
-
-extern const char kShowFeedbackReportQuestionnaireName[];
-extern const char kShowFeedbackReportQuestionnaireDescription[];
 
 extern const char kBluetoothSessionizedMetricsName[];
 extern const char kBluetoothSessionizedMetricsDescription[];

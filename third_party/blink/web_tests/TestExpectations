@@ -259,6 +259,7 @@ crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
 crbug.com/1123606 wpt_internal/fenced_frame/* [ Skip ]
 crbug.com/1123606 fenced_frame/* [ Skip ]
 crbug.com/1123606 virtual/fenced-frame-shadow-dom/* [ Pass ]
+crbug.com/1123606 virtual/fenced-frame-mparch/* [ Pass ]
 
 # These tests require the experimental prerender feature.
 # See https://crbug.com/1126305.
@@ -7229,7 +7230,7 @@ crbug.com/1249176 [ Mac11-arm64 ] fast/forms/file/recover-file-input-in-unposted
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-015.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-003.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-014.html [ Failure Pass ]
-crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure Pass ]
+crbug.com/1249176 virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Skip ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/scalefactor200/external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Failure Pass ]
@@ -7299,7 +7300,6 @@ crbug.com/959296 virtual/background-svg-in-lcp/external/wpt/largest-contentful-p
 
 # FileSystemHandle::move() is temporarily disabled outside of the Origin Private File System
 crbug.com/1247850 external/wpt/file-system-access/local_FileSystemFileHandle-move-manual.https.html [ Failure ]
-crbug.com/1247850 external/wpt/file-system-access/local_FileSystemFileHandle-rename-manual.https.html [ Failure ]
 crbug.com/1247850 [ Fuchsia ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemFileHandle-move-manual.https.html [ Failure ]
 crbug.com/1247850 [ Linux ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemFileHandle-move-manual.https.html [ Failure ]
 crbug.com/1247850 [ Mac10.12 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemFileHandle-move-manual.https.html [ Failure ]
@@ -7308,20 +7308,13 @@ crbug.com/1247850 [ Mac10.14 ] virtual/fsa-incognito/external/wpt/file-system-ac
 crbug.com/1247850 [ Mac10.15 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemFileHandle-move-manual.https.html [ Failure ]
 crbug.com/1247850 [ Mac11 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemFileHandle-move-manual.https.html [ Failure ]
 crbug.com/1247850 [ Win ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemFileHandle-move-manual.https.html [ Failure ]
-crbug.com/1247850 virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemFileHandle-rename-manual.https.html [ Failure ]
 # FileSystemHandle::move() is temporarily disabled for directory handles
 crbug.com/1250534 external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure ]
-crbug.com/1250534 external/wpt/file-system-access/local_FileSystemDirectoryHandle-rename-manual.https.html [ Failure ]
 crbug.com/1250534 external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-move.https.any.html [ Failure ]
-crbug.com/1250534 external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-rename.https.any.html [ Failure ]
 crbug.com/1250534 external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-move.https.any.worker.html [ Failure ]
-crbug.com/1250534 external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-rename.https.any.worker.html [ Failure ]
 crbug.com/1250534 virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-move-manual.https.html [ Failure ]
-crbug.com/1250534 virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemDirectoryHandle-rename-manual.https.html [ Failure ]
 crbug.com/1250534 virtual/fsa-incognito/external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-move.https.any.html [ Failure ]
-crbug.com/1250534 virtual/fsa-incognito/external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-rename.https.any.html [ Failure ]
 crbug.com/1250534 virtual/fsa-incognito/external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-move.https.any.worker.html [ Failure ]
-crbug.com/1250534 virtual/fsa-incognito/external/wpt/file-system-access/sandboxed_FileSystemDirectoryHandle-rename.https.any.worker.html [ Failure ]
 
 # Sheriff 2021-09-23
 crbug.com/1164568 [ Mac10.12 ] external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin-allow-popups-report-to.https.html [ Failure ]
@@ -7373,7 +7366,6 @@ crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-prof
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-clip.html [ Failure Pass ]
-crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-image-shape.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-object.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-svg.html [ Failure Pass ]
@@ -7452,8 +7444,6 @@ crbug.com/1267734 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/resource-ti
 crbug.com/1267736 [ Win ] http/tests/devtools/bindings/jssourcemap-bindings-overlapping-sources.js [ Failure Pass ]
 
 # Sheriff 2021-11-09
-crbug.com/1268518 [ Linux ] external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure Pass ]
-crbug.com/1268518 [ Mac10.12 ] external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure Pass ]
 crbug.com/1269535 http/tests/misc/resource-timing-sizes-multipart.html [ Failure Pass Timeout ]
 crbug.com/1267734 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-appearance.html [ Failure Pass ]
 
@@ -7633,7 +7623,7 @@ crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-s
 crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax.js [ Pass Timeout ]
 
 # crbug.com/1285304 issues (Note - because color-scheme is in SlowTests, this must be Skip):
-crbug.com/1285304 fast/forms/color-scheme/suggestion-picker/time-suggestion-picker-appearance.html [ Skip Pass Failure Timeout ]
+crbug.com/1285304 fast/forms/color-scheme/suggestion-picker/time-suggestion-picker-appearance.html [ Failure Pass Skip Timeout ]
 
 # Sheriff 2022-01-04
 crbug.com/1283865 external/wpt/webmessaging/without-ports/020.html [ Failure Pass ]
@@ -7658,3 +7648,9 @@ crbug.com/1286448 [ Mac ] virtual/without-coep-for-shared-worker/external/wpt/ht
 
 # Sheriff 2022-01-12
 crbug.com/1286619 [ Mac ] external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Failure Pass ]
+
+# Sanitizer API: Namespace-based tests will partially fail until namespace support is complete.
+crbug.com/1225606 external/wpt/sanitizer-api/sanitizer-names.https.tentative.html [ Failure ]
+
+# Changes to fork() on Mac causing test to crash
+crbug.com/1284401 [ Mac ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/create-credential.https.html [ Crash Failure ]

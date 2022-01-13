@@ -624,6 +624,10 @@ const base::Feature kFiltersInRecents{"FiltersInRecents",
 const base::Feature kFirmwareUpdaterApp = {"FirmwareUpdaterApp",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to allow keeping full screen mode after unlock.
+const base::Feature kFullscreenAfterUnlockAllowed = {
+    "FullscreenAfterUnlockAllowed", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // When enabled, there will be an alert bubble showing up when the device
 // returns from low brightness (e.g., sleep, closed cover) without a lock screen
 // and the active window is in fullscreen.
@@ -1161,11 +1165,6 @@ const base::Feature kShimlessRMAFlow{"ShimlessRMAFlow",
 const base::Feature kShowBluetoothDebugLogToggle{
     "ShowBluetoothDebugLogToggle", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether to show domain-related questionnaire in feedback report UI
-// (crbug/1241169).
-const base::Feature kShowFeedbackReportQuestionnaire{
-    "FeedbackReportQuestionnaire", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Shows the Play Store icon in Demo Mode.
 const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1543,6 +1542,10 @@ bool IsFileManagerSwaEnabled() {
 
 bool IsFirmwareUpdaterAppEnabled() {
   return base::FeatureList::IsEnabled(kFirmwareUpdaterApp);
+}
+
+bool IsFullscreenAfterUnlockAllowed() {
+  return base::FeatureList::IsEnabled(kFullscreenAfterUnlockAllowed);
 }
 
 bool IsFullscreenAlertBubbleEnabled() {

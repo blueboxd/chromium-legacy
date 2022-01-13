@@ -1863,7 +1863,8 @@
             "platforms": [
                 "android",
                 "windows",
-                "mac"
+                "mac",
+                "chromeos"
             ],
             "experiments": [
                 {
@@ -2814,6 +2815,21 @@
             ]
         }
     ],
+    "CredentialProviderExtensionPromo": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CredentialProviderExtensionPromo"
+                    ]
+                }
+            ]
+        }
+    ],
     "CriticalPersistedTabDataV2": [
         {
             "platforms": [
@@ -2977,6 +2993,27 @@
                     "disable_features": [
                         "DefaultPassthroughCommandDecoder",
                         "RawDraw"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DelayFirstParkingOfStrings": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DelayFirstParkingOfStrings"
                     ]
                 }
             ]
@@ -6088,6 +6125,21 @@
             ]
         }
     ],
+    "PartitionAllocLargeThreadCacheSizeAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PartitionAllocLargeThreadCacheSize"
+                    ]
+                }
+            ]
+        }
+    ],
     "PartitionAllocPCScanBlinkPartitions": [
         {
             "platforms": [
@@ -6126,6 +6178,25 @@
                         "PartitionNelAndReportingByNetworkIsolationKey",
                         "PartitionSSLSessionsByNetworkIsolationKey",
                         "SplitHostCacheByNetworkIsolationKey"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PasswordAddCredentialManuallyInDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20211214",
+                    "enable_features": [
+                        "SupportForAddPasswordsInSettings"
                     ]
                 }
             ]
@@ -6543,10 +6614,10 @@
                     ]
                 },
                 {
-                    "name": "EnabledExploreAndServerRankingSegmentation2",
+                    "name": "EnabledExploreAndServerRankingAndRawTrendingSegmentation2",
                     "params": {
                         "base_url": "https://chromeupboarding-pa.googleapis.com",
-                        "experiment_tag": "{maxLevels : 1, rankTiles : true}",
+                        "experiment_tag": "{maxLevels : 1, rankTiles : true, enableTrending : true, maxTrendingQueries : 8, disableEntityTranslation: true}",
                         "image_prefetch_mode": "top",
                         "is_unmetered_network_required": "false",
                         "max_trending_tile_impressions": "1",
@@ -6559,12 +6630,12 @@
                         "QueryTiles",
                         "QueryTilesInNTP",
                         "QueryTilesLocalOrdering",
+                        "QueryTilesRemoveTrendingAfterInactivity",
                         "QueryTilesSegmentation"
                     ],
                     "disable_features": [
                         "QueryTilesEnableQueryEditing",
-                        "QueryTilesInOmnibox",
-                        "QueryTilesRemoveTrendingAfterInactivity"
+                        "QueryTilesInOmnibox"
                     ]
                 }
             ]
@@ -7323,40 +7394,6 @@
                     ],
                     "disable_features": [
                         "ShareUsageRankingFixedMore"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SharedHighlightingClankV2": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SharedHighlightingV2"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SharedHighlightingDesktopV2": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SharedHighlightingV2"
                     ]
                 }
             ]

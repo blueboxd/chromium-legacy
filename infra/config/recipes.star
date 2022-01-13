@@ -152,6 +152,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_3pp",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -208,22 +209,9 @@ build_recipe(
 )
 
 build_recipe(
-    name = "recipe:findit/chromium/compile",
-)
-
-build_recipe(
-    name = "recipe:findit/chromium/export_bot_db",
-    use_python3 = True,
-)
-
-build_recipe(
     name = "recipe:findit/chromium/single_revision",
     bootstrappable = PROPERTIES_OPTIONAL,
     use_python3 = True,
-)
-
-build_recipe(
-    name = "recipe:findit/chromium/update_components",
 )
 
 build_recipe(
@@ -240,6 +228,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:requires_testing_checker",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -259,6 +248,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:tricium_metrics",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -273,4 +263,5 @@ build_recipe(
 
 build_recipe(
     name = "recipe:webrtc/chromium_ios",
+    use_python3 = True,
 )

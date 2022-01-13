@@ -1407,10 +1407,14 @@ mixed_component("base") {
   # TODO(crbug.com/1280708): Switch to enable_rust after we have NaCl support.
   if (toolchain_has_rust) {
     rs_crate_root = "lib.rs"
+    rs_deps = [
+      "//third_party/rust/serde/v1:lib",
+    ]
     rs_sources = [
       "lib.rs",
       "rs_glue/mod.rs",
       "values.rs",
+      "values_deserialization.rs",
     ]
     rs_cxx_bindings = [ "rs_glue/mod.rs" ]
     sources += [
@@ -3090,6 +3094,7 @@ test("base_unittests") {
     "i18n/string_search_unittest.cc",
     "i18n/time_formatting_unittest.cc",
     "i18n/timezone_unittest.cc",
+    "i18n/transliterator_unittest.cc",
     "immediate_crash_unittest.cc",
     "json/json_parser_unittest.cc",
     "json/json_reader_unittest.cc",

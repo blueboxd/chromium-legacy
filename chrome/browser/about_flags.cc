@@ -3028,10 +3028,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"vertical-snap", flag_descriptions::kVerticalSnapName,
      flag_descriptions::kVerticalSnapDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::wm::features::kVerticalSnap)},
-    {"ash-advanced-screen-capture-settings",
-     flag_descriptions::kImprovedScreenCaptureSettingsName,
-     flag_descriptions::kImprovedScreenCaptureSettingsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kImprovedScreenCaptureSettings)},
     {"ash-bento-bar", flag_descriptions::kBentoBarName,
      flag_descriptions::kBentoBarDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBentoBar)},
@@ -7408,6 +7404,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-holding-space-in-progress-animation-v2",
+     flag_descriptions::kHoldingSpaceInProgressAnimationV2Name,
+     flag_descriptions::kHoldingSpaceInProgressAnimationV2Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kHoldingSpaceInProgressAnimationV2)},
     {"enable-holding-space-in-progress-downloads-integration",
      flag_descriptions::kHoldingSpaceInProgressDownloadsIntegrationName,
      flag_descriptions::kHoldingSpaceInProgressDownloadsIntegrationDescription,

@@ -2710,6 +2710,9 @@ extern const char kHelpAppLauncherSearchDescription[];
 extern const char kHelpAppSearchServiceIntegrationName[];
 extern const char kHelpAppSearchServiceIntegrationDescription[];
 
+extern const char kHoldingSpaceInProgressAnimationV2Name[];
+extern const char kHoldingSpaceInProgressAnimationV2Description[];
+
 extern const char kHoldingSpaceInProgressDownloadsIntegrationName[];
 extern const char kHoldingSpaceInProgressDownloadsIntegrationDescription[];
 
@@ -2780,9 +2783,6 @@ extern const char kLacrosSupportDescription[];
 
 extern const char kLimitShelfItemsToActiveDeskName[];
 extern const char kLimitShelfItemsToActiveDeskDescription[];
-
-extern const char kImprovedScreenCaptureSettingsName[];
-extern const char kImprovedScreenCaptureSettingsDescription[];
 
 extern const char kListAllDisplayModesName[];
 extern const char kListAllDisplayModesDescription[];

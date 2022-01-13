@@ -22,6 +22,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/interest_group/auction_process_manager.h"
+#include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/debuggable_auction_worklet.h"
 #include "content/browser/interest_group/debuggable_auction_worklet_tracker.h"
 #include "content/browser/interest_group/interest_group_manager.h"
@@ -298,11 +299,8 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
  public:
   explicit MockBidderWorklet(
       mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
-          pending_receiver,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          pending_url_loader_factory)
-      : url_loader_factory_(std::move(pending_url_loader_factory)),
-        receiver_(this, std::move(pending_receiver)) {
+          pending_receiver)
+      : receiver_(this, std::move(pending_receiver)) {
     receiver_.set_disconnect_handler(base::BindOnce(
         &MockBidderWorklet::OnPipeClosed, base::Unretained(this)));
   }
@@ -401,10 +399,6 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
         .Run(report_url, std::vector<std::string>() /* errors */);
   }
 
-  mojo::Remote<network::mojom::URLLoaderFactory>& url_loader_factory() {
-    return url_loader_factory_;
-  }
-
   // Flush the receiver pipe and return whether or not its closed.
   bool PipeIsClosed() {
     receiver_.FlushForTesting();
@@ -421,8 +415,6 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
   std::unique_ptr<base::RunLoop> generate_bid_run_loop_;
   std::unique_ptr<base::RunLoop> report_win_run_loop_;
   ReportWinCallback report_win_callback_;
-
-  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
 
   // Receiver is last so that destroying `this` while there's a pending callback
   // over the pipe will not DCHECK.
@@ -442,14 +434,8 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
 
   explicit MockSellerWorklet(
       mojo::PendingReceiver<auction_worklet::mojom::SellerWorklet>
-          pending_receiver,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          pending_url_loader_factory,
-      auction_worklet::mojom::AuctionWorkletService::LoadSellerWorkletCallback
-          load_worklet_callback)
-      : load_worklet_callback_(std::move(load_worklet_callback)),
-        url_loader_factory_(std::move(pending_url_loader_factory)),
-        receiver_(this, std::move(pending_receiver)) {}
+          pending_receiver)
+      : receiver_(this, std::move(pending_receiver)) {}
 
   MockSellerWorklet(const MockSellerWorklet&) = delete;
   const MockSellerWorklet& operator=(const MockSellerWorklet&) = delete;
@@ -457,6 +443,9 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
   ~MockSellerWorklet() override {
     EXPECT_EQ(expect_send_pending_signals_requests_called_,
               send_pending_signals_requests_called_);
+
+    // Every received ScoreAd() call should have been waited for.
+    EXPECT_TRUE(score_ad_params_.empty());
   }
 
   // auction_worklet::mojom::SellerWorklet implementation:
@@ -507,26 +496,11 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
         << "ConnectDevToolsAgent should not be called on MockSellerWorklet";
   }
 
-  // Informs the consumer that the seller worklet has successfully loaded.
-  void CompleteLoading() {
-    DCHECK(load_worklet_callback_);
-
-    // If a worklet completes loading successfully,
-    // `send_pending_signals_requests_called_` is always called, unless the
-    // seller worklet crashes. This includes the case where no bidders
-    // successfully bid, though it's not strictly needed in that case.
-    expect_send_pending_signals_requests_called_ = true;
-
-    std::move(load_worklet_callback_)
-        .Run(true /* success */, std::vector<std::string>() /* errors */);
-  }
-
   // Waits until ScoreAd() has been invoked, if it hasn't been already. It's up
   // to the caller to invoke the returned ScoreAdParams::callback to continue
   // the auction.
   ScoreAdParams WaitForScoreAd() {
     DCHECK(!score_ad_run_loop_);
-    DCHECK(!load_worklet_callback_);
     if (score_ad_params_.empty()) {
       score_ad_run_loop_ = std::make_unique<base::RunLoop>();
       score_ad_run_loop_->Run();
@@ -540,7 +514,6 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
 
   void WaitForReportResult() {
     DCHECK(!report_result_run_loop_);
-    DCHECK(!load_worklet_callback_);
     if (!report_result_callback_) {
       report_result_run_loop_ = std::make_unique<base::RunLoop>();
       report_result_run_loop_->Run();
@@ -559,31 +532,23 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
              std::vector<std::string>() /* errors */);
   }
 
-  mojo::Remote<network::mojom::URLLoaderFactory>& url_loader_factory() {
-    return url_loader_factory_;
-  }
-
   void Flush() { receiver_.FlushForTesting(); }
 
   // `expect_send_pending_signals_requests_called_` needs to be set to false in
-  // the case a SellerWorklet crash is simulated before the final bid is scored.
+  // the case a SellerWorklet is destroyed before it receives a request to score
+  // the final bid.
   void set_expect_send_pending_signals_requests_called(bool value) {
     expect_send_pending_signals_requests_called_ = value;
   }
 
  private:
-  auction_worklet::mojom::AuctionWorkletService::LoadSellerWorkletCallback
-      load_worklet_callback_;
-
   std::unique_ptr<base::RunLoop> score_ad_run_loop_;
   std::list<ScoreAdParams> score_ad_params_;
 
   std::unique_ptr<base::RunLoop> report_result_run_loop_;
   ReportResultCallback report_result_callback_;
 
-  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
-
-  bool expect_send_pending_signals_requests_called_ = false;
+  bool expect_send_pending_signals_requests_called_ = true;
   bool send_pending_signals_requests_called_ = false;
 
   // Receiver is last so that destroying `this` while there's a pending callback
@@ -650,8 +615,7 @@ class MockAuctionProcessManager
     EXPECT_EQ(0u, bidder_worklets_.count(script_source_url));
     bidder_worklets_.emplace(std::make_pair(
         script_source_url, std::make_unique<MockBidderWorklet>(
-                               std::move(bidder_worklet_receiver),
-                               std::move(pending_url_loader_factory))));
+                               std::move(bidder_worklet_receiver))));
     // Whenever a worklet is created, one of the RunLoops should be waiting for
     // worklet creation.
     if (wait_for_bidder_reload_run_loop_) {
@@ -671,8 +635,7 @@ class MockAuctionProcessManager
           pending_url_loader_factory,
       const GURL& script_source_url,
       const absl::optional<GURL>& trusted_scoring_signals_url,
-      const url::Origin& top_window_origin,
-      LoadSellerWorkletCallback load_seller_worklet_callback) override {
+      const url::Origin& top_window_origin) override {
     DCHECK(!seller_worklet_);
 
     // Make sure this request came over the right pipe.
@@ -680,10 +643,8 @@ class MockAuctionProcessManager
               ComputeDisplayName(AuctionProcessManager::WorkletType::kSeller,
                                  url::Origin::Create(script_source_url)));
 
-    seller_worklet_ = std::make_unique<MockSellerWorklet>(
-        std::move(seller_worklet_receiver),
-        std::move(pending_url_loader_factory),
-        std::move(load_seller_worklet_callback));
+    seller_worklet_ =
+        std::make_unique<MockSellerWorklet>(std::move(seller_worklet_receiver));
 
     ASSERT_TRUE(waiting_on_seller_);
     waiting_on_seller_ = false;
@@ -728,11 +689,6 @@ class MockAuctionProcessManager
   }
 
   void Flush() { receiver_set_.FlushForTesting(); }
-
-  // Close all the AuctionWorkletService pipes. Needs to be called before
-  // uninvoked worklet callbacks can be destroyed, which is useful after
-  // simulating a worklet crash.
-  void ClosePipes() { receiver_set_.Clear(); }
 
  private:
   void MaybeQuitWaitForWorkletsRunLoop() {
@@ -804,7 +760,7 @@ class SameProcessAuctionProcessManager : public AuctionProcessManager {
 };
 
 class AuctionRunnerTest : public testing::Test,
-                          public AuctionRunner::Delegate,
+                          public AuctionWorkletManager::Delegate,
                           public DebuggableAuctionWorkletTracker::Observer {
  protected:
   // Output of the RunAuctionCallback passed to AuctionRunner::CreateAndStart().
@@ -903,13 +859,15 @@ class AuctionRunnerTest : public testing::Test,
     interest_group_manager_ = std::make_unique<InterestGroupManager>(
         base::FilePath(), true /* in_memory */,
         /* url_loader_factory */ nullptr);
-    if (auction_process_manager_) {
-      interest_group_manager_->set_auction_process_manager_for_testing(
-          std::move(auction_process_manager_));
-    } else {
-      interest_group_manager_->set_auction_process_manager_for_testing(
-          std::make_unique<SameProcessAuctionProcessManager>());
+    if (!auction_process_manager_) {
+      auction_process_manager_ =
+          std::make_unique<SameProcessAuctionProcessManager>();
     }
+    auction_worklet_manager_ = std::make_unique<AuctionWorkletManager>(
+        auction_process_manager_.get(), browser_signals->top_frame_origin,
+        frame_origin_, this);
+    interest_group_manager_->set_auction_process_manager_for_testing(
+        std::move(auction_process_manager_));
 
     histogram_tester_ = std::make_unique<base::HistogramTester>();
 
@@ -936,8 +894,8 @@ class AuctionRunnerTest : public testing::Test,
 
     auction_run_loop_ = std::make_unique<base::RunLoop>();
     auction_runner_ = AuctionRunner::CreateAndStart(
-        this, interest_group_manager_.get(), std::move(auction_config),
-        std::vector<url::Origin>{kBidder1, kBidder2},
+        auction_worklet_manager_.get(), this, interest_group_manager_.get(),
+        std::move(auction_config), std::vector<url::Origin>{kBidder1, kBidder2},
         std::move(browser_signals), frame_origin_,
         base::BindOnce(&AuctionRunnerTest::OnAuctionComplete,
                        base::Unretained(this)));
@@ -1099,7 +1057,7 @@ class AuctionRunnerTest : public testing::Test,
     mock_auction_process_manager_->WaitForWorklets(2 /* num_bidders */);
   }
 
-  // AuctionRunner::Delegate implementation:
+  // AuctionWorkletManager::Delegate implementation:
   network::mojom::URLLoaderFactory* GetFrameURLLoaderFactory() override {
     return &url_loader_factory_;
   }
@@ -1189,6 +1147,8 @@ class AuctionRunnerTest : public testing::Test,
   Result result_;
 
   network::TestURLLoaderFactory url_loader_factory_;
+
+  std::unique_ptr<AuctionWorkletManager> auction_worklet_manager_;
 
   // This is used (and consumed) when starting an auction, if non-null. Allows
   // either using a MockAuctionProcessManager instead of a
@@ -2293,7 +2253,7 @@ TEST_F(AuctionRunnerTest, ProcessManagerDelaysAuction) {
   EXPECT_EQ(0u, auction_process_manager->GetPendingBidderRequestsForTesting());
   EXPECT_FALSE(auction_complete_);
 
-  // Make kMaxBidderProcesses bidder worklet requests different bidder origins.
+  // Make kMaxBidderProcesses bidder worklet requests for different origins.
   // Do this after starting the auction, so the auction will incorrectly
   // complete once a seller worklet slot is freed if the auction already
   // requested bidder worklet processes.
@@ -2340,6 +2300,51 @@ TEST_F(AuctionRunnerTest, ProcessManagerDelaysAuction) {
                   2 /* expected_interest_groups */, 2 /* expected_owners */);
 }
 
+// Test a seller worklet load failure while waiting on bidder worklet processes
+// to be allocated. Most of the tests for global seller worklet failures at a
+// particular phase use seller crashes instead of load errors (see SellerCrash
+// test), but this case is simplest to test with a seller load error.
+TEST_F(AuctionRunnerTest, SellerLoadErrorWhileWaitingForBidders) {
+  // Create AuctionProcessManager in advance of starting the auction so can
+  // create worklets before the auction starts.
+  auction_process_manager_ =
+      std::make_unique<SameProcessAuctionProcessManager>();
+
+  // Make kMaxBidderProcesses bidder worklet requests for different origins.
+  std::list<std::unique_ptr<AuctionProcessManager::ProcessHandle>>
+      other_bidders;
+  for (size_t i = 0; i < AuctionProcessManager::kMaxBidderProcesses; ++i) {
+    other_bidders.push_back(
+        std::make_unique<AuctionProcessManager::ProcessHandle>());
+    url::Origin origin = url::Origin::Create(
+        GURL(base::StringPrintf("https://blocking.bidder.%zu.test", i)));
+    EXPECT_TRUE(auction_process_manager_->RequestWorkletService(
+        AuctionProcessManager::WorkletType::kBidder, origin,
+        &*other_bidders.back(), base::BindOnce([]() {
+          ADD_FAILURE() << "This should not be called";
+        })));
+  }
+
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                         MakeAuctionScript());
+
+  url_loader_factory_.AddResponse(kSellerUrl.spec(), "", net::HTTP_NOT_FOUND);
+
+  RunStandardAuction();
+
+  EXPECT_FALSE(result_.ad_url);
+  EXPECT_EQ(5, result_.bidder1_bid_count);
+  EXPECT_EQ(3u, result_.bidder1_prev_wins.size());
+  EXPECT_EQ(5, result_.bidder2_bid_count);
+  ASSERT_EQ(3u, result_.bidder2_prev_wins.size());
+  EXPECT_THAT(result_.errors,
+              testing::ElementsAre(
+                  "Failed to load https://adstuff.publisher1.com/auction.js "
+                  "HTTP status = 404 Not Found."));
+  CheckHistograms(AuctionRunner::AuctionResult::kSellerWorkletLoadFailed,
+                  2 /* expected_interest_groups */, 2 /* expected_owners */);
+}
+
 TEST_F(AuctionRunnerTest, AllBiddersCrashBeforeBidding) {
   StartStandardAuctionWithMockService();
   auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
@@ -2350,8 +2355,6 @@ TEST_F(AuctionRunnerTest, AllBiddersCrashBeforeBidding) {
   auto bidder2_worklet =
       mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
   ASSERT_TRUE(bidder2_worklet);
-
-  seller_worklet->CompleteLoading();
 
   EXPECT_FALSE(auction_complete_);
 
@@ -2421,8 +2424,6 @@ TEST_F(AuctionRunnerTest, BidderCrashBeforeBidding) {
     auto bidder2_worklet =
         mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
     ASSERT_TRUE(bidder2_worklet);
-
-    seller_worklet->CompleteLoading();
 
     ASSERT_FALSE(auction_complete_);
     if (other_bidder_finishes_first) {
@@ -2515,7 +2516,6 @@ TEST_F(AuctionRunnerTest, WinningBidderCrashWhileReporting) {
       mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
   ASSERT_TRUE(bidder2_worklet);
 
-  seller_worklet->CompleteLoading();
   bidder1_worklet->InvokeGenerateBidCallback(7 /* bid */,
                                              GURL("https://ad1.com/"));
   // The bidder pipe should be closed after it bids.
@@ -2565,17 +2565,19 @@ TEST_F(AuctionRunnerTest, WinningBidderCrashWhileReporting) {
                   2 /* expected_interest_groups */, 2 /* expected_owners */);
 }
 
-// If the seller crashes at any point in the auction, the auction fails.
+// If the seller crashes at several points in the auction, the auction fails.
+// Seller load failures look the same to auctions, so this test also covers
+// load failures in the same places. Note that a seller worklet load error while
+// waiting for bidder worklet processes is covered in another test, and looks
+// exactly like a crash at the same point to the AuctionRunner.
 TEST_F(AuctionRunnerTest, SellerCrash) {
   enum class CrashPhase {
     kLoad,
-    kLoadAfterBidsReceived,
     kScoreBid,
     kReportResult,
   };
   for (CrashPhase crash_phase :
-       {CrashPhase::kLoad, CrashPhase::kLoadAfterBidsReceived,
-        CrashPhase::kScoreBid, CrashPhase::kReportResult}) {
+       {CrashPhase::kLoad, CrashPhase::kScoreBid, CrashPhase::kReportResult}) {
     SCOPED_TRACE(static_cast<int>(crash_phase));
 
     StartStandardAuctionWithMockService();
@@ -2592,34 +2594,19 @@ TEST_F(AuctionRunnerTest, SellerCrash) {
     // While loop to allow breaking when the crash stage is reached.
     while (true) {
       if (crash_phase == CrashPhase::kLoad) {
-        // Need to close the AuctionWorkletService pipes so callbacks can be
-        // destroyed without DCHECKing.
-        mock_auction_process_manager_->ClosePipes();
+        seller_worklet->set_expect_send_pending_signals_requests_called(false);
         seller_worklet.reset();
         break;
       }
 
+      // Generate both bids, wait for seller to receive them..
       bidder1_worklet->InvokeGenerateBidCallback(5 /* bid */,
                                                  GURL("https://ad1.com/"));
       bidder2_worklet->InvokeGenerateBidCallback(7 /* bid */,
                                                  GURL("https://ad2.com/"));
-      // Wait for bids to be received.
-      task_environment_.RunUntilIdle();
-
-      if (crash_phase == CrashPhase::kLoadAfterBidsReceived) {
-        // Need to close the AuctionWorkletService pipes so callbacks can be
-        // destroyed without DCHECKing.
-        mock_auction_process_manager_->ClosePipes();
-        seller_worklet.reset();
-        break;
-      }
-
-      // Seller worklet finishes loading, and receives both bids.
-      seller_worklet->CompleteLoading();
-
-      // Wait for both bids.
       auto score_ad_params = seller_worklet->WaitForScoreAd();
       auto score_ad_params2 = seller_worklet->WaitForScoreAd();
+
       // Wait for SendPendingSignalsRequests() invocation.
       task_environment_.RunUntilIdle();
 
@@ -2705,7 +2692,6 @@ TEST_F(AuctionRunnerTest, NullAdComponents) {
         mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
     ASSERT_TRUE(bidder_worklet);
 
-    seller_worklet->CompleteLoading();
     bidder_worklet->InvokeGenerateBidCallback(
         /*bid=*/1, kRenderUrl, test_case.bid_ad_component_urls,
         base::TimeDelta());
@@ -2793,7 +2779,6 @@ TEST_F(AuctionRunnerTest, AdComponentsLimit) {
         mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
     ASSERT_TRUE(bidder_worklet);
 
-    seller_worklet->CompleteLoading();
     bidder_worklet->InvokeGenerateBidCallback(
         /*bid=*/1, kRenderUrl, ad_component_urls, base::TimeDelta());
 
@@ -2971,7 +2956,6 @@ TEST_F(AuctionRunnerTest, BadBid) {
         mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
     ASSERT_TRUE(bidder2_worklet);
 
-    seller_worklet->CompleteLoading();
     bidder1_worklet->InvokeGenerateBidCallback(
         test_case.bid, test_case.render_url, test_case.ad_component_urls,
         test_case.duration);
@@ -3014,7 +2998,6 @@ TEST_F(AuctionRunnerTest, BadSellerReportUrl) {
       mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
   ASSERT_TRUE(bidder2_worklet);
 
-  seller_worklet->CompleteLoading();
   // Only Bidder1 bids, to keep things simple.
   bidder1_worklet->InvokeGenerateBidCallback(5 /* bid */,
                                              GURL("https://ad1.com/"));
@@ -3062,7 +3045,6 @@ TEST_F(AuctionRunnerTest, BadBidderReportUrl) {
       mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
   ASSERT_TRUE(bidder2_worklet);
 
-  seller_worklet->CompleteLoading();
   // Only Bidder1 bids, to keep things simple.
   bidder1_worklet->InvokeGenerateBidCallback(5 /* bid */,
                                              GURL("https://ad1.com/"));
@@ -3099,95 +3081,6 @@ TEST_F(AuctionRunnerTest, BadBidderReportUrl) {
                   2 /* expected_interest_groups */, 2 /* expected_owners */);
 }
 
-// Make sure that requesting unexpected URLs is blocked.
-TEST_F(AuctionRunnerTest, UrlRequestProtection) {
-  StartStandardAuctionWithMockService();
-
-  auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
-  ASSERT_TRUE(seller_worklet);
-  auto bidder1_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
-  ASSERT_TRUE(bidder1_worklet);
-  auto bidder2_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
-  ASSERT_TRUE(bidder2_worklet);
-
-  // It should be possible to request the seller URL from the seller's
-  // URLLoaderFactory.
-  network::ResourceRequest request;
-  request.url = kSellerUrl;
-  request.headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                            "application/javascript");
-  mojo::PendingRemote<network::mojom::URLLoader> receiver;
-  mojo::PendingReceiver<network::mojom::URLLoaderClient> client;
-  seller_worklet->url_loader_factory()->CreateLoaderAndStart(
-      receiver.InitWithNewPipeAndPassReceiver(), 0 /* request_id_ */,
-      0 /* options */, request, client.InitWithNewPipeAndPassRemote(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  seller_worklet->url_loader_factory().FlushForTesting();
-  EXPECT_TRUE(seller_worklet->url_loader_factory().is_connected());
-  ASSERT_EQ(1u, url_loader_factory_.pending_requests()->size());
-  EXPECT_EQ(kSellerUrl,
-            (*url_loader_factory_.pending_requests())[0].request.url);
-  receiver.reset();
-  client.reset();
-
-  // A bidder's URLLoaderFactory should reject the seller URL, closing the Mojo
-  // pipe.
-  bidder1_worklet->url_loader_factory()->CreateLoaderAndStart(
-      receiver.InitWithNewPipeAndPassReceiver(), 0 /* request_id_ */,
-      0 /* options */, request, client.InitWithNewPipeAndPassRemote(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  bidder1_worklet->url_loader_factory().FlushForTesting();
-  EXPECT_FALSE(bidder1_worklet->url_loader_factory().is_connected());
-  EXPECT_EQ(1u, url_loader_factory_.pending_requests()->size());
-  EXPECT_EQ("Unexpected request", TakeBadMessage());
-  receiver.reset();
-  client.reset();
-
-  // A bidder's URLLoaderFactory should allow the bidder's URL to be requested.
-  request.url = kBidder2Url;
-  bidder2_worklet->url_loader_factory()->CreateLoaderAndStart(
-      receiver.InitWithNewPipeAndPassReceiver(), 0 /* request_id_ */,
-      0 /* options */, request, client.InitWithNewPipeAndPassRemote(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  bidder2_worklet->url_loader_factory().FlushForTesting();
-  EXPECT_TRUE(bidder2_worklet->url_loader_factory().is_connected());
-  ASSERT_EQ(2u, url_loader_factory_.pending_requests()->size());
-  EXPECT_EQ(kBidder2Url,
-            (*url_loader_factory_.pending_requests())[1].request.url);
-  receiver.reset();
-  client.reset();
-
-  // The seller's URLLoaderFactory should reject a bidder worklet's URL, closing
-  // the Mojo pipe.
-  seller_worklet->url_loader_factory()->CreateLoaderAndStart(
-      receiver.InitWithNewPipeAndPassReceiver(), 0 /* request_id_ */,
-      0 /* options */, request, client.InitWithNewPipeAndPassRemote(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  seller_worklet->url_loader_factory().FlushForTesting();
-  EXPECT_FALSE(seller_worklet->url_loader_factory().is_connected());
-  EXPECT_EQ(2u, url_loader_factory_.pending_requests()->size());
-  EXPECT_EQ("Unexpected request", TakeBadMessage());
-  receiver.reset();
-  client.reset();
-
-  // A bidder's URLLoaderFactory should also reject the URL from another bidder.
-  request.url = kBidder1Url;
-  bidder2_worklet->url_loader_factory()->CreateLoaderAndStart(
-      receiver.InitWithNewPipeAndPassReceiver(), 0 /* request_id_ */,
-      0 /* options */, request, client.InitWithNewPipeAndPassRemote(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  bidder2_worklet->url_loader_factory().FlushForTesting();
-  EXPECT_FALSE(bidder2_worklet->url_loader_factory().is_connected());
-  ASSERT_EQ(2u, url_loader_factory_.pending_requests()->size());
-  EXPECT_EQ("Unexpected request", TakeBadMessage());
-
-  // Need to close the AuctionWorkletService pipes so callbacks can be destroyed
-  // without DCHECKing.
-  mock_auction_process_manager_->ClosePipes();
-}
-
 // Check that BidderWorklets that don't make a bid are destroyed immediately.
 TEST_F(AuctionRunnerTest, DestroyBidderWorkletWithoutBid) {
   StartStandardAuctionWithMockService();
@@ -3200,8 +3093,6 @@ TEST_F(AuctionRunnerTest, DestroyBidderWorkletWithoutBid) {
   auto bidder2_worklet =
       mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
   ASSERT_TRUE(bidder2_worklet);
-
-  seller_worklet->CompleteLoading();
 
   bidder1_worklet->InvokeGenerateBidCallback(/*bid=*/absl::nullopt);
   // Need to flush the service pipe to make sure the AuctionRunner has received
@@ -3262,8 +3153,6 @@ TEST_F(AuctionRunnerTest, Tie) {
     auto bidder2_worklet =
         mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
     ASSERT_TRUE(bidder2_worklet);
-
-    seller_worklet->CompleteLoading();
 
     // Bidder1 returns a bid, which is then scored.
     bidder1_worklet->InvokeGenerateBidCallback(5 /* bid */,
@@ -3376,8 +3265,6 @@ TEST_F(AuctionRunnerTest, WorkletOrder) {
       auto bidder2_worklet =
           mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
       ASSERT_TRUE(bidder2_worklet);
-
-      seller_worklet->CompleteLoading();
 
       MockSellerWorklet::ScoreAdParams score_ad_params1;
       MockSellerWorklet::ScoreAdParams score_ad_params2;

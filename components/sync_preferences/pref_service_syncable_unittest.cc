@@ -299,8 +299,8 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationDoNotSyncDefaults) {
 TEST_F(PrefServiceSyncableTest, ModelAssociationEmptyCloud) {
   prefs_.SetString(kStringPrefName, kExampleUrl0);
   {
-    ListPrefUpdateDeprecated update(GetPrefs(), kListPrefName);
-    base::ListValue* url_list = update.Get();
+    ListPrefUpdate update(GetPrefs(), kListPrefName);
+    base::Value* url_list = update.Get();
     url_list->Append(kExampleUrl0);
     url_list->Append(kExampleUrl1);
   }
@@ -318,8 +318,8 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationEmptyCloud) {
 TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasData) {
   prefs_.SetString(kStringPrefName, kExampleUrl0);
   {
-    ListPrefUpdateDeprecated update(GetPrefs(), kListPrefName);
-    base::ListValue* url_list = update.Get();
+    ListPrefUpdate update(GetPrefs(), kListPrefName);
+    base::Value* url_list = update.Get();
     url_list->Append(kExampleUrl0);
   }
 
@@ -508,8 +508,8 @@ class PrefServiceSyncableMergeTest : public testing::Test {
 
 TEST_F(PrefServiceSyncableMergeTest, ShouldMergeSelectedListValues) {
   {
-    ListPrefUpdateDeprecated update(&prefs_, kListPrefName);
-    base::ListValue* url_list = update.Get();
+    ListPrefUpdate update(&prefs_, kListPrefName);
+    base::Value* url_list = update.Get();
     url_list->Append(kExampleUrl0);
     url_list->Append(kExampleUrl1);
   }
@@ -589,10 +589,10 @@ TEST_F(PrefServiceSyncableMergeTest, ManagedListPreferences) {
 
 TEST_F(PrefServiceSyncableMergeTest, ShouldMergeSelectedDictionaryValues) {
   {
-    DictionaryPrefUpdateDeprecated update(&prefs_, kDictPrefName);
-    base::DictionaryValue* dict_value = update.Get();
-    dict_value->Set("my_key1", std::make_unique<base::Value>("my_value1"));
-    dict_value->Set("my_key3", std::make_unique<base::Value>("my_value3"));
+    DictionaryPrefUpdate update(&prefs_, kDictPrefName);
+    base::Value* dict_value = update.Get();
+    dict_value->SetStringKey("my_key1", "my_value1");
+    dict_value->SetStringKey("my_key3", "my_value3");
   }
 
   base::DictionaryValue remote_update;
@@ -778,7 +778,7 @@ TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeUnknownPreference) {
 TEST_F(PrefServiceSyncableTest, ManagedPreferences) {
   // Make the homepage preference managed.
   base::Value managed_value("http://example.com");
-  prefs_.SetManagedPref(kStringPrefName, managed_value.CreateDeepCopy());
+  prefs_.SetManagedPref(kStringPrefName, managed_value.Clone());
 
   syncer::SyncChangeList out;
   InitWithSyncDataTakeOutput(syncer::SyncDataList(), &out);
@@ -786,7 +786,7 @@ TEST_F(PrefServiceSyncableTest, ManagedPreferences) {
 
   // Changing the homepage preference should not sync anything.
   base::Value user_value("http://chromium..com");
-  prefs_.SetUserPref(kStringPrefName, user_value.CreateDeepCopy());
+  prefs_.SetUserPref(kStringPrefName, user_value.Clone());
   EXPECT_TRUE(out.empty());
 
   // An incoming sync transaction should change the user value, not the managed
@@ -814,7 +814,7 @@ TEST_F(PrefServiceSyncableTest, DynamicManagedPreferences) {
   // Switch kHomePage to managed and set a different value.
   base::Value managed_value("http://example.com/managed");
   GetTestingPrefService()->SetManagedPref(kStringPrefName,
-                                          managed_value.CreateDeepCopy());
+                                          managed_value.Clone());
 
   // The pref value should be the one dictated by policy.
   EXPECT_TRUE(managed_value.Equals(&GetPreferenceValue(kStringPrefName)));
@@ -839,7 +839,7 @@ TEST_F(PrefServiceSyncableTest, DynamicManagedPreferencesWithSyncChange) {
   // Switch kHomePage to managed and set a different value.
   base::Value managed_value("http://example.com/managed");
   GetTestingPrefService()->SetManagedPref(kStringPrefName,
-                                          managed_value.CreateDeepCopy());
+                                          managed_value.Clone());
 
   // Change the sync value.
   base::Value sync_value("http://example.com/sync");
@@ -872,7 +872,7 @@ TEST_F(PrefServiceSyncableTest, DynamicManagedDefaultPreferences) {
   // Switch kHomePage to managed and set a different value.
   base::Value managed_value("http://example.com/managed");
   GetTestingPrefService()->SetManagedPref(kStringPrefName,
-                                          managed_value.CreateDeepCopy());
+                                          managed_value.Clone());
   // The pref value should be the one dictated by policy.
   EXPECT_TRUE(managed_value.Equals(&GetPreferenceValue(kStringPrefName)));
   EXPECT_FALSE(pref->IsDefaultValue());

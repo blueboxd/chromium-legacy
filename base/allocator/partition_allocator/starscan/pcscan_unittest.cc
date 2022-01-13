@@ -154,8 +154,7 @@ FullSlotSpanAllocation GetFullSlotSpan(ThreadSafePartitionRoot& root,
   if (bucket.num_system_pages_per_slot_span == NumSystemPagesPerPartitionPage())
     PA_EXPECT_PTR_EQ(reinterpret_cast<size_t>(first) & PartitionPageBaseMask(),
                      reinterpret_cast<size_t>(last) & PartitionPageBaseMask());
-  EXPECT_EQ(num_slots, static_cast<size_t>(
-                           bucket.active_slot_spans_head->num_allocated_slots));
+  EXPECT_EQ(num_slots, bucket.active_slot_spans_head->num_allocated_slots);
   EXPECT_EQ(nullptr, bucket.active_slot_spans_head->get_freelist_head());
   EXPECT_TRUE(bucket.is_valid());
   EXPECT_TRUE(bucket.active_slot_spans_head !=
@@ -663,8 +662,7 @@ TEST_F(PartitionAllocPCScanTest, StackScanning) {
     PCScan::NotifyThreadCreated(GetStackPointer());
     [this]() NOINLINE {
       // This writes the pointer to the stack.
-      auto* volatile stack_ref = dangling_reference;
-      ALLOW_UNUSED_LOCAL(stack_ref);
+      ALLOW_UNUSED_TYPE auto* volatile stack_ref = dangling_reference;
       [this]() NOINLINE {
         // Schedule PCScan but don't scan.
         SchedulePCScan();

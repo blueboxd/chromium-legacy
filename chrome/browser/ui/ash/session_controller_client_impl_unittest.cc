@@ -18,10 +18,10 @@
 #include "chrome/browser/ash/crosapi/fake_browser_manager.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
-#include "chrome/browser/ash/policy/networking/policy_cert_service.h"
-#include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/policy/networking/policy_cert_service.h"
+#include "chrome/browser/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/ui/ash/assistant/assistant_browser_delegate_impl.h"
 #include "chrome/browser/ui/ash/test_session_controller.h"
 #include "chrome/common/pref_names.h"
@@ -80,8 +80,7 @@ class TestChromeUserManager : public ash::FakeChromeUserManager {
     // depends on prefs::kAllowScreenLock.
     user_manager::UserList unlock_users;
     for (user_manager::User* user : users_) {
-      Profile* user_profile =
-          chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+      Profile* user_profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
       // Skip if user has a profile and kAllowScreenLock is set to false.
       if (user_profile &&
           !user_profile->GetPrefs()->GetBoolean(ash::prefs::kAllowScreenLock)) {
@@ -153,7 +152,7 @@ class SessionControllerClientImplTest : public testing::Test {
                  : user_manager()->AddUser(account_id);
     session_manager_.CreateSession(
         account_id,
-        chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+        ash::ProfileHelper::GetUserIdHashByUserIdForTesting(
             account_id.GetUserEmail()),
         is_child);
 
@@ -191,8 +190,7 @@ class SessionControllerClientImplTest : public testing::Test {
     TestingProfile* profile =
         profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
     profile->set_profile_name(account_id.GetUserEmail());
-    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
-                                                                      profile);
+    ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, profile);
     return profile;
   }
 
@@ -461,7 +459,7 @@ TEST_F(SessionControllerClientImplTest, SendUserSession) {
   CreateTestingProfile(user);
   session_manager_.CreateSession(
       account_id,
-      chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+      ash::ProfileHelper::GetUserIdHashByUserIdForTesting(
           account_id.GetUserEmail()),
       false);
   session_manager_.SetSessionState(SessionState::ACTIVE);
@@ -516,7 +514,7 @@ TEST_F(SessionControllerClientImplTest, UserPrefsChange) {
   const user_manager::User* user = user_manager()->AddUser(account_id);
   session_manager_.CreateSession(
       account_id,
-      chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+      ash::ProfileHelper::GetUserIdHashByUserIdForTesting(
           account_id.GetUserEmail()),
       false);
 

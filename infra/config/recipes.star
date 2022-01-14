@@ -97,14 +97,14 @@ build_recipe(
 build_recipe(
     name = "recipe:angle_chromium",
     experiments = {
-        "luci.recipes.use_python3": 5,
+        "luci.recipes.use_python3": 25,
     },
 )
 
 build_recipe(
     name = "recipe:angle_chromium_trybot",
     experiments = {
-        "luci.recipes.use_python3": 5,
+        "luci.recipes.use_python3": 25,
     },
 )
 
@@ -167,6 +167,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_codesearch",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -206,6 +207,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:flakiness/generate_builder_test_data",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -216,6 +218,9 @@ build_recipe(
 
 build_recipe(
     name = "recipe:presubmit",
+    experiments = {
+        "luci.recipes.use_python3": 1,
+    },
 )
 
 build_recipe(

@@ -1136,6 +1136,7 @@ crbug.com/1284270 [ Fuchsia ] external/wpt/css/css-ui/compute-kind-widget-no-fal
 crbug.com/1284270 [ Linux ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Failure ]
 crbug.com/1284270 [ Mac10.12 ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Failure ]
 crbug.com/1284270 [ Mac10.13 ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Failure ]
+crbug.com/1284270 [ Mac10.14 ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Failure ]
 crbug.com/1284270 [ Mac10.15 ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Failure ]
 crbug.com/1284270 [ Mac11 ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Failure ]
 crbug.com/1284270 [ Mac11-arm64 ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Failure ]
@@ -3083,13 +3084,12 @@ crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-text/letter-spacing/letter-sp
 crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-text/letter-spacing/letter-spacing-bengali-yaphala-001.html [ Failure ]
 crbug.com/626703 [ Mac11 ] external/wpt/css/css-text/letter-spacing/letter-spacing-bengali-yaphala-001.html [ Failure ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-text/letter-spacing/letter-spacing-bengali-yaphala-001.html [ Failure ]
-crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/html/canvas/element/manual/wide-gamut-canvas/canvas-createImageBitmap-e_srgb.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/video-rvfc/request-video-frame-callback-during-xr-session.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webxr/ar-module/xrSession_interactionMode.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/document-referrer.html [ Timeout Failure ]
-crbug.com/626703 [ Mac10.13 ] virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/document-referrer.html [ Timeout Failure ]
+crbug.com/626703 [ Mac10.13 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/document-referrer.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.13 ] virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/document-referrer.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/web-share/share-url-invalid.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webxr/depth-sensing/cpu/depth_sensing_cpu_staleView.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] virtual/scroll-unification/external/wpt/dom/events/scrolling/overscroll-event-fired-to-document.html [ Timeout ]
@@ -6436,6 +6436,7 @@ crbug.com/1196620 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-
 
 # WebTransport tests should eventually run when the WebTransport WPT server is added.
 crbug.com/1201569 external/wpt/webtransport/* [ Skip ]
+crbug.com/1201569 wpt_internal/webtransport/* [ Skip ]
 # WebTransport server infra tests pass on python3 but fail on python2.
 crbug.com/1201569 external/wpt/infrastructure/server/webtransport-h3.https.sub.any.html [ Failure Pass ]
 crbug.com/1201569 external/wpt/infrastructure/server/webtransport-h3.https.sub.any.serviceworker.html [ Failure Pass ]

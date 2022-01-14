@@ -15,7 +15,6 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -111,7 +110,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/radio_utils.h"
 #include "net/android/radio_activity_tracker.h"
 #include "services/network/radio_monitor_android.h"
@@ -660,7 +659,7 @@ class URLLoaderTest : public testing::Test {
   }
 
   // Attempts to load |url| and returns the resulting error code.
-  int Load(const GURL& url, std::string* body = nullptr) WARN_UNUSED_RESULT {
+  [[nodiscard]] int Load(const GURL& url, std::string* body = nullptr) {
     DCHECK(!ran_);
 
     ResourceRequest request =
@@ -684,8 +683,8 @@ class URLLoaderTest : public testing::Test {
   // using |body| instead of calling ReadBody() after Load is that it will load
   // the response body before URLLoader is complete, so URLLoader completion
   // won't block on trying to write the body buffer.
-  int LoadRequest(const ResourceRequest& request,
-                  std::string* body = nullptr) WARN_UNUSED_RESULT {
+  [[nodiscard]] int LoadRequest(const ResourceRequest& request,
+                                std::string* body = nullptr) {
     uint32_t options = mojom::kURLLoadOptionNone;
     if (send_ssl_with_response_)
       options |= mojom::kURLLoadOptionSendSSLInfoWithResponse;
@@ -857,9 +856,9 @@ class URLLoaderTest : public testing::Test {
 
   base::File OpenFileForUpload(const base::FilePath& file_path) {
     int open_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     open_flags |= base::File::FLAG_ASYNC;
-#endif  //  defined(OS_WIN)
+#endif  //  BUILDFLAG(IS_WIN)
     base::File file(file_path, open_flags);
     EXPECT_TRUE(file.IsValid());
     return file;
@@ -4387,7 +4386,7 @@ class TestSSLPrivateKey : public net::SSLPrivateKey {
   int sign_count_ = 0;
 };
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 TEST_F(URLLoaderTest, ClientAuthRespondTwice) {
   // This tests that one URLLoader can handle two client cert requests.
 
@@ -5068,7 +5067,7 @@ TEST_F(URLLoaderTest, CredentialsModeOmitWorkaroundWithOptionalCerts) {
   EXPECT_EQ(0, client_cert_observer.on_certificate_requested_counter());
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
 }
-#endif  // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 
 TEST_F(URLLoaderTest, CookieReporting) {
   {
@@ -7345,7 +7344,7 @@ TEST_F(URLLoaderFakeTransportInfoTest, AcceptCHFrameIgnoreMalformed) {
   EXPECT_FALSE(accept_ch_frame_observer.called());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 
 namespace {
 
@@ -7421,6 +7420,6 @@ TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_IntervalTooShort) {
   CheckRadioWakeupTriggerHistograms(histograms, /*expected_count=*/0);
 }
 
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace network

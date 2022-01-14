@@ -808,7 +808,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.Local.RequestTypeOnError" enum="SyncRequestType"
-    expires_after="2022-04-30">
+    expires_after="2022-07-11">
   <owner>pastarmovj@chromium.org</owner>
   <component>Services&gt;Sync</component>
   <summary>
@@ -826,7 +826,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.LocalDeviceInfoDeletionReuploaded" enum="Boolean"
-    expires_after="2022-01-31">
+    expires_after="2022-05-31">
   <owner>rushans@google.com</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -1857,6 +1857,28 @@ chromium-metrics-reviews@google.com.
     Recorded when user clicks/taps on trusted vault error button for the
     keys-missing error state. Buckets represents the UI elements which contain
     trusted vault error button.
+  </summary>
+</histogram>
+
+<histogram name="Sync.TrustedVaultLocalDataDecryptionIsSuccessful"
+    enum="BooleanSuccess" expires_after="2022-07-03">
+  <owner>mmoskvitin@google.com</owner>
+  <owner>mastiz@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Records whether local data was successfully decrypted upon every attempt to
+    read local file.
+  </summary>
+</histogram>
+
+<histogram name="Sync.TrustedVaultLocalDataEncryptionIsSuccessful"
+    enum="BooleanSuccess" expires_after="2022-07-03">
+  <owner>mmoskvitin@google.com</owner>
+  <owner>mastiz@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Records whether local data was successfully encrypted upon every attempt to
+    write local file.
   </summary>
 </histogram>
 

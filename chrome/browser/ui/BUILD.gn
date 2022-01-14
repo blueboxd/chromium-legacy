@@ -411,6 +411,7 @@ static_library("ui") {
     "//chrome/browser/image_decoder",
     "//chrome/browser/media:mojo_bindings",
     "//chrome/browser/media/router:media_router_feature",
+    "//chrome/browser/media/router/discovery/access_code:access_code_cast_feature",
     "//chrome/browser/media/router/discovery/access_code:discovery_resources_proto",
     "//chrome/browser/profiles",
     "//chrome/browser/profiles:profile",
@@ -1136,8 +1137,6 @@ static_library("ui") {
       "media_router/cloud_services_dialog.h",
       "media_router/media_cast_mode.cc",
       "media_router/media_cast_mode.h",
-      "media_router/media_router_file_dialog.cc",
-      "media_router/media_router_file_dialog.h",
       "media_router/media_router_ui.cc",
       "media_router/media_router_ui.h",
       "media_router/media_router_ui_helper.cc",
@@ -2948,6 +2947,7 @@ static_library("ui") {
       "//chrome/browser/ash/crosapi",
       "//chrome/browser/ash/crostini:crostini_installer_types_mojom",
       "//chrome/browser/chromeos",
+      "//chrome/browser/media/router/discovery/access_code:access_code_cast_feature",
       "//chrome/browser/media/router/discovery/access_code:discovery_resources_proto",
       "//chrome/browser/nearby_sharing:share_target",
       "//chrome/browser/nearby_sharing/certificates",
@@ -5260,12 +5260,6 @@ static_library("ui") {
         "webui/print_preview/local_printer_handler_default.cc",
         "webui/print_preview/local_printer_handler_default.h",
       ]
-    }
-
-    if (enable_service_discovery) {
-      if (!is_chromeos_ash) {
-        deps += [ "//chrome/common:service_process_mojom" ]
-      }
     }
   }
 

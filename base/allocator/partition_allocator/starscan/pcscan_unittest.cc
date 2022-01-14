@@ -326,7 +326,7 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceDifferentBucketsAligned) {
   {
     auto* value_root = ThreadSafePartitionRoot::FromPointerInFirstSuperpage(
         reinterpret_cast<char*>(value));
-    ScopedGuard<ThreadSafe> guard{value_root->lock_};
+    ::partition_alloc::ScopedGuard guard{value_root->lock_};
 
     auto super_page = reinterpret_cast<uintptr_t>(value) & kSuperPageBaseMask;
     ASSERT_EQ(super_page,
@@ -662,7 +662,7 @@ TEST_F(PartitionAllocPCScanTest, StackScanning) {
     PCScan::NotifyThreadCreated(GetStackPointer());
     [this]() NOINLINE {
       // This writes the pointer to the stack.
-      ALLOW_UNUSED_TYPE auto* volatile stack_ref = dangling_reference;
+      [[maybe_unused]] auto* volatile stack_ref = dangling_reference;
       [this]() NOINLINE {
         // Schedule PCScan but don't scan.
         SchedulePCScan();

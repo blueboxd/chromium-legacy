@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
@@ -85,9 +86,6 @@ class MockCastDialogController : public CastDialogController {
   MOCK_METHOD2(StartCasting,
                void(const std::string& sink_id, MediaCastMode cast_mode));
   MOCK_METHOD1(StopCasting, void(const std::string& route_id));
-  MOCK_METHOD1(
-      ChooseLocalFile,
-      void(base::OnceCallback<void(const ui::SelectedFileInfo*)> callback));
   MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
 };
 

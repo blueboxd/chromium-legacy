@@ -253,8 +253,8 @@ class WebNavigationApiTestWithContextType
       const WebNavigationApiTestWithContextType&) = delete;
 
  protected:
-  bool RunTest(const char* name,
-               bool allow_in_incognito = false) WARN_UNUSED_RESULT {
+  [[nodiscard]] bool RunTest(const char* name,
+                             bool allow_in_incognito = false) {
     return RunExtensionTest(name, {},
                             {.allow_in_incognito = allow_in_incognito});
   }
@@ -660,7 +660,9 @@ class WebNavigationApiFencedFrameTest
 
 IN_PROC_BROWSER_TEST_P(WebNavigationApiFencedFrameTest, Load) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("webnavigation/fencedFrames")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/fencedFrames",
+                               {.custom_arg = !GetParam() ? "MPArch" : ""}))
+      << message_;
 }
 
 INSTANTIATE_TEST_SUITE_P(WebNavigationApiFencedFrameTest,

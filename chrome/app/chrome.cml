@@ -1,11 +1,18 @@
 {
-    include: [ "syslog/client.shard.cml" ],
+    include: [
+        "vulkan/client.shard.cml",
+        "syslog/client.shard.cml",
+    ],
     program: {
         runner: "elf",
         binary: "chrome",
         args: [
-          "--enable-features=Vulkan,CanvasOopRasterization"
+            "--use-graphical-presenter",
+            "--enable-features=Vulkan,CanvasOopRasterization"
         ],
+        // Required to allow JIT in child processes such as renderers.
+        // Known as 'deprecated-ambient-replace-as-executable' in CFv1.
+        job_policy_ambient_mark_vmo_exec: "true",
     },
     capabilities: [
         {
@@ -32,8 +39,14 @@
             path: "/tmp",
         },
         {
+            directory: "root-ssl-certificates",
+            rights: [ "r*" ],
+            path: "/config/ssl",
+        },
+        {
             protocol: [
                 "fuchsia.device.NameProvider",
+                "fuchsia.element.GraphicalPresenter",
                 "fuchsia.fonts.Provider",
                 "fuchsia.input.virtualkeyboard.ControllerCreator",
                 "fuchsia.intl.PropertyProvider",
@@ -45,10 +58,10 @@
                 "fuchsia.net.name.Lookup",
                 "fuchsia.posix.socket.Provider",
                 "fuchsia.process.Launcher",
-                "fuchsia.sysmem.Allocator",
+                "fuchsia.ui.composition.Allocator",
+                "fuchsia.ui.composition.Flatland",                
                 "fuchsia.ui.input3.Keyboard",
                 "fuchsia.ui.scenic.Scenic",
-                "fuchsia.vulkan.loader.Loader",
             ],
         },
     ],

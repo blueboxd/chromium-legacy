@@ -4,7 +4,6 @@
 
 #include "base/memory/tagging.h"
 
-#include "base/compiler_specific.h"
 #include "base/cpu.h"
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -17,6 +16,17 @@
 #define PR_SET_TAGGED_ADDR_CTRL 55
 #define PR_GET_TAGGED_ADDR_CTRL 56
 #define PR_TAGGED_ADDR_ENABLE (1UL << 0)
+
+#if BUILDFLAG(IS_LINUX)
+#include <linux/version.h>
+
+// Linux headers already provide these since v5.10.
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+#define HAS_PR_MTE_MACROS
+#endif
+#endif
+
+#ifndef HAS_PR_MTE_MACROS
 #define PR_MTE_TCF_SHIFT 1
 #define PR_MTE_TCF_NONE (0UL << PR_MTE_TCF_SHIFT)
 #define PR_MTE_TCF_SYNC (1UL << PR_MTE_TCF_SHIFT)
@@ -24,6 +34,7 @@
 #define PR_MTE_TCF_MASK (3UL << PR_MTE_TCF_SHIFT)
 #define PR_MTE_TAG_SHIFT 3
 #define PR_MTE_TAG_MASK (0xffffUL << PR_MTE_TAG_SHIFT)
+#endif
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -138,7 +149,7 @@ void ChangeMemoryTaggingModeForCurrentThread(TagViolationReportingMode m) {
 }
 
 namespace {
-ALLOW_UNUSED_TYPE static bool CheckTagRegionParameters(void* ptr, size_t sz) {
+[[maybe_unused]] static bool CheckTagRegionParameters(void* ptr, size_t sz) {
   // Check that ptr and size are correct for MTE
   uintptr_t ptr_as_uint = reinterpret_cast<uintptr_t>(ptr);
   bool ret = (ptr_as_uint % kMemTagGranuleSize == 0) &&

@@ -303,11 +303,6 @@
 #include "printing/backend/win_helper.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
-#endif
-
 #if BUILDFLAG(ENABLE_RLZ)
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "components/rlz/rlz_tracker.h"  // nogncheck crbug.com/1125897
@@ -400,9 +395,9 @@ StartupProfileInfo CreatePrimaryProfile(
     // Clear kProfilesLastActive since the user only wants to launch a specific
     // profile. Don't clear it if the user launched a web app, in order to not
     // break any subsequent multi-profile session restore.
-    ListPrefUpdateDeprecated update(g_browser_process->local_state(),
-                                    prefs::kProfilesLastActive);
-    base::ListValue* profile_list = update.Get();
+    ListPrefUpdate update(g_browser_process->local_state(),
+                          prefs::kProfilesLastActive);
+    base::Value* profile_list = update.Get();
     profile_list->ClearList();
   }
 
@@ -1613,16 +1608,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // extended Variations Safe Mode experiment.
   browser_process_->metrics_service()->LogNeedForCleanShutdown();
 #endif  // !defined(OS_ANDROID)
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !BUILDFLAG(IS_CHROMEOS_ASH)
-  // Create the instance of the cloud print proxy service so that it can launch
-  // the service process if needed. This is needed because the service process
-  // might have shutdown because an update was available.
-  // TODO(torne): this should maybe be done with
-  // BrowserContextKeyedServiceFactory::ServiceIsCreatedWithBrowserContext()
-  // instead?
-  CloudPrintProxyServiceFactory::GetForProfile(profile_);
-#endif
 
   // This has to come before the first GetInstance() call. PreBrowserStart()
   // seems like a reasonable place to put this, except on Android,

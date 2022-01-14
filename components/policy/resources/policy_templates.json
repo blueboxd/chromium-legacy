@@ -12837,6 +12837,7 @@
             'canvas',
             'google_news',
             'explore',
+            'crosh',
           ],
         },
       },
@@ -12881,6 +12882,11 @@
           'value': 'explore',
           'caption': '''Explore (supported since version 91)''',
         },
+        {
+          'name': 'crosh',
+          'value': 'crosh',
+          'caption': '''Crosh (supported since version 99)''',
+        },
       ],
       'supported_on': ['chrome_os:84-'],
       'features': {
@@ -12890,7 +12896,7 @@
       },
       'example_value': ['camera', 'browser_settings', 'os_settings', 'scanning', 'web_store', 'canvas'],
       'id': 689,
-      'caption': '''Configure the camera, browser settings, os settings, scanning, web store, canvas and explore features to be disabled''',
+      'caption': '''Configure the camera, browser settings, os settings, scanning, web store, canvas, explore and crosh features to be disabled''',
       'tags': [],
       'desc': '''Allows you to set a list of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> features to be disabled.
 
@@ -13070,7 +13076,7 @@
           'type': 'string',
         },
       },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:99-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -29116,7 +29122,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
         {
           'name': 'ForceDisabled',
           'value': 1,
-          'caption': '''User Agent reduction diabled, and not enabled by Field-Trials or Origin-Trials.''',
+          'caption': '''User Agent reduction disabled, and not enabled by Field-Trials or Origin-Trials.''',
         },
         {
           'name': 'ForceEnabled',

@@ -1579,12 +1579,6 @@ const char kMetricsSettingsAndroidName[] = "Metrics Settings on Android";
 const char kMetricsSettingsAndroidDescription[] =
     "Enables the new design of metrics settings.";
 
-const char kMobileIdentityConsistencyFREName[] =
-    "Mobile identity consistency FRE";
-const char kMobileIdentityConsistencyFREDescription[] =
-    "Enables stronger identity consistency on mobile with different UIs for "
-    "the First Run Experience.";
-
 const char kMojoLinuxChannelSharedMemName[] =
     "Enable Mojo Shared Memory Channel";
 const char kMojoLinuxChannelSharedMemDescription[] =
@@ -2383,10 +2377,6 @@ const char kTabGroupsAutoCreateName[] = "Tab Groups Auto Create";
 const char kTabGroupsAutoCreateDescription[] =
     "Automatically creates groups for users, if tab groups are enabled.";
 
-const char kTabGroupsCollapseFreezingName[] = "Tab Groups Collapse Freezing";
-const char kTabGroupsCollapseFreezingDescription[] =
-    "Experimental tab freezing upon collapsing a tab group.";
-
 const char kTabGroupsNewBadgePromoName[] = "Tab Groups 'New' Badge Promo";
 const char kTabGroupsNewBadgePromoDescription[] =
     "Causes a 'New' badge to appear on the entry point for creating a tab "
@@ -2564,6 +2554,11 @@ const char kVerticalSnapDescription[] =
     "This enables Vertical Snap feature in portrait display."
     "This feature allows users to snap windows to top and bottom in portrait "
     "display orientation and maintains left/right snap for landscape display.";
+
+const char kGlobalVaapiLockName[] = "Global lock on the VA-API wrapper.";
+const char kGlobalVaapiLockDescription[] =
+    "Enable or disable the global VA-API lock for platforms and paths that "
+    "support controlling this.";
 
 const char kVp9kSVCHWDecodingName[] =
     "Hardware decode acceleration for k-SVC VP9";
@@ -3471,11 +3466,6 @@ const char kToolbarIphAndroidDescription[] =
     "Enables in product help bubbles on the toolbar. In particular, the home "
     "button and the tab switcher button.";
 
-const char kToolbarMicIphAndroidName[] =
-    "Enable IPH on Android on the mic in the toolbar";
-const char kToolbarMicIphAndroidDescription[] =
-    "Enables in product help bubble on the mic button in the toolbar.";
-
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 const char kUpdateMenuBadgeDescription[] =
     "When enabled, a badge will be shown on the app menu button if the update "
@@ -3613,6 +3603,13 @@ const char kNtpDriveModuleName[] = "NTP Drive Module";
 const char kNtpDriveModuleDescription[] =
     "Shows the Google Drive module on the New Tab Page";
 
+#if !defined(OFFICIAL_BUILD)
+const char kNtpDummyModulesName[] = "NTP Dummy Modules";
+const char kNtpDummyModulesDescription[] =
+    "Adds dummy modules to New Tab Page when 'NTP Modules Redesigned' is "
+    "enabled.";
+#endif
+
 const char kNtpPhotosModuleName[] = "NTP Photos Module";
 const char kNtpPhotosModuleDescription[] =
     "Shows the Google Photos module on the New Tab Page";
@@ -3746,12 +3743,6 @@ const char kSharingDesktopScreenshotsEditDescription[] =
 // Windows ---------------------------------------------------------------------
 
 #if defined(OS_WIN)
-
-const char kCalculateNativeWinOcclusionName[] =
-    "Calculate window occlusion on Windows";
-const char kCalculateNativeWinOcclusionDescription[] =
-    "Calculate window occlusion on Windows will be used in the future "
-    "to throttle and potentially unload foreground tabs in occluded windows";
 
 const char kEnableIncognitoShortcutOnDesktopName[] =
     "Enable Incognito Desktop Shortcut";
@@ -4403,11 +4394,6 @@ const char kEnableHostnameSettingName[] = "Enable setting the device hostname";
 const char kEnableHostnameSettingDescription[] =
     "Enables the ability to set the Chrome OS hostname, the name of the device "
     "that is exposed to the local network";
-
-const char kEnableGeneratedWebApksName[] = "Generated WebAPKs";
-const char kEnableGeneratedWebApksDescription[] =
-    "When enabled, generates and installs a WebAPK inside ARC for each "
-    "installed and eligible PWA.";
 
 const char kEnableGesturePropertiesDBusServiceName[] =
     "Enable gesture properties D-Bus service";

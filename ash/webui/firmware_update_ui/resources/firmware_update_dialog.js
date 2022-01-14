@@ -19,6 +19,9 @@ import {DialogContent, FirmwareUpdate, InstallationProgress, InstallControllerRe
 import {getUpdateProvider} from './mojo_interface_provider.js';
 import {mojoString16ToString} from './mojo_utils.js';
 
+/** @type {!Array<!UpdateState>} */
+const inactiveDialogStates = [UpdateState.kUnknown, UpdateState.kIdle];
+
 /** @type {!DialogContent} */
 const initialDialogContent = {
   title: '',
@@ -139,7 +142,8 @@ export class FirmwareUpdateDialogElement extends
 
     this.installController_.addObserver(
         this.updateProgressObserverReceiver_.$.bindNewPipeAndPassRemote());
-    this.installController_.beginUpdate();
+    this.installController_.beginUpdate(
+        this.update.deviceId, this.update.filepath);
   }
 
   /**
@@ -187,9 +191,24 @@ export class FirmwareUpdateDialogElement extends
    * @protected
    * @return {boolean}
    */
+  isDeviceRestarting_() {
+    return this.installationProgress.state === UpdateState.kRestarting;
+  }
+
+  /**
+   * @protected
+   * @return {boolean}
+   */
+  shouldShowProgressBar_() {
+    return this.isUpdateInProgress_() || this.isDeviceRestarting_();
+  }
+  /**
+   * @protected
+   * @return {boolean}
+   */
   isUpdateDone_() {
-    // TODO(michaelcheco): Handle failed state.
-    return this.installationProgress.state === UpdateState.kSuccess;
+    return this.installationProgress.state === UpdateState.kSuccess ||
+        this.installationProgress.state === UpdateState.kFailed;
   }
 
   /**
@@ -206,6 +225,18 @@ export class FirmwareUpdateDialogElement extends
         body: this.i18n('updatingInfo'),
         footer: this.i18n('installing', percentage),
       },
+      [UpdateState.kRestarting]: {
+        title:
+            this.i18n('restartingTitleText', mojoString16ToString(deviceName)),
+        body: this.i18n('restartingBodyText'),
+        footer: this.i18n('restartingFooterText'),
+      },
+      [UpdateState.kFailed]: {
+        title: this.i18n(
+            'updateFailedTitleText', mojoString16ToString(deviceName)),
+        body: this.i18n('updateFailedBodyText'),
+        footer: '',
+      },
       [UpdateState.kSuccess]: {
         title: this.i18n('deviceUpToDate', mojoString16ToString(deviceName)),
         body: this.i18n(
@@ -219,12 +250,17 @@ export class FirmwareUpdateDialogElement extends
 
   /** @return {!DialogContent} */
   computeDialogContent_() {
+    if (inactiveDialogStates.includes(this.installationProgress.state) ||
+        this.isDeviceRestarting_()) {
+      return this.createDialogContentObj_(UpdateState.kRestarting);
+    }
+
     if (this.isUpdateInProgress_()) {
       return this.createDialogContentObj_(UpdateState.kUpdating);
     }
 
     if (this.isUpdateDone_()) {
-      return this.createDialogContentObj_(UpdateState.kSuccess);
+      return this.createDialogContentObj_(this.installationProgress.state);
     }
     return initialDialogContent;
   }

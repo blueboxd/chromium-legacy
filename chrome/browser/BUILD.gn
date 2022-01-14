@@ -1006,8 +1006,6 @@ static_library("browser") {
     "page_load_metrics/observers/portal_page_load_metrics_observer.h",
     "page_load_metrics/observers/prefetch_proxy_page_load_metrics_observer.cc",
     "page_load_metrics/observers/prefetch_proxy_page_load_metrics_observer.h",
-    "page_load_metrics/observers/previews_ukm_observer.cc",
-    "page_load_metrics/observers/previews_ukm_observer.h",
     "page_load_metrics/observers/protocol_page_load_metrics_observer.cc",
     "page_load_metrics/observers/protocol_page_load_metrics_observer.h",
     "page_load_metrics/observers/scheme_page_load_metrics_observer.cc",
@@ -1360,6 +1358,8 @@ static_library("browser") {
     "prefs/profile_pref_store_manager.h",
     "prefs/session_startup_pref.cc",
     "prefs/session_startup_pref.h",
+    "prerender/prerender_utils.cc",
+    "prerender/prerender_utils.h",
     "privacy/privacy_metrics_service.cc",
     "privacy/privacy_metrics_service.h",
     "privacy/privacy_metrics_service_factory.cc",
@@ -1943,6 +1943,7 @@ static_library("browser") {
     "//chrome/browser/media:mojo_bindings",
     "//chrome/browser/media/router",
     "//chrome/browser/media/router:media_router_feature",
+    "//chrome/browser/media/router/discovery/access_code:access_code_cast_feature",
     "//chrome/browser/metrics:expired_histograms_array",
     "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
     "//chrome/browser/net:probe_message_proto",
@@ -5912,8 +5913,11 @@ static_library("browser") {
     ]
 
     deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.element",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.app",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.composition",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.scenic",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.views",
       "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
       "//ui/platform_window",
@@ -6319,22 +6323,6 @@ static_library("browser") {
           "printing/print_dialog_cloud_win.cc",
           "printing/print_dialog_cloud_win.h",
         ]
-      }
-
-      if (is_mac) {
-        sources += [ "service_process/service_process_control_mac.mm" ]
-      }
-
-      if (!is_chromeos_ash) {
-        sources += [
-          "printing/cloud_print/cloud_print_proxy_service.cc",
-          "printing/cloud_print/cloud_print_proxy_service.h",
-          "printing/cloud_print/cloud_print_proxy_service_factory.cc",
-          "printing/cloud_print/cloud_print_proxy_service_factory.h",
-          "service_process/service_process_control.cc",
-          "service_process/service_process_control.h",
-        ]
-        public_deps += [ "//chrome/common:service_process_mojom" ]
       }
     } else {
       # Partial - only printing support.

@@ -905,9 +905,6 @@ extern const char kMediaSessionWebRTCDescription[];
 extern const char kMetricsSettingsAndroidName[];
 extern const char kMetricsSettingsAndroidDescription[];
 
-extern const char kMobileIdentityConsistencyFREName[];
-extern const char kMobileIdentityConsistencyFREDescription[];
-
 extern const char kMojoLinuxChannelSharedMemName[];
 extern const char kMojoLinuxChannelSharedMemDescription[];
 
@@ -1369,9 +1366,6 @@ extern const char kAppsShortcutDefaultOffDescription[];
 extern const char kTabGroupsAutoCreateName[];
 extern const char kTabGroupsAutoCreateDescription[];
 
-extern const char kTabGroupsCollapseFreezingName[];
-extern const char kTabGroupsCollapseFreezingDescription[];
-
 extern const char kTabGroupsNewBadgePromoName[];
 extern const char kTabGroupsNewBadgePromoDescription[];
 
@@ -1460,6 +1454,9 @@ extern const char kV8VmFutureDescription[];
 
 extern const char kVerticalSnapName[];
 extern const char kVerticalSnapDescription[];
+
+extern const char kGlobalVaapiLockName[];
+extern const char kGlobalVaapiLockDescription[];
 
 extern const char kVp9kSVCHWDecodingName[];
 extern const char kVp9kSVCHWDecodingDescription[];
@@ -1982,9 +1979,6 @@ extern const char kThemeRefactorAndroidDescription[];
 extern const char kToolbarIphAndroidName[];
 extern const char kToolbarIphAndroidDescription[];
 
-extern const char kToolbarMicIphAndroidName[];
-extern const char kToolbarMicIphAndroidDescription[];
-
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
 
@@ -2069,6 +2063,11 @@ extern const char kNtpModulesDescription[];
 extern const char kNtpDriveModuleName[];
 extern const char kNtpDriveModuleDescription[];
 
+#if !defined(OFFICIAL_BUILD)
+extern const char kNtpDummyModulesName[];
+extern const char kNtpDummyModulesDescription[];
+#endif
+
 extern const char kNtpPhotosModuleName[];
 extern const char kNtpPhotosModuleDescription[];
 
@@ -2143,9 +2142,6 @@ extern const char kSCTAuditingDescription[];
 // Windows --------------------------------------------------------------------
 
 #if defined(OS_WIN)
-
-extern const char kCalculateNativeWinOcclusionName[];
-extern const char kCalculateNativeWinOcclusionDescription[];
 
 extern const char kEnableIncognitoShortcutOnDesktopName[];
 extern const char kEnableIncognitoShortcutOnDesktopDescription[];
@@ -2517,9 +2513,6 @@ extern const char kDnsProxyEnableDOHDescription[];
 
 extern const char kEnableHostnameSettingName[];
 extern const char kEnableHostnameSettingDescription[];
-
-extern const char kEnableGeneratedWebApksName[];
-extern const char kEnableGeneratedWebApksDescription[];
 
 extern const char kEnableGesturePropertiesDBusServiceName[];
 extern const char kEnableGesturePropertiesDBusServiceDescription[];

@@ -483,6 +483,9 @@ void AppListControllerImpl::Show(int64_t display_id,
     LogAppListShowSource(show_source.value(), show_app_list_bubble);
 
   if (show_app_list_bubble) {
+    // Clamshell ProductivityLauncher does not support app list drags.
+    if (show_source.has_value())
+      DCHECK_NE(show_source.value(), AppListShowSource::kSwipeFromShelf);
     bubble_presenter_->Show(display_id);
     return;
   }
@@ -523,11 +526,8 @@ void AppListControllerImpl::OnTemporarySortOrderChanged(
   DCHECK(features::IsProductivityLauncherEnabled());
   DCHECK(features::IsLauncherAppSortEnabled());
 
-  // Adapt to the new sorting order in clamshell mode.
-  if (!IsTabletMode()) {
-    DCHECK(bubble_presenter_);
-    bubble_presenter_->OnTemporarySortOrderChanged(new_order);
-  }
+  bubble_presenter_->OnTemporarySortOrderChanged(new_order);
+  fullscreen_presenter_->OnTemporarySortOrderChanged(new_order);
 }
 
 ShelfAction AppListControllerImpl::ToggleAppList(

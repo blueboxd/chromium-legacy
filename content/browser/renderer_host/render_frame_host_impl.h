@@ -2696,10 +2696,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OpenURL(blink::mojom::OpenURLParamsPtr params) override;
   void DidStopLoading() override;
 
-#if defined(OS_ANDROID)
-  void UpdateUserGestureCarryoverInfo() override;
-#endif
-
   friend class RenderAccessibilityHost;
   void HandleAXEvents(const ui::AXTreeID& tree_id,
                       mojom::AXUpdatesAndEventsPtr updates_and_events,
@@ -4128,8 +4124,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   raw_ptr<WebBluetoothServiceImpl> last_web_bluetooth_service_for_testing_ =
       nullptr;
 
-  // NOTE: This must be the last member.
+  // WeakPtrFactories are the last members, to ensure they are destroyed before
+  // all other fields of `this`.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};
+
+  // Unlike `weak_ptr_factory` which only invalidates when `this` is about to be
+  // deleted, `render_frame_scoped_weak_ptr_factory_` is invalidated every time
+  // the RenderFrame is deleted (for example, if the renderer crashes).
+  base::WeakPtrFactory<RenderFrameHostImpl>
+      render_frame_scoped_weak_ptr_factory_{this};
 };
 
 // Used when DCHECK_STATE_TRANSITION triggers.

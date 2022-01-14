@@ -489,6 +489,18 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   bool IsQueueEnabled() const { return task_queue_->IsQueueEnabled(); }
   bool IsEmpty() const { return task_queue_->IsEmpty(); }
 
+  bool HasTaskToRunImmediatelyOrReadyDelayedTask() const {
+    return task_queue_->HasTaskToRunImmediatelyOrReadyDelayedTask();
+  }
+
+  void SetBlameContext(base::trace_event::BlameContext* blame_context) {
+    task_queue_->SetBlameContext(blame_context);
+  }
+
+  void SetShouldReportPostedTasksWhenDisabled(bool should_report) {
+    task_queue_->SetShouldReportPostedTasksWhenDisabled(should_report);
+  }
+
   base::WeakPtr<MainThreadTaskQueue> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -551,6 +563,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
   // The WakeUpBudgetPool for this TaskQueue, if any.
   WakeUpBudgetPool* wake_up_budget_pool_{nullptr};  // NOT OWNED
+
+  std::unique_ptr<TaskQueue::OnTaskPostedCallbackHandle>
+      on_ipc_task_posted_callback_handle_;
 
   base::WeakPtrFactory<MainThreadTaskQueue> weak_ptr_factory_{this};
 };

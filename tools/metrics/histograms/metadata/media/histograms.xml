@@ -2063,7 +2063,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.EME.CdmInterfaceVersion" enum="GenericEnum"
-    expires_after="2022-05-07">
+    expires_after="2022-07-11">
   <owner>xhwang@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -2148,7 +2148,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.EME.EncryptionScheme.Initial.Video"
-    enum="MediaEncryptionScheme" expires_after="2022-05-07">
+    enum="MediaEncryptionScheme" expires_after="2022-07-11">
   <owner>jrummell@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -2244,6 +2244,30 @@ chromium-metrics-reviews@google.com.
     using Widevine in hardware secure mode.
   </summary>
   <token key="EmeApi" variants="EmeApi"/>
+</histogram>
+
+<histogram name="Media.EME.MediaFoundationService.IsKeySystemSupported"
+    units="ms" expires_after="2022-05-07">
+  <owner>xhwang@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Time for MediaFoundationService.IsKeySystemSupported() to finish. Reported
+    once per browser session lifetime.
+  </summary>
+</histogram>
+
+<histogram
+    name="Media.EME.MediaFoundationService.Widevine.HardwareSecure.IsTypeSupported"
+    units="ms" expires_after="2022-05-07">
+  <owner>xhwang@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Time for IMFContentDecryptionModuleFactory::IsTypeSupported() to finish in
+    MediaFoundationService when using Widevine in hardware secure mode, which
+    are called by MediaFoundationService.IsKeySystemSupported() (called once per
+    browser session lifetime). IsKeySystemSupported() calls IsTypeSupported()
+    multiple times, for different audio/video codecs and encryption schemes.
+  </summary>
 </histogram>
 
 <histogram name="Media.EME.MojoCdm.ConnectionError"
@@ -4867,7 +4891,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCapture.Mac.Device.CapturedIOSurface"
-    enum="Boolean" expires_after="2022-04-24">
+    enum="Boolean" expires_after="2022-07-11">
   <owner>eshr@google.com</owner>
   <owner>handellm@google.com</owner>
   <summary>
@@ -5360,7 +5384,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoRenderer.LowDelay" enum="Boolean"
-    expires_after="2022-05-07">
+    expires_after="2022-07-11">
   <owner>xhwang@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -5821,7 +5845,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MediaRouter.CastStreaming.Start.Failure.Native"
-    enum="MirroringServiceErrorType" expires_after="2022-05-01">
+    enum="MirroringServiceErrorType" expires_after="2022-07-11">
   <owner>takumif@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>

@@ -57,6 +57,7 @@ class FileNetLogObserver;
 class HostResolverManager;
 class HttpAuthHandlerFactory;
 class LoggingNetworkChangeObserver;
+class NetworkChangeNotifier;
 class NetworkQualityEstimator;
 class URLRequestContext;
 }  // namespace net
@@ -167,7 +168,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
                             memory_pressure_level) override;
   void OnPeerToPeerConnectionsCountChange(uint32_t count) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state) override;
 #endif
   void SetEnvironment(
@@ -189,7 +190,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void SetCtEnforcementEnabled(bool enabled) override;
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void DumpWithoutCrashing(base::Time dump_request_time) override;
 #endif
   void BindTestInterface(
@@ -274,6 +275,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
  private:
   class DelayedDohProbeActivator;
+
+  void InitMockNetworkChangeNotifierForTesting();
 
   void DestroyNetworkContexts();
 
@@ -383,6 +386,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // that renderer process (the renderer will proxy requests from PPAPI - such
   // requests should have their initiator origin within the set stored here).
   std::map<int, std::set<url::Origin>> plugin_origins_;
+
+  // This is used only in tests. It avoids leaky SystemDnsConfigChangeNotifiers
+  // leaking stale listeners between tests.
+  std::unique_ptr<net::NetworkChangeNotifier> mock_network_change_notifier_;
 };
 
 }  // namespace network

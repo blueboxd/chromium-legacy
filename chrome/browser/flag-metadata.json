@@ -327,7 +327,7 @@
       "basiaz@google.com",
       "chrome-voice@google.com"
     ],
-    "expiry_milestone": 98
+    "expiry_milestone": 103
   },
   {
     "name": "assistant-intent-page-url",
@@ -336,7 +336,7 @@
       "basiaz@google.com",
       "chrome-voice@google.com"
     ],
-    "expiry_milestone": 98
+    "expiry_milestone": 103
   },
   {
     "name": "assistant-intent-translate-info",
@@ -345,7 +345,7 @@
       "basiaz@google.com",
       "chrome-voice@google.com"
     ],
-    "expiry_milestone": 98
+    "expiry_milestone": 103
   },
   {
     "name": "audio-url",
@@ -621,11 +621,6 @@
     "name": "bypass-app-banner-engagement-checks",
     "owners": [ "dmurph" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "calculate-native-win-occlusion",
-    "owners": [ "davidbienvenu", "fdoray" ],
-    "expiry_milestone": 96
   },
   {
     "name": "calendar-view",
@@ -1115,7 +1110,7 @@
     "name": "deprecate-alt-click",
     "owners": [ "zentaro@google.com", "jimmyxgong@google.com",
                 "cros-peripherals@google.com"],
-    "expiry_milestone": 97
+    "expiry_milestone": 105
   },
   {
     "name": "deprecate-low-usage-codecs",
@@ -2047,14 +2042,17 @@
     "expiry_milestone": 98
   },
   {
-    "name": "enable-generated-webapks",
-    "owners": [ "tsergeant@chromium.org" ],
-    "expiry_milestone": 96
-  },
-  {
     "name": "enable-generic-sensor-extra-classes",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "enable-global-vaapi-lock",
+    "owners": [
+      "jeffcchen",
+      "chromeos-gfx-video@google.com"
+    ],
+    "expiry_milestone": 110
   },
   {
     "name": "enable-google-srp-isolated-prerender-nsp",
@@ -3481,7 +3479,7 @@
   },
   {
     "name": "improved-desks-keyboard-shortcuts",
-    "owners": [ "chinsenj", "janetmac"],
+    "owners": [ "zxdan", "janetmac"],
     "expiry_milestone": 101
   },
   {
@@ -3954,11 +3952,6 @@
     "expiry_milestone": 99
   },
   {
-    "name": "mobile-identity-consistency-fre",
-    "owners": [ "aliceywang", "msarda", "triploblastic" ],
-    "expiry_milestone": 98
-  },
-  {
     "name": "modern-tab-strip",
     "owners": [ "bling-flags@google.com" ],
     "expiry_milestone": 92
@@ -4016,7 +4009,7 @@
   {
     "name": "new-shortcut-mapping",
     "owners": [ "zentaro@google.com", "jimmyxgong@google.com", "cros-peripherals@google.com"],
-    "expiry_milestone": 98
+    "expiry_milestone": 105
   },
   {
     "name": "new-usb-backend",
@@ -4051,6 +4044,11 @@
   {
     "name": "ntp-drive-module",
     "owners": [ "mahmadi", "tiborg" ],
+    "expiry_milestone": 100
+  },
+  {
+    "name": "ntp-dummy-modules",
+    "owners": [ "pauladedeji", "tiborg" ],
     "expiry_milestone": 100
   },
   {
@@ -4155,7 +4153,7 @@
       "basiaz@google.com",
       "chrome-voice@google.com"
     ],
-    "expiry_milestone": 98
+    "expiry_milestone": 103
   },
   {
     "name": "omnibox-bookmark-paths",
@@ -5269,7 +5267,7 @@
   {
     "name": "sync-settings-categorization",
     "owners": [ "bsazonov", "rsorokin", "cros-oac@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 101
   },
   {
     "name": "sync-trusted-vault-passphrase-ios-rpc",
@@ -5311,16 +5309,6 @@
   },
   {
     "name": "tab-groups-auto-create",
-    "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "tab-groups-collapse-freezing",
-    "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "tab-groups-feedback",
     "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
     "expiry_milestone": 95
   },
@@ -5397,11 +5385,6 @@
     "expiry_milestone": 91
   },
   {
-    "name": "toolbar-mic-iph-android",
-    "owners": [ "basiaz@google.com", "chrome-voice@google.com" ],
-    "expiry_milestone": 98
-  },
-  {
     "name": "top-chrome-touch-ui",
     "owners": [ "pbos", "chrome-desktop-ui-sea@google.com" ],
     // This flag is used to easily swap into touch-mode for UI development where
@@ -5427,7 +5410,7 @@
       "basiaz@google.com",
       "chrome-voice@google.com"
     ],
-    "expiry_milestone": 98
+    "expiry_milestone": 103
   },
   {
     "name": "translate-force-trigger-on-english",
@@ -5443,7 +5426,7 @@
       "basiaz@google.com",
       "chrome-voice@google.com"
     ],
-    "expiry_milestone": 98
+    "expiry_milestone": 103
   },
   {
     "name": "trim-on-memory-pressure",
@@ -5690,7 +5673,7 @@
       "basiaz@google.com",
       "chrome-voice@google.com"
     ],
-    "expiry_milestone": 98
+    "expiry_milestone": 103
   },
   {
     "name": "wait-threshold-seconds-for-capabilities-api",

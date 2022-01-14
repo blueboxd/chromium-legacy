@@ -29,13 +29,32 @@ class PolicyStorage {
   PolicyStorage& operator=(PolicyStorage&& policy_storage);
   virtual ~PolicyStorage();
 
-  // Returns the serialized proto associated with |policy_type|. Returns empty
-  // string if there is no such association.
-  std::string GetPolicyPayload(const std::string& policy_type) const;
+  // Returns the serialized proto associated with |policy_type| and optional
+  // |entity_id|. Returns empty string if there is no such association.
+  std::string GetPolicyPayload(
+      const std::string& policy_type,
+      const std::string& entity_id = std::string()) const;
+  std::vector<std::string> GetEntityIdsForType(const std::string& policy_type);
+
   // Associates the serialized proto stored in |policy_payload| with
-  // |policy_type|.
+  // |policy_type| and optional |entity_id|.
   void SetPolicyPayload(const std::string& policy_type,
                         const std::string& policy_payload);
+  void SetPolicyPayload(const std::string& policy_type,
+                        const std::string& entity_id,
+                        const std::string& policy_payload);
+
+  // Returns the raw payload to be served by an external endpoint and associated
+  // with |policy_type| and optional |entity_id|. Returns empty string if there
+  // is no such association.
+  std::string GetExternalPolicyPayload(const std::string& policy_type,
+                                       const std::string& entity_id);
+
+  // Associates the |raw_payload| to be served via an external endpoint with
+  // |policy_type| and optional |entity_id|.
+  void SetExternalPolicyPayload(const std::string& policy_type,
+                                const std::string& entity_id,
+                                const std::string& raw_payload);
 
   SignatureProvider* signature_provider() const {
     return signature_provider_.get();
@@ -129,10 +148,12 @@ class PolicyStorage {
                                                    uint64_t remainder) const;
 
  private:
-  // Maps policy types to a serialized proto representing the policies to be
-  // applied for the type (e.g. CloudPolicySettings,
-  // ChromeDeviceSettingsProto).
+  // Maps policy keys to a serialized proto representing the policies to be
+  // applied for the type (e.g. CloudPolicySettings, ChromeDeviceSettingsProto).
   base::flat_map<std::string, std::string> policy_payloads_;
+
+  // Maps policy keys to a raw policy data served via an external endpoint.
+  base::flat_map<std::string, std::string> external_policy_payloads_;
 
   std::unique_ptr<SignatureProvider> signature_provider_;
 

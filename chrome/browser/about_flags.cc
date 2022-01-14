@@ -2102,18 +2102,6 @@ const FeatureEntry::FeatureVariation kAssistantConsentV2_Variations[] = {
      base::size(kAssistantConsentV2_reprompts_counter), nullptr},
 };
 
-const FeatureEntry::FeatureParam kIphMicToolbarGenericMessage[] = {
-    {"generic_message", "true"}};
-const FeatureEntry::FeatureParam kIphMicToolbarExampleQuery[] = {
-    {"generic_message", "false"}};
-const FeatureEntry::FeatureVariation kIphMicToolbarVariations[] = {
-    {"generic message", kIphMicToolbarGenericMessage,
-     base::size(kIphMicToolbarGenericMessage), nullptr},
-    {"example query", kIphMicToolbarExampleQuery,
-     base::size(kIphMicToolbarExampleQuery), nullptr},
-
-};
-
 const FeatureEntry::FeatureParam kOmniboxAssistantVoiceSearchGreyMic[] = {
     {"min_agsa_version", "10.95"},
     {"colorful_mic", "false"}};
@@ -3970,11 +3958,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"toolbar-iph-android", flag_descriptions::kToolbarIphAndroidName,
      flag_descriptions::kToolbarIphAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kToolbarIphAndroid)},
-    {"toolbar-mic-iph-android", flag_descriptions::kToolbarMicIphAndroidName,
-     flag_descriptions::kToolbarMicIphAndroidDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kToolbarMicIphAndroid,
-                                    kIphMicToolbarVariations,
-                                    "ToolbarMicIphAndroid")},
     {"theme-refactor-android", flag_descriptions::kThemeRefactorAndroidName,
      flag_descriptions::kThemeRefactorAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kThemeRefactorAndroid)},
@@ -4855,11 +4838,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabGroupsAutoCreateDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroupsAutoCreate)},
 
-    {"tab-groups-collapse-freezing",
-     flag_descriptions::kTabGroupsCollapseFreezingName,
-     flag_descriptions::kTabGroupsCollapseFreezingDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kTabGroupsCollapseFreezing)},
-
     {"tab-groups-new-badge-promo",
      flag_descriptions::kTabGroupsNewBadgePromoName,
      flag_descriptions::kTabGroupsNewBadgePromoDescription, kOsDesktop,
@@ -4933,6 +4911,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpDriveModule,
                                     kNtpDriveModuleVariations,
                                     "DesktopNtpModules")},
+
+#if !defined(OFFICIAL_BUILD)
+    {"ntp-dummy-modules", flag_descriptions::kNtpDummyModulesName,
+     flag_descriptions::kNtpDummyModulesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpDummyModules)},
+#endif
 
     {"ntp-photos-module", flag_descriptions::kNtpPhotosModuleName,
      flag_descriptions::kNtpPhotosModuleDescription, kOsDesktop,
@@ -5453,13 +5437,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kVaapiWebPImageDecodeAcceleration)},
 #endif
 
-#if defined(OS_WIN)
-    {"calculate-native-win-occlusion",
-     flag_descriptions::kCalculateNativeWinOcclusionName,
-     flag_descriptions::kCalculateNativeWinOcclusionDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kCalculateNativeWinOcclusion)},
-#endif  // OS_WIN
-
 #if !defined(OS_ANDROID)
     {"happiness-tracking-surveys-for-desktop-demo",
      flag_descriptions::kHappinessTrackingSurveysForDesktopDemoName,
@@ -5617,10 +5594,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_ANDROID)
-    {"mobile-identity-consistency-fre",
-     flag_descriptions::kMobileIdentityConsistencyFREName,
-     flag_descriptions::kMobileIdentityConsistencyFREDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(signin::kMobileIdentityConsistencyFRE)},
     {"force-startup-signin-promo",
      flag_descriptions::kForceStartupSigninPromoName,
      flag_descriptions::kForceStartupSigninPromoDescription, kOsAndroid,
@@ -7001,6 +6974,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kVaapiVp9kSVCHWEncoding)},
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
 
+    {"enable-global-vaapi-lock", flag_descriptions::kGlobalVaapiLockName,
+     flag_descriptions::kGlobalVaapiLockDescription, kOsCrOS | kOsLinux,
+     FEATURE_VALUE_TYPE(media::kGlobalVaapiLock)},
+
     {"enable-vp9-kSVC-decode-acceleration",
      flag_descriptions::kVp9kSVCHWDecodingName,
      flag_descriptions::kVp9kSVCHWDecodingDescription, kOsAll,
@@ -7255,12 +7232,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"playback-speed-button", flag_descriptions::kPlaybackSpeedButtonName,
      flag_descriptions::kPlaybackSpeedButtonDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kPlaybackSpeedButton)},
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-generated-webapks", flag_descriptions::kEnableGeneratedWebApksName,
-     flag_descriptions::kEnableGeneratedWebApksDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kWebApkGenerator)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"use-passthrough-command-decoder",
      flag_descriptions::kUsePassthroughCommandDecoderName,

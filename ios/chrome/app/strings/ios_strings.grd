@@ -1434,14 +1434,8 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_SUBTITLE_SIGNIN" desc="The subtitle of the Keep Data Separate option on the Import Data settings screen when signing in. [400em]">
         Delete existing data.
       </message>
-      <message name="IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_SUBTITLE_SWITCH" desc="The subtitle of the Keep Data separate option on the Import Data settings screen when switching accounts. [400em]">
-        Delete existing data. You can retrieve it by switching back to <ph name="USER_EMAIL1">$1<ex>john@doe.com</ex></ph>.
-      </message>
       <message name="IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_TITLE" desc="The title of the Keep Data Separate option on the Import Data settings screen. [60em]">
         Keep my data separate
-      </message>
-      <message name="IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SWITCH" desc="The title of the Import Data settings screen when switching accounts. [30em]">
-        Switch Sync Account
       </message>
       <message name="IDS_IOS_OPTIONS_PRELOAD_WEBPAGES" desc="Title for opening the setting for if/when to preload webpages. [Length: 20em] [iOS only]">
         Preload Webpages
@@ -1553,6 +1547,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PAGE_INFO_OFFLINE_TITLE" desc="Title of the message to display in the page info bubble when the page you are on is an offline page.">
         Viewing Offline Version
       </message>
+      <message name="IDS_IOS_PAGE_INFO_PERMISSIONS_DESCRIPTION" desc="Format of the description at the bottom of the permissions section (in page info).">
+        Manage site permissions for <ph name="URL">$1<ex>www.dailydot.com</ex></ph>. These permissions will be reset when you close the tab.
+      </message>
+      <message name="IDS_IOS_PAGE_INFO_PERMISSIONS_HEADER" desc="Header of the permissions section (in page info)">
+        Permissions
+      </message>
       <message name="IDS_IOS_PAGE_INFO_RELOAD" desc="Button title in the page info bubble that allows to reload the current page.">
         Reload
       </message>
@@ -1612,6 +1612,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_SAVE_PASSWORD_FOOTER_DISPLAYING_USER_EMAIL" desc="The footer text of the infobar that offers user to save/update a password to Chrome; also display's current user's email.">
         You can use saved passwords on any device. They're saved to Google Password Manager for <ph name="EMAIL">$1<ex>johndoe@gmail.com</ex></ph>
+      </message>
+      <message name="IDS_IOS_PERMISSIONS_CAMERA" desc="Usually used to show whether user has enabled a site's permission to use the device camera.">
+        Camera
+      </message>
+      <message name="IDS_IOS_PERMISSIONS_MICROPHONE" desc="Usually used to show whether user has enabled a site's permission to use the device microphone.">
+        Microphone
       </message>
       <message name="IDS_IOS_PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION" desc="Specifies the reason for writing to the user's photo library while the app is in use [Length: unlimited] [iOS only].">
         This lets you save photos to your photo library.

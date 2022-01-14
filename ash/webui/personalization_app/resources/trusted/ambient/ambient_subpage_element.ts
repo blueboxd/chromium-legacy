@@ -7,10 +7,9 @@
  * the ambient mode settings.
  */
 
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {WithPersonalizationStore} from '../personalization_store.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-export class AmbientSubpage extends WithPersonalizationStore {
+export class AmbientSubpage extends PolymerElement {
   static get is() {
     return 'ambient-subpage';
   }

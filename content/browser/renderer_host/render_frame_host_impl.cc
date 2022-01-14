@@ -1364,14 +1364,11 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   site_instance_->AddObserver(this);
   auto* process = GetProcess();
   process->RegisterRenderFrameHost(GetGlobalId());
-  process->AddObserver(this);
   GetSiteInstance()->IncrementActiveFrameCount();
 
   if (parent_) {
     // All frames in a frame tree should use the same storage partition.
     CHECK_EQ(parent_->GetStoragePartition(), GetStoragePartition());
-
-    cross_origin_embedder_policy_ = parent_->cross_origin_embedder_policy();
 
     // New child frames should inherit the nav_entry_id of their parent.
     set_nav_entry_id(parent_->nav_entry_id());
@@ -1500,7 +1497,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   auto* process = GetProcess();
   site_instance_->RemoveObserver(this);
   process->UnregisterRenderFrameHost(GetGlobalId());
-  process->RemoveObserver(this);
 
   const bool was_created = is_render_frame_created();
   render_frame_state_ = RenderFrameState::kDeleted;
@@ -1682,6 +1678,9 @@ void RenderFrameHostImpl::DidEnterBackForwardCache() {
     if (base::WeakPtr<ServiceWorkerContainerHost> host = entry.second)
       host->OnEnterBackForwardCache();
   }
+
+  DedicatedWorkerHostsForDocument::GetOrCreateForCurrentDocument(this)
+      ->OnEnterBackForwardCache();
 }
 
 // The frame as been restored from the BackForwardCache.
@@ -1698,6 +1697,9 @@ void RenderFrameHostImpl::WillLeaveBackForwardCache() {
     if (base::WeakPtr<ServiceWorkerContainerHost> host = entry.second)
       host->OnRestoreFromBackForwardCache();
   }
+
+  DedicatedWorkerHostsForDocument::GetOrCreateForCurrentDocument(this)
+      ->OnRestoreFromBackForwardCache();
 }
 
 mojom::DidCommitProvisionalLoadParamsPtr
@@ -2826,7 +2828,6 @@ void RenderFrameHostImpl::RenderProcessGone(
                   kRendererProcessCrashed
             : BackForwardCacheMetrics::NotRestoredReason::
                   kRendererProcessKilled);
-    return;
   }
 
   if (frame_tree()->is_prerendering()) {
@@ -2834,7 +2835,6 @@ void RenderFrameHostImpl::RenderProcessGone(
         info.status == base::TERMINATION_STATUS_PROCESS_CRASHED
             ? PrerenderHost::FinalStatus::kRendererProcessCrashed
             : PrerenderHost::FinalStatus::kRendererProcessKilled);
-    return;
   }
 
   if (owned_render_widget_host_)
@@ -2850,6 +2850,8 @@ void RenderFrameHostImpl::RenderProcessGone(
 
   if (is_audible_)
     OnAudibleStateChanged(false);
+
+  RenderProcessExited(site_instance->GetProcess(), info);
 }
 
 void RenderFrameHostImpl::PerformAction(const ui::AXActionData& data) {
@@ -6650,11 +6652,6 @@ void RenderFrameHostImpl::CreateNewWindow(
         dom_storage_context, params->session_storage_namespace_id);
   }
 
-  network::CrossOriginEmbedderPolicy popup_coep;
-  // On popup creation, if the opener and the openers's top-level document
-  // are same origin, then the popup's initial empty document inherits its
-  // COOP policy from the opener's top-level document. See
-  // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#model
   RenderFrameHostImpl* top_level_opener = GetMainFrame();
   // Verify that they are same origin.
   if (!top_level_opener->GetLastCommittedOrigin().IsSameOriginWith(
@@ -6690,11 +6687,6 @@ void RenderFrameHostImpl::CreateNewWindow(
   if (anonymous_ || IsNestedWithinFencedFrame()) {
     params->opener_suppressed = true;
   }
-
-  // The initial empty document in the popup inherits the COEP of its opener (if
-  // any).
-  if (!params->opener_suppressed)
-    popup_coep = cross_origin_embedder_policy();
 
   int popup_virtual_browsing_context_group =
       params->opener_suppressed
@@ -6733,7 +6725,6 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   RenderFrameHostImpl* new_main_rfh =
       new_frame_tree->root()->current_frame_host();
-  new_main_rfh->cross_origin_embedder_policy_ = popup_coep;
 
   new_main_rfh->virtual_browsing_context_group_ =
       popup_virtual_browsing_context_group;
@@ -9541,7 +9532,7 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
           /*creator_render_frame_host_id=*/GetGlobalId(),
           /*creator_worker_token=*/absl::nullopt,
           /*ancestor_render_frame_host_id=*/GetGlobalId(), storage_key(),
-          isolation_info_, cross_origin_embedder_policy_,
+          isolation_info_, cross_origin_embedder_policy(),
           /*creator_coep_reporter=*/coep_reporter,
           /*ancestor_coep_reporter=*/coep_reporter),
       std::move(receiver));
@@ -9646,7 +9637,7 @@ void RenderFrameHostImpl::BindCacheStorage(
     coep_reporter_->Clone(
         coep_reporter_remote.InitWithNewPipeAndPassReceiver());
   }
-  GetProcess()->BindCacheStorage(cross_origin_embedder_policy_,
+  GetProcess()->BindCacheStorage(cross_origin_embedder_policy(),
                                  std::move(coep_reporter_remote), storage_key(),
                                  std::move(receiver));
 }
@@ -9889,8 +9880,8 @@ RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
         static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition());
     coep_reporter = std::make_unique<CrossOriginEmbedderPolicyReporter>(
         storage_partition->GetWeakPtr(), url,
-        cross_origin_embedder_policy_.reporting_endpoint,
-        cross_origin_embedder_policy_.report_only_reporting_endpoint,
+        cross_origin_embedder_policy().reporting_endpoint,
+        cross_origin_embedder_policy().report_only_reporting_endpoint,
         GetReportingSource(), isolation_info.network_isolation_key());
   }
   std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info;
@@ -10107,7 +10098,7 @@ RenderFrameHostImpl::BuildClientSecurityState() const {
   client_security_state->private_network_request_policy =
       private_network_request_policy_;
   client_security_state->cross_origin_embedder_policy =
-      cross_origin_embedder_policy_;
+      policies.cross_origin_embedder_policy;
 
   return client_security_state;
 }
@@ -10788,8 +10779,6 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
 
   private_network_request_policy_ =
       navigation_request->private_network_request_policy();
-  cross_origin_embedder_policy_ =
-      navigation_request->cross_origin_embedder_policy();
 
   reporting_endpoints_.clear();
   DCHECK(navigation_request);

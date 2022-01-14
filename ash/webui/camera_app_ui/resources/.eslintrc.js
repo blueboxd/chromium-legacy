@@ -416,6 +416,8 @@ module.exports = {
     // code should be formatted properly by clang-format, as we required
     // `git cl format --js` before uploading.
     'indent': 'off',
+    // To resolve the conflict with clang-format.
+    'generator-star-spacing': ['error', 'both'],
   }),
   'overrides': [{
     'files': ['**/*.ts'],
@@ -432,6 +434,7 @@ module.exports = {
       // (TypeScript doesn't yet support getting types from jsdoc,
       // https://github.com/microsoft/TypeScript/issues/42048)
       'valid-jsdoc': 'off',
+
       // TODO(pihsun): Currently there are many existing js files that have
       // jsdoc which only contains type information and nothing else, which is
       // all removed while converting to ts. Disabling the requirement for
@@ -440,6 +443,20 @@ module.exports = {
       // their name, which means that we should be able to skip jsdoc for some
       // of the constructors and trivial structs.
       'require-jsdoc': 'off',
+
+      // go/tsstyle states that no variable should have _ as prefix/suffix, but
+      // there's no better alternative for unused function parameters. Since
+      // the convention for noUnusedParameters for TypeScript is also leading
+      // underscore, we use the same ignore pattern here.
+      // See b/173108529 and g/typescript-style/uOfKsoxxWEY/HCgzNfAFAwAJ for
+      // other discussions.
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+        },
+      ],
     },
   }],
 };

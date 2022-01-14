@@ -556,7 +556,7 @@ void Write(WTF::TextStream& ts,
 
   if (o.IsText() && !o.IsBR()) {
     const auto& text = To<LayoutText>(o);
-    if (const LayoutBlockFlow* block_flow = text.ContainingNGBlockFlow()) {
+    if (const LayoutBlockFlow* block_flow = text.FragmentItemsContainer()) {
       NGInlineCursor cursor(*block_flow);
       cursor.MoveTo(text);
       for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
@@ -663,9 +663,7 @@ static void Write(WTF::TextStream& ts,
 
   if (layer.GetLayoutObject().StyleRef().HasBlendMode()) {
     ts << " blendMode: "
-       << CompositeOperatorName(
-              kCompositeSourceOver,
-              layer.GetLayoutObject().StyleRef().GetBlendMode());
+       << BlendModeToString(layer.GetLayoutObject().StyleRef().GetBlendMode());
   }
 
   if (behavior & kLayoutAsTextShowPaintProperties) {

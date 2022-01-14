@@ -46,11 +46,11 @@ class IOSSSLErrorHandlerWithoutTabHelpersTest : public ChromeWebTest {
   // Returns certificate.
   scoped_refptr<net::X509Certificate> cert() { return cert_; }
 
-  // web::WebTestWithWebState overrides:
+  // ChromeWebTest overrides:
   void SetUp() override {
     ChromeWebTest::SetUp();
 
-    chrome_browser_state_->SetSharedURLLoaderFactory(
+    GetBrowserState()->SetSharedURLLoaderFactory(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_loader_factory_));
     test_loader_factory_.AddResponse("http://www.gstatic.com/generate_204", "",
@@ -88,7 +88,7 @@ class IOSSSLErrorHandlerTest : public IOSSSLErrorHandlerWithoutTabHelpersTest {
  protected:
   IOSSSLErrorHandlerTest() {}
 
-  // web::WebTestWithWebState overrides:
+  // IOSSSLErrorHandlerWithoutTabHelpersTest overrides:
   void SetUp() override {
     IOSSSLErrorHandlerWithoutTabHelpersTest::SetUp();
 

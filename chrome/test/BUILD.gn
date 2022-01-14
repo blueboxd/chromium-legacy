@@ -6639,6 +6639,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/search_result_ranker_unittest.cc",
+      "../browser/ui/app_list/search/util/ftrl_optimizer_unittest.cc",
       "../browser/ui/app_list/search/util/mrfu_cache_unittest.cc",
       "../browser/ui/app_list/search/util/persistent_proto_unittest.cc",
       "../browser/ui/app_list/search/util/score_normalizer_unittest.cc",
@@ -6671,6 +6672,7 @@ test("unit_tests") {
       "../browser/ui/ash/network/tether_notification_presenter_unittest.cc",
       "../browser/ui/ash/projector/projector_client_impl_unittest.cc",
       "../browser/ui/ash/projector/projector_soda_installation_controller_unittest.cc",
+      "../browser/ui/ash/projector/projector_utils_unittest.cc",
       "../browser/ui/ash/session_controller_client_impl_unittest.cc",
       "../browser/ui/ash/sharesheet/sharesheet_bubble_view_unittest.cc",
       "../browser/ui/ash/shelf/arc_app_shelf_id_unittest.cc",
@@ -8489,7 +8491,6 @@ if (!is_android && !is_fuchsia) {
     ]
     if (include_js_tests) {
       deps += [
-        "//chrome/test/data/webui:interactive_ui_tests_js_mojo_lite_webui",
         "//chrome/test/data/webui:interactive_ui_tests_js_mojo_webui",
         "//chrome/test/data/webui:interactive_ui_tests_js_webui",
       ]

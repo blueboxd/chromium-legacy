@@ -38,7 +38,7 @@
 #include "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom.h"
 #include "ui/gfx/text_elider.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/content_uri_utils.h"
 #endif
 
@@ -446,7 +446,7 @@ const GURL& NavigationEntryImpl::GetBaseURLForDataURL() {
   return base_url_for_data_url_;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void NavigationEntryImpl::SetDataURLAsString(
     scoped_refptr<base::RefCountedString> data_url) {
   if (data_url) {
@@ -586,7 +586,7 @@ const std::u16string& NavigationEntryImpl::GetTitleForDisplay() {
     base::i18n::WrapStringWithLTRFormatting(&title);
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (GetURL().SchemeIs(url::kContentScheme)) {
     std::u16string file_display_name;
     if (base::MaybeGetFileDisplayName(base::FilePath(GetURL().spec()),
@@ -724,17 +724,6 @@ bool NavigationEntryImpl::GetCanLoadLocalResources() {
   return can_load_local_resources_;
 }
 
-void NavigationEntryImpl::RemoveInitialEntryStatusIfNecessary() {
-  if (!is_initial_entry_)
-    return;
-  is_initial_entry_ = false;
-  if (GetURL().is_empty()) {
-    // The NavigationEntry is no longer the initial entry. Ensure that we now
-    // use "about:blank" as the URL, instead of an empty URL.
-    SetURL(GURL(url::kAboutBlankURL));
-  }
-}
-
 bool NavigationEntryImpl::IsInitialEntry() {
   return is_initial_entry_;
 }
@@ -743,9 +732,9 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::Clone() const {
   std::unique_ptr<NavigationEntryImpl> entry =
       CloneAndReplaceInternal(nullptr, false, nullptr, nullptr, nullptr,
                               ClonePolicy::kShareFrameEntries);
-  // When we are not deep-copying, the NavigationEntry is going to be used for
-  // a new committed navigation, so it loses its "initial" status.
-  entry->RemoveInitialEntryStatusIfNecessary();
+  // This function is only used for creating pending entries, which should not
+  // carry the "initial" status.
+  entry->set_is_initial_entry(false);
   return entry;
 }
 
@@ -765,9 +754,6 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   std::unique_ptr<NavigationEntryImpl> entry = CloneAndReplaceInternal(
       frame_navigation_entry, clone_children_of_target, target_frame_tree_node,
       root_frame_tree_node, nullptr, ClonePolicy::kShareFrameEntries);
-  // When we are not deep-copying, the NavigationEntry is going to be used for
-  // a new committed navigation, so it loses its "initial" status.
-  entry->RemoveInitialEntryStatusIfNecessary();
   return entry;
 }
 
@@ -804,7 +790,7 @@ NavigationEntryImpl::CloneAndReplaceInternal(
   // ResetForCommit: post_data_
   copy->extra_headers_ = extra_headers_;
   copy->base_url_for_data_url_ = base_url_for_data_url_;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   copy->data_url_as_string_ = data_url_as_string_;
 #endif
   // ResetForCommit: is_renderer_initiated_
@@ -911,7 +897,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           blink::mojom::WasActivatedOption::kUnknown,
           base::UnguessableToken::Create(),
           std::vector<blink::mojom::PrefetchedSignedExchangeInfoPtr>(),
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
           std::string(),
 #endif
           false /* is_browser_initiated */,
@@ -933,7 +919,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           absl::nullopt /* ad_auction_components */,
           // This timestamp will be populated when the commit IPC is sent.
           base::TimeTicks() /* commit_sent */, false /* anonymous */);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // `data_url_as_string` is saved in NavigationEntry but should only be used by
   // main frames, because loadData* navigations can only happen on the main
   // frame.
@@ -1020,19 +1006,16 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     // If the document of the FrameNavigationEntry is changing, we must clear
     // any child FrameNavigationEntries.
     if (root_node()->frame_entry->document_sequence_number() !=
-        document_sequence_number)
+        document_sequence_number) {
       root_node()->children.clear();
-
-    if (!url.is_empty()) {
-      // A navigation committed on the main frame, so the NavigationEntry loses
-      // its "initial NavigationEntry" status. Note that the initial entry
-      // creation path also goes through this function, but we know not to
-      // remove the status in that case because it uses the empty URL.
-      // TODO(https://crbug.com/1215096): Consider to remove the initial entry
-      // status after subframe navigations too, when the initial empty document
-      // replacement behavior is more consistent, and we've determined that
-      // exposing more history entries to WebView is OK.
-      is_initial_entry_ = false;
+      if (!url.is_empty()) {
+        // A cross-document navigation committed in the main frame, so the
+        // NavigationEntry loses its "initial NavigationEntry" status. Note that
+        // the initial entry creation path also goes through this function, but
+        // we know not to remove the status in that case because it uses the
+        // empty URL.
+        is_initial_entry_ = false;
+      }
     }
 
     root_node()->frame_entry->UpdateEntry(

@@ -76,7 +76,7 @@ std::unique_ptr<ImageProcessor> CreateVaapiImageProcessorWithInputCandidates(
       {VideoFrame::STORAGE_GPU_MEMORY_BUFFER});
   return ImageProcessor::Create(
       base::BindRepeating(&VaapiImageProcessorBackend::Create), input_config,
-      output_config, {ImageProcessor::OutputMode::IMPORT}, VIDEO_ROTATION_0,
+      output_config, ImageProcessor::OutputMode::IMPORT, VIDEO_ROTATION_0,
       std::move(error_cb), std::move(client_task_runner));
 }
 #endif  // BUILDFLAG(USE_VAAPI)
@@ -84,7 +84,7 @@ std::unique_ptr<ImageProcessor> CreateVaapiImageProcessorWithInputCandidates(
 #if BUILDFLAG(USE_V4L2_CODEC) && !BUILDFLAG(USE_VAAPI)
 std::unique_ptr<ImageProcessor> CreateV4L2ImageProcessorWithInputCandidates(
     const std::vector<PixelLayoutCandidate>& input_candidates,
-    const gfx::Rect& visible_rect,
+    const gfx::Size& visible_size,
     size_t num_buffers,
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     ImageProcessorFactory::PickFormatCB out_format_picker,
@@ -116,17 +116,14 @@ std::unique_ptr<ImageProcessor> CreateV4L2ImageProcessorWithInputCandidates(
     if (!base::Contains(supported_input_pixfmts, input_fourcc.ToV4L2PixFmt()))
       continue;
 
-    // Ideally the ImageProcessor would be able to scale and crop |input_size|
-    // to the |visible_rect| area of |output_size|. TryOutputFormat() below is
-    // called to verify that a given combination of fourcc values and input/
-    // output sizes are indeed supported (the driver can potentially return a
-    // different supported |output_size|). Some Image Processors(e.g. MTK8183)
-    // are not able to crop/scale correctly -- but TryOutputFormat()  doesn't
-    // return a "corrected" |output_size|. To avoid troubles (and, in general,
-    // low performance), we set |output_size| to be equal to |input_size|; the
-    // |visible_rect| will carry the information of exactly what part of the
-    // video frame contains valid pixels, and the media/compositor pipeline
-    // will take care of it.
+    // Some Image Processors (e.g. MTK8183) are not able to produce the ideal
+    // output resolution (which would be the |visible_size|) -- and the call to
+    // TryOutputFormat() doesn't return a "corrected" |output_size| in those
+    // cases (see b/213396803). To avoid those situations, we set here the
+    // |output_size| to be the same as the |input_size|, and will let the
+    // |visible_size| carry the information of exactly what part of the output
+    // video frame contains meaningful pixels.
+    // TODO(b/191450183): Use a gfx::Rect instead of |visible_size|.
     gfx::Size output_size = input_size;
     size_t num_planes = 0;
     if (!V4L2ImageProcessorBackend::TryOutputFormat(
@@ -135,15 +132,9 @@ std::unique_ptr<ImageProcessor> CreateV4L2ImageProcessorWithInputCandidates(
       VLOGF(2) << "Failed to get output size and plane count of IP";
       continue;
     }
-    // This is very restrictive because it assumes the IP has the same alignment
-    // criteria as the video decoder that will produce the input video frames.
-    // In practice, this applies to all Image Processors, i.e. Mediatek devices.
-    DCHECK(input_size == output_size);
-    // |visible_rect| applies equally to both |input_size| and |output_size|.
-    DCHECK(gfx::Rect(output_size).Contains(visible_rect));
 
     return v4l2_vda_helpers::CreateImageProcessor(
-        input_fourcc, *output_fourcc, input_size, output_size, visible_rect,
+        input_fourcc, *output_fourcc, input_size, output_size, visible_size,
         VideoFrame::StorageType::STORAGE_GPU_MEMORY_BUFFER, num_buffers,
         V4L2Device::Create(), ImageProcessor::OutputMode::IMPORT,
         std::move(client_task_runner), std::move(error_cb));
@@ -158,7 +149,7 @@ std::unique_ptr<ImageProcessor> CreateV4L2ImageProcessorWithInputCandidates(
 std::unique_ptr<ImageProcessor> ImageProcessorFactory::Create(
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
-    const std::vector<ImageProcessor::OutputMode>& preferred_output_modes,
+    ImageProcessor::OutputMode output_mode,
     size_t num_buffers,
     VideoRotation relative_rotation,
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
@@ -176,10 +167,9 @@ std::unique_ptr<ImageProcessor> ImageProcessorFactory::Create(
 
   std::unique_ptr<ImageProcessor> image_processor;
   for (auto& create_func : create_funcs) {
-    image_processor =
-        ImageProcessor::Create(std::move(create_func), input_config,
-                               output_config, preferred_output_modes,
-                               relative_rotation, error_cb, client_task_runner);
+    image_processor = ImageProcessor::Create(
+        std::move(create_func), input_config, output_config, output_mode,
+        relative_rotation, error_cb, client_task_runner);
     if (image_processor)
       return image_processor;
   }
@@ -203,8 +193,10 @@ ImageProcessorFactory::CreateWithInputCandidates(
   if (processor)
     return processor;
 #elif BUILDFLAG(USE_V4L2_CODEC)
+  // TODO(andrescj): we need to pass the |input_visible_rect| along for the V4L2
+  // ImageProcessor.
   auto processor = CreateV4L2ImageProcessorWithInputCandidates(
-      input_candidates, input_visible_rect, num_buffers, client_task_runner,
+      input_candidates, output_size, num_buffers, client_task_runner,
       out_format_picker, error_cb);
   if (processor)
     return processor;

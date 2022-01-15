@@ -157,7 +157,7 @@
 #include "url/origin.h"
 #include "url/url_constants.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #endif
@@ -1133,7 +1133,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*navigation_token=*/base::UnguessableToken::Create(),
           /*prefetched_signed_exchanges=*/
           std::vector<blink::mojom::PrefetchedSignedExchangeInfoPtr>(),
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
           /*data_url_as_string=*/std::string(),
 #endif
           /*is_browser_initiated=*/false,
@@ -1260,7 +1260,7 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           blink::mojom::WasActivatedOption::kUnknown,
           base::UnguessableToken::Create() /* navigation_token */,
           std::vector<blink::mojom::PrefetchedSignedExchangeInfoPtr>(),
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
           std::string() /* data_url_as_string */,
 #endif
           false /* is_browser_initiated */,
@@ -1397,7 +1397,7 @@ NavigationRequest::NavigationRequest(
   DCHECK(!common_params_->should_replace_current_entry ||
          !NavigationTypeUtils::IsReload(common_params_->navigation_type));
   DCHECK(IsInMainFrame() || common_params_->base_url_for_data_url.is_empty());
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   DCHECK(IsInMainFrame() || commit_params_->data_url_as_string.empty());
 #endif
   // If `rfh_restored_from_back_forward_cache` was set, it should not be
@@ -1608,7 +1608,7 @@ NavigationRequest::NavigationRequest(
 
   begin_params_->headers = headers.ToString();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   static constexpr base::Feature kOptimizeEarlyNavigation{
       "OptimizeEarlyNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
   static constexpr base::FeatureParam<base::TimeDelta> kCompositorLockTimeout{
@@ -1685,7 +1685,7 @@ NavigationRequest::~NavigationRequest() {
   // org.chromium.chrome.browser.toolbar.ToolbarManager
   pending_entry_ref_.reset();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (navigation_handle_proxy_)
     navigation_handle_proxy_->DidFinish();
 #endif
@@ -1917,7 +1917,7 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
 void NavigationRequest::BeginNavigationImpl() {
   base::ElapsedTimer timer;
   SetState(WILL_START_NAVIGATION);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
   bool should_override_url_loading = false;
 
@@ -2187,8 +2187,9 @@ void NavigationRequest::StartNavigation() {
   // entry to replace after the navigation).
   if (commit_params_->should_clear_history_list) {
     common_params_->should_replace_current_entry = false;
-  } else if (ShouldReplaceCurrentEntryForSameUrlNavigation() ||
-             ShouldReplaceCurrentEntryForNavigationFromInitialEmptyDocument()) {
+  } else if (
+      ShouldReplaceCurrentEntryForSameUrlNavigation() ||
+      ShouldReplaceCurrentEntryForNavigationFromInitialEmptyDocumentOrEntry()) {
     common_params_->should_replace_current_entry = true;
   }
 
@@ -2218,7 +2219,7 @@ void NavigationRequest::StartNavigation() {
         /*candidate_prerender_frame_tree_node_id=*/absl::nullopt);
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
 #endif
 
@@ -2278,7 +2279,7 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   // to objects owned by the handle (see the comment in the header).
   DCHECK(!loader_);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (navigation_handle_proxy_)
     navigation_handle_proxy_->DidFinish();
 #endif
@@ -2302,7 +2303,7 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   processing_navigation_throttle_ = false;
   sandbox_flags_to_commit_.reset();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (navigation_handle_proxy_)
     navigation_handle_proxy_.reset();
 #endif
@@ -2466,7 +2467,7 @@ void NavigationRequest::OnRequestRedirected(
   // a reason or another.
   RecordAddressSpaceFeature();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
 
   bool should_override_url_loading = false;
@@ -5708,7 +5709,7 @@ void NavigationRequest::UpdateStateFollowingRedirect(
   SetState(WILL_REDIRECT_REQUEST);
   processing_navigation_throttle_ = true;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   navigation_handle_proxy_->DidRedirect();
 #endif
 }
@@ -7207,7 +7208,8 @@ bool NavigationRequest::ShouldReplaceCurrentEntryForSameUrlNavigation() const {
 }
 
 bool NavigationRequest::
-    ShouldReplaceCurrentEntryForNavigationFromInitialEmptyDocument() const {
+    ShouldReplaceCurrentEntryForNavigationFromInitialEmptyDocumentOrEntry()
+        const {
   DCHECK_LE(state_, WILL_START_NAVIGATION);
   if (common_params_->navigation_type !=
           blink::mojom::NavigationType::SAME_DOCUMENT &&
@@ -7216,6 +7218,18 @@ bool NavigationRequest::
     // History navigations, session restore, and reloads shouldn't do
     // replacement.
     return false;
+  }
+
+  if (frame_tree_node_->navigator()
+          .controller()
+          .GetLastCommittedEntry()
+          ->IsInitialEntry()) {
+    // Initial NavigationEntry must always be replaced, to ensure that as long
+    // as the NavigationEntry exists, it will be the only NavigationEntry in
+    // the session history list, making history navigations to initial
+    // NavigationEntry possible. See the comment for `is_initial_entry_` in
+    // NavigationEntryImpl for more details.
+    return true;
   }
 
   return frame_tree_node_->is_on_initial_empty_document();

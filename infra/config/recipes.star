@@ -151,6 +151,12 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:chromium/builder_cache_prewarmer",
+    bootstrappable = True,
+    use_python3 = True,
+)
+
+build_recipe(
     name = "recipe:chromium_3pp",
     use_python3 = True,
 )
@@ -225,10 +231,12 @@ build_recipe(
 
 build_recipe(
     name = "recipe:reclient_config_deploy_check/tester",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:reclient_goma_comparison",
+    use_python3 = True,
 )
 
 build_recipe(

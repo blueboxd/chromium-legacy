@@ -45,7 +45,6 @@ class BluetoothPolicyHandler;
 class DeviceActiveDirectoryPolicyManager;
 class DeviceCloudPolicyInitializer;
 class ActiveDirectoryDeviceStateUploader;
-class ActiveDirectoryMigrationManager;
 class DeviceDockMacAddressHandler;
 class DeviceLocalAccountPolicyService;
 class DeviceNamePolicyHandler;
@@ -279,8 +278,6 @@ class BrowserPolicyConnectorAsh : public ChromeBrowserPolicyConnector,
       nullptr;
   std::unique_ptr<ActiveDirectoryDeviceStateUploader>
       active_directory_device_state_uploader_;
-  std::unique_ptr<ActiveDirectoryMigrationManager>
-      active_directory_migration_manager_;
   PrefService* local_state_ = nullptr;
   std::unique_ptr<DeviceCloudPolicyInitializer>
       device_cloud_policy_initializer_;
@@ -323,7 +320,7 @@ class BrowserPolicyConnectorAsh : public ChromeBrowserPolicyConnector,
       device_network_configuration_updater_;
 
   // The ConfigurationPolicyProviders created in the constructor are initially
-  // added here, and then pushed to the super class in BuildPolicyProviders().
+  // added here, and then pushed to the super class in CreatePolicyProviders().
   std::vector<std::unique_ptr<ConfigurationPolicyProvider>> providers_for_init_;
 
   // Manages provisioning of certificates from

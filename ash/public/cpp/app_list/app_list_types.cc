@@ -193,6 +193,80 @@ SearchResultAction::SearchResultAction(const SearchResultAction& other) =
 SearchResultAction::~SearchResultAction() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
+// SearchResultTextItem:
+
+SearchResultTextItem::SearchResultTextItem(SearchResultTextItemType type) {
+  item_type = type;
+}
+
+SearchResultTextItem::SearchResultTextItem(const SearchResultTextItem& other) {
+  item_type = other.item_type;
+  raw_text = other.raw_text;
+  text_tags = other.text_tags;
+  icon_code = other.icon_code;
+  raw_icon = other.raw_icon;
+}
+
+SearchResultTextItem& SearchResultTextItem::operator=(
+    const SearchResultTextItem& other) {
+  item_type = other.item_type;
+  raw_text = other.raw_text;
+  text_tags = other.text_tags;
+  icon_code = other.icon_code;
+  raw_icon = other.raw_icon;
+  return *this;
+}
+
+SearchResultTextItem::~SearchResultTextItem() = default;
+
+SearchResultTextItemType SearchResultTextItem::GetType() {
+  return item_type;
+}
+
+const std::string& SearchResultTextItem::GetText() {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kString);
+  return raw_text.value();
+}
+
+SearchResultTextItem& SearchResultTextItem::SetText(std::string text) {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kString);
+  raw_text = text;
+  return *this;
+}
+
+const SearchResultTags& SearchResultTextItem::GetTextTags() {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kString);
+  return text_tags.value();
+}
+
+SearchResultTextItem& SearchResultTextItem::SetTextTags(SearchResultTags tags) {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kString);
+  text_tags = tags;
+  return *this;
+}
+
+gfx::ImageSkia SearchResultTextItem::GetIconFromCode() {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kIconCode);
+  return gfx::ImageSkia();
+}
+
+SearchResultTextItem& SearchResultTextItem::SetIconCode(int code) {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kIconCode);
+  icon_code = code;
+  return *this;
+}
+
+gfx::ImageSkia SearchResultTextItem::GetIcon() {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kCustomIcon);
+  return raw_icon.value();
+}
+
+SearchResultTextItem& SearchResultTextItem::SetIcon(gfx::ImageSkia icon) {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kCustomIcon);
+  raw_icon = icon;
+  return *this;
+}
+////////////////////////////////////////////////////////////////////////////////
 // SearchResultMetadata:
 
 SearchResultMetadata::SearchResultMetadata() = default;

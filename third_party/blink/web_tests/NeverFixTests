@@ -210,7 +210,6 @@ external/wpt/css/CSS2/text/text-align-white-space-003.xht [ Skip ]
 external/wpt/css/CSS2/text/text-align-white-space-007.xht [ Skip ]
 
 # CSS2 tests that require files in different directories.
-external/wpt/css/CSS2/linebox/inline-formatting-context-012.xht [ Skip ]
 external/wpt/css/CSS2/normal-flow/blocks-017.xht [ Skip ]
 
 # CSS2 tests that have 1px diff due to font hinting.
@@ -1689,8 +1688,6 @@ virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-windo
 virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/wasm-module-sharing-enabled-not-site-per-process/external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Pass ]
-virtual/wasm-module-sharing-enabled-not-site-per-process/external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Pass ]
 # ----------------------- origin-keyed agent clusters --------------------
 # Origin-keyed agent clusters web platform tests are for the feature at
 # https://html.spec.whatwg.org/#origin-keyed-agent-clusters. It doesn't make
@@ -1840,6 +1837,9 @@ external/wpt/serial/serialPort_loopback_BreakError-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_loopback_BufferOverrunError-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_disconnect-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_readable-manual.https.html [ Skip ]
+
+# Content-shell doesn't support plugins
+fast/dom/HTMLObjectElement/object-param-url-usecounter-manual.html [ Skip ]
 
 # CPU test is enough for this one as there are gradient issues on the GPU
 crbug.com/626703 [ Linux ] external/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol-handler-query-nosw-manual.https.html [ Skip ]

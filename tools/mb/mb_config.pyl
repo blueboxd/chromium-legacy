@@ -25,6 +25,7 @@
       'lacros-amd64-generic-chrome': 'chromeos_amd64-generic_lacros_official',
       'lacros-amd64-generic-chrome-skylab': 'chromeos_amd64-generic_lacros_official_skylab',
       'lacros-arm-generic-chrome': 'chromeos_arm-generic_lacros_official',
+      'lacros-arm-generic-chrome-skylab': 'chromeos_arm-generic_lacros_official_skylab',
       # Don't include unwind tables for linux-/mac-/win-/win64-chrome builders.
       # They monitor binary size growth, which may be affected by the tables.
       'linux-chrome': 'official_goma',
@@ -129,16 +130,16 @@
     },
 
     'chromium.angle': {
-      'android-angle-arm64-builder': 'angle_specific_no_trace_android_release_trybot_dcheck_always_on_arm64',
+      'android-angle-arm64-builder': 'angle_deqp_android_release_trybot_dcheck_always_on_arm64',
       'android-angle-chromium-arm64-builder': 'gpu_tests_android_release_bot_dcheck_always_on_arm64_fastbuild',
-      'fuchsia-angle-builder': 'angle_specific_release_bot_dcheck_always_on_fuchsia',
-      'ios-angle-builder': 'angle_specific_release_bot_dcheck_always_on_ios',
-      'linux-angle-builder': 'angle_specific_release_bot_dcheck_always_on',
+      'fuchsia-angle-builder': 'angle_deqp_release_bot_dcheck_always_on_fuchsia',
+      'ios-angle-builder': 'angle_deqp_release_bot_dcheck_always_on_ios',
+      'linux-angle-builder': 'angle_deqp_release_trybot',
       'linux-angle-chromium-builder': 'gpu_tests_release_trybot_minimal_symbols',
       'mac-angle-chromium-builder': 'gpu_tests_release_trybot_minimal_symbols',
       'win-angle-chromium-x64-builder': 'gpu_tests_release_trybot_minimal_symbols',
       'win-angle-chromium-x86-builder': 'gpu_tests_release_bot_dcheck_always_on_x86',
-      'win-angle-x64-builder': 'angle_specific_release_bot_dcheck_always_on',
+      'win-angle-x64-builder': 'angle_deqp_release_trybot',
     },
 
     'chromium.chromiumos': {
@@ -868,18 +869,18 @@
     # TODO(jmadill/ynovikov): Migrate these to angle waterfall. http://anglebug.com/4483
     'tryserver.chromium.angle': {
       'android-angle-chromium-try': 'gpu_tests_android_release_trybot_arm64_fastbuild',
-      'android-angle-try': 'angle_specific_no_trace_android_release_trybot_arm64',
+      'android-angle-try': 'angle_deqp_android_release_trybot_arm64',
       'android_angle_rel_ng': 'gpu_tests_android_release_trybot_arm64',
       'fuchsia-angle-rel': 'gpu_fyi_tests_release_trybot_fuchsia',
-      'fuchsia-angle-try': 'angle_specific_release_trybot_fuchsia',
-      'ios-angle-try-intel': 'angle_specific_release_trybot_ios',
+      'fuchsia-angle-try': 'angle_deqp_release_trybot_fuchsia',
+      'ios-angle-try-intel': 'angle_deqp_release_trybot_ios',
       'linux-angle-rel': 'gpu_fyi_tests_release_trybot',
       'linux-angle-chromium-try': 'gpu_tests_release_trybot',
-      'linux-angle-try': 'angle_specific_release_trybot',
+      'linux-angle-try': 'angle_deqp_release_trybot',
       'mac-angle-chromium-try': 'gpu_tests_release_trybot',
       'win-angle-chromium-x64-try': 'gpu_tests_release_trybot',
       'win-angle-chromium-x86-try': 'gpu_tests_release_trybot_x86',
-      'win-angle-x64-try': 'angle_specific_release_trybot',
+      'win-angle-x64-try': 'angle_deqp_release_trybot',
     },
 
     'tryserver.chrome': {
@@ -1035,6 +1036,7 @@
       'linux-wayland-rel': 'gpu_tests_wayland_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-perfetto-rel': 'perfetto_release_trybot',
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
+      'linux-rel-warmed': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-rel-orchestrator': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-rel-rts': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-stable-filter-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
@@ -1603,8 +1605,9 @@
       'android_without_codecs', 'release_trybot', 'strip_debug_info',
     ],
 
-    'angle_deqp_release_trybot': [
-      'angle_deqp_tests', 'shared_release_bot_dcheck_always_on',
+    'angle_deqp_android_release_trybot_arm64': [
+      'angle_deqp_tests', 'android_without_codecs',
+      'shared_release_trybot', 'arm64',
     ],
 
     'angle_deqp_release_bot_dcheck_always_on_x86': [
@@ -1619,38 +1622,25 @@
       'angle_deqp_tests', 'shared_release_trybot', 'x86',
     ],
 
-    'angle_specific_no_trace_android_release_trybot_arm64': [
-      'angle_specific_no_trace_tests', 'android_without_codecs',
-      'shared_release_trybot', 'arm64',
-    ],
-
-    'angle_specific_no_trace_android_release_trybot_dcheck_always_on_arm64': [
-      'angle_specific_no_trace_tests', 'android_without_codecs',
+    'angle_deqp_android_release_trybot_dcheck_always_on_arm64': [
+      'angle_deqp_tests', 'android_without_codecs',
       'shared_release_bot_dcheck_always_on', 'arm64',
     ],
 
-    'angle_specific_release_bot_dcheck_always_on': [
-      'angle_specific_tests', 'shared_release_bot_dcheck_always_on',
+    'angle_deqp_release_bot_dcheck_always_on_fuchsia': [
+      'angle_deqp_tests', 'shared_release_bot_dcheck_always_on', 'fuchsia',
     ],
 
-    'angle_specific_release_bot_dcheck_always_on_fuchsia': [
-      'angle_specific_tests', 'shared_release_bot_dcheck_always_on', 'fuchsia',
+    'angle_deqp_release_bot_dcheck_always_on_ios': [
+      'angle_deqp_tests', 'release_trybot_minimal_symbols', 'ios', 'ios_simulator', 'ios_cpu_x64', 'xctest', 'ios_disable_xcode_project_generation',
     ],
 
-    'angle_specific_release_bot_dcheck_always_on_ios': [
-      'angle_specific_tests', 'release_trybot_minimal_symbols', 'ios', 'ios_simulator', 'ios_cpu_x64', 'xctest', 'ios_disable_xcode_project_generation',
+    'angle_deqp_release_trybot_fuchsia': [
+      'angle_deqp_tests', 'shared_release_trybot', 'fuchsia',
     ],
 
-    'angle_specific_release_trybot': [
-      'angle_specific_tests', 'shared_release_trybot',
-    ],
-
-    'angle_specific_release_trybot_fuchsia': [
-      'angle_specific_tests', 'shared_release_trybot', 'fuchsia',
-    ],
-
-    'angle_specific_release_trybot_ios': [
-      'angle_specific_tests', 'release_trybot', 'ios', 'ios_simulator', 'ios_cpu_x64', 'xctest', 'ios_disable_xcode_project_generation',
+    'angle_deqp_release_trybot_ios': [
+      'angle_deqp_tests', 'release_trybot', 'ios', 'ios_simulator', 'ios_cpu_x64', 'xctest', 'ios_disable_xcode_project_generation',
     ],
 
     'asan_clang_shared_v8_heap_minimal_symbols_release_tot': [
@@ -3172,18 +3162,6 @@
       'gn_args': 'build_angle_deqp_tests=true',
     },
 
-    'angle_specific_tests': {
-      'mixins': ['angle_deqp_tests', 'angle_trace_perf_tests', 'disable_nacl'],
-    },
-
-    'angle_specific_no_trace_tests': {
-      'mixins': ['angle_deqp_tests'],
-    },
-
-    'angle_trace_perf_tests': {
-      'gn_args': 'build_angle_trace_perf_tests=true',
-    },
-
     'arm': {
       'gn_args': 'target_cpu="arm"',
     },
@@ -3543,7 +3521,7 @@
 
     'gpu_fyi_tests': {
       'gn_args': 'is_gpu_fyi_bot=true',
-      'mixins': ['angle_trace_perf_tests', 'gpu_tests', 'internal_gles_conform_tests'],
+      'mixins': ['gpu_tests', 'internal_gles_conform_tests'],
     },
 
     'gpu_tests': {

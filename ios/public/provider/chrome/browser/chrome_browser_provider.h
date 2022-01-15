@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 
@@ -21,10 +20,6 @@ class DiscoverFeedProvider;
 class FollowProvider;
 class MailtoHandlerProvider;
 class UserFeedbackProvider;
-
-namespace base {
-class CommandLine;
-}
 
 namespace web {
 class WebState;
@@ -45,8 +40,8 @@ class ChromeTrustedVaultService;
 // any browser code is called (as the getter will fail if the provider has not
 // been set).
 ChromeBrowserProvider& GetChromeBrowserProvider();
-ChromeBrowserProvider* SetChromeBrowserProvider(ChromeBrowserProvider* provider)
-    WARN_UNUSED_RESULT;
+[[nodiscard]] ChromeBrowserProvider* SetChromeBrowserProvider(
+    ChromeBrowserProvider* provider);
 
 // Factory function for the embedder specific provider. This function must be
 // implemented by the embedder and will be selected via linking (i.e. by the
@@ -80,11 +75,6 @@ class ChromeBrowserProvider {
   ChromeBrowserProvider();
   virtual ~ChromeBrowserProvider();
 
-  // Appends additional command-line flags. Called before web startup.
-  virtual void AppendSwitchesFromExperimentalSettings(
-      NSUserDefaults* experimental_settings,
-      base::CommandLine* command_line) const;
-
   // This is called after web startup.
   virtual void Initialize() const;
 
@@ -97,9 +87,6 @@ class ChromeBrowserProvider {
   virtual ChromeTrustedVaultService* GetChromeTrustedVaultService();
   // Creates and returns a new styled text field.
   virtual UITextField* CreateStyledTextField() const NS_RETURNS_RETAINED;
-
-  // Attaches any embedder-specific browser agents to the given |browser|.
-  virtual void AttachBrowserAgents(Browser* browser) const;
 
   virtual id<LogoVendor> CreateLogoVendor(Browser* browser,
                                           web::WebState* web_state) const

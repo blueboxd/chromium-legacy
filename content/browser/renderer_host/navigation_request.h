@@ -67,7 +67,7 @@
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "url/origin.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/android/navigation_handle_proxy.h"
 #endif
@@ -567,7 +567,7 @@ class CONTENT_EXPORT NavigationRequest
     return navigation_type_;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Returns a reference to |navigation_handle_| Java counterpart. It is used
   // by Java WebContentsObservers.
   base::android::ScopedJavaGlobalRef<jobject> java_navigation_handle() {
@@ -1452,9 +1452,11 @@ class CONTENT_EXPORT NavigationRequest
   // or not. Called when the navigation just started.
   bool ShouldReplaceCurrentEntryForSameUrlNavigation() const;
 
-  // Whether this navigation happens on the initial empty document, and thus
-  // should replace the current entry.  Called when the navigation just started.
-  bool ShouldReplaceCurrentEntryForNavigationFromInitialEmptyDocument() const;
+  // Whether this navigation happens on the initial empty document or initial
+  // NavigationEntry, and thus should replace the current entry. Called when the
+  // navigation just started.
+  bool ShouldReplaceCurrentEntryForNavigationFromInitialEmptyDocumentOrEntry()
+      const;
 
   // Whether a failed navigation should replace the current entry or not. Called
   // when an error page is about to be committed.
@@ -1533,7 +1535,7 @@ class CONTENT_EXPORT NavigationRequest
 
   std::unique_ptr<NavigationURLLoader> loader_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // For each C++ NavigationHandle, there is a Java counterpart. It is the JNI
   // bridge in between the two.
   std::unique_ptr<NavigationHandleProxy> navigation_handle_proxy_;

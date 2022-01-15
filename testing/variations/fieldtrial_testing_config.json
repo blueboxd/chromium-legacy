@@ -2458,6 +2458,47 @@
             ]
         }
     ],
+    "CombinedNavigationOptimizations": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EarlyCodeCache",
+                        "FontManagerEarlyInit",
+                        "NavigationThreadingOptimizations",
+                        "URLLoaderSyncClient"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CombinedNavigationOptimizationsDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EarlyCodeCache",
+                        "NavigationThreadingOptimizations",
+                        "URLLoaderSyncClient"
+                    ]
+                }
+            ]
+        }
+    ],
     "CommerceMerchantViewer": [
         {
             "platforms": [
@@ -3031,6 +3072,7 @@
                         "NtpChromeCartModuleAbandonedCartDiscountUseUtmParam": "true",
                         "NtpChromeCartModuleHeuristicsImprovementParam": "true",
                         "NtpModulesLoadTimeoutMillisecondsParam": "3000",
+                        "NtpModulesOrderParam": "",
                         "discount-fetch-delay": "1h"
                     },
                     "enable_features": [
@@ -3581,28 +3623,6 @@
             ]
         }
     ],
-    "EarlyCodeCache": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20211116",
-                    "enable_features": [
-                        "EarlyCodeCache"
-                    ]
-                }
-            ]
-        }
-    ],
     "EarlyEstablishGpuChannel": [
         {
             "platforms": [
@@ -3853,23 +3873,6 @@
                     },
                     "enable_features": [
                         "IPH_FocusHelpBubbleScreenReaderPromo"
-                    ]
-                }
-            ]
-        }
-    ],
-    "FontManagerEarlyInit": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20210921",
-                    "enable_features": [
-                        "FontManagerEarlyInit"
                     ]
                 }
             ]
@@ -4165,6 +4168,28 @@
             ]
         }
     ],
+    "HatsArcGames": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "custom_client_data": "{\"package_names\":[\"com.roblox.client\",\"com.dts.freefireth\",\"air.com.lunime.gachaclub\",\"com.devsisters.ck\",\"com.tocaboca.tocalifeworld\",\"com.innersloth.spacemafia\",\"com.microsoft.microsoftsolitairecollection\",\"com.king.candycrushsaga\",\"com.king.candycrushsodasaga\",\"air.com.lunime.gachalife\",\"com.playrix.township\",\"com.dts.freefiremax\",\"com.mobilityware.spider\",\"net.wooga.junes_journey_hidden_object_mystery_game\",\"com.mobile.legends\",\"com.ninjakiwi.bloonstd6\",\"com.lockwoodpublishing.avakinlife\",\"com.pixel.art.coloring.color.number\",\"com.playrix.homescapes\",\"com.miHoYo.GenshinImpact\"]}",
+                        "prob": "0.05",
+                        "survey_cycle_length": "7",
+                        "survey_start_date_ms": "1638316800000",
+                        "trigger_id": "rJ6AqzkxG0jBnuKU19R0UJFsCCjz"
+                    },
+                    "enable_features": [
+                        "HappinessTrackingArcGames"
+                    ]
+                }
+            ]
+        }
+    ],
     "HatsOnboardingExperience": [
         {
             "platforms": [
@@ -4396,6 +4421,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MetrickitCrashReport"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSNewOverflowMenu": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NewOverflowMenu"
                     ]
                 }
             ]
@@ -5359,28 +5399,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "NavigationRequestPreconnect"
-                    ]
-                }
-            ]
-        }
-    ],
-    "NavigationThreadingOptimizations": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NavigationThreadingOptimizations"
                     ]
                 }
             ]
@@ -8090,28 +8108,6 @@
                     },
                     "enable_features": [
                         "UMAPseudoMetricsEffect"
-                    ]
-                }
-            ]
-        }
-    ],
-    "URLLoaderSyncClient": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20211102",
-                    "enable_features": [
-                        "URLLoaderSyncClient"
                     ]
                 }
             ]

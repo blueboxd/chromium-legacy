@@ -135,7 +135,7 @@ const base::Feature kTabCaptureBlueBorder{"TabCaptureBlueBorder",
 //      origin trial or through enabling Experimental Web Platforms features.)
 const base::Feature kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT{
     "TabCaptureBlueBorderForSelfCaptureRegionCaptureOT",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables migration of the network context data from `unsandboxed_data_path` to
 // `data_path`. See the explanation in network_context.mojom.
@@ -163,5 +163,12 @@ const base::Feature kLargeFaviconFromGoogle{"LargeFaviconFromGoogle",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip{
     &kLargeFaviconFromGoogle, "favicon_size_in_dip", 128};
+
+// Enables the use of a `ProfileManagerObserver` to trigger the post profile
+// init step of the browser startup. This affects the initialization order of
+// some features with the goal to improve startup performance in some cases.
+// See https://bit.ly/chromium-startup-no-guest-profile.
+const base::Feature kObserverBasedPostProfileInit{
+    "ObserverBasedPostProfileInit", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features

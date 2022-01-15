@@ -23,6 +23,15 @@
 # The goal is to drive the number of exceptions to zero, to make all
 # the bots behave similarly.
 {
+  'accessibility_unittests':{
+    'modifications': {
+      'fuchsia-fyi-x64-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.accessibility_unittests.filter',
+        ],
+      },
+    },
+  },
   'android_browsertests': {
     'modifications': {
       'android-11-x86-rel': {
@@ -82,39 +91,11 @@
   'android_webview_unittests': {
   },
   'angle_end2end_tests': {
-    'remove_from': [
-      # TODO(ynovikov) Investigate why the test breaks on older devices.
-      'Android FYI Release (Nexus 5)',
-      'Android FYI Release (Nexus 9)',
-    ],
     'modifications': {
-      # anglebug.com/5328 suspecting blue screen caused by multiprocess
-      'Optional Win10 x64 Release (Intel HD 630)': {
-        'args': [
-          '--max-processes=1',
-        ],
-      },
-      'Win10 FYI x64 Exp Release (Intel HD 630)': {
-        'args': [
-          '--max-processes=1',
-        ],
-      },
-      'Win10 FYI x64 Release (Intel HD 630)': {
-        'args': [
-          '--max-processes=1',
-        ],
-      },
       'win10-angle-x64-intel': {
         'args': [
           '--max-processes=1',
         ],
-      },
-    },
-    'replacements': {
-      'Linux FYI Release (AMD RX 5500 XT)': {
-        'args': {
-          '--max-processes': '1',
-        },
       },
     },
   },
@@ -130,25 +111,18 @@
       'linux-lacros-tester-fyi-rel',
       'linux-lacros-dbg-tests-fyi',
     ],
+    'modifications': {
+      # anglebug.com/6894
+      'fuchsia-fyi-x64-asan': {
+        'args': [
+          # crbug.com/
+          '--gtest_filter=-ConstructCompilerTest.DefaultParameters',
+        ],
+      },
+    },
   },
   'angle_white_box_tests': {
     'modifications': {
-      # anglebug.com/5328 suspecting blue screen caused by multiprocess
-      'Optional Win10 x64 Release (Intel HD 630)': {
-        'args': [
-          '--max-processes=1',
-        ],
-      },
-      'Win10 FYI x64 Exp Release (Intel HD 630)': {
-        'args': [
-          '--max-processes=1',
-        ],
-      },
-      'Win10 FYI x64 Release (Intel HD 630)': {
-        'args': [
-          '--max-processes=1',
-        ],
-      },
       'win10-angle-x64-intel': {
         'args': [
           '--max-processes=1',
@@ -185,6 +159,11 @@
         'swarming': {
           'shards': 5,
         },
+      },
+      'fuchsia-fyi-x64-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.base_unittests.filter',
+        ],
       },
     },
   },
@@ -537,6 +516,7 @@
       'CrWinAsan(dll)', # https://crbug.com/935598
       'linux-win_cross-rel',
       'ToTLinuxTSan',  # https://crbug.com/368525
+      'Mac10.11 Tests', # https://crbug.com/1263696
       # TODO(crbug.com/1171053): Enable the suite in 'Mac10.15 Tests' once it's
       # off CQ.
       'Mac10.13 Tests', # https://crbug.com/1042757
@@ -1438,6 +1418,11 @@
           'shards': 12,
         },
       },
+      'fuchsia-fyi-x64-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.content_unittests.filter',
+        ],
+      },
     },
   },
   'context_lost_validating_tests': {
@@ -1578,6 +1563,13 @@
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
     ],
+    'modifications': {
+      'fuchsia-fyi-x64-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.gin_unittests.filter',
+        ],
+      },
+    },
   },
   # TODO(crbug.com/1202958): Remove these GLRenderer variants when
   # SkiaRenderer is fully shipped on Chrome OS.
@@ -2091,6 +2083,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.media_unittests.filter',
         ],
       },
+      'fuchsia-fyi-x64-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.media_unittests.filter',
+        ],
+      },
     },
   },
   'mediapipe_validating_tests': {
@@ -2341,6 +2338,11 @@
           'shards': 14,
         },
       },
+      'fuchsia-fyi-x64-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.net_unittests.filter',
+        ],
+      },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'swarming': {
           'shards': 4,
@@ -2445,6 +2447,11 @@
         'args': [
           # TODO(crbug.com/1260440): Fix the failed test
           '--gtest_filter=-ScopedDirTest.CloseOutOfScope',
+        ],
+      },
+      'fuchsia-fyi-x64-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.perfetto_unittests.filter',
         ],
       },
     },
@@ -2771,6 +2778,15 @@
       },
       'chromeos-amd64-generic-rel (reclient)': {
         'ci_only': True,
+      },
+    },
+  },
+  'skia_unittests': {
+    'modifications': {
+      'fuchsia-fyi-x64-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.skia_unittests.filter',
+        ],
       },
     },
   },
@@ -3154,6 +3170,11 @@
       'fuchsia-fyi-arm64-dbg': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.views_unittests.filter',
+        ],
+      },
+      'fuchsia-fyi-x64-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.views_unittests.filter',
         ],
       },
       # https://crbug.com/1111979,

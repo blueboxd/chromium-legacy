@@ -234,12 +234,12 @@ VULKAN_DEVICE_FUNCTIONS = [
   },
   {
     'ifdef': 'BUILDFLAG(IS_FUCHSIA)',
-    'extension': 'VK_FUCHSIA_BUFFER_COLLECTION_X_EXTENSION_NAME',
+    'extension': 'VK_FUCHSIA_BUFFER_COLLECTION_EXTENSION_NAME',
     'functions': [
-      'vkCreateBufferCollectionFUCHSIAX',
-      'vkSetBufferCollectionConstraintsFUCHSIAX',
-      'vkGetBufferCollectionPropertiesFUCHSIAX',
-      'vkDestroyBufferCollectionFUCHSIAX',
+      'vkCreateBufferCollectionFUCHSIA',
+      'vkSetBufferCollectionImageConstraintsFUCHSIA',
+      'vkGetBufferCollectionPropertiesFUCHSIA',
+      'vkDestroyBufferCollectionFUCHSIA',
     ]
   },
   {

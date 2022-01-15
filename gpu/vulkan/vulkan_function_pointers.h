@@ -288,14 +288,14 @@ struct COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers {
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
 #if BUILDFLAG(IS_FUCHSIA)
-  VulkanFunction<PFN_vkCreateBufferCollectionFUCHSIAX>
-      vkCreateBufferCollectionFUCHSIAX;
-  VulkanFunction<PFN_vkSetBufferCollectionConstraintsFUCHSIAX>
-      vkSetBufferCollectionConstraintsFUCHSIAX;
-  VulkanFunction<PFN_vkGetBufferCollectionPropertiesFUCHSIAX>
-      vkGetBufferCollectionPropertiesFUCHSIAX;
-  VulkanFunction<PFN_vkDestroyBufferCollectionFUCHSIAX>
-      vkDestroyBufferCollectionFUCHSIAX;
+  VulkanFunction<PFN_vkCreateBufferCollectionFUCHSIA>
+      vkCreateBufferCollectionFUCHSIA;
+  VulkanFunction<PFN_vkSetBufferCollectionImageConstraintsFUCHSIA>
+      vkSetBufferCollectionImageConstraintsFUCHSIA;
+  VulkanFunction<PFN_vkGetBufferCollectionPropertiesFUCHSIA>
+      vkGetBufferCollectionPropertiesFUCHSIA;
+  VulkanFunction<PFN_vkDestroyBufferCollectionFUCHSIA>
+      vkDestroyBufferCollectionFUCHSIA;
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
   VulkanFunction<PFN_vkAcquireNextImageKHR> vkAcquireNextImageKHR;
@@ -1123,14 +1123,36 @@ ALWAYS_INLINE VkResult vkGetMemoryZirconHandleFUCHSIA(
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
 #if BUILDFLAG(IS_FUCHSIA)
-#define vkCreateBufferCollectionFUCHSIAX \
-  gpu::GetVulkanFunctionPointers()->vkCreateBufferCollectionFUCHSIAX
-#define vkSetBufferCollectionConstraintsFUCHSIAX \
-  gpu::GetVulkanFunctionPointers()->vkSetBufferCollectionConstraintsFUCHSIAX
-#define vkGetBufferCollectionPropertiesFUCHSIAX \
-  gpu::GetVulkanFunctionPointers()->vkGetBufferCollectionPropertiesFUCHSIAX
-#define vkDestroyBufferCollectionFUCHSIAX \
-  gpu::GetVulkanFunctionPointers()->vkDestroyBufferCollectionFUCHSIAX
+ALWAYS_INLINE VkResult vkCreateBufferCollectionFUCHSIA(
+    VkDevice device,
+    const VkBufferCollectionCreateInfoFUCHSIA* pCreateInfo,
+    const VkAllocationCallbacks* pAllocator,
+    VkBufferCollectionFUCHSIA* pCollection) {
+  return gpu::GetVulkanFunctionPointers()->vkCreateBufferCollectionFUCHSIA(
+      device, pCreateInfo, pAllocator, pCollection);
+}
+ALWAYS_INLINE VkResult vkSetBufferCollectionImageConstraintsFUCHSIA(
+    VkDevice device,
+    VkBufferCollectionFUCHSIA collection,
+    const VkImageConstraintsInfoFUCHSIA* pImageConstraintsInfo) {
+  return gpu::GetVulkanFunctionPointers()
+      ->vkSetBufferCollectionImageConstraintsFUCHSIA(device, collection,
+                                                     pImageConstraintsInfo);
+}
+ALWAYS_INLINE VkResult vkGetBufferCollectionPropertiesFUCHSIA(
+    VkDevice device,
+    VkBufferCollectionFUCHSIA collection,
+    VkBufferCollectionPropertiesFUCHSIA* pProperties) {
+  return gpu::GetVulkanFunctionPointers()
+      ->vkGetBufferCollectionPropertiesFUCHSIA(device, collection, pProperties);
+}
+ALWAYS_INLINE void vkDestroyBufferCollectionFUCHSIA(
+    VkDevice device,
+    VkBufferCollectionFUCHSIA collection,
+    const VkAllocationCallbacks* pAllocator) {
+  return gpu::GetVulkanFunctionPointers()->vkDestroyBufferCollectionFUCHSIA(
+      device, collection, pAllocator);
+}
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
 ALWAYS_INLINE VkResult vkAcquireNextImageKHR(VkDevice device,

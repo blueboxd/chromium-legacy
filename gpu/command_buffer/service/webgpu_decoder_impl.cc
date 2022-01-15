@@ -432,7 +432,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::unique_ptr<dawn_native::Instance> dawn_instance_;
   std::vector<dawn_native::Adapter> dawn_adapters_;
 
-  bool allow_spirv_ = false;
+  bool enable_unsafe_webgpu_ = false;
   bool force_webgpu_compat_ = false;
   std::vector<std::string> force_enabled_toggles_;
   std::vector<std::string> force_disabled_toggles_;
@@ -458,7 +458,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   // in PerformPollingWork. Dawn will never reuse a previously allocated
   // <ID, generation> pair.
   std::vector<std::pair<uint32_t, uint32_t>> known_devices_;
-  std::unordered_map<uint32_t, WGPUBackendType> device_backend_types_;
+  std::unordered_map<uint32_t, WGPUAdapterProperties>
+      device_adapter_properties_;
 
   bool has_polling_work_ = false;
   bool destroyed_ = false;
@@ -524,7 +525,7 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
       break;
   }
 
-  allow_spirv_ = gpu_preferences.enable_webgpu_spirv;
+  enable_unsafe_webgpu_ = gpu_preferences.enable_unsafe_webgpu;
   force_webgpu_compat_ = gpu_preferences.force_webgpu_compat;
   force_enabled_toggles_ = gpu_preferences.enabled_dawn_features_list;
   force_disabled_toggles_ = gpu_preferences.disabled_dawn_features_list;
@@ -543,7 +544,7 @@ WebGPUDecoderImpl::~WebGPUDecoderImpl() {
 void WebGPUDecoderImpl::Destroy(bool have_context) {
   associated_shared_image_map_.clear();
   known_devices_.clear();
-  device_backend_types_.clear();
+  device_adapter_properties_.clear();
   wire_server_ = nullptr;
 
   destroyed_ = true;
@@ -609,7 +610,7 @@ void WebGPUDecoderImpl::DoRequestDevice(
 
   // Disallows usage of SPIR-V by default for security (we only ensure that WGSL
   // is secure), unless --enable-unsafe-webgpu is used.
-  if (!allow_spirv_) {
+  if (!enable_unsafe_webgpu_) {
     device_descriptor.forceEnabledToggles.push_back("disallow_spirv");
   }
 
@@ -683,9 +684,10 @@ void WebGPUDecoderImpl::OnRequestDeviceCallback(
     // will be checked in PerformPollingWork to tick all the live devices and
     // remove all the dead ones.
     known_devices_.emplace_back(device_id, device_generation);
+
     WGPUAdapterProperties adapterProperties = {};
     dawn_adapters_[requested_adapter_index].GetProperties(&adapterProperties);
-    device_backend_types_[device_id] = adapterProperties.backendType;
+    device_adapter_properties_[device_id] = adapterProperties;
   }
 
   size_t error_message_size =
@@ -1155,7 +1157,7 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   // Create a WGPUTexture from the mailbox.
   std::unique_ptr<SharedImageRepresentationDawn> shared_image =
       shared_image_representation_factory_->ProduceDawn(
-          mailbox, device, device_backend_types_[device_id]);
+          mailbox, device, device_adapter_properties_[device_id].backendType);
   if (!shared_image) {
     DLOG(ERROR) << "AssociateMailbox: Couldn't produce shared image";
     return error::kInvalidArguments;

@@ -245,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '55c215cfb650300419033ea9a0af364acfd3976c',
+  'skia_revision': '00e04f23390ac261dda334fb5ceb20a7e32e8527',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '87f8946815ce8ac43f66f20e2b8384c3bcbaae40',
+  'devtools_frontend_revision': 'ba3d11fdec6340861e2dbe18141b57e81f1800b0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'b1760f2f073a128ae2be1d1ae2d4a0b432dae5cd',
+  'dawn_revision': '12a6c724550158bf9258b0a3c65cbe1656d5cbaf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -404,11 +404,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libcxxabi_revision':    'ac59a25224f7429b08e23169b943780f22bdd9a2',
+  'libcxxabi_revision':    'a38a05af626bd1363e9c11ef8c09aef611f6aae3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    '3a4338c13f92c8f440a4be4279e4107622f45e76',
+  'libunwind_revision':    'a09d233b29f905e9d227f9f18bd93fc13fdd9fed',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1718,7 +1718,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f940bff59845d4bb4aa1d3fe369c38eec58e7b03',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f909f07fcb9837f01d649da793eda89a09f5212b',
     'condition': 'checkout_src_internal',
   },
 

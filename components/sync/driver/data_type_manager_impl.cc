@@ -156,7 +156,7 @@ void DataTypeManagerImpl::PurgeForMigration(ModelTypeSet undesired_types) {
 void DataTypeManagerImpl::ConfigureImpl(ModelTypeSet desired_types,
                                         const ConfigureContext& context) {
   DCHECK_NE(context.reason, CONFIGURE_REASON_UNKNOWN);
-  DVLOG(1) << "Configuring for " << ModelTypeSetToString(desired_types)
+  DVLOG(1) << "Configuring for " << ModelTypeSetToDebugString(desired_types)
            << " with reason " << context.reason;
   if (state_ == STOPPING) {
     // You can not set a configuration while stopping.
@@ -190,7 +190,7 @@ void DataTypeManagerImpl::ConfigureImpl(ModelTypeSet desired_types,
 
 void DataTypeManagerImpl::ConnectDataTypes() {
   for (ModelType type : last_enabled_types_) {
-    const auto& dtc_iter = controllers_->find(type);
+    auto dtc_iter = controllers_->find(type);
     if (dtc_iter == controllers_->end()) {
       continue;
     }
@@ -274,9 +274,9 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
       Difference(Union(UserTypes(), ControlTypes()), enabled_types);
   const ModelTypeSet to_configure =
       Intersection(enabled_types, types_being_configured);
-  DVLOG(1) << "Enabling: " << ModelTypeSetToString(enabled_types);
-  DVLOG(1) << "Configuring: " << ModelTypeSetToString(to_configure);
-  DVLOG(1) << "Disabling: " << ModelTypeSetToString(disabled_types);
+  DVLOG(1) << "Enabling: " << ModelTypeSetToDebugString(enabled_types);
+  DVLOG(1) << "Configuring: " << ModelTypeSetToDebugString(to_configure);
+  DVLOG(1) << "Disabling: " << ModelTypeSetToDebugString(disabled_types);
 
   DataTypeConfigStateMap config_state_map;
   SetDataTypesState(CONFIGURE_INACTIVE, enabled_types, &config_state_map);
@@ -355,7 +355,7 @@ void DataTypeManagerImpl::OnAllDataTypesReadyForConfigure() {
   ConnectDataTypes();
 
   // Propagate the state of PROXY_TABS to the sync engine.
-  const auto& dtc_iter = controllers_->find(PROXY_TABS);
+  auto dtc_iter = controllers_->find(PROXY_TABS);
   if (dtc_iter != controllers_->end()) {
     configurer_->SetProxyTabsDatatypeEnabled(dtc_iter->second->state() ==
                                              DataTypeController::RUNNING);
@@ -405,7 +405,7 @@ void DataTypeManagerImpl::UpdatePreconditionErrors(
 }
 
 bool DataTypeManagerImpl::UpdatePreconditionError(ModelType type) {
-  const auto& iter = controllers_->find(type);
+  auto iter = controllers_->find(type);
   if (iter == controllers_->end())
     return false;
 
@@ -611,7 +611,7 @@ DataTypeManagerImpl::PrepareConfigureParams(
   // |downloaded_types_| was already updated to include all enabled types.
   DCHECK(downloaded_types_.HasAll(types_to_download));
 
-  DVLOG(1) << "Types " << ModelTypeSetToString(types_to_download)
+  DVLOG(1) << "Types " << ModelTypeSetToDebugString(types_to_download)
            << " added; calling ConfigureDataTypes";
 
   ModelTypeConfigurer::ConfigureParams params;

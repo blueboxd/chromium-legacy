@@ -1003,6 +1003,9 @@ extern const char kOmniboxOnFocusSuggestionsContextualWebDescription[];
 extern const char kOmniboxShortBookmarkSuggestionsName[];
 extern const char kOmniboxShortBookmarkSuggestionsDescription[];
 
+extern const char kOmniboxSiteSearchStarterPackName[];
+extern const char kOmniboxSiteSearchStarterPackDescription[];
+
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 
@@ -2992,6 +2995,11 @@ extern const char kLauncherNudgeShortIntervalDescription[];
 // Prefer keeping this section sorted to adding new declarations down here.
 
 #endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+extern const char kLacrosNonSyncingProfilesName[];
+extern const char kLacrosNonSyncingProfilesDescription[];
+#endif  // #if BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 extern const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[];

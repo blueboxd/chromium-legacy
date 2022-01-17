@@ -1990,6 +1990,8 @@ static_library("ui") {
       "app_list/search/ranking/ftrl_result_ranker.h",
       "app_list/search/ranking/launch_data.cc",
       "app_list/search/ranking/launch_data.h",
+      "app_list/search/ranking/query_highlighter.cc",
+      "app_list/search/ranking/query_highlighter.h",
       "app_list/search/ranking/ranker.cc",
       "app_list/search/ranking/ranker.h",
       "app_list/search/ranking/ranker_delegate.cc",
@@ -3177,6 +3179,7 @@ static_library("ui") {
       "window_sizer/window_sizer_chromeos.h",
     ]
     deps += [
+      "//chrome/browser/policy:onc",
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
       "//chromeos/ui/base",
@@ -3357,6 +3360,8 @@ static_library("ui") {
         "passwords/account_storage_auth_helper.h",
         "signin/dice_web_signin_interceptor_delegate.cc",
         "signin/dice_web_signin_interceptor_delegate.h",
+        "signin_intercept_first_run_experience_dialog.cc",
+        "signin_intercept_first_run_experience_dialog.h",
         "signin_reauth_view_controller.cc",
         "signin_reauth_view_controller.h",
         "views/profiles/dice_web_signin_interception_bubble_view.cc",

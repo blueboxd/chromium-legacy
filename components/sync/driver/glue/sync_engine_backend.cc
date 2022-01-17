@@ -245,7 +245,7 @@ void SyncEngineBackend::DoInitialize(
   ModelTypeSet new_control_types =
       Difference(ControlTypes(), sync_manager_->InitialSyncEndedTypes());
 
-  SDVLOG(1) << "Control Types " << ModelTypeSetToString(new_control_types)
+  SDVLOG(1) << "Control Types " << ModelTypeSetToDebugString(new_control_types)
             << " added; calling ConfigureSyncer";
 
   sync_manager_->ConfigureSyncer(
@@ -428,7 +428,7 @@ void SyncEngineBackend::SendBufferedProtocolEventsAndEnableForwarding() {
         sync_manager_->GetBufferedProtocolEvents();
 
     // Send them all over the fence to the host.
-    for (auto& event : buffered_events) {
+    for (std::unique_ptr<ProtocolEvent>& event : buffered_events) {
       host_.Call(FROM_HERE, &SyncEngineImpl::HandleProtocolEventOnFrontendLoop,
                  std::move(event));
     }

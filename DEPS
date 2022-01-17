@@ -245,15 +245,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '00e04f23390ac261dda334fb5ceb20a7e32e8527',
+  'skia_revision': '7502b75098f73366c43c61c6c0aec19c902e53c6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '33be75a34945c4ff1d9b6ac2d0311365a68173d8',
+  'v8_revision': '237224ef731eb85e2ecdace97a3590facfb6189a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '0aae0d7ad535aedba34daea325269e419baead68',
+  'angle_revision': '770c81b91170b91586af7fc7ca96db84a2d50ada',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'ba3d11fdec6340861e2dbe18141b57e81f1800b0',
+  'devtools_frontend_revision': 'dcc95c9681e7756e616377d604126364d7472e35',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '12a6c724550158bf9258b0a3c65cbe1656d5cbaf',
+  'dawn_revision': '9c08fd2c7781a5a00194d5d2a000006226d7d148',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -404,11 +404,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libcxxabi_revision':    'a38a05af626bd1363e9c11ef8c09aef611f6aae3',
+  'libcxxabi_revision':    'd78d7bf604c8010cba334c215cf66e568bc9d816',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    'a09d233b29f905e9d227f9f18bd93fc13fdd9fed',
+  'libunwind_revision':    'c27c97a625d5327a39a056453172827535762c4c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1427,7 +1427,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'd21ed9d314f222f0d931f66742108403580a3ac4',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'eff1df5f6a0a9d7124731cab1eed4043c5d186e8',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '72561785742eab5afee480368659cde144bca33c',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '2e85b5fa51857dd8e43520b57eb41ec413aa725e',
+    Var('webrtc_git') + '/src.git' + '@' + 'cc9b7ec7401880e4c14e5c76c4637e191ab4490a',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1718,7 +1718,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@edf5606023a6c5d99d4d1e56ac316fe8961bcdc9',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@aa0aeb70c77a466dbbf1e2c3136904e3928a5002',
     'condition': 'checkout_src_internal',
   },
 
@@ -1770,7 +1770,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'A5Cai0VGTEekRJiYLgPcVF7LsIvUiKMcp2w3j_hocpAC',
+        'version': 'XAVsMNoO52grEuqun-PS47YFVDQyVjkMiYGK3gZniGsC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

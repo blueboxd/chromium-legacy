@@ -1759,7 +1759,11 @@ const char kOmniboxRichAutocompletionPromisingName[] =
 const char kOmniboxRichAutocompletionPromisingDescription[] =
     "Allow autocompletion for titles and non-prefixes; see Omnibox Rich "
     "Autocompletion.";
-
+const char kOmniboxSiteSearchStarterPackName[] =
+    "Omnibox Site Search Starter Pack";
+const char kOmniboxSiteSearchStarterPackDescription[] =
+    "Enables @history, @bookmarks, and @settings scopes in Omnibox Site "
+    "Search/Keyword Mode";
 const char kOmniboxOnFocusSuggestionsContextualWebAllowSRPName[] =
     "Allow Omnibox contextual web on-focus suggestions on the SRP";
 const char kOmniboxOnFocusSuggestionsContextualWebAllowSRPDescription[] =
@@ -5202,6 +5206,13 @@ const char kLauncherNudgeShortIntervalDescription[] =
 // Prefer keeping this section sorted to adding new definitions down here.
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+const char kLacrosNonSyncingProfilesName[] =
+    "Enable non-syncing profiles on lacros";
+const char kLacrosNonSyncingProfilesDescription[] =
+    "Enables further types of profiles: (1) local, (2) signed-in non-syncing.";
+#endif  // #if BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[] =

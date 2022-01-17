@@ -4629,6 +4629,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxPreserveLongerShortcutsTextName,
      flag_descriptions::kOmniboxPreserveLongerShortcutsTextDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kPreserveLongerShortcutsText)},
+    {"omnibox-site-search-starter-pack",
+     flag_descriptions::kOmniboxSiteSearchStarterPackName,
+     flag_descriptions::kOmniboxSiteSearchStarterPackDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kSiteSearchStarterPack)},
     {"omnibox-aggregate-shortcuts",
      flag_descriptions::kOmniboxAggregateShortcutsName,
      flag_descriptions::kOmniboxAggregateShortcutsDescription, kOsDesktop,
@@ -7729,6 +7733,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAmbientModeAnimationName,
      flag_descriptions::kAmbientModeAnimationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kAmbientModeAnimationFeature)},
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    {"lacros-non-syncing-profiles",
+     flag_descriptions::kLacrosNonSyncingProfilesName,
+     flag_descriptions::kLacrosNonSyncingProfilesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kLacrosNonSyncingProfiles)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

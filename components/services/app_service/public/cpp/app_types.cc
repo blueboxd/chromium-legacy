@@ -20,11 +20,15 @@ std::unique_ptr<App> App::Clone() const {
   app->publisher_id = publisher_id;
   app->description = description;
   app->version = version;
+  app->additional_search_terms = additional_search_terms;
 
   if (icon_key.has_value()) {
     app->icon_key = apps::IconKey(icon_key->timeline, icon_key->resource_id,
                                   icon_key->icon_effects);
   }
+
+  app->last_launch_time = last_launch_time;
+  app->install_time = install_time;
 
   app->install_reason = install_reason;
   app->install_source = install_source;
@@ -174,12 +178,16 @@ std::unique_ptr<App> ConvertMojomAppToApp(
   app->publisher_id = mojom_app->publisher_id;
   app->description = mojom_app->description;
   app->version = mojom_app->version;
+  app->additional_search_terms = mojom_app->additional_search_terms;
 
   if (mojom_app->icon_key) {
     app->icon_key = apps::IconKey(mojom_app->icon_key->timeline,
                                   mojom_app->icon_key->resource_id,
                                   mojom_app->icon_key->icon_effects);
   }
+
+  app->last_launch_time = mojom_app->last_launch_time;
+  app->install_time = mojom_app->install_time;
 
   app->install_reason =
       ConvertMojomInstallReasonToInstallReason(mojom_app->install_reason);

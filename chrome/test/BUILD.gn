@@ -1888,6 +1888,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/ssl/ocsp_browsertest.cc",
       "../browser/ssl/security_state_tab_helper_browsertest.cc",
       "../browser/ssl/ssl_browsertest.cc",
+      "../browser/ssl/ssl_fenced_frame_browsertest.cc",
       "../browser/ssl/ssl_prerender_browsertest.cc",
       "../browser/ssl/stateful_ssl_host_state_delegate_test.cc",
       "../browser/storage/durable_storage_browsertest.cc",
@@ -2468,6 +2469,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/signin/dice_browsertest.cc",
         "../browser/signin/dice_web_signin_interceptor_browsertest.cc",
         "../browser/signin/signin_ui_util_browsertest.cc",
+        "../browser/ui/signin_intercept_first_run_experience_dialog_browsertest.cc",
         "../browser/ui/signin_reauth_view_controller_browsertest.cc",
         "../browser/ui/views/sync/inline_login_ui_browsertest.cc",
         "../browser/unified_consent/unified_consent_browsertest.cc",
@@ -6511,6 +6513,9 @@ test("unit_tests") {
 
     deps += [
       "//chrome/browser:dlp_policy_event_proto",
+      "//chrome/browser/policy:onc",
+      "//chrome/browser/policy:unit_tests",
+      "//chromeos/components/onc:onc",
       "//chromeos/crosapi/mojom",
       "//chromeos/dbus/dlp:dlp",
       "//chromeos/lacros:test_support",

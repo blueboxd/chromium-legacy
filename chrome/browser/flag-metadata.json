@@ -2568,8 +2568,8 @@
   },
   {
     "name": "enable-restricted-web-apis",
-    "owners": [ "anqing", "apotapchuk" ],
-    "expiry_milestone": 95
+    "owners": [ "bfranz", "anqing", "apotapchuk" ],
+    "expiry_milestone": 105
   },
   {
     "name": "enable-retail-coupons",
@@ -3666,6 +3666,14 @@
     "expiry_milestone": 130
   },
   {
+    "name": "lacros-non-syncing-profiles",
+    "owners": [ "jkrcal", "droger", "chrome-signin@google.com" ],
+    // Once Lacros is launched, this flag can be removed. Until then, this
+    // absolutely must not expire. We do not yet have a launch milestone.
+    // TODO(https://crbug.com/1148474).
+    "expiry_milestone": 130
+  },
+  {
     "name": "lacros-primary",
     "owners": [ "hidehiko", "erikchen", "lacros-team@google.com" ],
     // Once Lacros is launched, this flag can be removed. Until then, this
@@ -4319,6 +4327,11 @@
     "name": "omnibox-short-bookmark-suggestions",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "omnibox-site-search-starter-pack",
+    "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 107
   },
   {
     "name": "omnibox-spare-renderer",
@@ -5638,7 +5651,7 @@
   {
     "name": "username-first-flow-fallback-crowdsourcing",
     "owners": [ "kazinova@google.com", "kolos" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 104
   },
   {
     "name": "username-first-flow-filling",

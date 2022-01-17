@@ -368,7 +368,8 @@ net::HttpStatusCode LoopbackServer::HandleCommand(
       }
     } else if (!throttled_datatypes_in_request.Empty()) {
       DLOG(WARNING) << "Throttled datatypes: "
-                    << ModelTypeSetToString(throttled_datatypes_in_request);
+                    << ModelTypeSetToDebugString(
+                           throttled_datatypes_in_request);
       response->set_error_code(sync_pb::SyncEnums::THROTTLED);
       response->mutable_error()->set_error_type(sync_pb::SyncEnums::THROTTLED);
       for (ModelType type : throttled_datatypes_in_request) {
@@ -494,7 +495,7 @@ bool LoopbackServer::HandleGetUpdatesRequest(
 
   if (send_encryption_keys_based_on_nigori ||
       get_updates.need_encryption_key()) {
-    for (const auto& key : keystore_keys_) {
+    for (const std::vector<uint8_t>& key : keystore_keys_) {
       response->add_encryption_keys(key.data(), key.size());
     }
   }
@@ -620,7 +621,7 @@ void LoopbackServer::DeleteChildren(const string& parent_id) {
     }
   }
 
-  for (auto& tombstone : tombstones) {
+  for (sync_pb::SyncEntity& tombstone : tombstones) {
     SaveEntity(PersistentTombstoneEntity::CreateFromEntity(tombstone));
   }
 }
@@ -815,10 +816,11 @@ void LoopbackServer::SerializeState(sync_pb::LoopbackServerProto* proto) const {
   proto->set_version(kCurrentLoopbackServerProtoVersion);
   proto->set_store_birthday(store_birthday_);
   proto->set_last_version_assigned(version_);
-  for (const auto& key : keystore_keys_)
+  for (const std::vector<uint8_t>& key : keystore_keys_)
     proto->add_keystore_keys(key.data(), key.size());
   for (const auto& [id, entity] : entities_) {
-    auto* new_entity = proto->mutable_entities()->Add();
+    sync_pb::LoopbackServerEntity* new_entity =
+        proto->mutable_entities()->Add();
     entity->SerializeAsLoopbackServerEntity(new_entity);
   }
 }

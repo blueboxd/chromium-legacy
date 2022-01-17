@@ -176,27 +176,26 @@ void AppUpdate::Merge(App* state, const App* delta) {
   DCHECK_NE(state->readiness, Readiness::kRemoved);
   DCHECK_NE(delta->readiness, Readiness::kRemoved);
 
-  if (delta->readiness != apps::Readiness::kUnknown) {
-    state->readiness = delta->readiness;
+  SET_ENUM_VALUE(readiness, apps::Readiness::kUnknown);
+  SET_OPTIONAL_VALUE(name)
+  SET_OPTIONAL_VALUE(short_name)
+  SET_OPTIONAL_VALUE(publisher_id)
+  SET_OPTIONAL_VALUE(description)
+  SET_OPTIONAL_VALUE(version)
+
+  if (!delta->additional_search_terms.empty()) {
+    state->additional_search_terms.clear();
+    state->additional_search_terms = delta->additional_search_terms;
   }
-  if (delta->name.has_value()) {
-    state->name = delta->name;
-  }
-  if (delta->short_name.has_value()) {
-    state->short_name = delta->short_name;
-  }
-  if (delta->publisher_id.has_value()) {
-    state->publisher_id = delta->publisher_id;
-  }
-  if (delta->description.has_value()) {
-    state->description = delta->description;
-  }
-  if (delta->version.has_value()) {
-    state->version = delta->version;
-  }
+
   if (delta->icon_key.has_value()) {
     state->icon_key = CloneIconKey(delta->icon_key.value());
   }
+
+  SET_OPTIONAL_VALUE(last_launch_time);
+  SET_OPTIONAL_VALUE(install_time);
+  SET_ENUM_VALUE(install_reason, InstallReason::kUnknown);
+  SET_ENUM_VALUE(install_source, InstallSource::kUnknown);
 
   // When adding new fields to the App type, this function should also be
   // updated.
@@ -261,14 +260,7 @@ apps::mojom::Readiness AppUpdate::PriorReadiness() const {
 }
 
 apps::Readiness AppUpdate::GetReadiness() const {
-  if (delta_ && (delta_->readiness != apps::Readiness::kUnknown)) {
-    return delta_->readiness;
-  }
-  if (state_) {
-    return state_->readiness;
-  }
-  return apps::Readiness::kUnknown;
-}
+    GET_VALUE_WITH_DEFAULT_VALUE(readiness, apps::Readiness::kUnknown)}
 
 apps::Readiness AppUpdate::GetPriorReadiness() const {
   return state_ ? state_->readiness : apps::Readiness::kUnknown;
@@ -292,13 +284,7 @@ const std::string& AppUpdate::Name() const {
 }
 
 const std::string& AppUpdate::GetName() const {
-  if (delta_ && delta_->name.has_value()) {
-    return delta_->name.value();
-  }
-  if (state_ && state_->name.has_value()) {
-    return state_->name.value();
-  }
-  return base::EmptyString();
+  GET_VALUE_WITH_FALLBACK(name, base::EmptyString())
 }
 
 bool AppUpdate::NameChanged() const {
@@ -317,13 +303,7 @@ const std::string& AppUpdate::ShortName() const {
 }
 
 const std::string& AppUpdate::GetShortName() const {
-  if (delta_ && delta_->short_name.has_value()) {
-    return delta_->short_name.value();
-  }
-  if (state_ && state_->short_name.has_value()) {
-    return state_->short_name.value();
-  }
-  return base::EmptyString();
+  GET_VALUE_WITH_FALLBACK(short_name, base::EmptyString())
 }
 
 bool AppUpdate::ShortNameChanged() const {
@@ -343,13 +323,7 @@ const std::string& AppUpdate::PublisherId() const {
 }
 
 const std::string& AppUpdate::GetPublisherId() const {
-  if (delta_ && delta_->publisher_id.has_value()) {
-    return delta_->publisher_id.value();
-  }
-  if (state_ && state_->publisher_id.has_value()) {
-    return state_->publisher_id.value();
-  }
-  return base::EmptyString();
+  GET_VALUE_WITH_FALLBACK(publisher_id, base::EmptyString())
 }
 
 bool AppUpdate::PublisherIdChanged() const {
@@ -369,13 +343,7 @@ const std::string& AppUpdate::Description() const {
 }
 
 const std::string& AppUpdate::GetDescription() const {
-  if (delta_ && delta_->description.has_value()) {
-    return delta_->description.value();
-  }
-  if (state_ && state_->description.has_value()) {
-    return state_->description.value();
-  }
-  return base::EmptyString();
+  GET_VALUE_WITH_FALLBACK(description, base::EmptyString())
 }
 
 bool AppUpdate::DescriptionChanged() const {
@@ -395,13 +363,7 @@ const std::string& AppUpdate::Version() const {
 }
 
 const std::string& AppUpdate::GetVersion() const {
-  if (delta_ && delta_->version.has_value()) {
-    return delta_->version.value();
-  }
-  if (state_ && state_->version.has_value()) {
-    return state_->version.value();
-  }
-  return base::EmptyString();
+  GET_VALUE_WITH_FALLBACK(version, base::EmptyString())
 }
 
 bool AppUpdate::VersionChanged() const {
@@ -421,6 +383,11 @@ std::vector<std::string> AppUpdate::AdditionalSearchTerms() const {
   }
 
   return additional_search_terms;
+}
+
+std::vector<std::string> AppUpdate::GetAdditionalSearchTerms() const {
+  GET_VALUE_WITH_CHECK_AND_DEFAULT_RETURN(additional_search_terms, empty,
+                                          std::vector<std::string>{})
 }
 
 bool AppUpdate::AdditionalSearchTermsChanged() const {
@@ -465,6 +432,10 @@ base::Time AppUpdate::LastLaunchTime() const {
   return base::Time();
 }
 
+base::Time AppUpdate::GetLastLaunchTime() const {
+  GET_VALUE_WITH_FALLBACK(last_launch_time, base::Time())
+}
+
 bool AppUpdate::LastLaunchTimeChanged() const {
   return mojom_delta_ && mojom_delta_->last_launch_time.has_value() &&
          (!mojom_state_ ||
@@ -479,6 +450,10 @@ base::Time AppUpdate::InstallTime() const {
     return mojom_state_->install_time.value();
   }
   return base::Time();
+}
+
+base::Time AppUpdate::GetInstallTime() const {
+  GET_VALUE_WITH_FALLBACK(install_time, base::Time())
 }
 
 bool AppUpdate::InstallTimeChanged() const {

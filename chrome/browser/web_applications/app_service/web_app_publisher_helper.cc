@@ -403,12 +403,16 @@ std::unique_ptr<apps::App> WebAppPublisherHelper::CreateWebApp(
           GetInstallSource(profile()->GetPrefs(), web_app->app_id())));
 
   app->description = web_app->description();
+  app->additional_search_terms = web_app->additional_search_terms();
 
   // Web App's publisher_id the start url.
   app->publisher_id = web_app->start_url().spec();
 
   app->icon_key =
       std::move(*icon_key_factory_.CreateIconKey(GetIconEffects(web_app)));
+
+  app->last_launch_time = web_app->last_launch_time();
+  app->install_time = web_app->install_time();
 
   // For system web apps (only), the install source is |kSystem|.
   DCHECK_EQ(web_app->IsSystemApp(),

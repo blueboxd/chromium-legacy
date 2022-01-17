@@ -108,6 +108,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   bool VersionChanged() const;
 
   std::vector<std::string> AdditionalSearchTerms() const;
+  std::vector<std::string> GetAdditionalSearchTerms() const;
   bool AdditionalSearchTermsChanged() const;
 
   apps::mojom::IconKeyPtr IconKey() const;
@@ -115,9 +116,11 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   bool IconKeyChanged() const;
 
   base::Time LastLaunchTime() const;
+  base::Time GetLastLaunchTime() const;
   bool LastLaunchTimeChanged() const;
 
   base::Time InstallTime() const;
+  base::Time GetInstallTime() const;
   bool InstallTimeChanged() const;
 
   std::vector<apps::mojom::PermissionPtr> Permissions() const;

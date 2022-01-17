@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '1eeb3cbd17d77746151da9e8a9bd5e717a52f415',
+  'v8_revision': '33be75a34945c4ff1d9b6ac2d0311365a68173d8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -722,7 +722,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'vV4Pak_gNgfspdF6CGkv7eAo8g171H8rWEwfKgygiZ8C',
+          'version': 'xPygu6w0owRCYrd5wH7NZAvz0U6vnSq72_rwt3G-Vx8C',
         },
       ],
       'dep_type': 'cipd',
@@ -733,7 +733,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'OTCnDMAVW2CruuHFewKuUODrxeYz2PY6QP3MZv6Wl-YC',
+          'version': 'yFcuBwlY7sE1wRWRd_WakGCgyMnJCbpg41aVuqEg-wYC',
         },
       ],
       'dep_type': 'cipd',
@@ -744,7 +744,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': '7eNxBH9pPECB0ybOJZkF8WH_E31lXnIN2uaqSzlysAMC',
+          'version': 'Lw015P3FduT0GiaXQS1A40BOPJ5lH8KH3XHNbiu8m0cC',
         },
       ],
       'dep_type': 'cipd',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '72561785742eab5afee480368659cde144bca33c',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '277a3b4f857c640f93f500de32e432c4574e7532',
+    Var('webrtc_git') + '/src.git' + '@' + '2e85b5fa51857dd8e43520b57eb41ec413aa725e',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1718,7 +1718,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f909f07fcb9837f01d649da793eda89a09f5212b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@edf5606023a6c5d99d4d1e56ac316fe8961bcdc9',
     'condition': 'checkout_src_internal',
   },
 
@@ -1748,7 +1748,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'PlXAMzWmxTh-gTBa4S7VBBONcDplLmywRq_dhhL9tl4C',
+        'version': 'BB46-WGD69gWNLcJxkAf2UDxsp4Dfg7S1oJhbgwTtWoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1759,7 +1759,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'a0WsgzVHQWY8X4MOejqWS6qImQ0JtSozV0Kykj_v-5UC',
+        'version': 'Bod3b1k2tnpQCRfjy81CrwGqXSKOGaO6XK1U4RkGwkUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

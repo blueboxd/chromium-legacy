@@ -363,9 +363,6 @@ extern const base::Feature kHaTSDesktopDevToolsIssuesHeavyAd;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHaTSDesktopDevToolsIssuesCSP;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kHaTSDesktopDevToolsLayoutPanel;
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -587,6 +584,9 @@ extern const base::Feature kPrivacyAdvisor;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrivacyReview;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kPrivacySandboxSettings3;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPushMessagingBackgroundMode;

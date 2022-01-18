@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "components/account_id/account_id.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -124,6 +125,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   bool InstallTimeChanged() const;
 
   std::vector<apps::mojom::PermissionPtr> Permissions() const;
+  apps::Permissions GetPermissions() const;
   bool PermissionsChanged() const;
 
   apps::mojom::InstallReason InstallReason() const;
@@ -137,6 +139,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   // An optional ID used for policy to identify the app.
   // For web apps, it contains the install URL.
   const std::string& PolicyId() const;
+  const std::string& GetPolicyId() const;
   bool PolicyIdChanged() const;
 
   apps::mojom::OptionalBool InstalledInternally() const;

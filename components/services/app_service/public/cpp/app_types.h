@@ -9,8 +9,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/time/time.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -125,12 +127,23 @@ struct COMPONENT_EXPORT(APP_TYPES) App {
   absl::optional<base::Time> last_launch_time;
   absl::optional<base::Time> install_time;
 
+  // This vector must be treated atomically, if there is a permission
+  // change, the publisher must send through the entire list of permissions.
+  // Should contain no duplicate IDs.
+  // If empty during updates, Subscriber can assume no changes.
+  // There is no guarantee that this is sorted by any criteria.
+  Permissions permissions;
+
   // Whether the app was installed by sync, policy or as a default app.
   InstallReason install_reason = InstallReason::kUnknown;
 
   // Where the app was installed from, e.g. from Play Store, from Chrome Web
   // Store, etc.
   InstallSource install_source = InstallSource::kUnknown;
+
+  // An optional ID used for policy to identify the app.
+  // For web apps, it contains the install URL.
+  absl::optional<std::string> policy_id;
 
   // TODO(crbug.com/1253250): Add other App struct fields.
 

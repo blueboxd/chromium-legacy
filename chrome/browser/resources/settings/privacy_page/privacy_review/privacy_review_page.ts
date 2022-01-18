@@ -25,9 +25,10 @@ import {CrViewManagerElement} from 'chrome://resources/cr_elements/cr_view_manag
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../../hats_browser_proxy.js';
+import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyGuideInteractions} from '../../metrics_browser_proxy.js';
 import {SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '../../people_page/sync_browser_proxy.js';
 import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
 import {SafeBrowsingSetting} from '../../privacy_page/security_page.js';
@@ -42,6 +43,7 @@ interface PrivacyReviewStepComponents {
   nextStep?: PrivacyReviewStep;
   onForwardNavigation?(): void;
   previousStep?: PrivacyReviewStep;
+  onBackwardNavigation?(): void;
   isAvailable(): boolean;
 }
 
@@ -129,6 +131,8 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
   // The privacy review flag is only enabled when the user was not managed at
   // the time settings were loaded, so this is default false.
   private isManaged_: boolean = false;
+  private metricsBrowserProxy_: MetricsBrowserProxy =
+      MetricsBrowserProxyImpl.getInstance();
 
   constructor() {
     super();
@@ -174,6 +178,12 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
         {
           nextStep: PrivacyReviewStep.MSBB,
           isAvailable: () => true,
+          onForwardNavigation: () => {
+            this.metricsBrowserProxy_.recordPrivacyGuideNextNavigationHistogram(
+                PrivacyGuideInteractions.WELCOME_NEXT_BUTTON);
+            this.metricsBrowserProxy_.recordAction(
+                'Settings.PrivacyGuide.NextClickWelcome');
+          },
         },
       ],
       [
@@ -181,6 +191,15 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
         {
           onForwardNavigation: () => {
             Router.getInstance().navigateToPreviousRoute();
+            this.metricsBrowserProxy_.recordPrivacyGuideNextNavigationHistogram(
+                PrivacyGuideInteractions.COMPLETION_NEXT_BUTTON);
+            this.metricsBrowserProxy_.recordAction(
+                'Settings.PrivacyGuide.NextClickCompletion');
+            Router.getInstance().navigateToPreviousRoute();
+          },
+          onBackwardNavigation: () => {
+            this.metricsBrowserProxy_.recordAction(
+                'Settings.PrivacyGuide.BackClickCompletion');
           },
           previousStep: PrivacyReviewStep.COOKIES,
           isAvailable: () => true,
@@ -191,6 +210,16 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
         {
           nextStep: PrivacyReviewStep.CLEAR_ON_EXIT,
           previousStep: PrivacyReviewStep.WELCOME,
+          onForwardNavigation: () => {
+            this.metricsBrowserProxy_.recordPrivacyGuideNextNavigationHistogram(
+                PrivacyGuideInteractions.MSBB_NEXT_BUTTON);
+            this.metricsBrowserProxy_.recordAction(
+                'Settings.PrivacyGuide.NextClickMSBB');
+          },
+          onBackwardNavigation: () => {
+            this.metricsBrowserProxy_.recordAction(
+                'Settings.PrivacyGuide.BackClickMSBB');
+          },
           isAvailable: () => true,
         },
       ],
@@ -208,6 +237,16 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
         {
           nextStep: PrivacyReviewStep.SAFE_BROWSING,
           previousStep: PrivacyReviewStep.CLEAR_ON_EXIT,
+          onForwardNavigation: () => {
+            this.metricsBrowserProxy_.recordPrivacyGuideNextNavigationHistogram(
+                PrivacyGuideInteractions.HISTORY_SYNC_NEXT_BUTTON);
+            this.metricsBrowserProxy_.recordAction(
+                'Settings.PrivacyGuide.NextClickHistorySync');
+          },
+          onBackwardNavigation: () => {
+            this.metricsBrowserProxy_.recordAction(
+                'Settings.PrivacyGuide.BackClickHistorySync');
+          },
           // Allow the history sync card to be shown while `syncStatus_` is
           // unavailable. Otherwise we would skip it in
           // `navigateForwardIfCurrentCardNoLongerAvailable` before
@@ -220,6 +259,16 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
         {
           nextStep: PrivacyReviewStep.COOKIES,
           previousStep: PrivacyReviewStep.HISTORY_SYNC,
+          onForwardNavigation: () => {
+            this.metricsBrowserProxy_.recordPrivacyGuideNextNavigationHistogram(
+                PrivacyGuideInteractions.SAFE_BROWSING_NEXT_BUTTON);
+            this.metricsBrowserProxy_.recordAction(
+                'Settings.PrivacyGuide.NextClickSafeBrowsing');
+          },
+          onBackwardNavigation: () => {
+            this.metricsBrowserProxy_.recordAction(
+                'Settings.PrivacyGuide.BackClickSafeBrowsing');
+          },
           isAvailable: () => this.shouldShowSafeBrowsingCard_(),
         },
       ],
@@ -230,6 +279,14 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
           onForwardNavigation: () => {
             HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
                 TrustSafetyInteraction.COMPLETED_PRIVACY_GUIDE);
+            this.metricsBrowserProxy_.recordPrivacyGuideNextNavigationHistogram(
+                PrivacyGuideInteractions.COOKIES_NEXT_BUTTON);
+            this.metricsBrowserProxy_.recordAction(
+                'Settings.PrivacyGuide.NextClickCookies');
+          },
+          onBackwardNavigation: () => {
+            this.metricsBrowserProxy_.recordAction(
+                'Settings.PrivacyGuide.BackClickCookies');
           },
           previousStep: PrivacyReviewStep.SAFE_BROWSING,
           isAvailable: () => this.shouldShowCookiesCard_(),
@@ -312,6 +369,11 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
   }
 
   private navigateBackward_(playAnimation: boolean) {
+    const components =
+        this.privacyReviewStepToComponentsMap_.get(this.privacyReviewStep_)!;
+    if (components.onBackwardNavigation) {
+      components.onBackwardNavigation();
+    }
     this.navigateToCard_(
         this.privacyReviewStepToComponentsMap_.get(this.privacyReviewStep_)!
             .previousStep!,
@@ -342,8 +404,6 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
       }
       Router.getInstance().updateRouteParams(
           new URLSearchParams('step=' + step));
-      // TODO(crbug/1215630): Programmatically put the focus to the
-      // corresponding element.
     }
   }
 
@@ -404,6 +464,16 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
   private showAnySettingFragment_(): boolean {
     return this.privacyReviewStep_ !== PrivacyReviewStep.WELCOME &&
         this.privacyReviewStep_ !== PrivacyReviewStep.COMPLETION;
+  }
+
+  private onViewEnterStart_(event: Event) {
+    // The |view-enter-start| event was dispatched to the fragment that is now
+    // becoming visible. Every fragment has a |header| class element that can
+    // be focused programmatically.
+    const elementToFocus =
+        assert((event.target! as HTMLElement)
+                   .shadowRoot!.querySelector<HTMLElement>('.header'));
+    afterNextRender(this, () => elementToFocus!.focus());
   }
 }
 

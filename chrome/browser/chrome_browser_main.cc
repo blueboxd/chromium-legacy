@@ -923,7 +923,12 @@ int ChromeBrowserMainParts::ApplyFirstRunPrefs() {
         prefs::kBrowserSuppressDefaultBrowserPrompt,
         master_prefs_->suppress_default_browser_prompt_for_version);
   }
-
+#if defined(OS_MAC)
+  if (!master_prefs_->confirm_to_quit) {
+    local_state->SetBoolean(prefs::kBrowserSuppressDefaultBrowserPrompt,
+                            master_prefs_->confirm_to_quit);
+  }
+#endif  // defined(OS_MAC)
 #endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   return content::RESULT_CODE_NORMAL_EXIT;
 }
@@ -1192,9 +1197,6 @@ void ChromeBrowserMainParts::PostProfileInit(Profile* profile,
                                              bool is_initial_profile) {
   if (is_initial_profile) {
     TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostProfileInit");
-    g_browser_process->CreateDevToolsProtocolHandler();
-    if (parsed_command_line().HasSwitch(::switches::kAutoOpenDevToolsForTabs))
-      g_browser_process->CreateDevToolsAutoOpener();
   }
 
   for (auto& chrome_extra_part : chrome_extra_parts_)
@@ -1536,6 +1538,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if defined(OS_ANDROID)
   page_info::SetPageInfoClient(new ChromePageInfoClient());
 #endif
+
+  // Needs to be done before PostProfileInit, to allow connecting DevTools
+  // before WebUI for the CrOS login that can be called inside PostProfileInit
+  g_browser_process->CreateDevToolsProtocolHandler();
+  if (parsed_command_line().HasSwitch(::switches::kAutoOpenDevToolsForTabs))
+    g_browser_process->CreateDevToolsAutoOpener();
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
   // (requires supporting early exit).

@@ -30,7 +30,7 @@ function toStackFrame(callsite: CallSite): StackFrame {
   if (fileName.startsWith(window.location.origin)) {
     fileName = fileName.substring(window.location.origin.length + 1);
   }
-  const ensureNumber = (n) => (n === undefined ? -1 : n);
+  const ensureNumber = (n: number|undefined) => (n === undefined ? -1 : n);
   return {
     fileName,
     funcName: callsite.getFunctionName() || '[Anonymous]',
@@ -117,7 +117,8 @@ const triggeredErrorSet = new Set<string>();
  * metrics in non test run.
  */
 export function reportError(
-    type: ErrorType, level: ErrorLevel, error: Error): void {
+    type: ErrorType, level: ErrorLevel, errorRaw: unknown): void {
+  const error = assertInstanceof(errorRaw, Error);
   // Uncaught promise is already logged in console.
   if (type !== ErrorType.UNCAUGHT_PROMISE) {
     if (level === ErrorLevel.ERROR) {

@@ -9,6 +9,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
@@ -113,7 +114,7 @@ class MODULES_EXPORT RemoteMediaStreamTrackAdapter
  private:
   const scoped_refptr<WebRtcMediaStreamTrackType> webrtc_track_;
   CrossThreadPersistent<MediaStreamComponent> component_;
-  CrossThreadPersistent<ExecutionContext> track_execution_context_;
+  CrossThreadWeakPersistent<ExecutionContext> track_execution_context_;
   // const copy of the webrtc track id that allows us to check it from both the
   // main and signaling threads without incurring a synchronous thread hop.
   const String id_;

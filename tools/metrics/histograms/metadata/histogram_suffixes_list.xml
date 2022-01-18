@@ -780,7 +780,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="AccountManager" label="Using Android AccountManager API"/>
   <suffix name="GoogleAuthUtil" label="Using GoogleAuthUtil API"/>
   <affected-histogram name="Signin.AndroidGetAccountsTime"/>
-  <affected-histogram name="Signin.AndroidGetAccountsTimeUiThread"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AndroidProcessExitReasons" separator=".">
@@ -2489,7 +2488,6 @@ chromium-metrics-reviews@google.com.
       Deprecated December 2020 because it isn't recorded.
     </obsolete>
   </suffix>
-  <affected-histogram name="PasswordManager.CompromisedCredentials"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ConnCountImpact" separator="_">
@@ -2999,13 +2997,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="MediumPeriod" label="Runtime is between 10 and 60 minutes"/>
   <suffix name="ShortPeriod" label="Runtime is shorter than 10 minutes"/>
   <affected-histogram name="Cras.Busyloop"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="CrosFirstRunStep" separator="">
-  <suffix name="AppList" label=""/>
-  <suffix name="Help" label=""/>
-  <suffix name="Tray" label=""/>
-  <affected-histogram name="CrosFirstRun.TimeSpentOnStep"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CrosNotificationActions" separator=".">
@@ -5601,9 +5592,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="Mus" label="for Mus clients."/>
   <suffix name="OOPIF" label="for out-of-process-iframe clients."/>
   <suffix name="Renderer" label="for renderer process in general."/>
-  <affected-histogram name="GraphicsPipeline.ReceivedBeginFrame"/>
-  <affected-histogram
-      name="GraphicsPipeline.SubmitCompositorFrameAfterBeginFrame"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="GridTabSwitcherAnimationType" separator=".">
@@ -7101,23 +7089,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Media.ConfigChangeDecoderSelectionTime"/>
   <affected-histogram name="Media.InitialDecoderSelectionTime"/>
   <affected-histogram name="Media.MSE.CodecChangeTime"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="MediaTimelineWidths" separator=".">
-  <obsolete>
-    Deprecated as of 2020/10.
-  </obsolete>
-  <suffix name="32_47" label=""/>
-  <suffix name="48_79" label=""/>
-  <suffix name="80_127" label=""/>
-  <suffix name="128_255" label=""/>
-  <suffix name="256_511" label=""/>
-  <suffix name="512_inf" label=""/>
-  <affected-histogram name="Media.Timeline.DragGestureDuration"/>
-  <affected-histogram name="Media.Timeline.DragPercent"/>
-  <affected-histogram name="Media.Timeline.DragSumAbsTimeDelta"/>
-  <affected-histogram name="Media.Timeline.DragTimeDelta"/>
-  <affected-histogram name="Media.Timeline.SeekType"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MediaVideoCaptureManagerTime" separator=".">
@@ -13442,19 +13413,10 @@ chromium-metrics-reviews@google.com.
   <suffix name="Background" label=""/>
   <suffix name="Foreground" label=""/>
   <affected-histogram name="RendererScheduler.TaskCPUDurationPerThreadType"/>
-  <affected-histogram name="RendererScheduler.TaskCPUDurationPerThreadType2"/>
   <affected-histogram name="RendererScheduler.TaskDurationPerTaskType"/>
   <affected-histogram name="RendererScheduler.TaskDurationPerTaskType2"/>
   <affected-histogram name="RendererScheduler.TaskDurationPerThreadType"/>
   <affected-histogram name="RendererScheduler.TaskDurationPerThreadType2"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="RendererScheduler_QueueType" separator=".">
-  <suffix name="Compositor" label=""/>
-  <suffix name="Input" label=""/>
-  <suffix name="Loading" label=""/>
-  <suffix name="Other" label=""/>
-  <affected-histogram name="RendererScheduler.QueueingDurationPerQueueType"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RendererScheduler_TaskCountPerTaskLength"
@@ -13464,10 +13426,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="LongerThan50ms" label=""/>
   <suffix name="LongerThan100ms" label=""/>
   <suffix name="LongerThan150ms" label=""/>
-  <affected-histogram name="RendererScheduler.TaskCountPerFrameType"/>
-  <affected-histogram
-      name="RendererScheduler.TaskCountPerFrameType.HasSafePoint"/>
-  <affected-histogram name="RendererScheduler.TaskCountPerQueueType"/>
 </histogram_suffixes>
 
 <histogram_suffixes
@@ -13540,7 +13498,6 @@ chromium-metrics-reviews@google.com.
       label="Time spent in tasks of a particular queue type when the renderer
              is visible."/>
   <affected-histogram name="RendererScheduler.TaskDurationPerQueueType2"/>
-  <affected-histogram name="RendererScheduler.TaskDurationPerQueueType3"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RendererScheduler_TaskDurationPerTaskTypeSplit"
@@ -15370,7 +15327,6 @@ chromium-metrics-reviews@google.com.
       label="The authenticaion token can not be verified due to persisten
              error"/>
   <suffix name="Success" label="The authenticaion token is valid"/>
-  <affected-histogram name="Signin.ForceSigninVerificationTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Signin_ObsoleteActions" separator=".">
@@ -15399,9 +15355,6 @@ chromium-metrics-reviews@google.com.
       label="Execution of the reconciler triggered by some other change of
              state."/>
   <affected-histogram name="Signin.Reconciler.AddedToChrome"/>
-  <affected-histogram name="Signin.Reconciler.AddedToCookieJar"/>
-  <affected-histogram name="Signin.Reconciler.DifferentPrimaryAccounts"/>
-  <affected-histogram name="Signin.Reconciler.RemovedFromCookieJar"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Signin_Reconciler_Duration" separator=".">
@@ -15571,7 +15524,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="CompositorLatency.MissedDeadlineFrame"/>
   <affected-histogram name="CompositorLatency.Type"/>
   <affected-histogram name="Graphics.Smoothness.Checkerboarding"/>
-  <affected-histogram name="Graphics.Smoothness.FrameSequenceLength"/>
   <affected-histogram name="Graphics.Smoothness.Jank.Compositor"/>
   <affected-histogram name="Graphics.Smoothness.Jank.Main"/>
   <affected-histogram name="Graphics.Smoothness.MaxStale"/>
@@ -15598,7 +15550,6 @@ chromium-metrics-reviews@google.com.
   </obsolete>
   <suffix name="Universal" label="All frame production"/>
   <affected-histogram name="Graphics.Smoothness.Checkerboarding"/>
-  <affected-histogram name="Graphics.Smoothness.FrameSequenceLength"/>
   <affected-histogram
       name="Graphics.Smoothness.PercentDroppedFrames.CompositorThread"/>
   <affected-histogram

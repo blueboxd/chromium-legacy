@@ -71,7 +71,8 @@ void TopMatchRanker::UpdateResultRanks(ResultsMap& results,
       // set as a top match.
       if (scoring.top_match) {
         scoring.top_match = false;
-        result->SetDetails(RemoveTopMatchPrefix(result->details()));
+        if (result->best_match())
+          result->SetBestMatch(false);
       }
 
       if (scoring.normalized_relevance >= kTopMatchThreshold)
@@ -86,11 +87,7 @@ void TopMatchRanker::UpdateResultRanks(ResultsMap& results,
   for (int i = 0; i < std::min(kNumTopMatches, top_results.size()); ++i) {
     auto* result = top_results[i].first;
     result->scoring().top_match = true;
-
-    // TODO(crbug.com/1199206): This adds some debug information to the result
-    // details. Remove once we have explicit categories in the UI.
-    result->SetDetails(
-        base::StrCat({kTopMatchDetailsUTF16, result->details()}));
+    result->SetBestMatch(true);
   }
 }
 

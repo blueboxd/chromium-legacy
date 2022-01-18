@@ -255,19 +255,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Permissions.CrowdDeny.PreloadData.IsLoadedAtAbuseCheckTime"
-    enum="Boolean" expires_after="2021-06-06">
-  <obsolete>
-    Removed in January 2021.
-  </obsolete>
-  <owner>elklm@chromium.org</owner>
-  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
-  <summary>
-    Records, each time during an abusive origin verification, whether preload
-    data has been loaded from the disk.
-  </summary>
-</histogram>
-
 <histogram name="Permissions.CrowdDeny.PreloadData.NotificationUxQuality"
     enum="CrowdDenyNotificationUxQuality" expires_after="2022-06-26">
   <owner>andypaicu@chromium.org</owner>
@@ -675,22 +662,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Permissions.Prompt.TimeToDecision" units="ms"
-    expires_after="2022-10-31">
-  <obsolete>
-    Replaced with Permissions.Prompt.TimeToDecision.{RequestAction} in April
-    2021.
-  </obsolete>
-  <owner>bsep@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>olesiamarukhno@google.com</owner>
-  <summary>
-    Records how long it takes for the user to make a decision about permission
-    request, from when permission prompt is shown until when the user clicks on
-    one of the buttons in the prompt (accept, block or close).
-  </summary>
-</histogram>
-
 <histogram name="Permissions.Prompt.TimeToDecision.{RequestAction}" units="ms"
     expires_after="2022-10-31">
   <owner>bsep@chromium.org</owner>
@@ -720,10 +691,18 @@ chromium-metrics-reviews@google.com.
     prompt has been resolved.
   </summary>
   <token key="Disposition">
+    <variant name="AnchoredBubble"/>
+    <variant name="CustomModalDialog"/>
     <variant name="LocationBarLeftChip"/>
     <variant name="LocationBarLeftChipAutoBubble"/>
     <variant name="LocationBarLeftQuietAbusiveChip"/>
     <variant name="LocationBarLeftQuietChip"/>
+    <variant name="LocationBarRightAnimatedIcon"/>
+    <variant name="LocationBarRightStaticIcon"/>
+    <variant name="MessageUI"/>
+    <variant name="MiniInfobar"/>
+    <variant name="ModalDialog"/>
+    <variant name="NoneVisible"/>
   </token>
   <token key="PermissionType">
     <variant name="AR"/>
@@ -782,17 +761,25 @@ chromium-metrics-reviews@google.com.
     expired.
   </summary>
   <token key="Action">
+    <variant name="Accepted"/>
+    <variant name="AcceptedOnce"/>
     <variant name="Denied"/>
     <variant name="Dismissed"/>
-    <variant name="Granted"/>
-    <variant name="GrantedOnce"/>
     <variant name="Ignored"/>
   </token>
   <token key="Disposition">
+    <variant name="AnchoredBubble"/>
+    <variant name="CustomModalDialog"/>
     <variant name="LocationBarLeftChip"/>
     <variant name="LocationBarLeftChipAutoBubble"/>
     <variant name="LocationBarLeftQuietAbusiveChip"/>
     <variant name="LocationBarLeftQuietChip"/>
+    <variant name="LocationBarRightAnimatedIcon"/>
+    <variant name="LocationBarRightStaticIcon"/>
+    <variant name="MessageUI"/>
+    <variant name="MiniInfobar"/>
+    <variant name="ModalDialog"/>
+    <variant name="NoneVisible"/>
   </token>
   <token key="PermissionType">
     <variant name="AR"/>
@@ -824,10 +811,10 @@ chromium-metrics-reviews@google.com.
     <variant name="DidClickManage"/>
   </token>
   <token key="Action">
+    <variant name="Accepted"/>
+    <variant name="AcceptedOnce"/>
     <variant name="Denied"/>
     <variant name="Dismissed"/>
-    <variant name="Granted"/>
-    <variant name="GrantedOnce"/>
     <variant name="Ignored"/>
   </token>
   <token key="Disposition">

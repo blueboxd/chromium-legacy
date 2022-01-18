@@ -163,4 +163,13 @@ bool MetricsServiceClient::IsMetricsReportingForceEnabled() const {
   return ::metrics::IsMetricsReportingForceEnabled();
 }
 
+absl::optional<bool> MetricsServiceClient::GetCurrentUserMetricsConsent()
+    const {
+  return absl::nullopt;
+}
+
+absl::optional<std::string> MetricsServiceClient::GetCurrentUserId() const {
+  return absl::nullopt;
+}
+
 }  // namespace metrics

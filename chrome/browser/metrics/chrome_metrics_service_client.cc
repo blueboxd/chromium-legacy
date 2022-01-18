@@ -100,6 +100,7 @@
 #include "components/metrics/version_utils.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/omnibox/browser/omnibox_metrics_provider.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/passphrase_type_metrics_provider.h"
@@ -146,15 +147,18 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 #include "chrome/browser/ash/printing/printer_metrics_provider.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/metrics/ambient_mode_metrics_provider.h"
 #include "chrome/browser/metrics/assistant_service_metrics_provider.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/metrics/cros_healthd_metrics_provider.h"
 #include "chrome/browser/metrics/family_link_user_metrics_provider.h"
 #include "chrome/browser/metrics/family_user_metrics_provider.h"
+#include "chrome/browser/metrics/per_user_state_manager_chromeos.h"
 #include "components/metrics/structured/structured_metrics_provider.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -499,7 +503,18 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginMetricsProvider::RegisterPrefs(registry);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  metrics::PerUserStateManagerChromeOS::RegisterPrefs(registry);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void ChromeMetricsServiceClient::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  metrics::PerUserStateManagerChromeOS::RegisterProfilePrefs(registry);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 metrics::MetricsService* ChromeMetricsServiceClient::GetMetricsService() {
   return metrics_service_.get();
@@ -507,11 +522,6 @@ metrics::MetricsService* ChromeMetricsServiceClient::GetMetricsService() {
 
 ukm::UkmService* ChromeMetricsServiceClient::GetUkmService() {
   return ukm_service_.get();
-}
-
-bool ChromeMetricsServiceClient::ShouldUploadMetricsForUserId(
-    const uint64_t user_id) {
-  return true;
 }
 
 void ChromeMetricsServiceClient::SetMetricsClientId(
@@ -570,7 +580,7 @@ void ChromeMetricsServiceClient::OnEnvironmentUpdate(std::string* environment) {
       reinterpret_cast<const void*>(
           g_environment_for_crash_reporter.Get().data()),
       g_environment_for_crash_reporter.Get().size());
-#endif  // OS_WIN || OS_MAC || OS_ANDROID
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
 }
 
 void ChromeMetricsServiceClient::CollectFinalMetricsForLog(
@@ -1196,3 +1206,77 @@ std::string ChromeMetricsServiceClient::GetUploadSigningKey() {
 bool ChromeMetricsServiceClient::ShouldResetClientIdsOnClonedInstall() {
   return metrics_service_->ShouldResetClientIdsOnClonedInstall();
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+
+bool ChromeMetricsServiceClient::ShouldUploadMetricsForUserId(
+    const uint64_t user_id) {
+  if (base::FeatureList::IsEnabled(ash::features::kPerUserMetrics)) {
+    // Metrics logs with user ids should be stored in a user cryptohome so this
+    // function should only be called after a user logins.
+    // |per_user_state_manager_| is initialized before a user can login.
+    DCHECK(per_user_state_manager_);
+
+    // This function should only be called if reporting is enabled.
+    DCHECK(ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+
+    auto current_user_id = per_user_state_manager_->GetCurrentUserId();
+
+    // Current session is an ephemeral session with metrics reporting enabled.
+    // All logs generated during the session will not have a user id associated.
+    // Do not upload log with |user_id| during this session.
+    if (!current_user_id.has_value())
+      return false;
+
+    // If |user_id| is different from the currently logged in user, log
+    // associated with different |user_id| should not be uploaded. This can
+    // happen if a user goes from enable->disable->enable state as user ID is
+    // reset going from enable->disable state.
+    //
+    // The log will be dropped since it may contain data collected during a
+    // point in which metrics reporting consent was disabled.
+    return user_id == metrics::MetricsLog::Hash(current_user_id.value());
+  }
+
+  return true;
+}
+
+void ChromeMetricsServiceClient::UpdateCurrentUserMetricsConsent(
+    bool user_metrics_consent) {
+  if (base::FeatureList::IsEnabled(ash::features::kPerUserMetrics)) {
+    DCHECK(per_user_state_manager_);
+    per_user_state_manager_->SetCurrentUserMetricsConsent(user_metrics_consent);
+  }
+}
+
+void ChromeMetricsServiceClient::InitPerUserMetrics() {
+  if (base::FeatureList::IsEnabled(ash::features::kPerUserMetrics)) {
+    per_user_state_manager_ =
+        std::make_unique<metrics::PerUserStateManagerChromeOS>(
+            this, g_browser_process->GetMetricsServicesManager(),
+            g_browser_process->local_state());
+  }
+}
+
+absl::optional<bool> ChromeMetricsServiceClient::GetCurrentUserMetricsConsent()
+    const {
+  if (per_user_state_manager_) {
+    DCHECK(base::FeatureList::IsEnabled(ash::features::kPerUserMetrics));
+    return per_user_state_manager_
+        ->GetCurrentUserReportingConsentIfApplicable();
+  }
+
+  return absl::nullopt;
+}
+
+absl::optional<std::string> ChromeMetricsServiceClient::GetCurrentUserId()
+    const {
+  if (per_user_state_manager_) {
+    DCHECK(base::FeatureList::IsEnabled(ash::features::kPerUserMetrics));
+    return per_user_state_manager_->GetCurrentUserId();
+  }
+
+  return absl::nullopt;
+}
+
+#endif

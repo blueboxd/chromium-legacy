@@ -1501,7 +1501,7 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-child-sho
 crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-composited.html [ Crash ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Crash ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-and-footers-clipped.html [ Crash ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-and-footers-inside-transform.html [ Crash ]
+crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-and-footers-inside-transform.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Crash ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-and-footers-transformed.html [ Crash ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-headers-and-footers.html [ Crash ]
@@ -3077,6 +3077,7 @@ crbug.com/626703 [ Mac11 ] external/wpt/css/css-flexbox/abspos/flex-abspos-stati
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-flexbox/flexbox_flow-column-wrap.html [ Crash Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/registered-property-value-013.https.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/wasm/jsapi/constructor/instantiate-bad-imports.any.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/wasm/jsapi/constructor/instantiate-bad-imports.any.worker.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-text/letter-spacing/letter-spacing-bengali-yaphala-001.html [ Failure ]
@@ -6137,22 +6138,6 @@ crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-polic
 crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-allowed-for-some.https.sub.html [ Failure Skip Timeout ]
 crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-disallowed-for-all.https.sub.html [ Failure Skip Timeout ]
 
-# Rename "feature-policy-violation" report type to "permissions-policy-violation" report type.
-crbug.com/1123116 external/wpt/feature-policy/reporting/camera-reporting.https.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/encrypted-media-reporting.https.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/fullscreen-reporting.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/generic-sensor-reporting.https.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/geolocation-reporting.https.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/microphone-reporting.https.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/midi-reporting.https.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/payment-reporting.https.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/picture-in-picture-reporting.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/screen-wake-lock-reporting.https.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/serial-reporting.https.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/sync-xhr-reporting.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/usb-reporting.https.html [ Timeout ]
-crbug.com/1123116 external/wpt/feature-policy/reporting/xr-reporting.https.html [ Timeout ]
-
 crbug.com/1159445 [ Mac ] paint/invalidation/repaint-overlay/layers-overlay.html [ Failure ]
 
 #Sheriff 2020-10-21
@@ -7180,7 +7165,6 @@ crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile
 crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/page/set-font-families.js [ Failure Pass ]
 crbug.com/1249176 [ Mac ] http/tests/text-autosizing/wide-iframe.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/layout-instability/recent-input.html [ Failure Pass ]
-crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/performance/perf-metrics.js [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/event-timing/event-retarget.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/mimesniff/media/media-sniff.window.html [ Failure Pass ]
@@ -7344,7 +7328,6 @@ crbug.com/1257298 svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableVal
 crbug.com/1257570 [ Win7 ] fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-animate.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-animate-rotate.html [ Failure Pass ]
-crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-clip.html [ Failure Pass ]
 crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/color-profile-image-shape.html [ Failure Pass ]
@@ -7645,6 +7628,10 @@ crbug.com/1286944 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-a
 
 # Sheriff 2022-01-17
 crbug.com/1287928 [ Mac ] external/wpt/webrtc/RTCPeerConnection-perfect-negotiation-stress-glare.https.html [ Failure Pass ]
-
+crbug.com/1233938 http/tests/notifications/click-shared-worker.html [ Pass Timeout ]
 # Temporarily disable test to allow fixing of devtools path escaping
-crbug.com/1094436 http/tests/devtools/overrides/project-added-with-existing-files-bind.js [ Skip Timeout Failure ]
+crbug.com/1094436 http/tests/devtools/overrides/project-added-with-existing-files-bind.js [ Failure Skip Timeout ]
+crbug.com/1256763 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Failure Pass ]
+crbug.com/1287093 [ Linux ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/document-referrer.html [ Failure Pass ]
+crbug.com/1287093 [ Linux ] virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/document-referrer.html [ Failure Pass ]
+crbug.com/1288136 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/registered-property-value-005.https.html [ Failure Pass ]

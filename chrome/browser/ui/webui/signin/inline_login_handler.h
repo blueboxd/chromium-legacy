@@ -48,6 +48,8 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
   // Parameters passed to `CompleteLogin` method.
   struct CompleteLoginParams {
     CompleteLoginParams();
+    CompleteLoginParams(const CompleteLoginParams&);
+    CompleteLoginParams& operator=(const CompleteLoginParams&);
     ~CompleteLoginParams();
 
     std::string email;
@@ -58,6 +60,9 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
     bool trusted_value = false;
     bool trusted_found = false;
     bool choose_what_to_sync = false;
+    // Whether the account should be available in ARC after addition. Used only
+    // on Chrome OS.
+    bool is_available_in_arc = false;
   };
 
   // Closes the dialog by calling the |inline.login.closeDialog| Javascript

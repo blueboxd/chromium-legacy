@@ -377,6 +377,15 @@ const base::Feature kForwardMemoryPressureEventsToGpuProcess {
 };
 #endif
 
+// If enabled, limits the number of FLEDGE auctions that can be run between page
+// load and unload -- any attempt to run more than this number of auctions will
+// fail (return null to JavaScript).
+const base::Feature kFledgeLimitNumAuctions{"LimitNumFledgeAuctions",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+// The number of allowed auctions for each page load (load to unload).
+const base::FeatureParam<int> kFledgeLimitNumAuctionsParam{
+    &kFledgeLimitNumAuctions, "max_auctions_per_page", 8};
+
 // Enables scrollers inside Blink to store scroll offsets in fractional
 // floating-point numbers rather than truncating to integers.
 const base::Feature kFractionalScrollOffsets{"FractionalScrollOffsets",
@@ -944,12 +953,6 @@ const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
 // https://crbug.com/1144104
 const base::Feature kUnrestrictedSharedArrayBuffer{
     "UnrestrictedSharedArrayBuffer", base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if BUILDFLAG(IS_ANDROID) && defined(INCLUDE_BOTH_V8_SNAPSHOTS)
-// If enabled, blink's context snapshot is used rather than the v8 snapshot.
-const base::Feature kUseContextSnapshot{"UseContextSnapshot",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Allows user activation propagation to all frames having the same origin as
 // the activation notifier frame.  This is an intermediate measure before we

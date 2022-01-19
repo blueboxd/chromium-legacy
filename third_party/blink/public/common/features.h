@@ -116,6 +116,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kIntensiveWakeUpThrottling;
 BLINK_COMMON_EXPORT extern const char
     kIntensiveWakeUpThrottling_GracePeriodSeconds_Name[];
+BLINK_COMMON_EXPORT extern const base::Feature kThrottleForegroundTimers;
 
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcH264WithOpenH264FFmpeg;
@@ -131,7 +132,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kStorageAccessAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kCssSelectorFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kFontAccess;
-BLINK_COMMON_EXPORT extern const base::Feature kFontAccessPersistent;
 BLINK_COMMON_EXPORT extern const base::Feature kComputePressure;
 BLINK_COMMON_EXPORT extern const base::Feature kFileHandlingAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kFileHandlingIcons;
@@ -183,10 +183,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kBlinkCompositorUseDisplayThreadPriority;
 
 BLINK_COMMON_EXPORT extern const base::Feature kBackfaceVisibilityInterop;
-
-BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirect;
-
-BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirectSrcVideo;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSetLowPriorityForBeacon;
 

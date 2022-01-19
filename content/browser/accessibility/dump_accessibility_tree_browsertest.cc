@@ -742,6 +742,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaDirectory) {
   RunAriaTest(FILE_PATH_LITERAL("aria-directory.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaDirectoryChildren) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-directory-children.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaDisabled) {
   RunAriaTest(FILE_PATH_LITERAL("aria-disabled.html"));
 }
@@ -938,12 +943,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("aria-insertion-deletion.html"));
 }
 
-#if !defined(OS_CHROMEOS)
-// TODO(accessibility) Reennable. See crrev.com/c//3396516.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaInvalid) {
   RunAriaTest(FILE_PATH_LITERAL("aria-invalid.html"));
 }
-#endif  // defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAriaKeyShortcuts) {
@@ -994,9 +996,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAriaListBoxDisabled) {
   RunAriaTest(FILE_PATH_LITERAL("aria-listbox-disabled.html"));
 }
-// TODO(crbug.com/983802): Flaky.
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityAriaListBoxActiveDescendant) {
+                       AccessibilityAriaListBoxActiveDescendant) {
   RunAriaTest(FILE_PATH_LITERAL("aria-listbox-activedescendant.html"));
 }
 

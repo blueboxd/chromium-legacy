@@ -57,7 +57,6 @@
 #include "chrome/browser/federated_learning/floc_id_provider_factory.h"
 #include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/first_party_sets/first_party_sets_util.h"
-#include "chrome/browser/font_access/chrome_font_access_delegate.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/gpu/chrome_browser_main_extra_parts_gpu.h"
 #include "chrome/browser/hid/chrome_hid_delegate.h"
@@ -257,7 +256,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/file_url_loader.h"
-#include "content/public/browser/font_access_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/overlay_window.h"
@@ -2227,7 +2225,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   // On Chrome OS need to pass primary user homedir (in multi-profiles session).
   base::FilePath homedir;
   base::PathService::Get(base::DIR_HOME, &homedir);
-  command_line->AppendSwitchASCII(chromeos::switches::kHomedir,
+  command_line->AppendSwitchASCII(ash::switches::kHomedir,
                                   homedir.value().c_str());
 #endif
 
@@ -2251,10 +2249,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    const std::string& login_profile = browser_command_line.GetSwitchValueASCII(
-        chromeos::switches::kLoginProfile);
+    const std::string& login_profile =
+        browser_command_line.GetSwitchValueASCII(ash::switches::kLoginProfile);
     if (!login_profile.empty())
-      command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+      command_line->AppendSwitchASCII(ash::switches::kLoginProfile,
                                       login_profile);
 #endif
 
@@ -5435,13 +5433,6 @@ content::HidDelegate* ChromeContentBrowserClient::GetHidDelegate() {
   if (!hid_delegate_)
     hid_delegate_ = std::make_unique<ChromeHidDelegate>();
   return hid_delegate_.get();
-}
-
-content::FontAccessDelegate*
-ChromeContentBrowserClient::GetFontAccessDelegate() {
-  if (!font_access_delegate_)
-    font_access_delegate_ = std::make_unique<ChromeFontAccessDelegate>();
-  return static_cast<content::FontAccessDelegate*>(font_access_delegate_.get());
 }
 
 content::WebAuthenticationDelegate*

@@ -744,6 +744,8 @@ void ShimlessRmaService::ProvisioningComplete(
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
+  state_proto_.mutable_provision_device()->set_choice(
+      rmad::ProvisionDeviceState::RMAD_PROVISION_CHOICE_CONTINUE);
   TransitionNextStateGeneric(std::move(callback));
 }
 
@@ -1100,8 +1102,8 @@ void ShimlessRmaService::OnAbortRmaResponse(
               : "Rebooting after user cancelled RMA.");
     } else {
       VLOG(1) << "Restarting Chrome to bypass RMA after cancel request.";
-      // TODO(gavindodd): Append ::ash::switches::kNoShimlessRma when autolaunch
-      // is implemented.
+      // TODO(gavindodd): Append switches::kNoShimlessRma when autolaunch is
+      // implemented.
       shimless_rma_delegate_->RestartChrome();
     }
   }

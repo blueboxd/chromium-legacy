@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -38,11 +37,11 @@
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -376,8 +375,8 @@ class WebAppInstallManagerTest
   int GetNumFullyInstalledApps() const {
     int num_apps = 0;
 
-    for (const WebApp& app : fake_registry_controller_->registrar().GetApps()) {
-      ALLOW_UNUSED_LOCAL(app);
+    for ([[maybe_unused]] const WebApp& app :
+         fake_registry_controller_->registrar().GetApps()) {
       ++num_apps;
     }
 

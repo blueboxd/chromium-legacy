@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -2221,13 +2222,13 @@ class DevToolsAllowedByCommandLineSwitch : public DevToolsExtensionForceInstallT
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-    // Same as |chromeos::switches::kForceDevToolsAvailable|, but used as a
+    // Same as `ash::switches::kForceDevToolsAvailable`, but used as a
     // literal here so it's possible to verify that the switch does not apply on
     // non-ChromeOS platforms.
     const std::string kForceDevToolsAvailableBase = "force-devtools-available";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     ASSERT_EQ(kForceDevToolsAvailableBase,
-              chromeos::switches::kForceDevToolsAvailable);
+              ash::switches::kForceDevToolsAvailable);
 #endif
     command_line->AppendSwitch("--" + kForceDevToolsAvailableBase);
   }

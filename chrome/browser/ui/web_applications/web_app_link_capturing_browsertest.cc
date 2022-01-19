@@ -22,9 +22,9 @@
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/embedder_support/switches.h"
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_P(WebAppDeclarativeLinkCapturingBrowserTest,
 }
 
 // TODO(crbug.com/1185680): Flaky on Linux and lacros.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_CaptureLinksNewClient DISABLED_CaptureLinksNewClient
 #else
 #define MAYBE_CaptureLinksNewClient CaptureLinksNewClient

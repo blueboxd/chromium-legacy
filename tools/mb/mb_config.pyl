@@ -38,6 +38,7 @@
       'android-arm32-pgo': 'official_goma_android_arm32_pgo',
       'android-arm64-pgo': 'official_goma_android_arm64_pgo',
       'linux-pgo': 'official_goma_linux_pgo',
+      'mac-arm-pgo': 'official_goma_mac_arm_pgo',
       'mac-pgo': 'official_goma_mac_pgo',
       'win32-pgo': 'official_goma_x86_pgo',
       'win64-pgo': 'official_goma_x64_pgo',
@@ -334,7 +335,6 @@
       'ios15-sdk-device': 'ios_device_release_static_bot_xctest',
       'ios15-sdk-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios-asan': 'ios_simulator_release_static_asan_bot_xctest',
-      'ios-catalyst': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_no_dsyms_no_lld_no_remoting',
       'ios-reclient': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios_xctest',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
@@ -343,10 +343,10 @@
       'ios-webkit-tot': 'ios_simulator_debug_static_bot_xctest_no_lld',
       'lacros-amd64-generic-rel (goma cache silo)': 'chromeos_amd64-generic_lacros_rel',
       'lacros-amd64-generic-rel (reclient)': 'chromeos_amd64-generic_lacros_rel_reclient',
-      'linux-annotator-rel': 'release_bot',
+      'linux-annotator-rel': 'release_bot_reclient',
       'linux-blink-animation-use-time-delta': 'debug_bot_enable_blink_animation_use_time_delta',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_minimal_symbols_tsan',
-      'linux-blink-heap-verification': 'release_bot_enable_blink_heap_verification_dcheck_always_on',
+      'linux-blink-heap-verification': 'release_bot_enable_blink_heap_verification_dcheck_always_on_reclient',
       'linux-blink-v8-oilpan': 'release_bot_enable_v8_oilpan_dcheck_always_on',
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage',
       'linux-chromeos-js-code-coverage': 'chromeos_with_codecs_release_bot_javascript_coverage',
@@ -530,6 +530,7 @@
     'chromium.mac': {
       'Mac Builder': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
+      'ios-catalyst': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_no_dsyms_no_lld_no_remoting',
       'ios-device': 'ios_device_release_compile_only',
       'ios-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios-simulator-full-configs': 'ios_simulator_debug_static_bot_xctest',
@@ -920,6 +921,7 @@
       'android-arm32-pgo': 'official_goma_android_arm32_pgo',
       'android-arm64-pgo': 'official_goma_android_arm64_pgo',
       'linux-pgo': 'official_goma_linux_pgo',
+      'mac-arm-pgo': 'official_goma_mac_arm_pgo',
       'mac-pgo': 'official_goma_mac_pgo',
       'win32-pgo': 'official_goma_x86_pgo',
       'win64-pgo': 'official_goma_x64_pgo',
@@ -2727,6 +2729,10 @@
       'official', 'goma', 'no_keystone_registration_framework', 'no_widevine_cdm_host_verification', 'full_symbols', 'arm64', 'pgo_phase_0', 'use_py3_for_perf'
     ],
 
+    'official_goma_mac_arm_pgo': [
+      'official', 'goma', 'no_keystone_registration_framework', 'no_widevine_cdm_host_verification', 'arm64', 'disable_widevine_signing', 'static', 'no_symbols', 'pgo_phase_1'
+    ],
+
     'official_goma_mac_pgo': [
       'official', 'goma', 'no_keystone_registration_framework', 'no_widevine_cdm_host_verification', 'disable_widevine_signing', 'static', 'no_symbols', 'pgo_phase_1'
     ],
@@ -2848,6 +2854,10 @@
       'release_bot',
     ],
 
+    'release_bot_reclient': [
+      'release_bot_reclient',
+    ],
+
     'release_bot_blink': [
       'release_bot_blink',
     ],
@@ -2878,8 +2888,8 @@
       'release_bot_blink', 'v8_enable_debugging_features',
     ],
 
-    'release_bot_enable_blink_heap_verification_dcheck_always_on': [
-      'release_bot_blink', 'enable_blink_heap_verification', 'dcheck_always_on',
+    'release_bot_enable_blink_heap_verification_dcheck_always_on_reclient': [
+      'release_bot_blink_reclient', 'enable_blink_heap_verification', 'dcheck_always_on',
     ],
 
     'release_bot_enable_v8_oilpan_dcheck_always_on': [

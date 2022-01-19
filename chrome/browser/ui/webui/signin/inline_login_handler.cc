@@ -44,6 +44,13 @@ InlineLoginHandler::~InlineLoginHandler() = default;
 
 InlineLoginHandler::CompleteLoginParams::CompleteLoginParams() = default;
 
+InlineLoginHandler::CompleteLoginParams::CompleteLoginParams(
+    const InlineLoginHandler::CompleteLoginParams&) = default;
+
+InlineLoginHandler::CompleteLoginParams&
+InlineLoginHandler::CompleteLoginParams::operator=(
+    const InlineLoginHandler::CompleteLoginParams&) = default;
+
 InlineLoginHandler::CompleteLoginParams::~CompleteLoginParams() = default;
 
 void InlineLoginHandler::RegisterMessages() {
@@ -195,6 +202,8 @@ void InlineLoginHandler::HandleCompleteLoginMessageWithCookies(
 
   params.choose_what_to_sync =
       dict.FindBoolKey("chooseWhatToSync").value_or(false);
+  params.is_available_in_arc =
+      dict.FindBoolKey("isAvailableInArc").value_or(false);
 
   CompleteLogin(params);
 }

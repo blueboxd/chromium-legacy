@@ -347,6 +347,10 @@ const base::Feature kIntensiveWakeUpThrottling{
 const char kIntensiveWakeUpThrottling_GracePeriodSeconds_Name[] =
     "grace_period_seconds";
 
+// Throttles Javascript timer wake ups on foreground pages.
+const base::Feature kThrottleForegroundTimers{
+    "ThrottleForegroundTimers", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 // Run-time feature for the |rtc_use_h264| encoder/decoder.
 const base::Feature kWebRtcH264WithOpenH264FFmpeg{
@@ -413,10 +417,6 @@ const base::Feature kAllowSyncXHRInPageDismissal{
 // Font enumeration and data access. https://crbug.com/535764
 const base::Feature kFontAccess{"FontAccess",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Font enumeration and data access. https://crbug.com/1173275
-const base::Feature kFontAccessPersistent{"FontAccessPersistent",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for the Compute Pressure API. https://crbug.com/1067627
 const base::Feature kComputePressure{"ComputePressure",
@@ -573,16 +573,6 @@ const base::Feature kBlinkCompositorUseDisplayThreadPriority {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-// Enables redirecting subresources in the page to better compressed and
-// optimized versions to provide data savings.
-const base::Feature kSubresourceRedirect{"SubresourceRedirect",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables redirecting src videos in the page to better compressed and optimized
-// versions to provide data savings.
-const base::Feature kSubresourceRedirectSrcVideo{
-    "SubresourceRedirectSrcVideo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, enforces new interoperable semantics for 3D transforms.
 // See crbug.com/1008483.
@@ -847,7 +837,7 @@ const base::Feature kWebAppEnableTranslations{
 
 // Controls URL handling feature in web apps. Controls parsing of "url_handlers"
 // field in web app manifests. See explainer for more information:
-// https://github.com/WICG/pwa-url-handler/blob/master/explainer.md
+// https://github.com/WICG/pwa-url-handler/blob/main/explainer.md
 const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 

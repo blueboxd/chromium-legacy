@@ -611,12 +611,6 @@ const char kFontAccessAPIDescription[] =
     "Enables the experimental Font Access APIs, giving websites access "
     "to enumerate local fonts and access their table data.";
 
-const char kFontAccessPersistentName[] =
-    "Enable persistent access to the Font Access API";
-const char kFontAccessPersistentDescription[] =
-    "Enables persistent access to the Font Access API, giving websites access "
-    "to enumerate local fonts after being granted a permission.";
-
 const char kForceColorProfileSRGB[] = "sRGB";
 const char kForceColorProfileP3[] = "Display P3 D65";
 const char kForceColorProfileColorSpin[] = "Color spin with gamma 2.4";
@@ -859,7 +853,7 @@ const char kDesktopPWAsUrlHandlingName[] = "Desktop PWA URL handling";
 const char kDesktopPWAsUrlHandlingDescription[] =
     "Enable web app manifests to declare URL handling behavior. Prototype "
     "implementation of: "
-    "https://github.com/WICG/pwa-url-handler/blob/master/explainer.md";
+    "https://github.com/WICG/pwa-url-handler/blob/main/explainer.md";
 
 const char kDesktopPWAsWindowControlsOverlayName[] =
     "Desktop PWA Window Controls Overlay";
@@ -1222,11 +1216,6 @@ const char kEnableUseZoomForDsfDescription[] =
 const char kEnableUseZoomForDsfChoiceDefault[] = "Default";
 const char kEnableUseZoomForDsfChoiceEnabled[] = "Enabled";
 const char kEnableUseZoomForDsfChoiceDisabled[] = "Disabled";
-
-const char kEnableSubresourceRedirectName[] =
-    "Enable Subresource Redirect Compression";
-const char kEnableSubresourceRedirectDescription[] =
-    "Allow subresource compression for data savings";
 
 const char kEnableWebAuthenticationCableV2SupportName[] =
     "Web Authentication caBLE v2 QR codes";
@@ -2424,6 +2413,12 @@ const char kThreadedScrollingDescription[] =
     "this can dramatically hurt scrolling performance of most websites and is "
     "intended for testing purposes only.";
 
+const char kThrottleForegroundTimersName[] =
+    "Throttle Foreground Timers to 30 Hz";
+const char kThrottleForegroundTimersDescription[] =
+    "On foreground pages, run DOM timers with a non-zero delay on a periodic "
+    "30 Hz tick, instead of as soon as their delay has passed.";
+
 const char kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName[] =
     "Throttle non-visible cross-origin iframes";
 const char
@@ -3086,6 +3081,10 @@ const char kEnableMixedContentDownloadDialogDescription[] =
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
+
+const char kFeatureNotificationGuideName[] = "Feature notification guide";
+const char kFeatureNotificationGuideDescription[] =
+    "Enables notifications about chrome features.";
 
 const char kFeedBackToTopName[] = "Back to top of the feeds";
 const char kFeedBackToTopDescription[] =
@@ -4612,6 +4611,11 @@ const char
         "Enable multistep automation for Switch Access, which is a project for "
         "the 2021 accessibility sprint.";
 
+const char kExtendedOpenVpnSettingsName[] = "Enable extended OpenVPN settings";
+const char kExtendedOpenVpnSettingsDescription[] =
+    "Enable displaying additional configuration properties of already "
+    "configured OpenVPN networks.";
+
 const char kMagnifierContinuousMouseFollowingModeSettingName[] =
     "Enable ability to choose continuous mouse following mode in Magnifier "
     "settings";
@@ -4919,6 +4923,10 @@ const char kNearbySharingOnePageOnboardingDescription[] =
 const char kNearbySharingSelfShareName[] = "Nearby Sharing Self Share";
 const char kNearbySharingSelfShareDescription[] =
     "Enables seamless sharing between a user's own devices.";
+
+const char kNearbySharingWifiLanName[] = "Nearby Sharing WifiLan";
+const char kNearbySharingWifiLanDescription[] =
+    "Enables WifiLan as a Nearby Share transfer medium.";
 
 const char kPcieBillboardNotificationName[] = "Pcie billboard notification";
 const char kPcieBillboardNotificationDescription[] =

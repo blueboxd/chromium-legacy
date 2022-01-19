@@ -220,6 +220,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEnableWireGuard;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnforceAshExtensionKeeplist;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kExtendedOpenVpnSettings;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEolWarningNotifications;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kESimPolicy;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kExoLockNotification;
@@ -394,7 +396,6 @@ extern const base::Feature kProductivityLauncherAnimation;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kProjector;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kProjectorManagedUser;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kProjectorFeaturePod;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kProjectorAnnotator;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickDim;
@@ -550,6 +551,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAResizingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWADebugModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsESimPolicyEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsExtendedOpenVpnSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFamilyLinkOnSchoolDeviceEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFastPairEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFileManagerFuseBoxEnabled();

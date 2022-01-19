@@ -190,7 +190,6 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
         PrivacyReviewStep.COMPLETION,
         {
           onForwardNavigation: () => {
-            Router.getInstance().navigateToPreviousRoute();
             this.metricsBrowserProxy_.recordPrivacyGuideNextNavigationHistogram(
                 PrivacyGuideInteractions.COMPLETION_NEXT_BUTTON);
             this.metricsBrowserProxy_.recordAction(
@@ -397,7 +396,8 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
       }
     } else {
       if (this.animationsEnabled_ && playAnimation) {
-        this.$.viewManager.switchView(this.privacyReviewStep_);
+        this.$.viewManager.switchView(
+            this.privacyReviewStep_, 'slide-in-fade-in', 'no-animation');
       } else {
         this.$.viewManager.switchView(
             this.privacyReviewStep_, 'no-animation', 'no-animation');

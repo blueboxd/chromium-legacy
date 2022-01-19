@@ -574,23 +574,6 @@
       "use_goma": true
     }
   },
-  "ios-catalyst": {
-    "gn_args": {
-      "enable_dsyms": false,
-      "enable_remoting": false,
-      "ios_set_attributes_for_xcode_project_generation": false,
-      "is_component_build": false,
-      "is_debug": true,
-      "is_p2p_enabled": false,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "target_environment": "catalyst",
-      "target_os": "ios",
-      "use_goma": true,
-      "use_libfuzzer": true,
-      "use_lld": false
-    }
-  },
   "ios-reclient": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
@@ -807,7 +790,8 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-ash-chromium-builder-fyi-rel": {
@@ -864,7 +848,8 @@
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-blink-v8-oilpan": {

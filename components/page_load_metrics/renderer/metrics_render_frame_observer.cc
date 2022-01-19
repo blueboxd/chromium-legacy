@@ -173,8 +173,7 @@ void MetricsRenderFrameObserver::DidStartResponse(
     const GURL& response_url,
     int request_id,
     const network::mojom::URLResponseHead& response_head,
-    network::mojom::RequestDestination request_destination,
-    blink::PreviewsState previews_state) {
+    network::mojom::RequestDestination request_destination) {
   if (provisional_frame_resource_data_use_ &&
       blink::IsRequestDestinationFrame(request_destination)) {
     // TODO(rajendrant): This frame request might start before the provisional
@@ -595,6 +594,8 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
             : ClampDelta(perf.LargestImagePaint(), start);
     timing->paint_timing->largest_contentful_paint->type =
         perf.LargestContentfulPaintType();
+    timing->paint_timing->largest_contentful_paint->image_bpp =
+        perf.LargestContentfulPaintImageBPP();
   }
   if (perf.LargestTextPaintSize() > 0) {
     // LargestTextPaint and LargestTextPaintSize should be available at the

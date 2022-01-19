@@ -37,6 +37,7 @@
 #include "chrome/browser/ash/android_sms/android_sms_switches.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/commerce/commerce_feature_list.h"
+#include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/login_detection/login_detection_util.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_features.h"
@@ -429,7 +430,7 @@ const FeatureEntry::Choice kForceUpdateMenuTypeChoices[] = {
     {flag_descriptions::kUpdateMenuTypeUnsupportedOSVersion,
      switches::kForceUpdateMenuType, "unsupported_os_version"},
 };
-#else  // !defined(OS_ANDROID)
+#else   // !defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kReaderModeOfferInSettings[] = {
     {switches::kReaderModeDiscoverabilityParamName,
      switches::kReaderModeOfferInSettings}};
@@ -2420,27 +2421,6 @@ const FeatureEntry::FeatureVariation kCheckOfflineCapabilityVariations[] = {
      base::size(kCheckOfflineCapabilityEnforce), nullptr},
 };
 
-const FeatureEntry::FeatureParam kSubresourceRedirectPublicImageHints[] = {
-    {"enable_public_image_hints_based_compression", "true"},
-    {"enable_subresource_server_redirect", "true"},
-    {"enable_login_robots_based_compression", "false"},
-};
-
-const FeatureEntry::FeatureParam
-    kSubresourceRedirectLoginRobotsBasedCompression[] = {
-        {"enable_login_robots_based_compression", "true"},
-        {"enable_subresource_server_redirect", "true"},
-        {"enable_public_image_hints_based_compression", "false"},
-};
-
-const FeatureEntry::FeatureVariation kSubresourceRedirectVariations[] = {
-    {"Public image hints based compression",
-     kSubresourceRedirectPublicImageHints,
-     base::size(kSubresourceRedirectPublicImageHints), nullptr},
-    {"robots.txt allowed image compression in non logged-in pages",
-     kSubresourceRedirectLoginRobotsBasedCompression,
-     base::size(kSubresourceRedirectLoginRobotsBasedCompression), nullptr}};
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const FeatureEntry::FeatureParam kCategoricalSearch_Unranked[] = {
     {"ranking", "none"}};
@@ -3171,6 +3151,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"esim-policy", flag_descriptions::kESimPolicyName,
      flag_descriptions::kESimPolicyDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kESimPolicy)},
+    {"extended-open-vpn-settings",
+     flag_descriptions::kExtendedOpenVpnSettingsName,
+     flag_descriptions::kExtendedOpenVpnSettingsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kExtendedOpenVpnSettings)},
     {"dns-proxy-enable-doh", flag_descriptions::kDnsProxyEnableDOHName,
      flag_descriptions::kDnsProxyEnableDOHDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(::features::kDnsProxyEnableDOH)},
@@ -3205,7 +3189,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kHideShelfControlsInTabletMode)},
     {"shelf-hover-previews", flag_descriptions::kShelfHoverPreviewsName,
      flag_descriptions::kShelfHoverPreviewsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kShelfHoverPreviews)},
+     SINGLE_VALUE_TYPE(ash::switches::kShelfHoverPreviews)},
     {"show-bluetooth-debug-log-toggle",
      flag_descriptions::kShowBluetoothDebugLogToggleName,
      flag_descriptions::kShowBluetoothDebugLogToggleDescription, kOsCrOS,
@@ -3653,12 +3637,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-use-zoom-for-dsf", flag_descriptions::kEnableUseZoomForDsfName,
      flag_descriptions::kEnableUseZoomForDsfDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableUseZoomForDSFChoices)},
-    {"enable-subresource-redirect",
-     flag_descriptions::kEnableSubresourceRedirectName,
-     flag_descriptions::kEnableSubresourceRedirectDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kSubresourceRedirect,
-                                    kSubresourceRedirectVariations,
-                                    "SubresourceRedirect")},
     {"enable-login-detection", flag_descriptions::kEnableLoginDetectionName,
      flag_descriptions::kEnableLoginDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(login_detection::kLoginDetection)},
@@ -3884,6 +3862,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kAddToHomescreenIPH,
                                     kAddToHomescreenIPHVariations,
                                     "AddToHomescreen")},
+    {"feature-notification-guide",
+     flag_descriptions::kFeatureNotificationGuideName,
+     flag_descriptions::kFeatureNotificationGuideDescription, kOsAll,
+     FEATURE_VALUE_TYPE(feature_guide::features::kFeatureNotificationGuide)},
     {"offline-pages-live-page-sharing",
      flag_descriptions::kOfflinePagesLivePageSharingName,
      flag_descriptions::kOfflinePagesLivePageSharingDescription, kOsAndroid,
@@ -4354,7 +4336,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-touchscreen-calibration",
      flag_descriptions::kTouchscreenCalibrationName,
      flag_descriptions::kTouchscreenCalibrationDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchCalibrationSetting)},
+     SINGLE_VALUE_TYPE(ash::switches::kEnableTouchCalibrationSetting)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"audio-url", flag_descriptions::kAudioUrlName,
@@ -5898,10 +5880,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFontAccessAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kFontAccess)},
 
-    {"font-access-persistent", flag_descriptions::kFontAccessPersistentName,
-     flag_descriptions::kFontAccessPersistentDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kFontAccessPersistent)},
-
     {"mouse-subframe-no-implicit-capture",
      flag_descriptions::kMouseSubframeNoImplicitCaptureName,
      flag_descriptions::kMouseSubframeNoImplicitCaptureDescription, kOsAll,
@@ -6451,6 +6429,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNearbySharingSelfShareName,
      flag_descriptions::kNearbySharingSelfShareDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharingSelfShare)},
+    {"nearby-sharing-wifilan", flag_descriptions::kNearbySharingWifiLanName,
+     flag_descriptions::kNearbySharingWifiLanDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kNearbySharingWifiLan)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -7213,6 +7194,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUpdateHistoryEntryPointsInIncognitoName,
      flag_descriptions::kUpdateHistoryEntryPointsInIncognitoDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kUpdateHistoryEntryPointsInIncognito)},
+
+    {"throttle-foreground-timers",
+     flag_descriptions::kThrottleForegroundTimersName,
+     flag_descriptions::kThrottleForegroundTimersDescription,
+     kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(blink::features::kThrottleForegroundTimers)},
 
     {"enable-throttle-display-none-and-visibility-hidden-cross-origin-iframes",
      flag_descriptions::

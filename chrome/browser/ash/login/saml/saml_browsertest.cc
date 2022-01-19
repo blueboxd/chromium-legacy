@@ -35,10 +35,10 @@
 #include "chrome/browser/ash/login/saml/fake_saml_idp_mixin.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/login/test/embedded_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
-#include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
@@ -898,7 +898,7 @@ class SAMLEnrollmentTest : public SamlTestWithRedirectToDefaultIdPFeature {
   void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) override;
 
  protected:
-  LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
+  EmbeddedPolicyTestServerMixin policy_test_server_mixin_{&mixin_host_};
   test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
 };
 
@@ -1084,7 +1084,7 @@ void SAMLPolicyTest::SetUpCommandLine(base::CommandLine* command_line) {
   SamlTestBase::SetUpCommandLine(command_line);
 
   // Disable token check to allow offline sign-in for the fake gaia users.
-  command_line->AppendSwitch(chromeos::switches::kDisableGaiaServices);
+  command_line->AppendSwitch(switches::kDisableGaiaServices);
 }
 
 void SAMLPolicyTest::SetSAMLOfflineSigninTimeLimitPolicy(int limit) {

@@ -17403,6 +17403,39 @@
       ''',
     },
     {
+      'name': 'NTPMiddleSlotAnnouncementVisible',
+      'owners': ['danpeng@google.com', 'tiborg@chromium.org', 'chrome-desktop-ntp@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:99-', 'chrome_os:99-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'New Tab Page will show the middle slot announcement if it is available',
+        },
+        {
+          'value': False,
+          'caption': 'New Tab Page will not show the middle slot announcement even if it is available',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 941,
+      'caption': '''Show the middle slot announcement on the New Tab Page''',
+      'tags': [],
+      'desc':
+      '''This policy controls the visibility of the middle slot announcement on the New Tab Page.
+
+      If the policy is set to Enabled, the New Tab Page will show the middle slot announcement if it is available.
+
+      If the policy is set to Disabled, the New Tab Page will not show the middle slot announcement even if it is available.
+      ''',
+    },
+    {
       'name': 'WebRtcUdpPortRange',
       'owners': ['guidou@chromium.org'],
       'type': 'string',
@@ -27776,9 +27809,10 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'id': 824,
       'caption': 'Web App management settings',
       'tags': [],
-      'desc': '''Setting the policy controls web app management settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''This policy allows an admin to specify settings for installed web apps.
 
-      This policy allows an admin to specify settings for web apps installed through <ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME">WebAppInstallForceList</ph>. A default configuration can be set using the special ID <ph name="DEFAULT_SCOPE">"*"</ph>, which applies to all web apps without a custom configuration in this policy.
+      This policy maps a Web App ID to its specific setting. See <ph name="WEB_APP_ID_REFERENCE_URL">https://developer.chrome.com/blog/pwa-manifest-id/<ex>https://developer.chrome.com/blog/pwa-manifest-id/</ex></ph> for instructions on how to determine the id for an installed web app.
+      A default configuration can be set using the special ID <ph name="DEFAULT_SCOPE">"*"</ph>, which applies to all web apps without a custom configuration in this policy.
 
       The <ph name="RUN_ON_OS_LOGIN_FIELD">"run_on_os_login"</ph> field specifies if a web app can be run during OS login. If this field is set to <ph name="BLOCKED">"blocked"</ph>, the web app will not run during OS login and the user will not be able to enable this later. If this field is set to <ph name="RUN_WINDOWED">"run_windowed"</ph>, the web app will run during OS login and the user will not be able to disable this later. If this field is set to <ph name="ALLOWED">"allowed"</ph>, the user will be able to configure the web app to run at OS login. The default configuration only allows the <ph name="ALLOWED">"allowed"</ph> and <ph name="BLOCKED">"blocked"</ph> values.
       ''',
@@ -30306,6 +30340,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 940,
+  'highest_id_currently_used': 941,
   'highest_atomic_group_id_currently_used': 41
 }

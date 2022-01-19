@@ -9,6 +9,7 @@ import("//chrome/test/base/js2gtest.gni")
 import("//chrome/test/include_js_tests.gni")
 import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//components/signin/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
@@ -416,7 +417,6 @@ if (include_js_tests) {
       "bluetooth_internals/bluetooth_internals_browsertest.js",
       "media/media_engagement_browsertest.js",
       "media/media_history_webui_browsertest.js",
-      "read_later/side_panel/side_panel_browsertest.js",
     ]
 
     deps = [ "//chrome/browser/ui" ]
@@ -449,6 +449,7 @@ if (include_js_tests) {
       "engagement/site_engagement_browsertest.js",
       "new_tab_page/new_tab_page_browsertest.js",
       "read_later/read_later_browsertest.js",
+      "read_later/side_panel/side_panel_browsertest.js",
       "tab_search/tab_search_browsertest.js",
       "usb_internals_browsertest.js",
     ]
@@ -630,6 +631,11 @@ generate_grd("build_grd") {
     "$target_gen_dir/tab_search/resources.grdp",
     "$target_gen_dir/web_ui_test_mojo_resources.grdp",
   ]
+
+  if (enable_extensions) {
+    deps += [ "extensions:build_grdp" ]
+    grdp_files += [ "$target_gen_dir/extensions/resources.grdp" ]
+  }
 
   if (enable_print_preview) {
     deps += [ "print_preview:build_grdp" ]

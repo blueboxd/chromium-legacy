@@ -15,6 +15,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -60,7 +61,7 @@
 #include "chrome/browser/ui/signin_view_controller.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -445,7 +446,7 @@ void ShowEnterpriseManagementPageInTabbedBrowser(Browser* browser) {
 
 void ShowAppManagementPage(Profile* profile,
                            const std::string& app_id,
-                           AppManagementEntryPoint entry_point) {
+                           ash::settings::AppManagementEntryPoint entry_point) {
   // This histogram is also declared and used at chrome/browser/resources/
   // settings/chrome_os/os_apps_page/app_management_page/constants.js.
   constexpr char kAppManagementEntryPointsHistogramName[] =

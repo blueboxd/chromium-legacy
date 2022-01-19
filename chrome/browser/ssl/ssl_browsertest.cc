@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -66,7 +67,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -5839,7 +5840,7 @@ class SSLUITestCustomCACerts : public SSLUITestNoCert {
     SSLUITestNoCert::SetUpCommandLine(command_line);
     // Don't require policy for our sessions - this is required so the policy
     // code knows not to expect cached policy for the secondary profile.
-    command_line->AppendSwitchASCII(chromeos::switches::kProfileRequiresPolicy,
+    command_line->AppendSwitchASCII(ash::switches::kProfileRequiresPolicy,
                                     "false");
   }
 

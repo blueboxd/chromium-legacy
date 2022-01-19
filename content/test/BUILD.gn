@@ -2497,7 +2497,6 @@ test("content_unittests") {
     "//gpu/ipc/host",
     "//gpu/ipc/service",
     "//ipc:test_support",
-    "//jingle:jingle_glue",
     "//media:test_support",
     "//media/capture",
     "//media/midi:midi",
@@ -2744,8 +2743,7 @@ test("content_unittests") {
 
     if (use_v8_context_snapshot) {
       deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-    }
-    if (!use_v8_context_snapshot || include_both_v8_snapshots) {
+    } else {
       deps += [ "//v8:v8_external_startup_data_assets" ]
     }
 

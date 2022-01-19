@@ -666,8 +666,9 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
 #endif
 
   version_info::Channel channel = chrome::GetChannel();
-  bool is_canary_dev = (channel == version_info::Channel::CANARY ||
-                        channel == version_info::Channel::DEV);
+  [[maybe_unused]] bool is_canary_dev =
+      (channel == version_info::Channel::CANARY ||
+       channel == version_info::Channel::DEV);
   // GWP-ASAN requires crashpad to gather alloc/dealloc stack traces, which is
   // not always enabled on Linux/ChromeOS.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -686,8 +687,6 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
                                       process_type.c_str());
 #endif
   }
-
-  ALLOW_UNUSED_LOCAL(is_canary_dev);
 
   // Start heap profiling as early as possible so it can start recording
   // memory allocations.
@@ -869,9 +868,9 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   // Initialize primary user homedir (in multi-profile session) as it may be
   // passed as a command line switch.
   base::FilePath homedir;
-  if (command_line.HasSwitch(chromeos::switches::kHomedir)) {
+  if (command_line.HasSwitch(ash::switches::kHomedir)) {
     homedir = base::FilePath(
-        command_line.GetSwitchValueASCII(chromeos::switches::kHomedir));
+        command_line.GetSwitchValueASCII(ash::switches::kHomedir));
     base::PathService::OverrideAndCreateIfNeeded(base::DIR_HOME, homedir, true,
                                                  false);
   }
@@ -881,7 +880,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   // up a command line to tell it that we want it to recover, and to preserve
   // the original command line. Note: logging at this point is to /var/log/ui.
   if ((base::SysInfo::IsRunningOnChromeOS() &&
-       command_line.HasSwitch(chromeos::switches::kLoginUser)) ||
+       command_line.HasSwitch(ash::switches::kLoginUser)) ||
       command_line.HasSwitch(switches::kDiagnosticsRecovery)) {
     base::CommandLine interim_command_line(command_line.GetProgram());
     const char* const kSwitchNames[] = {switches::kUserDataDir, };

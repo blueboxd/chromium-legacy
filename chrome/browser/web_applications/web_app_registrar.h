@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
@@ -247,6 +247,10 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // Computes and returns the DisplayMode only accounting for
   // entries in the web app manifest.
   DisplayMode GetEffectiveDisplayModeFromManifest(const AppId& app_id) const;
+
+  // Computes and returns the unhashed app id from entries in the web app
+  // manifest.
+  std::string GetComputedUnhashedAppId(const AppId& app_id) const;
 
   // Returns whether the app should be opened in tabbed window mode.
   bool IsTabbedWindowModeEnabled(const AppId& app_id) const;

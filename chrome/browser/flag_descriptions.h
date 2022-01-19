@@ -365,9 +365,6 @@ extern const char
 extern const char kFontAccessAPIName[];
 extern const char kFontAccessAPIDescription[];
 
-extern const char kFontAccessPersistentName[];
-extern const char kFontAccessPersistentDescription[];
-
 extern const char kForceColorProfileSRGB[];
 extern const char kForceColorProfileP3[];
 extern const char kForceColorProfileColorSpin[];
@@ -687,9 +684,6 @@ extern const char
 
 extern const char kEnableRestrictedWebApisName[];
 extern const char kEnableRestrictedWebApisDescription[];
-
-extern const char kEnableSubresourceRedirectName[];
-extern const char kEnableSubresourceRedirectDescription[];
 
 extern const char kEnableUseZoomForDsfName[];
 extern const char kEnableUseZoomForDsfDescription[];
@@ -1396,6 +1390,9 @@ extern const char kTopChromeTouchUiDescription[];
 extern const char kThreadedScrollingName[];
 extern const char kThreadedScrollingDescription[];
 
+extern const char kThrottleForegroundTimersName[];
+extern const char kThrottleForegroundTimersDescription[];
+
 extern const char
     kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName[];
 extern const char
@@ -1752,6 +1749,9 @@ extern const char kEnableMixedContentDownloadDialogDescription[];
 
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
+
+extern const char kFeatureNotificationGuideName[];
+extern const char kFeatureNotificationGuideDescription[];
 
 extern const char kFeedBackToTopName[];
 extern const char kFeedBackToTopDescription[];
@@ -2642,6 +2642,9 @@ extern const char
 extern const char
     kExperimentalAccessibilitySwitchAccessMultistepAutomationDescription[];
 
+extern const char kExtendedOpenVpnSettingsName[];
+extern const char kExtendedOpenVpnSettingsDescription[];
+
 extern const char kMagnifierContinuousMouseFollowingModeSettingName[];
 extern const char kMagnifierContinuousMouseFollowingModeSettingDescription[];
 
@@ -2824,6 +2827,9 @@ extern const char kNearbySharingOnePageOnboardingDescription[];
 
 extern const char kNearbySharingSelfShareName[];
 extern const char kNearbySharingSelfShareDescription[];
+
+extern const char kNearbySharingWifiLanName[];
+extern const char kNearbySharingWifiLanDescription[];
 
 extern const char kPcieBillboardNotificationName[];
 extern const char kPcieBillboardNotificationDescription[];

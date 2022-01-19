@@ -1509,7 +1509,7 @@
   {
     "name": "enable-autofill-upi-vpa",
     "owners": [ "cfroussios" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 108
   },
   {
     "name": "enable-automatic-snooze",
@@ -3075,6 +3075,11 @@
     "expiry_milestone": 102
   },
   {
+    "name": "extended-open-vpn-settings",
+    "owners": [ "gflegar@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "extension-content-verification",
     "owners": [ "//extensions/OWNERS" ],
     "expiry_milestone": 86
@@ -3100,6 +3105,11 @@
     "name": "fast-pair",
     "owners": [ "//ash/quick_pair/OWNERS", "jonmann@chromium.org" ],
     "expiry_milestone": 101
+  },
+  {
+    "name": "feature-notification-guide",
+    "owners": [ "shaktisahu"],
+    "expiry_milestone": 110
   },
   {
     "name": "fedcm",
@@ -3209,17 +3219,7 @@
   {
     "name": "font-access",
     "owners": [ "cmp", "pwnall" ],
-    "expiry_milestone": 96
-  },
-  {
-    "name": "font-access-chooser",
-    "owners": [ "pwnall" ],
-    "expiry_milestone": 96
-  },
-  {
-    "name": "font-access-persistent",
-    "owners": [ "pwnall" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 102
   },
   {
     "name": "force-color-profile",
@@ -3997,6 +3997,11 @@
   {
     "name": "nearby-sharing-self-share",
     "owners": [ "hansenmichael@google.com", "cvandermerwe@google.com", "chromeos-cross-device-eng@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
+    "name": "nearby-sharing-wifilan",
+    "owners": [ "nohle@google.com", "chromeos-cross-device-eng@google.com" ],
     "expiry_milestone": 105
   },
   {
@@ -5379,6 +5384,11 @@
     "name": "theme-refactor-android",
     "owners": [ "sinansahin@google.com", "twellington", "clank-app-team@google.com" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "throttle-foreground-timers",
+    "owners": [ "fdoray", "scheduler-dev" ],
+    "expiry_milestone": 102
   },
   {
     "name": "tint-composited-content",

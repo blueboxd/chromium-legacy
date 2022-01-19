@@ -51,7 +51,7 @@ constexpr int kPrepareEndOfView = 30;
 // The percentage of a normal row height, which (percentage * row_height) will
 // be used as the `CalendarView` height when the `CalendarEventListView` is
 // expanded.
-constexpr float kExpandedCalendarViewHeightScale = 1.3;
+constexpr float kExpandedCalendarViewHeightScale = 1.2;
 
 // After the user is finished navigating to a different month, this is how long
 // we wait before fetchiung more events.
@@ -118,10 +118,10 @@ class MonthHeaderView : public views::View {
 }  // namespace
 
 // The label for each month.
-class CalendarView::MonthYearHeaderView : public views::View {
+class CalendarView::MonthHeaderLabelView : public views::View {
  public:
-  MonthYearHeaderView(LabelType type,
-                      CalendarViewController* calendar_view_controller)
+  MonthHeaderLabelView(LabelType type,
+                       CalendarViewController* calendar_view_controller)
       : month_label_(AddChildView(std::make_unique<views::Label>())) {
     // The layer is required in animation.
     SetPaintToLayer();
@@ -148,28 +148,16 @@ class CalendarView::MonthYearHeaderView : public views::View {
     month_label_->SetBorder(views::CreateEmptyBorder(
         kLabelVerticalPadding, calendar_utils::kDateHorizontalPadding,
         kLabelVerticalPadding, 0));
-
-    if (calendar_utils::GetExplodedLocal(date_).year !=
-        calendar_utils::GetExplodedLocal(base::Time::Now()).year) {
-      year_label_ = AddChildView(std::make_unique<views::Label>());
-      year_label_->SetText(base::UTF8ToUTF16(
-          base::NumberToString(calendar_utils::GetExplodedLocal(date_).year)));
-      SetupLabel(year_label_);
-      year_label_->SetBorder(views::CreateEmptyBorder(
-          gfx::Insets(kLabelVerticalPadding, kLabelTextInBetweenPadding)));
-    }
   }
-  MonthYearHeaderView(const MonthYearHeaderView&) = delete;
-  MonthYearHeaderView& operator=(const MonthYearHeaderView&) = delete;
-  ~MonthYearHeaderView() override = default;
+  MonthHeaderLabelView(const MonthHeaderLabelView&) = delete;
+  MonthHeaderLabelView& operator=(const MonthHeaderLabelView&) = delete;
+  ~MonthHeaderLabelView() override = default;
 
   // views::View:
   void OnThemeChanged() override {
     views::View::OnThemeChanged();
 
     month_label_->SetEnabledColor(calendar_utils::GetPrimaryTextColor());
-    if (year_label_)
-      year_label_->SetEnabledColor(calendar_utils::GetSecondaryTextColor());
   }
 
   void SetupLabel(views::Label* label) {
@@ -187,9 +175,6 @@ class CalendarView::MonthYearHeaderView : public views::View {
 
   // The month label in the view.
   views::Label* const month_label_ = nullptr;
-
-  // The year label in the view.
-  views::Label* year_label_ = nullptr;
 };
 
 CalendarHeaderView::CalendarHeaderView(const std::u16string& month,
@@ -265,10 +250,8 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
   // Add the header.
   header_ = new CalendarHeaderView(
       calendar_view_controller_->GetOnScreenMonthName(),
-      base::UTF8ToUTF16(base::NumberToString(
-          calendar_utils::GetExplodedLocal(
-              calendar_view_controller_->GetOnScreenMonthFirstDayLocal())
-              .year)));
+      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
+                                  "YYYY"));
 
   TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
   tri_view->SetBorder(views::CreateEmptyBorder(kLabelVerticalPadding,
@@ -411,7 +394,8 @@ int CalendarView::PositionOfToday() const {
 int CalendarView::PositionOfSelectedDate() const {
   DCHECK(calendar_view_controller_->selected_date().has_value());
   const int row_height = calendar_view_controller_->selected_date_row_index() *
-                         calendar_view_controller_->row_height();
+                             calendar_view_controller_->row_height() +
+                         calendar_utils::kDateVerticalPadding;
   // The selected date should be either in the current month or the next month.
   if (calendar_view_controller_->IsSelectedDateInCurrentMonth())
     return PositionOfCurrentMonth() + row_height;
@@ -450,11 +434,10 @@ void CalendarView::ResetToToday() {
 }
 
 void CalendarView::UpdateHeaders() {
-  header_->UpdateHeaders(calendar_view_controller_->GetOnScreenMonthName(),
-                         base::UTF8ToUTF16(base::NumberToString(
-                             calendar_utils::GetExplodedLocal(
-                                 calendar_view_controller_->current_date())
-                                 .year)));
+  header_->UpdateHeaders(
+      calendar_view_controller_->GetOnScreenMonthName(),
+      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
+                                  "YYYY"));
 }
 
 void CalendarView::RestoreHeadersStatus() {
@@ -605,7 +588,7 @@ void CalendarView::OnViewFocused(View* observed_view) {
 }
 
 views::View* CalendarView::AddLabelWithId(LabelType type, bool add_at_front) {
-  auto label = std::make_unique<MonthYearHeaderView>(
+  auto label = std::make_unique<MonthHeaderLabelView>(
       type, calendar_view_controller_.get());
   if (add_at_front)
     return content_view_->AddChildViewAt(std::move(label), 0);
@@ -690,18 +673,13 @@ void CalendarView::OpenEventList() {
     return;
 
   // Updates `scroll_view_`'s accessible name with the selected date.
-  absl::optional<base::Time::Exploded> selected_date =
+  absl::optional<base::Time> selected_date =
       calendar_view_controller_->selected_date();
-  DCHECK(selected_date.has_value());
-  base::Time unexploded_selected_date;
-  bool result = base::Time::FromLocalExploded(selected_date.value(),
-                                              &unexploded_selected_date);
-  DCHECK(result);
   scroll_view_->GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_CONTENT_ACCESSIBLE_DESCRIPTION,
       base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
                                   "MMMM yyyy"),
-      base::TimeFormatWithPattern(unexploded_selected_date, "MMMMdyyyy")));
+      base::TimeFormatWithPattern(selected_date.value(), "MMMMdyyyy")));
   scroll_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
                                          /*send_native_event=*/true);
 
@@ -955,7 +933,8 @@ void CalendarView::ScrollOneRowWithAnimation(bool is_scrolling_up) {
     const int row_height = calendar_view_controller_->GetExpandedRowIndex() *
                            calendar_view_controller_->row_height();
     scroll_view_->ScrollToPosition(scroll_view_->vertical_scroll_bar(),
-                                   PositionOfCurrentMonth() + row_height);
+                                   PositionOfCurrentMonth() + row_height +
+                                       calendar_utils::kDateVerticalPadding);
     scroll_view_->SetVerticalScrollBarMode(
         views::ScrollView::ScrollBarMode::kDisabled);
     return;
@@ -967,8 +946,9 @@ void CalendarView::ScrollOneRowWithAnimation(bool is_scrolling_up) {
                               current_month_->last_row_index()) {
     ScrollDownOneMonth();
     calendar_view_controller_->set_expanded_row_index(0);
-    scroll_view_->ScrollToPosition(scroll_view_->vertical_scroll_bar(),
-                                   PositionOfCurrentMonth());
+    scroll_view_->ScrollToPosition(
+        scroll_view_->vertical_scroll_bar(),
+        PositionOfCurrentMonth() + calendar_utils::kDateVerticalPadding);
     scroll_view_->SetVerticalScrollBarMode(
         views::ScrollView::ScrollBarMode::kDisabled);
     return;
@@ -980,7 +960,8 @@ void CalendarView::ScrollOneRowWithAnimation(bool is_scrolling_up) {
   const int row_height = calendar_view_controller_->GetExpandedRowIndex() *
                          calendar_view_controller_->row_height();
   scroll_view_->ScrollToPosition(scroll_view_->vertical_scroll_bar(),
-                                 PositionOfCurrentMonth() + row_height);
+                                 PositionOfCurrentMonth() + row_height +
+                                     calendar_utils::kDateVerticalPadding);
   scroll_view_->SetVerticalScrollBarMode(
       views::ScrollView::ScrollBarMode::kDisabled);
   return;

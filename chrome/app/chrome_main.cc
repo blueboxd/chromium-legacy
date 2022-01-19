@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_main_delegate.h"
@@ -128,7 +127,6 @@ int ChromeMain(int argc, const char** argv) {
     command_line->AppendSwitch(switches::kDisableGpuCompositing);
   }
 #endif
-  ALLOW_UNUSED_LOCAL(command_line);
 
 #if BUILDFLAG(IS_WIN)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

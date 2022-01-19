@@ -662,17 +662,6 @@ const base::Feature kIncognitoClearBrowsingDataDialogForDesktop{
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
     "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if !BUILDFLAG(IS_ANDROID)
-// Allow user to have preference for PWA in the intent picker.
-const base::Feature kIntentPickerPWAPersistence{
-#if BUILDFLAG(IS_CHROMEOS)
-  "IntentPickerPWAPersistence", base::FEATURE_ENABLED_BY_DEFAULT
-#else
-  "IntentPickerPWAPersistence", base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // BUILDFLAG(IS_CHROMEOS)
-};
-#endif  // !BUILDFLAG(IS_ANDROID)
-
 // If enabled, CloudPolicyInvalidator and RemoteCommandInvalidator instances
 // will have unique owner name.
 const base::Feature kInvalidatorUniqueOwnerName{
@@ -704,6 +693,11 @@ constexpr base::FeatureParam<int> kLinuxLowMemoryMonitorModerateLevel{
 constexpr base::FeatureParam<int> kLinuxLowMemoryMonitorCriticalLevel{
     &kLinuxLowMemoryMonitor, "critical_level", 255};
 #endif  // BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+const base::Feature kListWebAppsSwitch{"ListWebAppsSwitch",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if BUILDFLAG(IS_MAC)
 // Uses NSFullSizeContentViewWindowMask where available instead of adding our
@@ -875,6 +869,10 @@ const base::Feature kPrivacyReview{"PrivacyReview",
 // Enables the third release of the Privacy Sandbox settings
 const base::Feature kPrivacySandboxSettings3{"PrivacySandboxSettings3",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<bool> kPrivacySandboxSettings3ForceShowConsent{
+    &kPrivacySandboxSettings3, "force-show-consent", false};
+const base::FeatureParam<bool> kPrivacySandboxSettings3ForceShowNotice{
+    &kPrivacySandboxSettings3, "force-show-notice", false};
 
 // Enables or disables push subscriptions keeping Chrome running in the
 // background when closed.

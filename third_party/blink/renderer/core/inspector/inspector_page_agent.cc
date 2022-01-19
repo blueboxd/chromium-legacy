@@ -796,6 +796,10 @@ CreatePermissionsPolicyBlockLocator(
       reason =
           protocol::Page::PermissionsPolicyBlockReasonEnum::IframeAttribute;
       break;
+    case blink::PermissionsPolicyBlockReason::kInFencedFrameTree:
+      reason =
+          protocol::Page::PermissionsPolicyBlockReasonEnum::InFencedFrameTree;
+      break;
   }
 
   return protocol::Page::PermissionsPolicyBlockLocator::create()
@@ -1076,7 +1080,7 @@ void InspectorPageAgent::DidRunJavaScriptDialog() {
 void InspectorPageAgent::DidResizeMainFrame() {
   if (!inspected_frames_->Root()->IsMainFrame())
     return;
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   PageLayoutInvalidated(true);
 #endif
   GetFrontend()->frameResized();

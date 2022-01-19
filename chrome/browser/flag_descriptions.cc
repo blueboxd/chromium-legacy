@@ -4516,6 +4516,11 @@ const char kEcheSWAResizingDescription[] =
 const char kEcheSWADebugModeName[] = "Enable Eche Debug Mode";
 const char kEcheSWADebugModeDescription[] = "Enable the Debug Mode of the Eche";
 
+const char kEcheSWAInBackgroundName[] = "Enable Eche Background Mode";
+const char kEcheSWAInBackgroundDescription[] =
+    "Enable the Eche SWA to run in the background before connection "
+    "established";
+
 const char kEnableIdleInhibitName[] = "Enable Idle Inhibit Protocol";
 const char kEnableIdleInhibitDescription[] =
     "Enables the Wayland idle-inhibit-unstable-v1 protocol";
@@ -4787,10 +4792,6 @@ const char kCrosLanguageSettingsImeOptionsInSettingsName[] =
     "Ime settings in settings";
 const char kCrosLanguageSettingsImeOptionsInSettingsDescription[] =
     "Adds IME settings to the settings menu";
-
-const char kIntentPickerPWAPersistenceName[] = "Intent picker PWA Persistence";
-const char kIntentPickerPWAPersistenceDescription[] =
-    "Allow user to always open with PWA in intent picker.";
 
 const char kKeyboardBasedDisplayArrangementInSettingsName[] =
     "Keyboard-based Display Arrangement in Settings";

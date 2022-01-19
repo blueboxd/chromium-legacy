@@ -122,8 +122,10 @@ void DlpContentManagerAsh::CheckScreenshotRestriction(
     ash::OnCaptureModeDlpRestrictionChecked callback) {
   const ConfidentialContentsInfo info =
       GetAreaConfidentialContentsInfo(area, DlpContentRestriction::kScreenshot);
-  MaybeReportEvent(info.restriction_info,
-                   DlpRulesManager::Restriction::kScreenshot);
+  if (IsBlocked(info.restriction_info)) {
+    MaybeReportEvent(info.restriction_info,
+                     DlpRulesManager::Restriction::kScreenshot);
+  }
   DlpBooleanHistogram(dlp::kScreenshotBlockedUMA,
                       IsBlocked(info.restriction_info));
   CheckScreenCaptureRestriction(info, std::move(callback));
@@ -152,6 +154,20 @@ void DlpContentManagerAsh::CheckScreenShareRestriction(
 void DlpContentManagerAsh::OnVideoCaptureStarted(const ScreenshotArea& area) {
   DCHECK(!running_video_capture_info_.has_value());
   running_video_capture_info_.emplace(area);
+  const ConfidentialContentsInfo info =
+      GetAreaConfidentialContentsInfo(area, DlpContentRestriction::kScreenshot);
+  // Taking video capture of confidential content with block level restriction
+  // should not proceed to this function. Taking video capture should be blocked
+  // earlier.
+  DCHECK(!IsBlocked(info.restriction_info));
+  if (IsReported(info.restriction_info)) {
+    // Don't report for the report mode before starting a video capture to avoid
+    // reporting multiple times.
+    DCHECK(!running_video_capture_info_->was_reported);
+    MaybeReportEvent(info.restriction_info,
+                     DlpRulesManager::Restriction::kScreenshot);
+    running_video_capture_info_->was_reported = true;
+  }
 }
 
 void DlpContentManagerAsh::CheckStoppedVideoCapture(
@@ -170,8 +186,14 @@ void DlpContentManagerAsh::CheckStoppedVideoCapture(
     auto reporting_callback = base::BindOnce(
         &MaybeReportWarningProceededEvent, url,
         DlpRulesManager::Restriction::kScreenshot, reporting_manager_);
+    // base::Unretained(this) is safe here because DlpContentManagerAsh is
+    // initialized as a singleton that's always available in the system.
     warn_notifier_->ShowDlpVideoCaptureWarningDialog(
-        std::move(reporting_callback).Then(std::move(callback)),
+        base::BindOnce(&DlpContentManagerAsh::OnDlpWarnDialogReply,
+                       base::Unretained(this),
+                       running_video_capture_info_->confidential_contents,
+                       DlpRulesManager::Restriction::kScreenshot,
+                       std::move(reporting_callback).Then(std::move(callback))),
         running_video_capture_info_->confidential_contents);
   } else {
     std::move(callback).Run(/*proceed=*/true);
@@ -180,13 +202,29 @@ void DlpContentManagerAsh::CheckStoppedVideoCapture(
   running_video_capture_info_.reset();
 }
 
+void DlpContentManagerAsh::OnImageCapture(const ScreenshotArea& area) {
+  const ConfidentialContentsInfo info =
+      GetAreaConfidentialContentsInfo(area, DlpContentRestriction::kScreenshot);
+  // Taking screenshots of confidential content with block level restriction
+  // should not proceed to this function. Taking screenshot should be blocked
+  // earlier.
+  DCHECK(!IsBlocked(info.restriction_info));
+  if (IsReported(info.restriction_info)) {
+    MaybeReportEvent(info.restriction_info,
+                     DlpRulesManager::Restriction::kScreenshot);
+  }
+}
+
 void DlpContentManagerAsh::CheckCaptureModeInitRestriction(
     ash::OnCaptureModeDlpRestrictionChecked callback) {
   const ConfidentialContentsInfo info =
       GetConfidentialContentsOnScreen(DlpContentRestriction::kScreenshot);
 
-  MaybeReportEvent(info.restriction_info,
-                   DlpRulesManager::Restriction::kScreenshot);
+  if (IsBlocked(info.restriction_info)) {
+    MaybeReportEvent(info.restriction_info,
+                     DlpRulesManager::Restriction::kScreenshot);
+  }
+
   DlpBooleanHistogram(dlp::kCaptureModeInitBlockedUMA,
                       IsBlocked(info.restriction_info));
   CheckScreenCaptureRestriction(info, std::move(callback));
@@ -685,8 +723,13 @@ void DlpContentManagerAsh::CheckRunningVideoCapture() {
     return;
   ConfidentialContentsInfo info = GetAreaConfidentialContentsInfo(
       running_video_capture_info_->area, DlpContentRestriction::kScreenshot);
-  MaybeReportEvent(info.restriction_info,
-                   DlpRulesManager::Restriction::kScreenshot);
+
+  if (!running_video_capture_info_->was_reported) {
+    MaybeReportEvent(info.restriction_info,
+                     DlpRulesManager::Restriction::kScreenshot);
+    running_video_capture_info_->was_reported = true;
+  }
+
   if (IsBlocked(info.restriction_info)) {
     DlpBooleanHistogram(dlp::kVideoCaptureInterruptedUMA, true);
     InterruptVideoRecording();

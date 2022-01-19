@@ -245,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '458653d9fce73db0f48d628353e50e828ad6c389',
+  'skia_revision': 'ef189dd3401f7df832b8bb9ec4102570a6ab9638',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -261,7 +261,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '341c836c0ba66610a12d09bc31387be00d8f0b23',
+  'pdfium_revision': '707cb3745d875648c970e1f4a525ab6077794774',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -276,7 +276,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling googletest
   # and whatever else without interference from each other.
-  'googletest_revision': 'c9643a2e45ed0cb18b8409c62994be7c6e66dc1b',
+  'googletest_revision': '100f6fbf5f81a82d163c1e29735e8a2936eacd4f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lighttpd
   # and whatever else without interference from each other.
@@ -320,7 +320,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '68613ab02f6d556a2c5ac68ea08f466a534c6bd9',
+  'devtools_frontend_revision': '30df387ba8415d6f1670f49a86032b3f3baba239',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'd0530a6e035d6bbba42313b9e075672c08a89c32',
+  'dawn_revision': '1351d4bbd8d5b2e0942299c98d243f07aec4dbf2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -384,7 +384,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libavif
   # and whatever else without interference from each other.
-  'libavif_revision': '411221a16d2cee76e14dad10963c1ffafe2cfa6b',
+  'libavif_revision': 'ded15fb7b41b0513e138ba457034a2fb91c1f2c9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
@@ -408,7 +408,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    '57e4aff4a11ba10432307816505385d9344b3706',
+  'libunwind_revision':    'efb2cbd37494e4cab69fc3548e811c59ab01c9de',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1427,7 +1427,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '56f2ccce0511ebd51e2f7d2fa659719a712a6044',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c581dd4f599dc73735f6d006ea1d25ea80ce3165',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1524,7 +1524,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'c4248946060fac5a7740971c2d584007164b30b0',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '918b34e6f3b4fcda8f2920dceee01d1e8c7fd380',
 
   'src/third_party/r8': {
       'packages': [
@@ -1609,7 +1609,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@85f43409872d6984849dca746335747ca5b6819e',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@d1b842fca80dddd1a098bf63813386e3e44f9642',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'ebe84bec02c041d28f902da0214bf442743fc907',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'fc207904abbb29864991c71c7156336455a3d892',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'ac506bddcfa3af906128281db6a0127f26e3ed59',
+    Var('webrtc_git') + '/src.git' + '@' + 'ff2613a4087022c59f62db3e1a463a263f9b78c0',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1718,7 +1718,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@69463595064cb645ef53552c575462495998f389',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@671f7e8e1f6fa304dd067ccf8733287de52af5b1',
     'condition': 'checkout_src_internal',
   },
 
@@ -1770,7 +1770,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'e3MIsXKmh6VfKN1--QZqutBMCWHt_82YWo6w8OExsdEC',
+        'version': '2pqPQ_wSuAWQ24j8MpTLLqnEdas50f8Ua_yEa9ZDSlkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -4748,6 +4748,7 @@ recursedeps = [
   # Dawn and Tint's revision are linked
   'src/third_party/dawn',
   'src/third_party/openscreen/src',
+  'src/third_party/devtools-frontend/src',
   'src/third_party/vulkan-deps',
   # src-internal has its own DEPS file to pull additional internal repos
   'src-internal',

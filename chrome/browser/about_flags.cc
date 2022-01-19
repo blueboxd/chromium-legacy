@@ -2594,28 +2594,28 @@ const FeatureEntry::Choice kDocumentTransitionSlowdownFactorChoices[] = {
 
 const FeatureEntry::FeatureParam kSnoopingProtectionPrecision[] = {
     {"filter_config_case", "2"},
-    {"count", "2"},
+    {"count", "3"},
     {"threshold", "40"},
     {"initial_state", "false"}};
 
-const FeatureEntry::FeatureParam kSnoopingProtectionBalance[] = {
+const FeatureEntry::FeatureParam kSnoopingProtectionConfidence[] = {
     {"filter_config_case", "2"},
-    {"count", "2"},
-    {"threshold", "0"},
+    {"count", "5"},
+    {"threshold", "40"},
     {"initial_state", "false"}};
 
 const FeatureEntry::FeatureParam kSnoopingProtectionRecall[] = {
     {"filter_config_case", "2"},
-    {"count", "2"},
+    {"count", "3"},
     {"threshold", "-40"},
     {"initial_state", "false"}};
 
 const FeatureEntry::FeatureVariation kSnoopingProtectionVariations[] = {
-    {"Slow Precise", kSnoopingProtectionPrecision,
+    {"Precise", kSnoopingProtectionPrecision,
      base::size(kSnoopingProtectionPrecision), nullptr},
-    {"Slow Balanced", kSnoopingProtectionBalance,
-     base::size(kSnoopingProtectionBalance), nullptr},
-    {"Slow Comprehensive", kSnoopingProtectionRecall,
+    {"Slow Precise", kSnoopingProtectionConfidence,
+     base::size(kSnoopingProtectionConfidence), nullptr},
+    {"Comprehensive", kSnoopingProtectionRecall,
      base::size(kSnoopingProtectionRecall), nullptr}};
 
 const FeatureEntry::FeatureParam kQuickDim120s[] = {{"quick_dim_ms", "120000"}};
@@ -4422,6 +4422,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"eche-swa-debug-mode", flag_descriptions::kEcheSWADebugModeName,
      flag_descriptions::kEcheSWADebugModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEcheSWADebugMode)},
+    {"eche-swa-in-background", flag_descriptions::kEcheSWAInBackgroundName,
+     flag_descriptions::kEcheSWAInBackgroundDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEcheSWAInBackground)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_MAC)
@@ -5562,11 +5565,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseFakeDeviceForMediaStreamName,
      flag_descriptions::kUseFakeDeviceForMediaStreamDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(media::kUseFakeDeviceForMediaStream)},
-
-    {"intent-picker-pwa-persistence",
-     flag_descriptions::kIntentPickerPWAPersistenceName,
-     flag_descriptions::kIntentPickerPWAPersistenceDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kIntentPickerPWAPersistence)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)

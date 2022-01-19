@@ -251,7 +251,7 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
       // Reserving memory from the GigaCage is actually not a syscall on 64 bit
       // platforms.
 #if !defined(PA_HAS_64_BITS_POINTERS)
-      ScopedSyscallTimer<thread_safe> timer{root};
+      ScopedSyscallTimer timer{root};
 #endif
       reservation_start = ReserveMemoryFromGigaCage(pool, 0, reservation_size);
     }
@@ -270,7 +270,7 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
         reservation_start + PartitionPageSize() + padding_for_alignment;
 
     {
-      ScopedSyscallTimer<thread_safe> timer{root};
+      ScopedSyscallTimer timer{root};
       RecommitSystemPages(
           reinterpret_cast<void*>(reservation_start + SystemPageSize()),
 #if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
@@ -376,7 +376,7 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
       }
 
       {
-        ScopedSyscallTimer<thread_safe> timer{root};
+        ScopedSyscallTimer timer{root};
 #if !defined(PA_HAS_64_BITS_POINTERS)
         AddressPoolManager::GetInstance()->MarkUnused(
             pool, reinterpret_cast<uintptr_t>(reservation_start),
@@ -549,9 +549,9 @@ PartitionBucket<thread_safe>::AllocNewSlotSpan(PartitionRoot<thread_safe>* root,
   uintptr_t slot_span_start = adjusted_next_partition_page;
   auto* slot_span = &gap_end_page->slot_span_metadata;
   InitializeSlotSpan(slot_span);
-  // Now that slot span is initialized, it's safe to call FromSlotStartPtr.
-  PA_DCHECK(slot_span == SlotSpanMetadata<thread_safe>::FromSlotStartPtr(
-                             reinterpret_cast<void*>(slot_span_start)));
+  // Now that slot span is initialized, it's safe to call FromSlotStart.
+  PA_DCHECK(slot_span ==
+            SlotSpanMetadata<thread_safe>::FromSlotStart(slot_span_start));
 
   // System pages in the super page come in a decommited state. Commit them
   // before vending them back.
@@ -626,7 +626,7 @@ ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::AllocNewSuperPage(
   // guard page, except an "island" in the middle where we put page metadata and
   // also a tiny amount of extent metadata.
   {
-    ScopedSyscallTimer<thread_safe> timer{root};
+    ScopedSyscallTimer timer{root};
     RecommitSystemPages(
         reinterpret_cast<void*>(super_page + SystemPageSize()),
 #if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
@@ -691,7 +691,7 @@ ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::AllocNewSuperPage(
   // could be not initialized yet.
   if (root->IsQuarantineEnabled()) {
     {
-      ScopedSyscallTimer<thread_safe> timer{root};
+      ScopedSyscallTimer timer{root};
       RecommitSystemPages(reinterpret_cast<void*>(state_bitmap),
                           state_bitmap_size_to_commit, PageReadWrite,
                           PageUpdatePermissions);
@@ -737,8 +737,8 @@ PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
   PA_DCHECK(!slot_span->is_full());
 
   size_t size = slot_size;
-  uintptr_t slot_span_start = reinterpret_cast<uintptr_t>(
-      SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(slot_span));
+  uintptr_t slot_span_start =
+      SlotSpanMetadata<thread_safe>::ToSlotSpanStart(slot_span);
   // If we got here, the first unallocated slot is either partially or fully on
   // an uncommitted page. If the latter, it must be at the start of that page.
   uintptr_t return_slot =
@@ -788,8 +788,8 @@ PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
     if (LIKELY(size <= kMaxMemoryTaggingSize)) {
       next_slot = memory::TagMemoryRangeRandomly(next_slot, size);
     }
-    auto* entry = new (reinterpret_cast<PartitionFreelistEntry*>(next_slot))
-        PartitionFreelistEntry();
+    auto* entry =
+        new (reinterpret_cast<void*>(next_slot)) PartitionFreelistEntry();
     if (!slot_span->get_freelist_head()) {
       PA_DCHECK(!prev_entry);
       PA_DCHECK(!free_list_entries_added);
@@ -985,15 +985,15 @@ uintptr_t PartitionBucket<thread_safe>::SlowPathAlloc(
       // If lazy commit is enabled, pages will be recommitted when provisioning
       // slots, in ProvisionMoreSlotsAndAllocOne(), not here.
       if (!kUseLazyCommit) {
-        uintptr_t address = reinterpret_cast<uintptr_t>(
-            SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(new_slot_span));
+        uintptr_t slot_span_start =
+            SlotSpanMetadata<thread_safe>::ToSlotSpanStart(new_slot_span);
         // Since lazy commit isn't used, we have a guarantee that all slot span
         // pages have been previously committed, and then decommitted using
         // PageKeepPermissionsIfPossible, so use the same option as an
         // optimization.
         // TODO(lizeb): Handle commit failure.
         root->RecommitSystemPagesForData(
-            address, new_slot_span->bucket->get_bytes_per_span(),
+            slot_span_start, new_slot_span->bucket->get_bytes_per_span(),
             PageKeepPermissionsIfPossible);
       }
 

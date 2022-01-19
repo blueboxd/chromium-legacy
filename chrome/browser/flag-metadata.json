@@ -1395,6 +1395,11 @@
     "expiry_milestone": 101
   },
   {
+    "name": "eche-swa-in-background",
+    "owners": [ "dhnishi" ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "eche-swa-resizing",
     "owners": [ "dhnishi" ],
     "expiry_milestone": 98
@@ -3576,11 +3581,6 @@
     "name": "intensive-wake-up-throttling",
     "owners": [ "fdoray" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "intent-picker-pwa-persistence",
-    "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 98
   },
   {
     "name": "interest-feed-notice-card-auto-dismiss",

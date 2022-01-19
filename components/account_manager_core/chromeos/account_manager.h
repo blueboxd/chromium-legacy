@@ -155,24 +155,19 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManager {
   void GetAccounts(AccountListCallback callback);
 
   // Gets (async) the raw, un-canonicalized email id corresponding to
-  // |account_key|. |callback| is called with an empty string if |account_key|
+  // `account_key`. `callback` is called with an empty string if `account_key`
   // is not known to Account Manager.
   void GetAccountEmail(const ::account_manager::AccountKey& account_key,
                        base::OnceCallback<void(const std::string&)> callback);
 
-  // Removes an account. Does not do anything if |account_key| is not known by
-  // |AccountManager|.
+  // Removes an account. Does not do anything if `account_key` is not known by
+  // `AccountManager`.
   // Observers are notified about an account removal through
-  // |Observer::OnAccountRemoved|.
+  // `Observer::OnAccountRemoved`.
   // If the account being removed is a GAIA account, a token revocation with
   // GAIA is also attempted, on a best effort basis. Even if token revocation
   // with GAIA fails, AccountManager will forget the account.
   void RemoveAccount(const ::account_manager::AccountKey& account_key);
-
-  // Similar to |RemoveAccount(AccountKey)| except that it accepts |email| as
-  // the account identifier instead of |account_key|. |email| can be the raw
-  // email or the canonical email.
-  void RemoveAccount(const std::string& email);
 
   // Updates or inserts an account. |raw_email| is the raw, un-canonicalized
   // email id for |account_key|. |raw_email| must not be empty. Use
@@ -184,8 +179,8 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManager {
                      const std::string& raw_email,
                      const std::string& token);
 
-  // Updates the token for the account corresponding to the given |account_key|.
-  // The account must be known to Account Manager. See |UpsertAccount| for
+  // Updates the token for the account corresponding to the given `account_key`.
+  // The account must be known to Account Manager. See `UpsertAccount` for
   // information about adding an account.
   // Note: This API is idempotent.
   void UpdateToken(const ::account_manager::AccountKey& account_key,
@@ -291,25 +286,6 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManager {
   // been initialized, otherwise saves the |closure| for running later, when the
   // class is initialized.
   void RunOnInitialization(base::OnceClosure closure);
-
-  // Does the actual work of fetching the email for |account_key|. Assumes that
-  // |AccountManager| initialization (|init_state_|) is complete.
-  void GetAccountEmailInternal(
-      const ::account_manager::AccountKey& account_key,
-      base::OnceCallback<void(const std::string&)> callback);
-
-  // Does the actual work of removing an account. Assumes that
-  // |AccountManager| initialization (|init_state_|) is complete.
-  void RemoveAccountInternal(const ::account_manager::AccountKey& account_key);
-
-  // Does the actual work of removing an account. Assumes that |AccountManager|
-  // initialization (|init_state_|) is complete. |email| can be the raw email or
-  // the canonical email.
-  void RemoveAccountByEmailInternal(const std::string& email);
-
-  // Assumes that |AccountManager| initialization (|init_state_|) is complete.
-  void UpdateTokenInternal(const ::account_manager::AccountKey& account_key,
-                           const std::string& token);
 
   // Assumes that |AccountManager| initialization (|init_state_|) is complete.
   void UpdateEmailInternal(const ::account_manager::AccountKey& account_key,

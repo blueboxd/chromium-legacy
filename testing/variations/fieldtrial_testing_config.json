@@ -951,6 +951,21 @@
             ]
         }
     ],
+    "AsyncFontAccess": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "AsyncFontAccess",
+                    "enable_features": [
+                        "AsyncFontAccess"
+                    ]
+                }
+            ]
+        }
+    ],
     "AudioServiceSandboxLinux": [
         {
             "platforms": [
@@ -4422,6 +4437,21 @@
             ]
         }
     ],
+    "IOSNewOverflowMenu": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NewOverflowMenu"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSRestoreSessionFromCache": [
         {
             "platforms": [
@@ -4932,7 +4962,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enable_14s_20220104",
+                    "name": "Enable_14s_20220118",
+                    "params": {
+                        "DefaultPresentationMessagesDurationFeatureParam": "14",
+                        "LongPresentationMessagesDurationFeatureParam": "14"
+                    },
                     "enable_features": [
                         "EnableLongMessageDuration"
                     ]
@@ -5533,8 +5567,7 @@
                         "OmniboxPreserveLongerShortcutsText",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichAutocompletion",
-                        "OmniboxUIExperimentMaxAutocompleteMatches",
-                        "SearchSuggestChips"
+                        "OmniboxUIExperimentMaxAutocompleteMatches"
                     ],
                     "disable_features": [
                         "OmniboxShortBookmarkSuggestionsByTotalInputLength"
@@ -6205,6 +6238,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "use_basic_close_label": "true"
+                    },
                     "enable_features": [
                         "PasswordChange"
                     ]
@@ -7192,24 +7228,6 @@
                     },
                     "enable_features": [
                         "ResamplingScrollEvents"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SearchRankerQueryBasedMixedTypes": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "use_aggregated_model": "true"
-                    },
-                    "enable_features": [
-                        "EnableQueryBasedMixedTypesRanker"
                     ]
                 }
             ]

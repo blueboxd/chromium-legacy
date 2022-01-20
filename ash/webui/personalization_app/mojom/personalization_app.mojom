@@ -5,6 +5,7 @@
 module ash.personalization_app.mojom;
 
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/url.mojom";
 
 // This should be kept in sync with |ash::WallpaperLayout|
@@ -136,7 +137,8 @@ interface WallpaperObserver {
 
 // Provides APIs to retrieve Wallpaper information. This API is exposed only to
 // the Personalization App (chrome://personalization). It is a mojom wrapper for
-// APIs found in |backdrop_wallpaper.proto|.
+// APIs found in |backdrop_wallpaper.proto| and |WallpaperController| APIs to
+// change the user's wallpaper in Ash.
 interface WallpaperProvider {
     // Called to force the browser window to make the native views transparent
     // so that the user can see wallpaper in fullscreen on their desktop. Safe
@@ -235,13 +237,40 @@ struct UserInfo {
 
   // The display name of the user.
   string name;
-
-  // The device avatar image of the user as a data url.
-  url.mojom.Url avatar;
 };
 
-// Provides APIs to view information about the current user.
+// Receives updated user image when it is changed for the current user.
+interface UserImageObserver {
+  // Triggered by |UserManager::Observer::OnUserImageChanged|.
+  OnUserImageChanged(url.mojom.Url image);
+};
+
+// A default user image stored on the device that can be set as the user's
+// device avatar image.
+struct DefaultUserImage {
+  // A user image is identified by an index.
+  int32 index;
+
+  // The title of the image to display to the user.
+  mojo_base.mojom.String16 title;
+
+  // A url to display the image. Typically |chrome://theme/IDR_LOGIN_DEFAULT_X|.
+  url.mojom.Url url;
+};
+
+// Provides APIs to view information about the current user. This API is exposed
+// only to the Personalization App (chrome://personalization), and is
+// implemented by |PersonalizationAppUserProviderImpl| in chrome.
 interface UserProvider {
+  // Binds an observer for the current user's device image.
+  SetUserImageObserver(pending_remote<UserImageObserver> observer);
+
   // Return information about the current user.
   GetUserInfo() => (UserInfo user_info);
+
+  // Returns an array of default user images to choose from.
+  GetDefaultUserImages() => (array<DefaultUserImage> default_user_images);
+
+  // Select one of the default images from the provided default user images.
+  SelectDefaultImage(int32 index);
 };

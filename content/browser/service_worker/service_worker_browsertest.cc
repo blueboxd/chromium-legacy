@@ -2728,7 +2728,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerDisableWebSecurityTest,
   RunTestWithCrossOriginURL(kPageUrl, kScopeUrl);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Flaky on Android, http://crbug.com/1141870.
 #define MAYBE_RegisterNoCrash DISABLED_RegisterNoCrash
 #else
@@ -3272,12 +3272,6 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCrossOriginIsolatedBrowserTest,
   EXPECT_EQ(embedded_test_server()->GetURL("/service_worker/" + worker_url),
             running_info.script_url);
 
-  // Non-PlzServiceWorker:
-  // Process allocation is broken during a fresh installation. We currently do
-  // not have the headers, and end up with a non isolated service worker script.
-  //
-  // TODO(crbug.com/996511): Remove non-PlzSerivceWorker case once the flag
-  // sticks.
   bool is_in_process =
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID() ==
       running_info.render_process_id;
@@ -3625,7 +3619,7 @@ class ServiceWorkerBackForwardCacheBrowserTest
 };
 
 // Fails on Android. https://crbug.com/1216619
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_EvictionOfBackForwardCacheWithMultipleServiceWorkers \
   DISABLED_EvictionOfBackForwardCacheWithMultipleServiceWorkers
 #else

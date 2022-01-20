@@ -3,18 +3,44 @@
 // found in the LICENSE file.
 
 import {Action} from 'chrome://resources/js/cr/ui/store.js';
+import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {UserInfo} from '../personalization_app.mojom-webui.js';
+import {DefaultUserImage, UserInfo} from '../personalization_app.mojom-webui.js';
 
 /**
  * @fileoverview Defines the actions to change user state.
  */
 
 export enum UserActionName {
+  SET_DEFAULT_USER_IMAGES = 'set_default_user_images',
+  SET_USER_IMAGE = 'set_user_image',
   SET_USER_INFO = 'set_user_info',
 }
 
-export type UserActions = SetUserInfoAction;
+export type UserActions =
+    SetUserImageAction|SetDefaultUserImagesAction|SetUserInfoAction;
+
+export type SetUserImageAction = Action&{
+  name: UserActionName.SET_USER_IMAGE,
+  image: Url,
+};
+
+export function setUserImageAction(image: Url): SetUserImageAction {
+  return {name: UserActionName.SET_USER_IMAGE, image};
+}
+
+export type SetDefaultUserImagesAction = Action&{
+  name: UserActionName.SET_DEFAULT_USER_IMAGES,
+  defaultUserImages: Array<DefaultUserImage>,
+};
+
+export function setDefaultUserImagesAction(
+    defaultUserImages: Array<DefaultUserImage>): SetDefaultUserImagesAction {
+  return {
+    name: UserActionName.SET_DEFAULT_USER_IMAGES,
+    defaultUserImages,
+  };
+}
 
 export type SetUserInfoAction = Action&{
   name: UserActionName.SET_USER_INFO;

@@ -79,7 +79,7 @@
       'Android arm64 Builder (dbg)': 'android_webview_google_debug_static_bot_arm64_reclient',
       'Android x64 Builder (dbg)': 'android_debug_static_bot_x64_reclient',
       'Android x86 Builder (dbg)': 'android_debug_static_bot_x86_reclient',
-      'Cast Android (dbg)': 'android_cast_debug_static_bot',
+      'Cast Android (dbg)': 'android_cast_debug_static_bot_reclient',
       'Deterministic Android': 'android_without_codecs_release_bot_minimal_symbols',
       'Deterministic Android (dbg)': 'android_debug_bot',
 
@@ -98,7 +98,7 @@
 
       # This bot must use the gpu_tests mixin to match 'Android FYI Release (Nexus 5X)'
       # on the chromium.gpu waterfall, which it mirrors via trybots.pyl.
-      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild',
+      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_reclient',
 
       'android-marshmallow-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_webview_google',
       'android-marshmallow-x86-rel-non-cq': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_webview_google',
@@ -498,10 +498,10 @@
     },
 
     'chromium.linux': {
-      'Cast Audio Linux': 'cast_audio_release_bot',
-      'Cast Linux': 'cast_release_bot',
-      'Cast Linux Debug': 'cast_debug_bot',
-      'Cast Linux ARM64': 'cast_arm64_release_bot',
+      'Cast Audio Linux': 'cast_audio_release_bot_reclient',
+      'Cast Linux': 'cast_release_bot_reclient',
+      'Cast Linux Debug': 'cast_debug_bot_reclient',
+      'Cast Linux ARM64': 'cast_arm64_release_bot_reclient',
       'Deterministic Fuchsia (dbg)': 'debug_bot_fuchsia',
       'Deterministic Linux (dbg)': {
         'local': 'debug_bot_local_build',
@@ -1254,8 +1254,8 @@
       'official_optimize', 'stable_channel',
     ],
 
-    'android_cast_debug_static_bot': [
-      'android', 'cast', 'clang', 'debug_static_bot',
+    'android_cast_debug_static_bot_reclient': [
+      'android', 'cast', 'clang', 'debug_static_bot_reclient',
     ],
 
     'android_cast_debug_static_bot_compile_only': [
@@ -1743,8 +1743,8 @@
 
     # Cast Linux takes very long in linking, possibly due to being on GCE
     # (crbug/794423).
-    'cast_release_bot': [
-      'cast', 'release_bot', 'minimal_symbols',
+    'cast_release_bot_reclient': [
+      'cast', 'release_bot_reclient', 'minimal_symbols',
     ],
 
     'cast_release_trybot': [
@@ -1755,16 +1755,24 @@
       'cast', 'debug_bot',
     ],
 
+    'cast_debug_bot_reclient': [
+      'cast', 'debug_bot_reclient',
+    ],
+
     'cast_arm64_release_bot': [
       'cast', 'release_bot', 'arm64', 'minimal_symbols',
+    ],
+
+    'cast_arm64_release_bot_reclient': [
+      'cast', 'release_bot_reclient', 'arm64', 'minimal_symbols',
     ],
 
     'cast_binary_size': [
       'cast', 'minimal_symbols', 'release_bot',
     ],
 
-    'cast_audio_release_bot': [
-      'cast', 'cast_audio', 'release_bot', 'minimal_symbols',
+    'cast_audio_release_bot_reclient': [
+      'cast', 'cast_audio', 'release_bot_reclient', 'minimal_symbols',
     ],
 
     'cast_audio_release_trybot': [
@@ -2241,6 +2249,12 @@
 
     'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild': [
       'gpu_tests', 'android', 'release_bot', 'minimal_symbols', 'arm64',
+      'resource_allowlisting', 'static_angle', 'android_fastbuild',
+      'webview_google',
+    ],
+
+    'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_reclient': [
+      'gpu_tests', 'android', 'release_bot_reclient', 'minimal_symbols', 'arm64',
       'resource_allowlisting', 'static_angle', 'android_fastbuild',
       'webview_google',
     ],

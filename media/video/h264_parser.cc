@@ -612,19 +612,8 @@ H264Parser::Result H264Parser::AdvanceToNextNALU(H264NALU* nalu) {
   nalu->size = nalu_size_with_start_code - start_code_size;
   DVLOG(4) << "NALU found: size=" << nalu_size_with_start_code;
 
-  // Initialize bit reader at the start of the found NALU. Limit the NALU size
-  // in the bitstream reader to unencrypted data.
-  size_t clear_nalu_size = nalu->size;
-  const uint8_t* nalu_end = nalu->data + nalu->size;
-  for (size_t i = 0; i < encrypted_ranges_.size(); ++i) {
-    if (nalu_end <= encrypted_ranges_.start(i))
-      break;
-    if (nalu_end <= encrypted_ranges_.end(i)) {
-      clear_nalu_size = encrypted_ranges_.start(i) - nalu->data;
-      break;
-    }
-  }
-  if (!br_.Initialize(nalu->data, clear_nalu_size)) {
+  // Initialize bit reader at the start of found NALU.
+  if (!br_.Initialize(nalu->data, nalu->size)) {
     stream_ = nullptr;
     bytes_left_ = 0;
     return kEOStream;
@@ -1211,7 +1200,15 @@ H264Parser::Result H264Parser::ParsePPS(int* pps_id) {
   READ_BOOL_OR_RETURN(&pps->constrained_intra_pred_flag);
   READ_BOOL_OR_RETURN(&pps->redundant_pic_cnt_present_flag);
 
-  if (br_.HasMoreRBSPData()) {
+  bool pps_remainder_unencrypted = true;
+  if (encrypted_ranges_.size()) {
+    Ranges<const uint8_t*> pps_range;
+    pps_range.Add(previous_nalu_range_.end(0) - br_.NumBitsLeft() / 8,
+                  previous_nalu_range_.end(0));
+    pps_remainder_unencrypted =
+        (encrypted_ranges_.IntersectionWith(pps_range).size() == 0);
+  }
+  if (pps_remainder_unencrypted && br_.HasMoreRBSPData()) {
     READ_BOOL_OR_RETURN(&pps->transform_8x8_mode_flag);
     READ_BOOL_OR_RETURN(&pps->pic_scaling_matrix_present_flag);
 

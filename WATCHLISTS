@@ -677,7 +677,9 @@
                   '|net/cert/sct_status_flags.h'\
                   '|net/cert/signed_certificate_timestamp'\
                   '|net/cert/signed_tree_head'\
-                  '|net/test/ct_',
+                  '|net/services/network/sct_auditing/'\
+                  '|net/services/network/ct_'\
+                  '|net/test/ct_'
     },
     'chrome_camera_app': {
       'filepath': # Exclude string translation .xtb files.
@@ -1126,6 +1128,7 @@
     'holding_space': {
       'filepath': 'ash/public/cpp/holding_space|'\
                   'ash/system/holding_space|'\
+                  'ash/system/progress_indicator|'\
                   'chrome/browser/lacros/.*holding_space|'\
                   'chrome/browser/ui/ash/holding_space|'\
                   'chrome/browser/ui/ash/thumbnail_loader|'\
@@ -2375,7 +2378,7 @@
     'cc-animation': ['gerchiko@microsoft.com'],
     'cc-display': ['penghuang+viz@chromium.org'],
     'cc-scheduler': ['scheduler-bugs+cc@chromium.org'],
-    'certificate_transparency': ['certificate-transparency-chrome@googlegroups.com',
+    'certificate_transparency': ['jdeblasio+watch@chromium.org',
                                  'martijn+crwatch@martijnc.be',
                                  'rsleevi+watch@chromium.org'],
     'chrome_camera_app': ['chromeos-camera-app-eng@google.com'],
@@ -2859,7 +2862,7 @@
                            'ramyagopalan+watch@google.com',
 			   'jorgelo+watch@chromium.org'],
     'translate': ['translate-reviews@chromium.org'],
-    'turtledove': ['taymon@google.com'],
+    'turtledove': [],
     'ui_compositor': ['cc-bugs@chromium.org'],
     'ui_display_win': ['robliao+watch@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],

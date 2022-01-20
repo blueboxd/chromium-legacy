@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
@@ -19,6 +20,7 @@
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/templates/desks_templates_test_util.h"
 #include "ash/wm/overview/overview_test_util.h"
+#include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -52,6 +54,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "components/account_id/account_id.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/features.h"
 #include "components/app_restore/full_restore_save_handler.h"
@@ -87,6 +90,12 @@ constexpr char kExampleUrl1[] = "https://examples1.com";
 constexpr char kExampleUrl2[] = "https://examples2.com";
 constexpr char kExampleUrl3[] = "https://examples3.com";
 constexpr char kYoutubeUrl[] = "https://www.youtube.com/";
+constexpr char kTestAdminTemplateUuid[] =
+    "1f4ec992-0fa9-415d-a136-4b7c292c39dc";
+constexpr char kTestAdminTemplateFormat[] =
+    "[{\"version\":1,\"uuid\":\"%s\",\"name\": \"test admin template\","
+    "\"created_time_usec\": \"1633535632\",\"updated_time_usec\": "
+    "\"1633535632\",\"desk\":{}}]";
 
 Browser* FindBrowser(int32_t window_id) {
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -125,6 +134,37 @@ std::unique_ptr<ash::DeskTemplate> CaptureActiveDeskAndSaveTemplate() {
           }));
   run_loop.Run();
   return desk_template;
+}
+
+std::vector<ash::DeskTemplate*> GetDeskTemplates() {
+  base::RunLoop run_loop;
+  std::vector<ash::DeskTemplate*> templates;
+
+  DesksTemplatesClient::Get()->GetDeskTemplates(base::BindLambdaForTesting(
+      [&](const std::vector<ash::DeskTemplate*>& desk_templates,
+          std::string error_string) {
+        templates = desk_templates;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  return templates;
+}
+
+// Search `desk_templates` for a template with `uuid` and returns true if found,
+// false if not.
+bool ContainUuidInTemplates(
+    const std::string& uuid,
+    const std::vector<ash::DeskTemplate*>& desk_templates) {
+  base::GUID guid = base::GUID::ParseCaseInsensitive(uuid);
+  DCHECK(guid.is_valid());
+
+  for (auto* desk_template : desk_templates) {
+    if (desk_template->uuid() == guid)
+      return true;
+  }
+
+  return false;
 }
 
 std::string GetTemplateJson(const std::string& uuid, Profile* profile) {
@@ -1664,86 +1704,6 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   ClickFirstTemplateItem();
 }
 
-// crbug.com/1288715: flaky on Linux.
-#if defined(OS_LINUX)
-#define MAYBE_NativeUILaunchMultipleDeskTemplates \
-  DISABLED_NativeUILaunchMultipleDeskTemplates
-#else
-#define MAYBE_NativeUILaunchMultipleDeskTemplates \
-  NativeUILaunchMultipleDeskTemplates
-#endif
-
-// Tests that launching the same desk template multiple times creates desks with
-// different/incremented names.
-IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
-                       MAYBE_NativeUILaunchMultipleDeskTemplates) {
-  const base::GUID kDeskUuid = base::GUID::GenerateRandomV4();
-  const std::u16string kDeskName(u"Test Desk Name");
-
-  auto* desks_controller = ash::DesksController::Get();
-
-  ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
-  desks_controller->desks()[0]->SetName(kDeskName, true);
-
-  // Save a template.
-  ash::ToggleOverview();
-  ash::WaitForOverviewEnterAnimation();
-
-  ClickSaveDeskAsTemplateButton();
-
-  // Helper that launches a template by entering the grid and clicking on the
-  // lone template item, and then checks the expected name.
-  bool first_run = true;
-  auto check_launch_template_desk_name =
-      [kDeskUuid, &first_run](const std::u16string& desk_name) {
-        SCOPED_TRACE(desk_name);
-
-        // We are already on the templates grid after saving the template, so no
-        // need to click the templates button the first time we use this helper.
-        if (!first_run)
-          ClickExpandedStateTemplatesButton();
-
-        ClickFirstTemplateItem();
-
-        // Wait for the tabs to load.
-        content::RunAllTasksUntilIdle();
-
-        // A DCHECK related to the desks templates animation fails without this
-        // wait.
-        // TODO(sammiequon): Find a proper fix and remove this delay.
-        base::RunLoop run_loop;
-        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-            FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(500));
-        run_loop.Run();
-
-        first_run = false;
-      };
-
-  // Launching a desk from the template creates a desk with the same name as the
-  // template.
-  desks_controller->desks()[0]->SetName(u"Desk", true);
-  check_launch_template_desk_name(kDeskName);
-
-  // Launch more desks from the template and verify that the newly created desks
-  // have unique names.
-  check_launch_template_desk_name(std::u16string(kDeskName).append(u" (1)"));
-  check_launch_template_desk_name(std::u16string(kDeskName).append(u" (2)"));
-
-  // Remove "Test Desk Name (1)", which means the next created desk from
-  // template will have that name. Then it will skip (2) since it already
-  // exists, and create the next desk with (3).
-  RemoveDesk(desks_controller->desks()[2].get());
-  check_launch_template_desk_name(std::u16string(kDeskName).append(u" (1)"));
-  check_launch_template_desk_name(std::u16string(kDeskName).append(u" (3)"));
-
-  // Same as above, but make sure that deleting the desk with the exact template
-  // name still functions the same by only filling in whatever name is
-  // available.
-  RemoveDesk(desks_controller->desks()[1].get());
-  check_launch_template_desk_name(kDeskName);
-  check_launch_template_desk_name(std::u16string(kDeskName).append(u" (4)"));
-}
-
 // Tests that the windows and tabs count histogram is recorded properly.
 IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
                        NativeUIDeskTemplateWindowAndTabCountHistogram) {
@@ -1768,42 +1728,6 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   histogram_tester.ExpectBucketCount(kWindowCountHistogramName, 4, 1);
   histogram_tester.ExpectBucketCount(kTabCountHistogramName, 6, 1);
   histogram_tester.ExpectBucketCount(kWindowAndTabCountHistogramName, 7, 1);
-}
-
-// Tests that the launch from template histogram is recorded properly.
-IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
-                       NativeUIDeskTemplateLaunchFromTemplateHistogram) {
-  base::HistogramTester histogram_tester;
-
-  // Create a new browser.
-  CreateBrowser({});
-
-  // Save a template.
-  ash::ToggleOverview();
-  ash::WaitForOverviewEnterAnimation();
-  ClickSaveDeskAsTemplateButton();
-
-  const int launches = 5;
-  for (int i = 0; i < launches; i++) {
-    ClickFirstTemplateItem();
-
-    // A DCHECK related to the desks templates animation fails without this
-    // wait.
-    // TODO(sammiequon): Find a proper fix and remove this delay.
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(500));
-    run_loop.Run();
-
-    ClickExpandedStateTemplatesButton();
-  }
-
-  // TODO(crbug.com/1287649): This histogram is double counted when a template
-  // is launched from the UI.
-  constexpr char kLaunchFromTemplateHistogramName[] =
-      "Ash.DeskTemplate.LaunchFromTemplate";
-  histogram_tester.ExpectTotalCount(kLaunchFromTemplateHistogramName,
-                                    2 * launches);
 }
 
 // Tests that the template count histogram is recorded properly.
@@ -2016,6 +1940,10 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientArcTest,
   arc_helper()->StopInstance();
 }
 
+// TODO(crbug.com/1273532): Port over LaunchMultipleDeskTemplates and
+// DeskTemplateLaunchFromTemplateHistogram to use the native UI to do template
+// operations.
+
 class DesksTemplatesClientMultiProfileTest : public ash::LoginManagerTest {
  public:
   DesksTemplatesClientMultiProfileTest() : ash::LoginManagerTest() {
@@ -2055,25 +1983,35 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientMultiProfileTest, MultiProfileTest) {
   const app_restore::RestoreData* restore_data =
       desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
-  EXPECT_EQ(app_id_to_launch_list.size(), 1u);
+  EXPECT_EQ(1u, app_id_to_launch_list.size());
 
-  auto get_templates_size = []() {
-    base::RunLoop run_loop;
-    int templates_num = 0;
-    DesksTemplatesClient::Get()->GetDeskTemplates(base::BindLambdaForTesting(
-        [&](const std::vector<ash::DeskTemplate*>& desk_templates,
-            std::string error_string) {
-          templates_num = desk_templates.size();
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return templates_num;
-  };
-  EXPECT_EQ(get_templates_size(), 1);
+  EXPECT_EQ(1u, GetDeskTemplates().size());
 
   // Now switch to |account_id2_|. Test that the captured desk template can't
   // be accessed from |account_id2_|.
   ash::UserAddingScreen::Get()->Start();
   AddUser(account_id2_);
-  EXPECT_EQ(get_templates_size(), 0);
+  EXPECT_EQ(0u, GetDeskTemplates().size());
+}
+
+// Tests that admin templates policy can be set.
+IN_PROC_BROWSER_TEST_F(DesksTemplatesClientMultiProfileTest,
+                       SetAndClearAdminTemplates) {
+  EXPECT_TRUE(DesksTemplatesClient::Get());
+
+  // Set an admin template policy.
+  DesksTemplatesClient::Get()->SetPolicyPreconfiguredTemplate(
+      account_id1_, std::make_unique<std::string>(base::StringPrintf(
+                        kTestAdminTemplateFormat, kTestAdminTemplateUuid)));
+
+  // Verify that the admin templates is present.
+  EXPECT_TRUE(
+      ContainUuidInTemplates(kTestAdminTemplateUuid, GetDeskTemplates()));
+
+  // Clear admin templates.
+  DesksTemplatesClient::Get()->RemovePolicyPreconfiguredTemplate(account_id1_);
+
+  // Verify that the admin templates is removed.
+  EXPECT_FALSE(
+      ContainUuidInTemplates(kTestAdminTemplateUuid, GetDeskTemplates()));
 }

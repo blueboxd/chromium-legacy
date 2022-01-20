@@ -284,9 +284,26 @@ class PaymentsClient {
   // UploadCardRequest.
   struct UploadCardResponseDetails {
     std::string server_id;
-    // TODO(crbug.com/1281695): Add |virtual_card_enrollment_state| and
-    //   |card_art_url| data members when integrating all of the logic for the
-    //   virtual-card enrollment flow.
+    // |instrument_id| is used by the server as an identifier for the card that
+    // was uploaded. Currently, we have it in the UploadCardResponseDetails so
+    // that we can send it in the GetDetailsForEnrollRequest in the virtual card
+    // enrollment flow.
+    int64_t instrument_id = 0;
+    // |virtual_card_enrollment_state| is used to determine whether we want to
+    // pursue further action with the credit card that was uploaded regarding
+    // virtual card enrollment. For example, if the state is
+    // UNENROLLED_AND_ELIGIBLE we might offer the user the option to enroll the
+    // card that was uploaded into virtual card.
+    CreditCard::VirtualCardEnrollmentState virtual_card_enrollment_state =
+        CreditCard::VirtualCardEnrollmentState::UNSPECIFIED;
+    // |card_art_url| is the mapping that would be used by PersonalDataManager
+    // to try to get the card art for the credit card that was uploaded. It is
+    // used in flows where after uploading a card we want to display its card
+    // art. Since chrome sync does not instantly sync the card art with the url,
+    // the actual card art image might not always be present. Flows that use
+    // |card_art_url| need to make sure they handle the case where the image has
+    // not been synced yet.
+    GURL card_art_url;
   };
 
   // A collection of information needed for the
@@ -324,15 +341,37 @@ class PaymentsClient {
     absl::optional<std::string> vcn_context_token;
   };
 
-  // TODO(crbug.com/1281695): Add GetDetailsForEnrollRequest.
+  // The struct to hold all detailed information to construct a
+  // GetDetailsForEnrollmentRequest.
+  struct GetDetailsForEnrollmentRequestDetails {
+    GetDetailsForEnrollmentRequestDetails();
+    GetDetailsForEnrollmentRequestDetails(
+        const GetDetailsForEnrollmentRequestDetails& other);
+    ~GetDetailsForEnrollmentRequestDetails();
+
+    // The type of the enrollment this request is for.
+    VirtualCardEnrollmentSource type = VirtualCardEnrollmentSource::kNone;
+
+    // |instrument_id| is used by the server to identify a specific card to get
+    // details for.
+    int64_t instrument_id = 0;
+
+    // The billing customer number of the account this request is sent to.
+    int64_t billing_customer_number = 0;
+
+    // |risk_data| contains some fingerprint data for the user and the device.
+    std::string risk_data;
+
+    // |app_locale| is the Chrome locale.
+    std::string app_locale;
+  };
+
   // A collection of information received in the response for a
   // GetDetailsForEnrollRequest.
   struct GetDetailsForEnrollmentResponseDetails {
     GetDetailsForEnrollmentResponseDetails();
     GetDetailsForEnrollmentResponseDetails(
-        const GetDetailsForEnrollmentResponseDetails&) = delete;
-    GetDetailsForEnrollmentResponseDetails& operator=(
-        const GetDetailsForEnrollmentResponseDetails&) = delete;
+        const GetDetailsForEnrollmentResponseDetails& other);
     ~GetDetailsForEnrollmentResponseDetails();
     // |vcn_context_token| is used in the sequential Enroll call, where it
     // allows the server to get the instrument id for this |vcn_context_token|

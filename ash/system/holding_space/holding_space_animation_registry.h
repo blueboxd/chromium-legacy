@@ -5,11 +5,10 @@
 #ifndef ASH_SYSTEM_HOLDING_SPACE_HOLDING_SPACE_ANIMATION_REGISTRY_H_
 #define ASH_SYSTEM_HOLDING_SPACE_HOLDING_SPACE_ANIMATION_REGISTRY_H_
 
-#include <memory>
-
 #include "ash/ash_export.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
+#include "ash/system/progress_indicator/progress_indicator_animation_registry.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/scoped_observation.h"
@@ -28,15 +27,11 @@ class HoldingSpaceProgressRingAnimation;
 // destroyed.
 //
 // Supported animation types:
-//   * Progress icon animation - independently drive the animation of properties
-//     for a progress indicator's inner icon, as opposed to progress ring
-//     animations which independently drive the animation of properties for a
-//     progress indicator's outer ring.
-//   * Progress ring animation - independently drive the animation of properties
-//     for a progress indicator's outer ring, as opposed to progress icon
-//     animations which independently drive the animation of properties for a
-//     progress indicator's inner icon.
-class ASH_EXPORT HoldingSpaceAnimationRegistry : public ShellObserver {
+//   * Progress icon animation - see `ProgressIndicatorAnimationRegistry`.
+//   * Progress ring animation - see `ProgressIndicatorAnimationRegistry`.
+class ASH_EXPORT HoldingSpaceAnimationRegistry
+    : public ProgressIndicatorAnimationRegistry,
+      public ShellObserver {
  public:
   HoldingSpaceAnimationRegistry(const HoldingSpaceAnimationRegistry&) = delete;
   HoldingSpaceAnimationRegistry& operator=(
@@ -48,55 +43,17 @@ class ASH_EXPORT HoldingSpaceAnimationRegistry : public ShellObserver {
   // when `Shell` is being destroyed.
   static HoldingSpaceAnimationRegistry* GetInstance();
 
-  using ProgressIconAnimationChangedCallbackList =
-      base::RepeatingCallbackList<void(HoldingSpaceProgressIconAnimation*)>;
-
-  // Adds the specified `callback` to be notified of changes to the progress
-  // icon animation associated with the specified `key`. The `callback` will
-  // continue to receive events so long as both `this` and the returned
-  // subscription exist.
+  // ProgressIndicatorAnimationRegistry:
   base::CallbackListSubscription AddProgressIconAnimationChangedCallbackForKey(
       const void* key,
-      ProgressIconAnimationChangedCallbackList::CallbackType callback);
-
-  using ProgressRingAnimationChangedCallbackList =
-      base::RepeatingCallbackList<void(HoldingSpaceProgressRingAnimation*)>;
-
-  // Adds the specified `callback` to be notified of changes to the progress
-  // ring animation associated with the specified `key`. The `callback` will
-  // continue to receive events so long as both `this` and the returned
-  // subscription exist.
+      ProgressIconAnimationChangedCallbackList::CallbackType callback) override;
   base::CallbackListSubscription AddProgressRingAnimationChangedCallbackForKey(
       const void* key,
-      ProgressRingAnimationChangedCallbackList::CallbackType callback);
-
-  // Returns the progress icon animation registered for the specified `key`. For
-  // cumulative progress, the animation is keyed on a pointer to the holding
-  // space controller. For individual item progress, the animation is keyed on a
-  // pointer to the holding space item itself. NOTE: This may return `nullptr`
-  // if no such animation is registered.
+      ProgressRingAnimationChangedCallbackList::CallbackType callback) override;
   HoldingSpaceProgressIconAnimation* GetProgressIconAnimationForKey(
-      const void* key);
-
-  // Returns the progress ring animation registered for the specified `key`. For
-  // cumulative progress, the animation is keyed on a pointer to the holding
-  // space controller. For individual item progress, the animation is keyed on a
-  // pointer to the holding space item itself. NOTE: This may return `nullptr`
-  // if no such animation is registered.
+      const void* key) override;
   HoldingSpaceProgressRingAnimation* GetProgressRingAnimationForKey(
-      const void* key);
-
-  // Sets and returns the progress icon animation registered for the specified
-  // `key`. NOTE: This method accepts `nullptr` to support un-registration.
-  HoldingSpaceProgressIconAnimation* SetProgressIconAnimationForKey(
-      const void* key,
-      std::unique_ptr<HoldingSpaceProgressIconAnimation> animation);
-
-  // Sets and returns the progress ring animation registered for the specified
-  // `key`. NOTE: This method accepts `nullptr` to support un-registration.
-  HoldingSpaceProgressRingAnimation* SetProgressRingAnimationForKey(
-      const void* key,
-      std::unique_ptr<HoldingSpaceProgressRingAnimation> animation);
+      const void* key) override;
 
  private:
   HoldingSpaceAnimationRegistry();

@@ -2277,7 +2277,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
   // See BackForwardCacheBrowserTest.RestoreWhilePendingCommit which covers the
   // same scenario for back-forward cache.
   web_contents()->GetController().GetBackForwardCache().DisableForTesting(
-      BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+      BackForwardCacheImpl::TEST_REQUIRES_NO_CACHING);
 
   using Response = net::test_server::ControllableHttpResponse;
   Response response_A1(embedded_test_server(), "/A");
@@ -3944,7 +3944,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
   // so that the document policy to force-load-at-top will run. This will not
   // happen if the document is back-forward cached, so we need to disable it.
   DisableBackForwardCacheForTesting(web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Load the document with document policy force-load-at-top
   shell()->LoadURL(url);
@@ -5470,7 +5470,7 @@ class NavigationBrowserTestWithPerformanceManager
 
 // TODO(crbug.com/1233836, crbug.com/1238886): Test is flaky on Mac 11, Linux
 // and ChromeOS.
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_BeginNewNavigationAfterCommitNavigationInMainFrame \
   DISABLED_BeginNewNavigationAfterCommitNavigationInMainFrame
 #else
@@ -5534,7 +5534,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // TODO(crbug.com/1233836): Test is flaky on Mac.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_BeginNewNavigationAfterCommitNavigationInSubFrame \
   DISABLED_BeginNewNavigationAfterCommitNavigationInSubFrame
 #else
@@ -5715,12 +5715,12 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestWithPerformanceManager,
 // new NavigationRequest, because it was trying to access the current
 // RenderFrameHost's PolicyContainerHost, which had not been set up yet by
 // RenderFrameHostImpl::DidNavigate.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Flaky on Android: https://crbug.com/1222320.
 #define MAYBE_Bug1210234 DISABLED_Bug1210234
 #else
 #define MAYBE_Bug1210234 Bug1210234
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, MAYBE_Bug1210234) {
   class NavigationWebContentsDelegate : public WebContentsDelegate {
    public:

@@ -77,7 +77,8 @@
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_os": "android",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "Deterministic Android": {
@@ -429,7 +430,8 @@
       "target_cpu": "arm64",
       "target_os": "android",
       "use_errorprone_java_compiler": false,
-      "use_goma": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "use_static_angle": true
     }
   },

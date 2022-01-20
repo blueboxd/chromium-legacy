@@ -629,6 +629,11 @@ const base::Feature kDawn2dCanvas{"Dawn2dCanvas",
 const base::Feature kWebviewAccelerateSmallCanvases{
     "WebviewAccelerateSmallCanvases", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use old behavior for accelerated canvases: de-accelerate after first call to
+// ctx.getImageData (crbug.com/1288118)
+const base::Feature kSoftwareCanvas2DOnReadback{
+    "SoftwareCanvas2DOnReadback", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, frees up CachedMetadata after consumption by script resources
 // and modules. Needed for the experiment in http://crbug.com/1045052.
 const base::Feature kDiscardCodeCacheAfterFirstUse{
@@ -901,7 +906,7 @@ const base::Feature kScopeMemoryCachePerContext{
 // Allow image context menu selections to penetrate through transparent
 // elements.
 const base::Feature kEnablePenetratingImageSelection{
-    "EnablePenetratingImageSelection", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnablePenetratingImageSelection", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, permits shared/root element transitions. See
 // https://github.com/WICG/shared-element-transitions.

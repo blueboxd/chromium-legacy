@@ -28,6 +28,7 @@ import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resource
 import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../../hats_browser_proxy.js';
+import {loadTimeData} from '../../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyGuideInteractions} from '../../metrics_browser_proxy.js';
 import {SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '../../people_page/sync_browser_proxy.js';
 import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
@@ -396,8 +397,15 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
       }
     } else {
       if (this.animationsEnabled_ && playAnimation) {
+        // In the LTR mode, the user scrolls LTR, and the animation makes it
+        // the next page slide in RTL. If the user scrolls back or if
+        // the display mode is RTL, the animation is inverted.
+        const ltr = isBackwardNavigation ===
+            (loadTimeData.getString('textdirection') === 'ltr');
         this.$.viewManager.switchView(
-            this.privacyReviewStep_, 'slide-in-fade-in', 'no-animation');
+            this.privacyReviewStep_,
+            ltr ? 'slide-in-fade-in-ltr' : 'slide-in-fade-in-rtl',
+            'no-animation');
       } else {
         this.$.viewManager.switchView(
             this.privacyReviewStep_, 'no-animation', 'no-animation');
@@ -468,11 +476,11 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
 
   private onViewEnterStart_(event: Event) {
     // The |view-enter-start| event was dispatched to the fragment that is now
-    // becoming visible. Every fragment has a |header| class element that can
-    // be focused programmatically.
+    // becoming visible. Every fragment has a [focus-element] element that is
+    // focused programmatically when the fragment becomes visible.
     const elementToFocus =
         assert((event.target! as HTMLElement)
-                   .shadowRoot!.querySelector<HTMLElement>('.header'));
+                   .shadowRoot!.querySelector<HTMLElement>('[focus-element]'));
     afterNextRender(this, () => elementToFocus!.focus());
   }
 }

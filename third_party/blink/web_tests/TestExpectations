@@ -227,9 +227,8 @@ crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
 # These tests require fenced-frames
 # Keep this in sync with VirtualTestSuites.
 crbug.com/1123606 wpt_internal/fenced_frame/* [ Skip ]
-crbug.com/1123606 fenced_frame/* [ Skip ]
+crbug.com/1123606 http/tests/fenced_frame/* [ Skip ]
 crbug.com/1123606 virtual/fenced-frame-shadow-dom/* [ Pass ]
-crbug.com/1123606 virtual/fenced-frame-mparch/* [ Pass ]
 
 # These tests require the experimental prerender feature.
 # See https://crbug.com/1126305.
@@ -7611,3 +7610,7 @@ crbug.com/1227911 [ Mac10.14 ] virtual/not-site-per-process/external/wpt/html/br
 crbug.com/1227911 [ Win Release ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-no-subdomain-2-yes-subdomain.sub.https.html [ Failure Pass ]
 crbug.com/1227911 [ Linux Release ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-no-subdomain-2-yes-subdomain.sub.https.html [ Failure Pass ]
 crbug.com/1227911 [ Mac10.14 ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-no-subdomain-2-yes-subdomain.sub.https.html [ Failure Pass ]
+
+# Flaky test on mac.
+crbug.com/1282347 [ Mac ] virtual/clipboard-custom-formats/clipboard/async-clipboard/async-custom-formats-write-read.tentative.https.html [ Failure Pass ]
+crbug.com/1282347 [ Mac ] virtual/clipboard-custom-formats/clipboard/async-clipboard/async-custom-format-write-read.tentative.https.html [ Failure Pass ]

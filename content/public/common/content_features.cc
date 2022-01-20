@@ -230,11 +230,6 @@ const base::Feature kCrashReporting{"CrashReporting",
 const base::Feature kCriticalClientHint{"CriticalClientHint",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable cross-origin sharing of WebAssembly modules.
-const base::Feature kCrossOriginWebAssemblyModuleSharingEnabled{
-    "CrossOriginWebAssemblyModuleSharingEnabled",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Puts save-data header in the holdback mode. This disables sending of
 // save-data header to origins, and to the renderer processes within Chrome.
 const base::Feature kDataSaverHoldback{"DataSaverHoldback",
@@ -401,12 +396,6 @@ const base::Feature kNetworkQualityEstimatorWebHoldback{
 // quotes and escaped backslashed should be added to the Sec-CH-UA header
 // (activated by kUserAgentClientHint)
 const base::Feature kGreaseUACH{"GreaseUACH", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Prevents sandboxed iframes from using the history API to navigate frames
-// outside their subttree, if they are restricted from doing top-level
-// navigations.
-const base::Feature kHistoryPreventSandboxedNavigation{
-    "HistoryPreventSandboxedNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // This is intended as a kill switch for the Idle Detection feature. To enable
 // this feature, the experimental web platform features flag should be set,

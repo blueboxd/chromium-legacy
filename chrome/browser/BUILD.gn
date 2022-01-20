@@ -8,7 +8,6 @@ import("//build/config/buildflags_paint_preview.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/pgo/pgo.gni")
-import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/python.gni")
@@ -26,6 +25,7 @@ import("//components/optimization_guide/features.gni")
 import("//components/os_crypt/features.gni")
 import("//components/signin/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
+import("//crypto/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/gpu/args.gni")
@@ -3042,8 +3042,6 @@ static_library("browser") {
       "content_settings/request_desktop_site_web_contents_observer_android.h",
       "crash_upload_list/crash_upload_list_android.cc",
       "crash_upload_list/crash_upload_list_android.h",
-      "data_reduction_proxy/data_reduction_promo_infobar_delegate_android.cc",
-      "data_reduction_proxy/data_reduction_promo_infobar_delegate_android.h",
       "data_reduction_proxy/data_reduction_proxy_settings_android.cc",
       "data_reduction_proxy/data_reduction_proxy_settings_android.h",
       "device_reauth/android/biometric_authenticator_android.cc",
@@ -5280,6 +5278,8 @@ static_library("browser") {
       "apps/intent_helper/chromeos_intent_picker_helpers.h",
       "apps/intent_helper/metrics/intent_handling_metrics.cc",
       "apps/intent_helper/metrics/intent_handling_metrics.h",
+      "chromeos/arc/open_with_menu.cc",
+      "chromeos/arc/open_with_menu.h",
       "download/notification/download_item_notification.cc",
       "download/notification/download_item_notification.h",
       "download/notification/download_notification_manager.cc",
@@ -5308,6 +5308,7 @@ static_library("browser") {
       "//chromeos/crosapi/mojom",
       "//chromeos/dbus/constants",
       "//chromeos/ui/wm",
+      "//components/arc/common",
     ]
     allow_circular_includes_from += [ "//chrome/browser/policy:onc" ]
   }

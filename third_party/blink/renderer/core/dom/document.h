@@ -37,6 +37,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
@@ -644,8 +645,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void IncLayoutCallsCounterNG() { ++layout_calls_counter_ng_; }
   void IncLayoutBlockCounter() { ++layout_blocks_counter_; }
   void IncLayoutBlockCounterNG() { ++layout_blocks_counter_ng_; }
-  void IncLayoutFlexboxCounterNG() { ++layout_flexbox_counter_ng_; }
-  void IncLayoutGridCounterNG() { ++layout_grid_counter_ng_; }
 
   scoped_refptr<const ComputedStyle> StyleForPage(uint32_t page_index);
 
@@ -1086,6 +1085,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void OverrideLastModified(const AtomicString& modified) {
     override_last_modified_ = modified;
   }
+  absl::optional<base::Time> lastModifiedTime() const;
   String lastModified() const;
 
   // The cookieURL is used to query the cookie database for this document's
@@ -2282,12 +2282,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // The number of LayoutNGMixin<LayoutBlock> instances
   uint32_t layout_blocks_counter_ng_ = 0;
-
-  // The number of LayoutNGFlexibleBox instances
-  uint32_t layout_flexbox_counter_ng_ = 0;
-
-  // The number of LayoutNGGrid instances
-  uint32_t layout_grid_counter_ng_ = 0;
 
   bool deferred_compositor_commit_is_allowed_ = false;
 

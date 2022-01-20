@@ -43,7 +43,7 @@ TrustedTypesCheckForScript(const V8UnionStringOrTrustedScript* value,
 // Perform Trusted Type checks, for a dynamically or statically determined
 // type.
 // Returns the effective value (which may have been modified by the "default"
-// policy. We use WARN_UNUSED_RESULT to prevent erroneous usage.
+// policy.
 [[nodiscard]] String TrustedTypesCheckFor(SpecificTrustedType,
                                           String,
                                           const ExecutionContext*,
@@ -62,6 +62,14 @@ String TrustedTypesCheckForJavascriptURLinNavigation(String, ExecutionContext*);
 CORE_EXPORT String GetStringForScriptExecution(String,
                                                ScriptElementBase::Type,
                                                ExecutionContext*);
+
+// Functionally equivalent to TrustedTypesCheckForHTML(const String&, ...),
+// but with separate enable flag and use counter, to ensure this won't break
+// existing sites before enabling it in full.
+CORE_EXPORT String TrustedTypesCheckForExecCommand(String,
+                                                   const ExecutionContext*,
+                                                   ExceptionState&)
+    WARN_UNUSED_RESULT;
 
 // Determine whether a Trusted Types check is needed in this execution context.
 //

@@ -4697,7 +4697,7 @@ Puoi assegnare più sensori a questa azione.</translation>
 <translation id="5943127421590245687">La verifica è andata a buon fine. Per sbloccare e ripristinare i dati locali, inserisci la vecchia password del dispositivo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5945002094477276055">Il file <ph name="FILE_NAME" /> potrebbe essere pericoloso. Inviare a Google Navigazione sicura per la scansione?</translation>
 <translation id="5945363896952315544">Impossibile memorizzare altre impronte sul token di sicurezza. Per aggiungere una nuova impronta, devi prima eliminarne una esistente.</translation>
-<translation id="5946591249682680882">ID rapporto <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
+<translation id="5946591249682680882">ID report <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5948536763493709626">Collega una tastiera o un mouse oppure continua la configurazione usando il touchscreen. Se usi dispositivi Bluetooth, assicurati che siano pronti per essere accoppiati.</translation>
 <translation id="5949544233750246342">Impossibile analizzare il file</translation>
 <translation id="5950819593680344519">Chrome non ha rilevato software dannoso sul computer • Ultima verifica: ieri</translation>
@@ -7842,7 +7842,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="932327136139879170">Home page</translation>
 <translation id="932508678520956232">Impossibile inizializzare la stampa.</translation>
 <translation id="933427034780221291">{NUM_FILES,plural, =1{Il file è troppo grande per essere sottoposto a un controllo di sicurezza. La dimensione massima dei file che puoi caricare è di 50 MB.}one{Alcuni di questi file sono troppo grandi per essere sottoposti a un controllo di sicurezza. La dimensione massima dei file che puoi caricare è di 50 MB.}other{Alcuni di questi file sono troppo grandi per essere sottoposti a un controllo di sicurezza. La dimensione massima dei file che puoi caricare è di 50 MB.}}</translation>
-<translation id="93343527085570547">Visita la <ph name="BEGIN_LINK1" />pagina del Centro Assistenza<ph name="END_LINK1" /> per richiedere modifiche ai contenuti per motivi legali. Alcune informazioni sull'account e sul sistema potrebbero essere inviate a Google, che le userà per risolvere problemi tecnici e migliorare i suoi servizi nel rispetto delle sue <ph name="BEGIN_LINK2" />Norme sulla privacy<ph name="END_LINK2" /> e dei suoi <ph name="BEGIN_LINK3" />Termini di servizio<ph name="END_LINK3" />.</translation>
+<translation id="93343527085570547">Vai alla <ph name="BEGIN_LINK1" />Guida di approfondimento legale<ph name="END_LINK1" /> per richiedere modifiche ai contenuti per motivi legali. Alcune informazioni sull'account e sul sistema potrebbero essere inviate a Google, che le userà per risolvere problemi tecnici e migliorare i suoi servizi nel rispetto delle sue <ph name="BEGIN_LINK2" />Norme sulla privacy<ph name="END_LINK2" /> e dei suoi <ph name="BEGIN_LINK3" />Termini di servizio<ph name="END_LINK3" />.</translation>
 <translation id="93393615658292258">Solo password</translation>
 <translation id="934244546219308557">Assegna un nome a questo gruppo</translation>
 <translation id="934503638756687833">Se necessario verranno rimossi anche elementi non elencati qui. Leggi ulteriori informazioni sulla &lt;a href="<ph name="URL" />"&gt;protezione da software indesiderato&lt;/a&gt; nel whitepaper sulla privacy di Chrome.</translation>

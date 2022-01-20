@@ -3147,6 +3147,7 @@ void RenderFrameHostImpl::RenderFrameDeleted() {
   CHECK_NE(render_frame_state_, RenderFrameState::kDeleting);
   bool was_created = is_render_frame_created();
   render_frame_state_ = RenderFrameState::kDeleting;
+  render_frame_scoped_weak_ptr_factory_.InvalidateWeakPtrs();
 
   // If the current status is different than the new status, the delegate
   // needs to be notified.
@@ -4502,6 +4503,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
   // Sets a default value for before_unload_end_time so that the browser
   // survives a hacked renderer.
   base::TimeTicks before_unload_end_time = renderer_before_unload_end_time;
+  base::TimeDelta browser_to_renderer_ipc_time_delta;
   if (!renderer_before_unload_start_time.is_null() &&
       !renderer_before_unload_end_time.is_null()) {
     base::TimeTicks before_unload_completed_time = base::TimeTicks::Now();
@@ -4523,6 +4525,19 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
           converter.ToLocalTimeTicks(blink::RemoteTimeTicks::FromTimeTicks(
               renderer_before_unload_end_time));
       before_unload_end_time = browser_before_unload_end_time.ToTimeTicks();
+      if (base::FeatureList::IsEnabled(
+              features::kIncludeIpcOverheadInNavigationStart)) {
+        const blink::LocalTimeTicks browser_before_unload_start_time =
+            converter.ToLocalTimeTicks(blink::RemoteTimeTicks::FromTimeTicks(
+                renderer_before_unload_start_time));
+        browser_to_renderer_ipc_time_delta =
+            browser_before_unload_start_time.ToTimeTicks() -
+            send_before_unload_start_time_;
+      }
+    } else if (base::FeatureList::IsEnabled(
+                   features::kIncludeIpcOverheadInNavigationStart)) {
+      browser_to_renderer_ipc_time_delta =
+          (renderer_before_unload_start_time - send_before_unload_start_time_);
     }
 
     base::TimeDelta on_before_unload_overhead_time =
@@ -4565,7 +4580,12 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
               proceed, before_unload_end_time);
         }
       },
-      weak_ptr_factory_.GetWeakPtr(), before_unload_end_time, proceed,
+      // The overhead of the browser->renderer IPC may be non trivial. Account
+      // for it here. Ideally this would also include the time to execute the
+      // JS, but we would need to exclude the time spent waiting for a dialog,
+      // which is tricky.
+      weak_ptr_factory_.GetWeakPtr(),
+      before_unload_end_time - browser_to_renderer_ipc_time_delta, proceed,
       unload_ack_is_for_navigation_);
 
   if (is_frame_being_destroyed) {
@@ -6946,6 +6966,13 @@ void RenderFrameHostImpl::CreateFencedFrame(
     mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
         pending_receiver,
     CreateFencedFrameCallback callback) {
+  // TODO(btiszka): Add blink::features::IsFencedFramesEnabled() check
+  // after kFencedFrames has been switched to FEATURE_DISABLED_BY_DEFAULT
+  if (!blink::features::IsFencedFramesMPArchBased()) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_FENCED_FRAME_MOJO_WHEN_DISABLED);
+    return;
+  }
   fenced_frames_.push_back(
       std::make_unique<FencedFrame>(weak_ptr_factory_.GetSafeRef()));
   FencedFrame* fenced_frame = fenced_frames_.back().get();
@@ -8535,6 +8562,15 @@ void RenderFrameHostImpl::TearDownMojoConnection() {
   pepper_instance_map_.clear();
   pepper_hung_detectors_.Clear();
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+  // Audio stream factories are tied to a live RenderFrame: see
+  // //content/browser/media/forwarding_audio_stream_factory.h.
+  // Eagerly reset now to ensure that it is impossible to create streams
+  // associated with a RenderFrameHost without a live RenderFrame;
+  // otherwise, the `RenderFrameDeleted()` signal used to clean up streams
+  // will never fire.
+  audio_service_audio_output_stream_factory_.reset();
+  audio_service_audio_input_stream_factory_.reset();
 }
 
 bool RenderFrameHostImpl::IsFocused() {
@@ -9373,12 +9409,19 @@ void RenderFrameHostImpl::BindRenderAccessibilityHost(
   // the commit which in turns updates the browser's token before this method
   // could be called.
   DCHECK(GetAXTreeID().token());
+  // `render_accessibility_host_` is reset in `TearDownMojoConnection()`, but
+  // this Mojo endpoint lives on another sequence and posts tasks back to this
+  // `RenderFrameHostImpl` on the UI thread. After the reset, there may still be
+  // tasks in flight: use `render_frame_scoped_weak_ptr_factory_` to ensure
+  // those tasks are dropped if they arrive after the reset of their
+  // corresponding RenderAccessibilityHost.
   render_accessibility_host_ = base::SequenceBound<RenderAccessibilityHost>(
       base::FeatureList::IsEnabled(
           features::kRenderAccessibilityHostDeserializationOffMainThread)
           ? base::ThreadPool::CreateSequencedTaskRunner({})
           : base::SequencedTaskRunnerHandle::Get(),
-      weak_ptr_factory_.GetWeakPtr(), std::move(receiver), GetAXTreeID());
+      render_frame_scoped_weak_ptr_factory_.GetWeakPtr(), std::move(receiver),
+      GetAXTreeID());
 }
 
 void RenderFrameHostImpl::CancelPrerendering(

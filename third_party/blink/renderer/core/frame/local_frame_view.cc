@@ -280,7 +280,17 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, gfx::Rect frame_rect)
       layout_shift_tracker_(MakeGarbageCollected<LayoutShiftTracker>(this)),
       paint_timing_detector_(MakeGarbageCollected<PaintTimingDetector>(this)),
       mobile_friendliness_checker_(
-          MakeGarbageCollected<MobileFriendlinessChecker>(*this))
+          // Only run the mobile friendliness checker for the local main frame.
+          // The checker will iterate through all local frames in the current
+          // blink::Page. Also skip the mobile friendliness checks for
+          // "non-ordinary" pages by checking IsLocalFrameClientImpl(), since
+          // it's not useful to generate mobile friendliness metrics for
+          // devtools.
+          //
+          GetFrame().Client()->IsLocalFrameClientImpl() &&
+                  GetFrame().Client()->IsLocalFrameClientImpl()
+              ? MakeGarbageCollected<MobileFriendlinessChecker>(*this)
+              : nullptr)
 #if DCHECK_IS_ON()
       ,
       is_updating_descendant_dependent_flags_(false),
@@ -1956,7 +1966,9 @@ Color LocalFrameView::DocumentBackgroundColor() {
 }
 
 void LocalFrameView::WillBeRemovedFromFrame() {
-  mobile_friendliness_checker_->WillBeRemovedFromFrame();
+  if (mobile_friendliness_checker_)
+    mobile_friendliness_checker_->WillBeRemovedFromFrame();
+
   if (paint_artifact_compositor_)
     paint_artifact_compositor_->WillBeRemovedFromFrame();
 
@@ -3118,7 +3130,7 @@ void LocalFrameView::UpdateStyleAndLayout() {
   }
 
   VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();
-  DoubleSize visual_viewport_size(visual_viewport.VisibleWidthCSSPx(),
+  gfx::SizeF visual_viewport_size(visual_viewport.VisibleWidthCSSPx(),
                                   visual_viewport.VisibleHeightCSSPx());
 
   bool did_layout = UpdateStyleAndLayoutInternal();
@@ -3151,7 +3163,7 @@ void LocalFrameView::UpdateStyleAndLayout() {
     bool visual_viewport_size_changed = false;
     if (frame_->IsMainFrame()) {
       // Scrollbars changing state can cause a visual viewport size change.
-      DoubleSize new_viewport_size(visual_viewport.VisibleWidthCSSPx(),
+      gfx::SizeF new_viewport_size(visual_viewport.VisibleWidthCSSPx(),
                                    visual_viewport.VisibleHeightCSSPx());
       visual_viewport_size_changed =
           (new_viewport_size != visual_viewport_size);
@@ -3343,7 +3355,10 @@ DoublePoint LocalFrameView::DocumentToFrame(
   if (!layout_viewport)
     return point_in_document;
 
-  return point_in_document - DoubleSize(layout_viewport->GetScrollOffset());
+  ScrollOffset scroll_offset = layout_viewport->GetScrollOffset();
+  DoublePoint result = point_in_document;
+  result.Move(-scroll_offset.x(), -scroll_offset.y());
+  return result;
 }
 
 gfx::Point LocalFrameView::DocumentToFrame(

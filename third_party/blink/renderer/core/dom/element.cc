@@ -2681,9 +2681,17 @@ void Element::AttachLayoutTree(AttachContext& context) {
   LayoutObject* layout_object = nullptr;
   if (being_rendered) {
     AdjustForceLegacyLayout(style, &children_context.force_legacy_layout);
+
+    if (children_context.force_legacy_layout) {
+      GetDocument()
+          .GetStyleEngine()
+          .RecalcStyleForContainerDescendantsInLegacyLayoutTree(*this);
+    }
+
     LegacyLayout legacy = children_context.force_legacy_layout
                               ? LegacyLayout::kForce
                               : LegacyLayout::kAuto;
+
     LayoutTreeBuilderForElement builder(*this, context, style, legacy);
     builder.CreateLayoutObject();
 
@@ -4862,11 +4870,6 @@ bool Element::ForceLegacyLayoutInFragmentationContext(
         !parent->GetComputedStyle()
              ->InsideFragmentationContextWithNondeterministicEngine())
       break;
-
-    // Otherwise, if this element is always marked for legacy fallback, we can
-    // bail.
-    if (legacy_root->ShouldForceLegacyLayoutForChild())
-      return false;
   }
 
   // Only mark for reattachment if needed. Unnecessary reattachments may lead to

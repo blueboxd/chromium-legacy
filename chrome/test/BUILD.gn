@@ -2424,7 +2424,6 @@ if (!is_android && !is_fuchsia) {
     if (include_js_tests) {
       deps += [
         "//chrome/browser/resources:browser_tests_js",
-        "//chrome/test/data/webui:browser_tests_js_mojo_lite_webui",
         "//chrome/test/data/webui:browser_tests_js_mojo_webui",
         "//chrome/test/data/webui:browser_tests_js_webui",
       ]
@@ -2437,6 +2436,7 @@ if (!is_android && !is_fuchsia) {
           "//ash/webui/system_apps:browser_tests",
           "//ash/webui/system_extensions_internals_ui:browser_tests_js",
           "//chrome/browser/resources/gaia_auth_host:browser_tests",
+          "//chrome/test/data/webui:browser_tests_js_mojo_lite_webui",
         ]
 
         data_deps += [ "//chrome/test/data/webui:browser_tests_js_webui" ]
@@ -6225,6 +6225,7 @@ test("unit_tests") {
       "../browser/new_tab_page/modules/photos/photos_service_unittest.cc",
       "../browser/new_tab_page/modules/safe_browsing/safe_browsing_handler_unittest.cc",
       "../browser/new_tab_page/modules/task_module/task_module_service_unittest.cc",
+      "../browser/new_tab_page/modules/task_module/time_format_util_unittest.cc",
       "../browser/search/ntp_features_unittest.cc",
 
       # Android uses a different way of showing browser windows.
@@ -6642,6 +6643,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/mixer_unittest.cc",
       "../browser/ui/app_list/search/omnibox_result_unittest.cc",
       "../browser/ui/app_list/search/ranking/answer_ranker_unittest.cc",
+      "../browser/ui/app_list/search/ranking/best_match_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/ftrl_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/removed_results_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/score_normalizing_ranker_unittest.cc",
@@ -6758,6 +6760,7 @@ test("unit_tests") {
       "//chromeos/ui/wm",
       "//components/app_restore:unit_tests",
       "//components/arc:arc_test_support",
+      "//components/arc/common",
       "//components/services/app_service/public/cpp:preferred_apps",
       "//components/soda:soda",
     ]

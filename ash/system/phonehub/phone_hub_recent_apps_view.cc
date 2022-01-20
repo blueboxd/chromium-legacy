@@ -64,7 +64,9 @@ class HeaderView : public views::Label {
   const char* GetClassName() const override { return "HeaderView"; }
 };
 
-class PlaceholderView : public views::Label {
+}  // namespace
+
+class PhoneHubRecentAppsView::PlaceholderView : public views::Label {
  public:
   PlaceholderView() {
     SetText(
@@ -86,8 +88,6 @@ class PlaceholderView : public views::Label {
   const char* GetClassName() const override { return "ContentView"; }
 };
 
-}  // namespace
-
 PhoneHubRecentAppsView::PhoneHubRecentAppsView(
     phonehub::RecentAppsInteractionHandler* recent_apps_interaction_handler)
     : recent_apps_interaction_handler_(recent_apps_interaction_handler) {
@@ -99,6 +99,7 @@ PhoneHubRecentAppsView::PhoneHubRecentAppsView(
   AddChildView(std::make_unique<HeaderView>());
   recent_app_buttons_view_ =
       AddChildView(std::make_unique<RecentAppButtonsView>());
+  placeholder_view_ = AddChildView(std::make_unique<PlaceholderView>());
 
   Update();
   recent_apps_interaction_handler_->AddObserver(this);
@@ -157,16 +158,15 @@ void PhoneHubRecentAppsView::RecentAppButtonsView::Layout() {
                           kRecentAppButtonDefaultSpacing);
   }
 
-  int x_delta = child_area.x();
+  int child_x = child_area.x();
   int child_y = child_area.y() + kRecentAppButtonsViewTopPadding +
                 kRecentAppButtonFocusPadding.bottom();
   for (auto* child : visible_children) {
-    // Most recent apps be added to the right and shift left as the other apps
+    // Most recent apps be added to the left and shift right as the other apps
     // are streamed.
-    int child_x = child_area.width() - x_delta - kRecentAppButtonSize;
     int width = child->GetPreferredSize().width();
     child->SetBounds(child_x, child_y, width, child->GetHeightForWidth(width));
-    x_delta += width + spacing;
+    child_x += width + spacing;
   }
 }
 
@@ -187,11 +187,12 @@ void PhoneHubRecentAppsView::Update() {
 
   switch (current_ui_state) {
     case RecentAppsUiState::HIDDEN:
+      placeholder_view_->SetVisible(false);
       SetVisible(false);
       break;
     case RecentAppsUiState::PLACEHOLDER_VIEW:
       recent_app_buttons_view_->SetVisible(false);
-      AddChildView(std::make_unique<PlaceholderView>());
+      placeholder_view_->SetVisible(true);
       SetVisible(true);
       break;
     case RecentAppsUiState::ITEMS_VISIBLE:
@@ -210,6 +211,7 @@ void PhoneHubRecentAppsView::Update() {
             recent_app_button_list_.back().get());
       }
       recent_app_buttons_view_->SetVisible(true);
+      placeholder_view_->SetVisible(false);
       SetVisible(true);
       break;
   }

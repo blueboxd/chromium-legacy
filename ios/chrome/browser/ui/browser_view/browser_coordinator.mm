@@ -26,8 +26,8 @@
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_signout/enterprise_signout_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/enterprise/user_policy_signout/user_policy_signout_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_type.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
@@ -107,7 +107,7 @@
                                   BrowserCoordinatorCommands,
                                   DefaultBrowserPromoCommands,
                                   DefaultPromoNonModalPresentationDelegate,
-                                  EnterpriseSignoutCoordinatorDelegate,
+                                  EnterprisePromptCoordinatorDelegate,
                                   FormInputAccessoryCoordinatorNavigator,
                                   PageInfoCommands,
                                   PasswordBreachCommands,
@@ -116,7 +116,6 @@
                                   RepostFormTabHelperDelegate,
                                   ToolbarAccessoryCoordinatorDelegate,
                                   URLLoadingDelegate,
-                                  UserPolicySignoutCoordinatorDelegate,
                                   WebStateListObserving>
 
 // Whether the coordinator is started.
@@ -227,17 +226,9 @@
 @property(nonatomic, strong)
     DefaultBrowserPromoNonModalCoordinator* nonModalPromoCoordinator;
 
-// The coordinator that manages the prompt for when the user is signed out due
-// to policy.
+// The coordinator that manages enterprise prompts.
 @property(nonatomic, strong)
-    UserPolicySignoutCoordinator* policySignoutPromptCoordinator;
-
-// The coordinator that manages alerts for enterprise sync policy changes.
-@property(nonatomic, strong) AlertCoordinator* syncDisabledAlertCoordinator;
-
-// The coordinator that manages the view for enterprise signout.
-@property(nonatomic, strong)
-    EnterpriseSignoutCoordinator* enterpriseSignoutCoordinator;
+    EnterprisePromptCoordinator* enterprisePromptCoordinator;
 
 // The coordinator used for the Text Fragments feature.
 @property(nonatomic, strong) TextFragmentsCoordinator* textFragmentsCoordinator;
@@ -1137,65 +1128,40 @@
 #pragma mark - PolicyChangeCommands
 
 - (void)showPolicySignoutPrompt {
-  if (!self.policySignoutPromptCoordinator) {
-    self.policySignoutPromptCoordinator = [[UserPolicySignoutCoordinator alloc]
+  if (!self.enterprisePromptCoordinator) {
+    self.enterprisePromptCoordinator = [[EnterprisePromptCoordinator alloc]
         initWithBaseViewController:self.viewController
-                           browser:self.browser];
-    self.policySignoutPromptCoordinator.delegate = self;
+                           browser:self.browser
+                        promptType:EnterprisePromptTypeForceSignOut];
+    self.enterprisePromptCoordinator.delegate = self;
   }
-  [self.policySignoutPromptCoordinator start];
+  [self.enterprisePromptCoordinator start];
 }
 
-- (void)showSyncDisabledAlert {
-  if (self.syncDisabledAlertCoordinator) {
-    [self.syncDisabledAlertCoordinator stop];
+- (void)showSyncDisabledPrompt {
+  if (!self.enterprisePromptCoordinator) {
+    self.enterprisePromptCoordinator = [[EnterprisePromptCoordinator alloc]
+        initWithBaseViewController:self.viewController
+                           browser:self.browser
+                        promptType:EnterprisePromptTypeSyncDisabled];
+    self.enterprisePromptCoordinator.delegate = self;
   }
-  self.syncDisabledAlertCoordinator = [[AlertCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser
-                           title:l10n_util::GetNSString(
-                                     IDS_IOS_SYNC_SYNC_DISABLED)
-                         message:l10n_util::GetNSString(
-                                     IDS_IOS_SYNC_SYNC_DISABLED_DESCRIPTION)];
-
-  __weak BrowserCoordinator* weakSelf = self;
-  [self.syncDisabledAlertCoordinator
-      addItemWithTitle:l10n_util::GetNSString(
-                           IDS_IOS_SYNC_SYNC_DISABLED_CONTINUE)
-                action:^{
-                  [weakSelf.syncDisabledAlertCoordinator stop];
-                  weakSelf.syncDisabledAlertCoordinator = nil;
-                }
-                 style:UIAlertActionStyleCancel];
-  [self.syncDisabledAlertCoordinator
-      addItemWithTitle:l10n_util::GetNSString(
-                           IDS_IOS_SYNC_SYNC_DISABLED_LEARN_MORE)
-                action:^{
-                  if (weakSelf) {
-                    UrlLoadParams params =
-                        UrlLoadParams::InNewTab(GURL(kChromeUIManagementURL));
-                    UrlLoadingBrowserAgent::FromBrowser(weakSelf.browser)
-                        ->Load(params);
-                    [weakSelf.syncDisabledAlertCoordinator stop];
-                    weakSelf.syncDisabledAlertCoordinator = nil;
-                  }
-                }
-                 style:UIAlertActionStyleDefault];
-
-  [self.syncDisabledAlertCoordinator start];
+  [self.enterprisePromptCoordinator start];
 }
 
 - (void)showEnterpriseSignout {
   SceneState* sceneState =
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
   if (sceneState.activationLevel >= SceneActivationLevelForegroundActive) {
-    if (!self.enterpriseSignoutCoordinator) {
-      self.enterpriseSignoutCoordinator = [[EnterpriseSignoutCoordinator alloc]
+    if (!self.enterprisePromptCoordinator) {
+      self.enterprisePromptCoordinator = [[EnterprisePromptCoordinator alloc]
           initWithBaseViewController:self.viewController
-                             browser:self.browser];
-      self.enterpriseSignoutCoordinator.delegate = self;
+                             browser:self.browser
+                          promptType:
+                              EnterprisePromptTypeRestrictAccountSignedOut];
+      self.enterprisePromptCoordinator.delegate = self;
     }
-    [self.enterpriseSignoutCoordinator start];
+    [self.enterprisePromptCoordinator start];
   } else {
     __weak BrowserCoordinator* weakSelf = self;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
@@ -1204,18 +1170,6 @@
                      [weakSelf showEnterpriseSignout];
                    });
   }
-}
-
-#pragma mark - UserPolicySignoutCoordinatorDelegate
-
-- (void)hidePolicySignoutPromptForLearnMore:(BOOL)learnMore {
-  [self.policySignoutPromptCoordinator stop];
-  self.policySignoutPromptCoordinator = nil;
-}
-
-- (void)userPolicySignoutDidDismiss {
-  [self.policySignoutPromptCoordinator stop];
-  self.policySignoutPromptCoordinator = nil;
 }
 
 #pragma mark - DefaultBrowserPromoNonModalCommands
@@ -1259,11 +1213,16 @@
                                                    completion:completion];
 }
 
-#pragma mark - EnterpriseSignoutCoordinatorDelegate
+#pragma mark - EnterprisePromptCoordinatorDelegate
 
-- (void)enterpriseSignoutCoordinatorDidDismiss {
-  [self.enterpriseSignoutCoordinator stop];
-  self.enterpriseSignoutCoordinator = nil;
+- (void)hideEnterprisePrompForLearnMore:(BOOL)learnMore {
+  [self.enterprisePromptCoordinator stop];
+  self.enterprisePromptCoordinator = nil;
+}
+
+- (void)enterprisePromptCoordinatorDidDismiss {
+  [self.enterprisePromptCoordinator stop];
+  self.enterprisePromptCoordinator = nil;
 }
 
 @end

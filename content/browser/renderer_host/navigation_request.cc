@@ -784,69 +784,6 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
       common_params.initiator_origin.value_or(url::Origin()));
 }
 
-// Special chrome schemes cannot directly be categorized in public/private/local
-// address spaces using information from the network or the PolicyContainer. We
-// have to classify them manually. In its default state an unhandled scheme will
-// have an IPAddressSpace of kUnknown, which is equivalent to public.
-// This means a couple of things:
-// - They cannot embed anything private or local without being secure contexts
-//   and triggering a CORS preflight.
-// - Private Network Access does not prevent them being embedded by less private
-//   content.
-// - It pollutes metrics since kUnknown could also mean a missed edge case.
-// To address these issues we list here a number of schemes that should be
-// considered local.
-// TODO(titouan): It might be better to have these schemes (and in general
-// other schemes such as data: or blob:) handled directly by the URLLoaders.
-// Investigate on whether this is worth doing.
-network::mojom::IPAddressSpace IPAddressSpaceForSpecialScheme(const GURL& url) {
-  // This only handles schemes that are known to the content/ layer.
-  // List here: content/public/common/url_constants.cc.
-  const char* special_content_schemes[] = {
-    kChromeDevToolsScheme,
-    kChromeUIScheme,
-    kChromeUIUntrustedScheme,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    kExternalFileScheme,
-#endif
-  };
-
-  for (auto* scheme : special_content_schemes) {
-    if (url.SchemeIs(scheme))
-      return network::mojom::IPAddressSpace::kLocal;
-  }
-
-  // Some of these schemes are only known to the embedder. Query the embedder
-  // for these.
-  ContentBrowserClient* client = GetContentClient()->browser();
-  return client->DetermineAddressSpaceFromURL(url);
-}
-
-network::mojom::IPAddressSpace CalculateIPAddressSpace(
-    const GURL& url,
-    network::mojom::URLResponseHead* response_head) {
-  // Determine the IPAddressSpace, based on the IP address and the response
-  // headers received.
-  absl::optional<network::CalculateClientAddressSpaceParams> params =
-      absl::nullopt;
-  if (response_head) {
-    params.emplace(response_head->url_list_via_service_worker,
-                   response_head->parsed_headers,
-                   response_head->remote_endpoint);
-  }
-  network::mojom::IPAddressSpace computed_ip_address_space =
-      network::CalculateClientAddressSpace(url, params);
-
-  if (computed_ip_address_space != network::mojom::IPAddressSpace::kUnknown) {
-    return computed_ip_address_space;
-  }
-
-  // Some navigation aren't loaded from the network. An IPAddressSpace can still
-  // be attributed for some, whose scheme are known from the content/ layer. For
-  // instance chrome: or devtools:
-  return IPAddressSpaceForSpecialScheme(url);
-}
-
 // Returns true if the parent's COEP policy `parent_coep` should block a child
 // embedded in an <iframe> loaded with `child_coep` policy. The `anonymous`
 // parameter reflects whether the child will be loaded as an anonymous document.
@@ -6674,7 +6611,7 @@ NavigationRequest::ComputeCrossOriginEmbedderPolicy() {
   // Note: we only check the outer document for fenced frames, because it's
   // unclear if other embedded cases like Portals should inherit COEP from
   // the embedder as well.
-  // TODO(https://crbug.com/1278207): add other embedded cases if needed.
+  // TODO(https://crbug.com/1278207) add other embedded cases if needed.
   RenderFrameHostImpl* const parent =
       GetNavigatingFrameType() == FrameType::kFencedFrameRoot
           ? GetParentFrameOrOuterDocument()
@@ -6740,7 +6677,7 @@ bool NavigationRequest::CheckResponseAdherenceToCoep(const GURL& url) {
   // Note: we only check the outer document for fenced frames, because it's
   // unclear if other embedded cases like Portals should inherit COEP from
   // the embedder as well.
-  // TODO(https://crbug.com/1278207): add other embedded cases if needed.
+  // TODO(https://crbug.com/1278207) add other embedded cases if needed.
   RenderFrameHostImpl* const parent =
       GetNavigatingFrameType() == FrameType::kFencedFrameRoot
           ? GetParentFrameOrOuterDocument()
@@ -6787,15 +6724,7 @@ bool NavigationRequest::CheckResponseAdherenceToCoep(const GURL& url) {
 absl::optional<network::mojom::BlockedByResponseReason>
 NavigationRequest::EnforceCOEP() {
   // https://html.spec.whatwg.org/C/#check-a-navigation-response's-adherence-to-its-embedder-policy
-
-  // Fenced frame should not be recognized as a top frame. COEP must be applied.
-  // Note: we only check the outer document for fenced frames, because it's
-  // unclear if other embedded cases like Portals should behave the same.
-  // TODO(https://crbug.com/1278207): add other embedded cases if needed.
-  RenderFrameHostImpl* const parent_frame =
-      GetNavigatingFrameType() == FrameType::kFencedFrameRoot
-          ? GetParentFrameOrOuterDocument()
-          : GetParentFrame();
+  auto* parent_frame = GetParentFrame();
   if (!parent_frame) {
     return absl::nullopt;
   }
@@ -6974,7 +6903,8 @@ void NavigationRequest::ComputePoliciesToCommit() {
   const auto& url = common_params_->url;
 
   network::mojom::IPAddressSpace response_address_space =
-      CalculateIPAddressSpace(url, response_head_.get());
+      CalculateIPAddressSpace(url, response_head_.get(),
+                              GetContentClient()->browser());
   policy_container_navigation_bundle_->SetIPAddressSpace(
       response_address_space);
 

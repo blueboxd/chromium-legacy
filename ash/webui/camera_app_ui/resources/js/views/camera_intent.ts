@@ -72,8 +72,8 @@ export class CameraIntent extends Camera {
             assertNotReached();
           },
         },
-        infoUpdater, photoPreferrer, videoPreferrer, mode, perfLogger,
-        /* facing= */ null);
+        infoUpdater, photoPreferrer, videoPreferrer, perfLogger,
+        /* facing= */ null, /* modeConstraints= */ {exact: mode});
   }
 
   private reviewIntentResult(metricArgs: MetricArgs): Promise<void> {
@@ -96,7 +96,7 @@ export class CameraIntent extends Camera {
         ],
       }));
       metrics.sendCaptureEvent({
-        facing: this.facingMode,
+        facing: this.facing,
         ...metricArgs,
         intentResult: confirmed ? metrics.IntentResultType.CONFIRMED :
                                   metrics.IntentResultType.CANCELED,
@@ -132,9 +132,5 @@ export class CameraIntent extends Camera {
     await this.review.setReviewVideo(this.videoResultFile);
     await this.reviewIntentResult(
         {resolution: videoResult.resolution, duration: videoResult.duration});
-  }
-
-  protected async getModeCandidates(): Promise<Mode[]> {
-    return [this.defaultMode];
   }
 }

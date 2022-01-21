@@ -1450,29 +1450,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="BlueZ.PerProfile.ProbingResult"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="BrowserRunningMode" separator=".">
-  <obsolete>
-    Removed in M91.
-  </obsolete>
-  <suffix name="FullBrowser" label=""/>
-  <suffix name="ReducedMode" label=""/>
-  <affected-histogram
-      name="Memory.BackgroundTask.Browser.PrivateMemoryFootprint"/>
-  <affected-histogram
-      name="Memory.BackgroundTask.Browser.PrivateSwapFootprint"/>
-  <affected-histogram name="Memory.BackgroundTask.Browser.ResidentSet"/>
-  <affected-histogram
-      name="Memory.BackgroundTask.Browser.SharedMemoryFootprint"/>
-  <affected-histogram
-      name="Memory.BackgroundTask.OfflinePrefetch.Browser.PrivateMemoryFootprint"/>
-  <affected-histogram
-      name="Memory.BackgroundTask.OfflinePrefetch.Browser.PrivateSwapFootprint"/>
-  <affected-histogram
-      name="Memory.BackgroundTask.OfflinePrefetch.Browser.ResidentSet"/>
-  <affected-histogram
-      name="Memory.BackgroundTask.OfflinePrefetch.Browser.SharedMemoryFootprint"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="CacheDeletedEntries" separator="_">
   <suffix name="11" label="Out of the experiment"/>
   <suffix name="12" label="Control"/>
@@ -5289,9 +5266,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="SharedImageStub" label="Shared Image Stub."/>
   <suffix name="Skia" label="Skia."/>
   <suffix name="Unknown" label="No source specified."/>
-  <affected-histogram name="Memory.GPU.PeakMemoryAllocationSource.ChangeTab"/>
-  <affected-histogram name="Memory.GPU.PeakMemoryAllocationSource.PageLoad"/>
-  <affected-histogram name="Memory.GPU.PeakMemoryAllocationSource.Scroll"/>
   <affected-histogram name="Memory.GPU.PeakMemoryAllocationSource2.ChangeTab"/>
   <affected-histogram name="Memory.GPU.PeakMemoryAllocationSource2.PageLoad"/>
   <affected-histogram name="Memory.GPU.PeakMemoryAllocationSource2.Scroll"/>
@@ -5301,7 +5275,6 @@ chromium-metrics-reviews@google.com.
   <suffix base="true" name="ChangeTab" label="Changing Tabs."/>
   <suffix base="true" name="PageLoad" label="Page Load."/>
   <suffix base="true" name="Scroll" label="Scroll."/>
-  <affected-histogram name="Memory.GPU.PeakMemoryAllocationSource"/>
   <affected-histogram name="Memory.GPU.PeakMemoryAllocationSource2"/>
 </histogram_suffixes>
 
@@ -5309,7 +5282,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="ChangeTab" label="Changing Tabs."/>
   <suffix name="PageLoad" label="Page Load."/>
   <suffix name="Scroll" label="Scroll."/>
-  <affected-histogram name="Memory.GPU.PeakMemoryUsage"/>
   <affected-histogram name="Memory.GPU.PeakMemoryUsage2"/>
 </histogram_suffixes>
 
@@ -5345,31 +5317,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="Webgl2" label="Webgl2"/>
   <affected-histogram name="GPU.BlacklistFeatureTestResultsWindows"/>
   <affected-histogram name="GPU.BlocklistFeatureTestResults"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="GpuChannelManagerPressureHandlerDurationDetails"
-    separator=".">
-  <obsolete>
-    Removed 03/2021.
-  </obsolete>
-  <suffix name="DiscardableManagerHandleMemoryPressureDuration"
-      label="The time taken by the call to
-             |ServiceDiscardableManager::HandleMemoryPressure|."/>
-  <suffix name="GrShaderCachePurgeMemoryDuration"
-      label="The time taken by the call to |GrShaderCache::PurgeMemory|."/>
-  <suffix name="PasshtroughDiscardableManagerHandleMemoryPressureDuration"
-      label="The time taken by the call to
-             |PassthroughDiscardableManager::HandleMemoryPressure|."/>
-  <suffix name="ProgramCacheHandleMemoryPressureDuration"
-      label="The time taken by the call to
-             |ProgramCache::HandleMemoryPressure|."/>
-  <suffix name="SharedContextStatePurgeMemoryDuration"
-      label="The time taken by the call to |SharedContextState::PurgeMemory|."/>
-  <suffix name="TotalDuration" label="The total duration of this handler."/>
-  <suffix name="TrimD3DResourcesDuration"
-      label="The time taken by the call to |TrimD3DResources|."/>
-  <affected-histogram
-      name="Memory.Experimental.GpuChannelManagerPressureHandlerDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="GpuChannelResponse" separator=".">
@@ -15696,84 +15643,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="WebCore.IndexedDB.TombstoneSweeper.TombstonesSize"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SyncModelTypeByMacro" separator="" ordering="prefix">
-  <obsolete>
-    Removed in M80.
-  </obsolete>
-  <suffix name="AppList" label="App list"/>
-  <suffix name="AppNotifications" label="App notifications">
-    <obsolete>
-      Deprecated 2/2017.
-    </obsolete>
-  </suffix>
-  <suffix name="Apps" label="Apps"/>
-  <suffix name="AppSettings" label="App settings"/>
-  <suffix name="ArcPackage" label="Arc package"/>
-  <suffix name="Article" label="Article">
-    <obsolete>
-      Deprecated 7/2018.
-    </obsolete>
-  </suffix>
-  <suffix name="Autofill" label="Autocomplete"/>
-  <suffix name="AutofillProfiles" label="Autofill profiles"/>
-  <suffix name="AutofillWallet" label="Autofill wallet"/>
-  <suffix name="AutofillWalletMetadata" label="Autofill wallet metadata"/>
-  <suffix name="Bookmarks" label="Bookmarks"/>
-  <suffix name="DeviceInfo" label="Device info"/>
-  <suffix name="Dictionary" label="Dictionary"/>
-  <suffix name="Experiments" label="Experiments"/>
-  <suffix name="Extensions" label="Extensions"/>
-  <suffix name="ExtensionSettings" label="Extension settings"/>
-  <suffix name="FaviconImages" label="Favicon images"/>
-  <suffix name="FaviconTracking" label="Favicon tracking"/>
-  <suffix name="HistoryDeleteDirectives" label="History delete directives"/>
-  <suffix name="ManagedUser" label="Managed user">
-    <obsolete>
-      Deprecated 4/2018.
-    </obsolete>
-  </suffix>
-  <suffix name="ManagedUserSetting" label="Managed user setting"/>
-  <suffix name="ManagedUserSharedSetting" label="Managed user shared setting">
-    <obsolete>
-      Deprecated 4/2018.
-    </obsolete>
-  </suffix>
-  <suffix name="ManagedUserWhitelist" label="Managed user allowlist"/>
-  <suffix name="MountainShares" label="Mountain shares"/>
-  <suffix name="Nigori" label="Nigori"/>
-  <suffix name="Passwords" label="Passwords"/>
-  <suffix name="Preferences" label="Preferences"/>
-  <suffix name="Printers" label="Printers"/>
-  <suffix name="PriorityPreferences" label="Priority preferences"/>
-  <suffix name="ReadingList" label="Reading list"/>
-  <suffix name="SearchEngines" label="Search engines"/>
-  <suffix name="SecurityEvents" label="Security events"/>
-  <suffix name="SendTabToSelf" label="Send tab to self"/>
-  <suffix name="Sessions" label="Sessions"/>
-  <suffix name="SyncedNotificationAppInfo" label="Synced notification app info">
-    <obsolete>
-      Deprecated in M53.
-    </obsolete>
-  </suffix>
-  <suffix name="SyncedNotifications" label="Synced notifications">
-    <obsolete>
-      Deprecated in M53.
-    </obsolete>
-  </suffix>
-  <suffix name="Themes" label="Themes"/>
-  <suffix name="TypedUrls" label="Typed urls"/>
-  <suffix name="UserConsents" label="User consents"/>
-  <suffix name="UserEvents" label="User events"/>
-  <suffix name="WifiConfigurations" label="Wifi configurations"/>
-  <suffix name="WifiCredentials" label="Wifi credentials">
-    <obsolete>
-      This never got launched and is removed.
-    </obsolete>
-  </suffix>
-  <affected-histogram name="Sync.AssociationTime"/>
-  <affected-histogram name="Sync.ConfigureFailure"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="SystemNotificationAgeType" separator=".">
   <suffix name="ClickToCall" label="Click To Call"/>
   <suffix name="PriceDrop" label="Price Drop Alerts"/>
@@ -16453,10 +16322,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="Min" label="The minimum over the time interval"/>
   <affected-histogram name="WebRTC.Audio.EchoCanceller.ComfortNoiseBand0"/>
   <affected-histogram name="WebRTC.Audio.EchoCanceller.ComfortNoiseBand1"/>
-  <affected-histogram name="WebRTC.Audio.EchoCanceller.ErlBand0"/>
-  <affected-histogram name="WebRTC.Audio.EchoCanceller.ErlBand1"/>
-  <affected-histogram name="WebRTC.Audio.EchoCanceller.ErleBand0"/>
-  <affected-histogram name="WebRTC.Audio.EchoCanceller.ErleBand1"/>
   <affected-histogram name="WebRTC.Audio.EchoCanceller.SuppressorGainBand0"/>
   <affected-histogram name="WebRTC.Audio.EchoCanceller.SuppressorGainBand1"/>
 </histogram_suffixes>

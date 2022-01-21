@@ -68,7 +68,7 @@ export class App {
   constructor({perfLogger, intent, facing, mode: defaultMode}: {
     perfLogger: PerfLogger,
     intent: Intent|null,
-    facing: Facing|null,
+    facing: Facing,
     mode: Mode|null,
   }) {
     this.perfLogger = perfLogger;
@@ -76,11 +76,11 @@ export class App {
     this.intent = intent;
 
     this.photoPreferrer = new PhotoConstraintsPreferrer(async () => {
-      await this.cameraView.start();
+      await this.cameraView.cameraManager.reconfigure();
     });
 
     this.videoPreferrer = new VideoConstraintsPreferrer(async () => {
-      await this.cameraView.start();
+      await this.cameraView.cameraManager.reconfigure();
     });
 
     this.infoUpdater =
@@ -96,7 +96,8 @@ export class App {
       } else {
         return new Camera(
             this.galleryButton, this.infoUpdater, this.photoPreferrer,
-            this.videoPreferrer, mode, this.perfLogger, facing);
+            this.videoPreferrer, this.perfLogger, facing,
+            /* modeConstraints= */ {default: mode});
       }
     })();
 
@@ -250,8 +251,8 @@ export class App {
       } else {
         // CCA must get camera usage for completing its initialization when
         // first launched.
-        await this.cameraView.initialize();
         notifyCameraResourceReady();
+        await this.cameraView.initialize();
         cameraResourceInitialized.signal();
       }
     };
@@ -264,10 +265,11 @@ export class App {
 
     const startCamera = (async () => {
       await cameraResourceInitialized.wait();
-      const isSuccess = await this.cameraView.start();
+      const isSuccess = await this.cameraView.cameraManager.requestResume();
 
       if (isSuccess) {
-        const aspectRatio = this.cameraView.getPreviewAspectRatio();
+        const {aspectRatio} =
+            this.cameraView.cameraManager.getPreviewResolution();
         const {width, height} = getDefaultWindowSize(aspectRatio);
         window.resizeTo(width, height);
       }
@@ -354,7 +356,7 @@ export class App {
  */
 function parseSearchParams(): {
   intent: Intent|null,
-  facing: Facing|null,
+  facing: Facing,
   mode: Mode|null,
   openFrom: string|null,
   autoTake: boolean
@@ -362,7 +364,8 @@ function parseSearchParams(): {
   const url = new URL(window.location.href);
   const params = url.searchParams;
 
-  const facing = checkEnumVariant(Facing, params.get('facing'));
+  const facing =
+      checkEnumVariant(Facing, params.get('facing')) ?? Facing.NOT_SET;
 
   const mode = checkEnumVariant(Mode, params.get('mode'));
 

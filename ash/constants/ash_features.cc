@@ -225,11 +225,6 @@ const base::Feature kBorealisLinuxMode{"BorealisLinuxMode",
 const base::Feature kManagedTermsOfService{"ManagedTermsOfService",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable display of button on Arc provisioning failure dialog for network
-// tests.
-const base::Feature kButtonARCNetworkDiagnostics{
-    "ButtonARCNetworkDiagnostics", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable or disable calendar view from the system tray. Also enables the system
 // tray to show date in the shelf when the screen is sufficiently large.
 const base::Feature kCalendarView{"CalendarView",
@@ -438,7 +433,7 @@ const base::Feature kDragUnpinnedAppToPin{"DragUnpinnedAppToPin",
 
 // Enables dragging and dropping an existing window to new desk in overview.
 const base::Feature kDragWindowToNewDesk{"DragWindowToNewDesk",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, DriveFS will be used for Drive sync.
 const base::Feature kDriveFs{"DriveFS", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1409,8 +1404,7 @@ bool IsArcInputOverlayEnabled() {
 }
 
 bool IsArcNetworkDiagnosticsButtonEnabled() {
-  return IsNetworkingInDiagnosticsAppEnabled() &&
-         base::FeatureList::IsEnabled(kButtonARCNetworkDiagnostics);
+  return IsNetworkingInDiagnosticsAppEnabled();
 }
 
 bool IsAssistiveMultiWordEnabled() {

@@ -210,6 +210,7 @@ void AppListBubbleAppsPage::AnimateShowLauncher() {
   ui::AnimationThroughputReporter reporter(
       scrollable_apps_grid_view_->layer()->GetAnimator(),
       metrics_util::ForSmoothness(base::BindRepeating([](int value) {
+        // This histogram name is used in Tast tests. Do not rename.
         base::UmaHistogramPercentage(
             "Apps.ClamshellLauncher.AnimationSmoothness.OpenAppsPage", value);
       })));
@@ -260,13 +261,17 @@ void AppListBubbleAppsPage::AnimateShowPage() {
     return;
   }
 
-  // TODO(https://crbug.com/1286590): Add ui::AnimationThroughputReporter and
-  // tests.
-
   // Scroll contents has a layer, so animate that.
   views::View* scroll_contents = scroll_view_->contents();
   DCHECK(scroll_contents->layer());
   DCHECK_EQ(scroll_contents->layer()->type(), ui::LAYER_TEXTURED);
+
+  ui::AnimationThroughputReporter reporter(
+      scroll_contents->layer()->GetAnimator(),
+      metrics_util::ForSmoothness(base::BindRepeating([](int value) {
+        base::UmaHistogramPercentage(
+            "Apps.ClamshellLauncher.AnimationSmoothness.ShowAppsPage", value);
+      })));
 
   gfx::Transform translate_down;
   constexpr int kVerticalOffset = 40;
@@ -297,9 +302,6 @@ void AppListBubbleAppsPage::AnimateHidePage() {
     return;
   }
 
-  // TODO(https://crbug.com/1286590): Add ui::AnimationThroughputReporter and
-  // tests.
-
   // Update view visibility when the animation is done.
   auto set_visible_false = base::BindRepeating(
       [](base::WeakPtr<AppListBubbleAppsPage> self) {
@@ -316,6 +318,13 @@ void AppListBubbleAppsPage::AnimateHidePage() {
   views::View* scroll_contents = scroll_view_->contents();
   DCHECK(scroll_contents->layer());
   DCHECK_EQ(scroll_contents->layer()->type(), ui::LAYER_TEXTURED);
+
+  ui::AnimationThroughputReporter reporter(
+      scroll_contents->layer()->GetAnimator(),
+      metrics_util::ForSmoothness(base::BindRepeating([](int value) {
+        base::UmaHistogramPercentage(
+            "Apps.ClamshellLauncher.AnimationSmoothness.HideAppsPage", value);
+      })));
 
   // The animation spec says 40 dips down over 250ms, but the opacity animation
   // renders the view invisible after 50ms, so animate the visible fraction.
@@ -356,10 +365,23 @@ void AppListBubbleAppsPage::DisableFocusForShowingActiveFolder(bool disabled) {
   scrollable_apps_grid_view_->DisableFocusForShowingActiveFolder(disabled);
 }
 
-void AppListBubbleAppsPage::OnTemporarySortOrderChanged(
-    const absl::optional<AppListSortOrder>& new_order) {
+void AppListBubbleAppsPage::UpdateForNewSortingOrder(
+    const absl::optional<AppListSortOrder>& new_order,
+    bool animate,
+    base::OnceClosure update_position_closure) {
   DCHECK(features::IsLauncherAppSortEnabled());
-  reorder_undo_container_->OnTemporarySortOrderChanged(new_order);
+  DCHECK_EQ(animate, !update_position_closure.is_null());
+
+  if (!animate) {
+    // Reordering is not required so update the undo toast and return early.
+    reorder_undo_container_->OnTemporarySortOrderChanged(new_order);
+    return;
+  }
+
+  update_position_closure_ = std::move(update_position_closure);
+  scrollable_apps_grid_view_->FadeOutVisibleItemsForReorder(base::BindRepeating(
+      &AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEneded,
+      weak_factory_.GetWeakPtr(), new_order));
 }
 
 void AppListBubbleAppsPage::Layout() {
@@ -455,6 +477,44 @@ void AppListBubbleAppsPage::OnAppsGridViewAnimationEnded() {
   // the gradient mask layer.
   gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(scroll_view_);
   gradient_helper_->UpdateGradientZone();
+}
+
+void AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEneded(
+    const absl::optional<AppListSortOrder>& new_order,
+    bool aborted) {
+  // Update item positions after the fade out animation but before the fade in
+  // animation. NOTE: `update_position_closure_` can be empty in some edge
+  // cases. For example, the app list is set with a new order denoted by Order
+  // A. Then before the fade out animation is completed, the app list order is
+  // reset with the old value. In this case, `update_position_closure_` for
+  // Order A is never called. As a result, the closure for resetting the order
+  // is empty.
+  // Also update item positions only when the fade out animation ends normally.
+  // Because a fade out animation is aborted when:
+  // (1) Another reorder animation starts, or
+  // (2) The apps grid's view model updates due to the reasons such as app
+  // installation or model reset.
+  // It is meaningless to update item positions in either case.
+  if (update_position_closure_ && !aborted)
+    std::move(update_position_closure_).Run();
+
+  // Record the undo toast's visibility before update.
+  const bool old_toast_visible = reorder_undo_container_->is_toast_visible();
+
+  reorder_undo_container_->OnTemporarySortOrderChanged(new_order);
+
+  // Skip the fade in animation if the fade out animation is aborted.
+  if (aborted)
+    return;
+
+  // When the undo toast's visibility changes, the apps grid's bounds should
+  // change. Meanwhile, the fade in animation relies on the apps grid's bounds
+  // to calculate visible items. Therefore trigger layout before starting the
+  // fade in animation.
+  if (old_toast_visible != reorder_undo_container_->is_toast_visible())
+    Layout();
+
+  scrollable_apps_grid_view_->FadeInVisibleItemsForReorder();
 }
 
 void AppListBubbleAppsPage::SlideViewIntoPosition(views::View* view,

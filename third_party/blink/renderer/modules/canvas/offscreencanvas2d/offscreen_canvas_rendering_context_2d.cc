@@ -107,7 +107,7 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
 
   ExecutionContext* execution_context = canvas->GetTopExecutionContext();
   if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
-    DCHECK(window->GetFrame());
+    DCHECK(window->GetFrame() && window->GetFrame()->GetSettings());
     if (window->GetFrame()->GetSettings()->GetDisableReadingFromCanvas())
       canvas->SetDisableReadingFromCanvasTrue();
     return;
@@ -142,7 +142,7 @@ void OffscreenCanvasRenderingContext2D::FlushRecording() {
   GetCanvasResourceProvider()->ReleaseLockedImages();
 }
 
-void OffscreenCanvasRenderingContext2D::FinalizeFrame() {
+void OffscreenCanvasRenderingContext2D::FinalizeFrame(bool /*printing*/) {
   TRACE_EVENT0("blink", "OffscreenCanvasRenderingContext2D::FinalizeFrame");
 
   // Make sure surface is ready for painting: fix the rendering mode now

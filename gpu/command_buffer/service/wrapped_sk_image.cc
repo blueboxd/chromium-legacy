@@ -67,44 +67,6 @@ SkImageInfo MakeSkImageInfo(const gfx::Size& size, viz::ResourceFormat format) {
                            kOpaque_SkAlphaType);
 }
 
-uint64_t BackendTextureTracingID(const GrBackendTexture& backend_texture) {
-  switch (backend_texture.backend()) {
-    case GrBackendApi::kOpenGL: {
-      GrGLTextureInfo tex_info;
-      if (backend_texture.getGLTextureInfo(&tex_info))
-        return tex_info.fID;
-      break;
-    }
-#if BUILDFLAG(IS_MAC)
-    case GrBackendApi::kMetal: {
-      GrMtlTextureInfo image_info;
-      if (backend_texture.getMtlTextureInfo(&image_info))
-        return reinterpret_cast<uint64_t>(image_info.fTexture.get());
-      break;
-    }
-#endif
-#if BUILDFLAG(ENABLE_VULKAN)
-    case GrBackendApi::kVulkan: {
-      GrVkImageInfo image_info;
-      if (backend_texture.getVkImageInfo(&image_info))
-        return reinterpret_cast<uint64_t>(image_info.fImage);
-      break;
-    }
-#endif
-#if BUILDFLAG(SKIA_USE_DAWN)
-    case GrBackendApi::kDawn: {
-      GrDawnTextureInfo tex_info;
-      if (backend_texture.getDawnTextureInfo(&tex_info))
-        return reinterpret_cast<uint64_t>(tex_info.fTexture.Get());
-      break;
-    }
-#endif
-    default:
-      break;
-  }
-  return 0;
-}
-
 class WrappedSkImage : public ClearTrackingSharedImageBacking {
  public:
   WrappedSkImage(base::PassKey<WrappedSkImageFactory>,
@@ -153,9 +115,13 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
     auto destroy_resources = [](scoped_refptr<SharedContextState> context_state,
                                 sk_sp<SkPromiseImageTexture> promise_texture,
                                 GrBackendTexture backend_texture) {
-      DCHECK(promise_texture);
       context_state->MakeCurrent(nullptr);
-      context_state->EraseCachedSkSurface(promise_texture.get());
+
+      // Note that if we fail to initialize this backing, |promise_texture| will
+      // not be created and hence could be null while backing is destroyed after
+      // a failed init.
+      if (promise_texture)
+        context_state->EraseCachedSkSurface(promise_texture.get());
       promise_texture.reset();
 
       if (backend_texture.isValid())
@@ -329,7 +295,7 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
     }
 
     promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
-    tracing_id_ = BackendTextureTracingID(backend_texture_);
+    tracing_id_ = GrBackendTextureTracingID(backend_texture_);
 
     return true;
   }
@@ -369,7 +335,7 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
       SetCleared();
 
     promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
-    tracing_id_ = BackendTextureTracingID(backend_texture_);
+    tracing_id_ = GrBackendTextureTracingID(backend_texture_);
 
     return true;
   }

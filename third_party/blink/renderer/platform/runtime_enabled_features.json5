@@ -1140,6 +1140,10 @@
       name: "ForceOverlayFullscreenVideo",
     },
     {
+      // https://github.com/flackr/reduce-motion/blob/main/explainer.md
+      name: "ForceReduceMotion",
+    },
+    {
       name: "ForceSynchronousHTMLParsing",
     },
     {
@@ -1280,6 +1284,7 @@
     {
       name: "LayoutNGBlockInInline",
       depends_on: ["LayoutNG"],
+      status: "test",
     },
     {
       // Block fragmentation support in the flex layout algorithm.

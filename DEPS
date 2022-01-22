@@ -245,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '63a4d65e161a6323159a61b78829a431c37b7e19',
+  'skia_revision': '4350707fe0a65c265f259acf07161d145c40b47c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -276,7 +276,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling googletest
   # and whatever else without interference from each other.
-  'googletest_revision': '2ddfdf819d7c37e5e314566ccd3ec68a40a7297c',
+  'googletest_revision': '3d81736c973fbcc938267cb296918bc3266dde12',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lighttpd
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '7418eeff428cd3e0ffc5d27b17256361114e1b3d',
+  'dawn_revision': 'e67adac44144f0c9235ecc6a08d1fd2a5ffe65c7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -642,7 +642,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/toji/webvr.info.git' + '@' + 'c58ae99b9ff9e2aa4c524633519570bf33536248',
 
   'src/docs/website': {
-    'url': Var('chromium_git') + '/website.git' + '@' + '92cd1107e1b24460b14643d38b79f911b9fa67a1',
+    'url': Var('chromium_git') + '/website.git' + '@' + 'cf86afb7b72165fbb06d269da98023e2edefdb5a',
   },
 
   'src/ios/third_party/earl_grey2/src': {
@@ -1634,7 +1634,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@d1b842fca80dddd1a098bf63813386e3e44f9642',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@e261142ee3407f95bee94bbb0410c0e0cc9d1561',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'ebe84bec02c041d28f902da0214bf442743fc907',
@@ -1743,7 +1743,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6a8a9e7fca1623665e879d74ed58f98174c4a6c7',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@dce26b409a02e1e7ddb02a6f18999fc43c0ccca5',
     'condition': 'checkout_src_internal',
   },
 
@@ -1795,7 +1795,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': '-lpMfCpl0pn7l_07nVLMubDqcU0Lah6IXPnQ4mp6sBQC',
+        'version': 'oyKdwbpzoEZmo5QiaSdrBxp67BC5oDbebrv9qJNc-rcC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

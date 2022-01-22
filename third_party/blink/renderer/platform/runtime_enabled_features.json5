@@ -349,6 +349,10 @@
       status: "experimental",
     },
     {
+      name: "Canvas2dStaysGPUOnReadback",
+      status: "experimental",
+    },
+    {
       name: "CanvasColorManagement",
       status: "stable",
     },
@@ -1097,6 +1101,9 @@
     {
       name: "Fledge",
       origin_trial_feature_name: "Fledge",
+    },
+    {
+      name: "Focusgroup",
     },
     {
       name: "FocuslessSpatialNavigation",

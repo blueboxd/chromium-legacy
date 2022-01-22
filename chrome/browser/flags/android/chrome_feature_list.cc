@@ -168,6 +168,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBackgroundThreadPool,
     &kBookmarkBottomSheet,
     &kCastDeviceFilter,
+    &kCloseAllTabsModalDialog,
     &kCloseTabSuggestions,
     &kCriticalPersistedTabData,
     &kCCTBackgroundTab,
@@ -436,6 +437,9 @@ const base::Feature kConditionalTabStripAndroid{
 const base::Feature kCastDeviceFilter{"CastDeviceFilter",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCloseAllTabsModalDialog{"CloseAllTabsModalDialog",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kCloseTabSuggestions{"CloseTabSuggestions",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -593,6 +597,9 @@ const base::Feature kDisableCompositedProgressBar{
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+extern const base::Feature kDownloadHomeForExternalApp{
+    "DownloadHomeForExternalApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDownloadProgressInfoBar{"DownloadProgressInfoBar",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -618,7 +625,7 @@ const base::Feature kDynamicColorAndroid{"DynamicColorAndroid",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableDangerousDownloadDialog{
-    "EnableDangerousDownloadDialog", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableDangerousDownloadDialog", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableDuplicateDownloadDialog{
     "EnableDuplicateDownloadDialog", base::FEATURE_DISABLED_BY_DEFAULT};

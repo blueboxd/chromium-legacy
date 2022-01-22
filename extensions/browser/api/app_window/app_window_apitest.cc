@@ -138,9 +138,8 @@ IN_PROC_BROWSER_TEST_F(AppWindowApiTest, SetShapeNoPerm) {
 IN_PROC_BROWSER_TEST_F(AppWindowApiTest, MAYBE_AlphaEnabledHasPermissions) {
   const char kNoAlphaDir[] =
       "platform_apps/windows_api_alpha_enabled/has_permissions_no_alpha";
-  const char kHasAlphaDir[] =
+  [[maybe_unused]] const char kHasAlphaDir[] =
       "platform_apps/windows_api_alpha_enabled/has_permissions_has_alpha";
-  ALLOW_UNUSED_LOCAL(kHasAlphaDir);
   const char* test_dir = kNoAlphaDir;
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -152,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowApiTest, MAYBE_AlphaEnabledHasPermissions) {
   if (!ui::win::IsAeroGlassEnabled()) {
     test_dir = kNoAlphaDir;
   }
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 #endif  // USE_AURA && !(OS_LINUX || IS_CHROMEOS_LACROS)
 
   EXPECT_TRUE(RunExtensionTest(test_dir, {.launch_as_platform_app = true}))

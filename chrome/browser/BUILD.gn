@@ -1710,8 +1710,8 @@ static_library("browser") {
     "ssl/ssl_client_auth_metrics.cc",
     "ssl/ssl_client_auth_metrics.h",
     "ssl/ssl_client_certificate_selector.h",
+    "ssl/ssl_config_service_manager.cc",
     "ssl/ssl_config_service_manager.h",
-    "ssl/ssl_config_service_manager_pref.cc",
     "ssl/ssl_error_controller_client.cc",
     "ssl/ssl_error_controller_client.h",
     "ssl/stateful_ssl_host_state_delegate_factory.cc",
@@ -2458,6 +2458,7 @@ static_library("browser") {
       "//chrome/browser/ash/system_extensions/api/window_management",
       "//chrome/browser/nearby_sharing/common",
       "//chrome/browser/policy:onc",
+      "//chrome/browser/ui/quick_answers",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/audio:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
@@ -2498,10 +2499,14 @@ static_library("browser") {
       "//device/vr/public/mojom:isolated_xr_service",
     ]
 
-    # TODO(crbug.com/1253318): Refactor window_management into ash/ and expose
-    # the InstanceRegistry via an InstanceRegistryWrapper, then remove this.
-    allow_circular_includes_from +=
-        [ "//chrome/browser/ash/system_extensions/api/window_management" ]
+    allow_circular_includes_from += [
+      # TODO(crbug.com/1253318): Refactor window_management into ash/ and expose
+      # the InstanceRegistry via an InstanceRegistryWrapper, then remove this.
+      "//chrome/browser/ash/system_extensions/api/window_management",
+
+      # TODO(b/215757706): Find a way to avoid the circular include.
+      "//chrome/browser/ui/quick_answers",
+    ]
     public_deps += [ "//ui/lottie" ]
     if (!is_official_build) {
       deps += [

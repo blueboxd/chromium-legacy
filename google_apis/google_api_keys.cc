@@ -21,7 +21,7 @@
 #include "google_apis/gaia/gaia_config.h"
 #include "google_apis/gaia/gaia_switches.h"
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #include "google_apis/google_api_keys_mac.h"
 #endif
 
@@ -48,14 +48,6 @@
 
 #if !defined(GOOGLE_CLIENT_SECRET_MAIN)
 #define GOOGLE_CLIENT_SECRET_MAIN DUMMY_API_TOKEN
-#endif
-
-#if !defined(GOOGLE_CLIENT_ID_CLOUD_PRINT)
-#define GOOGLE_CLIENT_ID_CLOUD_PRINT DUMMY_API_TOKEN
-#endif
-
-#if !defined(GOOGLE_CLIENT_SECRET_CLOUD_PRINT)
-#define GOOGLE_CLIENT_SECRET_CLOUD_PRINT DUMMY_API_TOKEN
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_REMOTING)
@@ -132,7 +124,7 @@ class APIKeyCache {
         std::string(), environment.get(), command_line, gaia_config);
 
 // A special non-stable key is at the moment defined only for Android Chrome.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     api_key_non_stable_ = CalculateKeyValue(
         GOOGLE_API_KEY_ANDROID_NON_STABLE,
         STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_ANDROID_NON_STABLE), nullptr,
@@ -193,15 +185,6 @@ class APIKeyCache {
         ::switches::kOAuth2ClientSecret, default_client_secret,
         environment.get(), command_line, gaia_config);
 
-    client_ids_[CLIENT_CLOUD_PRINT] = CalculateKeyValue(
-        GOOGLE_CLIENT_ID_CLOUD_PRINT,
-        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_ID_CLOUD_PRINT), nullptr,
-        default_client_id, environment.get(), command_line, gaia_config);
-    client_secrets_[CLIENT_CLOUD_PRINT] = CalculateKeyValue(
-        GOOGLE_CLIENT_SECRET_CLOUD_PRINT,
-        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_SECRET_CLOUD_PRINT), nullptr,
-        default_client_secret, environment.get(), command_line, gaia_config);
-
     client_ids_[CLIENT_REMOTING] = CalculateKeyValue(
         GOOGLE_CLIENT_ID_REMOTING,
         STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_ID_REMOTING), nullptr,
@@ -222,7 +205,7 @@ class APIKeyCache {
   }
 
   std::string api_key() const { return api_key_; }
-#if defined(OS_IOS) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
   void set_api_key(const std::string& api_key) { api_key_ = api_key; }
 #endif
   std::string api_key_non_stable() const { return api_key_non_stable_; }
@@ -239,7 +222,7 @@ class APIKeyCache {
     return client_ids_[client];
   }
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   void SetClientID(OAuth2Client client, const std::string& client_id) {
     client_ids_[client] = client_id;
   }
@@ -250,7 +233,7 @@ class APIKeyCache {
     return client_secrets_[client];
   }
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   void SetClientSecret(OAuth2Client client, const std::string& client_secret) {
     client_secrets_[client] = client_secret;
   }
@@ -282,7 +265,7 @@ class APIKeyCache {
                                        GaiaConfig* gaia_config) {
     std::string key_value = baked_in_value;
     std::string temp;
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
     // macOS and iOS can also override the API key with a value from the
     // Info.plist.
     temp = ::google_apis::GetAPIKeyFromInfoPlist(environment_variable_name);
@@ -318,7 +301,7 @@ class APIKeyCache {
     }
 
     if (key_value == DUMMY_API_TOKEN) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_FUCHSIA)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !BUILDFLAG(IS_FUCHSIA)
       // No key should be unset in an official build except the
       // GOOGLE_DEFAULT_* keys.  The default keys don't trigger this
       // check as their "unset" value is not DUMMY_API_TOKEN.
@@ -386,7 +369,7 @@ std::string GetFresnelAPIKey() {
   return g_api_key_cache.Get().api_key_fresnel();
 }
 
-#if defined(OS_IOS) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
 void SetAPIKey(const std::string& api_key) {
   g_api_key_cache.Get().set_api_key(api_key);
 }
@@ -416,7 +399,7 @@ std::string GetOAuth2ClientSecret(OAuth2Client client) {
   return g_api_key_cache.Get().GetClientSecret(client);
 }
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 void SetOAuth2ClientID(OAuth2Client client, const std::string& client_id) {
   g_api_key_cache.Get().SetClientID(client, client_id);
 }

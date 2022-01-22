@@ -2928,6 +2928,11 @@ const char kChromeSharingHubLaunchAdjacentDescription[] =
     "In multi-window mode, launches share hub actions in an adjacent window. "
     "For internal debugging.";
 
+const char kCloseAllTabsModalDialogName[] = "Close all tabs modal dialog";
+const char kCloseAllTabsModalDialogDescription[] =
+    "Shows a confirmation modal dialog when clicking 'Close all tabs' in the"
+    "app menu.";
+
 const char kCloseTabSuggestionsName[] = "Suggest to close Tabs";
 const char kCloseTabSuggestionsDescription[] =
     "Suggests to the user to close Tabs that haven't been used beyond a "
@@ -4966,10 +4971,6 @@ const char kProductivityLauncherDescription[] =
     "To evaluate an enhanced Launcher experience that aims to improve app "
     "workflows by optimizing access to apps, app content, and app actions.";
 
-const char kProductivityLauncherAnimationName[] = "App Launcher: Animation";
-const char kProductivityLauncherAnimationDescription[] =
-    "Enables new animation in the enhanced app launcher.";
-
 const char kForceShowContinueSectionName[] =
     "App Launcher: Force Continue Section Suggestions";
 const char kForceShowContinueSectionDescription[] =
@@ -5272,12 +5273,12 @@ const char kLinkCapturingUiUpdateDescription[] =
     "including the intent picker and an in-app link capturing prompt.";
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 const char kVaapiVP9kSVCEncoderName[] =
     "VA-API encode acceleration for k-SVC VP9";
 const char kVaapiVP9kSVCEncoderDescription[] =
     "Enable or disable k-SVC VP9 encode acceleration using VA-API.";
-#endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 const char kChromeOSDirectVideoDecoderName[] = "ChromeOS Direct Video Decoder";

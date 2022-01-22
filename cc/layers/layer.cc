@@ -40,10 +40,11 @@
 
 namespace cc {
 
-struct SameSizeAsLayer : public base::RefCounted<SameSizeAsLayer> {
+struct SameSizeAsLayer : public base::RefCounted<SameSizeAsLayer>,
+                         public ProtectedSequenceSynchronizer {
  private:
   SameSizeAsLayer();
-  virtual ~SameSizeAsLayer();
+  ~SameSizeAsLayer() override;
 
   void* pointers[2];
   struct {
@@ -53,11 +54,9 @@ struct SameSizeAsLayer : public base::RefCounted<SameSizeAsLayer> {
     int layer_id;
     unsigned bitfields;
     SkColor background_color;
-    Region non_fast_scrollable_region;
     TouchActionRegion touch_action_region;
-    void* capture_bounds;
-    Region wheel_event_region;
     ElementId element_id;
+    void* rare_inputs;
   } inputs;
   raw_ptr<void> layer_tree_inputs;
   int int_fields[6];
@@ -120,11 +119,11 @@ Layer::Layer()
       should_check_backface_visibility_(false),
       cache_render_surface_(false),
       force_render_surface_for_testing_(false),
-      subtree_property_changed_(false),
       may_contain_video_(false),
       has_transform_node_(false),
       has_clip_node_(false),
-      subtree_has_copy_request_(false) {}
+      subtree_has_copy_request_(false),
+      subtree_property_changed_(false) {}
 
 Layer::~Layer() {
   // Our parent should be holding a reference to us so there should be no
@@ -235,14 +234,14 @@ bool Layer::IsPropertyChangeAllowed() const {
   DCHECK(IsMainThread());
 
   return !layer_tree_host()->in_paint_layer_contents() &&
-         !layer_tree_host()->in_commit();
+         !layer_tree_host()->InProtectedSequence();
 }
 
 bool Layer::IsMutationAllowed() const {
   if (!IsAttached())
     return true;
   DCHECK(IsMainThread());
-  return !layer_tree_host()->in_commit();
+  return !layer_tree_host()->InProtectedSequence();
 }
 
 void Layer::CaptureContent(const gfx::Rect& rect,
@@ -256,8 +255,9 @@ void Layer::SetParent(Layer* layer) {
   DCHECK(IsMutationAllowed());
   DCHECK(!layer || !layer->HasAncestor(this));
 
-  parent_ = layer;
-  SetLayerTreeHost(parent_ ? parent_->layer_tree_host() : nullptr);
+  raw_ptr<Layer>& parent = parent_.Write(*this);
+  parent = layer;
+  SetLayerTreeHost(parent ? parent->layer_tree_host() : nullptr);
 
   SetPropertyTreesNeedRebuild();
 }
@@ -287,8 +287,8 @@ void Layer::InsertChild(scoped_refptr<Layer> child, size_t index) {
 
 void Layer::RemoveFromParent() {
   DCHECK(IsPropertyChangeAllowed());
-  if (parent_)
-    parent_->RemoveChild(this);
+  if (parent_.Read(*this))
+    parent_.Write(*this)->RemoveChild(this);
 }
 
 void Layer::RemoveChild(Layer* child) {
@@ -327,7 +327,7 @@ void Layer::ReorderChildren(LayerList* new_children_order) {
   // since SetSubtreePropertyChanged includes SetNeedsPushProperties, but this
   // change is not included in properties pushing.
   for (const auto& child : inputs_.children)
-    child->subtree_property_changed_ = true;
+    child->subtree_property_changed_.Write(*child) = true;
 
   SetNeedsFullTreeSync();
 }
@@ -393,7 +393,7 @@ void Layer::SetBounds(const gfx::Size& size) {
 Layer* Layer::RootLayer() {
   Layer* layer = this;
   while (layer->parent())
-    layer = layer->parent();
+    layer = layer->mutable_parent();
   return layer;
 }
 
@@ -1112,9 +1112,14 @@ bool Layer::GetUserScrollableVertical() const {
 
 void Layer::SetNonFastScrollableRegion(const Region& region) {
   DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.non_fast_scrollable_region == region)
+  if (!inputs_.rare_inputs && region.IsEmpty())
     return;
-  inputs_.non_fast_scrollable_region = region;
+
+  RareInputs& rare_inputs = EnsureRareInputs();
+  if (rare_inputs.non_fast_scrollable_region == region)
+    return;
+
+  rare_inputs.non_fast_scrollable_region = region;
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }
@@ -1129,25 +1134,30 @@ void Layer::SetTouchActionRegion(TouchActionRegion touch_action_region) {
   SetNeedsCommit();
 }
 
-void Layer::SetCaptureBounds(std::unique_ptr<viz::RegionCaptureBounds> bounds) {
+void Layer::SetCaptureBounds(viz::RegionCaptureBounds bounds) {
   DCHECK(IsPropertyChangeAllowed());
-  if (!inputs_.capture_bounds && !bounds)
+  if (!inputs_.rare_inputs && bounds.IsEmpty())
     return;
 
-  if (inputs_.capture_bounds && bounds && *inputs_.capture_bounds == *bounds)
+  RareInputs& rare_inputs = EnsureRareInputs();
+  if (inputs_.rare_inputs->capture_bounds == bounds)
     return;
 
-  inputs_.capture_bounds = std::move(bounds);
+  rare_inputs.capture_bounds = std::move(bounds);
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }
 
 void Layer::SetWheelEventRegion(Region wheel_event_region) {
   DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.wheel_event_region == wheel_event_region)
+  if (!inputs_.rare_inputs && wheel_event_region.IsEmpty())
     return;
 
-  inputs_.wheel_event_region = std::move(wheel_event_region);
+  RareInputs& rare_inputs = EnsureRareInputs();
+  if (rare_inputs.wheel_event_region == wheel_event_region)
+    return;
+
+  rare_inputs.wheel_event_region = std::move(wheel_event_region);
   SetNeedsCommit();
 }
 
@@ -1171,7 +1181,8 @@ RenderSurfaceReason Layer::GetRenderSurfaceReason() const {
   // Effect node can also be the effect node of an ancestor layer.
   // Check if this effect node was created for this layer specifically.
   if (!effect_node ||
-      (parent_ && this->effect_tree_index() == parent_->effect_tree_index())) {
+      (parent_.Read(*this) &&
+       this->effect_tree_index() == parent_.Read(*this)->effect_tree_index())) {
     return RenderSurfaceReason::kNone;
   }
   return effect_node->render_surface_reason;
@@ -1428,16 +1439,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer,
   layer->SetHitTestable(HitTestable());
   // subtree_property_changed_ is propagated to all descendants while building
   // property trees. So, it is enough to check it only for the current layer.
-  if (subtree_property_changed_)
+  if (subtree_property_changed_.Read(*this))
     layer->NoteLayerPropertyChanged();
   layer->set_may_contain_video(may_contain_video_);
-  layer->SetNonFastScrollableRegion(inputs_.non_fast_scrollable_region);
   layer->SetTouchActionRegion(inputs_.touch_action_region);
-  layer->SetCaptureBounds(
-      inputs_.capture_bounds
-          ? std::make_unique<viz::RegionCaptureBounds>(*inputs_.capture_bounds)
-          : nullptr);
-  layer->SetWheelEventHandlerRegion(inputs_.wheel_event_region);
   layer->SetContentsOpaque(inputs_.contents_opaque);
   layer->SetContentsOpaqueForText(inputs_.contents_opaque_for_text);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
@@ -1464,8 +1469,17 @@ void Layer::PushPropertiesTo(LayerImpl* layer,
   // debug_info_->invalidations, if exist, will be cleared in the function.
   layer->UpdateDebugInfo(debug_info_.get());
 
+  if (inputs_.rare_inputs) {
+    layer->SetNonFastScrollableRegion(
+        inputs_.rare_inputs->non_fast_scrollable_region);
+    layer->SetCaptureBounds(inputs_.rare_inputs->capture_bounds);
+    layer->SetWheelEventHandlerRegion(inputs_.rare_inputs->wheel_event_region);
+  } else {
+    layer->ResetRareProperties();
+  }
+
   // Reset any state that should be cleared for the next update.
-  subtree_property_changed_ = false;
+  subtree_property_changed_.Write(*this) = false;
   inputs_.update_rect = gfx::Rect();
 }
 
@@ -1491,7 +1505,8 @@ void Layer::TakeCopyRequests(
   layer_tree_inputs_->copy_requests.clear();
 }
 
-std::unique_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
+std::unique_ptr<LayerImpl> Layer::CreateLayerImpl(
+    LayerTreeImpl* tree_impl) const {
   return LayerImpl::Create(tree_impl, inputs_.layer_id);
 }
 
@@ -1510,7 +1525,7 @@ void Layer::UpdateDrawsContent(bool has_drawable_content) {
     return;
 
   if (parent())
-    parent()->AddDrawableDescendants(draws_content ? 1 : -1);
+    mutable_parent()->AddDrawableDescendants(draws_content ? 1 : -1);
 
   draws_content_ = draws_content;
   SetPropertyTreesNeedRebuild();
@@ -1527,9 +1542,9 @@ bool Layer::Update() {
 }
 
 void Layer::SetSubtreePropertyChanged() {
-  if (subtree_property_changed_)
+  if (subtree_property_changed_.Read(*this))
     return;
-  subtree_property_changed_ = true;
+  subtree_property_changed_.Write(*this) = true;
   SetNeedsPushProperties();
 }
 
@@ -1540,12 +1555,21 @@ void Layer::SetMayContainVideo(bool yes) {
   SetNeedsPushProperties();
 }
 
+bool Layer::IsOwnerThread() const {
+  return !IsAttached() || layer_tree_host_->IsOwnerThread();
+}
+
 bool Layer::IsMainThread() const {
   return IsAttached() && layer_tree_host_->IsMainThread();
 }
 
-bool Layer::IsImplThread() const {
-  return IsAttached() && layer_tree_host_->IsImplThread();
+bool Layer::InProtectedSequence() const {
+  return IsAttached() && layer_tree_host_->InProtectedSequence();
+}
+
+void Layer::WaitForProtectedSequenceCompletion() const {
+  if (IsAttached())
+    layer_tree_host_->WaitForProtectedSequenceCompletion();
 }
 
 bool Layer::IsUsingLayerLists() const {
@@ -1619,7 +1643,7 @@ void Layer::AddDrawableDescendants(int num) {
   num_descendants_that_draw_content_ += num;
   SetNeedsCommit();
   if (parent())
-    parent()->AddDrawableDescendants(num);
+    mutable_parent()->AddDrawableDescendants(num);
 }
 
 void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {}

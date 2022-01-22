@@ -2292,9 +2292,13 @@ const FeatureEntry::FeatureVariation kDrawPredictedPointVariations[] = {
      kDrawPredictedPointExperiment2Points3Ms,
      base::size(kDrawPredictedPointExperiment2Points3Ms), nullptr}};
 
+const FeatureEntry::FeatureParam kFedCmVariationAutoSignin[] = {
+    {features::kFedCmAutoSigninFieldTrialParamName, "true"}};
 const FeatureEntry::FeatureParam kFedCmVariationInterception[] = {
     {features::kFedCmInterceptionFieldTrialParamName, "true"}};
 const FeatureEntry::FeatureVariation kFedCmFeatureVariations[] = {
+    {"- with FedCM auto-signin", kFedCmVariationAutoSignin,
+     base::size(kFedCmVariationAutoSignin), nullptr},
     {"- with FedCM HTTP filtering (very experimental)",
      kFedCmVariationInterception, base::size(kFedCmVariationInterception),
      nullptr}};
@@ -6499,10 +6503,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"productivity-launcher", flag_descriptions::kProductivityLauncherName,
      flag_descriptions::kProductivityLauncherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kProductivityLauncher)},
-    {"productivity-launcher-animation",
-     flag_descriptions::kProductivityLauncherAnimationName,
-     flag_descriptions::kProductivityLauncherAnimationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kProductivityLauncherAnimation)},
     {"shelf-drag-to-pin", flag_descriptions::kShelfDragToPinName,
      flag_descriptions::kShelfDragToPinDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDragUnpinnedAppToPin)},
@@ -6960,12 +6960,16 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(policy::features::kDefaultChromeAppsMigration)},
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
+    // TODO(b/214589754): revisit the need for this flag when the final design
+    // for HW encoding is implemented for lacros-chrome.
+    // TODO(b/180051795): remove kOsLinux when lacros-chrome switches to
+    // kOsCrOS.
     {"enable-vaapi-vp9-kSVC-encode-acceleration",
      flag_descriptions::kVaapiVP9kSVCEncoderName,
-     flag_descriptions::kVaapiVP9kSVCEncoderDescription, kOsCrOS,
+     flag_descriptions::kVaapiVP9kSVCEncoderDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(media::kVaapiVp9kSVCHWEncoding)},
-#endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 
     {"enable-global-vaapi-lock", flag_descriptions::kGlobalVaapiLockName,
      flag_descriptions::kGlobalVaapiLockDescription, kOsCrOS | kOsLinux,
@@ -7733,6 +7737,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLacrosNonSyncingProfilesDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kLacrosNonSyncingProfiles)},
 #endif
+
+#if BUILDFLAG(IS_ANDROID)
+    {"close-all-tabs-modal-dialog",
+     flag_descriptions::kCloseAllTabsModalDialogName,
+     flag_descriptions::kCloseAllTabsModalDialogDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCloseAllTabsModalDialog)},
+#endif  // BUILDFLAG(IS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

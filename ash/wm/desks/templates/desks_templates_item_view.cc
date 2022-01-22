@@ -16,11 +16,14 @@
 #include "ash/style/style_util.h"
 #include "ash/wm/desks/desks_textfield.h"
 #include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
+#include "ash/wm/desks/templates/desks_templates_grid_view.h"
 #include "ash/wm/desks/templates/desks_templates_icon_container.h"
+#include "ash/wm/desks/templates/desks_templates_metrics_util.h"
 #include "ash/wm/desks/templates/desks_templates_name_view.h"
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "base/strings/utf_string_conversions.h"
@@ -68,8 +71,8 @@ constexpr int kManagedStatusIndicatorSize = 20;
 
 constexpr char kAmPmTimeDateFmtStr[] = "%d:%02d%s, %d-%02d-%02d";
 
-// TODO(richui): This is a placeholder text format. Update this once specs are
-// done.
+// TODO(crbug.com/1268922): This is a placeholder text format. Update this once
+// specs are done.
 std::u16string GetTimeStr(base::Time timestamp) {
   base::Time::Exploded exploded_time;
   timestamp.LocalExplode(&exploded_time);
@@ -89,7 +92,7 @@ std::u16string GetTimeStr(base::Time timestamp) {
 }  // namespace
 
 DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
-    : desk_template_(desk_template) {
+    : desk_template_(desk_template->Clone()) {
   auto launch_template_callback = base::BindRepeating(
       &DesksTemplatesItemView::OnGridItemPressed, base::Unretained(this));
 
@@ -156,7 +159,6 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
           views::Builder<views::View>().CopyAddressTo(&hover_container_))
       .BuildChildren();
 
-  // TODO(crbug.com/1267470): Make `PillButton` work with views::Builder.
   launch_button_ = hover_container_->AddChildView(std::make_unique<PillButton>(
       base::BindRepeating(&DesksTemplatesItemView::OnGridItemPressed,
                           base::Unretained(this)),
@@ -174,7 +176,7 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
   hover_container_->SetUseDefaultFillLayout(true);
   hover_container_->SetVisible(false);
 
-  icon_container_view_->PopulateIconContainerFromTemplate(desk_template_);
+  icon_container_view_->PopulateIconContainerFromTemplate(desk_template_.get());
   icon_container_view_->SetVisible(true);
   card_container->SetFlexForView(spacer, 1);
 
@@ -216,6 +218,22 @@ void DesksTemplatesItemView::UpdateHoverButtonsVisibility(
 
 bool DesksTemplatesItemView::IsTemplateNameBeingModified() const {
   return name_view_->HasFocus();
+}
+
+void DesksTemplatesItemView::ReplaceTemplate(const std::string& uuid,
+                                             const std::u16string& new_name) {
+  UpdateTemplateName();
+  DesksTemplatesPresenter::Get()->DeleteEntry(uuid);
+  RecordReplaceTemplateHistogram();
+}
+
+void DesksTemplatesItemView::RevertTemplateName() {
+  views::FocusManager* focus_manager = GetFocusManager();
+  focus_manager->SetFocusedView(name_view_);
+  name_view_->SetText(desk_template_->template_name());
+  name_view_->SelectAll(true);
+
+  name_view_->OnContentsChanged();
 }
 
 void DesksTemplatesItemView::Layout() {
@@ -321,36 +339,49 @@ void DesksTemplatesItemView::OnViewBlurred(views::View* observed_view) {
 
   // Collapse the whitespace for the text first before comparing it or trying to
   // commit the name in order to prevent duplicate name issues.
-  name_view_->SetText(
+  const std::u16string user_entered_name =
       base::CollapseWhitespace(name_view_->GetText(),
-                               /*trim_sequences_with_line_breaks=*/false));
+                               /*trim_sequences_with_line_breaks=*/false);
+  name_view_->SetText(user_entered_name);
 
   // When committing the name, do not allow an empty template name. Also, don't
   // commit the name changes if the view was blurred from the user pressing the
   // escape key (identified by `should_commit_name_changes_`). Revert back to
   // the original name.
-  if (!should_commit_name_changes_ || name_view_->GetText().empty() ||
-      desk_template_->template_name() == name_view_->GetText()) {
+  if (!should_commit_name_changes_ || user_entered_name.empty() ||
+      desk_template_->template_name() == user_entered_name) {
     OnTemplateNameChanged(desk_template_->template_name());
     return;
   }
 
-  auto updated_template = desk_template_->Clone();
-  updated_template->set_template_name(name_view_->GetText());
-  OnTemplateNameChanged(updated_template->template_name());
-
-  // Calling `SaveOrUpdateDeskTemplate` will trigger rebuilding the desks
-  // templates grid views hierarchy which includes `this`. Use a post task as
-  // some other `ViewObserver`'s may still be using `this`.
-  // TODO(crbug.com/1266552): Remove the post task once saving and updating does
-  // not cause a `this` to be deleted anymore.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](std::unique_ptr<DeskTemplate> desk_template) {
-                       DesksTemplatesPresenter::Get()->SaveOrUpdateDeskTemplate(
-                           /*is_update=*/false, std::move(desk_template));
-                     },
-                     std::move(updated_template)));
+  // Check if template name exist, replace existing template if confirmed by
+  // user.
+  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+  OverviewGrid* overview_grid = Shell::Get()
+                                    ->overview_controller()
+                                    ->overview_session()
+                                    ->GetGridWithRootWindow(root_window);
+  auto* templates_grid_view = static_cast<DesksTemplatesGridView*>(
+      overview_grid->desks_templates_grid_widget()->GetContentsView());
+  for (DesksTemplatesItemView* template_item :
+       templates_grid_view->grid_items()) {
+    auto new_name = name_view_->GetText();
+    if (template_item != this &&
+        template_item->desk_template_->template_name() == new_name) {
+      // Show replace template dialog.
+      // If accepted, replace old template and commit name change.
+      DesksTemplatesDialogController::Get()->ShowReplaceDialog(
+          root_window, new_name,
+          base::BindOnce(
+              &DesksTemplatesItemView::ReplaceTemplate, base::Unretained(this),
+              template_item->desk_template_->uuid().AsLowercaseString(),
+              new_name),
+          base::BindOnce(&DesksTemplatesItemView::RevertTemplateName,
+                         base::Unretained(this)));
+      return;
+    }
+  }
+  UpdateTemplateName();
 }
 
 views::Button::KeyClickAction DesksTemplatesItemView::GetKeyClickActionForEvent(
@@ -361,6 +392,24 @@ views::Button::KeyClickAction DesksTemplatesItemView::GetKeyClickActionForEvent(
     return KeyClickAction::kNone;
 
   return Button::GetKeyClickActionForEvent(event);
+}
+
+void DesksTemplatesItemView::UpdateTemplateName() {
+  desk_template_->set_template_name(name_view_->GetText());
+  OnTemplateNameChanged(desk_template_->template_name());
+
+  // Calling `SaveOrUpdateDeskTemplate` will trigger rebuilding the desks
+  // templates grid views hierarchy which includes `this`. Use a post task as
+  // some other `ViewObserver`'s may still be using `this`.
+  // TODO(crbug.com/1266552): Remove the post task once saving and updating does
+  // not cause `this` to be deleted anymore.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](std::unique_ptr<DeskTemplate> desk_template) {
+                       DesksTemplatesPresenter::Get()->SaveOrUpdateDeskTemplate(
+                           /*is_update=*/true, std::move(desk_template));
+                     },
+                     std::move(desk_template_)));
 }
 
 void DesksTemplatesItemView::ContentsChanged(
@@ -512,7 +561,7 @@ void DesksTemplatesItemView::OnTemplateNameChanged(
   if (is_template_name_being_modified_)
     return;
 
-  name_view_->SetTextAndElideIfNeeded(new_name);
+  name_view_->SetText(new_name);
   name_view_->SetAccessibleName(new_name);
   SetAccessibleName(new_name);
 

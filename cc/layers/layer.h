@@ -85,7 +85,8 @@ struct CC_EXPORT LayerDebugInfo {
 // parent (or none at the root). Layers within the tree, other than the root
 // layer, are kept alive by that tree relationship, with refpointer ownership
 // from parents to children.
-class CC_EXPORT Layer : public base::RefCounted<Layer> {
+class CC_EXPORT Layer : public base::RefCounted<Layer>,
+                        public ProtectedSequenceSynchronizer {
  public:
   // An invalid layer id, as all layer ids are positive.
   enum LayerIdLabels {
@@ -98,6 +99,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   Layer(const Layer&) = delete;
   Layer& operator=(const Layer&) = delete;
 
+  // ProtectedSequenceSynchronizer implementation
+  bool IsOwnerThread() const override;
+  bool InProtectedSequence() const override;
+  void WaitForProtectedSequenceCompletion() const override;
+
   // A unique and stable id for the Layer. Ids are always positive.
   int id() const { return inputs_.layer_id; }
 
@@ -105,8 +111,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   Layer* RootLayer();
   // Returns a pointer to the direct ancestor of this layer if it exists,
   // or null.
-  Layer* parent() { return parent_; }
-  const Layer* parent() const { return parent_; }
+  Layer* mutable_parent() { return parent_.Write(*this); }
+  const Layer* parent() const { return parent_.Read(*this); }
   // Appends |child| to the list of children of this layer, and maintains
   // ownership of a reference to that |child|.
   void AddChild(scoped_refptr<Layer> child);
@@ -138,7 +144,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // safe to query from either the main or impl thread.
   bool IsAttached() const { return layer_tree_host_; }
   bool IsMainThread() const;
-  bool IsImplThread() const;
   bool IsUsingLayerLists() const;
 
   // Gets the LayerTreeHost that this layer is attached to, or null if not.
@@ -455,13 +460,30 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool GetUserScrollableHorizontal() const;
   bool GetUserScrollableVertical() const;
 
+  // Contains a set of input properties that are infrequently set on layers,
+  // generally speaking in <10% of use cases. When adding new values to this
+  // struct, consider the memory implications versus simply adding to Inputs.
+  struct RareInputs {
+    viz::RegionCaptureBounds capture_bounds;
+    Region non_fast_scrollable_region;
+    Region wheel_event_region;
+  };
+
+  RareInputs& EnsureRareInputs() {
+    if (!inputs_.rare_inputs)
+      inputs_.rare_inputs = std::make_unique<RareInputs>();
+
+    return *inputs_.rare_inputs;
+  }
+
   // Set or get an area of this layer within which initiating a scroll can not
   // be done from the compositor thread. Within this area, if the user attempts
   // to start a scroll, the events must be sent to the main thread and processed
   // there.
   void SetNonFastScrollableRegion(const Region& non_fast_scrollable_region);
   const Region& non_fast_scrollable_region() const {
-    return inputs_.non_fast_scrollable_region;
+    return inputs_.rare_inputs ? inputs_.rare_inputs->non_fast_scrollable_region
+                               : Region::Empty();
   }
 
   // Set or get the set of touch actions allowed across each point of this
@@ -475,9 +497,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   }
 
   // Set or get the region that should be used for capture.
-  void SetCaptureBounds(std::unique_ptr<viz::RegionCaptureBounds> bounds);
-  const viz::RegionCaptureBounds* capture_bounds() const {
-    return inputs_.capture_bounds.get();
+  void SetCaptureBounds(viz::RegionCaptureBounds bounds);
+  const viz::RegionCaptureBounds& capture_bounds() const {
+    return inputs_.rare_inputs ? inputs_.rare_inputs->capture_bounds
+                               : viz::RegionCaptureBounds::Empty();
   }
 
   // Set or get the set of blocking wheel rects of this layer. The
@@ -487,7 +510,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // can start scrolling.
   void SetWheelEventRegion(Region wheel_event_region);
   const Region& wheel_event_region() const {
-    return inputs_.wheel_event_region;
+    return inputs_.rare_inputs ? inputs_.rare_inputs->wheel_event_region
+                               : Region::Empty();
   }
 
   // For layer tree mode only.
@@ -656,7 +680,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Internal method to create the compositor thread type for this Layer.
   // Subclasses should override this method if they want to return their own
   // subclass of LayerImpl instead.
-  virtual std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
+  virtual std::unique_ptr<LayerImpl> CreateLayerImpl(
+      LayerTreeImpl* tree_impl) const;
 
   // Internal method to copy all state from this Layer to the compositor thread.
   // Should be overridden by any subclass that has additional state, to copy
@@ -732,9 +757,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // considered damaged and re-displayed to the user.
   void SetSubtreePropertyChanged();
   void ClearSubtreePropertyChangedForTesting() {
-    subtree_property_changed_ = false;
+    subtree_property_changed_.Write(*this) = false;
   }
-  bool subtree_property_changed() const { return subtree_property_changed_; }
+  bool subtree_property_changed() const {
+    return subtree_property_changed_.Read(*this);
+  }
 
   // Internal to property tree construction. Returns ElementListType::ACTIVE
   // as main thread layers do not have a pending/active tree split, and
@@ -790,7 +817,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   friend class TreeSynchronizer;
 
   Layer();
-  virtual ~Layer();
+  ~Layer() override;
 
   // These SetNeeds functions are in order of severity of update:
 
@@ -890,6 +917,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     explicit Inputs(int layer_id);
     ~Inputs();
 
+    int layer_id;
+
     // In layer list mode, only the root layer can have children.
     // TODO(wangxianzhu): Move this field into LayerTreeHost when we remove
     // layer tree mode.
@@ -898,8 +927,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     gfx::Rect update_rect;
     gfx::Size bounds;
 
-    int layer_id;
-
     // Hit testing depends on this bit.
     bool hit_testable : 1;
     bool contents_opaque : 1;
@@ -907,15 +934,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     bool is_drawable : 1;
     bool double_sided : 1;
 
-    // TODO(crbug.com/1264177): properties that are rarely set should be
-    // moved to a separate sub-struct.
     SkColor background_color;
-    Region non_fast_scrollable_region;
     TouchActionRegion touch_action_region;
-    std::unique_ptr<viz::RegionCaptureBounds> capture_bounds;
-    Region wheel_event_region;
 
     ElementId element_id;
+
+    std::unique_ptr<RareInputs> rare_inputs;
   };
 
   // These inputs are used in layer tree mode (ui compositor) only. Most of them
@@ -986,7 +1010,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
   };
 
-  raw_ptr<Layer> parent_;
+  ProtectedSequenceReadable<raw_ptr<Layer>> parent_;
 
   // Layer instances have a weak pointer to their LayerTreeHost.
   // This pointer value is nil when a Layer is not in a tree and is
@@ -1015,12 +1039,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Force use of and cache render surface.
   bool cache_render_surface_ : 1;
   bool force_render_surface_for_testing_ : 1;
-  bool subtree_property_changed_ : 1;
   bool may_contain_video_ : 1;
   bool has_transform_node_ : 1;
   bool has_clip_node_ : 1;
   // This value is valid only when LayerTreeHost::has_copy_request() is true
   bool subtree_has_copy_request_ : 1;
+  ProtectedSequenceWritable<bool> subtree_property_changed_;
 
   std::unique_ptr<LayerDebugInfo> debug_info_;
 

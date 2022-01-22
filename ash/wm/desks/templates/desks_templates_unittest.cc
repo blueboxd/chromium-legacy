@@ -554,7 +554,8 @@ TEST_F(DesksTemplatesTest, DialogSystemModal) {
 
   // Show one of the dialogs. Activating the dialog keeps us in overview mode.
   auto* dialog_controller = DesksTemplatesDialogController::Get();
-  dialog_controller->ShowReplaceDialog(Shell::GetPrimaryRootWindow(), u"Bento");
+  dialog_controller->ShowReplaceDialog(Shell::GetPrimaryRootWindow(), u"Bento",
+                                       base::DoNothing(), base::DoNothing());
   EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
   ASSERT_TRUE(GetOverviewSession());
 
@@ -1653,54 +1654,7 @@ TEST_F(DesksTemplatesTest, TemplateNameChangeAborted) {
   EXPECT_EQ(base::UTF8ToUTF16(template_name), name_view->GetText());
 }
 
-// When template names exceed the width of the textfield, we elide the text
-// (truncate the string add "..." to the end) for display purposese. The full
-// template name is still stored as the `full_text()`. This test checks to
-// ensure that the elided text is displayed when the textfield is not focused,
-// but the full text is populated into the textfield when it is focused.
-TEST_F(DesksTemplatesTest, TemplateNameEllipsis) {
-  auto test_window = CreateAppWindow();
-
-  const std::string template_name = "desk template name that is very long";
-  AddEntry(base::GUID::GenerateRandomV4(), template_name, base::Time::Now());
-
-  OpenOverviewAndShowTemplatesGrid();
-  DesksTemplatesNameView* name_view =
-      GetItemViewFromTemplatesGrid(0)->name_view();
-
-  // Verify that the template name field has an ellipsis.
-  EXPECT_NE(base::UTF8ToUTF16(template_name), name_view->GetText());
-  EXPECT_NE(std::string::npos, name_view->GetText().find(u"\x2026"));
-
-  // Verify that the full text stored by the textfield is the `template_name`.
-  EXPECT_EQ(base::UTF8ToUTF16(template_name),
-            DesksTemplatesNameViewTestApi(name_view).full_text());
-
-  // Test that when we click on and focus the template name, that the ellipsized
-  // text is replaced with the full template name. Also tests that it's hidden
-  // again when we lose focus.
-  ClickOnView(name_view);
-  EXPECT_TRUE(name_view->HasFocus());
-  EXPECT_EQ(base::UTF8ToUTF16(template_name), name_view->GetText());
-  SendKey(ui::VKEY_RETURN);
-  EXPECT_FALSE(name_view->HasFocus());
-  EXPECT_NE(base::UTF8ToUTF16(template_name), name_view->GetText());
-  EXPECT_NE(std::string::npos, name_view->GetText().find(u"\x2026"));
-
-  // Test that adding onto a long `template_name` will still update and
-  // ellipsize correctly.
-  ClickOnView(name_view);
-  SendKey(ui::VKEY_RIGHT);
-  SendKey(ui::VKEY_A);
-  SendKey(ui::VKEY_B);
-  SendKey(ui::VKEY_RETURN);
-  WaitForDesksTemplatesUI();
-  name_view = GetItemViewFromTemplatesGrid(0)->name_view();
-  EXPECT_EQ(base::UTF8ToUTF16(template_name) + u"ab",
-            DesksTemplatesNameViewTestApi(name_view).full_text());
-}
-
-// Tesets that Showing the overview records to the TemplateGrid histogram.
+// Tests that showing the overview records to the TemplateGrid histogram.
 TEST_F(DesksTemplatesTest, RecordDesksTemplateGridShows) {
   // Make sure that LoadTemplateHistogram is recorded.
   base::HistogramTester histogram_tester;
@@ -2160,17 +2114,31 @@ TEST_F(DesksTemplatesTest, LayoutItemsInPortrait) {
 }
 
 // Tests record metrics when current template being replaced.
-TEST_F(DesksTemplatesTest, ReplaceTemplateRecordMetrics) {
+TEST_F(DesksTemplatesTest, ReplaceTemplate) {
   base::HistogramTester histogram_tester;
 
   UpdateDisplay("800x600,800x600");
 
-  ToggleOverview();
-  ASSERT_TRUE(GetOverviewSession());
+  const base::GUID uuid_1 = base::GUID::GenerateRandomV4();
+  const std::u16string name_1 = u"template_1";
+  AddEntry(uuid_1, "template_1", base::Time::Now());
 
+  const base::GUID uuid_2 = base::GUID::GenerateRandomV4();
+  const std::u16string name_2 = u"template_2";
+  AddEntry(uuid_2, "template_2", base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
+      /*grid_item_index=*/0);
   // Show replace dialogs.
   auto* dialog_controller = DesksTemplatesDialogController::Get();
-  dialog_controller->ShowReplaceDialog(Shell::GetPrimaryRootWindow(), u"Bento");
+  auto callback = base::BindLambdaForTesting([&]() {
+    item_view->ReplaceTemplate(uuid_1.AsLowercaseString(), name_1);
+  });
+
+  dialog_controller->ShowReplaceDialog(Shell::GetPrimaryRootWindow(), u"Bento",
+                                       callback, base::DoNothing());
   EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
   ASSERT_TRUE(GetOverviewSession());
 
@@ -2180,6 +2148,14 @@ TEST_F(DesksTemplatesTest, ReplaceTemplateRecordMetrics) {
       ->AsDialogDelegate()
       ->AcceptDialog();
 
+  // Only one template left.
+  EXPECT_EQ(1ul, desk_model()->GetEntryCount());
+  // The Template has been replaced.
+  DesksTemplatesNameView* name_view =
+      GetItemViewFromTemplatesGrid(0)->name_view();
+  EXPECT_EQ(name_1, name_view->GetText());
+  std::vector<DeskTemplate*> entries = GetAllEntries();
+  EXPECT_EQ(uuid_2, entries[0]->uuid());
   // Assert metrics being recorded.
   histogram_tester.ExpectTotalCount(kReplaceTemplateHistogramName, 1);
 

@@ -7,7 +7,6 @@
 #include <memory>
 #include <dlfcn.h>
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/memory/shared_memory_mapping.h"
@@ -379,7 +378,7 @@ void VTVideoEncodeAccelerator::SetAdjustedConstantBitrate(int32_t bitrate) {
   encoder_set_bitrate_ = bitrate;
   video_toolbox::SessionPropertySetter session_property_setter(
       compression_session_);
-  bool rv = session_property_setter.Set(
+  [[maybe_unused]] bool rv = session_property_setter.Set(
       kVTCompressionPropertyKey_AverageBitRate, encoder_set_bitrate_);
   rv &= session_property_setter.Set(
       kVTCompressionPropertyKey_DataRateLimits,
@@ -387,7 +386,6 @@ void VTVideoEncodeAccelerator::SetAdjustedConstantBitrate(int32_t bitrate) {
           encoder_set_bitrate_ / kBitsPerByte, 1.0f));
   DLOG_IF(ERROR, !rv)
       << "Couldn't change bitrate parameters of encode session.";
-  ALLOW_UNUSED_LOCAL(rv);
 }
 
 void VTVideoEncodeAccelerator::SetVariableBitrate(const Bitrate& bitrate) {
@@ -396,7 +394,7 @@ void VTVideoEncodeAccelerator::SetVariableBitrate(const Bitrate& bitrate) {
 
   video_toolbox::SessionPropertySetter session_property_setter(
       compression_session_);
-  bool rv =
+  [[maybe_unused]] bool rv =
       session_property_setter.Set(kVTCompressionPropertyKey_AverageBitRate,
                                   static_cast<int32_t>(bitrate.target()));
   rv &= session_property_setter.Set(kVTCompressionPropertyKey_DataRateLimits,
@@ -404,7 +402,6 @@ void VTVideoEncodeAccelerator::SetVariableBitrate(const Bitrate& bitrate) {
                                         bitrate.peak() / kBitsPerByte, 1.0f));
   DLOG_IF(ERROR, !rv)
       << "Couldn't change bitrate parameters of encode session.";
-  ALLOW_UNUSED_LOCAL(rv);
 }
 
 void VTVideoEncodeAccelerator::DestroyTask() {

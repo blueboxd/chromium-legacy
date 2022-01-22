@@ -200,7 +200,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kDawn2dCanvas;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebviewAccelerateSmallCanvases;
 
-BLINK_COMMON_EXPORT extern const base::Feature kSoftwareCanvas2DOnReadback;
+BLINK_COMMON_EXPORT extern const base::Feature kCanvas2dStaysGPUOnReadback;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDiscardCodeCacheAfterFirstUse;
 
@@ -586,6 +586,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kCompositedCaret;
 // Allows pages that support App Install Banners to stay eligible for the
 // back/forward cache.
 BLINK_COMMON_EXPORT extern const base::Feature kBackForwardCacheAppBanner;
+
+BLINK_COMMON_EXPORT extern const base::Feature kDefaultStyleSheetsEarlyInit;
 
 }  // namespace features
 }  // namespace blink

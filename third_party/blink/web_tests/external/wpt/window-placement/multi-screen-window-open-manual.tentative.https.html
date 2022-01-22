@@ -8,9 +8,10 @@
 <link rel="help" href="https://webscreens.github.io/window-placement/">
 This test uses multi-screen details to open a popup window on each screen.<br>
 It runs automated or manually with `wpt serve` and a compatible browser.<br><br>
-<button id="setUpButton">Click to request screen details</button>
+<button id="setUpButton">Request screen details</button>
 <ul id="popupButtons"></ul>
-<button id="cleanUpButton">Click to close any open popups</button>
+<button id="cleanUpButton">Close any open popups</button><br>
+<input id="autoCleanUp" type="checkbox" checked=true>Auto-close popups</input>
 <ul id="logger"></ul>
 <p>
 <script src="/resources/testdriver.js"></script>
@@ -32,21 +33,21 @@ cleanUpButton.addEventListener('click', async () => {
   popups.forEach(p => p.close());
 });
 
-async function testPopupOnScreen(popupTest, screen, openedWithAutomation) {
+async function testPopupOnScreen(popupTest, screen) {
   // Show a popup child window on the associated screen.
-  const left = screen.availLeft + screen.availWidth / 2 - 150;
-  const top = screen.availTop + screen.availHeight / 2 - 50;
+  const left = screen.availLeft + Math.floor(screen.availWidth / 2) - 150;
+  const top = screen.availTop + Math.floor(screen.availHeight / 2) - 50;
   log(`Opening a popup on '${screen.label}' at (${left}, ${top})`);
   let popup = window.open(
       '/resources/blank.html', '',
       `left=${left},top=${top},width=300,height=100`);
   popups.push(popup);
-  if (openedWithAutomation)
+  if (autoCleanUp.checked)
     popupTest.add_cleanup(popup.close);
 
   // Window.open() synchronously returns a Window with estimated screenX|Y.
   // Initial `screenX` and `screenY` values should match `left` and `top`.
-  log(`<div style="margin-left: 40px">Initial bounds:
+  log(`<div style='margin-left: 40px'>Initial bounds:
          (${popup.screenX}, ${popup.screenY})
        </div>`);
   assert_equals(popup.screenX, left);
@@ -66,7 +67,7 @@ async function testPopupOnScreen(popupTest, screen, openedWithAutomation) {
   popup.document.write(`Expected: (${left}, ${top}) <br> \
        Initial: (${popup.initialScreenX}, ${popup.initialScreenY}) <br> \
        Resolved: (${popup.screenX}, ${popup.screenY}) `);
-  log(`<div style="margin-left: 40px">Resolved bounds:
+  log(`<div style='margin-left: 40px'>Resolved bounds:
          (${popup.screenX}, ${popup.screenY})
        </div>`);
   // Window.screenX|Y may be zero, if the user agent wishes to hide information
@@ -108,21 +109,19 @@ promise_test(async setUpTest => {
   for (const s of screenDetails.screens) {
     promise_test(async popupTest => {
       const button = document.createElement('button');
-      button.innerHTML = `Click to open a popup on '${s.label}'`;
+      button.innerHTML = `Open a popup on '${s.label}'`;
       const entry = document.createElement('li');
       entry.appendChild(button);
       popupButtons.appendChild(entry);
       const popupWatcher = new EventWatcher(popupTest, button, ['click']);
       const popupClick = popupWatcher.wait_for('click');
-      let openedWithAutomation = true;
       try {  // Support manual testing where test_driver is not running.
         await test_driver.click(button);
       } catch {
-        openedWithAutomation = false;
       }
       await popupClick;
       button.disabled = true;
-      await testPopupOnScreen(popupTest, s, openedWithAutomation);
+      await testPopupOnScreen(popupTest, s);
     }, `Open a popup on '${s.label}'`);
   }
 }, 'Use multi-screen details to open a popup window on each screen');

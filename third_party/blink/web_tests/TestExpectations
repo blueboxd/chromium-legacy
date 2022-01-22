@@ -4195,7 +4195,6 @@ crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-enco
 crbug.com/626703 external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/981970 external/wpt/fetch/http-cache/split-cache.html [ Skip ]
 crbug.com/626703 external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
-crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Crash Skip Timeout ]
 crbug.com/626703 external/wpt/html/browsers/history/joint-session-history/joint-session-history-remove-iframe.html [ Skip Timeout ]
 crbug.com/626703 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fill-stroke/paint-order-001.tentative.html [ Failure ]
@@ -4345,6 +4344,8 @@ crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-scrollintoview-nest
 crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-smooth-positions.html [ Skip ]
 crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-subframe-root.html [ Skip ]
 crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-subframe-window.html [ Skip ]
+
+crbug.com/1289222 external/wpt/css/cssom-view/scroll-behavior-smooth-navigation.html [ Skip Timeout ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
 crbug.com/809935 external/wpt/css/css-fonts/variations/font-style-interpolation.html [ Skip Timeout ]
@@ -6864,7 +6865,8 @@ crbug.com/1093027 http/tests/credentialmanager/credentialscontainer-create-with-
 # The next test was originally skipped on mac for lack of support (crbug.com/613672). It is now skipped everywhere due to flakiness.
 crbug.com/1229708 fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
 crbug.com/1229711 [ Linux ] http/tests/devtools/console-resource-errors.js [ Failure Pass ]
-crbug.com/1229725 http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Crash Failure Pass ]
+# pause-on-elements-panel.js is marked as Slow, so it's required to also be Skipped due to it Timing out.
+crbug.com/1229725 http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Crash Timeout Skip Failure Pass ]
 crbug.com/1085647 external/wpt/pointerevents/compat/pointerevent_mouse-pointer-preventdefault.html [ Pass Timeout ]
 crbug.com/1087232 http/tests/devtools/network/network-worker-fetch-blocked.js [ Failure Pass ]
 crbug.com/1229801 http/tests/devtools/elements/css-rule-hover-highlights-selectors.js [ Failure Pass ]

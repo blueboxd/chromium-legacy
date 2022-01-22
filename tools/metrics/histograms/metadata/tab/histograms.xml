@@ -112,6 +112,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Tab.CloseAllTabsDialog.ClosedAllTabs{CloseAllTabsDialogType}"
+    units="Boolean" expires_after="2022-06-30">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <summary>
+    Records the whether the &quot;Close all tabs&quot; action was taken when
+    close all tabs confirmation dialog was shown through App Menu &gt; Close all
+    tabs. This is only recorded for Android. {CloseAllTabsDialogType}
+  </summary>
+  <token key="CloseAllTabsDialogType">
+    <variant name=".CannotUndoWarning"
+        summary="A warning about being unable to undo close all tabs is shown
+                 in addition to the default message. The undo close all
+                 action cannot be undone when using a custom homepage."/>
+    <variant name=".Default"
+        summary="The default close all tabs message is shown alerting users
+                 that this action will close all tabs and lose any unsaved
+                 data."/>
+    <variant name=".NoWarningImmediateExit"
+        summary="The default message is shown, but no additional warning
+                 about being unable to undo close all tabs is shown. Undo
+                 will not be possible due to having a custom homepage."/>
+  </token>
+</histogram>
+
 <histogram name="Tab.Count.Guest" units="units" expires_after="2022-06-19">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
@@ -2303,6 +2329,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Tabs.TabSearch.NumMediaTabsOnOpen" units="tabs"
+    expires_after="2022-09-27">
+  <owner>elainechien@chromium.org</owner>
+  <owner>romanarora@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <owner>yuhengh@chromium.org</owner>
+  <summary>
+    Tab Search is a feature that allows users to efficiently navigate, search,
+    and interact with their open and recently closed tabs. This records the
+    number of tabs using audio or video in the payload Tab Search receives when
+    it is first opened. This metric will be zero if Media Tabs are not enabled.
+  </summary>
+</histogram>
+
 <histogram name="Tabs.TabSearch.NumTabsClosedPerInstance" units="tabs"
     expires_after="2022-06-05">
   <owner>tluk@chromium.org</owner>
@@ -2407,6 +2448,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Tabs.TabSearch.WebUI.CloseMediaTabAction"
+    enum="BooleanTabSearchWithSearchQuery" expires_after="2022-09-27">
+  <owner>elainechien@chromium.org</owner>
+  <owner>romanarora@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <owner>yuhengh@chromium.org</owner>
+  <summary>
+    Tab Search is a feature that allows users to efficiently navigate, search,
+    and interact with their open and recently closed tabs. This metric will be
+    updated when the user uses Tab Search to close a tab in the Audio and Video
+    section and will track whether this action was taken from a filtered search
+    results list or the default unfiltered list.
+  </summary>
+</histogram>
+
 <histogram name="Tabs.TabSearch.WebUI.IndexOf{Action}In{State}List"
     units="tabs" expires_after="2022-03-27">
   <owner>tluk@chromium.org</owner>
@@ -2490,6 +2547,22 @@ chromium-metrics-reviews@google.com.
     The time taken to run the search algorithm. The algorithm takes an
     unfiltered list of items and user search query as inputs, then generate a
     list of filtered items as output. Recorded after the measurement ends.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.TabSearch.WebUI.SwitchToMediaTabAction"
+    enum="BooleanTabSearchWithSearchQuery" expires_after="2022-09-27">
+  <owner>elainechien@chromium.org</owner>
+  <owner>romanarora@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <owner>yuhengh@chromium.org</owner>
+  <summary>
+    Tab Search is a feature that allows users to efficiently navigate, search,
+    and interact with their open and recently closed tabs. This metric will be
+    updated when the user uses Tab Search to switch to a tab in the Audio and
+    Video section and will track whether this action was taken from a filtered
+    search results list or the default unfiltered list.
   </summary>
 </histogram>
 

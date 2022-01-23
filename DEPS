@@ -245,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'cc5601659563d302e8de4abc5ea12cddc40b3f3e',
+  'skia_revision': 'c6237f0de006a21572c681f5dd3b6a35bbad0d77',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '16ea6420f496fe6cbee469057c65c2ff4910610b',
+  'dawn_revision': '9a68ad594f256d303cad9a4a52cc9beb806848d3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -747,7 +747,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'JLE6IkAcsTsFX1ea_8XAypTg5fTTtfuiNuKnMtjUn-IC',
+          'version': '3QyhrPJDAAb1WWwDdUxLnPPARQihFWxYzss8bzBlgcEC',
         },
       ],
       'dep_type': 'cipd',
@@ -769,7 +769,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'zvcCU1VxJ42NtMFsDGV5APkln9rQZWGYW6q-dw11oJgC',
+          'version': 'mpLYpGCOflqy9qLQNLvjFbUxUuByypGR7ye_UVGGDwwC',
         },
       ],
       'dep_type': 'cipd',
@@ -1743,7 +1743,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@cb9faae69c3c3640915e1f6a04d4280e22f34139',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1af851b0cd925495360ea5392ba3652427107a97',
     'condition': 'checkout_src_internal',
   },
 
@@ -1795,7 +1795,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'oyKdwbpzoEZmo5QiaSdrBxp67BC5oDbebrv9qJNc-rcC',
+        'version': 'tUe0aQN_w404HE0W_TYvffa34UWdPvfmcVGEeIaj78MC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

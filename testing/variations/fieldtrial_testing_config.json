@@ -691,42 +691,6 @@
             ]
         }
     ],
-    "AssistMultiWord": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledWithGboard_20211005",
-                    "params": {
-                        "group": "gboard"
-                    },
-                    "enable_features": [
-                        "AssistMultiWord"
-                    ]
-                },
-                {
-                    "name": "EnabledWithGboardRelaxedA_20211005",
-                    "params": {
-                        "group": "gboard_relaxed_a"
-                    },
-                    "enable_features": [
-                        "AssistMultiWord"
-                    ]
-                },
-                {
-                    "name": "EnabledWithGboardRelaxedB_20211005",
-                    "params": {
-                        "group": "gboard_relaxed_b"
-                    },
-                    "enable_features": [
-                        "AssistMultiWord"
-                    ]
-                }
-            ]
-        }
-    ],
     "AssistPersonalInfo": [
         {
             "platforms": [
@@ -1916,24 +1880,6 @@
             ]
         }
     ],
-    "ChromeOSReinstallApps": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "enabled0DayDelay",
-                    "params": {
-                        "interaction_grace_hours": "0"
-                    },
-                    "enable_features": [
-                        "EnableAppReinstallZeroState"
-                    ]
-                }
-            ]
-        }
-    ],
     "ChromeOSSharingHub": [
         {
             "platforms": [
@@ -2591,6 +2537,21 @@
                     "name": "Enabled_20210713",
                     "enable_features": [
                         "CellularUseAttachApn"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CrosDeviceActiveCounting": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DeviceActiveClient"
                     ]
                 }
             ]

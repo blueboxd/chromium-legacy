@@ -27,13 +27,19 @@ ThreadGroupNativeMac::ThreadGroupNativeMac(
 ThreadGroupNativeMac::~ThreadGroupNativeMac() {}
 
 void ThreadGroupNativeMac::StartImpl() {
-  dispatch_queue_attr_t attributes = dispatch_queue_attr_make_with_qos_class(
-      DISPATCH_QUEUE_CONCURRENT,
-      priority_hint_ == ThreadPriority::NORMAL ? QOS_CLASS_USER_INITIATED
-                                               : QOS_CLASS_BACKGROUND,
-      /*relative_priority=*/-1);
-  queue_.reset(dispatch_queue_create("org.chromium.base.ThreadPool.ThreadGroup",
-                                     attributes));
+
+  if (@available(macOS 10.10, *)) {
+    dispatch_queue_attr_t attributes = dispatch_queue_attr_make_with_qos_class(
+        DISPATCH_QUEUE_CONCURRENT,
+        priority_hint_ == ThreadPriority::NORMAL ? QOS_CLASS_USER_INITIATED
+                                                 : QOS_CLASS_BACKGROUND,
+        /*relative_priority=*/-1);
+    queue_.reset(dispatch_queue_create("org.chromium.base.ThreadPool.ThreadGroup",
+                                       attributes));
+  } else {
+    queue_.reset(dispatch_queue_create("org.chromium.base.ThreadPool.ThreadGroup",
+                                       DISPATCH_QUEUE_CONCURRENT));    
+  } 
   group_.reset(dispatch_group_create());
 }
 

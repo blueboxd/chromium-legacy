@@ -11,6 +11,8 @@
 
 #include <tuple>
 
+#include <dlfcn.h>
+
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -137,7 +139,12 @@ bool IsAppAtPathAWebBrowser(NSString* app_path) {
   if (!activities)
     return false;
 
-  return [activities containsObject:NSUserActivityTypeBrowsingWeb];
+  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  if(NSUserActivityTypeBrowsingWebStr) {
+    return [activities containsObject:*NSUserActivityTypeBrowsingWebStr];
+  } else {
+    return false;
+  }
 }
 
 // Restart the Dock process by sending it a SIGTERM.

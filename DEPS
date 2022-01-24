@@ -245,15 +245,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'c6237f0de006a21572c681f5dd3b6a35bbad0d77',
+  'skia_revision': '67f92df4b0598fb2a8fd5a43dac820662f9242a7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '576f54907b20c3167d4ded4b4e8c81b15c5d9e26',
+  'v8_revision': '7ab25aaf576ddf1ef877c001d2ca3c3463d25949',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '0f00fbae2cdaf0813816bda44ac10d37ccba7a4b',
+  'angle_revision': '64c49da36fc2aeef95259865c77392f6b4dd6a60',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -292,7 +292,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '0b635b1eb2a5a648627284de946cd9364929e4d4',
+  'freetype_revision': '02fa26f4cdb6b2da96afddb56d4482c67ba6ff78',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -360,7 +360,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '9a68ad594f256d303cad9a4a52cc9beb806848d3',
+  'dawn_revision': '25fe51a2ae1cf99027ee7e815c11c26bb289524b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -404,7 +404,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libcxxabi_revision':    'fd0ef6db30debb29f90f276e9aa30db5c61fd93b',
+  'libcxxabi_revision':    '579d5e5496d1beda3c91c18a3f6d0260f9c4ef0d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1069,7 +1069,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '4068ef45c64529d00bb3fb1140efc5ed06c7c5eb',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '19c4cef848d1884c48db070d583fd24aaffedd1c',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1673,7 +1673,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '7c696b0954c5a8a2ecbd3ee7517d92dc8b1c22a1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'c0a4316825a8a5ebffa60713e32660f4c7ffb336',
+    Var('webrtc_git') + '/src.git' + '@' + 'd5f414cee1ef51d774b364f28fdc4dea71301eba',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1743,7 +1743,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@96d87b52f0d3f19758ed2f314f2663247cc27ff7',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@355073c06fc5cf9990f94e6d90a856eece655edb',
     'condition': 'checkout_src_internal',
   },
 
@@ -1795,7 +1795,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'tUe0aQN_w404HE0W_TYvffa34UWdPvfmcVGEeIaj78MC',
+        'version': '23G-U0JOFWIgkYN22ZC9Pc914ruugYLjw46-mPSJb9YC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

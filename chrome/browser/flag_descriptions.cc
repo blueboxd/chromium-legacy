@@ -1931,6 +1931,11 @@ const char kPasswordsAccountStorageRevisedOptInFlowDescription[] =
     "Enables the revised opt-in flow for the account-scoped passwords storage "
     "during first-time save.";
 
+const char kPasswordDomainCapabilitiesFetchingName[] =
+    "Fetch credentials' password change capabilities";
+const char kPasswordDomainCapabilitiesFetchingDescription[] =
+    "Fetches credentials' password change capabilities from the server.";
+
 const char kPasswordScriptsFetchingName[] = "Fetch password scripts";
 const char kPasswordScriptsFetchingDescription[] =
     "Fetches scripts for password change flows.";
@@ -3973,6 +3978,10 @@ const char kAppDiscoveryRemoteUrlSearchDescription[] =
 const char kArcAccountRestrictionsName[] = "Enable ARC account restrictions";
 const char kArcAccountRestrictionsDescription[] =
     "ARC account restrictions feature for multi-profile account consistency";
+
+const char kArcCompatSnapName[] = "Enable ARC compatible window snapping";
+const char kArcCompatSnapDesc[] =
+    "Allow snapping ARC resize-locked windows with the compatible size.";
 
 const char kArcCustomTabsExperimentName[] =
     "Enable Custom Tabs experiment for ARC";

@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "components/network_time/historical_latencies_container.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
@@ -162,6 +163,8 @@ class NetworkTimeTracker {
 
   void OverrideNonceForTesting(uint32_t nonce);
 
+  void OverrideUMANoiseFactorForTesting(double noise_factor);
+
   base::TimeDelta GetTimerDelayForTesting() const;
 
  private:
@@ -244,6 +247,15 @@ class NetworkTimeTracker {
 
   // Callbacks to run when the in-progress time fetch completes.
   std::vector<base::OnceClosure> fetch_completion_callbacks_;
+
+  // Computes statistics over a sliding window of the most recent fetch
+  // latencies.
+  HistoricalLatenciesContainer historical_latencies_;
+
+  // Clock skews reported to UMA will have ±`uma_noise_factor_` noise (relative
+  // to the clock skew itself) for privacy reasons. For example, specifying 0.1
+  // here means ±10% noise.
+  double uma_noise_factor_ = 0.1;
 
   base::ThreadChecker thread_checker_;
 };

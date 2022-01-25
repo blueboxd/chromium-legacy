@@ -186,6 +186,13 @@ bool CheckSecurityRequirementsBeforeRequest(
   // The API is not exposed in non-secure context.
   SECURITY_CHECK(resolver->GetExecutionContext()->IsSecureContext());
 
+  if (resolver->DomWindow()->GetFrame()->IsInFencedFrameTree()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotAllowedError,
+        "The credential operation is not allowed in a fenced frame tree."));
+    return false;
+  }
+
   switch (required_origin_type) {
     case RequiredOriginType::kSecure:
       // This has already been checked.
@@ -1195,7 +1202,8 @@ ScriptPromise CredentialsContainer::get(
         // TODO(yigu): Ideally the logic should be handled in CredentialManager
         // via Get. However currently it's only for password management and we
         // should refactor the logic to make it generic.
-        if (!RuntimeEnabledFeatures::WebIDEnabled()) {
+        if (!RuntimeEnabledFeatures::WebIDEnabled(
+                ExecutionContext::From(script_state))) {
           resolver->Reject(MakeGarbageCollected<DOMException>(
               DOMExceptionCode::kNotSupportedError, "Invalid provider entry"));
           return promise;

@@ -106,6 +106,8 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
   void OnRevokeResponse(IdpNetworkRequestManager::RevokeResponse response);
   void CompleteRevokeRequest(blink::mojom::RevokeStatus status);
 
+  void CleanUp();
+
   std::unique_ptr<IdpNetworkRequestManager> CreateNetworkManager(
       const GURL& provider);
   std::unique_ptr<IdentityRequestDialogController> CreateDialogController();
@@ -170,7 +172,10 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
   // mediation flow.
   std::string account_id_;
   std::string id_token_;
-  base::TimeTicks id_token_request_time_;
+  base::TimeTicks start_time_;
+  base::TimeTicks show_accounts_dialog_time_;
+  base::TimeTicks select_account_time_;
+  base::TimeTicks id_token_response_time_;
   blink::mojom::FederatedAuthRequest::RequestIdTokenCallback
       auth_request_callback_;
 

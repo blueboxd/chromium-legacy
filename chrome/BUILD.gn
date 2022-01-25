@@ -457,6 +457,9 @@ if (is_win) {
     } else {
       args += [ "--keystone=0" ]
     }
+    if (enable_chromium_updater) {
+      args += [ "--privileged_helper_id=$privileged_helper_name" ]
+    }
   }
 
   mac_app_bundle("chrome_app") {
@@ -505,6 +508,10 @@ if (is_win) {
       # This is a bit of a hack, since GN deliberately terminates its search
       # for runtime_deps at create_bundle nodes (https://crbug.com/1010347).
       data_deps = [ ":chrome_framework" ]
+    }
+
+    if (enable_chromium_updater) {
+      deps += [ ":chromium_updater_privileged_helper" ]
     }
   }
 
@@ -627,6 +634,17 @@ if (is_win) {
       # this dependency directly copies the file into the framework's
       # resources directory.
       public_deps += [ ":chrome_framework_widevine_signature" ]
+    }
+  }
+
+  if (enable_chromium_updater) {
+    bundle_data("chromium_updater_privileged_helper") {
+      sources = [ "$root_out_dir/$privileged_helper_name" ]
+      outputs = [
+        "{{bundle_contents_dir}}/Library/LaunchServices/{{source_file_part}}",
+      ]
+
+      public_deps = [ "//chrome/updater/mac:privileged_helper" ]
     }
   }
 
@@ -1874,9 +1892,11 @@ if (is_linux || is_chromeos) {
         binary = "$root_out_dir/liboptimization_guide_internal.so"
         if (current_cpu == "x86") {
           # GYP used "ia32" so keep that naming for back-compat.
-          symbol_file = "$root_out_dir/optimization_guide.breakpad.ia32"
+          symbol_file =
+              "$root_out_dir/optimization_guide_internal.breakpad.ia32"
         } else {
-          symbol_file = "$root_out_dir/optimization_guide.breakpad.$current_cpu"
+          symbol_file =
+              "$root_out_dir/optimization_guide_internal.breakpad.$current_cpu"
         }
 
         deps = [ "//components/optimization_guide/internal:optimization_guide_internal" ]

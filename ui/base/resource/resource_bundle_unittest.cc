@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <string>
 
 #include "base/base_paths.h"
 #include "base/big_endian.h"
@@ -65,12 +66,10 @@ constexpr char kLottieData[] = "LOTTIEtest";
 // Mock of |lottie::ParseLottieAsStillImage|. Checks that |kLottieData| is
 // properly stripped of the "LOTTIE" prefix.
 gfx::ImageSkiaRep ParseLottieAsStillImageForTesting(
-    const base::RefCountedString& bytes_string) {
-  auto expected_bytes_string = base::MakeRefCounted<base::RefCountedString>();
-  expected_bytes_string->data() = "test";
-  CHECK(bytes_string.Equals(expected_bytes_string));
+    const std::string& bytes_string) {
+  CHECK_EQ("test", bytes_string);
 
-  const int kDimension = 16;
+  constexpr int kDimension = 16;
   return gfx::ImageSkiaRep(gfx::Size(kDimension, kDimension), 0.f);
 }
 #endif

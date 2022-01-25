@@ -3117,6 +3117,14 @@
     "expiry_milestone": 102
   },
   {
+    "name": "fast-pair-low-power",
+    "owners": [
+      "//ash/quick_pair/OWNERS",
+      "jonmann@chromium.org"
+    ],
+    "expiry_milestone": 102
+  },
+  {
     "name": "fast-pair-software-scanning",
     "owners": [ "//ash/quick_pair/OWNERS", "jonmann@chromium.org" ],
     "expiry_milestone": 102
@@ -3333,11 +3341,6 @@
     "name": "frame-throttle-fps",
     "owners":[ "yjliu", "chromeos-perf@google.com"],
     "expiry_milestone": 95
-  },
-  {
-    "name": "full-restore",
-    "owners": [ "dominickn", "nancylingwang", "sammiequon", "xdai" ],
-    "expiry_milestone": 99
   },
   {
     "name": "full-restore-for-lacros",
@@ -3676,6 +3679,15 @@
     "expiry_milestone": 130
   },
   {
+    "name": "lacros-availability-policy",
+    "owners": [ "hidehiko", "lacros-team@google.com" ],
+    // Once Lacros is launched, and all users switch to use lacros fully,
+    // this flag can be removed. Until then, this absolutely must not expire.
+    // We do not yet have a launch milestone.
+    // TODO(https://crbug.com/1148474, https://crbug.com/1286340).
+    "expiry_milestone": 130
+  },
+  {
     "name": "lacros-non-syncing-profiles",
     "owners": [ "jkrcal", "droger", "chrome-signin@google.com" ],
     // Once Lacros is launched, this flag can be removed. Until then, this
@@ -3874,6 +3886,11 @@
     "name": "messages-for-android-infrastructure",
     "owners": [ "pavely", "lazzzis" ],
     "expiry_milestone": 102
+  },
+  {
+    "name": "messages-for-android-instant-apps",
+    "owners": [ "aishwaryarj", "lazzzis" ],
+    "expiry_milestone": 101
   },
   {
     "name": "messages-for-android-near-oom-reduction",
@@ -5443,6 +5460,11 @@
     "name": "touch-selection-strategy",
     "owners": [ "dovizu@google.com" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "touch-to-fill-password-submission",
+    "owners": [ "kolos", "fhorschig" ],
+    "expiry_milestone": 103
   },
   {
     "name": "traffic-counters-settings-ui",

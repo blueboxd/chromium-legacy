@@ -4,7 +4,7 @@
 
 # This is the main failure suppression file for Blink LayoutTests.
 # Further documentation:
-# https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_test_expectations.md
+# https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_test_expectations.md
 
 # Intentional failures to test the layout test system.
 harness-tests/crash.html [ Crash ]
@@ -7293,7 +7293,7 @@ crbug.com/1249043 [ Fuchsia ] external/wpt/html/cross-origin-embedder-policy/rep
 crbug.com/1249043 [ Linux ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Pass ]
 crbug.com/1249043 [ Mac10.12 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Pass ]
 crbug.com/1249043 [ Mac10.13 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Pass ]
-crbug.com/1249043 [ Mac10.14 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Pass ]
+crbug.com/1249043 [ Mac10.14 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Pass Timeout Skip ]
 crbug.com/1249043 [ Mac11 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Pass ]
 crbug.com/1249043 [ Mac11-arm64 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Pass ]
 crbug.com/1249043 [ Win ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Pass ]
@@ -7388,7 +7388,6 @@ crbug.com/1274917 external/wpt/content-security-policy/inheritance/history-ifram
 crbug.com/1274919 http/tests/inspector-protocol/page/consecutive-navigate.js [ Pass Timeout ]
 
 # Sheriff 2021-11-23
-crbug.com/1270963 virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/create-credential.https.html [ Skip ]
 crbug.com/1046784 http/tests/devtools/tracing/timeline-receive-response-event.js [ Failure Pass ]
 crbug.com/1273282 [ Win7 ] external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.commit.html [ Failure Pass ]
 
@@ -7544,6 +7543,7 @@ crbug.com/1287519 http/tests/devtools/elements/styles-4/styles-update-links-1.js
 crbug.com/1287519 http/tests/devtools/elements/styles-4/styles-update-links-3.js [ Skip ]
 crbug.com/1287519 http/tests/devtools/elements/styles-4/undo-add-property.js [ Skip ]
 crbug.com/1287519 http/tests/devtools/modify-cross-domain-rule.js [ Skip ]
+crbug.com/1287519 [ Mac ] http/tests/devtools/elements/styles-3/styles-add-new-rule-colon.js [ Skip ]
 
 # Flaky failures in finding the reference file on Mac
 crbug.com/1286944 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/parse-input-arguments-012.https.html [ Failure Pass ]
@@ -7553,10 +7553,6 @@ crbug.com/1286944 [ Mac11 ] virtual/off-main-thread-css-paint/external/wpt/css/c
 crbug.com/1286944 [ Mac11 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/geometry-border-image-002.https.html [ Failure Pass ]
 crbug.com/1286944 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/hidpi/canvas-transform.https.html [ Failure Pass ]
 crbug.com/1286944 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/parse-input-arguments-011.https.html [ Failure Pass ]
-
-# Temporarily disable test to unblock WebRTC roll
-crbug.com/webrtc/4409 external/wpt/webrtc/RTCPeerConnection-addIceCandidate.html [ Pass Failure ]
-crbug.com/webrtc/4409 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-addIceCandidate.html [ Pass Failure ]
 
 # Sheriff 2022-01-17
 crbug.com/1287928 [ Mac ] external/wpt/webrtc/RTCPeerConnection-perfect-negotiation-stress-glare.https.html [ Failure Pass ]

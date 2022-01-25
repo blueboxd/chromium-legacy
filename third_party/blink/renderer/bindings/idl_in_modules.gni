@@ -1156,7 +1156,6 @@ if (target_os != "android") {
             "//third_party/blink/renderer/modules/direct_sockets/navigator_socket.idl",
             "//third_party/blink/renderer/modules/direct_sockets/socket_options.idl",
             "//third_party/blink/renderer/modules/direct_sockets/tcp_socket.idl",
-            "//third_party/blink/renderer/modules/direct_sockets/udp_message.idl",
             "//third_party/blink/renderer/modules/direct_sockets/udp_socket.idl",
           ],
           "abspath")
@@ -1181,23 +1180,6 @@ if (target_os != "android") {
             "//third_party/blink/renderer/modules/serial/serial_port_info.idl",
             "//third_party/blink/renderer/modules/serial/serial_port_request_options.idl",
             "//third_party/blink/renderer/modules/serial/worker_navigator_serial.idl",
-          ],
-          "abspath")
-}
-
-# WindowControlsOverlay
-# This uses target_os rather than current_os (which is what is_android is set
-# from) for the case of generating the v8 context snapshot for android. When
-# generating the snapshot for android, blink is compiled with
-# current_os="linux" and target_os="android". Using target_os is necessary as
-# we need to compile in the same way as would happen when current_os="android".
-if (target_os != "android") {
-  static_idl_files_in_modules += get_path_info(
-          [
-            "//third_party/blink/renderer/modules/window_controls_overlay/navigator_window_controls_overlay.idl",
-            "//third_party/blink/renderer/modules/window_controls_overlay/window_controls_overlay.idl",
-            "//third_party/blink/renderer/modules/window_controls_overlay/window_controls_overlay_geometry_change_event.idl",
-            "//third_party/blink/renderer/modules/window_controls_overlay/window_controls_overlay_geometry_change_event_init.idl",
           ],
           "abspath")
 }

@@ -91,6 +91,7 @@ source_set("common") {
     "//remoting/signaling",
     "//services/network/public/cpp:cpp",
   ]
+
   if (is_linux && !is_chromeos_lacros) {
     deps += [
       "//build/config/linux/gtk",
@@ -106,6 +107,7 @@ source_set("common") {
     deps += [
       "//chromeos/ui/vector_icons",
       "//remoting/host/chromeos",
+      "//remoting/host/chromeos:host_event_reporter_impl",
       "//ui/message_center",
       "//ui/message_center/public/cpp",
     ]

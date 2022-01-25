@@ -465,6 +465,12 @@ const char kBiometricReauthForPasswordFillingDescription[] =
     "Enables biometric"
     "re-authentication before password filling";
 
+const char kTouchToFillPasswordSubmissionName[] =
+    "Form submission in Touch-To-Fill";
+const char kTouchToFillPasswordSubmissionDescription[] =
+    "Enables automatic form submission after filling credentials with "
+    "Touch-To-Fill";
+
 const char kBorealisBigGlName[] = "Borealis Big GL";
 const char kBorealisBigGlDescription[] = "Enable Big GL when running Borealis.";
 
@@ -1475,12 +1481,6 @@ const char kIncognitoReauthenticationForAndroidDescription[] =
     "When enabled, a setting appears in Settings > Privacy and Security, to "
     "enable reauthentication for accessing your existing Incognito tabs.";
 
-const char kIncognitoBrandConsistencyForDesktopName[] =
-    "Enable Incognito brand consistency in desktop.";
-const char kIncognitoBrandConsistencyForDesktopDescription[] =
-    "When enabled, removes any theme or background customization done by the "
-    "user on the Incognito UI.";
-
 const char kIncognitoClearBrowsingDataDialogForDesktopName[] =
     "Enable clear browsing data dialog in Incognito.";
 const char kIncognitoClearBrowsingDataDialogForDesktopDescription[] =
@@ -1502,12 +1502,6 @@ const char kIncognitoScreenshotName[] = "Incognito Screenshot";
 const char kIncognitoScreenshotDescription[] =
     "Enables Incognito screenshots on Android. It will also make Incognito "
     "thumbnails visible.";
-
-const char kInheritNativeThemeFromParentWidgetName[] =
-    "Allow widgets to inherit native theme from its parent widget.";
-const char kInheritNativeThemeFromParentWidgetDescription[] =
-    "When enabled, secondary UI like menu, dialog etc would be in dark mode "
-    "when Incognito mode is open.";
 
 const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeChoiceDescription[] =
@@ -3184,6 +3178,10 @@ const char kMessagesForAndroidInfrastructureName[] = "Messages infrastructure";
 const char kMessagesForAndroidInfrastructureDescription[] =
     "When enabled, will initialize Messages UI infrastructure";
 
+const char kMessagesForAndroidInstantAppsName[] = "Instant Apps Messages UI";
+const char kMessagesForAndroidInstantAppsDescription[] =
+    "When enabled, instant apps prompt will use the new Messages UI.";
+
 const char kMessagesForAndroidNearOomReductionName[] =
     "Near OOM Reduction Messages UI";
 const char kMessagesForAndroidNearOomReductionDescription[] =
@@ -4308,6 +4306,12 @@ const char kFastPairDescription[] =
     "Use along with #bluetooth-advertisement-monitoring to allow background "
     "scanning.";
 
+const char kFastPairLowPowerName[] = "Enable Fast Pair Low Power mode";
+const char kFastPairLowPowerDescription[] =
+    "Enables Fast Pair Low Power mode, which doesn't scan for devices "
+    "continously. This results in lower power usage, but also higher latency "
+    "for device discovery.";
+
 const char kFastPairSoftwareScanningName[] =
     "Enable Fast Pair Software Scanning";
 const char kFastPairSoftwareScanningDescription[] =
@@ -4712,9 +4716,6 @@ const char kFrameThrottleFps15[] = "15 fps";
 const char kFrameThrottleFps20[] = "20 fps";
 const char kFrameThrottleFps25[] = "25 fps";
 const char kFrameThrottleFps30[] = "30 fps";
-
-const char kFullRestoreName[] = "Full restore";
-const char kFullRestoreDescription[] = "Chrome OS full restore";
 
 const char kFullRestoreForLacrosName[] = "Full restore lacros support";
 const char kFullRestoreForLacrosDescription[] =

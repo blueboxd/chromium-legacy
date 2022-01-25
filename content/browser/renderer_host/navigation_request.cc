@@ -51,7 +51,6 @@
 #include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/commit_deferring_condition.h"
 #include "content/browser/renderer_host/cookie_utils.h"
-#include "content/browser/renderer_host/cross_origin_embedder_policy.h"
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -4796,12 +4795,15 @@ net::Error NavigationRequest::CheckCSPDirectives(
     }
   }
 
-  // [frame-src]
+  // [frame-src] or [fenced-frame-src]
   if (parent_policies &&
       !IsAllowedByCSPDirective(
           parent_policies->content_security_policies, &parent_context,
-          network::mojom::CSPDirectiveName::FrameSrc, has_followed_redirect,
-          url_upgraded_after_redirect, is_response_check, disposition)) {
+          frame_tree_node_->IsFencedFrameRoot()
+              ? network::mojom::CSPDirectiveName::FencedFrameSrc
+              : network::mojom::CSPDirectiveName::FrameSrc,
+          has_followed_redirect, url_upgraded_after_redirect, is_response_check,
+          disposition)) {
     error = net::ERR_BLOCKED_BY_CSP;
   }
 
@@ -4828,16 +4830,21 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
   const PolicyContainerPolicies* parent_policies =
       policy_container_navigation_bundle_->ParentPolicies();
   DCHECK(!parent == !parent_policies);
-  if (!parent && frame_tree_node()->current_frame_host()->InsidePortal() &&
-      frame_tree_node()->render_manager()->GetOuterDelegateNode()) {
+  bool set_parent_for_nested_frame_tree =
+      !parent &&
+      (frame_tree_node()->current_frame_host()->InsidePortal() ||
+       frame_tree_node()->IsFencedFrameRoot()) &&
+      frame_tree_node()->render_manager()->GetOuterDelegateNode();
+  if (set_parent_for_nested_frame_tree) {
     parent = frame_tree_node()
                  ->render_manager()
                  ->GetOuterDelegateNode()
                  ->current_frame_host()
                  ->GetParent();
-    // TODO(antoniosartori): If we want to keep checking frame-src for portals,
-    // consider storing a snapshot of the parent policies in the
-    // `policy_container_navigation_bundle_` at the beginning of the navigation.
+    // TODO(antoniosartori): If we want to keep checking frame-src for portals
+    // or fenced frames, consider storing a snapshot of the parent policies in
+    // the `policy_container_navigation_bundle_` at the beginning of the
+    // navigation.
     parent_policies = &parent->policy_container_host()->policies();
   }
 
@@ -6658,7 +6665,7 @@ NavigationRequest::ComputeCrossOriginEmbedderPolicy() {
   // 2. If environment is a non-secure context, then return policy.
   if (network::IsUrlPotentiallyTrustworthy(top_level_creation_url)) {
     if (response_head_) {
-      return CoepFromMainResponse(url, response_head_.get());
+      return response_head_->parsed_headers->cross_origin_embedder_policy;
     }
   }
   return network::CrossOriginEmbedderPolicy();

@@ -1,0 +1,67 @@
+// Copyright 2022 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_BROWSER_WEBID_FEDCM_METRICS_H_
+#define CONTENT_BROWSER_WEBID_FEDCM_METRICS_H_
+
+namespace base {
+class TimeDelta;
+}
+
+namespace content {
+
+// This enum describes the status of a request id token call to the FedCM API.
+enum class FedCmRequestIdTokenStatus {
+  // Don't change the meaning or the order of these values because they are
+  // being recorded in metrics and in sync with the counterpart in enums.xml.
+  kSuccess,
+  kTooManyRequests,
+  kAborted,
+  kUnhandledRequest,
+  kNoNetworkManager,
+  kNotSelectAccount,
+  kWellKnownHttpNotFound,
+  kWellKnownNoResponse,
+  kWellKnownInvalidResponse,
+  kClientIdMetadataHttpNotFound,
+  kClientIdMetadataNoResponse,
+  kClientIdMetadataInvalidResponse,
+  kAccountsHttpNotFound,
+  kAccountsNoResponse,
+  kAccountsInvalidResponse,
+  kIdTokenHttpNotFound,
+  kIdTokenNoResponse,
+  kIdTokenInvalidResponse,
+  kIdTokenInvalidRequest,
+
+  kMaxValue = kIdTokenInvalidRequest
+};
+
+// Records the time from when a call to the API was made to when the accounts
+// dialog is shown.
+void RecordShowAccountsDialogTime(base::TimeDelta duration);
+
+// Records the time from when the accounts dialog is shown to when the user
+// presses the Continue button.
+void RecordContinueOnDialogTime(base::TimeDelta duration);
+
+// Records the time from when the accounts dialog is shown to when the user
+// closes the dialog without selecting any account.
+void RecordCancelOnDialogTime(base::TimeDelta duration);
+
+// Records the time from when the user presses the Continue button to when the
+// idtoken response is received. Also records the overall time from when the API
+// is called to when the idtoken response is received.
+void RecordIdTokenResponseAndTurnaroundTime(
+    base::TimeDelta id_token_response_time,
+    base::TimeDelta turnaround_time);
+
+// Records the status of the |RequestIdToken| call.
+// TODO(yigu): Call this function from |CompleteRequest| once the mojom side
+// |RequestIdTokenStatus| is cleaned up.
+void RecordRequestIdTokenStatus(FedCmRequestIdTokenStatus status);
+
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_WEBID_FEDCM_METRICS_H_

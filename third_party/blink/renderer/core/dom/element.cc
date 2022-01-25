@@ -2924,6 +2924,13 @@ bool Element::SkipStyleRecalcForContainer(
     }
   }
 
+  // Don't skip style recalc for form controls. The reason for skipping is a
+  // baseline inconsistency issue laying out an input element with a placeholder
+  // when interleaving layout and style recalc. This bigger cannon is to avoid
+  // potential issues with other peculiarities inside form controls.
+  if (IsFormControlElement())
+    return false;
+
   // If we are moving the ::backdrop element to the top layer while laying out
   // its originating element, it means we will add a layout-dirty box as a
   // preceding sibling of the originating element's box which means we will not
@@ -4831,7 +4838,7 @@ bool Element::ForceLegacyLayoutInFormattingContext(
     // CSSContainerQueries rely on LayoutNG being fully shipped before shipping.
     // In the meantime, make sure we do not mark containers for re-attachment
     // since we might be in the process of laying out the container.
-    if (style->IsContainerForContainerQueries(*this))
+    if (style->IsContainerForContainerQueries(*ancestor))
       break;
 
     found_fc = DefinitelyNewFormattingContext(*ancestor, *style);
@@ -5434,7 +5441,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
     ancestors.pop_back();
     const ComputedStyle* style =
         ancestor->EnsureOwnComputedStyle(style_recalc_context, kPseudoIdNone);
-    if (style->IsContainerForContainerQueries(*this))
+    if (style->IsContainerForContainerQueries(*ancestor))
       style_recalc_context.container = ancestor;
   }
 

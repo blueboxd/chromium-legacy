@@ -116,6 +116,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.Canvas.2DLayerBridge.WillReadFrequently"
+    enum="BooleanWillReadFrequently" expires_after="2023-01-24">
+  <owner>aaronhk@chromium.org</owner>
+  <owner>junov@chromium.org</owner>
+  <summary>
+    Records the state of the willReadFrequently flag upon creation of a Canvas2D
+    layer bridge, as this is the moment when it determines whether the canvas
+    will be accelerated.
+  </summary>
+</histogram>
+
 <histogram name="Blink.Canvas.2DPrintingAsVector" enum="BooleanSuccess"
     expires_after="2022-01-31">
   <owner>fserb@chromium.org</owner>
@@ -143,6 +154,15 @@ chromium-metrics-reviews@google.com.
   <owner>aaronhk@chromium.org</owner>
   <summary>
     The source from which an ImageBitmap is created by a createImageBitmap call.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Canvas.GetImageData.WillReadFrequently"
+    enum="BooleanWillReadFrequently" expires_after="2023-01-24">
+  <owner>aaronhk@chromium.org</owner>
+  <owner>junov@chromium.org</owner>
+  <summary>
+    Records the state of the willReadFrequently flag during Canvas2D readback.
   </summary>
 </histogram>
 
@@ -455,6 +475,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Blink.Canvas.WillReadFrequently"
     enum="BooleanWillReadFrequently" expires_after="2021-01-31">
+  <obsolete>
+    Expired on 2021-01-31. This metric was replaced with
+    Blink.Canvas.2DLayerBridge.WillReadFrequently
+  </obsolete>
   <owner>fserb@chromium.org</owner>
   <summary>
     Logs if the canvas is initialized to be read frequently or not.
@@ -735,6 +759,69 @@ chromium-metrics-reviews@google.com.
     The EffectiveZoom as reported by ComputedStyle in a Blink renderer. The
     value is reported each time the effective zoom is set to a new value. The
     maximum zoom reported is 400% to keep the histogram of reasonable size.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.Status.RequestIdToken"
+    enum="FedCmRequestIdTokenStatus" expires_after="M110">
+  <owner>yigu@chromium.org</owner>
+  <owner>webid-core@google.com</owner>
+  <summary>
+    Records the status of a request id token call to the FedCM API.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.Timing.CancelOnDialog" units="ms"
+    expires_after="M110">
+  <owner>yigu@chromium.org</owner>
+  <owner>webid-core@google.com</owner>
+  <summary>
+    Records the time from when the accounts dialog is shown to when the user
+    closes the dialog without selecting any account. Only records a sample when
+    the user sees and closes the dialog.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.Timing.ContinueOnDialog" units="ms"
+    expires_after="M110">
+  <owner>yigu@chromium.org</owner>
+  <owner>webid-core@google.com</owner>
+  <summary>
+    Records the time from when the accounts dialog is shown to when the user
+    presses the Continue button. Only records a sample when the user sees and
+    taps the &quot;Continue&quot; button on the dialog.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.Timing.IdTokenResponse" units="ms"
+    expires_after="M110">
+  <owner>yigu@chromium.org</owner>
+  <owner>webid-core@google.com</owner>
+  <summary>
+    Records the time from when the user presses the Continue button to when the
+    idtoken response is received. Only records a sample when the idtoken
+    response is received.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.Timing.ShowAccountsDialog" units="ms"
+    expires_after="M110">
+  <owner>yigu@chromium.org</owner>
+  <owner>webid-core@google.com</owner>
+  <summary>
+    Records the time from when a call to the API was made to when the accounts
+    dialog is shown. Only records a sample when the dialog is shown.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.Timing.TurnaroundTime" units="ms"
+    expires_after="M110">
+  <owner>yigu@chromium.org</owner>
+  <owner>webid-core@google.com</owner>
+  <summary>
+    Records the overall time from when the API is called to when the idtoken
+    response is received. Only records a sample when the idtoken response is
+    received.
   </summary>
 </histogram>
 

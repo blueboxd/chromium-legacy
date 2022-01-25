@@ -261,7 +261,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.ServerRequestsDeepScanningPrompt"
-    enum="BooleanRequested" expires_after="2022-03-01">
+    enum="BooleanRequested" expires_after="2023-01-24">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -372,7 +372,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.BrowserReadyOnClassifierNotReady"
-    enum="BooleanReady" expires_after="2022-03-08">
+    enum="BooleanReady" expires_after="2023-01-24">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -395,7 +395,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="SBClientPhishing.CancelClassificationReason"
     enum="SBClientPhishingCancelClassificationReason"
-    expires_after="2022-02-20">
+    expires_after="2023-01-24">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>

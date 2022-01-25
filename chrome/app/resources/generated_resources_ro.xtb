@@ -73,6 +73,11 @@
 <translation id="1071917609930274619">Cifrare de date</translation>
 <translation id="1072700771426194907">S-a detectat un dispozitiv USB</translation>
 <translation id="107278043869924952">Folosește codul PIN pe lângă parolă</translation>
+<translation id="1073264809281558926"><ph name="BEGIN_PARAGRAPH1" />Dacă permiți ca dispozitivele cu sistem de operare Chrome să trimită rapoarte automate, ne ajuți să stabilim o ordine a priorităților privind remedierile și îmbunătățirile pentru sistemul de operare Chrome. Aceste rapoarte pot include aspecte precum ce funcții au fost folosite, câtă memorie a fost utilizată de obicei, precum și date de diagnosticare și de utilizare despre aplicațiile pentru Android. Unele date agregate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Poți să acorzi sau să anulezi oricând permisiunea pentru aceste rapoarte în setările dispozitivului cu sistem de operare Chrome al copilului. Dacă ești administratorul unui domeniu, poți să modifici această setare în consola de administrare.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Dezactivarea acestei funcții nu afectează capacitatea dispozitivului de a trimite informațiile necesare pentru servicii esențiale, cum ar fi actualizările de sistem și securitatea.<ph name="END_PARAGRAPH3" />
+    <ph name="BEGIN_PARAGRAPH4" />Dacă ai activat setarea Activitatea de pe web și din aplicații pentru Contul Google al copilului tău, datele copilului pot fi salvate în Contul său Google. Află mai multe despre aceste setări și cum să le modifici la families.google.com.<ph name="END_PARAGRAPH4" />
+    <ph name="BEGIN_PARAGRAPH4" />Dacă proprietarul dispozitivului activează opțiunea Trimite date de utilizare și diagnosticare, pot fi trimise rapoarte de blocare la Google.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="1076176485976385390">Navighează în pagini folosind cursorul pentru text</translation>
 <translation id="1076698951459398590">Activează tema</translation>
 <translation id="1076766328672150609">Copilul tău poate folosi un cod PIN pentru a debloca dispozitivul.</translation>
@@ -504,6 +509,7 @@
 <translation id="1521442365706402292">Gestionează certificatele</translation>
 <translation id="1521774566618522728">Activ astăzi</translation>
 <translation id="152234381334907219">Nu se salvează niciodată</translation>
+<translation id="1523279371236772909">Afișat în ultima lună</translation>
 <translation id="1523978563989812243">Motoare pentru redarea vocală a textului</translation>
 <translation id="1524430321211440688">Tastatură</translation>
 <translation id="1524563461097350801">Nu, mulțumesc</translation>
@@ -1215,6 +1221,9 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2220572644011485463">PIN sau parolă</translation>
 <translation id="2221261048068091179"><ph name="FIRST_SWITCH" /> <ph name="SECOND_SWITCH" /></translation>
 <translation id="222201875806112242">Sursă media nedenumită</translation>
+<translation id="2224173723542116248"><ph name="BEGIN_PARAGRAPH1" />Pentru a asigura o experiență optimă, <ph name="DEVICE_OS" /> colectează date despre hardware de la dispozitive și le trimite la Google pentru a stabili ce actualizări vor fi livrate. Opțional, poți permite ca Google să folosească aceste date și în alte scopuri, cum ar fi asistență și îmbunătățiri ale experienței și serviciului <ph name="DEVICE_OS" />.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Conectează-te pe acest dispozitiv și accesează secțiunea CLOUDREADY_HARDWARE_INFO de pe chrome://system pentru a vedea datele trimise la Google pentru filtrarea actualizărilor, precum și alte situații în care poți alege să trimiți date la Google.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Pentru detalii suplimentare despre datele pe care <ph name="DEVICE_OS" /> le poate trimite la Google și cum sunt folosite acestea, accesează g.co/CR2/HWDataCollection.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="2224444042887712269">Setarea aparține utilizatorului <ph name="OWNER_EMAIL" />.</translation>
 <translation id="222447520299472966">Trebuie să selectezi cel puțin un album din Galeria de imagini</translation>
 <translation id="2224551243087462610">Editați numele dosarului</translation>
@@ -1232,6 +1241,7 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2232876851878324699">Fișierul conținea un certificat, care nu a fost importat:</translation>
 <translation id="2233502537820838181">&amp;Mai multe informații</translation>
 <translation id="223356358902285214">Activitatea de pe web și din aplicații</translation>
+<translation id="2234827758954819389">Ghid privind confidențialitatea</translation>
 <translation id="2234876718134438132">Sincronizarea și serviciile Google</translation>
 <translation id="2235344399760031203">Cookie-urile terță parte sunt blocate</translation>
 <translation id="2238379619048995541">Date pentru starea activă</translation>
@@ -1334,6 +1344,10 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2328561734797404498">Repornește dispozitivul pentru a folosi <ph name="APP_NAME" />.</translation>
 <translation id="2328636661627946415">În modul incognito, site-urile pot folosi cookie-uri numai pentru a-ți vedea activitatea de navigare pe site-ul respectiv. Cookie-urile sunt șterse la sfârșitul sesiunii incognito.</translation>
 <translation id="2329597144923131178">Conectează-te și accesează marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
+<translation id="2330878972945412956"><ph name="BEGIN_PARAGRAPH1" />Dacă permiți ca dispozitivele cu sistem de operare Chrome să trimită rapoarte automate, ne ajuți să stabilim o ordine a priorităților privind remedierile și îmbunătățirile pentru sistemul de operare Chrome. Aceste rapoarte pot include aspecte precum funcțiile pe care le folosești, câtă memorie utilizezi de obicei, date de diagnosticare și de utilizare despre aplicațiile pentru Android și erori. Unele date agregate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Poți să acorzi sau să anulezi oricând permisiunea pentru aceste rapoarte în setările dispozitivului cu sistem de operare Chrome. Dacă ești administratorul unui domeniu, poți să modifici această setare în consola de administrare.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Dacă setarea Activitatea de pe web și din aplicații este activată pentru Contul Google, datele de pe Android pot fi salvate în Contul tău Google. Poți să consulți datele, să le ștergi și să modifici setările contului la account.google.com.<ph name="END_PARAGRAPH3" />
+    <ph name="BEGIN_PARAGRAPH4" />Dacă proprietarul dispozitivului activează opțiunea Trimite date de utilizare și diagnosticare, pot fi trimise rapoarte de blocare la Google.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="2332131598580221120">Vedeți în magazin</translation>
 <translation id="2332192922827071008">Deschide Preferințele</translation>
 <translation id="2332515770639153015">Navigarea sigură îmbunătățită este activată</translation>
@@ -1763,6 +1777,15 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2766161002040448006">Cere unui părinte</translation>
 <translation id="2767077837043621282">Nu s-a putut actualiza Chromebookul. Încearcă din nou mai târziu.</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> va putea edita <ph name="FILENAME" /> până când închizi toate filele pentru acest site</translation>
+<translation id="2767821224812051905"><ph name="BEGIN_PARAGRAPH1" />Încearcă următorii pași pentru remedierea problemelor:
+    <ph name="BEGIN_LIST" />
+    <ph name="LIST_ITEM" />asigură-te că dispozitivul conține o unitate de memorie internă funcțională, de exemplu, HDD, SSD sau eMMC;
+    <ph name="LIST_ITEM" />asigură-te că dispozitivul de memorie internă are un spațiu liber de cel puțin 16 GB;
+    <ph name="LIST_ITEM" />verifică starea conexiunii la dispozitivul de memorie internă, dacă este accesibil fizic;
+    <ph name="LIST_ITEM" />asigură-te că folosești un model certificat și consultă notele de instalare.
+    <ph name="END_LIST" />
+    <ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Pentru ajutor suplimentar, accesează g.co/CR2/InstallErrors.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="2770465223704140727">Elimină din listă</translation>
 <translation id="2770690685823456775">Exportă parolele într-un alt dosar</translation>
 <translation id="2770929488047004208">Rezoluția monitorului</translation>
@@ -2036,6 +2059,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3030967311408872958">De la apus la răsărit</translation>
 <translation id="3031417829280473749">Agenta X</translation>
 <translation id="3031557471081358569">Selectează elementele de importat:</translation>
+<translation id="3032587662022429783">Află mai multe despre datele de diagnosticare și de utilizare.</translation>
 <translation id="3033348223765101500">Gestionează-ți datele</translation>
 <translation id="3036327949511794916">A trecut termenul limită pentru returnarea acestui <ph name="DEVICE_TYPE" />.</translation>
 <translation id="3036546437875325427">Activează Flash</translation>
@@ -2585,6 +2609,9 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3629631988386925734">Introdu parola pentru a activa Smart Lock. Data viitoare, telefonul tău va debloca dispozitivul <ph name="DEVICE_TYPE" />. Poți dezactiva Smart Lock din Setări.</translation>
 <translation id="3630132874740063857">Telefonul</translation>
 <translation id="3630995161997703415">Adaugă acest site pe raft pentru a-l folosi oricând</translation>
+<translation id="3631680145967006828"><ph name="BEGIN_PARAGRAPH1" />Dacă permiți ca dispozitivele cu sistem de operare Chrome să trimită rapoarte automate, ne ajuți să stabilim o ordine a priorităților privind remedierile și îmbunătățirile pentru sistemul de operare Chrome. Aceste rapoarte pot include aspecte precum situațiile în care se blochează sistemul de operare Chrome, ce funcții folosești și câtă memorie utilizezi de obicei.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Poți să acorzi sau să anulezi oricând permisiunea pentru aceste rapoarte în setările dispozitivului Chrome. Dacă ești administratorul unui domeniu, poți să modifici această setare în consola de administrare.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Dezactivarea acestei funcții nu afectează capacitatea dispozitivului de a trimite informațiile necesare pentru servicii esențiale, cum ar fi actualizările de sistem și securitatea.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="3634652306074934350">Solicitarea permisiunii a expirat</translation>
 <translation id="3635199270495525546">S-a detectat un Trusted Platform Module (TPM)</translation>
 <translation id="3635353578505343390">Trimite feedback la Google</translation>
@@ -2605,6 +2632,10 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3651488188562686558">se va deconecta de la Wi-Fi.</translation>
 <translation id="3652817283076144888">Se inițializează</translation>
 <translation id="3653160965917900914">Spații comune de stocare fișiere în rețea</translation>
+<translation id="3653411319514369774"><ph name="BEGIN_PARAGRAPH1" />Dacă permiți ca dispozitivele cu sistem de operare Chrome să trimită rapoarte automate, ne ajuți să stabilim o ordine a priorităților privind remedierile și îmbunătățirile pentru sistemul de operare Chrome. Aceste rapoarte pot include aspecte precum ce funcții au fost folosite și câtă memorie a fost utilizată de obicei.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Poți să acorzi sau să anulezi oricând permisiunea pentru aceste rapoarte în setările dispozitivului cu sistem de operare Chrome al copilului. Dacă ești administratorul unui domeniu, poți să modifici această setare în consola de administrare.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Dezactivarea acestei funcții nu afectează capacitatea dispozitivului de a trimite informațiile necesare pentru servicii esențiale, cum ar fi actualizările de sistem și securitatea.<ph name="END_PARAGRAPH3" />
+    <ph name="BEGIN_PARAGRAPH4" />Dacă proprietarul dispozitivului activează opțiunea Trimite date de utilizare și diagnosticare, pot fi trimise rapoarte de blocare la Google.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="3653999333232393305">Permiteți în continuare accesul <ph name="HOST" /> la microfonul dvs.</translation>
 <translation id="3654045516529121250">Citește setările de accesibilitate</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Aplicația are acces definitiv la un fișier.}few{Aplicația are acces definitiv la # fișiere.}other{Aplicația are acces definitiv la # de fișiere.}}</translation>
@@ -2984,6 +3015,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4005817994523282006">Metoda de detectare a fusului orar</translation>
 <translation id="4007856537951125667">Ascunde comenzile rapide</translation>
 <translation id="4008291085758151621">Informațiile despre site nu sunt disponibile în RV</translation>
+<translation id="4009955655170295852">Înainte de a începe, asigură-te că ai făcut backup pentru date. Instalarea <ph name="DEVICE_OS" /> va înlocui datele de pe hard disk. Află mai multe la g.co/CR2/InstallGuide.</translation>
 <translation id="4010917659463429001">Pentru a accesa marcajele pe dispozitivul mobil, <ph name="GET_IOS_APP_LINK" />.</translation>
 <translation id="4014432863917027322">Repari „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="4015163439792426608">Ai extensii? <ph name="BEGIN_LINK" />Gestionează extensiile<ph name="END_LINK" /> ușor, dintr-un singur loc.</translation>
@@ -3063,6 +3095,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4095264805865317199">Deschide IU pentru activarea celulară</translation>
 <translation id="4095507791297118304">Afișare principală</translation>
 <translation id="4096508467498758490">Dezactivați extensiile care rulează în modul pentru dezvoltatori</translation>
+<translation id="4096797685681362305">Afișat în ultima săptămână</translation>
 <translation id="4097406557126260163">Aplicații și extensii</translation>
 <translation id="409742781329613461">Sfaturi pentru Chrome</translation>
 <translation id="4097560579602855702">Caută pe Google</translation>
@@ -3099,6 +3132,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4132183752438206707">Găsește aplicații în Magazinul Google Play</translation>
 <translation id="4132364317545104286">Redenumește profilul eSIM</translation>
 <translation id="4133076602192971179">Deschide aplicația pentru a schimba parola</translation>
+<translation id="4135746311382563554">Termenii și condițiile suplimentare pentru Google Chrome și sistemul de operare Chrome</translation>
 <translation id="4136203100490971508">Lumina de noapte se va dezactiva automat la răsărit</translation>
 <translation id="41365691917097717">Dacă alegi să continui, remedierea erorilor prin ADB se va activa pentru crearea și testarea aplicațiilor Android. Reține că această acțiune permite instalarea aplicațiilor Android care nu au fost verificate de Google. Pentru dezactivare, este necesară revenirea la setările din fabrică.</translation>
 <translation id="4138267921960073861">Afișează numele de utilizatori și fotografiile pe ecranul de conectare</translation>
@@ -3617,6 +3651,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4699172675775169585">Imaginile și fișierele memorate în cache</translation>
 <translation id="4699357559218762027">(lansată automat)</translation>
 <translation id="4701025263201366865">Conectarea unui părinte</translation>
+<translation id="4701335814944566468">Afișat ieri</translation>
 <translation id="4708794300267213770">Afișează blocarea ecranului când dispozitivul este activat</translation>
 <translation id="4708849949179781599">Închide <ph name="PRODUCT_NAME" /></translation>
 <translation id="4711638718396952945">Restabiliți setările</translation>
@@ -3684,6 +3719,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="479536056609751218">Pagină web, numai HTML</translation>
 <translation id="4796142525425001238">Restabilește întotdeauna</translation>
 <translation id="4798236378408895261">Atașează <ph name="BEGIN_LINK" />Jurnalele Bluetooth<ph name="END_LINK" /> (Utilizare internă Google)</translation>
+<translation id="479863874072008121">Gestionează dispozitivele</translation>
 <translation id="4800839971935185386">Examinează actualizările numelui și ale pictogramei</translation>
 <translation id="4801448226354548035">Ascundeți conturile</translation>
 <translation id="4801512016965057443">Permite roaming de date mobile</translation>
@@ -3706,6 +3742,9 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4816336393325437908">{COUNT,plural, =1{Un marcaj șters}few{{COUNT} marcaje șterse}other{{COUNT} de marcaje șterse}}</translation>
 <translation id="4819607494758673676">Notificări privind Asistentul Google</translation>
 <translation id="4820236583224459650">Setează ca tichet activ</translation>
+<translation id="4820771945393916447"><ph name="BEGIN_PARAGRAPH1" />Înainte să te înregistrezi, trebuie să ștergi TPM-ul pentru ca <ph name="DEVICE_OS" /> să preia controlul asupra dispozitivului.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Poți și să dezactivezi complet dispozitivul TPM. Datele tale vor fi stocate în siguranță prin criptarea software-ului, dar anumite funcții de securitate, cum ar fi certificatele stocate pe hardware, vor fi dezactivate.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Poți modifica setările TPM prin repornirea sistemului și accesarea setărilor BIOS / UEFI. Pașii variază în funcție de modelul dispozitivului. Pentru mai multe informații, deschide documentația <ph name="DEVICE_OS" /> pe alt dispozitiv înainte de repornire: g.co/CR2/TPMHelp.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="4821935166599369261">&amp;Analizare activată</translation>
 <translation id="4823484602432206655">Citește și modifică setările pentru dispozitiv și pentru utilizator</translation>
 <translation id="4824037980212326045">Backupul și restabilirea în Linux</translation>
@@ -3795,6 +3834,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4900652253009739885">Nu se poate elimina singurul comutator atribuit acțiunii Selectează. Apasă orice tastă pentru acțiunea <ph name="RESPONSE" />.</translation>
 <translation id="4901309472892185668">Selectează starea experimentului pentru experimentul <ph name="EXPERIMENT_NAME" />.</translation>
 <translation id="49027928311173603">Politica descărcată de pe server este nevalidă: <ph name="VALIDATION_ERROR" />.</translation>
+<translation id="4904511036057277323">Contribuie la îmbunătățirea funcțiilor și a performanței Chrome și a sistemului de operare Chrome, trimițând automat la Google date de diagnosticare și de utilizare. Anumite date agregate vor fi utile atât pentru aplicațiile pentru Android, cât și pentru partenerii Google. Dacă ai activat setarea Activitatea de pe web și din aplicații pentru Contul Google al copilului tău, datele Android ale acestuia pot fi salvate în Contul său Google.</translation>
 <translation id="4906490889887219338">Configurează sau gestionează spații comune de stocare în rețea. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="4907129260985716018">Alege când poate extensia să citească și să modifice datele privind site-urile</translation>
 <translation id="4907161631261076876">Acest fișier nu este descărcat de obicei și ar putea fi periculos.</translation>
@@ -3964,6 +4004,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5093569275467863761">Subcadru incognito din memoria cache înainte-înapoi: <ph name="BACK_FORWARD_CACHE_INCOGNITO_PAGE_URL" /></translation>
 <translation id="5094721898978802975">Comunicarea cu aplicațiile native cooperante</translation>
 <translation id="5097002363526479830">A eșuat conectarea la rețeaua „<ph name="NAME" />”: <ph name="DETAILS" /></translation>
+<translation id="5097306410549350357">Află mai multe despre folosirea locației</translation>
 <translation id="5097649414558628673">Instrument: <ph name="PRINT_NAME" /></translation>
 <translation id="5097874180538493929">Dă automat clic la oprirea cursorului</translation>
 <translation id="5101839224773798795">Se dă clic automat când cursorul se oprește</translation>
@@ -4253,6 +4294,7 @@ Poți atribui mai multe comutatoare acestei acțiuni.</translation>
 <translation id="5407167491482639988">Neinteligibilă</translation>
 <translation id="5408750356094797285">Zoom: <ph name="PERCENT" /></translation>
 <translation id="5409044712155737325">Din Contul Google</translation>
+<translation id="5413640305322530561">Află mai multe despre datele de diagnosticare și de utilizare</translation>
 <translation id="5414198321558177633">Se actualizează lista de profiluri. Poate dura câteva minute.</translation>
 <translation id="5414566801737831689">Citește pictogramele site-urilor pe care le accesezi</translation>
 <translation id="5417312524372586921">Teme pentru browser</translation>
@@ -5180,6 +5222,10 @@ Poți atribui mai multe comutatoare acestei acțiuni.</translation>
 <translation id="63849924261838903">{NUM_TABS,plural, =1{Grup nedenumit – o filă}few{Grup nedenumit – # file}other{Grup nedenumit – # de file}}</translation>
 <translation id="6385149369087767061">Conectează-te la internet și încearcă din nou</translation>
 <translation id="6385543213911723544">Site-urile pot să salveze și să citească date despre cookie-uri</translation>
+<translation id="6385599849914981574"><ph name="BEGIN_PARAGRAPH1" />Dacă permiți ca dispozitivele cu sistem de operare Chrome să trimită rapoarte automate, ne ajuți să stabilim o ordine a priorităților privind remedierile și îmbunătățirile pentru sistemul de operare Chrome. Aceste rapoarte pot include aspecte precum ce funcții folosești și câtă memorie utilizezi de obicei.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Poți să acorzi sau să anulezi oricând permisiunea pentru aceste rapoarte în setările dispozitivului Chrome. Dacă ești administratorul unui domeniu, poți să modifici această setare în consola de administrare.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Dezactivarea acestei funcții nu afectează capacitatea dispozitivului de a trimite informațiile necesare pentru servicii esențiale, cum ar fi actualizările de sistem și securitatea.<ph name="END_PARAGRAPH3" />
+    <ph name="BEGIN_PARAGRAPH4" />Dacă proprietarul dispozitivului activează opțiunea Trimite date de utilizare și diagnosticare, pot fi trimise rapoarte de blocare la Google.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="6385994920693662133">Avertisment: înregistrarea detaliată în jurnal este activată. Jurnalele de mai jos pot să includă adrese URL sau alte informații sensibile. Examinează informațiile și asigură-te că vrei să le trimiți.</translation>
 <translation id="6387674443318562538">Împarte pe verticală</translation>
 <translation id="6388429472088318283">Caută limbi</translation>
@@ -5296,6 +5342,7 @@ Poți atribui mai multe comutatoare acestei acțiuni.</translation>
 <translation id="6504601948739128893">Nu au permisiunea de a folosi fonturile instalate pe dispozitiv</translation>
 <translation id="6504611359718185067">Conectează-te la internet pentru a adăuga o imprimantă</translation>
 <translation id="6506374932220792071">Semnătură X9.62 ECDSA cu SHA-256</translation>
+<translation id="6507936476364432879">Contribuie la îmbunătățirea funcțiilor și a performanței Chrome și a sistemului de operare Chrome, trimițând automat la Google date de diagnosticare și de utilizare.</translation>
 <translation id="6508248480704296122">Conținut similar cu <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Aplicație: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Licență media</translation>
@@ -5614,6 +5661,7 @@ Poți atribui mai multe comutatoare acestei acțiuni.</translation>
 <translation id="6834652994408928492">Modul întunecat se va activa automat la apus</translation>
 <translation id="6835762382653651563">Accesează internetul pentru a actualiza dispozitivul <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6839225236531462745">Eroare de ștergere a certificatului</translation>
+<translation id="6839882458129755986">Google nu răspunde pentru pierderea datelor și <ph name="DEVICE_OS" /> poate să nu funcționeze cu modele care nu sunt certificate. Află mai multe la g.co/CR2/InstallGuide.</translation>
 <translation id="6839916869147598086">Conectarea a fost schimbată</translation>
 <translation id="6840155290835956714">Întreabă înainte de a trimite</translation>
 <translation id="6840184929775541289">Nu este o Autoritate de certificare</translation>
@@ -5931,6 +5979,7 @@ Poți atribui mai multe comutatoare acestei acțiuni.</translation>
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="7180865173735832675">Personalizează</translation>
 <translation id="7182791023900310535">Mută parola</translation>
+<translation id="7183193772170782394">Permite ca Google să folosească datele despre hardware-ul tău pentru a îmbunătăți <ph name="DEVICE_OS" />. Chiar dacă refuzi, datele vor fi trimise la Google pentru a alege actualizările potrivite, dar nu vor fi stocate sau folosite în alte scopuri. Află mai multe la g.co/CR2/HWDataCollection.</translation>
 <translation id="7183420126213758623">Activează / dezactivează căutarea laterală. Căutarea laterală nu este activată.</translation>
 <translation id="7186088072322679094">Păstrează în bara de instrumente</translation>
 <translation id="7186303001964993981"><ph name="ORIGIN" /> nu poate deschide acest dosar, deoarece conține fișiere de sistem</translation>
@@ -6394,6 +6443,7 @@ Poți atribui mai multe comutatoare acestei acțiuni.</translation>
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7659154729610375585">Ieși oricum din modul incognito?</translation>
 <translation id="7659297516559011665">Numai parolele de pe acest dispozitiv</translation>
+<translation id="7659336857671800422">Consultă Ghidul privind confidențialitatea</translation>
 <translation id="7659584679870740384">Nu ești autorizat(ă) să folosești acest dispozitiv. Contactează administratorul pentru permisiunea de conectare.</translation>
 <translation id="7661259717474717992">Permite site-urilor să salveze și să citească datele asociate cookie-urilor</translation>
 <translation id="7661451191293163002">Nu s-a putut obține un certificat de înregistrare.</translation>
@@ -6553,6 +6603,7 @@ Apasă un comutator sau o tastă atribuită pentru a elimina atribuirea</transla
 <translation id="7807711621188256451">Permiteți întotdeauna accesul <ph name="HOST" /> la camera dvs.</translation>
 <translation id="7810202088502699111">Ferestrele pop-up au fost blocate pe această pagină.</translation>
 <translation id="781167124805380294">Proiectează <ph name="FILE_NAME" /></translation>
+<translation id="7811886112806886172">Contribuie la îmbunătățirea funcțiilor și a performanței Chrome și a sistemului de operare Chrome, trimițând automat la Google date de diagnosticare și de utilizare. Anumite date agregate vor fi utile atât pentru aplicațiile pentru Android, cât și pentru partenerii Google. Dacă setarea Activitatea de pe web și din aplicații este activată pentru Contul Google, datele de pe Android pot fi salvate în Contul tău Google.</translation>
 <translation id="7814277578404816512">Vezi noutățile de pe <ph name="DEVICE_TYPE" /></translation>
 <translation id="7814458197256864873">&amp;Copiază</translation>
 <translation id="7815680994978050279">A fost blocată o descărcare periculoasă</translation>
@@ -6605,6 +6656,9 @@ Apasă un comutator sau o tastă atribuită pentru a elimina atribuirea</transla
 <translation id="7847212883280406910">Apăsați combinația Ctrl + Alt + S pentru a comuta la <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="7849264908733290972">Deschide &amp;imaginea într-o filă nouă</translation>
 <translation id="784934925303690534">Interval de timp</translation>
+<translation id="7850717413915978159"><ph name="BEGIN_PARAGRAPH1" />Dacă permiți ca dispozitivele cu sistem de operare Chrome să trimită rapoarte automate, ne ajuți să stabilim o ordine a priorităților privind remedierile și îmbunătățirile pentru sistemul de operare Chrome. Aceste rapoarte pot include aspecte precum situațiile în care se blochează sistemul de operare Chrome, ce funcții folosești, câtă memorie utilizezi de obicei și date de diagnosticare și de utilizare despre aplicațiile pentru Android. Unele date agregate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Poți să acorzi sau să anulezi oricând permisiunea pentru aceste rapoarte în setările dispozitivului cu sistem de operare Chrome. Dacă ești administratorul unui domeniu, poți să modifici această setare în consola de administrare.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />Dacă setarea Activitatea de pe web și din aplicații este activată pentru Contul Google, datele de pe Android pot fi salvate în Contul tău Google. Poți să consulți datele, să le ștergi și să modifici setările contului la account.google.com.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7851021205959621355"><ph name="BEGIN_BOLD" />Notă:<ph name="END_BOLD" /> o voce asemănătoare sau o înregistrare a vocii tale ar putea accesa rezultatele tale personalizate sau Asistentul. Pentru a economisi bateria, poți selecta activarea expresiei „Ok Google” în Setările Asistentului numai când dispozitivul este conectat la o sursă de alimentare.</translation>
 <translation id="7851457902707056880">Conectarea a fost restricționată la contul proprietarului. Reporniți dispozitivul și conectați-vă folosind contul proprietarului. Dispozitivul va reporni automat în 30 de secunde.</translation>
 <translation id="7851716364080026749">Blocați întotdeauna accesul la cameră și la microfon</translation>
@@ -7017,6 +7071,8 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Această extensie nu este inclusă în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și este posibil să fi fost adăugată fără știrea dvs.</translation>
 <translation id="8261506727792406068">Șterge</translation>
+<translation id="8262443362616648274"><ph name="BEGIN_PARAGRAPH1" />A apărut o problemă și <ph name="DEVICE_OS" /> nu s-a putut instala.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Pentru ajutor suplimentar, accesează g.co/CR2/InstallErrors.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="8263336784344783289">Denumește acest grup</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> a dezactivat cursorul mouse-ului.</translation>
 <translation id="8264024885325823677">Această setare este gestionată de administrator.</translation>
@@ -7490,6 +7546,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <ph name="DOMAIN" /> solicită să nu scoți cardul inteligent din dispozitiv.}}</translation>
 <translation id="8777259617149177596">Nivelul bateriei carcasei: <ph name="BATTERY_PERCENTAGE" /> %.</translation>
 <translation id="8777628254805677039">parola directorului rădăcină</translation>
+<translation id="8779944680596936487">Site-urile pot folosi cookie-uri numai pentru a-ți vedea activitatea de navigare pe site-ul respectiv</translation>
 <translation id="8780123805589053431">Descarcă descrierile imaginii de la Google</translation>
 <translation id="8780443667474968681">Căutarea vocală a fost dezactivată.</translation>
 <translation id="8781834595282316166">Filă nouă în grup</translation>
@@ -7716,7 +7773,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9009708085379296446">Ai vrut să modifici această pagină?</translation>
 <translation id="9011163749350026987">Afișează întotdeauna pictograma</translation>
 <translation id="9011393886518328654">Note despre versiune</translation>
-<translation id="9012122671773859802">Mută încontinuu ecranul în timpul mișcării mouse-ului</translation>
+<translation id="9012122671773859802">Mută încontinuu ecranul, odată cu mouse-ul</translation>
 <translation id="9013037634206938463">Pentru a instala Linux, se recomandă un spațiu liber de cel puțin <ph name="INSTALL_SIZE" />. Pentru a elibera spațiu, șterge fișiere de pe dispozitiv.</translation>
 <translation id="901668144954885282">Fă backup în Google Drive</translation>
 <translation id="9018218886431812662">Instalare finalizată</translation>
@@ -7904,10 +7961,12 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9186963452600581158">Conectează-te cu Contul Google al unui copil</translation>
 <translation id="9187967020623675250">Tastele nu corespund. Apasă pe orice tastă pentru <ph name="RESPONSE" />.</translation>
 <translation id="9188732951356337132">Trimite date de utilizare și diagnosticare. Momentan, dispozitivul trimite automat date de diagnosticare și de utilizare a dispozitivului și aplicațiilor la Google. Acestea nu vor fi folosite la identificarea copilului și vor ajuta la stabilitatea sistemului, a aplicațiilor și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Dacă ai activat setarea Activitatea suplimentară de pe web și din aplicații pentru copilul tău, aceste date pot fi salvate în Contul său Google. <ph name="BEGIN_LINK2" />Află mai multe<ph name="END_LINK2" /></translation>
+<translation id="919686179725692564">Află mai multe despre cum să faci backup pentru aplicații</translation>
 <translation id="9198090666959937775">Folosește telefonul Android ca pe o cheie de securitate</translation>
 <translation id="9200339982498053969"><ph name="ORIGIN" /> va putea edita fișierele din <ph name="FOLDERNAME" /></translation>
 <translation id="920045321358709304">Caută pe <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Toate datele offline vor fi șterse</translation>
+<translation id="9201117361710210082">Afișat anterior</translation>
 <translation id="9201220332032049474">Opțiuni de blocare a ecranului</translation>
 <translation id="9201842707396338580">A apărut o eroare. Contactează proprietarul dispozitivului ori administratorul. Cod de eroare: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;Analizare activată</translation>

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
-#include "content/browser/renderer_host/cross_origin_embedder_policy.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
@@ -198,7 +197,8 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveEarlyHints(
     network::mojom::EarlyHintsPtr early_hints) {}
 
 void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
-    network::mojom::URLResponseHeadPtr response_head) {
+    network::mojom::URLResponseHeadPtr response_head,
+    mojo::ScopedDataPipeConsumerHandle consumer) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
       "ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse", this,
@@ -236,7 +236,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
     // here, not matter the URLLoader used to load it.
     cross_origin_embedder_policy_ =
         response_head->parsed_headers
-            ? CoepFromMainResponse(script_url_, response_head.get())
+            ? response_head->parsed_headers->cross_origin_embedder_policy
             : network::CrossOriginEmbedderPolicy();
   }
 
@@ -245,6 +245,9 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
   network_accessed_ = response_head->network_accessed;
 
   WriteHeaders(std::move(response_head));
+
+  if (consumer)
+    OnStartLoadingResponseBody(std::move(consumer));
 }
 
 void ServiceWorkerSingleScriptUpdateChecker::OnReceiveRedirect(

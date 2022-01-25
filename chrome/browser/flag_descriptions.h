@@ -257,6 +257,9 @@ extern const char kDragWindowToNewDeskDescription[];
 extern const char kBiometricReauthForPasswordFillingName[];
 extern const char kBiometricReauthForPasswordFillingDescription[];
 
+extern const char kTouchToFillPasswordSubmissionName[];
+extern const char kTouchToFillPasswordSubmissionDescription[];
+
 extern const char kBorealisBigGlName[];
 extern const char kBorealisBigGlDescription[];
 
@@ -842,9 +845,6 @@ extern const char kIncognitoBrandConsistencyForAndroidDescription[];
 extern const char kIncognitoReauthenticationForAndroidName[];
 extern const char kIncognitoReauthenticationForAndroidDescription[];
 
-extern const char kIncognitoBrandConsistencyForDesktopName[];
-extern const char kIncognitoBrandConsistencyForDesktopDescription[];
-
 extern const char kIncognitoDownloadsWarningName[];
 extern const char kIncognitoDownloadsWarningDescription[];
 
@@ -859,9 +859,6 @@ extern const char kIncognitoNtpRevampDescription[];
 
 extern const char kIncognitoScreenshotName[];
 extern const char kIncognitoScreenshotDescription[];
-
-extern const char kInheritNativeThemeFromParentWidgetName[];
-extern const char kInheritNativeThemeFromParentWidgetDescription[];
 
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
@@ -1818,6 +1815,9 @@ extern const char kMessagesForAndroidChromeSurveyDescription[];
 extern const char kMessagesForAndroidInfrastructureName[];
 extern const char kMessagesForAndroidInfrastructureDescription[];
 
+extern const char kMessagesForAndroidInstantAppsName[];
+extern const char kMessagesForAndroidInstantAppsDescription[];
+
 extern const char kMessagesForAndroidNearOomReductionName[];
 extern const char kMessagesForAndroidNearOomReductionDescription[];
 
@@ -2469,6 +2469,9 @@ extern const char kDisplayAlignmentAssistanceDescription[];
 extern const char kFastPairName[];
 extern const char kFastPairDescription[];
 
+extern const char kFastPairLowPowerName[];
+extern const char kFastPairLowPowerDescription[];
+
 extern const char kFastPairSoftwareScanningName[];
 extern const char kFastPairSoftwareScanningDescription[];
 
@@ -2702,9 +2705,6 @@ extern const char kFrameThrottleFps15[];
 extern const char kFrameThrottleFps20[];
 extern const char kFrameThrottleFps25[];
 extern const char kFrameThrottleFps30[];
-
-extern const char kFullRestoreName[];
-extern const char kFullRestoreDescription[];
 
 extern const char kFullRestoreForLacrosName[];
 extern const char kFullRestoreForLacrosDescription[];

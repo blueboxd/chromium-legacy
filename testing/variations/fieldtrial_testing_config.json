@@ -506,21 +506,6 @@
             ]
         }
     ],
-    "AppListZeroStateMixedTypesRanker": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20191017",
-                    "enable_features": [
-                        "EnableZeroStateMixedTypesRanker"
-                    ]
-                }
-            ]
-        }
-    ],
     "ApplyNativeOcclusionToCompositor": [
         {
             "platforms": [
@@ -597,6 +582,21 @@
                     },
                     "enable_features": [
                         "ArcGuestLogdConfig"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ArcUseDalvikMemoryProfile": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ArcUseDalvikMemoryProfile"
                     ]
                 }
             ]
@@ -1211,19 +1211,20 @@
                     "name": "Enabled",
                     "params": {
                         "TimeToLiveInBackForwardCacheInSeconds": "180",
-                        "all_extension_allowed": "true",
-                        "blocked_websites": "https://domain1.org,https://domain2.org",
+                        "allowed_websites": "",
                         "cache_size": "6",
-                        "content_injection_supported": "true",
+                        "check_eligibility_after_pagehide": "true",
                         "enable_same_site": "true",
-                        "extension_message_supported": "true",
                         "file_system_api_supported": "true",
                         "foreground_cache_size": "2",
                         "grace_period_to_finish_loading_in_seconds": "60",
-                        "max_buffered_bytes_per_process": "1024000"
+                        "max_buffered_bytes": "200000",
+                        "max_buffered_bytes_per_process": "1024000",
+                        "supported_features": "MediaSessionImplOnServiceCreated"
                     },
                     "enable_features": [
                         "BackForwardCache",
+                        "FreezeWhileKeepActive",
                         "LoadingTasksUnfreezable"
                     ]
                 }
@@ -2451,35 +2452,7 @@
             ]
         }
     ],
-    "DefaultEnableGpuRasterization": [
-        {
-            "platforms": [
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DefaultEnableGpuRasterization"
-                    ]
-                }
-            ]
-        }
-    ],
     "DefaultPassthroughCommandDecoder": [
-        {
-            "platforms": [
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20191004",
-                    "enable_features": [
-                        "DefaultPassthroughCommandDecoder"
-                    ]
-                }
-            ]
-        },
         {
             "platforms": [
                 "mac"
@@ -4373,26 +4346,6 @@
                     "name": "Enabled_20210111",
                     "enable_features": [
                         "MigrateDefaultChromeAppToWebAppsNonGSuite"
-                    ]
-                }
-            ]
-        }
-    ],
-    "MinimizeAudioProcessingForUnusedOutput": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MinimizeAudioProcessingForUnusedOutput"
                     ]
                 }
             ]

@@ -93,7 +93,8 @@ void NGBoxFragmentBuilder::AddResult(
   // instead. The fact that we create a line box at all in such cases is just an
   // implementation detail -- anything of interest is stored on the child block
   // fragment.
-  const NGLayoutResult* result_for_propagation = &child_layout_result;
+  scoped_refptr<const NGLayoutResult> result_for_propagation =
+      &child_layout_result;
 
   if (!fragment.IsBox() && items_builder_) {
     if (const NGPhysicalLineBoxFragment* line =
@@ -383,6 +384,11 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
   block_size_for_fragmentation_ =
       std::max(block_size_for_fragmentation_, block_end_in_container);
 
+  if (ConstraintSpace()->RequiresContentBeforeBreaking()) {
+    if (child_layout_result.IsBlockSizeForFragmentationClamped())
+      is_block_size_for_fragmentation_clamped_ = true;
+  }
+
   const auto* child_box_fragment =
       DynamicTo<NGPhysicalBoxFragment>(&child_layout_result.PhysicalFragment());
   if (!child_box_fragment)
@@ -412,10 +418,14 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
         child_layout_result.TallestUnbreakableBlockSize());
   }
 
-  if (child_layout_result.HasForcedBreak())
+  if (child_layout_result.HasForcedBreak()) {
     SetHasForcedBreak();
-  else if (!IsInitialColumnBalancingPass())
-    PropagateSpaceShortage(child_layout_result.MinimalSpaceShortage());
+  } else if (!IsInitialColumnBalancingPass()) {
+    LayoutUnit space_shortage = child_layout_result.MinimalSpaceShortage();
+    // Only nodes that fragmented report any useful space shortage.
+    if (space_shortage)
+      PropagateSpaceShortage(space_shortage);
+  }
 
   // If a spanner was found inside the child, we need to finish up and propagate
   // the spanner to the column layout algorithm, so that it can take care of it.
@@ -460,7 +470,7 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     OverflowClipAxes block_axis =
         GetWritingDirection().IsHorizontal() ? kOverflowClipY : kOverflowClipX;
     if ((To<NGBlockNode>(node_).GetOverflowClipAxes() & block_axis) ||
-        MustStayInCurrentFragmentainer()) {
+        is_block_size_for_fragmentation_clamped_) {
       // If block-axis overflow is clipped, ignore child overflow and just use
       // the border-box size of the fragment itself. Also do this if the node
       // was forced to stay in the current fragmentainer. We'll ignore overflow

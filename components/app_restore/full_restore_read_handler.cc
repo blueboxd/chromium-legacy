@@ -71,12 +71,36 @@ void FullRestoreReadHandler::OnWindowInitialized(aura::Window* window) {
     return;
   }
 
+  if (window->GetProperty(aura::client::kAppType) ==
+      static_cast<int>(ash::AppType::LACROS)) {
+    // If the Lacros `window` is added to the hidden container, observe `window`
+    // to restore and remove it from the hidden container in
+    // OnWindowAddedToRootWindow callback.
+    if (lacros_read_handler_ &&
+        window_id == app_restore::kParentToHiddenContainer) {
+      observed_windows_.AddObservation(window);
+    }
+    return;
+  }
+
   if (!SessionID::IsValidValue(window_id)) {
     return;
   }
 
   observed_windows_.AddObservation(window);
   FullRestoreInfo::GetInstance()->OnWindowInitialized(window);
+}
+
+void FullRestoreReadHandler::OnWindowAddedToRootWindow(aura::Window* window) {
+  // If the Lacros `window` is added to the hidden container, call
+  // OnWindowAddedToRootWindow to restore and remove it from the hidden
+  // container.
+  if (window->GetProperty(aura::client::kAppType) ==
+          static_cast<int>(ash::AppType::LACROS) &&
+      lacros_read_handler_ &&
+      window->GetProperty(app_restore::kParentToHiddenContainerKey)) {
+    lacros_read_handler_->OnWindowAddedToRootWindow(window);
+  }
 }
 
 void FullRestoreReadHandler::OnWindowDestroyed(aura::Window* window) {
@@ -309,6 +333,13 @@ int32_t FullRestoreReadHandler::GetArcRestoreWindowIdForSessionId(
 
 int32_t FullRestoreReadHandler::GetArcSessionId() {
   return arc_read_handler_ ? arc_read_handler_->GetArcSessionId() : 0;
+}
+
+int32_t FullRestoreReadHandler::GetLacrosRestoreWindowId(
+    const std::string& lacros_window_id) const {
+  return IsLacrosRestoreRunning()
+             ? lacros_read_handler_->GetLacrosRestoreWindowId(lacros_window_id)
+             : 0;
 }
 
 void FullRestoreReadHandler::SetArcSessionIdForWindowId(int32_t arc_session_id,

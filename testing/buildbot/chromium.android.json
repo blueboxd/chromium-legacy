@@ -12240,6 +12240,7 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android30.textpb"
         ],
+        "ci_only": true,
         "experiment_percentage": 100,
         "merge": {
           "args": [
@@ -43760,7 +43761,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M99",
-              "revision": "version:99.0.4844.5"
+              "revision": "version:99.0.4844.6"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -44024,7 +44025,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M99",
-              "revision": "version:99.0.4844.5"
+              "revision": "version:99.0.4844.6"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -44363,7 +44364,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M99",
-              "revision": "version:99.0.4844.5"
+              "revision": "version:99.0.4844.6"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -44627,7 +44628,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M99",
-              "revision": "version:99.0.4844.5"
+              "revision": "version:99.0.4844.6"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -44966,7 +44967,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M99",
-              "revision": "version:99.0.4844.5"
+              "revision": "version:99.0.4844.6"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -45230,7 +45231,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M99",
-              "revision": "version:99.0.4844.5"
+              "revision": "version:99.0.4844.6"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",

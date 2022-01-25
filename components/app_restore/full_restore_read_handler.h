@@ -72,6 +72,7 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreReadHandler
   void OnWindowInitialized(aura::Window* window) override;
 
   // aura::WindowObserver:
+  void OnWindowAddedToRootWindow(aura::Window* window) override;
   void OnWindowDestroyed(aura::Window* window) override;
 
   // app_restore::ArcReadHandler::Delegate:
@@ -160,6 +161,10 @@ class COMPONENT_EXPORT(APP_RESTORE) FullRestoreReadHandler
   // Generates the ARC session id (1,000,000,001 - INT_MAX) for restored ARC
   // apps.
   int32_t GetArcSessionId();
+
+  // Returns the restore window id for the Lacros window with
+  // `lacros_window_id`.
+  int32_t GetLacrosRestoreWindowId(const std::string& lacros_window_id) const;
 
   // Sets |arc session id| for |window_id| to |arc_session_id_to_window_id_|.
   // |arc session id| is assigned when ARC apps are restored.

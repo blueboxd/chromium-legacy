@@ -942,10 +942,6 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginUser))
     return false;
 
-  // We can't restart if that's a second user sign in that is happening.
-  if (user_manager::UserManager::Get()->GetLoggedInUsers().size() > 1)
-    return false;
-
   // Don't restart browser if it is not the first profile in the session.
   if (user_manager::UserManager::Get()->GetLoggedInUsers().size() != 1)
     return false;
@@ -2191,7 +2187,8 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   if (ash::BrowserDataMigratorImpl::MaybeRestartToMigrate(
-          user->GetAccountId(), user->username_hash())) {
+          user->GetAccountId(), user->username_hash(),
+          crosapi::browser_util::PolicyInitState::kAfterInit)) {
     LOG(WARNING) << "Restarting chrome to run profile migration.";
     return;
   }

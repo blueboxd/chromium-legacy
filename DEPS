@@ -257,7 +257,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '1a74e1c7ab3795bf1d59fc51fccd42158994d81e',
+  'swiftshader_revision': 'fd6928b8a6f0fb457ea094ff12125da1b2582aba',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -364,7 +364,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'b620e0538e403bab3574e28059c472e2a1ccb352',
+  'quiche_revision': 'f76cbbeff65908b21547c0dd6cf7fbfd52fe57ea',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -642,7 +642,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/toji/webvr.info.git' + '@' + 'c58ae99b9ff9e2aa4c524633519570bf33536248',
 
   'src/docs/website': {
-    'url': Var('chromium_git') + '/website.git' + '@' + 'f75e737a527323b501753a1c67e4121869f9e303',
+    'url': Var('chromium_git') + '/website.git' + '@' + '198b96feac9e0ea762b8c568ac823078adf13c33',
   },
 
   'src/ios/third_party/earl_grey2/src': {
@@ -1743,7 +1743,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2484d40721ae57f88fd3f1310d17d9b663d8520a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e1dd3c77e712b4095a4beaa84f61dabc6d5e9714',
     'condition': 'checkout_src_internal',
   },
 

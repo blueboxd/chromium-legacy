@@ -11,6 +11,8 @@
 #include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/rounded_image_view.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/close_button.h"
@@ -36,7 +38,6 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_base.h"
 #include "ash/wm/overview/overview_test_util.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
@@ -306,6 +307,9 @@ class DesksTemplatesTest : public OverviewTestBase {
     ASSERT_TRUE(save_template->IsVisible());
     ClickOnView(save_template->GetContentsView());
     WaitForDesksTemplatesUI();
+    // Clicking the save template button selects the newly created template's
+    // name field. We can press enter or escape or click to select out of it.
+    SendKey(ui::VKEY_RETURN);
     for (auto& overview_grid : GetOverviewGridList())
       ASSERT_TRUE(overview_grid->IsShowingDesksTemplatesGrid());
   }
@@ -741,6 +745,38 @@ TEST_F(DesksTemplatesTest, SaveDeskAsTemplateButtonShowsDesksTemplatesGrid) {
   EXPECT_TRUE(GetOverviewGridList()[0]->IsShowingDesksTemplatesGrid());
 }
 
+// Tests that saving a template nudges the correct name view.
+TEST_F(DesksTemplatesTest, SaveTemplateNudgesNameView) {
+  // Other templates were added earlier.
+  AddEntry(base::GUID::GenerateRandomV4(), "template1", base::Time::Now());
+  AddEntry(base::GUID::GenerateRandomV4(), "template2", base::Time::Now());
+
+  DesksController* desks_controller = DesksController::Get();
+  ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
+
+  auto test_window = CreateAppWindow();
+
+  // Capture the current desk as a template, which is by default named "Desk 1".
+  // We open overview and save template without clicking out of the newly
+  // created template name view.
+  ToggleOverview();
+  ClickOnView(
+      GetSaveDeskAsTemplateButtonForRoot(Shell::Get()->GetPrimaryRootWindow())
+          ->GetContentsView());
+  WaitForDesksTemplatesUI();
+  ASSERT_EQ(3ul, GetAllEntries().size());
+
+  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
+  DesksTemplatesNameView* name_view =
+      GetItemViewFromTemplatesGrid(0)->name_view();
+
+  // Expect that the last added template item name view has focus.
+  EXPECT_TRUE(overview_grid->IsTemplateNameBeingModified());
+  EXPECT_TRUE(name_view->HasFocus());
+  EXPECT_TRUE(name_view->HasSelection());
+  EXPECT_EQ(u"Desk 1", name_view->GetText());
+}
+
 // Tests that launching templates from the templates grid functions correctly.
 // We test both clicking on the card, as well as clicking on the "Use template"
 // button that shows up on hover. Both should do the same thing.
@@ -1029,7 +1065,7 @@ TEST_F(DesksTemplatesTest, EnteringInTabletMode) {
   auto test_window_1 = CreateAppWindow();
   AddEntry(base::GUID::GenerateRandomV4(), "template", base::Time::Now());
 
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EnterTabletMode();
 
   // Test that the templates buttons are created but invisible. The save desk as
   // template button is not created.
@@ -1069,7 +1105,7 @@ TEST_F(DesksTemplatesTest, ClamshellToTabletMode) {
 
   // Tests that after transitioning, we remain in overview mode and all the
   // buttons are invisible.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EnterTabletMode();
   ASSERT_TRUE(GetOverviewSession());
   EXPECT_FALSE(zero_state->GetVisible());
   EXPECT_FALSE(expanded_state->GetVisible());
@@ -1094,12 +1130,31 @@ TEST_F(DesksTemplatesTest, ShowingTemplatesGridToTabletMode) {
 
   // Tests that after transitioning, we remain in overview mode and the grid is
   // hidden.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EnterTabletMode();
   ASSERT_TRUE(GetOverviewSession());
   EXPECT_FALSE(GetOverviewSession()
                    ->GetGridWithRootWindow(root_window)
                    ->desks_templates_grid_widget()
                    ->IsVisible());
+}
+
+// In certain cases there are activation issues when we enter tablet mode,
+// causing us to exit overview mode. This tests that if we save a template (and
+// get dropped into the templates grid), and then enter tablet mode, we remain
+// in overview mode. Regression test for https://crbug.com/1277769.
+TEST_F(DesksTemplatesTest, TabletModeActivationIssues) {
+  // Create a test window.
+  auto test_window = CreateAppWindow();
+
+  // Open overview and save a template.
+  OpenOverviewAndSaveTemplate(Shell::Get()->GetPrimaryRootWindow());
+  std::vector<DeskTemplate*> entries = GetAllEntries();
+  ASSERT_EQ(1ul, entries.size());
+
+  // Tests that after transitioning into tablet mode, the activation and focus
+  // is correct and we remain in overview mode.
+  EnterTabletMode();
+  ASSERT_TRUE(InOverviewSession());
 }
 
 TEST_F(DesksTemplatesTest, OverviewTabbing) {
@@ -1454,8 +1509,9 @@ TEST_F(DesksTemplatesTest, ShowTemplatesInAlphabeticalOrder) {
       static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
   ASSERT_TRUE(templates_grid_view);
 
+  // The grid has three items and one feedback button.
   views::View::Views grid_views = templates_grid_view->children();
-  ASSERT_EQ(3ul, grid_views.size());
+  ASSERT_EQ(4ul, grid_views.size());
 
   // Tests that templates are sorted in alphabetical order.
   EXPECT_EQ(
@@ -2076,8 +2132,9 @@ TEST_F(DesksTemplatesTest, LayoutItemsInLandscape) {
   const auto* templates_grid_view =
       static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
 
+  // The grid has four items and one feedback button.
   views::View::Views grid_views = templates_grid_view->children();
-  ASSERT_EQ(4ul, grid_views.size());
+  ASSERT_EQ(5ul, grid_views.size());
 
   // We expect the first three items to be laid out in one row.
   EXPECT_EQ(grid_views[0]->bounds().y(), grid_views[1]->bounds().y());
@@ -2103,14 +2160,44 @@ TEST_F(DesksTemplatesTest, LayoutItemsInPortrait) {
   const auto* templates_grid_view =
       static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
 
+  // The grid has four items and one feedback button.
   views::View::Views grid_views = templates_grid_view->children();
-  ASSERT_EQ(4ul, grid_views.size());
+  ASSERT_EQ(5ul, grid_views.size());
 
   // We expect the first two items to be laid out in one row.
   EXPECT_EQ(grid_views[0]->bounds().y(), grid_views[1]->bounds().y());
   // And the last two items on the next row.
   EXPECT_NE(grid_views[0]->bounds().y(), grid_views[2]->bounds().y());
   EXPECT_EQ(grid_views[2]->bounds().y(), grid_views[3]->bounds().y());
+}
+
+// Tests that there is no overlap with the shelf on our smallest supported
+// resolution.
+TEST_F(DesksTemplatesTest, ItemsDoNotOverlapShelf) {
+  // The smallest display resolution we support is 1087x675.
+  UpdateDisplay("1000x600");
+
+  // Create 6 entries to max out the grid.
+  for (const std::string& name : {"A", "B", "C", "D", "E", "F"})
+    AddEntry(base::GUID::GenerateRandomV4(), name, base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
+  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
+  const auto* templates_grid_view =
+      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
+
+  // The grid has six items and one feedback button.
+  views::View::Views grid_views = templates_grid_view->children();
+  ASSERT_EQ(7ul, grid_views.size());
+
+  const gfx::Rect shelf_bounds =
+      GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen();
+
+  // Test that none of the grid items overlap with the shelf.
+  for (views::View* view : grid_views)
+    EXPECT_FALSE(view->GetBoundsInScreen().Intersects(shelf_bounds));
 }
 
 // Tests record metrics when current template being replaced.

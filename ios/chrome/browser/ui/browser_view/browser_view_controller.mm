@@ -3266,7 +3266,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)displaySavedPasswordList {
-  [self.dispatcher showSavedPasswordsSettingsFromViewController:self];
+  [self.dispatcher showSavedPasswordsSettingsFromViewController:self
+                                               showCancelButton:YES];
 }
 
 #pragma mark - WebStateContainerViewProvider
@@ -4089,7 +4090,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (oldWebState) {
     oldWebState->WasHidden();
     oldWebState->SetKeepRenderProcessAlive(false);
-    [[self ntpCoordinatorForWebState:oldWebState] ntpDidChangeVisibility:NO];
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(oldWebState);
+    if (NTPHelper && NTPHelper->IsActive()) {
+      [[self ntpCoordinatorForWebState:oldWebState] ntpDidChangeVisibility:NO];
+    }
     [self dismissPopups];
   }
   // NOTE: webStateSelected expects to always be called with a
@@ -4098,7 +4103,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
 
   self.currentWebState->GetWebViewProxy().scrollViewProxy.clipsToBounds = NO;
-  [[self ntpCoordinatorForWebState:newWebState] ntpDidChangeVisibility:YES];
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(newWebState);
+  if (NTPHelper && NTPHelper->IsActive()) {
+    [[self ntpCoordinatorForWebState:newWebState] ntpDidChangeVisibility:YES];
+  }
 
   [self webStateSelected:newWebState notifyToolbar:YES];
 }

@@ -81,6 +81,7 @@
   E_CPONLY(kColorLinkForegroundDisabled) \
   E_CPONLY(kColorLinkForegroundPressed) \
   E(kColorMenuBackground, NativeTheme::kColorId_MenuBackgroundColor) \
+  E(kColorTouchableMenuBackground, NativeTheme::kColorId_MenuBackgroundColor) \
   E_CPONLY(kColorMenuBorder) \
   E_CPONLY(kColorMenuDropmarker) \
   E(kColorMenuIcon, NativeTheme::kColorId_MenuIconColor) \
@@ -105,14 +106,18 @@
   E_CPONLY(kColorNotificationInputBackground) \
   E_CPONLY(kColorNotificationInputForeground) \
   E_CPONLY(kColorNotificationInputPlaceholderForeground) \
-  E(kColorOverlayScrollbarFill, \
-    NativeTheme::kColorId_OverlayScrollbarThumbFill) \
-  E(kColorOverlayScrollbarFillHovered, \
-    NativeTheme::kColorId_OverlayScrollbarThumbHoveredFill) \
-  E(kColorOverlayScrollbarStroke, \
-    NativeTheme::kColorId_OverlayScrollbarThumbStroke) \
-  E(kColorOverlayScrollbarStrokeHovered, \
-    NativeTheme::kColorId_OverlayScrollbarThumbHoveredStroke) \
+  E_CPONLY(kColorOverlayScrollbarFill) \
+  E_CPONLY(kColorOverlayScrollbarFillDark) \
+  E_CPONLY(kColorOverlayScrollbarFillLight) \
+  E_CPONLY(kColorOverlayScrollbarFillHovered) \
+  E_CPONLY(kColorOverlayScrollbarFillHoveredDark) \
+  E_CPONLY(kColorOverlayScrollbarFillHoveredLight) \
+  E_CPONLY(kColorOverlayScrollbarStroke) \
+  E_CPONLY(kColorOverlayScrollbarStrokeDark) \
+  E_CPONLY(kColorOverlayScrollbarStrokeLight) \
+  E_CPONLY(kColorOverlayScrollbarStrokeHovered) \
+  E_CPONLY(kColorOverlayScrollbarStrokeHoveredDark) \
+  E_CPONLY(kColorOverlayScrollbarStrokeHoveredLight) \
   E_CPONLY(kColorProgressBar) \
   E_CPONLY(kColorPwaSecurityChipForeground) \
   E_CPONLY(kColorPwaSecurityChipForegroundDangerous) \

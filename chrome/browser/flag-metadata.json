@@ -1885,7 +1885,7 @@
   {
     "name": "enable-desktop-pwas-window-controls-overlay",
     "owners": [ "ambake@microsoft.com", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 102
   },
   {
     "name": "enable-device-trust-connector",
@@ -1946,6 +1946,11 @@
     "name": "enable-experimental-accessibility-dictation-extension",
     "owners": [ "akihiroota", "katie" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "enable-experimental-accessibility-dictation-hints",
+    "owners": [ "akihiroota"],
+    "expiry_milestone": 103
   },
   {
     "name": "enable-experimental-accessibility-dictation-offline",
@@ -2703,6 +2708,11 @@
     "name": "enable-system-proxy-for-system-services",
     "owners": [ "acostinas"],
     "expiry_milestone": 94
+  },
+  {
+    "name": "enable-tab-audio-muting",
+    "owners": [ "evliu@google.com", "chrome-media-ux@google.com" ],
+    "expiry_milestone": 107
   },
   {
     "name": "enable-tab-engagement-reporting",
@@ -4426,7 +4436,7 @@
   {
     "name": "overlay-scrollbars",
     "owners": [ "chaopeng", "bokan", "input-dev" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 105
   },
   {
     "name": "overlay-strategies",
@@ -5843,22 +5853,22 @@
   {
     "name": "webui-tab-strip",
     "owners": [ "tluk", "collinbaker", "johntlee" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 102
   },
   {
     "name" : "webui-tab-strip-context-menu-after-tap",
     "owners": [ "romanarora", "tluk", "yuhengh" ],
-    "expiry_milestone" : 99
+    "expiry_milestone" : 102
   },
   {
     "name": "webui-tab-strip-ntb-in-tab-strip",
     "owners": [ "yuhengh", "tluk", "romanarora" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 102
   },
   {
     "name": "webui-tab-strip-tab-drag-integration",
     "owners": [ "tluk", "collinbaker", "johntlee" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 102
   },
   {
     "name": "webxr-incubations",

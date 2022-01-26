@@ -828,7 +828,6 @@
       'display_unittests': {},
       'google_apis_unittests': {},
       'ipc_tests': {},
-      'jingle_unittests': {},
       'latency_unittests': {},
       'libcups_unittests': {},
       'media_unittests': {
@@ -990,7 +989,6 @@
       'gpu_unittests': {},
       'gwp_asan_unittests': {},
       'ipc_tests': {},
-      'jingle_unittests': {},
       'latency_unittests': {},
       'libjingle_xmpp_unittests': {},
       'liburlpattern_unittests': {},
@@ -1045,7 +1043,6 @@
 
     'chromium_gtests_for_linux_only': {
       'ozone_x11_unittests': {},
-      'x11_unittests': {},
     },
 
     'chromium_gtests_for_win_and_linux_only': {
@@ -1333,7 +1330,6 @@
       'headless_browsertests': {},
       'headless_unittests': {},
       'interactive_ui_tests': {},
-      'jingle_unittests': {},
       'nacl_loader_unittests': {},
       'net_unittests': {},
       'pdf_unittests': {},
@@ -1697,7 +1693,6 @@
         ],
       },
       'ipc_tests': {},
-      'jingle_unittests': {},
       'latency_unittests': {},
       'media_unittests': {},
       'midi_unittests': {},
@@ -4730,7 +4725,6 @@
         },
       },
       'ipc_tests': {},
-      'jingle_unittests': {},
       'latency_unittests': {},
       'libjingle_xmpp_unittests': {},
       'liburlpattern_unittests': {},
@@ -5514,7 +5508,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter',
         ],
       },
-      'jingle_unittests': {},
       'remoting_unittests': {
         'args': ['--gtest_filter=Webrtc*'],
       },
@@ -6823,7 +6816,7 @@
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
-    'gpu_pixel4_telemetry_tests': [
+    'gpu_pixel_4_and_6_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_mediapipe_validating_telemetry_tests',

@@ -5060,6 +5060,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_MENU_EXTENSIONS_TAB_TITLE" desc="Title of the installed extensions tab in the Extensions Menu">
         Installed
       </message>
+      <message name="IDS_EXTENSIONS_MENU_EXTENSIONS_TAB_DISCOVER_MORE_TITLE" desc="Text of the button in the installed extensions tab used to open the webstore page">
+        Discover more extensions
+      </message>
 
       <!-- Settings API bubble -->
       <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their home page setting">
@@ -5161,6 +5164,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_WEB_APP_WINDOW_CONTROLS_OVERLAY_DISABLED_ALERT" desc="Status change notification that the title bar is showing after window controls overlay is disabled">
         Title bar is now showing
+      </message>
+
+      <message name="IDS_WEB_APP_SETTINGS_TITLE" desc="Title of web app settings page">
+        Apps
       </message>
 
       <!-- Components -->
@@ -6525,6 +6532,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ACCNAME_TAB_SCROLL_TRAILING" desc="The accessible name for the TabStrip trailing scroll button.">
         Scroll towards the last tab
+      </message>
+      <message name="IDS_ACCNAME_MUTE_TAB" desc="The accessible name for the Mute tab button.">
+        Mute tab
       </message>
 
       <!-- Clipboard permission -->

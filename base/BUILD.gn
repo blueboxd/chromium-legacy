@@ -350,7 +350,6 @@ mixed_component("base") {
     "hash/hash.h",
     "hash/legacy_hash.cc",
     "hash/legacy_hash.h",
-    "ignore_result.h",
     "immediate_crash.h",
     "json/json_common.h",
     "json/json_file_value_serializer.cc",
@@ -1282,8 +1281,8 @@ mixed_component("base") {
       "ios/ns_range.h",
       "ios/scoped_critical_action.h",
       "ios/scoped_critical_action.mm",
-      "message_loop/message_pump_io_ios.cc",
-      "message_loop/message_pump_io_ios.h",
+      "message_loop/message_pump_kqueue.cc",
+      "message_loop/message_pump_kqueue.h",
       "native_library_ios.mm",
       "process/launch_ios.cc",
       "process/process_metrics_ios.cc",
@@ -1504,10 +1503,7 @@ mixed_component("base") {
       ]
     }
 
-    if (use_allocator == "tcmalloc") {
-      sources += [ "allocator/allocator_shim_default_dispatch_to_tcmalloc.cc" ]
-      deps += [ "//base/allocator:tcmalloc" ]
-    } else if (use_allocator == "none") {
+    if (use_allocator == "none") {
       if (is_android) {
         sources += [ "allocator/allocator_shim_default_dispatch_to_linker_wrapped_symbols.cc" ]
       }
@@ -2777,6 +2773,7 @@ test("base_perftests") {
   data_deps = [
     # Needed for isolate script to execute.
     "//testing:run_perf_test",
+    "//testing/buildbot/filters:base_perftests_filters",
   ]
 
   if (is_android) {
@@ -3019,7 +3016,6 @@ source_set("arm_bti_testfunctions") {
 
 test("base_unittests") {
   sources = [
-    "allocator/tcmalloc_unittest.cc",
     "as_const_unittest.cc",
     "at_exit_unittest.cc",
     "atomicops_unittest.cc",
@@ -3614,7 +3610,7 @@ test("base_unittests") {
     sources += [
       "ios/device_util_unittest.mm",
       "ios/weak_nsobject_unittest.mm",
-      "message_loop/message_pump_io_ios_unittest.cc",
+      "message_loop/message_pump_kqueue_unittest.cc",
     ]
 
     # ios does not use test_launcher to run gtests.

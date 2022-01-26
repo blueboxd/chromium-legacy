@@ -17,7 +17,7 @@
 #include "content/browser/interest_group/ad_auction_result_metrics.h"
 #include "content/browser/interest_group/auction_runner.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
-#include "content/browser/interest_group/interest_group_manager.h"
+#include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -438,9 +438,8 @@ bool AdAuctionServiceImpl::IsInterestGroupAPIAllowed(
         interest_group_api_operation,
     const url::Origin& origin) const {
   return GetContentClient()->browser()->IsInterestGroupAPIAllowed(
-      render_frame_host(),
-      ContentBrowserClient::InterestGroupApiOperation::kJoin,
-      main_frame_origin_, origin);
+      render_frame_host(), interest_group_api_operation, main_frame_origin_,
+      origin);
 }
 
 void AdAuctionServiceImpl::OnAuctionComplete(
@@ -448,8 +447,7 @@ void AdAuctionServiceImpl::OnAuctionComplete(
     AuctionRunner* auction,
     absl::optional<GURL> render_url,
     absl::optional<std::vector<GURL>> ad_component_urls,
-    absl::optional<GURL> bidder_report_url,
-    absl::optional<GURL> seller_report_url,
+    std::vector<GURL> report_urls,
     std::vector<std::string> errors) {
   // Delete the AuctionRunner. Since all arguments are passed by value, they're
   // all safe to used after this has been done.
@@ -468,8 +466,7 @@ void AdAuctionServiceImpl::OnAuctionComplete(
       AdAuctionResultMetrics::GetForPage(render_frame_host()->GetPage());
 
   if (!render_url) {
-    DCHECK(!bidder_report_url);
-    DCHECK(!seller_report_url);
+    DCHECK(report_urls.empty());
     std::move(callback).Run(absl::nullopt);
     auction_result_metrics->ReportAuctionResult(
         AdAuctionResultMetrics::AuctionResult::kFailed);
@@ -496,20 +493,16 @@ void AdAuctionServiceImpl::OnAuctionComplete(
       AdAuctionResultMetrics::AuctionResult::kSucceeded);
 
   network::mojom::URLLoaderFactory* factory = GetTrustedURLLoaderFactory();
-  if (bidder_report_url) {
-    FetchReport(factory, *bidder_report_url, origin(),
-                GetFrame()->BuildClientSecurityState());
-  }
-  if (seller_report_url) {
-    FetchReport(factory, *seller_report_url, origin(),
+  for (const GURL& report_url : report_urls) {
+    FetchReport(factory, report_url, origin(),
                 GetFrame()->BuildClientSecurityState());
   }
 }
 
-InterestGroupManager& AdAuctionServiceImpl::GetInterestGroupManager() const {
-  return *static_cast<StoragePartitionImpl*>(
-              render_frame_host()->GetStoragePartition())
-              ->GetInterestGroupManager();
+InterestGroupManagerImpl& AdAuctionServiceImpl::GetInterestGroupManager()
+    const {
+  return *static_cast<InterestGroupManagerImpl*>(
+      render_frame_host()->GetStoragePartition()->GetInterestGroupManager());
 }
 
 url::Origin AdAuctionServiceImpl::GetTopWindowOrigin() const {

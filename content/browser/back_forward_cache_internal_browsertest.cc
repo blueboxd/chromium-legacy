@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/raw_ptr.h"
 #include "content/browser/back_forward_cache_browsertest.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -329,7 +329,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 }
 
 // Disabled due to flakiness on Linux and Mac https://crbug.com/1287467
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+// Disabled on Chrome OS due to flakiness https://crbug.com/1290834
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_ProxiesAreStoredAndRestored DISABLED_ProxiesAreStoredAndRestored
 #else
 #define MAYBE_ProxiesAreStoredAndRestored ProxiesAreStoredAndRestored

@@ -632,10 +632,10 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   // which is paused while overlays are displayed over the web content area.
   self.readLaterAction.enabled =
       !self.webContentAreaShowingOverlay && [self isCurrentURLWebURL];
-  if (self.followAction) {
-    self.followAction.enabled =
-        self.followActionState == FollowActionStateEnabled ? YES : NO;
-  }
+
+  BOOL followEnabled = self.followActionState == FollowActionStateEnabled;
+  self.followAction.enabled = followEnabled;
+  self.unfollowAction.enabled = followEnabled;
   BOOL bookmarkEnabled =
       [self isCurrentURLWebURL] && [self isEditBookmarksEnabled];
   self.addBookmarkAction.enabled = bookmarkEnabled;
@@ -1075,7 +1075,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   [self.dispatcher dismissPopupMenuAnimated:YES];
   RecordAction(UserMetricsAction("MobileMenuPasswords"));
   [self.dispatcher
-      showSavedPasswordsSettingsFromViewController:self.baseViewController];
+      showSavedPasswordsSettingsFromViewController:self.baseViewController
+                                  showCancelButton:NO];
 }
 
 // Dismisses the menu and opens downloads.

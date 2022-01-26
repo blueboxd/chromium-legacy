@@ -166,7 +166,7 @@ const base::Feature kNavigationPredictor {
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991
 const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable Portals. https://crbug.com/865123.
 // Note that default enabling this does not expose the portal
@@ -239,7 +239,7 @@ bool IsFencedFramesMPArchBased() {
 }
 
 const base::Feature kInitialNavigationEntry{"InitialNavigationEntry",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsInitialNavigationEntryEnabled() {
   return base::FeatureList::IsEnabled(blink::features::kInitialNavigationEntry);
@@ -1197,5 +1197,7 @@ const base::Feature kBackForwardCacheAppBanner{
 const base::Feature kDefaultStyleSheetsEarlyInit{
     "DefaultStyleSheetsEarlyInit", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSystemColorChooser{"SystemColorChooser",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 }  // namespace blink

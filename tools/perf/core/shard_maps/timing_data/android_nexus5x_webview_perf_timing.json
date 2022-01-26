@@ -2172,10 +2172,6 @@
         "name": "rendering.mobile/card_flying"
     },
     {
-        "duration": "11.0",
-        "name": "rendering.mobile/cats_viewport_width"
-    },
-    {
         "duration": "36.0",
         "name": "rendering.mobile/cc_poster_circle"
     },
@@ -2734,10 +2730,6 @@
     {
         "duration": "20.0",
         "name": "rendering.mobile/list_recycle_transform"
-    },
-    {
-        "duration": "56.0",
-        "name": "rendering.mobile/lost_crypt"
     },
     {
         "duration": "22.0",

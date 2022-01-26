@@ -220,6 +220,9 @@
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
         ],
+        'swarming': {
+          'quickrun_shards': 18,
+        },
       },
       'Linux Tests (dbg)(1)': {
         'args': [
@@ -262,6 +265,7 @@
             },
           ],
           'shards': 25,
+          'quickrun_shards': 26,
         },
       },
       'Mac11 Tests (dbg)': {
@@ -841,7 +845,7 @@
     'modifications': {
       'chromeos-amd64-generic-rel': {
         'swarming': {
-          'quickrun_shards': 4,
+          'quickrun_shards': 8,
         },
       },
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': {
@@ -1218,6 +1222,11 @@
       'Mac ASan 64 Tests (1)': { # https://crbug.com/1200640
         'experiment_percentage': 100,
       },
+      'Mac11 Tests': {
+        'swarming': {
+          'quickrun_shards': 10,
+        },
+      },
       'Mac11 Tests (dbg)': { # https://crbug.com/1279504
         'swarming': {
           'shards': 7,
@@ -1412,6 +1421,9 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.content_shell_test_apk.filter',
         ],
+        'swarming': {
+          'quickrun_shards': 8,
+        },
       },
       'android-pie-x86-rel': {
         'args': [
@@ -1519,6 +1531,15 @@
     'remove_from': [
       'chromeos-kevin-rel',
     ],
+  },
+  'exo_unittests': {
+    'modifications': {
+      'linux-chromeos-rel': {
+        'swarming': {
+          'quickrun_shards': 2,
+        }
+      },
+    },
   },
   'extensions_browsertests': {
     'remove_from': [
@@ -1817,13 +1838,6 @@
         'swarming': {
           'shards': 6,
         },
-      },
-    },
-  },
-  'high_dpi_blink_web_tests': {
-    'modifications': {
-      'Linux Tests': {
-        'experiment_percentage': 100,
       },
     },
   },
@@ -2410,6 +2424,9 @@
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
         ],
+        'swarming': {
+          'quickrun_shards': 18,
+        },
       },
       'linux-code-coverage': {
         'args': [
@@ -3320,6 +3337,10 @@
   },
   'webgl2_conformance_gles_passthrough_tests': {
     'remove_from': [
+      # Currently not enough capacity to run these tests on this config.
+      # TODO(crbug.com/1280418): Re-enable once more of the Pixel 6 capacity
+      # is deployed.
+      'Android FYI Release (Pixel 6)',
       # Not enough CrOS hardware capacity to run both on anything other than
       # VMs. See https://crbug.com/1238070.
       'Lacros FYI x64 Release (Intel)',
@@ -3359,6 +3380,10 @@
   },
   'webgl2_conformance_validating_tests': {
     'remove_from': [
+      # Currently not enough capacity to run these tests on this config.
+      # TODO(crbug.com/1280418): Re-enable once more of the Pixel 6 capacity
+      # is deployed.
+      'Android FYI Release (Pixel 6)',
       # Passthrough version run on this configuration, not enough capacity for
       # both. See https://crbug.com/1238070.
       'ChromeOS FYI Release (kevin)',
@@ -3527,6 +3552,7 @@
         # TODO(crbug.com/1111436): Move this back to walleye if/when additional
         # capacity has been deployed.
         'swarming': {
+          'quickrun_shards': 2,
           'dimension_sets': [
             {
               'device_type': 'sailfish',
@@ -3696,13 +3722,6 @@
   'webview_ui_test_app_test_apk': {
     'remove_from': [
       'android-11-x86-rel', # crbug.com/1165280
-    ],
-  },
-  'x11_unittests': {
-    # Wayland bot uses chromium_linux_gtests that includes some x11 only
-    # test targets. To avoid maintaining a list of tests, remove them here.
-    'remove_from': [
-      'Linux Tests (Wayland)',
     ],
   },
   'xr_browser_tests': {

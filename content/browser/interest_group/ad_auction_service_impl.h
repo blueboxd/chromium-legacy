@@ -26,7 +26,7 @@
 namespace content {
 
 class AuctionRunner;
-class InterestGroupManager;
+class InterestGroupManagerImpl;
 class RenderFrameHost;
 class RenderFrameHostImpl;
 
@@ -88,11 +88,10 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
                          AuctionRunner* auction,
                          absl::optional<GURL> render_url,
                          absl::optional<std::vector<GURL>> ad_component_urls,
-                         absl::optional<GURL> bidder_report_url,
-                         absl::optional<GURL> seller_report_url,
+                         std::vector<GURL> report_urls,
                          std::vector<std::string> errors);
 
-  InterestGroupManager& GetInterestGroupManager() const;
+  InterestGroupManagerImpl& GetInterestGroupManager() const;
 
   url::Origin GetTopWindowOrigin() const;
 

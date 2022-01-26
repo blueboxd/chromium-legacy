@@ -98,6 +98,8 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
 
   const std::u16string template_name = desk_template_->template_name();
   auto* color_provider = AshColorProvider::Get();
+  const bool is_admin_managed =
+      desk_template->source() == DeskTemplateSource::kPolicy;
 
   views::BoxLayoutView* card_container;
   views::View* spacer;
@@ -145,12 +147,15 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
                                   color_provider->GetContentLayerColor(
                                       AshColorProvider::ContentLayerType::
                                           kIconColorSecondary)))
-                              .SetVisible(desk_template->source() ==
-                                          DeskTemplateSource::kPolicy)),
+                              .SetVisible(is_admin_managed)),
                   views::Builder<views::Label>()
                       .CopyAddressTo(&time_view_)
                       .SetHorizontalAlignment(gfx::ALIGN_LEFT)
-                      .SetText(GetTimeStr(desk_template_->created_time()))
+                      .SetText(
+                          is_admin_managed
+                              ? l10n_util::GetStringUTF16(
+                                    IDS_ASH_DESKS_TEMPLATES_MANAGEMENT_STATUS_DESCRIPTION)
+                              : GetTimeStr(desk_template_->created_time()))
                       .SetPreferredSize(gfx::Size(
                           kTemplateNameAndTimePreferredWidth, kTimeViewHeight)),
                   views::Builder<views::View>().CopyAddressTo(&spacer),
@@ -416,7 +421,6 @@ void DesksTemplatesItemView::ContentsChanged(
     views::Textfield* sender,
     const std::u16string& new_contents) {
   DCHECK_EQ(sender, name_view_);
-  DCHECK(is_template_name_being_modified_);
 
   // To avoid potential security and memory issues, we don't allow template
   // names to have an unbounded length. Therefore we trim if needed at
@@ -429,6 +433,13 @@ void DesksTemplatesItemView::ContentsChanged(
   }
 
   name_view_->OnContentsChanged();
+
+  auto* focus_manager = GetWidget()->GetFocusManager();
+  if (focus_manager->GetFocusedView() != name_view_) {
+    // The text editor isn't currently the active view, so we'll assume that it
+    // was updated from a drag and drop operation.
+    UpdateTemplateName();
+  }
 }
 
 bool DesksTemplatesItemView::HandleKeyEvent(views::Textfield* sender,

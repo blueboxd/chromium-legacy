@@ -473,44 +473,6 @@
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-18.04",
-              "pool": "chrome.tests"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "cros_vm",
-              "path": "magic_cros_vm_cache"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
-          },
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -1163,7 +1125,7 @@
       {
         "args": [],
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R100-14476.0.0",
+        "cros_img": "octopus-release/R100-14477.0.0",
         "name": "lacros_fyi_tast_tests_OCTOPUS_LKGM",
         "swarming": {},
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
@@ -1207,7 +1169,7 @@
       {
         "args": [],
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R100-14476.0.0",
+        "cros_img": "octopus-release/R100-14477.0.0",
         "name": "ozone_unittests_OCTOPUS_LKGM",
         "swarming": {},
         "test": "ozone_unittests",
@@ -1255,7 +1217,7 @@
       {
         "args": [],
         "cros_board": "kevin",
-        "cros_img": "kevin-release/R100-14476.0.0",
+        "cros_img": "kevin-release/R100-14477.0.0",
         "name": "lacros_all_tast_tests_KEVIN_LKGM",
         "swarming": {},
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
@@ -1266,7 +1228,7 @@
       {
         "args": [],
         "cros_board": "hana",
-        "cros_img": "hana-release/R100-14476.0.0",
+        "cros_img": "hana-release/R100-14477.0.0",
         "name": "lacros_all_tast_tests_HANA_LKGM",
         "swarming": {},
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
@@ -1277,7 +1239,7 @@
       {
         "args": [],
         "cros_board": "kevin",
-        "cros_img": "kevin-release/R100-14476.0.0",
+        "cros_img": "kevin-release/R100-14477.0.0",
         "name": "ozone_unittests_KEVIN_LKGM",
         "swarming": {},
         "test": "ozone_unittests",
@@ -1287,7 +1249,7 @@
       {
         "args": [],
         "cros_board": "hana",
-        "cros_img": "hana-release/R100-14476.0.0",
+        "cros_img": "hana-release/R100-14477.0.0",
         "name": "ozone_unittests_HANA_LKGM",
         "swarming": {},
         "test": "ozone_unittests",
@@ -1297,7 +1259,7 @@
       {
         "args": [],
         "cros_board": "kevin",
-        "cros_img": "kevin-release/R100-14476.0.0",
+        "cros_img": "kevin-release/R100-14477.0.0",
         "name": "viz_unittests_KEVIN_LKGM",
         "swarming": {},
         "test": "viz_unittests",
@@ -1307,7 +1269,7 @@
       {
         "args": [],
         "cros_board": "hana",
-        "cros_img": "hana-release/R100-14476.0.0",
+        "cros_img": "hana-release/R100-14477.0.0",
         "name": "viz_unittests_HANA_LKGM",
         "swarming": {},
         "test": "viz_unittests",

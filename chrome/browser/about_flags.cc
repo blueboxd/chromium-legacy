@@ -4056,7 +4056,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"xsurface-metrics-reporting",
      flag_descriptions::kXsurfaceMetricsReportingName,
      flag_descriptions::kXsurfaceMetricsReportingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(feed::kWebFeed)},
+     FEATURE_VALUE_TYPE(feed::kXsurfaceMetricsReporting)},
     {"interest-feed-v1-clicks-and-views-cond-upload",
      flag_descriptions::kInterestFeedV1ClickAndViewActionsConditionalUploadName,
      flag_descriptions::
@@ -4205,6 +4205,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalAccessibilityDictationCommandsDescription,
      kOsCrOS,
      FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityDictationCommands)},
+    {"enable-experimental-accessibility-dictation-hints",
+     flag_descriptions::kExperimentalAccessibilityDictationHintsName,
+     flag_descriptions::kExperimentalAccessibilityDictationHintsDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityDictationHints)},
     {"enable-experimental-accessibility-switch-access-text",
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextName,
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextDescription,
@@ -7493,6 +7498,10 @@ const FeatureEntry kFeatureEntries[] = {
                                     kBookmarksRefreshVariations,
                                     "BookmarksRefresh")},
 #endif
+
+    {"enable-tab-audio-muting", flag_descriptions::kTabAudioMutingName,
+     flag_descriptions::kTabAudioMutingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media::kEnableTabMuting)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-app-discovery-for-oobe",

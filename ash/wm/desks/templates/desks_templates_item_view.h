@@ -71,6 +71,7 @@ class ASH_EXPORT DesksTemplatesItemView : public views::Button,
   DesksTemplatesItemView& operator=(const DesksTemplatesItemView&) = delete;
   ~DesksTemplatesItemView() override;
 
+  DeskTemplate* desk_template() const { return desk_template_.get(); }
   DesksTemplatesNameView* name_view() const { return name_view_; }
 
   // Updates the visibility state of the delete and launch buttons depending on
@@ -138,6 +139,8 @@ class ASH_EXPORT DesksTemplatesItemView : public views::Button,
 
   // Owned by the views hierarchy.
   DesksTemplatesNameView* name_view_ = nullptr;
+  // When template is managed by admin, `time_view_` will display management
+  // description instead.
   views::Label* time_view_ = nullptr;
   DesksTemplatesIconContainer* icon_container_view_ = nullptr;
   CloseButton* delete_button_ = nullptr;

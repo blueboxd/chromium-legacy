@@ -4,6 +4,8 @@
 
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 
+import {allInputsDisabledTest} from './all_inputs_disabled_test.js';
+import {criticalErrorPageTest} from './critical_error_page_test.js';
 import {fakeShimlessRmaServiceTestSuite} from './fake_shimless_rma_service_test.js';
 import {onboardingChooseDestinationPageTest} from './onboarding_choose_destination_page_test.js';
 import {onboardingChooseWpDisableMethodPageTest} from './onboarding_choose_wp_disable_method_page_test.js';
@@ -20,6 +22,7 @@ import {reimagingCalibrationSetupPageTest} from './reimaging_calibration_setup_p
 import {reimagingDeviceInformationPageTest} from './reimaging_device_information_page_test.js';
 import {reimagingFirmwareUpdatePageTest} from './reimaging_firmware_update_page_test.js';
 import {reimagingProvisioningPageTest} from './reimaging_provisioning_page_test.js';
+import {repairComponentChipElementTest} from './repair_component_chip_test.js';
 import {shimlessRMAAppTest} from './shimless_rma_app_test.js';
 import {wrapupFinalizePageTest} from './wrapup_finalize_page_test.js';
 import {wrapupRepairCompletePageTest} from './wrapup_repair_complete_page_test.js';
@@ -33,6 +36,8 @@ function runSuite(suiteName, testFn) {
   suite(suiteName, testFn);
 }
 
+runSuite('AllInputsDisabledTest', allInputsDisabledTest);
+runSuite('CriticalErrorPageTest', criticalErrorPageTest);
 runSuite('FakeShimlessRmaServiceTestSuite', fakeShimlessRmaServiceTestSuite);
 runSuite(
     'OnboardingChooseDestinationPageTest', onboardingChooseDestinationPageTest);
@@ -61,6 +66,7 @@ runSuite('ReimagingFirmwareUpdatePageTest', reimagingFirmwareUpdatePageTest);
 runSuite(
     'ReimagingDeviceInformationPageTest', reimagingDeviceInformationPageTest);
 runSuite('ReimagingProvisioningPageTest', reimagingProvisioningPageTest);
+runSuite('RepairComponentChipElementTest', repairComponentChipElementTest);
 runSuite('ShimlessRMAAppTest', shimlessRMAAppTest);
 runSuite('WrapupFinalizePageTest', wrapupFinalizePageTest);
 runSuite('WrapupRepairCompletePageTest', wrapupRepairCompletePageTest);

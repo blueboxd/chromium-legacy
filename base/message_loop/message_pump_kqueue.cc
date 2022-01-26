@@ -22,8 +22,12 @@ namespace {
 // port sets. MessagePumpKqueue will directly use Mach ports in the kqueue if
 // it is possible.
 bool KqueueNeedsPortSet() {
-  static bool kqueue_needs_port_set = mac::IsAtMostOS10_11();
+#if BUILDFLAG(IS_MAC)
+  static const bool kqueue_needs_port_set = mac::IsAtMostOS10_11();
   return kqueue_needs_port_set;
+#else
+  return false;
+#endif
 }
 
 int ChangeOneEvent(const ScopedFD& kqueue, kevent64_s* event) {

@@ -12,6 +12,7 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/features.gni")
+import("//build/config/rust.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/gn_logs.gni")
@@ -669,7 +670,6 @@ group("gn_all") {
       "//sandbox/win:sbox_unittests",
       "//sandbox/win:sbox_validation_tests",
       "//testing/gtest:gtest_main",
-      "//third_party/tcmalloc:addr2line-pdb",
 
       # The following two are accessibility API debugging tools.
       "//tools/accessibility/inspect:ax_dump_events",
@@ -854,6 +854,14 @@ group("gn_all") {
 
   # Minimal binaries to exercise Rust toolchain.
   deps += [ ":rust_build_tests" ]
+
+  # More Rust targets.
+  if (toolchain_has_rust) {
+    deps += [
+      "//mojo/public/rust",
+      "//mojo/public/rust:tests",
+    ]
+  }
 }
 
 group("rust_build_tests") {
@@ -1604,7 +1612,6 @@ if (enable_js_type_check) {
     if (is_chromeos_ash) {
       data_deps += [
         "ash/webui:closure_compile",
-        "chromeos/components:closure_compile",
         "ui/file_manager:closure_compile",
       ]
     }

@@ -93,6 +93,13 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Bluetooth.ChromeOS.DeviceDisconnect"
+    enum="BluetoothDeviceType" expires_after="2023-01-24">
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>Emitted each time a Bluetooth device is disconnected.</summary>
+</histogram>
+
 <histogram
     name="Bluetooth.ChromeOS.DeviceSelectionDuration{DeviceSelectionUISurfaces}"
     units="ms" expires_after="2022-07-01">
@@ -138,6 +145,13 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Bluetooth.ChromeOS.Disconnect.Result{BluetoothTransportTypes}"
     enum="DisconnectResult" expires_after="2022-07-21">
+  <obsolete>
+    Removed 2022-01-25. Removed in favor of
+    Bluetooth.ChromeOS.UserInitiatedDisconnect.Result, because this actually
+    recorded only user initiated disconnect results, and a more general
+    Bluetooth.ChromeOS.DeviceDisconnect was introduced to record all device
+    disconnections. check http://b/215601529 for details.
+  </obsolete>
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -741,6 +755,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.ChromeOS.FastPair.PairRetry.Count" units="count"
+    expires_after="2022-09-20">
+  <owner>shanefitz@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the count of the number of retry attempts needed for a successful
+    Fast Pair pairing, which can be zero if no retry was needed. Emitted
+    following the successful pairing. There are only three retry attempts before
+    failure is declared. No metric is emitted on failure.
+  </summary>
+</histogram>
+
 <histogram name="Bluetooth.ChromeOS.FastPair.Passkey.Decrypt.Result"
     enum="BooleanSuccess" expires_after="2022-09-20">
   <owner>shanefitz@google.com</owner>
@@ -1024,6 +1051,20 @@ chromium-metrics-reviews@google.com.
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>Metric emmitted each time a UI surface is shown.</summary>
+</histogram>
+
+<histogram
+    name="Bluetooth.ChromeOS.UserInitiatedDisconnect.Result{BluetoothTransportTypes}"
+    enum="DisconnectResult" expires_after="2023-01-24">
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Emitted each time a user attempted disconnection completes.
+    {BluetoothTransportTypes}
+  </summary>
+  <token key="BluetoothTransportTypes" variants="BluetoothTransportTypes">
+    <variant name=""/>
+  </token>
 </histogram>
 
 <histogram

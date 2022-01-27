@@ -951,7 +951,12 @@
       // Document transitions, including shared element transitions.
       // See https://github.com/WICG/shared-element-transitions
       name: "DocumentTransition",
-      origin_trial_feature_name: "DocumentTransition",
+      implied_by: ["DocumentTransitionRenderer"],
+    },
+    {
+      // Document transitions, including shared element transitions.
+      // See https://github.com/WICG/shared-element-transitions
+      name: "DocumentTransitionRenderer",
     },
     {
       name: "DocumentWrite",
@@ -2096,6 +2101,12 @@
       status: "stable",
     },
     {
+      name: "SendFullUserAgentAfterReduction",
+      origin_trial_feature_name: "SendFullUserAgentAfterReduction",
+      origin_trial_allows_third_party: true,
+      status: "experimental",
+    },
+    {
       name: "SendMouseEventsDisabledFormControls",
       status: "experimental",
     },
@@ -2608,7 +2619,7 @@
     {
       name: "WebNFCMakeReadOnly",
       depends_on: ["WebNFC"],
-      status: "experimental",
+      status: {"Android": "stable", "default": "test"},
     },
     {
       name: "WebOTP",

@@ -6,8 +6,8 @@ import {DefaultUserImage, UserImageObserverRemote, UserInfo, UserProviderInterfa
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
-export class TestUserProvider extends TestBrowserProxy implements
-    UserProviderInterface {
+export class TestUserProvider extends
+    TestBrowserProxy<UserProviderInterface> implements UserProviderInterface {
   public defaultUserImages: Array<DefaultUserImage> = [
     {
       index: 8,
@@ -23,17 +23,25 @@ export class TestUserProvider extends TestBrowserProxy implements
     email: 'test@email',
   };
 
+  public profileImage: Url = {
+    url: 'data://test_profile_url',
+  }
+
   constructor() {
     super([
       'setUserImageObserver',
       'getDefaultUserImages',
+      'selectProfileImage',
       'getUserInfo',
       'selectDefaultImage',
     ]);
   }
 
-  setUserImageObserver(observer: UserImageObserverRemote) {
-    this.methodCalled('setUserImageObserver', observer);
+  userImageObserverRemote: UserImageObserverRemote|null = null;
+
+  setUserImageObserver(remote: UserImageObserverRemote) {
+    this.methodCalled('setUserImageObserver');
+    this.userImageObserverRemote = remote;
   }
 
   async getUserInfo(): Promise<{userInfo: UserInfo}> {
@@ -49,5 +57,12 @@ export class TestUserProvider extends TestBrowserProxy implements
 
   selectDefaultImage(index: number) {
     this.methodCalled('selectDefaultImage', index);
+  }
+
+  async selectProfileImage() {
+    this.methodCalled('selectProfileImage');
+    this.profileImage = {
+      url: 'data://updated_test_url',
+    };
   }
 }

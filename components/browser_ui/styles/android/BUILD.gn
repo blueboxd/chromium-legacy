@@ -23,6 +23,7 @@ android_library("java") {
 
 android_resources("java_resources") {
   sources = [
+    "java/res/color/chip_text_color_secondary.xml",
     "java/res/color/default_icon_color_accent1_tint_list.xml",
     "java/res/color/default_icon_color_dark_tint_list.xml",
     "java/res/color/default_icon_color_disabled.xml",
@@ -204,6 +205,7 @@ android_resources("java_resources") {
     "java/res/drawable/smartphone_black_24dp.xml",
     "java/res/drawable/toolbar_hairline.xml",
     "java/res/values-night/colors.xml",
+    "java/res/values-night/dimens.xml",
     "java/res/values-night/drawables.xml",
     "java/res/values-night/styles.xml",
     "java/res/values-night/themes.xml",

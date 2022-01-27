@@ -58,6 +58,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kPrefersColorSchemeClientHintHeader;
 BLINK_COMMON_EXPORT extern const base::Feature kViewportHeightClientHintHeader;
+BLINK_COMMON_EXPORT extern const base::Feature kFullUserAgent;
 
 enum class FencedFramesImplementationType {
   kShadowDOM,
@@ -558,6 +559,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kLateFormNewlineNormalization;
 // and released to stable with no issues.
 BLINK_COMMON_EXPORT extern const base::Feature kAutoExpandDetailsElement;
 
+BLINK_COMMON_EXPORT extern const base::Feature kEarlyBodyLoad;
+
 BLINK_COMMON_EXPORT extern const base::Feature kEarlyCodeCache;
 
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -595,6 +598,9 @@ BLINK_COMMON_EXPORT extern const base::Feature kBackForwardCacheAppBanner;
 BLINK_COMMON_EXPORT extern const base::Feature kDefaultStyleSheetsEarlyInit;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSystemColorChooser;
+
+// Disables forced frame updates for web tests. Used by web test runner only.
+BLINK_COMMON_EXPORT extern const base::Feature kNoForcedFrameUpdates;
 
 }  // namespace features
 }  // namespace blink

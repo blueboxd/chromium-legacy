@@ -16,8 +16,6 @@
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/floc_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core/amp_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core/ukm_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/data_saver_site_breakdown_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/data_use_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/foreground_duration_ukm_observer.h"
 #include "chrome/browser/page_load_metrics/observers/formfill_page_load_metrics_observer.h"
@@ -58,7 +56,6 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/offline_measurements_page_load_metrics_observer.h"
 #else
 #include "chrome/browser/page_load_metrics/observers/session_restore_page_load_metrics_observer.h"
 #endif
@@ -134,8 +131,6 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
             web_contents()->GetBrowserContext()));
     tracker->AddObserver(std::make_unique<ProtocolPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<TabRestorePageLoadMetricsObserver>());
-    tracker->AddObserver(
-        std::make_unique<DataSaverSiteBreakdownMetricsObserver>());
     std::unique_ptr<page_load_metrics::AdsPageLoadMetricsObserver>
         ads_observer =
             page_load_metrics::AdsPageLoadMetricsObserver::CreateIfNeeded(
@@ -180,7 +175,6 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
   tracker->AddObserver(
       SecurityStatePageLoadMetricsObserver::MaybeCreateForProfile(
           web_contents()->GetBrowserContext()));
-  tracker->AddObserver(std::make_unique<DataUseMetricsObserver>());
   tracker->AddObserver(
       std::make_unique<PageAnchorsMetricsObserver>(tracker->GetWebContents()));
   std::unique_ptr<TranslatePageLoadMetricsObserver> translate_observer =
@@ -188,14 +182,6 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
           tracker->GetWebContents());
   if (translate_observer)
     tracker->AddObserver(std::move(translate_observer));
-
-#if BUILDFLAG(IS_ANDROID)
-  std::unique_ptr<OfflineMeasurementsPageLoadMetricsObserver>
-      offline_measurements_observer =
-          OfflineMeasurementsPageLoadMetricsObserver::CreateIfNeeded();
-  if (offline_measurements_observer)
-    tracker->AddObserver(std::move(offline_measurements_observer));
-#endif
 }
 
 bool PageLoadMetricsEmbedder::IsNewTabPageUrl(const GURL& url) {

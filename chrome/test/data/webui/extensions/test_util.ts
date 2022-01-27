@@ -20,7 +20,7 @@ export class ClickMock {
    */
   testClickingCalls(
       element: HTMLElement, callName: string, opt_expectedArgs: any[],
-      opt_returnValue: any) {
+      opt_returnValue?: any) {
     const mock = new MockController();
     const mockMethod = mock.createFunctionMock(this, callName);
     mockMethod.returnValue = opt_returnValue;
@@ -219,7 +219,8 @@ export function createExtensionInfo(
  * Finds all nodes matching |query| under |root|, within self and children's
  * Shadow DOM.
  */
-export function findMatches(root: HTMLElement, query: string): HTMLElement[] {
+export function findMatches(
+    root: HTMLElement|Document, query: string): HTMLElement[] {
   let elements = new Set<HTMLElement>();
   function doSearch(node: Node) {
     if (node.nodeType === Node.ELEMENT_NODE) {

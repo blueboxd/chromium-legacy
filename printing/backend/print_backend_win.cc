@@ -182,7 +182,7 @@ void LoadDpi(const wchar_t* printer,
 
 class PrintBackendWin : public PrintBackend {
  public:
-  explicit PrintBackendWin(const std::string& locale) : PrintBackend(locale) {}
+  PrintBackendWin() = default;
 
   // PrintBackend implementation.
   mojom::ResultCode EnumeratePrinters(PrinterList* printer_list) override;
@@ -452,9 +452,8 @@ bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
 // static
 scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
     const base::DictionaryValue* print_backend_settings,
-    const std::string& locale,
-    bool /*for_cloud_print*/) {
-  return base::MakeRefCounted<PrintBackendWin>(locale);
+    const std::string& /*locale*/) {
+  return base::MakeRefCounted<PrintBackendWin>();
 }
 
 }  // namespace printing

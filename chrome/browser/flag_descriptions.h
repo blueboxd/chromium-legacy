@@ -929,6 +929,9 @@ extern const char kNewCanvas2DAPIDescription[];
 extern const char kDestroyProfileOnBrowserCloseName[];
 extern const char kDestroyProfileOnBrowserCloseDescription[];
 
+extern const char kDestroySystemProfilesName[];
+extern const char kDestroySystemProfilesDescription[];
+
 extern const char kNewUsbBackendName[];
 extern const char kNewUsbBackendDescription[];
 
@@ -1387,6 +1390,9 @@ extern const char kTabOutlinesInLowContrastThemesDescription[];
 extern const char kTabSearchFuzzySearchName[];
 extern const char kTabSearchFuzzySearchDescription[];
 
+extern const char kTailoredSecurityIntegrationName[];
+extern const char kTailoredSecurityIntegrationDescription[];
+
 extern const char kTFLiteLanguageDetectionName[];
 extern const char kTFLiteLanguageDetectionDescription[];
 
@@ -1692,9 +1698,6 @@ extern const char kContextualSearchDelayedIntelligenceDescription[];
 
 extern const char kContextualSearchForceCaptionName[];
 extern const char kContextualSearchForceCaptionDescription[];
-
-extern const char kContextualSearchLiteralSearchTapName[];
-extern const char kContextualSearchLiteralSearchTapDescription[];
 
 extern const char kContextualSearchLongpressResolveName[];
 extern const char kContextualSearchLongpressResolveDescription[];
@@ -2952,6 +2955,9 @@ extern const char kTetherDescription[];
 
 extern const char kTouchscreenCalibrationName[];
 extern const char kTouchscreenCalibrationDescription[];
+
+extern const char kTrafficCountersHandlerEnabledName[];
+extern const char kTrafficCountersHandlerEnabledDescription[];
 
 extern const char kTrafficCountersSettingsUiName[];
 extern const char kTrafficCountersSettingsUiDescription[];

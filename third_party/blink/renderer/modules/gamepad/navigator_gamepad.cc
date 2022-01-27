@@ -66,6 +66,8 @@ const char kSecureContextBlocked[] =
     "Access to the feature \"gamepad\" requires a secure context";
 const char kFeaturePolicyBlocked[] =
     "Access to the feature \"gamepad\" is disallowed by permissions policy.";
+const char kFencedFrameBlocked[] =
+    "getGamepad is not allowed in a fenced frame tree.";
 
 NavigatorGamepad& NavigatorGamepad::From(Navigator& navigator) {
   NavigatorGamepad* supplement =
@@ -126,6 +128,13 @@ HeapVector<Member<Gamepad>> NavigatorGamepad::getGamepads(
   }
 
   auto* navigator_gamepad = &NavigatorGamepad::From(navigator);
+
+  // TODO(https://crbug.com/1011006): Remove fenced frame specific code when
+  // permission policy implements the Gamepad API support.
+  if (navigator.DomWindow()->GetFrame()->IsInFencedFrameTree()) {
+    exception_state.ThrowSecurityError(kFencedFrameBlocked);
+    return HeapVector<Member<Gamepad>>();
+  }
 
   ExecutionContext* context = navigator_gamepad->GetExecutionContext();
   if (!context || !context->IsSecureContext()) {
@@ -259,11 +268,18 @@ void NavigatorGamepad::Trace(Visitor* visitor) const {
 
 bool NavigatorGamepad::StartUpdatingIfAttached() {
   // The frame must be attached to start updating.
-  if (DomWindow()) {
-    StartUpdating();
-    return true;
+  if (!DomWindow()) {
+    return false;
   }
-  return false;
+
+  // TODO(https://crbug.com/1011006): Remove fenced frame specific code when
+  // permission policy implements the Gamepad API support.
+  if (DomWindow()->GetFrame()->IsInFencedFrameTree()) {
+    return false;
+  }
+
+  StartUpdating();
+  return true;
 }
 
 void NavigatorGamepad::DidUpdateData() {

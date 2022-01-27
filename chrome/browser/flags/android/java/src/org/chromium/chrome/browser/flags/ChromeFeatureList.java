@@ -284,8 +284,6 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SEARCH_DELAYED_INTELLIGENCE =
             "ContextualSearchDelayedIntelligence";
     public static final String CONTEXTUAL_SEARCH_FORCE_CAPTION = "ContextualSearchForceCaption";
-    public static final String CONTEXTUAL_SEARCH_LITERAL_SEARCH_TAP =
-            "ContextualSearchLiteralSearchTap";
     public static final String CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION =
             "ContextualSearchMlTapSuppression";
     public static final String CONTEXTUAL_SEARCH_NEW_SETTINGS = "ContextualSearchNewSettings";
@@ -401,8 +399,6 @@ public abstract class ChromeFeatureList {
     public static final String NEW_WINDOW_APP_MENU = "NewWindowAppMenu";
     public static final String OFFLINE_INDICATOR = "OfflineIndicator";
     public static final String OFFLINE_INDICATOR_V2 = "OfflineIndicatorV2";
-    public static final String OFFLINE_MEASUREMENTS_BACKGROUND_TASK =
-            "OfflineMeasurementsBackgroundTask";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS =
             "OfflinePagesDescriptiveFailStatus";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS =
@@ -531,6 +527,12 @@ public abstract class ChromeFeatureList {
     public static final String UNIFIED_CREDENTIAL_MANAGER_DRY_RUN =
             "UnifiedCredentialManagerDryRun";
     public static final String UNIFIED_PASSWORD_MANAGER_ANDROID = "UnifiedPasswordManagerAndroid";
+    public static final String UNIFIED_PASSWORD_MANAGER_MIGRATION =
+            "UnifiedPasswordManagerMigration";
+    public static final String UNIFIED_PASSWORD_MANAGER_SHADOW_ANDROID =
+            "UnifiedPasswordManagerShadowAndroid";
+    public static final String UNIFIED_PASSWORD_MANAGER_SHADOW_WRITE_OPERATIONS_ANDROID =
+            "UnifiedPasswordManagerShadowWriteOperationsAndroid";
     public static final String UPCOMING_SHARING_FEATURES = "UpcomingSharingFeatures";
     public static final String UPDATE_NOTIFICATION_IMMEDIATE_SHOW_OPTION =
             "UpdateNotificationScheduleServiceImmediateShowOption";

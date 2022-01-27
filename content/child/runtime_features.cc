@@ -352,6 +352,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kSetOnlyIfOverridden},
           {"DesktopPWAsSubApps", blink::features::kDesktopPWAsSubApps},
           {"DocumentTransition", blink::features::kDocumentTransition},
+          {"DocumentTransitionRenderer",
+           blink::features::kDocumentTransitionRenderer},
           // TODO(crbug.com/649162): Remove DialogFocusNewSpecBehavior after
           // the feature is in stable with no issues.
           {"DialogFocusNewSpecBehavior",
@@ -418,6 +420,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"ClientHintThirdPartyDelegation",
            blink::features::kClientHintThirdPartyDelegation},
           {"UserAgentReduction", blink::features::kReduceUserAgent},
+          {"UserAgentFull", blink::features::kFullUserAgent},
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(

@@ -884,11 +884,6 @@
     "expiry_milestone": 99
   },
   {
-    "name": "contextual-search-literal-search-tap",
-    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
-    "expiry_milestone": 95
-  },
-  {
     "name": "contextual-search-longpress-resolve",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
     "expiry_milestone": 99
@@ -1035,8 +1030,8 @@
   },
   {
     "name": "darken-websites-checkbox-in-themes-setting",
-    "owners": [ "lazzzis@google.com", "twellington" ],
-    "expiry_milestone": 98
+    "owners": [ "nemco@google.com", "wenyufu@google.com", "twellington" ],
+    "expiry_milestone": 110
   },
   {
     "name": "dcheck-is-fatal",
@@ -1131,6 +1126,11 @@
     "name": "destroy-profile-on-browser-close",
     "owners": [ "nicolaso" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "destroy-system-profiles",
+    "owners": [ "nicolaso" ],
+    "expiry_milestone": 102
   },
   {
     "name": "detect-form-submission-on-form-clear",
@@ -3643,11 +3643,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "ios-persist-crash-restore-infobar",
-    "owners": [ "thegreenfrog", "bling-flags@google.com" ],
-    "expiry_milestone": 98
-  },
-  {
     "name": "ios-shared-highlighting-color-change",
     "owners": [ "cheickcisse@google.com" ],
     "expiry_milestone": 95
@@ -4032,7 +4027,7 @@
   {
     "name": "nearby-sharing-background-scanning",
     "owners": [ "hansenmichael@google.com", "cvandermerwe@google.com", "chromeos-cross-device-eng@google.com" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 101
   },
   {
     "name": "nearby-sharing-one-page-onboarding",
@@ -5421,6 +5416,11 @@
     "expiry_milestone":100
   },
   {
+      "name": "tailored-security-integration",
+      "owners": ["drubery", "chrome-counter-abuse-core@google.com"],
+      "expiry_milestone":102
+  },
+  {
     "name": "terminal-ssh",
     "owners": [ "lxj@google.com", "joelhockey", "//chrome/browser/ash/guest_os/OWNERS" ],
     "expiry_milestone": 100
@@ -5475,6 +5475,11 @@
     "name": "touch-to-fill-password-submission",
     "owners": [ "kolos", "fhorschig" ],
     "expiry_milestone": 103
+  },
+  {
+    "name": "traffic-counters-handler-enabled",
+    "owners": ["khegde", "stevenjb"],
+    "expiry_milestone": 102
   },
   {
     "name": "traffic-counters-settings-ui",

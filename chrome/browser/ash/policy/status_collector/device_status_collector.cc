@@ -801,6 +801,9 @@ class DeviceStatusCollectorState : public StatusCollectorState {
   }
 
   void OnVolumeInfoReceived(const std::vector<em::VolumeInfo>& volume_info) {
+    if (!volume_info.empty()) {
+      SetDeviceStatusReported();
+    }
     response_params_.device_status->clear_volume_infos();
     for (const em::VolumeInfo& info : volume_info)
       *response_params_.device_status->add_volume_infos() = info;
@@ -815,6 +818,9 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     DLOG_IF(WARNING, cpu_temp_info.empty())
         << "Unable to read CPU temp information.";
     base::Time timestamp = base::Time::Now();
+    if (!cpu_temp_info.empty()) {
+      SetDeviceStatusReported();
+    }
     for (const em::CPUTempInfo& info : cpu_temp_info) {
       auto* new_info = response_params_.device_status->add_cpu_temp_infos();
       *new_info = info;
@@ -1495,6 +1501,7 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         response_params_.device_status->mutable_storage_status()
             ->mutable_lifetime_estimation();
     state->CopyFrom(est);
+    SetDeviceStatusReported();
   }
 
   void OnStatefulPartitionInfoReceived(const em::StatefulPartitionInfo& hdsi) {
@@ -1505,6 +1512,7 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     DCHECK_GE(hdsi.available_space(), 0);
     DCHECK_GE(hdsi.total_space(), hdsi.available_space());
     stateful_partition_info->CopyFrom(hdsi);
+    SetDeviceStatusReported();
   }
 
   void OnGraphicsStatusReceived(const em::GraphicsStatus& gs) {
@@ -1677,8 +1685,7 @@ DeviceStatusCollector::DeviceStatusCollector(
   stats_reporting_pref_subscription_ =
       cros_settings_->AddSettingsObserver(ash::kStatsReportingPref, callback);
 
-  // TODO(b/191986061):: consider using ScopedObservation instead.
-  power_manager_->AddObserver(this);
+  power_manager_observation_.Observe(power_manager_);
 
   // Fetch the current values of the policies.
   UpdateReportingSettings();
@@ -1730,9 +1737,7 @@ DeviceStatusCollector::DeviceStatusCollector(
           DeviceStatusCollector::GraphicsStatusFetcher(),
           DeviceStatusCollector::CrashReportInfoFetcher()) {}
 
-DeviceStatusCollector::~DeviceStatusCollector() {
-  power_manager_->RemoveObserver(this);
-}
+DeviceStatusCollector::~DeviceStatusCollector() = default;
 
 // static
 constexpr base::TimeDelta DeviceStatusCollector::kIdlePollInterval;

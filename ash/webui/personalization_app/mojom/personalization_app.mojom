@@ -243,6 +243,9 @@ struct UserInfo {
 interface UserImageObserver {
   // Triggered by |UserManager::Observer::OnUserImageChanged|.
   OnUserImageChanged(url.mojom.Url image);
+
+  // Triggered by |UserManager::Observer::OnUserProfileImageUpdated|.
+  OnUserProfileImageUpdated(url.mojom.Url profile_image);
 };
 
 // A default user image stored on the device that can be set as the user's
@@ -273,4 +276,7 @@ interface UserProvider {
 
   // Select one of the default images from the provided default user images.
   SelectDefaultImage(int32 index);
+
+  // Select the downloaded profile image as the user image.
+  SelectProfileImage();
 };

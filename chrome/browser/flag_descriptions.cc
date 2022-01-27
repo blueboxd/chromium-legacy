@@ -1607,6 +1607,12 @@ const char kDestroyProfileOnBrowserCloseDescription[] =
     "Release memory and other resources when a Profile's last browser window "
     "is closed, rather than when Chrome closes completely.";
 
+const char kDestroySystemProfilesName[] = "Destroy System Profile";
+const char kDestroySystemProfilesDescription[] =
+    "After you close the Profile Picker, release memory and other resources "
+    "owned by the System Profile. This requires "
+    "#destroy-profile-on-browser-close.";
+
 const char kNewUsbBackendName[] = "Enable new USB backend";
 const char kNewUsbBackendDescription[] =
     "Enables the new experimental USB backend for macOS";
@@ -2403,6 +2409,12 @@ const char kTabSearchFuzzySearchName[] = "Fuzzy search for Tab Search";
 const char kTabSearchFuzzySearchDescription[] =
     "Enable fuzzy search for Tab Search.";
 
+const char kTailoredSecurityIntegrationName[] =
+    "Account-level tailored security integration";
+const char kTailoredSecurityIntegrationDescription[] =
+    "Enable the integration between Enhanced Safe Browsing in Chrome and in "
+    "the account";
+
 const char kTFLiteLanguageDetectionName[] = "TFLite-based Language Detection";
 const char kTFLiteLanguageDetectionDescription[] =
     "Uses TFLite for language detection in place of CLD3";
@@ -2968,14 +2980,6 @@ const char kContextualSearchForceCaptionName[] =
     "Contextual Search force a caption";
 const char kContextualSearchForceCaptionDescription[] =
     "Forces a caption to always be shown in the Touch to Search Bar.";
-
-const char kContextualSearchLiteralSearchTapName[] =
-    "Contextual Search literal search with tap";
-const char kContextualSearchLiteralSearchTapDescription[] =
-    "Enables Contextual Search to be activated with a single tap and produce "
-    "a literal search. This is intended to be used in conjunction with the "
-    "long-press resolve feature to allow both gestures to trigger a form of "
-    "Touch to Search.";
 
 const char kContextualSearchLongpressResolveName[] =
     "Contextual Search long-press Resolves";
@@ -5141,6 +5145,12 @@ const char kTouchscreenCalibrationName[] =
 const char kTouchscreenCalibrationDescription[] =
     "If enabled, the user can calibrate the touch screen displays in "
     "chrome://settings/display.";
+
+const char kTrafficCountersHandlerEnabledName[] =
+    "Traffic counters handler enabled";
+const char kTrafficCountersHandlerEnabledDescription[] =
+    "If enabled, the TrafficCountersHandler class will handle traffic counter "
+    "resets.";
 
 const char kTrafficCountersSettingsUiName[] = "Traffic Counters Settings UI";
 const char kTrafficCountersSettingsUiDescription[] =

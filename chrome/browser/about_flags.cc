@@ -402,6 +402,18 @@ const FeatureEntry::FeatureVariation kElasticOverscrollVariations[] = {
     {"Transform stretch", kElasticOverscrollTransformType,
      base::size(kElasticOverscrollTransformType), nullptr}};
 
+const FeatureEntry::FeatureParam kCCTResizablePolicyParamUseAllowlist[] = {
+    {"default_policy", "use-allowlist"}};
+const FeatureEntry::FeatureParam kCCTResizablePolicyParamUseDenylist[] = {
+    {"default_policy", "use-denylist"}};
+
+const FeatureEntry::FeatureVariation
+    kCCTResizableThirdPartiesDefaultPolicyVariations[] = {
+        {"Use Allowlist", kCCTResizablePolicyParamUseAllowlist,
+         base::size(kCCTResizablePolicyParamUseAllowlist), nullptr},
+        {"Use Denylist", kCCTResizablePolicyParamUseDenylist,
+         base::size(kCCTResizablePolicyParamUseDenylist), nullptr}};
+
 const FeatureEntry::Choice kReaderModeHeuristicsChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kReaderModeHeuristicsMarkup,
@@ -2805,11 +2817,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchForceCaptionName,
      flag_descriptions::kContextualSearchForceCaptionDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchForceCaption)},
-    {"contextual-search-literal-search-tap",
-     flag_descriptions::kContextualSearchLiteralSearchTapName,
-     flag_descriptions::kContextualSearchLiteralSearchTapDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchLiteralSearchTap)},
     {"contextual-search-longpress-resolve",
      flag_descriptions::kContextualSearchLongpressResolveName,
      flag_descriptions::kContextualSearchLongpressResolveDescription,
@@ -5367,7 +5374,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"cct-resizable-for-third-parties",
      flag_descriptions::kCCTResizableForThirdPartiesName,
      flag_descriptions::kCCTResizableForThirdPartiesDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCCTResizableForThirdParties)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kCCTResizableForThirdParties,
+         kCCTResizableThirdPartiesDefaultPolicyVariations,
+         "CCTResizableThirdPartiesDefaultPolicy")},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -5467,6 +5477,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDestroyProfileOnBrowserCloseDescription,
      kOsMac | kOsWin | kOsLinux | kOsFuchsia,
      FEATURE_VALUE_TYPE(features::kDestroyProfileOnBrowserClose)},
+
+    {"destroy-system-profiles", flag_descriptions::kDestroySystemProfilesName,
+     flag_descriptions::kDestroySystemProfilesDescription,
+     kOsCrOS | kOsMac | kOsWin | kOsLinux | kOsFuchsia,
+     FEATURE_VALUE_TYPE(features::kDestroySystemProfiles)},
 
 #if BUILDFLAG(IS_WIN)
     {"use-angle", flag_descriptions::kUseAngleName,
@@ -7780,6 +7795,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCloseAllTabsModalDialogDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCloseAllTabsModalDialog)},
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"traffic-counters-handler-enabled",
+     flag_descriptions::kTrafficCountersHandlerEnabledName,
+     flag_descriptions::kTrafficCountersHandlerEnabledDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kTrafficCountersHandlerEnabled)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"tailored-security-integration",
+     flag_descriptions::kTailoredSecurityIntegrationName,
+     flag_descriptions::kTailoredSecurityIntegrationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(safe_browsing::kTailoredSecurityIntegration)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

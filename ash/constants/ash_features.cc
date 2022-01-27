@@ -285,7 +285,7 @@ const base::Feature kClipboardHistoryNudgeSessionReset{
 // If enabled, the clipboard history shortcut will appear in screenshot
 // notifications.
 const base::Feature kClipboardHistoryScreenshotNudge{
-    "ClipboardHistoryScreenshotNudge", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ClipboardHistoryScreenshotNudge", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables compositing-based throttling to throttle appropriate frame sinks that
 // do not need to be refreshed at high fps.
@@ -568,8 +568,7 @@ const base::Feature kEolWarningNotifications{"EolWarningNotifications",
 
 // Enables or disables enterprise policy control for eSIM cellular networks.
 // See https://crbug.com/1231305.
-const base::Feature kESimPolicy{"ESimPolicy",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kESimPolicy{"ESimPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable bubble showing when an application gains any UI lock.
 const base::Feature kExoLockNotification{"ExoLockNotification",
@@ -1226,6 +1225,10 @@ const base::Feature kTerminalSSH{"TerminalSSH",
 const base::Feature kTerminalTmuxIntegration{"TerminalTmuxIntegration",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the TrafficCountersHandler class to handle traffic counter resets.
+const base::Feature kTrafficCountersHandlerEnabled{
+    "TrafficCountersHandlerEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the Settings UI to show data usage for cellular networks.
 const base::Feature kTrafficCountersSettingsUi{
     "TrafficCountersSettingsUi", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1876,6 +1879,10 @@ bool IsSystemKoreanPhysicalTypingEnabled() {
 
 bool IsTabClusterUIEnabled() {
   return base::FeatureList::IsEnabled(kTabClusterUI);
+}
+
+bool IsTrafficCountersHandlerEnabled() {
+  return base::FeatureList::IsEnabled(kTrafficCountersHandlerEnabled);
 }
 
 bool IsTrilinearFilteringEnabled() {

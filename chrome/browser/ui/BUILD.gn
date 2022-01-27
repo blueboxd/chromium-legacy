@@ -2921,6 +2921,7 @@ static_library("ui") {
       "//ash/webui/help_app_ui",
       "//ash/webui/help_app_ui/search:mojo_bindings",
       "//ash/webui/media_app_ui",
+      "//ash/webui/multidevice_debug",
       "//ash/webui/network_ui:network_diagnostics_resource_provider",
       "//ash/webui/network_ui:network_health_resource_provider",
       "//ash/webui/network_ui:traffic_counters_resource_provider",
@@ -2979,7 +2980,6 @@ static_library("ui") {
       "//chromeos/components/local_search_service/public/cpp",
       "//chromeos/components/local_search_service/public/mojom",
       "//chromeos/components/multidevice",
-      "//chromeos/components/multidevice/debug_webui",
       "//chromeos/components/multidevice/logging",
       "//chromeos/components/onc",
       "//chromeos/components/quick_answers",
@@ -3818,6 +3818,8 @@ static_library("ui") {
 
   if (is_win || is_mac || is_linux) {
     sources += [
+      "webui/app_settings/web_app_settings_navigation_throttle.cc",
+      "webui/app_settings/web_app_settings_navigation_throttle.h",
       "webui/app_settings/web_app_settings_ui.cc",
       "webui/app_settings/web_app_settings_ui.h",
     ]

@@ -3940,6 +3940,11 @@ void RenderFrameHostImpl::DidChangeBackForwardCacheDisablingFeatures(
       BackForwardCacheDisablingFeatures::FromEnumBitmask(features_mask);
 
   MaybeEvictFromBackForwardCache();
+
+  if (back_forward_cache_disabling_features_callback_for_testing_) {
+    back_forward_cache_disabling_features_callback_for_testing_.Run(
+        renderer_reported_bfcache_disabling_features_);
+  }
 }
 
 using BackForwardCacheDisablingFeatureHandle =
@@ -4826,6 +4831,7 @@ void RenderFrameHostImpl::TakeFocus(bool reverse) {
   if (parent_or_outer_document) {
     RenderFrameProxyHost* proxy_host = GetProxyToOuterDelegate();
     DCHECK(proxy_host);
+    parent_or_outer_document->DidFocusFrame();
     parent_or_outer_document->AdvanceFocus(
         reverse ? blink::mojom::FocusType::kBackward
                 : blink::mojom::FocusType::kForward,
@@ -6693,6 +6699,8 @@ void RenderFrameHostImpl::CreateNewWindow(
       // See regression: https://crbug.com/1181673
       case network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone:
       case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups:
+      case network::mojom::CrossOriginOpenerPolicyValue::
+          kSameOriginAllowPopupsPlusCoep:
         break;
 
       // See https://html.spec.whatwg.org/#browsing-context-names (step 8)

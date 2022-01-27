@@ -647,6 +647,7 @@
 
     'client.devtools-frontend.integration': {
       'DevTools Linux': 'release_trybot_blink',
+      'DevTools Linux Fastbuild': 'release_trybot_blink_skip_typecheck',
     },
 
     'client.openscreen.chromium': {
@@ -765,11 +766,11 @@
       # waterfall bots, and run_web_tests.py can't handle that (by design).
       'linux-blink-rel': 'release_bot_blink_minimal_symbols',
       'linux-blink-optional-highdpi-rel': 'release_bot_blink_minimal_symbols',
-      'mac10.12-blink-rel': 'release_bot_blink_minimal_symbols',
-      'mac10.13-blink-rel': 'release_bot_blink_minimal_symbols',
-      'mac10.14-blink-rel': 'release_bot_blink_minimal_symbols',
+      'mac10.12-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
+      'mac10.13-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
+      'mac10.14-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
       'mac10.15-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
-      'mac11.0-blink-rel': 'release_bot_blink_minimal_symbols',
+      'mac11.0-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
       'mac11.0.arm64-blink-rel': 'release_bot_blink_arm64_minimal_symbols',
       'win7-blink-rel': 'release_bot_blink_x86_minimal_symbols',
       'win10.20h2-blink-rel': 'release_bot_blink_x86_minimal_symbols',
@@ -1058,7 +1059,7 @@
       'linux_chromium_asan_rel_ng-orchestrator': 'asan_lsan_release_trybot',
       'linux_chromium_asan_rel_ng_rts': 'asan_lsan_release_trybot',
       'linux_chromium_cfi_rel_ng': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
-      'linux_chromium_chromeos_asan_rel_ng': 'asan_lsan_chromeos_release_trybot',
+      'linux_chromium_chromeos_asan_rel_ng': 'asan_lsan_chromeos_release_bot_dcheck_always_on',
       'linux_chromium_chromeos_msan_rel_ng': 'chromeos_msan_release_bot',
       'linux_chromium_clobber_deterministic': 'release_trybot',
       'linux_chromium_clobber_rel_ng': 'release_trybot',
@@ -1222,6 +1223,7 @@
     'tryserver.devtools-frontend': {
       # Align devtools blink builders with chromium linux-rel
       'devtools_frontend_linux_blink_light_rel': 'release_trybot_blink',
+      'devtools_frontend_linux_blink_light_rel_fastbuild': 'release_trybot_blink_skip_typecheck',
       'devtools_frontend_linux_blink_rel': 'release_trybot_blink',
     },
 
@@ -1742,10 +1744,6 @@
 
     'asan_lsan_chromeos_release_bot_dcheck_always_on': [
       'asan', 'lsan', 'chromeos', 'release_trybot_minimal_symbols',
-    ],
-
-    'asan_lsan_chromeos_release_trybot': [
-      'asan', 'lsan', 'chromeos', 'release_trybot',
     ],
 
     'asan_lsan_debug_bot_reclient': [
@@ -2994,6 +2992,10 @@
       'release_trybot_blink',
     ],
 
+    'release_trybot_blink_skip_typecheck': [
+      'release_trybot_blink', 'devtools_skip_typecheck',
+    ],
+
     'release_trybot_dcheck_off': [
       'release_trybot_dcheck_off',
     ],
@@ -3431,6 +3433,10 @@
 
     'debug_static_bot_reclient': {
       'mixins': ['debug', 'static', 'minimal_symbols', 'reclient'],
+    },
+
+    'devtools_skip_typecheck': {
+      'gn_args': 'devtools_skip_typecheck=true',
     },
 
     'disable_nacl': {

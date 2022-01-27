@@ -32,11 +32,11 @@ CaretBkgnd.isEnabled;
  * Change the browser action icon and tooltip based on the enabled state.
  */
 CaretBkgnd.setIcon = function() {
-  chrome.browserAction.setIcon(
+  chrome.action.setIcon(
       {'path': CaretBkgnd.isEnabled ?
                '../caret_19_on.png' :
                '../caret_19.png'});
-  chrome.browserAction.setTitle(
+  chrome.action.setTitle(
       {'title': CaretBkgnd.isEnabled ?
                 'Turn Off Caret Browsing (F7)' :
                 'Turn On Caret Browsing (F7)' });
@@ -50,18 +50,17 @@ CaretBkgnd.setIcon = function() {
  */
 CaretBkgnd.injectContentScripts = function() {
   chrome.windows.getAll({'populate': true}, function(windows) {
-    for (let i = 0; i < windows.length; i++) {
-      const tabs = windows[i].tabs;
-      for (let j = 0; j < tabs.length; j++) {
-        for (let k = 0; k < CONTENT_SCRIPTS.length; k++) {
-          chrome.tabs.executeScript(
-              tabs[j].id,
-              {file: CONTENT_SCRIPTS[k], allFrames: true},
-              function(result) {
-                // Ignore.
-                chrome.runtime.lastError;
-              });
-        }
+    for (const w of windows) {
+      for (const tab of w.tabs) {
+        chrome.scripting.executeScript(
+            {
+              target: {tabId: tab.id, allFrames: true},
+              files: CONTENT_SCRIPTS,
+            },
+            function(result) {
+              // Ignore.
+              chrome.runtime.lastError;
+            });
       }
     }
   });
@@ -92,7 +91,7 @@ CaretBkgnd.init = function() {
     CaretBkgnd.setIcon();
     CaretBkgnd.injectContentScripts();
 
-    chrome.browserAction.onClicked.addListener(function(tab) {
+    chrome.action.onClicked.addListener(function(tab) {
       CaretBkgnd.toggle();
     });
   });

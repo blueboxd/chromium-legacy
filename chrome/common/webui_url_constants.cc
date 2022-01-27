@@ -152,6 +152,9 @@ const char kChromeUIPolicyURL[] = "chrome://policy/";
 const char kChromeUIPredictorsHost[] = "predictors";
 const char kChromeUIPrefsInternalsHost[] = "prefs-internals";
 const char kChromeUIPrintURL[] = "chrome://print/";
+const char kChromeUIPrivacySandboxDialogHost[] = "privacy-sandbox-dialog";
+const char kChromeUIPrivacySandboxDialogURL[] =
+    "chrome://privacy-sandbox-dialog";
 const char kChromeUIQuitHost[] = "quit";
 const char kChromeUIQuitURL[] = "chrome://quit/";
 // TODO(crbug.com/1202165): Remove when new quota-internals page is done.
@@ -541,6 +544,7 @@ const char kTriggeredResetProfileSettingsSubPage[] =
 const char kCreateProfileSubPage[] = "createProfile";
 const char kManageProfileSubPage[] = "manageProfile";
 const char kPeopleSubPage[] = "people";
+const char kPrivacySandboxSubPage[] = "privacySandbox";
 
 #if !BUILDFLAG(IS_ANDROID)
 const char kPrivacySandboxSubPagePath[] = "/privacySandbox";

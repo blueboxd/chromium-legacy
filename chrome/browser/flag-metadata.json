@@ -884,6 +884,11 @@
     "expiry_milestone": 99
   },
   {
+    "name": "contextual-search-literal-search-tap",
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "contextual-search-longpress-resolve",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
     "expiry_milestone": 99
@@ -1540,11 +1545,6 @@
     "name": "enable-browsing-data-lifetime-manager",
     "owners": ["ydago"],
     "expiry_milestone": 99
-  },
-  {
-    "name": "enable-canvas-context-lost-in-background",
-    "owners": [ "chrome-canvas@google.com" ],
-    "expiry_milestone": 100
   },
   {
     "name": "enable-cascade-layers",
@@ -3203,11 +3203,6 @@
     "name": "files-archivemount2",
     "owners": [ "fdegros", "nigeltao" ],
     "expiry_milestone": 112
-  },
-  {
-    "name": "files-banner-framework",
-    "owners": [ "benreich", "lucmult" ],
-    "expiry_milestone": 100
   },
   {
     "name": "files-extract-archive",

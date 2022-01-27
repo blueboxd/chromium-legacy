@@ -11,6 +11,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/android/locale_utils.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
@@ -1325,13 +1326,9 @@ void UiControllerAndroid::OnUserDataChanged(
   auto jselected_contact =
       selected_contact_profile == nullptr
           ? nullptr
-          : Java_AssistantCollectUserDataModel_createAutofillContact(
-                env, jcontext,
-                autofill::PersonalDataManagerAndroid::
-                    CreateJavaProfileFromNative(env, *selected_contact_profile),
-                collect_user_data_options->request_payer_name,
-                collect_user_data_options->request_payer_phone,
-                collect_user_data_options->request_payer_email);
+          : ui_controller_android_utils::CreateAssistantAutofillProfile(
+                env, *selected_contact_profile,
+                base::android::GetDefaultLocaleString());
   const auto& selected_contact_errors = user_data::GetContactValidationErrors(
       selected_contact_profile, *collect_user_data_options);
 
@@ -1341,11 +1338,9 @@ void UiControllerAndroid::OnUserDataChanged(
   auto jselected_shipping_address =
       selected_shipping_address == nullptr
           ? nullptr
-          : Java_AssistantCollectUserDataModel_createAutofillAddress(
-                env, jcontext,
-                autofill::PersonalDataManagerAndroid::
-                    CreateJavaProfileFromNative(env,
-                                                *selected_shipping_address));
+          : ui_controller_android_utils::CreateAssistantAutofillProfile(
+                env, *selected_shipping_address,
+                base::android::GetDefaultLocaleString());
   const auto& selected_shipping_address_errors =
       user_data::GetShippingAddressValidationErrors(selected_shipping_address,
                                                     *collect_user_data_options);
@@ -1354,26 +1349,20 @@ void UiControllerAndroid::OnUserDataChanged(
       field_change == UserData::FieldChange::AVAILABLE_PROFILES) {
     // Contacts.
     auto jcontactlist =
-        Java_AssistantCollectUserDataModel_createAutofillContactList(env);
+        Java_AssistantCollectUserDataModel_createContactList(env);
     auto contact_indices = user_data::SortContactsByCompleteness(
         *collect_user_data_options, user_data.available_contacts_);
     for (int index : contact_indices) {
-      auto jcontact = Java_AssistantCollectUserDataModel_createAutofillContact(
-          env, jcontext,
-          autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *user_data.available_contacts_[index]->profile),
-          collect_user_data_options->request_payer_name,
-          collect_user_data_options->request_payer_phone,
-          collect_user_data_options->request_payer_email);
-      if (jcontact) {
-        const auto& errors = user_data::GetContactValidationErrors(
-            user_data.available_contacts_[index]->profile.get(),
-            *collect_user_data_options);
-        Java_AssistantCollectUserDataModel_addAutofillContact(
-            env, jcontactlist, jcontact,
-            base::android::ToJavaArrayOfStrings(env, errors),
-            collect_user_data_options->can_edit_contacts);
-      }
+      const auto& errors = user_data::GetContactValidationErrors(
+          user_data.available_contacts_[index]->profile.get(),
+          *collect_user_data_options);
+      Java_AssistantCollectUserDataModel_addContact(
+          env, jcontactlist,
+          ui_controller_android_utils::CreateAssistantAutofillProfile(
+              env, *user_data.available_contacts_[index]->profile,
+              base::android::GetDefaultLocaleString()),
+          base::android::ToJavaArrayOfStrings(env, errors),
+          collect_user_data_options->can_edit_contacts);
     }
     Java_AssistantCollectUserDataModel_setAvailableContacts(env, jmodel,
                                                             jcontactlist);
@@ -1386,14 +1375,10 @@ void UiControllerAndroid::OnUserDataChanged(
     auto jbillinglist =
         Java_AssistantCollectUserDataModel_createBillingAddressList(env);
     for (const auto& address : user_data.available_addresses_) {
-      auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
-          env, jcontext,
-          autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *address->profile));
-      if (jaddress) {
-        Java_AssistantCollectUserDataModel_addBillingAddress(env, jbillinglist,
-                                                             jaddress);
-      }
+      Java_AssistantCollectUserDataModel_addBillingAddress(
+          env, jbillinglist,
+          ui_controller_android_utils::CreateAssistantAutofillProfile(
+              env, *address->profile, base::android::GetDefaultLocaleString()));
     }
     Java_AssistantCollectUserDataModel_setAvailableBillingAddresses(
         env, jmodel, jbillinglist);
@@ -1404,18 +1389,15 @@ void UiControllerAndroid::OnUserDataChanged(
     auto address_indices = user_data::SortShippingAddressesByCompleteness(
         *collect_user_data_options, user_data.available_addresses_);
     for (int index : address_indices) {
-      auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
-          env, jcontext,
-          autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *user_data.available_addresses_[index]->profile));
-      if (jaddress) {
-        const auto& errors = user_data::GetShippingAddressValidationErrors(
-            user_data.available_addresses_[index]->profile.get(),
-            *collect_user_data_options);
-        Java_AssistantCollectUserDataModel_addShippingAddress(
-            env, jshippinglist, jaddress,
-            base::android::ToJavaArrayOfStrings(env, errors));
-      }
+      const auto& errors = user_data::GetShippingAddressValidationErrors(
+          user_data.available_addresses_[index]->profile.get(),
+          *collect_user_data_options);
+      Java_AssistantCollectUserDataModel_addShippingAddress(
+          env, jshippinglist,
+          ui_controller_android_utils::CreateAssistantAutofillProfile(
+              env, *user_data.available_addresses_[index]->profile,
+              base::android::GetDefaultLocaleString()),
+          base::android::ToJavaArrayOfStrings(env, errors));
     }
     Java_AssistantCollectUserDataModel_setAvailableShippingAddresses(
         env, jmodel, jshippinglist);

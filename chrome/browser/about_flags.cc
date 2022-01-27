@@ -2817,6 +2817,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchForceCaptionName,
      flag_descriptions::kContextualSearchForceCaptionDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchForceCaption)},
+    {"contextual-search-literal-search-tap",
+     flag_descriptions::kContextualSearchLiteralSearchTapName,
+     flag_descriptions::kContextualSearchLiteralSearchTapDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchLiteralSearchTap)},
     {"contextual-search-longpress-resolve",
      flag_descriptions::kContextualSearchLongpressResolveName,
      flag_descriptions::kContextualSearchLongpressResolveDescription,
@@ -4411,9 +4416,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-archivemount2", flag_descriptions::kFilesArchivemount2Name,
      flag_descriptions::kFilesArchivemount2Description, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesArchivemount2)},
-    {"files-banner-framework", flag_descriptions::kFilesBannerFrameworkName,
-     flag_descriptions::kFilesBannerFrameworkDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kFilesBannerFramework)},
     {"files-extract-archive", flag_descriptions::kFilesExtractArchiveName,
      flag_descriptions::kFilesExtractArchiveDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesExtractArchive)},
@@ -6524,11 +6526,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCanvas2DLayersDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableCanvas2DLayers)},
 
-    {"enable-canvas-context-lost-in-background",
-     flag_descriptions::kEnableCanvasContextLostInBackgroundName,
-     flag_descriptions::kEnableCanvasContextLostInBackgroundDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableCanvasContextLostInBackground)},
-
     {"new-canvas-2d-api", flag_descriptions::kNewCanvas2DAPIName,
      flag_descriptions::kNewCanvas2DAPIDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableNewCanvas2DAPI)},
@@ -8050,7 +8047,7 @@ void CrosUrlFlagsRedirect() {
 #else
   // Note: This will only be called by the UI when Lacros is available.
   DCHECK(crosapi::BrowserManager::Get());
-  crosapi::BrowserManager::Get()->OpenUrl(GURL(chrome::kChromeUIFlagsURL));
+  crosapi::BrowserManager::Get()->SwitchToTab(GURL(chrome::kChromeUIFlagsURL));
 #endif
 }
 #endif

@@ -10,6 +10,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill_assistant.AssistantAutofillProfile;
 import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
 
 /** Delegate for the Collect user data UI which forwards events to a native counterpart. */
@@ -35,7 +36,7 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
             AssistantCollectUserDataNativeDelegateJni.get().onContactInfoChanged(
                     mNativeAssistantCollectUserDataDelegate,
                     AssistantCollectUserDataNativeDelegate.this,
-                    contactModel == null ? null : contactModel.mOption.getProfile(), eventType);
+                    contactModel == null ? null : contactModel.mOption, eventType);
         }
     }
 
@@ -47,7 +48,7 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
             AssistantCollectUserDataNativeDelegateJni.get().onShippingAddressChanged(
                     mNativeAssistantCollectUserDataDelegate,
                     AssistantCollectUserDataNativeDelegate.this,
-                    addressModel == null ? null : addressModel.mOption.getProfile(), eventType);
+                    addressModel == null ? null : addressModel.mOption, eventType);
         }
     }
 
@@ -126,10 +127,10 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
     interface Natives {
         void onContactInfoChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller,
-                @Nullable PersonalDataManager.AutofillProfile contactProfile, int eventType);
+                @Nullable AssistantAutofillProfile contactProfile, int eventType);
         void onShippingAddressChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller,
-                @Nullable PersonalDataManager.AutofillProfile address, int eventType);
+                @Nullable AssistantAutofillProfile address, int eventType);
         void onCreditCardChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller,
                 @Nullable PersonalDataManager.CreditCard card,

@@ -67,8 +67,6 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.additional_secti
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.payments.AutofillAddress;
-import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -346,7 +344,7 @@ public class AutofillAssistantCollectUserDataUiTest {
         /* Test delegate status. */
         assertThat(delegate.mPaymentMethod, nullValue());
         assertThat(delegate.mContact, nullValue());
-        assertThat(delegate.mAddress, nullValue());
+        assertThat(delegate.mShippingAddress, nullValue());
         assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.NOT_SELECTED));
         assertThat(delegate.mLoginChoice, nullValue());
     }
@@ -386,10 +384,7 @@ public class AutofillAssistantCollectUserDataUiTest {
 
         // Add profile to the list and send the updated model.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AutofillContact contact = AssistantCollectUserDataModel.createAutofillContact(
-                    mTestRule.getActivity(),
-                    mHelper.createDummyProfile("John Doe", "john@gmail.com"),
-                    /* requestName= */ true, /* requestPhone= */ true, /* requestEmail= */ false);
+            AssistantAutofillProfile contact = createDummyContact("John Doe", "john@gmail.com");
             model.set(AssistantCollectUserDataModel.AVAILABLE_CONTACTS,
                     Collections.singletonList(new ContactModel(contact)));
             model.set(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS,
@@ -594,15 +589,12 @@ public class AutofillAssistantCollectUserDataUiTest {
                     mDefaultContactFullOptions);
             model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
             model.set(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS, true);
-            AutofillContact contact = AssistantCollectUserDataModel.createAutofillContact(
-                    mTestRule.getActivity(), profile, /* requestName= */ true,
-                    /* requestPhone= */ true, /* requestEmail= */ true);
+            AssistantAutofillProfile contact = createDummyContact(profile);
             model.set(AssistantCollectUserDataModel.AVAILABLE_CONTACTS,
                     Collections.singletonList(new ContactModel(contact)));
             model.set(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS,
                     new ContactModel(contact));
-            AutofillAddress address = AssistantCollectUserDataModel.createAutofillAddress(
-                    mTestRule.getActivity(), profile);
+            AssistantAutofillProfile address = createDummyAddress(profile);
             model.set(AssistantCollectUserDataModel.AVAILABLE_SHIPPING_ADDRESSES,
                     Collections.singletonList(new AddressModel(address)));
             model.set(AssistantCollectUserDataModel.SELECTED_SHIPPING_ADDRESS,
@@ -678,20 +670,16 @@ public class AutofillAssistantCollectUserDataUiTest {
         // does not trigger a notification.
         assertThat(delegate.mPaymentMethod, is(nullValue()));
         assertThat(delegate.mContact, is(nullValue()));
-        assertThat(delegate.mAddress, is(nullValue()));
+        assertThat(delegate.mShippingAddress, is(nullValue()));
         assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.NOT_SELECTED));
         assertThat(delegate.mLoginChoice, is(nullValue()));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AutofillContact contact = AssistantCollectUserDataModel.createAutofillContact(
-                    mTestRule.getActivity(), profile, /* requestName= */ true,
-                    /* requestPhone= */ true, /* requestEmail= */ true);
+            AssistantAutofillProfile contact = createDummyContact(profile);
             model.set(AssistantCollectUserDataModel.AVAILABLE_CONTACTS,
                     Collections.singletonList(new ContactModel(contact)));
-            AutofillAddress address = AssistantCollectUserDataModel.createAutofillAddress(
-                    mTestRule.getActivity(), profile);
             model.set(AssistantCollectUserDataModel.AVAILABLE_SHIPPING_ADDRESSES,
-                    Collections.singletonList(new AddressModel(address)));
+                    Collections.singletonList(new AddressModel(createDummyAddress(profile))));
             AutofillPaymentInstrument paymentInstrument =
                     AssistantCollectUserDataModel.createAutofillPaymentInstrument(
                             mTestRule.getWebContents(), creditCard, profile);
@@ -705,7 +693,7 @@ public class AutofillAssistantCollectUserDataUiTest {
         // Check delegate status. Setting items again will not send a notification to the delegate.
         assertThat(delegate.mPaymentMethod, is(nullValue()));
         assertThat(delegate.mContact, is(nullValue()));
-        assertThat(delegate.mAddress, is(nullValue()));
+        assertThat(delegate.mShippingAddress, is(nullValue()));
         assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.NOT_SELECTED));
         assertThat(delegate.mLoginChoice, is(nullValue()));
     }
@@ -714,22 +702,10 @@ public class AutofillAssistantCollectUserDataUiTest {
     @Test
     @MediumTest
     public void testContactDetailsCustomSummary() throws Exception {
-        AutofillContact contactFull =
-                AssistantCollectUserDataModel.createAutofillContact(mTestRule.getActivity(),
-                        new PersonalDataManager.AutofillProfile("GUID", "https://www.example.com",
-                                /* honorificPrefix= */ "", "Maggie Simpson", "Acme Inc.",
-                                "123 Main", "California", "Los Angeles", "", "90210", "", "UZ",
-                                "555 123-4567", "maggie@simpson.com", ""),
-                        /* requestName= */ true,
-                        /* requestPhone= */ true, /* requestEmail= */ true);
-
-        AutofillContact contactWithoutEmail = AssistantCollectUserDataModel.createAutofillContact(
-                mTestRule.getActivity(),
-                new PersonalDataManager.AutofillProfile("GUID", "https://www.example.com",
-                        /* honorificPrefix= */ "", "John Simpson", "Acme Inc.", "123 Main",
-                        "California", "Los Angeles", "", "90210", "", "UZ", "555 123-4567", "", ""),
-                /* requestName= */ true,
-                /* requestPhone= */ true, /* requestEmail= */ true);
+        AssistantAutofillProfile contactFull =
+                createDummyContact("Maggie Simpson", "maggie@simpson.com", "555 123-4567");
+        AssistantAutofillProfile contactWithoutEmail =
+                createDummyContact("John Simpson", /* email= */ "", "555 123-4567");
 
         AssistantCollectUserDataModel model = createCollectUserDataModel();
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
@@ -1173,5 +1149,34 @@ public class AutofillAssistantCollectUserDataUiTest {
                 .check(matches(withText(expectedLabel)));
         onView(allOf(withId(R.id.sublabel), isDescendantOfA(is(fullView))))
                 .check(matches(withText(expectedSublabel)));
+    }
+
+    private AssistantAutofillProfile createDummyContact(String name, String email) {
+        return createDummyContact(name, email, /* phone= */ "");
+    }
+
+    private AssistantAutofillProfile createDummyContact(
+            PersonalDataManager.AutofillProfile profile) {
+        return createDummyContact(
+                profile.getFullName(), profile.getEmailAddress(), profile.getPhoneNumber());
+    }
+
+    private AssistantAutofillProfile createDummyContact(String name, String email, String phone) {
+        return new AssistantAutofillProfile(/* guid= */ "", /* origin= */ "", /* isLocal= */ true,
+                /* honorificPrefix= */ "", name,
+                /* companyName= */ "", /* streetAddress= */ "", /* region= */ "",
+                /* locality= */ "",
+                /* dependentLocality= */ "", /* postalCode= */ "", /* sortingCode= */ "",
+                /* countryCode= */ "", phone, email, /* languageCode= */ "en-US");
+    }
+
+    private AssistantAutofillProfile createDummyAddress(
+            PersonalDataManager.AutofillProfile profile) {
+        return new AssistantAutofillProfile(profile.getGUID(), profile.getOrigin(),
+                profile.getIsLocal(), profile.getHonorificPrefix(), profile.getFullName(),
+                profile.getCompanyName(), profile.getStreetAddress(), profile.getRegion(),
+                profile.getLocality(), profile.getDependentLocality(), profile.getPostalCode(),
+                profile.getSortingCode(), profile.getCountryCode(), profile.getPhoneNumber(),
+                profile.getEmailAddress(), profile.getLanguageCode());
     }
 }

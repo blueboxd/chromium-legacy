@@ -1000,11 +1000,6 @@ const char kDownloadRangeName[] = "Enable download range support";
 const char kDownloadRangeDescription[] =
     "Enables arbitrary download range request support.";
 
-const char kEnableCanvasContextLostInBackgroundName[] =
-    "Enable canvas context to be lost in background";
-const char kEnableCanvasContextLostInBackgroundDescription[] =
-    "Enable canvas context to be cleared when it is running in background";
-
 const char kEnableLazyFrameLoadingName[] = "Enable lazy frame loading";
 const char kEnableLazyFrameLoadingDescription[] =
     "Defers the loading of iframes marked with the attribute 'loading=lazy' "
@@ -2981,6 +2976,14 @@ const char kContextualSearchForceCaptionName[] =
 const char kContextualSearchForceCaptionDescription[] =
     "Forces a caption to always be shown in the Touch to Search Bar.";
 
+const char kContextualSearchLiteralSearchTapName[] =
+    "Contextual Search literal search with tap";
+const char kContextualSearchLiteralSearchTapDescription[] =
+    "Enables Contextual Search to be activated with a single tap and produce "
+    "a literal search. This is intended to be used in conjunction with the "
+    "long-press resolve feature to allow both gestures to trigger a form of "
+    "Touch to Search.";
+
 const char kContextualSearchLongpressResolveName[] =
     "Contextual Search long-press Resolves";
 const char kContextualSearchLongpressResolveDescription[] =
@@ -4681,11 +4684,6 @@ const char kFilesArchivemount2Name[] = "Archivemount in Files App (2nd Tier)";
 const char kFilesArchivemount2Description[] =
     "Enable mounting additional archive formats in File Manager. This has no "
     "effect unless #files-archivemount is also enabled.";
-
-const char kFilesBannerFrameworkName[] =
-    "Updated Banner framework in Files app";
-const char kFilesBannerFrameworkDescription[] =
-    "Enable the updated banner framework in Files app";
 
 const char kFilesExtractArchiveName[] = "Extract archive in Files app";
 const char kFilesExtractArchiveDescription[] =

@@ -622,9 +622,6 @@ extern const char kDownloadProgressMessageDescription[];
 extern const char kDownloadRangeName[];
 extern const char kDownloadRangeDescription[];
 
-extern const char kEnableCanvasContextLostInBackgroundName[];
-extern const char kEnableCanvasContextLostInBackgroundDescription[];
-
 extern const char kEnableFencedFramesName[];
 extern const char kEnableFencedFramesDescription[];
 
@@ -1699,6 +1696,9 @@ extern const char kContextualSearchDelayedIntelligenceDescription[];
 extern const char kContextualSearchForceCaptionName[];
 extern const char kContextualSearchForceCaptionDescription[];
 
+extern const char kContextualSearchLiteralSearchTapName[];
+extern const char kContextualSearchLiteralSearchTapDescription[];
+
 extern const char kContextualSearchLongpressResolveName[];
 extern const char kContextualSearchLongpressResolveDescription[];
 
@@ -2683,9 +2683,6 @@ extern const char kFilesArchivemountDescription[];
 
 extern const char kFilesArchivemount2Name[];
 extern const char kFilesArchivemount2Description[];
-
-extern const char kFilesBannerFrameworkName[];
-extern const char kFilesBannerFrameworkDescription[];
 
 extern const char kFilesExtractArchiveName[];
 extern const char kFilesExtractArchiveDescription[];

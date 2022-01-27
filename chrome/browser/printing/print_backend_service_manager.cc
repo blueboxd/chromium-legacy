@@ -41,6 +41,9 @@ namespace {
 constexpr char kPrintBackendRequiresElevatedPrivilegeHistogramName[] =
     "Printing.PrintBackend.DriversRequiringElevatedPrivilegeEncountered";
 
+// For fetching remote IDs when there is no printer name.
+constexpr char kEmptyPrinterName[] = "";
+
 // Amount of idle time to wait before resetting the connection to the service.
 constexpr base::TimeDelta kNoClientsRegisteredResetOnIdleTimeout =
     base::Seconds(10);
@@ -54,6 +57,20 @@ PrintBackendServiceManager* g_print_backend_service_manager_singleton = nullptr;
 PrintBackendServiceManager::PrintBackendServiceManager() = default;
 
 PrintBackendServiceManager::~PrintBackendServiceManager() = default;
+
+void PrintBackendServiceManager::SetCrashKeys(const std::string& printer_name) {
+  if (sandboxed_service_remote_for_test_)
+    return;
+
+  // TODO(crbug.com/1227561)  Remove local call for driver info, don't want
+  // any residual accesses left into the printer drivers from the browser
+  // process.
+  base::ScopedAllowBlocking allow_blocking;
+  scoped_refptr<PrintBackend> print_backend =
+      PrintBackend::CreateInstance(g_browser_process->GetApplicationLocale());
+  crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
+      print_backend->GetPrinterDriverInfo(printer_name));
+}
 
 uint32_t PrintBackendServiceManager::RegisterClient() {
   uint32_t client_id = ++last_client_id_;
@@ -74,7 +91,6 @@ uint32_t PrintBackendServiceManager::RegisterClient() {
   // We don't know if a particular printer might be needed, so for now just
   // start for the blank `printer_name` which would cover queries like getting
   // the default printer and enumerating the list of printers.
-  constexpr char kEmptyPrinterName[] = "";
   std::string remote_id = GetRemoteIdForPrinterName(kEmptyPrinterName);
   auto iter = sandboxed_remotes_.find(remote_id);
   if (iter == sandboxed_remotes_.end()) {
@@ -142,9 +158,8 @@ void PrintBackendServiceManager::EnumeratePrinters(
   // Get a callback ID to represent this command.
   auto saved_callback_id = base::UnguessableToken::Create();
 
-  const std::string kEmptyPrinterName;
-  bool is_sandboxed;
   std::string remote_id = GetRemoteIdForPrinterName(kEmptyPrinterName);
+  bool is_sandboxed;
   auto& service = GetService(kEmptyPrinterName, &is_sandboxed);
 
   SaveCallback(GetRemoteSavedEnumeratePrintersCallbacks(is_sandboxed),
@@ -173,16 +188,7 @@ void PrintBackendServiceManager::FetchCapabilities(
   SaveCallback(GetRemoteSavedFetchCapabilitiesCallbacks(is_sandboxed),
                remote_id, saved_callback_id, std::move(callback));
 
-  if (!sandboxed_service_remote_for_test_) {
-    // TODO(crbug.com/1227561)  Remove local call for driver info, don't want
-    // any residual accesses left into the printer drivers from the browser
-    // process.
-    base::ScopedAllowBlocking allow_blocking;
-    scoped_refptr<PrintBackend> print_backend =
-        PrintBackend::CreateInstance(g_browser_process->GetApplicationLocale());
-    crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
-        print_backend->GetPrinterDriverInfo(printer_name));
-  }
+  SetCrashKeys(printer_name);
 
   DVLOG(1) << "Sending FetchCapabilities on remote `" << remote_id
            << "`, saved callback ID of " << saved_callback_id;
@@ -201,10 +207,9 @@ void PrintBackendServiceManager::GetDefaultPrinterName(
   // Get a callback ID to represent this command.
   auto saved_callback_id = base::UnguessableToken::Create();
 
-  std::string remote_id =
-      GetRemoteIdForPrinterName(/*printer_name=*/std::string());
+  std::string remote_id = GetRemoteIdForPrinterName(kEmptyPrinterName);
   bool is_sandboxed;
-  auto& service = GetService(/*printer_name=*/std::string(), &is_sandboxed);
+  auto& service = GetService(kEmptyPrinterName, &is_sandboxed);
 
   SaveCallback(GetRemoteSavedGetDefaultPrinterNameCallbacks(is_sandboxed),
                remote_id, saved_callback_id, std::move(callback));
@@ -234,16 +239,7 @@ void PrintBackendServiceManager::GetPrinterSemanticCapsAndDefaults(
       GetRemoteSavedGetPrinterSemanticCapsAndDefaultsCallbacks(is_sandboxed),
       remote_id, saved_callback_id, std::move(callback));
 
-  if (!sandboxed_service_remote_for_test_) {
-    // TODO(crbug.com/1227561)  Remove local call for driver info, don't want
-    // any residual accesses left into the printer drivers from the browser
-    // process.
-    base::ScopedAllowBlocking allow_blocking;
-    scoped_refptr<PrintBackend> print_backend =
-        PrintBackend::CreateInstance(g_browser_process->GetApplicationLocale());
-    crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
-        print_backend->GetPrinterDriverInfo(printer_name));
-  }
+  SetCrashKeys(printer_name);
 
   DVLOG(1) << "Sending GetPrinterSemanticCapsAndDefaults on remote `"
            << remote_id << "`, saved callback ID of " << saved_callback_id;
@@ -271,16 +267,7 @@ void PrintBackendServiceManager::UpdatePrintSettings(
   SaveCallback(GetRemoteSavedUpdatePrintSettingsCallbacks(is_sandboxed),
                remote_id, saved_callback_id, std::move(callback));
 
-  if (!sandboxed_service_remote_for_test_) {
-    // TODO(crbug.com/1227561)  Remove local call for driver info, don't want
-    // any residual accesses left into the printer drivers from the browser
-    // process.
-    base::ScopedAllowBlocking allow_blocking;
-    scoped_refptr<PrintBackend> print_backend =
-        PrintBackend::CreateInstance(g_browser_process->GetApplicationLocale());
-    crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
-        print_backend->GetPrinterDriverInfo(printer_name));
-  }
+  SetCrashKeys(printer_name);
 
   DVLOG(1) << "Sending UpdatePrintSettings on remote `" << remote_id
            << "`, saved callback ID of " << saved_callback_id;
@@ -311,16 +298,7 @@ void PrintBackendServiceManager::StartPrinting(
   SaveCallback(GetRemoteSavedStartPrintingCallbacks(is_sandboxed), remote_id,
                saved_callback_id, std::move(callback));
 
-  if (!sandboxed_service_remote_for_test_) {
-    // TODO(crbug.com/1227561)  Remove local call for driver info, don't want
-    // any residual accesses left into the printer drivers from the browser
-    // process.
-    base::ScopedAllowBlocking allow_blocking;
-    scoped_refptr<PrintBackend> print_backend =
-        PrintBackend::CreateInstance(g_browser_process->GetApplicationLocale());
-    crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
-        print_backend->GetPrinterDriverInfo(printer_name));
-  }
+  SetCrashKeys(printer_name);
 
   DVLOG(1) << "Sending StartPrinting on remote `" << remote_id
            << "`, saved callback ID of " << saved_callback_id;
@@ -353,16 +331,7 @@ void PrintBackendServiceManager::RenderPrintedPage(
   SaveCallback(GetRemoteSavedRenderPrintedPageCallbacks(is_sandboxed),
                remote_id, saved_callback_id, std::move(callback));
 
-  if (!sandboxed_service_remote_for_test_) {
-    // TODO(crbug.com/1227561)  Remove local call for driver info, don't want
-    // any residual accesses left into the printer drivers from the browser
-    // process.
-    base::ScopedAllowBlocking allow_blocking;
-    scoped_refptr<PrintBackend> print_backend =
-        PrintBackend::CreateInstance(g_browser_process->GetApplicationLocale());
-    crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
-        print_backend->GetPrinterDriverInfo(printer_name));
-  }
+  SetCrashKeys(printer_name);
 
   // Page numbers are 0-based for the printing context.
   const uint32_t page_index = page.page_number() - 1;
@@ -433,14 +402,13 @@ void PrintBackendServiceManager::ResetForTesting() {
 std::string PrintBackendServiceManager::GetRemoteIdForPrinterName(
     const std::string& printer_name) const {
   if (sandboxed_service_remote_for_test_) {
-    return std::string();  // Test environment is always just one instance for
-                           // all printers.
+    // Test environment is always just one instance for all printers.
+    return std::string();
   }
 
 #if BUILDFLAG(IS_WIN)
-  // Windows drivers are not thread safe.  Use a
-  // process per driver to prevent bad interactions
-  // when interfacing to multiple drivers in parallel.
+  // Windows drivers are not thread safe.  Use a process per driver to prevent
+  // bad interactions when interfacing to multiple drivers in parallel.
   // https://crbug.com/957242
   return printer_name;
 #else

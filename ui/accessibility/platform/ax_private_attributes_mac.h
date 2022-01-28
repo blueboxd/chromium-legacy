@@ -46,6 +46,10 @@ AX_EXPORT constexpr NSString* const NSAccessibilityDOMIdentifierAttribute =
     @"AXDOMIdentifier";
 AX_EXPORT constexpr NSString* const NSAccessibilityDropEffectsAttribute =
     @"AXDropEffects";
+AX_EXPORT constexpr NSString* const NSAccessibilityElementBusyAttribute =
+    @"AXElementBusy";
+AX_EXPORT constexpr NSString* const NSAccessibilityGrabbedAttribute =
+    @"AXGrabbed";
 AX_EXPORT constexpr NSString* const NSAccessibilityHasPopupAttribute =
     @"AXHasPopup";
 AX_EXPORT constexpr NSString* const NSAccessibilityInvalidAttribute =

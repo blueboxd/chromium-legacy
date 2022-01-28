@@ -26,9 +26,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/l10n_file_util.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/message_bundle.h"
@@ -129,8 +129,8 @@ void ChromeExtensionMessageFilter::OnGetExtMessageBundle(
   if (default_locale.empty()) {
     // A little optimization: send the answer here to avoid an extra thread hop.
     std::unique_ptr<extensions::MessageBundle::SubstitutionMap> dictionary_map(
-        extensions::file_util::LoadNonLocalizedMessageBundleSubstitutionMap(
-            extension_id));
+        extensions::l10n_file_util::
+            LoadNonLocalizedMessageBundleSubstitutionMap(extension_id));
     ExtensionHostMsg_GetMessageBundle::WriteReplyParams(reply_msg,
                                                         *dictionary_map);
     Send(reply_msg);
@@ -173,7 +173,7 @@ void ChromeExtensionMessageFilter::OnGetExtMessageBundleAsync(
     extension_l10n_util::GzippedMessagesPermission gzip_permission,
     IPC::Message* reply_msg) {
   std::unique_ptr<extensions::MessageBundle::SubstitutionMap> dictionary_map(
-      extensions::file_util::LoadMessageBundleSubstitutionMapFromPaths(
+      extensions::l10n_file_util::LoadMessageBundleSubstitutionMapFromPaths(
           extension_paths, main_extension_id, default_locale, gzip_permission));
 
   ExtensionHostMsg_GetMessageBundle::WriteReplyParams(reply_msg,
@@ -190,7 +190,8 @@ void ChromeExtensionMessageFilter::OnAddAPIActionToExtensionActivityLog(
   scoped_refptr<extensions::Action> action = new extensions::Action(
       extension_id, base::Time::Now(), extensions::Action::ACTION_API_CALL,
       params.api_call);
-  action->set_args(params.arguments.CreateDeepCopy());
+  action->set_args(base::ListValue::From(
+      base::Value::ToUniquePtrValue(params.arguments.Clone())));
   if (!params.extra.empty()) {
     action->mutable_other()->SetString(
         activity_log_constants::kActionExtra, params.extra);
@@ -207,7 +208,8 @@ void ChromeExtensionMessageFilter::OnAddDOMActionToExtensionActivityLog(
   scoped_refptr<extensions::Action> action = new extensions::Action(
       extension_id, base::Time::Now(), extensions::Action::ACTION_DOM_ACCESS,
       params.api_call);
-  action->set_args(params.arguments.CreateDeepCopy());
+  action->set_args(base::ListValue::From(
+      base::Value::ToUniquePtrValue(params.arguments.Clone())));
   action->set_page_url(params.url);
   action->set_page_title(base::UTF16ToUTF8(params.url_title));
   action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
@@ -224,7 +226,8 @@ void ChromeExtensionMessageFilter::OnAddEventToExtensionActivityLog(
   scoped_refptr<extensions::Action> action = new extensions::Action(
       extension_id, base::Time::Now(), extensions::Action::ACTION_API_EVENT,
       params.api_call);
-  action->set_args(params.arguments.CreateDeepCopy());
+  action->set_args(base::ListValue::From(
+      base::Value::ToUniquePtrValue(params.arguments.Clone())));
   if (!params.extra.empty()) {
     action->mutable_other()->SetString(activity_log_constants::kActionExtra,
                                        params.extra);

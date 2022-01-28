@@ -750,7 +750,7 @@ const base::Feature kSnoopingProtection{"SnoopingProtection",
 
 // Enable or disable dark mode support for the Chrome OS virtual keyboard.
 const base::Feature kVirtualKeyboardDarkMode{"VirtualKeyboardDarkMode",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, options page for each input method will be opened in ChromeOS
 // settings. Otherwise it will be opened in a new web page in Chrome browser.
@@ -1042,6 +1042,11 @@ const base::Feature kProjectorManagedUser{"ProjectorManagedUser",
 // We are deprecating the old marker tools in favor of the annotator tools.
 const base::Feature kProjectorAnnotator{"ProjectorAnnotator",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the Projector app launches in debug mode, with more detailed
+// error messages.
+const base::Feature kProjectorAppDebug{"ProjectorAppDebug",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the quick dim prototype is enabled.
 const base::Feature kQuickDim{"QuickDim", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1801,6 +1806,10 @@ bool IsProjectorManagedUserEnabled() {
 bool IsProjectorAnnotatorEnabled() {
   return IsProjectorEnabled() &&
          base::FeatureList::IsEnabled(kProjectorAnnotator);
+}
+
+bool IsProjectorAppDebugMode() {
+  return base::FeatureList::IsEnabled(kProjectorAppDebug);
 }
 
 bool IsQuickDimEnabled() {

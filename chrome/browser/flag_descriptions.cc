@@ -262,6 +262,10 @@ const char kDnsOverHttpsDescription[] =
     "try to use a secure HTTPS connection to look up the addresses of websites "
     "and other web resources.";
 
+const char kAssistantConsentModalName[] = "AssistantConsentModal";
+const char kAssistantConsentModalDescription[] =
+    "Enables the modal version of the Assistant voice search consent dialog.";
+
 const char kAssistantConsentSimplifiedTextName[] =
     "AssistantConsentSimplifiedText";
 const char kAssistantConsentSimplifiedTextDescription[] =
@@ -890,6 +894,14 @@ const char kEnableMigrateDefaultChromeAppToWebAppsNonGSuiteName[] =
 const char kEnableMigrateDefaultChromeAppToWebAppsNonGSuiteDescription[] =
     "Enable the migration of default installed non-G Suite Chrome apps over to "
     "their corresponding web apps.";
+
+const char kEnablePreinstalledWebAppDuplicationFixerName[] =
+    "Enable the app deduplication fix for migrated preinstalled web apps";
+const char kEnablePreinstalledWebAppDuplicationFixerDescription[] =
+    "The preinstalled web app migration encountered app duplication issues "
+    "when it rolled out. This code path will attempt to re-migrate instances "
+    "of app duplication where the old app failed to stay removed. See "
+    "https://crbug.com/1290716.";
 
 const char kEnableSyncRequiresPoliciesLoadedName[] =
     "Sync waits for all policies to load before starting";
@@ -3486,6 +3498,11 @@ const char kStrictSiteIsolationDescription[] =
 const char kTabGroupsForTabletsName[] = "Tab groups on tablets";
 const char kTabGroupsForTabletsDescription[] = "Enable tab groups on tablets.";
 
+const char kTabStripImprovementsAndroidName[] =
+    "Tab strip improvements for Android.";
+const char kTabStripImprovementsAndroidDescription[] =
+    "Enables scrollable tab strip with tab group indicators.";
+
 const char kThemeRefactorAndroidName[] = "Theme refactor on Android";
 const char kThemeRefactorAndroidDescription[] =
     "Enables the theme refactoring on Android.";
@@ -3676,6 +3693,12 @@ const char kNtpRealboxMatchOmniboxThemeName[] =
     "NTP Realbox Matches Omnibox Theme";
 const char kNtpRealboxMatchOmniboxThemeDescription[] =
     "NTP Realbox matches the Omnibox theme when enabled.";
+
+const char kNtpRealboxMatchSearchboxThemeName[] =
+    "NTP Realbox Matches Searchbox Theme";
+const char kNtpRealboxMatchSearchboxThemeDescription[] =
+    "NTP Realbox matches the Searchbox theme when enabled. Specifically a "
+    "border, drop shadow on hover.";
 
 const char kNtpRealboxPedalsName[] = "NTP Realbox Pedals";
 const char kNtpRealboxPedalsDescription[] =

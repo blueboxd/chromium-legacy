@@ -879,7 +879,7 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
   void VerifyBeforeValues(Layer* layer) {
     EXPECT_EQ(gfx::Size(10, 10).ToString(), layer->bounds().ToString());
     EXPECT_FALSE(layer->hide_layer_and_subtree());
-    EXPECT_FALSE(layer->DrawsContent());
+    EXPECT_FALSE(layer->draws_content());
   }
 
   void SetBeforeValues(Layer* layer) {
@@ -902,7 +902,7 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
         EXPECT_EQ(tree.EffectiveOpacity(node), 0.f);
         break;
       case DRAWS_CONTENT:
-        EXPECT_TRUE(layer->DrawsContent());
+        EXPECT_TRUE(layer->draws_content());
         break;
     }
   }
@@ -5095,7 +5095,7 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
         // avoid causing a second commit to be scheduled. If a property change
         // is made during this, however, it needs to be pushed in the upcoming
         // commit.
-        auto ignore = scrollbar_layer_->IgnoreSetNeedsCommit();
+        auto ignore = scrollbar_layer_->IgnoreSetNeedsCommitForTest();
 
         scrollbar_layer_->SetBounds(gfx::Size(30, 30));
 

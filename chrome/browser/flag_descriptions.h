@@ -157,6 +157,9 @@ extern const char kUseCustomMessagesDomainDescription[];
 extern const char kAndroidPictureInPictureAPIName[];
 extern const char kAndroidPictureInPictureAPIDescription[];
 
+extern const char kAssistantConsentModalName[];
+extern const char kAssistantConsentModalDescription[];
+
 extern const char kAssistantConsentSimplifiedTextName[];
 extern const char kAssistantConsentSimplifiedTextDescription[];
 
@@ -520,6 +523,9 @@ extern const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteDescription[];
 
 extern const char kEnableMigrateDefaultChromeAppToWebAppsNonGSuiteName[];
 extern const char kEnableMigrateDefaultChromeAppToWebAppsNonGSuiteDescription[];
+
+extern const char kEnablePreinstalledWebAppDuplicationFixerName[];
+extern const char kEnablePreinstalledWebAppDuplicationFixerDescription[];
 
 extern const char kEnableSyncRequiresPoliciesLoadedName[];
 extern const char kEnableSyncRequiresPoliciesLoadedDescription[];
@@ -1387,6 +1393,9 @@ extern const char kTabOutlinesInLowContrastThemesDescription[];
 extern const char kTabSearchFuzzySearchName[];
 extern const char kTabSearchFuzzySearchDescription[];
 
+extern const char kTabStripImprovementsAndroidName[];
+extern const char kTabStripImprovementsAndroidDescription[];
+
 extern const char kTailoredSecurityIntegrationName[];
 extern const char kTailoredSecurityIntegrationDescription[];
 
@@ -2112,6 +2121,9 @@ extern const char kNtpModulesRedesignedLayoutDescription[];
 
 extern const char kNtpRealboxMatchOmniboxThemeName[];
 extern const char kNtpRealboxMatchOmniboxThemeDescription[];
+
+extern const char kNtpRealboxMatchSearchboxThemeName[];
+extern const char kNtpRealboxMatchSearchboxThemeDescription[];
 
 extern const char kNtpRealboxPedalsName[];
 extern const char kNtpRealboxPedalsDescription[];

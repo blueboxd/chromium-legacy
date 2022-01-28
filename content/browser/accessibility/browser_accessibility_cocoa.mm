@@ -70,10 +70,8 @@ namespace {
 // Private WebKit accessibility attributes.
 NSString* const NSAccessibilityEditableAncestorAttribute =
     @"AXEditableAncestor";
-NSString* const NSAccessibilityElementBusyAttribute = @"AXElementBusy";
 NSString* const NSAccessibilityFocusableAncestorAttribute =
     @"AXFocusableAncestor";
-NSString* const NSAccessibilityGrabbedAttribute = @"AXGrabbed";
 NSString* const NSAccessibilityHighestEditableAncestorAttribute =
     @"AXHighestEditableAncestor";
 NSString* const NSAccessibilityIsMultiSelectableAttribute =
@@ -634,13 +632,11 @@ bool content::IsNSRange(id value) {
       {NSAccessibilityDisclosureLevelAttribute, @"disclosureLevel"},
       {NSAccessibilityDisclosedRowsAttribute, @"disclosedRows"},
       {NSAccessibilityEditableAncestorAttribute, @"editableAncestor"},
-      {NSAccessibilityElementBusyAttribute, @"elementBusy"},
       {NSAccessibilityEnabledAttribute, @"enabled"},
       {NSAccessibilityEndTextMarkerAttribute, @"endTextMarker"},
       {NSAccessibilityExpandedAttribute, @"expanded"},
       {NSAccessibilityFocusableAncestorAttribute, @"focusableAncestor"},
       {NSAccessibilityFocusedAttribute, @"focused"},
-      {NSAccessibilityGrabbedAttribute, @"grabbed"},
       {NSAccessibilityHeaderAttribute, @"header"},
       {NSAccessibilityHelpAttribute, @"help"},
       {NSAccessibilityHighestEditableAncestorAttribute,
@@ -953,12 +949,6 @@ bool content::IsNSRange(id value) {
   return nil;
 }
 
-- (NSNumber*)elementBusy {
-  if (![self instanceActive])
-    return nil;
-  return @(_owner->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy));
-}
-
 - (NSNumber*)enabled {
   if (![self instanceActive])
     return nil;
@@ -1002,16 +992,6 @@ bool content::IsNSRange(id value) {
     return nil;
   BrowserAccessibilityManager* manager = _owner->manager();
   return @(manager->GetFocus() == _owner);
-}
-
-- (NSNumber*)grabbed {
-  if (![self instanceActive])
-    return nil;
-  std::string grabbed;
-  if (_owner->GetHtmlAttribute("aria-grabbed", &grabbed) && grabbed == "true")
-    return @YES;
-
-  return @NO;
 }
 
 - (id)header {
@@ -2839,7 +2819,6 @@ bool content::IsNSRange(id value) {
       arrayWithObjects:NSAccessibilityChildrenAttribute,
                        NSAccessibilityIdentifierChromeAttribute,
                        NSAccessibilityDescriptionAttribute,
-                       NSAccessibilityElementBusyAttribute,
                        NSAccessibilityEnabledAttribute,
                        NSAccessibilityEndTextMarkerAttribute,
                        NSAccessibilityFocusedAttribute,
@@ -2960,10 +2939,6 @@ bool content::IsNSRange(id value) {
       // NSAccessibilityValueAutofillTypeAttribute
     ]];
   }
-
-  std::string grabbed;
-  if (_owner->GetHtmlAttribute("aria-grabbed", &grabbed))
-    [ret addObject:NSAccessibilityGrabbedAttribute];
 
   if (_owner->HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     [ret addObject:NSAccessibilitySelectedAttribute];

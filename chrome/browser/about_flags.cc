@@ -1514,6 +1514,13 @@ const FeatureEntry::FeatureVariation kRealboxMatchOmniboxThemeVariations[] = {
      kRealboxMatchOmniboxThemeVar2, base::size(kRealboxMatchOmniboxThemeVar2),
      nullptr}};
 
+const FeatureEntry::FeatureParam kRealboxMatchSearchboxThemeRoundedCorners[] = {
+    {ntp_features::kRealboxMatchSearchboxThemeParam, "1"}};
+
+const FeatureEntry::FeatureVariation kRealboxMatchSearchboxThemeVariations[] = {
+    {"(Rounded Corners)", kRealboxMatchSearchboxThemeRoundedCorners,
+     base::size(kRealboxMatchSearchboxThemeRoundedCorners), nullptr}};
+
 const FeatureEntry::FeatureParam kNtpSafeBrowsingModuleFastCooldown[] = {
     {ntp_features::kNtpSafeBrowsingModuleCooldownPeriodDaysParam, "0.001"},
     {ntp_features::kNtpSafeBrowsingModuleCountMaxParam, "1"}};
@@ -2319,6 +2326,7 @@ const FeatureEntry::FeatureVariation kDrawPredictedPointVariations[] = {
      kDrawPredictedPointExperiment2Points3Ms,
      base::size(kDrawPredictedPointExperiment2Points3Ms), nullptr}};
 
+#if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam kFedCmVariationAutoSignin[] = {
     {features::kFedCmAutoSigninFieldTrialParamName, "true"}};
 const FeatureEntry::FeatureParam kFedCmVariationInterception[] = {
@@ -2329,6 +2337,7 @@ const FeatureEntry::FeatureVariation kFedCmFeatureVariations[] = {
     {"- with FedCM HTTP filtering (very experimental)",
      kFedCmVariationInterception, base::size(kFedCmVariationInterception),
      nullptr}};
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const FeatureEntry::Choice kForceControlFaceAeChoices[] = {
@@ -3518,6 +3527,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVoiceButtonInTopToolbarName,
      flag_descriptions::kVoiceButtonInTopToolbarDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kVoiceButtonInTopToolbar)},
+    {"assistant-consent-modal", flag_descriptions::kAssistantConsentModalName,
+     flag_descriptions::kAssistantConsentModalDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAssistantConsentModal)},
     {"assistant-consent-simplified-text",
      flag_descriptions::kAssistantConsentSimplifiedTextName,
      flag_descriptions::kAssistantConsentSimplifiedTextDescription, kOsAndroid,
@@ -3824,6 +3836,11 @@ const FeatureEntry kFeatureEntries[] = {
          kEnableMigrateDefaultChromeAppToWebAppsNonGSuiteDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(web_app::kMigrateDefaultChromeAppToWebAppsNonGSuite)},
+    {"enable-preinstalled-web-app-duplication-fixer",
+     flag_descriptions::kEnablePreinstalledWebAppDuplicationFixerName,
+     flag_descriptions::kEnablePreinstalledWebAppDuplicationFixerDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPreinstalledWebAppDuplicationFixer)},
 
     {"enable-openscreen-cast-streaming-session",
      flag_descriptions::kOpenscreenCastStreamingSessionName,
@@ -4997,6 +5014,13 @@ const FeatureEntry kFeatureEntries[] = {
                                     kRealboxMatchOmniboxThemeVariations,
                                     "OmniboxBundledExperimentV1")},
 
+    {"ntp-realbox-match-searchbox-theme",
+     flag_descriptions::kNtpRealboxMatchSearchboxThemeName,
+     flag_descriptions::kNtpRealboxMatchSearchboxThemeDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kRealboxMatchSearchboxTheme,
+                                    kRealboxMatchSearchboxThemeVariations,
+                                    "OmniboxBundledExperimentV1")},
+
     {"ntp-realbox-pedals", flag_descriptions::kNtpRealboxPedalsName,
      flag_descriptions::kNtpRealboxPedalsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kNtpRealboxPedals)},
@@ -5268,6 +5292,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabEngagementReportingName,
      flag_descriptions::kTabEngagementReportingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabEngagementReportingAndroid)},
+
+    {"enable-tab-strip-improvements",
+     flag_descriptions::kTabStripImprovementsAndroidName,
+     flag_descriptions::kTabStripImprovementsAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabStripImprovements)},
 
     {"enable-conditional-tabstrip",
      flag_descriptions::kConditionalTabStripAndroidName,
@@ -7099,11 +7128,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaSessionWebRTCDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kMediaSessionWebRTC)},
 
+#if BUILDFLAG(IS_ANDROID)
     {"fedcm", flag_descriptions::kFedCmName,
-     flag_descriptions::kFedCmDescription, kOsAll,
+     flag_descriptions::kFedCmDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kFedCm,
                                     kFedCmFeatureVariations,
                                     "FedCmFeatureVariations")},
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"bluetooth-sessionized-metrics",
@@ -7762,7 +7793,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(IS_ANDROID)
     {"drag-and-drop-android", flag_descriptions::kDragAndDropAndroidName,
      flag_descriptions::kDragAndDropAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kDragAndDropAndroid)},
+     FEATURE_VALUE_TYPE(features::kDragAndDrop)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"autofill-enable-update-virtual-card-enrollment",

@@ -54,7 +54,6 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/policy/policy_ui.h"
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
-#include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/segmentation_internals/segmentation_internals_ui.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_internals/sync_internals_ui.h"
@@ -182,6 +181,7 @@
 #include "ash/webui/print_management/print_management_ui.h"
 #include "ash/webui/print_management/url_constants.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"  // nogncheck
+#include "ash/webui/projector_app/trusted_projector_annotator_ui.h"
 #include "ash/webui/projector_app/trusted_projector_ui.h"
 #include "ash/webui/scanning/scanning_ui.h"
 #include "ash/webui/scanning/url_constants.h"
@@ -211,6 +211,7 @@
 #include "chrome/browser/ash/web_applications/chrome_file_manager_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/media_app/chrome_media_app_ui_delegate.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_ambient_provider_impl.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_theme_provider_impl.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_user_provider_impl.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_wallpaper_provider_impl.h"
@@ -422,6 +423,13 @@ WebUIController* NewWebUI<ash::TrustedProjectorUI>(WebUI* web_ui,
                                      Profile::FromWebUI(web_ui)->GetPrefs());
 }
 
+template <>
+WebUIController* NewWebUI<ash::TrustedProjectorAnnotatorUI>(WebUI* web_ui,
+                                                            const GURL& url) {
+  return new ash::TrustedProjectorAnnotatorUI(
+      web_ui, url, Profile::FromWebUI(web_ui)->GetPrefs());
+}
+
 void BindPrintManagement(
     Profile* profile,
     mojo::PendingReceiver<
@@ -589,15 +597,17 @@ WebUIController* NewWebUI<ash::ConnectivityDiagnosticsUI>(WebUI* web_ui,
 template <>
 WebUIController* NewWebUI<ash::PersonalizationAppUI>(WebUI* web_ui,
                                                      const GURL& url) {
+  auto ambient_provider =
+      std::make_unique<PersonalizationAppAmbientProviderImpl>(web_ui);
   auto theme_provider =
       std::make_unique<PersonalizationAppThemeProviderImpl>(web_ui);
   auto user_provider =
       std::make_unique<PersonalizationAppUserProviderImpl>(web_ui);
   auto wallpaper_provider =
       std::make_unique<PersonalizationAppWallpaperProviderImpl>(web_ui);
-  return new ash::PersonalizationAppUI(web_ui, std::move(theme_provider),
-                                       std::move(user_provider),
-                                       std::move(wallpaper_provider));
+  return new ash::PersonalizationAppUI(
+      web_ui, std::move(ambient_provider), std::move(theme_provider),
+      std::move(user_provider), std::move(wallpaper_provider));
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -707,8 +717,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<PasswordManagerInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIPredictorsHost)
     return &NewWebUI<PredictorsUI>;
-  if (url.host_piece() == chrome::kChromeUIQuotaInternalsHost)
-    return &NewWebUI<QuotaInternalsUI>;
   if (url.host_piece() == safe_browsing::kChromeUISafeBrowsingHost)
     return &NewWebUI<safe_browsing::SafeBrowsingUI>;
   if (url.host_piece() == chrome::kChromeUISegmentationInternalsHost)
@@ -934,6 +942,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       ash::features::IsProjectorEnabled() &&
       IsProjectorAllowedForProfile(profile)) {
     return &NewWebUI<ash::TrustedProjectorUI>;
+  }
+  if (url.host_piece() == ash::kChromeUIProjectorAnnotatorHost &&
+      ash::features::IsProjectorAnnotatorEnabled() &&
+      IsProjectorAllowedForProfile(profile)) {
+    return &NewWebUI<ash::TrustedProjectorAnnotatorUI>;
   }
   if (url.host_piece() == chrome::kChromeUISetTimeHost)
     return &NewWebUI<chromeos::SetTimeUI>;

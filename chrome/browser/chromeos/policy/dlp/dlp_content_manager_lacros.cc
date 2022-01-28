@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_manager_lacros.h"
 
+#include "base/containers/cxx20_erase.h"
 #include "chrome/browser/ui/lacros/window_utility.h"
 #include "chromeos/crosapi/mojom/dlp.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
@@ -27,8 +28,9 @@ crosapi::mojom::DlpRestrictionLevel ConvertLevelToMojo(
     case DlpRulesManager::Level::kBlock:
       return crosapi::mojom::DlpRestrictionLevel::kBlock;
     case DlpRulesManager::Level::kAllow:
-    case DlpRulesManager::Level::kNotSet:
       return crosapi::mojom::DlpRestrictionLevel::kAllow;
+    case DlpRulesManager::Level::kNotSet:
+      return crosapi::mojom::DlpRestrictionLevel::kNotSet;
   }
 }
 
@@ -57,6 +59,18 @@ crosapi::mojom::DlpRestrictionSetPtr ConvertRestrictionSetToMojo(
   return result;
 }
 
+crosapi::mojom::ScreenShareAreaPtr ConvertToScreenShareArea(
+    const content::DesktopMediaID& media_id) {
+  auto result = crosapi::mojom::ScreenShareArea::New();
+  if (media_id.type == content::DesktopMediaID::Type::TYPE_SCREEN) {
+    return result;
+  }
+  DCHECK_EQ(media_id.type, content::DesktopMediaID::Type::TYPE_WINDOW);
+  aura::Window* window = content::DesktopMediaID::GetNativeWindowById(media_id);
+  result->window_id = lacros_window_utility::GetRootWindowUniqueId(window);
+  return result;
+}
+
 }  // namespace
 
 // static
@@ -74,10 +88,121 @@ void DlpContentManagerLacros::CheckScreenShareRestriction(
         GetScreenShareConfidentialContentsInfoForWebContents(
             media_id.web_contents_id),
         std::move(callback));
-  } else {
-    // No restrictions apply.
-    // TODO(crbug.com/1278814): Pass the check to Ash to process there.
+    return;
+  }
+  chromeos::LacrosService* lacros_service = chromeos::LacrosService::Get();
+  if (!lacros_service->IsAvailable<crosapi::mojom::Dlp>()) {
+    LOG(WARNING) << "DLP mojo service not available";
     std::move(callback).Run(true);
+    return;
+  }
+
+  int dlp_mojo_version =
+      lacros_service->GetInterfaceVersion(crosapi::mojom::Dlp::Uuid_);
+  if (dlp_mojo_version < int{crosapi::mojom::Dlp::MethodMinVersions::
+                                 kCheckScreenShareRestrictionMinVersion}) {
+    LOG(WARNING) << "DLP mojo service version does not support screen share "
+                    "restrictions";
+    std::move(callback).Run(true);
+    return;
+  }
+
+  lacros_service->GetRemote<crosapi::mojom::Dlp>()->CheckScreenShareRestriction(
+      ConvertToScreenShareArea(media_id), application_title,
+      std::move(callback));
+}
+
+void DlpContentManagerLacros::OnScreenCaptureStarted(
+    const std::string& label,
+    std::vector<content::DesktopMediaID> screen_capture_ids,
+    const std::u16string& application_title,
+    base::RepeatingClosure stop_callback,
+    content::MediaStreamUI::StateChangeCallback state_change_callback) {
+  for (const content::DesktopMediaID& media_id : screen_capture_ids) {
+    if (media_id.type == content::DesktopMediaID::Type::TYPE_WEB_CONTENTS) {
+      AddScreenShare(label, media_id, application_title, stop_callback,
+                     state_change_callback);
+    } else {
+      chromeos::LacrosService* lacros_service = chromeos::LacrosService::Get();
+      auto delegate = std::make_unique<ScreenShareStateChangeDelegate>(
+          label, media_id, state_change_callback, stop_callback);
+      if (lacros_service->IsAvailable<crosapi::mojom::Dlp>()) {
+        lacros_service->GetRemote<crosapi::mojom::Dlp>()->OnScreenShareStarted(
+            label, ConvertToScreenShareArea(media_id), application_title,
+            delegate->BindDelegate());
+        running_remote_screen_shares_.push_back(std::move(delegate));
+      }
+    }
+  }
+  CheckRunningScreenShares();
+}
+
+void DlpContentManagerLacros::OnScreenCaptureStopped(
+    const std::string& label,
+    const content::DesktopMediaID& media_id) {
+  if (media_id.type == content::DesktopMediaID::Type::TYPE_WEB_CONTENTS) {
+    RemoveScreenShare(label, media_id);
+  } else {
+    chromeos::LacrosService* lacros_service = chromeos::LacrosService::Get();
+    if (lacros_service->IsAvailable<crosapi::mojom::Dlp>()) {
+      lacros_service->GetRemote<crosapi::mojom::Dlp>()->OnScreenShareStopped(
+          label, ConvertToScreenShareArea(media_id));
+    }
+    base::EraseIf(
+        running_remote_screen_shares_,
+        [=](const std::unique_ptr<
+            DlpContentManagerLacros::ScreenShareStateChangeDelegate>& delegate)
+            -> bool {
+          return delegate->label() == label && delegate->media_id() == media_id;
+        });
+  }
+}
+
+DlpContentManagerLacros::ScreenShareStateChangeDelegate::
+    ScreenShareStateChangeDelegate(
+        const std::string& label,
+        const content::DesktopMediaID& media_id,
+        content::MediaStreamUI::StateChangeCallback state_change_callback,
+        base::OnceClosure stop_callback)
+    : label_(label),
+      media_id_(media_id),
+      state_change_callback_(std::move(state_change_callback)),
+      stop_callback_(std::move(stop_callback)) {}
+
+DlpContentManagerLacros::ScreenShareStateChangeDelegate::
+    ~ScreenShareStateChangeDelegate() = default;
+
+bool DlpContentManagerLacros::ScreenShareStateChangeDelegate::operator==(
+    const DlpContentManagerLacros::ScreenShareStateChangeDelegate& other)
+    const {
+  return label_ == other.label_ && media_id_ == other.media_id_;
+}
+
+bool DlpContentManagerLacros::ScreenShareStateChangeDelegate::operator!=(
+    const DlpContentManagerLacros::ScreenShareStateChangeDelegate& other)
+    const {
+  return !(*this == other);
+}
+
+mojo::PendingRemote<crosapi::mojom::StateChangeDelegate>
+DlpContentManagerLacros::ScreenShareStateChangeDelegate::BindDelegate() {
+  return receiver_.BindNewPipeAndPassRemoteWithVersion();
+}
+
+void DlpContentManagerLacros::ScreenShareStateChangeDelegate::OnPause() {
+  state_change_callback_.Run(media_id_,
+                             blink::mojom::MediaStreamStateChange::PAUSE);
+}
+
+void DlpContentManagerLacros::ScreenShareStateChangeDelegate::OnResume() {
+  state_change_callback_.Run(media_id_,
+                             blink::mojom::MediaStreamStateChange::PLAY);
+}
+
+void DlpContentManagerLacros::ScreenShareStateChangeDelegate::OnStop() {
+  DCHECK(stop_callback_);
+  if (stop_callback_) {
+    std::move(stop_callback_).Run();
   }
 }
 
@@ -141,6 +266,17 @@ void DlpContentManagerLacros::UpdateRestrictions(aura::Window* window) {
           ConvertRestrictionSetToMojo(new_restrictions));
     }
   }
+}
+
+DlpContentManager::ConfidentialContentsInfo
+DlpContentManagerLacros::GetScreenShareConfidentialContentsInfo(
+    const content::DesktopMediaID& media_id) const {
+  if (media_id.type == content::DesktopMediaID::Type::TYPE_WEB_CONTENTS) {
+    return GetScreenShareConfidentialContentsInfoForWebContents(
+        media_id.web_contents_id);
+  }
+  NOTREACHED();
+  return ConfidentialContentsInfo();
 }
 
 }  // namespace policy

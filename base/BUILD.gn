@@ -26,6 +26,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
+import("//build/config/ios/config.gni")
 import("//build/config/logging.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/profiling/profiling.gni")
@@ -164,6 +165,12 @@ config("perfetto_config") {
       "BASE_USE_PERFETTO_CLIENT_LIBRARY=1",
     ]
   }
+}
+
+buildflag_header("ios_cronet_buildflags") {
+  header = "ios_cronet_buildflags.h"
+  header_dir = "base/message_loop"
+  flags = [ "CRONET_BUILD=$is_cronet_build" ]
 }
 
 # Base and everything it depends on should be a static library rather than
@@ -1281,14 +1288,23 @@ mixed_component("base") {
       "ios/ns_range.h",
       "ios/scoped_critical_action.h",
       "ios/scoped_critical_action.mm",
-      "message_loop/message_pump_io_ios.cc",
-      "message_loop/message_pump_io_ios.h",
       "native_library_ios.mm",
       "process/launch_ios.cc",
       "process/process_metrics_ios.cc",
       "profiler/module_cache_mac.cc",
       "profiler/stack_sampler_ios.cc",
     ]
+    if (is_cronet_build) {
+      sources += [
+        "message_loop/message_pump_io_ios.cc",
+        "message_loop/message_pump_io_ios.h",
+      ]
+    } else {
+      sources += [
+        "message_loop/message_pump_kqueue.cc",
+        "message_loop/message_pump_kqueue.h",
+      ]
+    }
 
     if (ios_stack_profiler_enabled) {
       sources += [
@@ -1445,6 +1461,7 @@ mixed_component("base") {
     ":clang_profiling_buildflags",
     ":debugging_buildflags",
     ":feature_list_buildflags",
+    ":ios_cronet_buildflags",
     ":logging_buildflags",
     ":orderfile_buildflags",
     ":parsing_buildflags",
@@ -1744,6 +1761,8 @@ mixed_component("base") {
       "files/file_util_fuchsia.cc",
       "files/file_util_posix.cc",
       "files/memory_mapped_file_posix.cc",
+      "fuchsia/build_info.cc",
+      "fuchsia/build_info.h",
       "fuchsia/default_job.cc",
       "fuchsia/default_job.h",
       "fuchsia/file_utils.cc",
@@ -1835,6 +1854,7 @@ mixed_component("base") {
     ]
 
     deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
       "//third_party/fuchsia-sdk/sdk/pkg/async-default",
@@ -3610,8 +3630,13 @@ test("base_unittests") {
     sources += [
       "ios/device_util_unittest.mm",
       "ios/weak_nsobject_unittest.mm",
-      "message_loop/message_pump_io_ios_unittest.cc",
     ]
+
+    if (is_cronet_build) {
+      sources += [ "message_loop/message_pump_io_ios_unittest.cc" ]
+    } else {
+      sources += [ "message_loop/message_pump_kqueue_unittest.cc" ]
+    }
 
     # ios does not use test_launcher to run gtests.
     sources -= [
@@ -3721,6 +3746,7 @@ test("base_unittests") {
     sources += [
       "files/dir_reader_posix_unittest.cc",
       "files/file_descriptor_watcher_posix_unittest.cc",
+      "fuchsia/build_info_unittest.cc",
       "fuchsia/file_utils_unittest.cc",
       "fuchsia/filtered_service_directory_unittest.cc",
       "fuchsia/fuchsia_logging_unittest.cc",
@@ -3745,6 +3771,7 @@ test("base_unittests") {
       ":test_interface_impl",
       ":test_log_listener_safe",
       ":testfidl",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
@@ -3926,6 +3953,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/FeatureList.java",
       "android/java/src/org/chromium/base/Features.java",
       "android/java/src/org/chromium/base/FieldTrialList.java",
+      "android/java/src/org/chromium/base/FileUtils.java",
       "android/java/src/org/chromium/base/ImportantFileWriterAndroid.java",
       "android/java/src/org/chromium/base/IntStringCallback.java",
       "android/java/src/org/chromium/base/JNIUtils.java",

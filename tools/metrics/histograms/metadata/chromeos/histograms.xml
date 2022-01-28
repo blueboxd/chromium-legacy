@@ -759,6 +759,24 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="FeatureName" variants="FeaturesLoggingUsageEvents"/>
 </histogram>
 
+<histogram name="ChromeOS.FirmwareUpdateUi.{Source}.DeviceCount"
+    units="devices" expires_after="2023-01-01">
+  <owner>jimmyxgong@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the total number of devices found. OnStartup is recorded when a user
+    first logs in and OnRefresh is recorded for any subsequent request. The
+    cases in which a subsequent request will be made are when the Firmware
+    Update SWA is launched, when an install is completed, and when we detect
+    that a device has been added or removed.
+  </summary>
+  <token key="Source">
+    <variant name="OnRefresh"/>
+    <variant name="OnStartup"/>
+  </token>
+</histogram>
+
 <histogram name="ChromeOS.Gaia.Message.{GaiaAuthFlow}.{MessageName}"
     enum="BooleanReceived" expires_after="2022-06-01">
   <owner>rsorokin@chromium.org</owner>
@@ -1008,6 +1026,22 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records whether a language pack uninstallation was successful after a
     language pack uninstallation attempt.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Liveness.BrowserStateAtTimeout"
+    enum="ChromeOSBrowserProcessState" expires_after="2023-01-30">
+  <owner>iby@google.com</owner>
+  <owner>xiyuan@google.com</owner>
+  <owner>kaznacheev@google.com</owner>
+  <summary>
+    Records the state of the Chrome browser process at the moment
+    session_manager's LivenessChecker ping times out. This is the moment when
+    LivenessChecker will send an abort signal, if sending an abort signal is
+    enabled, but this metric is recorded regardless of whether or not aborting
+    from LivenessChecker is enabled. Exactly one sample of this metric is
+    recorded when the timeout occurs. If aborting is enabled, this should mean
+    one sample per abort.
   </summary>
 </histogram>
 

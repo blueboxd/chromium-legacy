@@ -1237,7 +1237,7 @@
       },
       'Mac11 Tests (dbg)': { # https://crbug.com/1279504
         'swarming': {
-          'shards': 7,
+          'shards': 12,
         },
       },
 
@@ -1295,6 +1295,11 @@
               'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
             },
           ],
+        },
+      },
+      'android-12-x64-fyi-rel': {
+        'swarming': {
+          'shards': 20,
         },
       },
       'android-arm64-proguard-rel': {
@@ -2110,11 +2115,6 @@
       'android-pie-arm64-rel': {
         'args': [
           '--gtest_filter=-AAudio/AudioOutputTest.Play200HzTone/0', # https://crbug.com/1034009
-        ],
-      },
-      'android-pie-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_p.media_unittests.filter',
         ],
       },
       'fuchsia-code-coverage': {

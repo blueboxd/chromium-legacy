@@ -45,8 +45,7 @@
   E_CPONLY(kColorBubbleFooterBorder) \
   E_CPONLY(kColorButtonBackground) \
   E_CPONLY(kColorButtonBackgroundPressed) \
-  E(kColorButtonBackgroundProminent, \
-    NativeTheme::kColorId_ProminentButtonColor) \
+  E_CPONLY(kColorButtonBackgroundProminent) \
   E_CPONLY(kColorButtonBackgroundProminentDisabled) \
   E_CPONLY(kColorButtonBackgroundProminentFocused) \
   E_CPONLY(kColorButtonBorder) \
@@ -54,8 +53,7 @@
   E_CPONLY(kColorButtonForeground) \
   E_CPONLY(kColorButtonForegroundChecked) \
   E_CPONLY(kColorButtonForegroundDisabled) \
-  E(kColorButtonForegroundProminent, \
-    NativeTheme::kColorId_TextOnProminentButtonColor) \
+  E_CPONLY(kColorButtonForegroundProminent) \
   E_CPONLY(kColorButtonForegroundUnchecked) \
   E_CPONLY(kColorDialogBackground) \
   E_CPONLY(kColorDialogForeground) \
@@ -63,13 +61,13 @@
   E_CPONLY(kColorDropdownBackgroundSelected) \
   E_CPONLY(kColorDropdownForeground) \
   E_CPONLY(kColorDropdownForegroundSelected) \
-  E(kColorFocusableBorderFocused, NativeTheme::kColorId_FocusedBorderColor) \
+  E_CPONLY(kColorFocusableBorderFocused) \
   E_CPONLY(kColorFocusableBorderUnfocused) \
   E_CPONLY(kColorFrameActive) \
   E_CPONLY(kColorFrameInactive) \
   E_CPONLY(kColorHelpIconActive) \
   E_CPONLY(kColorHelpIconInactive) \
-  E(kColorIcon, NativeTheme::kColorId_DefaultIconColor) \
+  E_CPONLY(kColorIcon) \
   E_CPONLY(kColorIconDisabled) \
   E_CPONLY(kColorIconSecondary) \
   E_CPONLY(kColorLabelForeground) \
@@ -80,22 +78,21 @@
   E_CPONLY(kColorLinkForeground) \
   E_CPONLY(kColorLinkForegroundDisabled) \
   E_CPONLY(kColorLinkForegroundPressed) \
-  E(kColorMenuBackground, NativeTheme::kColorId_MenuBackgroundColor) \
-  E(kColorTouchableMenuBackground, NativeTheme::kColorId_MenuBackgroundColor) \
+  E_CPONLY(kColorMenuBackground) \
+  E_CPONLY(kColorTouchableMenuBackground) \
   E_CPONLY(kColorMenuBorder) \
   E_CPONLY(kColorMenuDropmarker) \
-  E(kColorMenuIcon, NativeTheme::kColorId_MenuIconColor) \
+  E_CPONLY(kColorMenuIcon) \
   E_CPONLY(kColorMenuItemBackgroundAlertedInitial) \
   E_CPONLY(kColorMenuItemBackgroundAlertedTarget) \
   E_CPONLY(kColorMenuItemBackgroundHighlighted) \
-  E(kColorMenuItemBackgroundSelected, \
-    NativeTheme::kColorId_FocusedMenuItemBackgroundColor) \
+  E_CPONLY(kColorMenuItemBackgroundSelected) \
   E_CPONLY(kColorMenuItemForeground) \
   E_CPONLY(kColorMenuItemForegroundDisabled) \
   E_CPONLY(kColorMenuItemForegroundHighlighted) \
   E_CPONLY(kColorMenuItemForegroundSecondary) \
   E_CPONLY(kColorMenuItemForegroundSelected) \
-  E(kColorMenuSeparator, NativeTheme::kColorId_MenuSeparatorColor) \
+  E_CPONLY(kColorMenuSeparator) \
   E_CPONLY(kColorNotificationActionsBackground) \
   E_CPONLY(kColorNotificationBackgroundActive) \
   E_CPONLY(kColorNotificationBackgroundInactive) \
@@ -162,8 +159,8 @@
   E_CPONLY(kColorTextfieldForegroundPlaceholder) \
   E_CPONLY(kColorTextfieldSelectionBackground) \
   E_CPONLY(kColorTextfieldSelectionForeground) \
-  E(kColorThrobber, NativeTheme::kColorId_ThrobberSpinningColor) \
-  E(kColorThrobberPreconnect, NativeTheme::kColorId_ThrobberWaitingColor) \
+  E_CPONLY(kColorThrobber) \
+  E_CPONLY(kColorThrobberPreconnect) \
   E_CPONLY(kColorToggleButtonShadow) \
   E_CPONLY(kColorToggleButtonThumbOff) \
   E_CPONLY(kColorToggleButtonThumbOn) \
@@ -177,11 +174,10 @@
   E_CPONLY(kColorTreeNodeForeground) \
   E_CPONLY(kColorTreeNodeForegroundSelectedFocused) \
   E_CPONLY(kColorTreeNodeForegroundSelectedUnfocused) \
-  E(kColorWindowBackground, NativeTheme::kColorId_WindowBackground)
+  E_CPONLY(kColorWindowBackground)
 
 #if BUILDFLAG(IS_CHROMEOS)
-#define CHROMEOS_COLOR_IDS \
-  /* ChromeOS native colors */ \
+#define PLATFORM_SPECIFIC_COLOR_IDS \
   E_CPONLY(kColorNativeColor1) \
   E_CPONLY(kColorNativeColor1Shade1) \
   E_CPONLY(kColorNativeColor1Shade2) \
@@ -192,11 +188,8 @@
   E_CPONLY(kColorNativeColor6) \
   E_CPONLY(kColorNativeBaseColor) \
   E_CPONLY(kColorNativeSecondaryColor)
-#endif
-
-#if BUILDFLAG(IS_WIN)
-#define WIN_COLOR_IDS \
-  /* Windows native colors */ \
+#elif BUILDFLAG(IS_WIN)
+#define PLATFORM_SPECIFIC_COLOR_IDS \
   E(kColorNative3dDkShadow, COLOR_3DDKSHADOW) \
   E(kColorNative3dLight, COLOR_3DLIGHT) \
   E(kColorNativeActiveBorder, COLOR_ACTIVEBORDER) \
@@ -227,19 +220,13 @@
   E(kColorNativeWindow, COLOR_WINDOW) \
   E(kColorNativeWindowFrame, COLOR_WINDOWFRAME) \
   E(kColorNativeWindowText, COLOR_WINDOWTEXT)
+#else
+#define PLATFORM_SPECIFIC_COLOR_IDS
 #endif
 
-#if BUILDFLAG(IS_WIN)
 #define COLOR_IDS \
   CROSS_PLATFORM_COLOR_IDS \
-  WIN_COLOR_IDS
-#elif BUILDFLAG(IS_CHROMEOS)
-#define COLOR_IDS \
-  CROSS_PLATFORM_COLOR_IDS \
-  CHROMEOS_COLOR_IDS
-#else
-#define COLOR_IDS CROSS_PLATFORM_COLOR_IDS
-#endif
+  PLATFORM_SPECIFIC_COLOR_IDS
 // clang-format on
 
 namespace ui {

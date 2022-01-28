@@ -513,7 +513,7 @@ class VADisplayState {
   VADisplay va_display() const { return va_display_; }
   VAImplementation implementation_type() const { return implementation_type_; }
 
-  void SetDrmFd(base::PlatformFile fd) { drm_fd_.reset(HANDLE_EINTR(dup(fd))); }
+  void SetDrmFd(base::ScopedFD fd) { drm_fd_ = std::move(fd); }
 
  private:
   friend class base::NoDestructor<VADisplayState>;
@@ -576,7 +576,8 @@ void VADisplayState::PreSandboxInitialization() {
     drmFreeVersion(version);
     if (base::LowerCaseEqualsASCII(version_name, "vgem"))
       continue;
-    VADisplayState::Get()->SetDrmFd(drm_file.GetPlatformFile());
+    VADisplayState::Get()->SetDrmFd(
+        base::ScopedFD(drm_file.TakePlatformFile()));
     return;
   }
 }
@@ -2349,17 +2350,15 @@ VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBufUnwrapped(
     // specified, each layer should contain one plane.
     DCHECK_EQ(1u, descriptor.layers[layer].num_planes);
 
-    // Strictly speaking, we only have to dup() the fd for the planes after the
-    // first one since we already own the first one, but we dup() regardless for
-    // simplicity: |bo_fd| will be closed at the end of this method anyway.
-    base::ScopedFD plane_fd(HANDLE_EINTR(dup(bo_fd.get())));
+    auto plane_fd = base::ScopedFD(
+        layer == 0 ? bo_fd.release()
+                   : HANDLE_EINTR(dup(handle.planes[0].fd.get())));
     PCHECK(plane_fd.is_valid());
     constexpr uint64_t kZeroSizeToPreventMapping = 0u;
     handle.planes.emplace_back(
         base::checked_cast<int>(descriptor.layers[layer].pitch[0]),
         base::checked_cast<int>(descriptor.layers[layer].offset[0]),
-        kZeroSizeToPreventMapping,
-        base::ScopedFD(HANDLE_EINTR(dup(bo_fd.get()))));
+        kZeroSizeToPreventMapping, std::move(plane_fd));
   }
 
   if (descriptor.fourcc == VA_FOURCC_IMC3) {

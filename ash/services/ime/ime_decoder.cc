@@ -51,12 +51,6 @@ void ImeLoggerBridge(int severity, const char* message) {
   }
 }
 
-// Check whether the crucial members of an EntryPoints are loaded.
-bool IsEntryPointsLoaded(ImeDecoder::EntryPoints entry) {
-  return (entry.init_once && entry.supports && entry.activate_ime &&
-          entry.process && entry.close);
-}
-
 }  // namespace
 
 ImeDecoder::ImeDecoder() : status_(Status::kUninitialized) {
@@ -80,31 +74,34 @@ ImeDecoder::ImeDecoder() : status_(Status::kUninitialized) {
 
   // TODO(b/172527471): Create a macro to fetch function pointers.
   entry_points_.init_once = reinterpret_cast<ImeDecoderInitOnceFn>(
-      library.GetFunctionPointer("ImeDecoderInitOnce"));
+      library.GetFunctionPointer(kImeDecoderInitOnceFnName));
   entry_points_.supports = reinterpret_cast<ImeDecoderSupportsFn>(
-      library.GetFunctionPointer("ImeDecoderSupports"));
+      library.GetFunctionPointer(kImeDecoderSupportsFnName));
   entry_points_.activate_ime = reinterpret_cast<ImeDecoderActivateImeFn>(
-      library.GetFunctionPointer("ImeDecoderActivateIme"));
+      library.GetFunctionPointer(kImeDecoderActivateImeFnName));
   entry_points_.process = reinterpret_cast<ImeDecoderProcessFn>(
-      library.GetFunctionPointer("ImeDecoderProcess"));
+      library.GetFunctionPointer(kImeDecoderProcessFnName));
   entry_points_.close = reinterpret_cast<ImeDecoderCloseFn>(
-      library.GetFunctionPointer("ImeDecoderClose"));
+      library.GetFunctionPointer(kImeDecoderCloseFnName));
   entry_points_.connect_to_input_method =
       reinterpret_cast<ConnectToInputMethodFn>(
-          library.GetFunctionPointer("ConnectToInputMethod"));
+          library.GetFunctionPointer(kConnectToInputMethodFnName));
   entry_points_.is_input_method_connected =
       reinterpret_cast<IsInputMethodConnectedFn>(
-          library.GetFunctionPointer("IsInputMethodConnected"));
-  if (!IsEntryPointsLoaded(entry_points_)) {
+          library.GetFunctionPointer(kIsInputMethodConnectedFnName));
+
+  // Checking if entry_points_ are loaded.
+  if (!entry_points_.init_once || !entry_points_.supports ||
+      !entry_points_.activate_ime || !entry_points_.process ||
+      !entry_points_.close) {
     status_ = Status::kFunctionMissing;
     return;
   }
   entry_points_.is_ready = true;
 
   // Optional function pointer.
-  ImeEngineLoggerSetterFn logger_setter =
-      reinterpret_cast<ImeEngineLoggerSetterFn>(
-          library.GetFunctionPointer("SetImeEngineLogger"));
+  SetImeEngineLoggerFn logger_setter = reinterpret_cast<SetImeEngineLoggerFn>(
+      library.GetFunctionPointer(kSetImeEngineLoggerFnName));
   if (logger_setter) {
     logger_setter(ImeLoggerBridge);
   } else {

@@ -50,28 +50,10 @@ AttributionPolicy::AttributionPolicy(bool debug_mode)
 
 AttributionPolicy::~AttributionPolicy() = default;
 
-bool AttributionPolicy::ShouldNoiseTriggerData() const {
-  return base::RandDouble() <= .05;
-}
-
-uint64_t AttributionPolicy::MakeNoisedTriggerData(uint64_t cardinality) const {
-  return base::RandGenerator(cardinality);
-}
-
 uint64_t AttributionPolicy::SanitizeTriggerData(
     uint64_t trigger_data,
     CommonSourceInfo::SourceType source_type) const {
   const uint64_t cardinality = TriggerDataCardinality(source_type);
-
-  // Add noise to the conversion when the value is first sanitized from a
-  // conversion registration event. This noised data will be used for all
-  // associated impressions that convert.
-  if (!debug_mode_ && ShouldNoiseTriggerData()) {
-    const uint64_t noised_data = MakeNoisedTriggerData(cardinality);
-    DCHECK_LT(noised_data, cardinality);
-    return noised_data;
-  }
-
   return trigger_data % cardinality;
 }
 
@@ -106,14 +88,14 @@ AttributionPolicy::GetOfflineReportDelayConfig() const {
   if (debug_mode_)
     return absl::nullopt;
 
-  // Add uniform random noise in the range of [0, 5 minutes] to the report time.
+  // Add uniform random noise in the range of [0, 1 minutes] to the report time.
   // TODO(https://crbug.com/1075600): This delay is very conservative. Consider
   // increasing this delay once we can be sure reports are still sent at
   // reasonable times, and not delayed for many browser sessions due to short
   // session up-times.
   return OfflineReportDelayConfig{
       .min = base::Minutes(0),
-      .max = base::Minutes(5),
+      .max = base::Minutes(1),
   };
 }
 
@@ -151,7 +133,7 @@ AttributionPolicy::AttributionMode AttributionPolicy::GetAttributionMode(
   if (base::RandDouble() < randomized_response_probability) {
     // The 0 value is reserved for `kNever`, so we add 1 here and subtract it
     // later.
-    uint64_t r = MakeNoisedTriggerData(1 + TriggerDataCardinality(source_type));
+    uint64_t r = base::RandGenerator(1 + TriggerDataCardinality(source_type));
     if (r == 0)
       return AttributionMode(AttributionLogic::kNever);
 

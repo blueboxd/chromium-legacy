@@ -218,4 +218,21 @@ TEST_F(
       this.runMochaTest(
           arc_account_picker_page_test.TestNames.ArcPickerHiddenForReauth);
     });
+
+TEST_F(
+    'InlineLoginArcAccountPickerBrowserTest', 'ArcPickerHiddenNoAccounts',
+    function() {
+      this.runMochaTest(
+          arc_account_picker_page_test.TestNames.ArcPickerHiddenNoAccounts);
+    });
+
+TEST_F('InlineLoginArcAccountPickerBrowserTest', 'AddAccount', function() {
+  this.runMochaTest(arc_account_picker_page_test.TestNames.AddAccount);
+});
+
+TEST_F(
+    'InlineLoginArcAccountPickerBrowserTest', 'MakeAvailableInArc', function() {
+      this.runMochaTest(
+          arc_account_picker_page_test.TestNames.MakeAvailableInArc);
+    });
 GEN('#endif');

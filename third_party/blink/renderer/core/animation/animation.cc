@@ -593,7 +593,6 @@ bool Animation::PreCommit(
     int compositor_group,
     const PaintArtifactCompositor* paint_artifact_compositor,
     bool start_on_compositor) {
-
   bool soft_change =
       compositor_state_ &&
       (Paused() || compositor_state_->playback_rate != EffectivePlaybackRate());
@@ -637,6 +636,12 @@ bool Animation::PreCommit(
       RecordCompositorAnimationFailureReasons(failure_reasons);
 
       if (failure_reasons == CompositorAnimations::kNoFailure) {
+        // We could still have a stale compositor keyframe model ID if
+        // a previous cancel failed due to not having a layout object at the
+        // time of the cancel operation. The start and stop of an animation
+        // for a marquee element does not depend on having a layout object.
+        if (HasActiveAnimationsOnCompositor())
+          CancelAnimationOnCompositor();
         CreateCompositorAnimation();
         StartAnimationOnCompositor(paint_artifact_compositor);
         compositor_state_ = std::make_unique<CompositorState>(*this);
@@ -2320,10 +2325,6 @@ bool Animation::Update(TimingUpdateReason reason) {
 
   if (reason == kTimingUpdateForAnimationFrame) {
     if (idle || CalculateAnimationPlayState() == kFinished) {
-      // TODO(crbug.com/1029348): Per spec, we should have a microtask
-      // checkpoint right after the update cycle. Once this is fixed we should
-      // no longer need to force a synchronous resolution here.
-      AsyncFinishMicrotask();
       finished_ = true;
     }
   }
@@ -2659,10 +2660,8 @@ bool Animation::IsReplaceable() {
   // 1. The existence of the animation is not prescribed by markup. That is, it
   //    is not a CSS animation with an owning element, nor a CSS transition with
   //    an owning element.
-  if (IsCSSAnimation() || IsCSSTransition()) {
-    // TODO(crbug.com/981905): Add OwningElement method to Animation and
-    // override in CssAnimations and CssTransitions. Only bail here if the
-    // animation has an owning element.
+  if ((IsCSSAnimation() || IsCSSTransition()) && OwningElement()) {
+    // A CSS animation or transition that is bound to markup is not replaceable.
     return false;
   }
 

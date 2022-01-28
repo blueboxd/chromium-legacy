@@ -46,11 +46,7 @@
 # SwiftShader
 # tags: [ swiftshader-gl no-swiftshader-gl ]
 # Driver
-# tags: [ intel_lt_25.20.100.6444 intel_lt_25.20.100.6577
-#             intel_lt_26.20.100.7000 intel_lt_26.20.100.7870
-#             intel_lt_26.20.100.7323 intel_lt_26.20.100.8141
-#             intel_lt_27.20.100.8280
-#         mesa_lt_19.1 mesa_ge_20.1 ]
+# tags: [ mesa_lt_19.1 ]
 # ASan
 # tags: [ asan no-asan ]
 # Display Server
@@ -424,7 +420,7 @@ crbug.com/1240440 [ chromeos ] Pixel_WebGLPreservedAfterTabSwitch [ Failure ]
 crbug.com/1240440 [ chromeos ] Pixel_WebGLReadPixelsTabSwitch [ Failure ]
 
 # Flakes on Mac dual-GPU
-crbug.com/1069339 [ mojave amd-0x6821 ] Pixel_OffscreenCanvasIBRCWebGLHighPerfWorker [ RetryOnFailure ]  # finder:disable Very low flake rate (1 in 1k+ builds)
+crbug.com/1069339 [ mojave amd-0x6821 ] Pixel_OffscreenCanvasIBRCWebGLHighPerfWorker [ RetryOnFailure ]  # finder:disable-stale Very low flake rate (1 in 1k+ builds)
 
 # Failures on Mac FYI arm64 Release (Apple DTK)
 crbug.com/1175753 [ mac release apple-apple-m1 ] Pixel_Video_BackdropFilter [ Failure ]

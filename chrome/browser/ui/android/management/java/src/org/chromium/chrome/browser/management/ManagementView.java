@@ -9,16 +9,16 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 /**
  * The View that renders the ManagementPage (chrome://management).
  * Consists of an medium size image icon over title and descriptive text.
  */
-public class ManagementView extends LinearLayout {
+public class ManagementView extends ConstraintLayout {
     private boolean mIsManaged;
     private @Nullable String mManagerName;
 

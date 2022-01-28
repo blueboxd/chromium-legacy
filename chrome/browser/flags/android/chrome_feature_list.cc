@@ -158,6 +158,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAllowNewIncognitoTabIntents,
     &kAndroidLayoutChangeTabReparenting,
     &kAndroidSearchEngineChoiceNotification,
+    &kAssistantConsentModal,
     &kAssistantConsentSimplifiedText,
     &kAssistantConsentV2,
     &kAssistantIntentExperimentId,
@@ -224,7 +225,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDownloadProgressInfoBar,
     &kDownloadProgressMessage,
     &kDownloadRename,
-    &kDragAndDropAndroid,
     &kDuetTabStripIntegrationAndroid,
     &kDynamicColorAndroid,
     &kEnableDangerousDownloadDialog,
@@ -277,6 +277,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTabGroupsForTablets,
     &kTabGridLayoutAndroid,
     &kTabReparenting,
+    &kTabStripImprovements,
     &kTabSwitcherOnReturn,
     &kTabToGTSAnimation,
     &kTestDefaultDisabled,
@@ -403,6 +404,9 @@ const base::Feature kFocusOmniboxInIncognitoTabIntents{
 
 const base::Feature kAndroidSearchEngineChoiceNotification{
     "AndroidSearchEngineChoiceNotification", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAssistantConsentModal{"AssistantConsentModal",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAssistantConsentSimplifiedText{
     "AssistantConsentSimplifiedText", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -619,9 +623,6 @@ const base::Feature kDownloadNotificationBadge{
 const base::Feature kDownloadRename{"DownloadRename",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kDragAndDropAndroid{"DragAndDropAndroid",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kDuetTabStripIntegrationAndroid{
     "DuetTabStripIntegrationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -769,6 +770,9 @@ const base::Feature kTabGridLayoutAndroid{"TabGridLayoutAndroid",
 
 const base::Feature kTabReparenting{"TabReparenting",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kTabStripImprovements{"TabStripImprovements",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTabSwitcherOnReturn{"TabSwitcherOnReturn",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

@@ -655,9 +655,10 @@ bool IsAXSetter(SEL selector) {
   // These attributes are required on all accessibility objects.
   NSArray* const kAllRoleAttributes = @[
     NSAccessibilityBlockQuoteLevelAttribute,
+    NSAccessibilityChildrenAttribute,
     NSAccessibilityDOMClassList,
     NSAccessibilityDOMIdentifierAttribute,
-    NSAccessibilityChildrenAttribute,
+    NSAccessibilityElementBusyAttribute,
     NSAccessibilityParentAttribute,
     NSAccessibilityPositionAttribute,
     NSAccessibilityRoleAttribute,
@@ -809,6 +810,10 @@ bool IsAXSetter(SEL selector) {
   // Drop effect.
   if (_node->HasHtmlAttribute("aria-dropeffect"))
     [axAttributes addObject:NSAccessibilityDropEffectsAttribute];
+
+  // Grabbed
+  if (_node->HasHtmlAttribute("aria-grabbed"))
+    [axAttributes addObject:NSAccessibilityGrabbedAttribute];
 
   if (ui::SupportsRequired(role)) {
     [axAttributes addObject:NSAccessibilityRequiredAttributeChrome];
@@ -1085,6 +1090,22 @@ bool IsAXSetter(SEL selector) {
     return base::SysUTF8ToNSString(dropEffects);
 
   return nil;
+}
+
+- (NSNumber*)AXElementBusy {
+  if (![self instanceActive])
+    return nil;
+  return @(_node->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy));
+}
+
+- (NSNumber*)AXGrabbed {
+  if (![self instanceActive])
+    return nil;
+  std::string grabbed;
+  if (_node->GetHtmlAttribute("aria-grabbed", &grabbed) && grabbed == "true")
+    return @YES;
+
+  return @NO;
 }
 
 - (NSNumber*)AXHasPopup {

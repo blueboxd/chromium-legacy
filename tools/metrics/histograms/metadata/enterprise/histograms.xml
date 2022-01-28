@@ -1437,7 +1437,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Enterprise.FileSystem.DownloadsRouting"
     enum="EnterpriseFileSystemDownloadsRoutingDestination"
-    expires_after="2022-01-30">
+    expires_after="2023-01-30">
   <owner>alicego@google.com</owner>
   <owner>rogerta@google.com</owner>
   <owner>xanth@google.com</owner>
@@ -1452,7 +1452,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Enterprise.FileSystem.DownloadsRouting.Box"
     enum="EnterpriseFileSystemDownloadsRoutingStatus"
-    expires_after="2022-01-30">
+    expires_after="2023-01-30">
   <owner>alicego@google.com</owner>
   <owner>rogerta@google.com</owner>
   <owner>xanth@google.com</owner>
@@ -1467,7 +1467,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.FileSystem.Uniquifier"
-    enum="EnterpriseFilesystemUploadAttemptCount" expires_after="2022-01-30">
+    enum="EnterpriseFilesystemUploadAttemptCount" expires_after="2023-01-30">
   <owner>alicego@google.com</owner>
   <owner>mad@google.com</owner>
   <owner>rogerta@google.com</owner>
@@ -1869,21 +1869,6 @@ chromium-metrics-reviews@google.com.
   <owner>bmalcolm@chromium.org</owner>
   <owner>cros-client-wa@google.com</owner>
   <summary>Result of a single attempt to upload system logs.</summary>
-</histogram>
-
-<histogram name="Enterprise.UploadJobSuccess" enum="EnterpriseUploadJobSuccess"
-    expires_after="M87">
-  <obsolete>
-    Removed 2022/01
-  </obsolete>
-  <owner>bmalcolm@chromium.org</owner>
-  <owner>managed-devices@google.com</owner>
-  <summary>
-    Number of retries the client did to execute an UploadJob. It's recorded
-    after the request has been completed, either successfully after 0 or more
-    retries, with a failure because of too many retries or if the UploadJob is
-    interrupted (destroyed before it could succeed or fail).
-  </summary>
 </histogram>
 
 <histogram name="Enterprise.UserPolicyChromeOS.ChildUser.OAuthTokenError"

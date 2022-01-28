@@ -85,7 +85,6 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -738,6 +737,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
   void FetchCrosHealthdData(
       const policy::DeviceStatusCollector::CrosHealthdDataFetcher&
           cros_healthd_data_fetcher,
+      std::vector<chromeos::cros_healthd::mojom::ProbeCategoryEnum>
+          probe_categories,
       bool report_system_info,
       bool report_vpd_info,
       bool report_storage_status,
@@ -745,7 +746,7 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       bool report_network_configuration) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     cros_healthd_data_fetcher.Run(
-        CrosHealthdCollectionMode::kFull,
+        probe_categories,
         base::BindOnce(&DeviceStatusCollectorState::OnCrosHealthdDataReceived,
                        this, report_system_info, report_vpd_info,
                        report_storage_status, report_version_info,
@@ -1554,7 +1555,6 @@ DeviceStatusCollector::DeviceStatusCollector(
     const TpmStatusFetcher& tpm_status_fetcher,
     const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
     const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
-    const CrosHealthdDataFetcher& cros_healthd_data_fetcher,
     const GraphicsStatusFetcher& graphics_status_fetcher,
     const CrashReportInfoFetcher& crash_report_info_fetcher,
     base::Clock* clock)
@@ -1568,7 +1568,6 @@ DeviceStatusCollector::DeviceStatusCollector(
       tpm_status_fetcher_(tpm_status_fetcher),
       emmc_lifetime_fetcher_(emmc_lifetime_fetcher),
       stateful_partition_info_fetcher_(stateful_partition_info_fetcher),
-      cros_healthd_data_fetcher_(cros_healthd_data_fetcher),
       graphics_status_fetcher_(graphics_status_fetcher),
       crash_report_info_fetcher_(crash_report_info_fetcher),
       power_manager_(chromeos::PowerManagerClient::Get()),
@@ -1607,11 +1606,8 @@ DeviceStatusCollector::DeviceStatusCollector(
         base::BindRepeating(&ReadStatefulPartitionInfo);
   }
 
-  if (cros_healthd_data_fetcher_.is_null()) {
-    cros_healthd_data_fetcher_ =
-        base::BindRepeating(&DeviceStatusCollector::FetchCrosHealthdData,
-                            weak_factory_.GetWeakPtr());
-  }
+  cros_healthd_data_fetcher_ = base::BindRepeating(
+      &DeviceStatusCollector::FetchCrosHealthdData, weak_factory_.GetWeakPtr());
 
   if (graphics_status_fetcher_.is_null())
     graphics_status_fetcher_ = base::BindRepeating(&FetchGraphicsStatus);
@@ -1733,7 +1729,6 @@ DeviceStatusCollector::DeviceStatusCollector(
           DeviceStatusCollector::TpmStatusFetcher(),
           DeviceStatusCollector::EMMCLifetimeFetcher(),
           DeviceStatusCollector::StatefulPartitionInfoFetcher(),
-          DeviceStatusCollector::CrosHealthdDataFetcher(),
           DeviceStatusCollector::GraphicsStatusFetcher(),
           DeviceStatusCollector::CrashReportInfoFetcher()) {}
 
@@ -2144,58 +2139,23 @@ void DeviceStatusCollector::AddDataSample(std::unique_ptr<SampledData> sample,
 }
 
 void DeviceStatusCollector::FetchCrosHealthdData(
-    CrosHealthdCollectionMode mode,
+    std::vector<chromeos::cros_healthd::mojom::ProbeCategoryEnum>
+        probe_categories,
     CrosHealthdDataReceiver callback) {
   using chromeos::cros_healthd::mojom::ProbeCategoryEnum;
 
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::vector<ProbeCategoryEnum> categories_to_probe;
   SamplingProbeResultCallback completion_callback;
-  switch (mode) {
-    case CrosHealthdCollectionMode::kFull: {
-      // Always probe System2 to get device vendor, product name, and product
-      // version
-      categories_to_probe.push_back(ProbeCategoryEnum::kSystem2);
-      if (report_vpd_info_ || report_system_info_)
-        categories_to_probe.push_back(ProbeCategoryEnum::kSystem);
-      if (report_storage_status_)
-        categories_to_probe.push_back(
-            ProbeCategoryEnum::kNonRemovableBlockDevices);
-      if (report_power_status_)
-        categories_to_probe.push_back(ProbeCategoryEnum::kBattery);
-      if (report_cpu_info_)
-        categories_to_probe.push_back(ProbeCategoryEnum::kCpu);
-      if (report_timezone_info_)
-        categories_to_probe.push_back(ProbeCategoryEnum::kTimezone);
-      if (report_memory_info_)
-        categories_to_probe.push_back(ProbeCategoryEnum::kMemory);
-      if (report_backlight_info_)
-        categories_to_probe.push_back(ProbeCategoryEnum::kBacklight);
-      if (report_fan_info_)
-        categories_to_probe.push_back(ProbeCategoryEnum::kFan);
-      if (report_bluetooth_info_)
-        categories_to_probe.push_back(ProbeCategoryEnum::kBluetooth);
-      if (report_version_info_)
-        categories_to_probe.push_back(ProbeCategoryEnum::kTpm);
-      if (report_network_configuration_)
-        categories_to_probe.push_back(ProbeCategoryEnum::kBus);
 
-      completion_callback =
-          base::BindOnce(&DeviceStatusCollector::OnProbeDataFetched,
-                         weak_factory_.GetWeakPtr(), std::move(callback));
-      break;
-    }
-    case CrosHealthdCollectionMode::kBattery: {
-      categories_to_probe.push_back(ProbeCategoryEnum::kBattery);
-      break;
-    }
-  }
+  completion_callback =
+      base::BindOnce(&DeviceStatusCollector::OnProbeDataFetched,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
 
   auto sample = std::make_unique<SampledData>();
   sample->timestamp = base::Time::Now();
 
   chromeos::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
-      categories_to_probe,
+      probe_categories,
       base::BindOnce(&DeviceStatusCollector::SampleProbeData,
                      weak_factory_.GetWeakPtr(), std::move(sample),
                      std::move(completion_callback)));
@@ -2677,6 +2637,25 @@ bool DeviceStatusCollector::GetRunningKioskApp(
   return true;
 }
 
+bool DeviceStatusCollector::GetDeviceBootMode(
+    em::DeviceStatusReportRequest* status) {
+  absl::optional<std::string> boot_mode =
+      StatusCollector::GetBootMode(statistics_provider_);
+
+  if (boot_mode) {
+    status->set_boot_mode(*boot_mode);
+    return true;
+  }
+  return false;
+}
+
+void DeviceStatusCollector::GetStorageStatus(
+    scoped_refptr<DeviceStatusCollectorState> state) {
+  state->FetchStatefulPartitionInfo(stateful_partition_info_fetcher_);
+  state->SampleVolumeInfo(volume_info_fetcher_);
+  state->FetchEMMCLifeTime(emmc_lifetime_fetcher_);
+}
+
 void DeviceStatusCollector::GetGraphicsStatus(
     scoped_refptr<DeviceStatusCollectorState> state) {
   // Fetch Graphics status on a background thread.
@@ -2717,9 +2696,34 @@ void DeviceStatusCollector::GetStatusAsync(StatusCollectorCallback response) {
 // call stack, typically in OnXDataReceived.
 void DeviceStatusCollector::GetDeviceStatus(
     scoped_refptr<DeviceStatusCollectorState> state) {
+  using chromeos::cros_healthd::mojom::ProbeCategoryEnum;
   em::DeviceStatusReportRequest* status =
       state->response_params().device_status.get();
   bool anything_reported = false;
+
+  std::vector<ProbeCategoryEnum> probe_categories;
+
+  // Always probe System2 to get device vendor, product name, and product
+  // version
+  probe_categories.push_back(ProbeCategoryEnum::kSystem2);
+
+  if (report_vpd_info_ || report_system_info_)
+    probe_categories.push_back(ProbeCategoryEnum::kSystem);
+
+  if (report_timezone_info_)
+    probe_categories.push_back(ProbeCategoryEnum::kTimezone);
+
+  if (report_backlight_info_)
+    probe_categories.push_back(ProbeCategoryEnum::kBacklight);
+
+  if (report_bluetooth_info_)
+    probe_categories.push_back(ProbeCategoryEnum::kBluetooth);
+
+  if (report_fan_info_)
+    probe_categories.push_back(ProbeCategoryEnum::kFan);
+
+  if (report_power_status_)
+    probe_categories.push_back(ProbeCategoryEnum::kBattery);
 
   if (report_activity_times_)
     anything_reported |= GetActivityTimes(status);
@@ -2727,20 +2731,19 @@ void DeviceStatusCollector::GetDeviceStatus(
   if (report_audio_status_)
     anything_reported |= GetAudioStatus(status);
 
-  if (report_version_info_)
+  if (report_version_info_) {
+    probe_categories.push_back(ProbeCategoryEnum::kTpm);
     anything_reported |= GetVersionInfo(status);
-
-  if (report_boot_mode_) {
-    absl::optional<std::string> boot_mode =
-        StatusCollector::GetBootMode(statistics_provider_);
-    if (boot_mode) {
-      status->set_boot_mode(*boot_mode);
-      anything_reported = true;
-    }
   }
 
-  if (report_network_configuration_)
+  if (report_boot_mode_) {
+    anything_reported |= GetDeviceBootMode(status);
+  }
+
+  if (report_network_configuration_) {
+    probe_categories.push_back(ProbeCategoryEnum::kBus);
     anything_reported |= GetNetworkConfiguration(status);
+  }
 
   if (report_network_status_)
     anything_reported |= GetNetworkStatus(status);
@@ -2754,10 +2757,13 @@ void DeviceStatusCollector::GetDeviceStatus(
   if (report_running_kiosk_app_)
     anything_reported |= GetRunningKioskApp(status);
 
-  if (report_memory_info_)
+  if (report_memory_info_) {
+    probe_categories.push_back(ProbeCategoryEnum::kMemory);
     anything_reported |= GetMemoryInfo(status);
+  }
 
   if (report_cpu_info_) {
+    probe_categories.push_back(ProbeCategoryEnum::kCpu);
     state->SampleCPUTempInfo(cpu_temp_fetcher_);
     anything_reported |= GetCPUInfo(status);
   }
@@ -2775,17 +2781,9 @@ void DeviceStatusCollector::GetDeviceStatus(
   if (anything_reported)
     state->SetDeviceStatusReported();
 
-  // The health daemon should always be queried to get the device vendor,
-  // product name, and product version.
-  state->FetchCrosHealthdData(cros_healthd_data_fetcher_, report_system_info_,
-                              report_vpd_info_, report_storage_status_,
-                              report_version_info_,
-                              report_network_configuration_);
-
   if (report_storage_status_) {
-    state->FetchStatefulPartitionInfo(stateful_partition_info_fetcher_);
-    state->SampleVolumeInfo(volume_info_fetcher_);
-    state->FetchEMMCLifeTime(emmc_lifetime_fetcher_);
+    probe_categories.push_back(ProbeCategoryEnum::kNonRemovableBlockDevices);
+    GetStorageStatus(state);
   }
 
   if (report_graphics_status_)
@@ -2793,6 +2791,13 @@ void DeviceStatusCollector::GetDeviceStatus(
 
   if (report_crash_report_info_ && stat_reporting_pref_)
     GetCrashReportInfo(state);
+
+  // The health daemon should always be queried to get the device vendor,
+  // product name, and product version.
+  state->FetchCrosHealthdData(cros_healthd_data_fetcher_, probe_categories,
+                              report_system_info_, report_vpd_info_,
+                              report_storage_status_, report_version_info_,
+                              report_network_configuration_);
 }
 
 bool DeviceStatusCollector::GetSessionStatusForUser(

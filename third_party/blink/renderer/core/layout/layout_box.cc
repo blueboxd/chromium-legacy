@@ -3376,7 +3376,19 @@ void LayoutBox::AddLayoutResult(scoped_refptr<const NGLayoutResult> result,
           To<NGPhysicalBoxFragment>(result->PhysicalFragment());
       // If we have reached the end, remove surplus results from previous
       // layout.
-      if (!box_fragment.BreakToken()) {
+      //
+      // Note: When an OOF is fragmented, we wait to lay it out at the
+      // fragmentation context root. If the OOF lives above a column spanner,
+      // though, we may lay it out early to make sure the OOF contributes to the
+      // correct column block-size. Thus, if an item broke as a result of a
+      // spanner, remove subsequent sibling items so that OOFs don't try to
+      // access old fragments.
+      //
+      // TODO(layout-dev): Other solutions to handling interactions between OOFs
+      // and spanner breaks may need to be considered.
+      if (!box_fragment.BreakToken() ||
+          To<NGBlockBreakToken>(box_fragment.BreakToken())
+              ->IsCausedByColumnSpanner()) {
         // Before forgetting any old fragments and their items, we need to clear
         // associations.
         if (box_fragment.IsInlineFormattingContext())
@@ -3719,6 +3731,12 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
       // We're should currently be checking if the node is unfragmented before
       // we get here.
       DCHECK(physical_fragment.IsOnlyForNode());
+
+      // Sometimes we perform simplified layout on a block-flow which is just
+      // growing in block-size. When fragmentation is present we can't hit the
+      // cache for these cases as we may grow past the fragmentation line.
+      if (cache_status != NGLayoutCacheStatus::kHit)
+        return nullptr;
 
       // If the node didn't break into multiple fragments, we might be able to
       // re-use the result. If the fragmentainer block-size has changed, or if

@@ -418,11 +418,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kImmersiveFullscreen;
 #endif
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kImproveAccessibilityTreeUsingLocalML;
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kInSessionPasswordChange;
@@ -597,13 +592,6 @@ extern const base::Feature kPrivacyAdvisor;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrivacyReview;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kPrivacySandboxSettings3;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::FeatureParam<bool> kPrivacySandboxSettings3ForceShowConsent;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::FeatureParam<bool> kPrivacySandboxSettings3ForceShowNotice;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPushMessagingBackgroundMode;

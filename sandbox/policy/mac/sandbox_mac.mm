@@ -20,7 +20,6 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/ignore_result.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/mac/bundle_locations.h"
@@ -61,72 +60,6 @@
 
 namespace sandbox {
 namespace policy {
-
-// Warm up System APIs that empirically need to be accessed before the Sandbox
-// is turned on.
-// This method is layed out in blocks, each one containing a separate function
-// that needs to be warmed up. The OS version on which we found the need to
-// enable the function is also noted.
-// This function is tested on the following OS versions:
-//     10.5.6, 10.6.0
-
-// static
-void SandboxMac::Warmup(sandbox::mojom::Sandbox sandbox_type) {
-  DCHECK_EQ(sandbox_type, sandbox::mojom::Sandbox::kGpu);
-
-  @autoreleasepool {
-    {  // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
-      base::ScopedCFTypeRef<CGColorSpaceRef> rgb_colorspace(
-          CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
-
-      // Allocate a 1x1 image.
-      char data[4];
-      base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
-          data, 1, 1, 8, 1 * 4, rgb_colorspace,
-          kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
-
-      // Load in the color profiles we'll need (as a side effect).
-      base::IgnoreResult(base::mac::GetSRGBColorSpace());
-      base::IgnoreResult(base::mac::GetSystemColorSpace());
-
-      // CGColorSpaceCreateSystemDefaultCMYK - 10.6
-      base::ScopedCFTypeRef<CGColorSpaceRef> cmyk_colorspace(
-          CGColorSpaceCreateWithName(kCGColorSpaceGenericCMYK));
-    }
-
-    {  // localtime() - 10.5.6
-      time_t tv = {0};
-      localtime(&tv);
-    }
-
-    {  // Gestalt() tries to read
-       // /System/Library/CoreServices/SystemVersion.plist
-      // on 10.5.6
-      int32_t tmp;
-      base::SysInfo::OperatingSystemVersionNumbers(&tmp, &tmp, &tmp);
-    }
-
-    {  // CGImageSourceGetStatus() - 10.6
-       // Create a png with just enough data to get everything warmed up...
-      unsigned char png_header[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
-      NSData* data = [NSData dataWithBytes:png_header
-                                    length:base::size(png_header)];
-      base::ScopedCFTypeRef<CGImageSourceRef> img(
-          CGImageSourceCreateWithData((CFDataRef)data, NULL));
-      CGImageSourceGetStatus(img);
-    }
-
-    {
-      // Allow access to /dev/urandom.
-      base::GetUrandomFD();
-    }
-
-    {  // IOSurfaceLookup() - 10.7
-      // Needed by zero-copy texture update framework - crbug.com/323338
-      base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceLookup(0));
-    }
-  }
-}
 
 // Load the appropriate template for the given sandbox type.
 // Returns the template as a string or an empty string on error.

@@ -47,8 +47,6 @@ js_type_check("closure_compile") {
 
   deps = [
     ":app",
-    ":customize_dialog",
-    ":doodle_share_dialog",
     ":lazy_load",
     ":new_tab_page",
     ":new_tab_page_proxy",
@@ -59,11 +57,6 @@ js_type_check("closure_compile") {
     "modules:module_registry",
     "modules:modules",
     "modules/dummy_v2:foo_proxy",
-    "realbox:realbox",
-    "realbox:realbox_browser_proxy",
-    "realbox:realbox_dropdown",
-    "realbox:realbox_icon",
-    "realbox:realbox_match",
   ]
 }
 
@@ -78,17 +71,12 @@ js_library("new_tab_page") {
     "modules:module_header",
     "modules:module_registry",
     "modules:modules",
-    "realbox:realbox_browser_proxy",
     "//ui/webui/resources/js/browser_command:browser_command_proxy",
   ]
 }
 
 js_library("lazy_load") {
-  deps = [
-    ":customize_dialog",
-    ":middle_slot_promo",
-    "modules/dummy_v2:module",
-  ]
+  deps = [ "modules/dummy_v2:module" ]
 }
 
 js_library("window_proxy") {
@@ -107,7 +95,6 @@ js_library("app") {
     ":new_tab_page_proxy",
     ":window_proxy",
     "modules:module_registry",
-    "realbox:realbox",
     "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_webui_js",
     "//skia/public/mojom:mojom_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -119,67 +106,7 @@ js_library("app") {
   ]
 }
 
-js_library("middle_slot_promo") {
-  deps = [
-    ":new_tab_page_proxy",
-    ":window_proxy",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js/browser_command:mojo_bindings_webui_js",
-  ]
-}
-
-js_library("customize_dialog") {
-  deps = [
-    ":customize_backgrounds",
-    ":customize_dialog_types",
-    ":customize_modules",
-    ":customize_shortcuts",
-    ":i18n_setup",
-    ":new_tab_page_proxy",
-    ":utils",
-    "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_webui_js",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
-  ]
-}
-
 js_library("customize_dialog_types") {
-}
-
-js_library("customize_backgrounds") {
-  deps = [
-    ":customize_dialog_types",
-    ":i18n_setup",
-    ":new_tab_page_proxy",
-    "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_webui_js",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
-js_library("customize_shortcuts") {
-  deps = [
-    ":i18n_setup",
-    ":new_tab_page_proxy",
-    "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_webui_js",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
-  ]
-}
-
-js_library("customize_modules") {
-  deps = [
-    ":i18n_setup",
-    ":new_tab_page_proxy",
-    "modules:module_registry",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
-    "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button.m",
-    "//ui/webui/resources/cr_elements/cr_radio_group:cr_radio_group.m",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator.m",
-    "//ui/webui/resources/js:assert.m",
-  ]
 }
 
 js_library("utils") {
@@ -188,18 +115,6 @@ js_library("utils") {
 js_library("metrics_utils") {
   deps = [ ":i18n_setup" ]
   externs_list = [ "//third_party/closure_compiler/externs/metrics_private.js" ]
-}
-
-js_library("doodle_share_dialog") {
-  deps = [
-    ":i18n_setup",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
-    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
-    "//url/mojom:url_mojom_gurl_webui_js",
-  ]
 }
 
 js_library("background_manager") {
@@ -223,16 +138,16 @@ js_library("i18n_setup") {
 html_to_js("web_components_local") {
   js_files = [
     "app.js",
-    "customize_backgrounds.js",
-    "customize_dialog.js",
-    "customize_shortcuts.js",
-    "doodle_share_dialog.js",
+    "customize_backgrounds.ts",
+    "customize_dialog.ts",
+    "customize_shortcuts.ts",
+    "doodle_share_dialog.ts",
     "logo.ts",
-    "middle_slot_promo.js",
+    "middle_slot_promo.ts",
     "mini_page.ts",
     "iframe.ts",
     "voice_search_overlay.ts",
-    "customize_modules.js",
+    "customize_modules.ts",
   ]
 }
 
@@ -276,16 +191,16 @@ preprocess_if_expr("preprocess_gen") {
   out_folder = "$target_gen_dir/$preprocess_folder"
   in_files = [
     "app.js",
-    "middle_slot_promo.js",
-    "customize_dialog.js",
+    "middle_slot_promo.ts",
+    "customize_dialog.ts",
     "voice_search_overlay.ts",
-    "customize_backgrounds.js",
-    "customize_modules.js",
-    "customize_shortcuts.js",
+    "customize_backgrounds.ts",
+    "customize_modules.ts",
+    "customize_shortcuts.ts",
     "iframe.ts",
     "mini_page.ts",
     "logo.ts",
-    "doodle_share_dialog.js",
+    "doodle_share_dialog.ts",
   ]
 }
 
@@ -459,18 +374,18 @@ ts_library("build_ts") {
   in_files = [
                "app.js",
                "background_manager.js",
-               "customize_backgrounds.js",
-               "customize_dialog.js",
+               "customize_backgrounds.ts",
+               "customize_dialog.ts",
                "customize_dialog_types.js",
-               "customize_modules.js",
-               "customize_shortcuts.js",
-               "doodle_share_dialog.js",
+               "customize_modules.ts",
+               "customize_shortcuts.ts",
+               "doodle_share_dialog.ts",
                "i18n_setup.js",
                "iframe.ts",
                "lazy_load.js",
                "logo.ts",
                "metrics_utils.js",
-               "middle_slot_promo.js",
+               "middle_slot_promo.ts",
                "mini_page.ts",
                "modules/cart/chrome_cart_proxy.js",
                "modules/cart/module.js",
@@ -492,12 +407,12 @@ ts_library("build_ts") {
                "modules/task_module/task_module_handler_proxy.js",
                "new_tab_page.js",
                "new_tab_page_proxy.js",
-               "realbox/realbox_action.js",
-               "realbox/realbox_browser_proxy.js",
-               "realbox/realbox_dropdown.js",
-               "realbox/realbox_icon.js",
-               "realbox/realbox.js",
-               "realbox/realbox_match.js",
+               "realbox/realbox_action.ts",
+               "realbox/realbox_browser_proxy.ts",
+               "realbox/realbox_dropdown.ts",
+               "realbox/realbox_icon.ts",
+               "realbox/realbox.ts",
+               "realbox/realbox_match.ts",
                "utils.js",
                "utils_ts.ts",
                "voice_search_overlay.ts",

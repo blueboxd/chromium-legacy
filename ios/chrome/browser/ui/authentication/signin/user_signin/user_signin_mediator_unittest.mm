@@ -76,9 +76,7 @@ class UserSigninMediatorTest : public PlatformTest {
         base::BindRepeating(&SyncSetupServiceMock::CreateKeyedService));
     browser_state_ = builder.Build();
 
-    WebStateList* web_state_list = nullptr;
-    browser_ =
-        std::make_unique<TestBrowser>(browser_state_.get(), web_state_list);
+    browser_ = std::make_unique<TestBrowser>(browser_state_.get());
 
     mediator_delegate_mock_ =
         OCMStrictProtocolMock(@protocol(UserSigninMediatorDelegate));
@@ -118,7 +116,6 @@ class UserSigninMediatorTest : public PlatformTest {
     authentication_flow_ = [[AuthenticationFlow alloc]
                  initWithBrowser:browser_.get()
                         identity:identity_
-                 shouldClearData:SHOULD_CLEAR_DATA_USER_CHOICE
                 postSignInAction:postSignInAction
         presentingViewController:presenting_view_controller_mock_];
     [authentication_flow_ setPerformerForTesting:performer_mock_];

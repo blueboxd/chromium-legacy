@@ -177,9 +177,11 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   bool HandlesIntentsChanged() const;
 
   apps::mojom::OptionalBool AllowUninstall() const;
+  absl::optional<bool> GetAllowUninstall() const;
   bool AllowUninstallChanged() const;
 
   apps::mojom::OptionalBool HasBadge() const;
+  absl::optional<bool> GetHasBadge() const;
   bool HasBadgeChanged() const;
 
   apps::mojom::OptionalBool Paused() const;

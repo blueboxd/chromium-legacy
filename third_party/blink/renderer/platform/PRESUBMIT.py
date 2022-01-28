@@ -20,12 +20,9 @@ LACROS_STATUS = "Lacros"
 # The ignore list will be removed once existing features adopt parity across
 # Lacros and ChromeOS.
 LACROS_CHROMEOS_FEATURE_STATUS_PARITY_IGNORE_LIST = [
-    'BarcodeDetector',  # crbug.com/1235855
     'DigitalGoods',  # crbug.com/1235859
     'NetInfoDownlinkMax',  # crbug.com/1235864
     'WebBluetooth',  # crbug.com/1235867
-    'WebBluetoothManufacturerDataFilter',  # crbug.com/1235869
-    'WebBluetoothRemoteCharacteristicNewWriteValue',  # crbug.com/235870
 ]
 
 

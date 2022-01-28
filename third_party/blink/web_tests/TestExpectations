@@ -3177,6 +3177,9 @@ crbug.com/626703 [ Mac11 ] external/wpt/css/css-flexbox/abspos/flex-abspos-stati
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-flexbox/flexbox_flow-column-wrap.html [ Crash Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/registered-property-invalidation-001.https.html [ Failure ]
+crbug.com/626703 [ Win10.20h2 ] virtual/prerender/external/wpt/speculation-rules/prerender/cache-storage.https.html [ Skip Timeout ]
+crbug.com/626703 [ Mac11 ] virtual/prerender/external/wpt/speculation-rules/prerender/cache-storage.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/private-network-access/fetch.https.window.html?include=from-public [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/private-network-access/service-worker.https.window.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/private-network-access/shared-worker-fetch.https.window.html [ Timeout ]
@@ -6311,7 +6314,7 @@ crbug.com/1072022 http/tests/security/frameNavigation/xss-ALLOWED-parent-navigat
 # Sheriff 2021-03-19
 crbug.com/1189976 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Skip ]
 crbug.com/1189976 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints-editing-dom-from-inspector.js [ Skip ]
-crbug.com/1190176 [ Linux ] fast/peerconnection/RTCPeerConnection-addMultipleTransceivers.html [ Failure Pass ]
+crbug.com/1190176 [ Linux ] fast/peerconnection/RTCPeerConnection-addMultipleTransceivers.html [ Failure Pass Crash ]
 
 crbug.com/1176039 [ Mac ] virtual/stable/media/stable/video-object-fit-stable.html [ Failure Pass ]
 
@@ -7118,7 +7121,6 @@ crbug.com/1249176 [ Mac11-arm64 ] images/color-profile-background-image-space.ht
 crbug.com/1249176 [ Mac11-arm64 ] http/tests/devtools/tracing/timeline-paint/update-layer-tree.js [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/gpu-rasterization/images/color-profile-clip.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/page/set-font-families.js [ Failure Pass ]
-crbug.com/1249176 [ Mac ] http/tests/text-autosizing/wide-iframe.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/layout-instability/recent-input.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/performance/perf-metrics.js [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/event-timing/event-retarget.html [ Failure Pass ]
@@ -7260,9 +7262,6 @@ crbug.com/1255014 [ Linux ] virtual/scroll-unification-overlay-scrollbar/plugin-
 crbug.com/1254963 [ Win ] external/wpt/mathml/presentation-markup/mrow/inferred-mrow-stretchy.html [ Crash Pass ]
 crbug.com/1255221 http/tests/devtools/elements/styles-4/svg-style.js [ Failure Pass ]
 
-# Sheriff 2021-10-04
-crbug.com/1226112 [ Win ] http/tests/text-autosizing/wide-iframe.html [ Pass Timeout ]
-
 # Skip devtools test hitting an unexpected tracing infrastructure exception 2021-10-04
 crbug.com/1255679 http/tests/devtools/service-workers/service-workers-wasm-test.js [ Skip ]
 
@@ -7368,11 +7367,11 @@ crbug.com/1267734 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-a
 
 # This test is flaky on all platforms
 crbug.com/1191846 [ Fuchsia ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass ]
-crbug.com/1191846 [ Mac10.12 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass ]
-crbug.com/1191846 [ Mac10.13 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass ]
-crbug.com/1191846 [ Mac10.14 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass ]
-crbug.com/1191846 [ Mac11 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass ]
-crbug.com/1191846 [ Mac11-arm64 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass ]
+crbug.com/1191846 [ Mac10.12 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass Skip Timeout ]
+crbug.com/1191846 [ Mac10.13 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass Skip Timeout ]
+crbug.com/1191846 [ Mac10.14 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass Skip Timeout ]
+crbug.com/1191846 [ Mac11 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass Skip Timeout ]
+crbug.com/1191846 [ Mac11-arm64 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass Skip Timeout ]
 crbug.com/1191846 [ Win ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass ]
 
 # Sheriff 2021-11-10
@@ -7618,6 +7617,7 @@ crbug.com/1282347 [ Mac ] virtual/clipboard-custom-formats/clipboard/async-clipb
 crbug.com/1290767 external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-in-worker.https.html [ Crash Pass ]
 crbug.com/1290767 external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-pipes-data-in-worker.https.html [ Crash Pass ]
 crbug.com/1290976 external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-in-shared-worker.https.html [ Crash Pass ]
+crbug.com/1291850 external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-in-service-worker.https.html [ Crash Pass ]
 
 # Temporarily disable tests to land branded types related changes.
 crbug.com/1253323 [ Win ] http/tests/devtools/sources/debugger-breakpoints/nodejs-set-breakpoint.js [ Skip ]
@@ -7637,3 +7637,7 @@ crbug.com/1291383 virtual/shared_array_buffer_on_desktop/fast/peerconnection/RTC
 
 # Sheriff 2022-01-27 Flaky test
 crbug.com/1291488 virtual/shared_array_buffer_on_desktop/fast/peerconnection/RTCPeerConnection-addMultipleTracks.html [ Skip ]
+
+# Sheriff 2022-01-28
+crbug.com/1248386 http/tests/text-autosizing/wide-iframe.html [ Failure Pass Timeout ]
+crbug.com/1287563 [ Linux ] external/wpt/webrtc/RTCPeerConnection-perfect-negotiation-stress-glare-linear.https.html [ Crash Failure Pass ]

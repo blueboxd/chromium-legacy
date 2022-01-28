@@ -213,6 +213,8 @@ void AppUpdate::Merge(App* state, const App* delta) {
   SET_OPTIONAL_VALUE(show_in_search);
   SET_OPTIONAL_VALUE(show_in_management);
   SET_OPTIONAL_VALUE(handles_intents);
+  SET_OPTIONAL_VALUE(allow_uninstall);
+  SET_OPTIONAL_VALUE(has_badge);
 
   // When adding new fields to the App type, this function should also be
   // updated.
@@ -781,6 +783,10 @@ apps::mojom::OptionalBool AppUpdate::AllowUninstall() const {
   return apps::mojom::OptionalBool::kUnknown;
 }
 
+absl::optional<bool> AppUpdate::GetAllowUninstall() const {
+  GET_VALUE_WITH_FALLBACK(allow_uninstall, absl::nullopt)
+}
+
 bool AppUpdate::AllowUninstallChanged() const {
   return mojom_delta_ &&
          (mojom_delta_->allow_uninstall !=
@@ -798,6 +804,10 @@ apps::mojom::OptionalBool AppUpdate::HasBadge() const {
     return mojom_state_->has_badge;
   }
   return apps::mojom::OptionalBool::kUnknown;
+}
+
+absl::optional<bool> AppUpdate::GetHasBadge() const {
+  GET_VALUE_WITH_FALLBACK(has_badge, absl::nullopt);
 }
 
 bool AppUpdate::HasBadgeChanged() const {

@@ -95,6 +95,10 @@ class AppUpdateTest : public testing::Test {
 
   absl::optional<bool> expect_handles_intents_;
 
+  absl::optional<bool> expect_allow_uninstall_;
+
+  absl::optional<bool> expect_has_badge_;
+
   AccountId account_id_ = AccountId::FromUserEmail("test@gmail.com");
 
   void CheckExpects(const AppUpdate& u) {
@@ -148,6 +152,8 @@ class AppUpdateTest : public testing::Test {
 
     EXPECT_EQ(expect_handles_intents_, u.GetHandlesIntents());
 
+    EXPECT_EQ(expect_has_badge_, u.GetHasBadge());
+
     EXPECT_EQ(account_id_, u.AccountId());
   }
 
@@ -180,6 +186,7 @@ class AppUpdateTest : public testing::Test {
     expect_show_in_search_ = absl::nullopt;
     expect_show_in_management_ = absl::nullopt;
     expect_handles_intents_ = absl::nullopt;
+    expect_has_badge_ = absl::nullopt;
     CheckExpects(u);
 
     if (delta) {
@@ -643,6 +650,46 @@ class AppUpdateTest : public testing::Test {
     if (state) {
       apps::AppUpdate::Merge(state, delta);
       EXPECT_EQ(expect_handles_intents_, state->handles_intents);
+      CheckExpects(u);
+    }
+
+    // AllowUninstall tests
+
+    if (state) {
+      state->allow_uninstall = false;
+      expect_allow_uninstall_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->allow_uninstall = true;
+      expect_allow_uninstall_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      EXPECT_EQ(expect_allow_uninstall_, state->allow_uninstall);
+      CheckExpects(u);
+    }
+
+    // HasBadge tests.
+
+    if (state) {
+      state->has_badge = false;
+      expect_has_badge_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->has_badge = true;
+      expect_has_badge_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      EXPECT_EQ(expect_has_badge_, state->has_badge);
       CheckExpects(u);
     }
   }

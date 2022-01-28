@@ -2360,6 +2360,23 @@
             ]
         }
     ],
+    "DestroySystemProfiles": [
+        {
+            "platforms": [
+                "windows",
+                "linux",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "DestroySystemProfiles",
+                    "enable_features": [
+                        "DestroySystemProfiles"
+                    ]
+                }
+            ]
+        }
+    ],
     "DetectFormSubmissionOnFormClearIOS": [
         {
             "platforms": [
@@ -3966,6 +3983,8 @@
                     },
                     "enable_features": [
                         "OmniboxAggregateShortcuts",
+                        "OmniboxBlurWithEscape",
+                        "OmniboxClosePopupWithEscape",
                         "OmniboxDocumentProviderAso",
                         "OmniboxEntitySuggestionsReduceLatency",
                         "OmniboxKeywordSearchButton",
@@ -4558,6 +4577,21 @@
                 "linux",
                 "mac",
                 "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20211214",
+                    "enable_features": [
+                        "SupportForAddPasswordsInSettings"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PasswordAddCredentialManuallyInIOS": [
+        {
+            "platforms": [
+                "ios"
             ],
             "experiments": [
                 {

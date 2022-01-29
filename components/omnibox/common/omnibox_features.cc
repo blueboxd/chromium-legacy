@@ -285,7 +285,7 @@ const base::Feature kOmniboxPedalsAndroidBatch1{
 // for non-English locales (English locales are 'en' and 'en-GB').
 // This feature is only meaningful if `OmniboxPedalsBatch2` is enabled.
 const base::Feature kOmniboxPedalsBatch2NonEnglish{
-    "OmniboxPedalsBatch2NonEnglish", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxPedalsBatch2NonEnglish", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to enable the third batch of Pedals.
 const base::Feature kOmniboxPedalsBatch3{"OmniboxPedalsBatch3",
@@ -299,7 +299,7 @@ const base::Feature kOmniboxPedalsBatch3NonEnglish{
 
 // Feature that enables loading synonyms from the translation console.
 const base::Feature kOmniboxPedalsTranslationConsole{
-    "OmniboxPedalsTranslationConsole", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxPedalsTranslationConsole", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, uses WebUI to render the omnibox suggestions popup, similar to
 // how the NTP "realbox" is implemented.
@@ -316,11 +316,6 @@ const base::Feature kClosePopupWithEscape{"OmniboxClosePopupWithEscape",
 
 const base::Feature kBlurWithEscape{"OmniboxBlurWithEscape",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, a setting is added to chrome://settings/searchEngines to
-// control whether <space> can be used to trigger keyword mode.
-const base::Feature kKeywordSpaceTriggeringSetting{
-    "OmniboxKeywordSpaceTriggeringSetting", enabled_by_default_desktop_only};
 
 // When enabled, add an Active Search Engines category to
 // chrome://settings/searchEngines. This section contains any search engines

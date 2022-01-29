@@ -901,7 +901,20 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
-    Records the time between each IOPMPowerSource event. Only recorded on MacOS.
+    Records the time between each IOPMPowerSource event. The recorded value is
+    clamped between 55 seconds and 65 seconds for maximum precision around the
+    expected value. Only recorded on MacOS.
+  </summary>
+</histogram>
+
+<histogram name="Power.IOPMPowerSource.SamplingEventDelta.MediumTimes"
+    units="ms" expires_after="2022-07-11">
+  <owner>pmonette@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Records the time between each IOPMPowerSource event. The recorded value is
+    not clamped and covers the range from zero seconds to 3 minutes. Only
+    recorded on MacOS.
   </summary>
 </histogram>
 
@@ -986,21 +999,6 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
     broken down by component. Only recorded on macOS. Only valid on Intel based
     systems. NB: The collection method was changed in May 2019, which may look
     like a regression in timeline view.
-  </summary>
-</histogram>
-
-<histogram name="Power.Mac.AppleSMCOpened" enum="BooleanSuccess"
-    expires_after="2022-07-03">
-  <obsolete>
-    Stopped reporting in M98, deprecated in M99
-  </obsolete>
-  <owner>lgrey@chromium.org</owner>
-  <summary>
-    When metrics collection started, records true if a handle to the System
-    Management Controller (SMC) was successfully opened to monitor power
-    consumption, false otherwise. If false, a system API might have changed in a
-    new version of macOS, or Chrome might be running in a nonstandard
-    environment (VM, hackintosh). Only recorded on macOS.
   </summary>
 </histogram>
 

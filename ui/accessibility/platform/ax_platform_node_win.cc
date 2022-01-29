@@ -53,9 +53,11 @@
 #include "ui/accessibility/platform/ax_platform_relation_win.h"
 #include "ui/accessibility/platform/compute_attributes.h"
 #include "ui/accessibility/platform/uia_registrar_win.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/strings/grit/ax_strings.h"
 
 //
 // Macros to use at the top of any AXPlatformNodeWin function that implements
@@ -4408,7 +4410,15 @@ HRESULT AXPlatformNodeWin::GetPropertyValueImpl(PROPERTYID property_id,
       break;
 
     case UIA_LocalizedControlTypePropertyId: {
-      std::u16string localized_control_type = GetRoleDescription();
+      // According to the HTML-AAM, UIA expects <output> to have a Localized
+      // Control Type of "output" whereas the Core-AAM states the Localized
+      // Control Type of the ARIA status role should be "status".
+      std::string html_tag =
+          GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
+      std::u16string localized_control_type =
+          html_tag == "output" ? l10n_util::GetStringUTF16(IDS_AX_ROLE_OUTPUT)
+                               : GetRoleDescription();
+
       if (!localized_control_type.empty()) {
         result->vt = VT_BSTR;
         result->bstrVal =
@@ -7656,8 +7666,13 @@ int AXPlatformNodeWin::MSAAState() const {
   // Map the ax::mojom::State to MSAA state. Note that some of the states are
   // not currently handled.
 
-  if (GetBoolAttribute(ax::mojom::BoolAttribute::kBusy))
+  if (GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
+      GetRole() != ax::mojom::Role::kRootWebArea) {
+    // TODO(accessibility): https://crbug.com/1292018
+    // Exposing the busy state on the root web area means the NVDA user will end
+    // up without a virtualBuffer until the page fully loads.
     msaa_state |= STATE_SYSTEM_BUSY;
+  }
 
   if (HasState(ax::mojom::State::kCollapsed))
     msaa_state |= STATE_SYSTEM_COLLAPSED;
@@ -8263,7 +8278,14 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
       break;
 
     case UIA_TogglePatternId:
-      if (SupportsToggle(GetRole())) {
+      // According to the CoreAAM spec [1], TogglePattern should be exposed for
+      // all aria-checkable roles. However, the UIA documentation [2] specifies
+      // the RadioButton control does not implement IToggleProvider.
+      // [1] https://w3c.github.io/core-aam/#mapping_state-property_table
+      // [2]
+      // https://docs.microsoft.com/en-us/dotnet/framework/ui-automation/implementing-the-ui-automation-toggle-control-pattern
+      if ((IsPlatformCheckable() || SupportsToggle(GetRole())) &&
+          !IsRadio(GetRole())) {
         return &PatternProvider<IToggleProvider>;
       }
       break;

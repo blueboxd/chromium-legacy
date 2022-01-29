@@ -113,8 +113,7 @@ class ExtensionHost : public DeferredStartRenderHost,
   void RenderFrameDeleted(content::RenderFrameHost* frame_host) override;
   void PrimaryMainFrameRenderProcessGone(
       base::TerminationStatus status) override;
-  void DocumentAvailableInMainFrame(
-      content::RenderFrameHost* render_frame_host) override;
+  void PrimaryMainDocumentElementAvailable() override;
   void DidStopLoading() override;
 
   // content::WebContentsDelegate:
@@ -137,9 +136,7 @@ class ExtensionHost : public DeferredStartRenderHost,
                                   blink::mojom::MediaStreamType type) override;
   bool IsNeverComposited(content::WebContents* web_contents) override;
   content::PictureInPictureResult EnterPictureInPicture(
-      content::WebContents* web_contents,
-      const viz::SurfaceId& surface_id,
-      const gfx::Size& natural_size) override;
+      content::WebContents* web_contents) override;
   void ExitPictureInPicture() override;
   std::string GetTitleForMediaControls(
       content::WebContents* web_contents) override;

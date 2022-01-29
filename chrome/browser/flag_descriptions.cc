@@ -1713,12 +1713,6 @@ const char kOmniboxExperimentalSuggestScoringDescription[] =
     "Enables an experimental scoring mode for suggestions when Google is the "
     "default search engine.";
 
-const char kOmniboxKeywordSpaceTriggeringSettingName[] =
-    "Omnibox Keyword Space Triggering Setting";
-const char kOmniboxKeywordSpaceTriggeringSettingDescription[] =
-    "Adds a setting to the search engines setting page to control whether "
-    "spacebar activates keyword mode.";
-
 const char kOmniboxMostVisitedTilesName[] = "Omnibox Most Visited Tiles";
 const char kOmniboxMostVisitedTilesDescription[] =
     "Display a list of frequently visited pages from history as a single row "
@@ -4567,6 +4561,11 @@ const char kDisableQuickAnswersV2TranslationName[] =
     "Disable Quick Answers Translation";
 const char kDisableQuickAnswersV2TranslationDescription[] =
     "Disable translation services of the Quick Answers.";
+
+const char kQuickAnswersAlwaysTriggerForSingleWordName[] =
+    "Enable Quick Answers always trigger for single word";
+const char kQuickAnswersAlwaysTriggerForSingleWordDescription[] =
+    "Enable Quick Answers always trigger for single word selection.";
 
 const char kTrimOnMemoryPressureName[] = "Trim Working Set on memory pressure";
 const char kTrimOnMemoryPressureDescription[] =

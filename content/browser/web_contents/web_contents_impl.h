@@ -686,8 +686,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
-  void DocumentAvailableInMainFrame(
-      RenderFrameHost* render_frame_host) override;
+  void PrimaryMainDocumentElementAvailable() override;
   void PassiveInsecureContentFound(const GURL& resource_url) override;
   bool ShouldAllowRunningInsecureContent(bool allowed_per_prefs,
                                          const url::Origin& origin,
@@ -1157,8 +1156,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Notifies the Picture-in-Picture controller that there is a new player
   // entering Picture-in-Picture.
   // Returns the result of the enter request.
-  PictureInPictureResult EnterPictureInPicture(const viz::SurfaceId&,
-                                               const gfx::Size& natural_size);
+  PictureInPictureResult EnterPictureInPicture();
 
   // Updates the Picture-in-Picture controller with a signal that
   // Picture-in-Picture mode has ended.
@@ -1302,6 +1300,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       base::TimeDelta duration) {
     minimum_delay_between_loading_updates_ms_ = duration;
   }
+
+  // If the given frame is prerendered, cancels the associated prerender.
+  // Returns true if a prerender was canceled.
+  bool CancelPrerendering(FrameTreeNode* frame_tree_node,
+                          PrerenderHost::FinalStatus final_status);
 
  private:
   using FrameTreeIterationCallback = base::RepeatingCallback<void(FrameTree*)>;

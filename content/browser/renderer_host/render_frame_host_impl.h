@@ -1817,7 +1817,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Prerender2:
   // Tells PrerenderHostRegistry to cancel the prerendering of the page this
   // frame is in, which destroys this frame.
-  void CancelPrerendering(PrerenderHost::FinalStatus status);
+  // Returns true if a prerender was canceled. Does nothing and returns false if
+  // `this` is not prerendered.
+  bool CancelPrerendering(PrerenderHost::FinalStatus status);
   // Called by MojoBinderPolicyApplier when it receives a kCancel interface.
   void CancelPrerenderingByMojoBinderPolicy(const std::string& interface_name);
 
@@ -2014,7 +2016,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                  bool user_gesture) override;
   void DidDisplayInsecureContent() override;
   void DidContainInsecureFormAction() override;
-  void DocumentAvailableInMainFrame(bool uses_temporary_zoom_level) override;
+  void MainDocumentElementAvailable(bool uses_temporary_zoom_level) override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
   void SetVirtualKeyboardOverlayPolicy(bool vk_overlays_content) override;
   void VisibilityChanged(blink::mojom::FrameVisibility) override;

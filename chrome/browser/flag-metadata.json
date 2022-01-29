@@ -486,16 +486,6 @@
     "expiry_milestone": 102
   },
   {
-    "name": "autofill-profile-client-validation",
-    "owners": [ "parastoog" ],
-    "expiry_milestone": 79
-  },
-  {
-    "name": "autofill-profile-server-validation",
-    "owners": [ "parastoog" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "autofill-save-card-dismiss-on-navigation",
     "owners": [ "sczs", "bling-flags@google.com" ],
     "expiry_milestone": 82
@@ -4277,16 +4267,6 @@
     "expiry_milestone": 85
   },
   {
-    "name": "omnibox-keyword-search-button",
-    "owners": [ "jdonnelly", "yoangela", "orinj", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "omnibox-keyword-space-triggering-setting",
-    "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 99
-  },
-  {
     "name": "omnibox-local-history-zero-suggest",
     "owners": ["rkgibson@google.com", "stkhapugin", "chrome-omnibox-team@google.com"],
     "expiry_milestone": 100
@@ -4798,6 +4778,11 @@
     "name": "query-tiles-swap-trending",
     "owners": [ "qinmin" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "quick-answers-always-trigger-for-single-word",
+    "owners": [ "croissant-eng", "updowndota" ],
+    "expiry_milestone": 105
   },
   {
     "name": "quick-dim",

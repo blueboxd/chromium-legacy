@@ -981,9 +981,6 @@ extern const char kOmniboxDisableCGIParamMatchingDescription[];
 extern const char kOmniboxDocumentProviderAsoName[];
 extern const char kOmniboxDocumentProviderAsoDescription[];
 
-extern const char kOmniboxKeywordSpaceTriggeringSettingName[];
-extern const char kOmniboxKeywordSpaceTriggeringSettingDescription[];
-
 extern const char kOmniboxExperimentalSuggestScoringName[];
 extern const char kOmniboxExperimentalSuggestScoringDescription[];
 
@@ -2609,6 +2606,9 @@ extern const char kEnablePalmSuppressionDescription[];
 
 extern const char kDisableQuickAnswersV2TranslationName[];
 extern const char kDisableQuickAnswersV2TranslationDescription[];
+
+extern const char kQuickAnswersAlwaysTriggerForSingleWordName[];
+extern const char kQuickAnswersAlwaysTriggerForSingleWordDescription[];
 
 extern const char kESimPolicyName[];
 extern const char kESimPolicyDescription[];

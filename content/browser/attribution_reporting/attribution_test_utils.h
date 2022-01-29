@@ -95,6 +95,8 @@ class ConfigurableStorageDelegate : public AttributionStorage::Delegate {
   base::TimeDelta GetDeleteExpiredSourcesFrequency() const override;
   base::TimeDelta GetDeleteExpiredRateLimitsFrequency() const override;
   base::GUID NewReportID() const override;
+  absl::optional<OfflineReportDelayConfig> GetOfflineReportDelayConfig()
+      const override;
 
   void set_max_attributions_per_source(int max) {
     max_attributions_per_source_ = max;
@@ -124,6 +126,11 @@ class ConfigurableStorageDelegate : public AttributionStorage::Delegate {
     report_time_ms_ = report_time_ms;
   }
 
+  void set_offline_report_delay_config(
+      absl::optional<OfflineReportDelayConfig> config) {
+    offline_report_delay_config_ = config;
+  }
+
  private:
   int max_attributions_per_source_ = INT_MAX;
   int max_sources_per_origin_ = INT_MAX;
@@ -139,6 +146,8 @@ class ConfigurableStorageDelegate : public AttributionStorage::Delegate {
   base::TimeDelta delete_expired_rate_limits_frequency_;
 
   int report_time_ms_ = 0;
+
+  absl::optional<OfflineReportDelayConfig> offline_report_delay_config_;
 };
 
 // Test manager provider which can be used to inject a fake AttributionManager.
@@ -402,6 +411,97 @@ std::ostream& operator<<(
 std::vector<AttributionReport> GetAttributionsToReportForTesting(
     AttributionManagerImpl* manager,
     base::Time max_report_time);
+
+// Source matchers
+
+MATCHER_P(CommonSourceInfoIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.common_info(), result_listener);
+}
+
+MATCHER_P(SourceEventIdIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.common_info().source_event_id(),
+                            result_listener);
+}
+
+MATCHER_P(ImpressionOriginIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.common_info().impression_origin(),
+                            result_listener);
+}
+
+MATCHER_P(ConversionOriginIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.common_info().conversion_origin(),
+                            result_listener);
+}
+
+MATCHER_P(SourceTypeIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.common_info().source_type(),
+                            result_listener);
+}
+
+MATCHER_P(SourcePriorityIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.common_info().priority(),
+                            result_listener);
+}
+
+MATCHER_P(ImpressionTimeIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.common_info().impression_time(),
+                            result_listener);
+}
+
+MATCHER_P(DedupKeysAre, matcher, "") {
+  return ExplainMatchResult(matcher, arg.dedup_keys(), result_listener);
+}
+
+// Trigger matchers.
+
+MATCHER_P(TriggerConversionDestinationIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.conversion_destination(),
+                            result_listener);
+}
+
+// Report matchers
+
+MATCHER_P(ReportSourceIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.source(), result_listener);
+}
+
+MATCHER_P(ReportTimeIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.report_time(), result_listener);
+}
+
+MATCHER_P(FailedSendAttemptsIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.failed_send_attempts(),
+                            result_listener);
+}
+
+MATCHER_P(EventLevelDataIs, matcher, "") {
+  return ExplainMatchResult(
+      ::testing::VariantWith<AttributionReport::EventLevelData>(matcher),
+      arg.data(), result_listener);
+}
+
+MATCHER_P(TriggerDataIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.trigger_data, result_listener);
+}
+
+MATCHER_P(TriggerPriorityIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.priority, result_listener);
+}
+
+// `CreateReportResult` matchers
+
+MATCHER_P(CreateReportStatusIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.status(), result_listener);
+}
+
+MATCHER_P(DroppedReportIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.dropped_report(), result_listener);
+}
+
+MATCHER_P(DeactivatedSourceIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.GetDeactivatedSource(),
+                            result_listener);
+}
 
 }  // namespace content
 

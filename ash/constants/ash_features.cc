@@ -195,7 +195,7 @@ const base::Feature kBluetoothFixA2dpPacketSize{
 // Enables or disables the Chrome OS Bluetooth Revamp, which updates Bluetooth
 // system UI and related infrastructure. See https://crbug.com/1010321.
 const base::Feature kBluetoothRevamp{"BluetoothRevamp",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Bluetooth WBS microphone be selected as default
 // audio input option.
@@ -593,6 +593,14 @@ const base::Feature kFastPair{"FastPair", base::FEATURE_DISABLED_BY_DEFAULT};
 // Sets Fast Pair scanning to low power mode.
 const base::Feature kFastPairLowPower{"FastPairLowPower",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// The amount of seconds we should scan while in low power mode before stopping.
+const base::FeatureParam<double> kFastPairLowPowerActiveSeconds{
+    &kFastPairLowPower, "active-seconds", 2};
+
+// The amount of seconds we should pause scanning while in low power mode.
+const base::FeatureParam<double> kFastPairLowPowerInactiveSeconds{
+    &kFastPairLowPower, "inactive-seconds", 3};
 
 // Allows Fast Pair to use software scanning on devices which don't support
 // hardware offloading of BLE scans.

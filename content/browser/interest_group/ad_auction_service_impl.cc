@@ -146,27 +146,11 @@ bool IsAuctionValid(const blink::mojom::AuctionAdConfig& config) {
   // it is non-null.
   DCHECK(non_shared_params);
 
-  if (!non_shared_params->interest_group_buyers ||
-      non_shared_params->interest_group_buyers->is_all_buyers()) {
-    return false;
-  }
-  DCHECK(non_shared_params->interest_group_buyers->is_buyers());
-
   // All interest group owners must be HTTPS.
-  for (const url::Origin& buyer :
-       non_shared_params->interest_group_buyers->get_buyers()) {
-    if (buyer.scheme() != url::kHttpsScheme)
-      return false;
-  }
-
-  // All buyer signals must be for listed buyers.
-  if (non_shared_params->per_buyer_signals) {
-    for (const auto& it : non_shared_params->per_buyer_signals.value()) {
-      if (!base::Contains(
-              non_shared_params->interest_group_buyers->get_buyers(),
-              it.first)) {
+  if (non_shared_params->interest_group_buyers) {
+    for (const url::Origin& buyer : *non_shared_params->interest_group_buyers) {
+      if (buyer.scheme() != url::kHttpsScheme)
         return false;
-      }
     }
   }
 

@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -119,6 +120,7 @@ void DocumentTransition::ContextDestroyed() {
     style_tracker_->Abort();
     style_tracker_ = nullptr;
   }
+  state_ = State::kIdle;
   active_shared_elements_.clear();
   signal_ = nullptr;
   StopDeferringCommits();
@@ -170,11 +172,18 @@ ScriptPromise DocumentTransition::prepare(
     return ScriptPromise();
   }
 
+  // This stores a per-shared-element configuration, if specified. Note that
+  // this is likely to change when the API is redesigned at
+  // https://github.com/WICG/shared-element-transitions.
+  //
+  // Note that we add one extra config for the "root" element, after parsing the
+  // shared elements.
   std::vector<DocumentTransitionRequest::TransitionConfig>
       shared_elements_config;
   if (options->hasSharedElements()) {
     shared_elements_config.resize(options->sharedElements().size());
 
+    // TODO(vmpstr): This is likely to be superceded by CSS customization.
     if (options->hasSharedElementsConfig()) {
       const auto& shared_elements_config_options =
           options->sharedElementsConfig();
@@ -199,6 +208,10 @@ ScriptPromise DocumentTransition::prepare(
       }
     }
   }
+
+  // The root snapshot is handled as a shared element by the compositing stack.
+  if (!RuntimeEnabledFeatures::DocumentTransitionVizEnabled())
+    shared_elements_config.emplace_back();
 
   if (options->hasAbortSignal()) {
     if (options->abortSignal()->aborted()) {
@@ -229,7 +242,7 @@ ScriptPromise DocumentTransition::prepare(
           &DocumentTransition::NotifyPrepareFinished,
           WrapCrossThreadWeakPersistent(this), last_prepare_sequence_id_)));
 
-  if (RuntimeEnabledFeatures::DocumentTransitionRendererEnabled()) {
+  if (!RuntimeEnabledFeatures::DocumentTransitionVizEnabled()) {
     style_tracker_ =
         MakeGarbageCollected<DocumentTransitionStyleTracker>(*document_);
     style_tracker_->Prepare(active_shared_elements_);
@@ -277,7 +290,7 @@ ScriptPromise DocumentTransition::start(
     // TODO(khushalsagar) : Viz keeps copy results cached for 5 seconds at this
     // point. We should send an early release. See crbug.com/1266500.
     SetActiveSharedElements({});
-    if (RuntimeEnabledFeatures::DocumentTransitionRendererEnabled()) {
+    if (!RuntimeEnabledFeatures::DocumentTransitionVizEnabled()) {
       style_tracker_->Abort();
       style_tracker_ = nullptr;
     }
@@ -288,16 +301,16 @@ ScriptPromise DocumentTransition::start(
   state_ = State::kStarted;
   start_promise_resolver_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  if (RuntimeEnabledFeatures::DocumentTransitionRendererEnabled()) {
-    pending_request_ =
-        DocumentTransitionRequest::CreateAnimateRenderer(document_tag_);
-    style_tracker_->Start(active_shared_elements_);
-  } else {
+  if (RuntimeEnabledFeatures::DocumentTransitionVizEnabled()) {
     pending_request_ = DocumentTransitionRequest::CreateStart(
         document_tag_, prepare_shared_element_count_,
         ConvertToBaseOnceCallback(CrossThreadBindOnce(
             &DocumentTransition::NotifyStartFinished,
             WrapCrossThreadWeakPersistent(this), last_start_sequence_id_)));
+  } else {
+    pending_request_ =
+        DocumentTransitionRequest::CreateAnimateRenderer(document_tag_);
+    style_tracker_->Start(active_shared_elements_);
   }
 
   NotifyHasChangesToCommit();
@@ -361,7 +374,7 @@ void DocumentTransition::NotifyStartFinished(uint32_t sequence_id) {
   state_ = State::kIdle;
   SetActiveSharedElements({});
 
-  if (RuntimeEnabledFeatures::DocumentTransitionRendererEnabled()) {
+  if (!RuntimeEnabledFeatures::DocumentTransitionVizEnabled()) {
     style_tracker_->StartFinished();
     style_tracker_ = nullptr;
     pending_request_ = DocumentTransitionRequest::CreateRelease(document_tag_);
@@ -374,17 +387,43 @@ DocumentTransition::TakePendingRequest() {
   return std::move(pending_request_);
 }
 
-bool DocumentTransition::IsActiveElement(const Element* element) const {
-  return active_shared_elements_.Contains(element);
+bool DocumentTransition::IsTransitionParticipant(
+    const LayoutObject& object) const {
+  // If our state is idle it implies that we have no style tracker.
+  DCHECK(state_ != State::kIdle || !style_tracker_);
+
+  // The layout view is always a participant if there is a transition.
+  if (auto* layout_view = DynamicTo<LayoutView>(object)) {
+    return !RuntimeEnabledFeatures::DocumentTransitionVizEnabled() &&
+           state_ != State::kIdle;
+  }
+  // Otherwise check if the layout object has an active shared element.
+  auto* element = DynamicTo<Element>(object.GetNode());
+  return element && active_shared_elements_.Contains(element);
 }
 
-void DocumentTransition::PopulateSharedElementAndResourceId(
-    const Element* element,
+void DocumentTransition::PopulateSharedElementAndResourceIds(
+    const LayoutObject& object,
     DocumentTransitionSharedElementId* shared_element_id,
     viz::SharedElementResourceId* resource_id) const {
-  DCHECK(IsActiveElement(element));
+  if (!IsTransitionParticipant(object))
+    return;
 
   *shared_element_id = DocumentTransitionSharedElementId(document_tag_);
+
+  auto* element = DynamicTo<Element>(object.GetNode());
+  if (!element) {
+    // The only non-element participant is the layout view.
+    DCHECK(object.IsLayoutView());
+    DCHECK(!RuntimeEnabledFeatures::DocumentTransitionVizEnabled());
+    // This matches one past the size of the shared element configs generated in
+    // ::prepare().
+    shared_element_id->AddIndex(active_shared_elements_.size());
+    *resource_id = style_tracker_->GetLiveRootSnapshotId();
+    DCHECK(shared_element_id->valid());
+    return;
+  }
+
   for (wtf_size_t i = 0; i < active_shared_elements_.size(); ++i) {
     if (active_shared_elements_[i] != element)
       continue;
@@ -393,7 +432,7 @@ void DocumentTransition::PopulateSharedElementAndResourceId(
     // This tags the shared element's content with the resource id used by the
     // first pseudo element. This is okay since in the eventual API we should
     // have a 1:1 mapping between shared elements and pseudo elements.
-    if (RuntimeEnabledFeatures::DocumentTransitionRendererEnabled()) {
+    if (!RuntimeEnabledFeatures::DocumentTransitionVizEnabled()) {
       if (!resource_id->IsValid()) {
         *resource_id = style_tracker_->GetLiveSnapshotId(element);
       }

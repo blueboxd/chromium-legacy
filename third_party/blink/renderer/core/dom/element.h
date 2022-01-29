@@ -1031,11 +1031,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void NotifyInlineStyleMutation();
 
-  // Returns true if this element should composite due to a document transition.
-  // See third_party/blink/renderer/core/document_transition/README.md for more
-  // information.
-  bool ShouldCompositeForDocumentTransition() const;
-
   // For undo stack cleanup
   bool HasUndoStack() const;
   void SetHasUndoStack(bool);
@@ -1058,6 +1053,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       const Vector<AtomicString>& document_transition_tags);
   void RebuildTransitionPseudoLayoutTree(
       const Vector<AtomicString>& document_transition_tags);
+
+  // Returns true if the element has the 'inert' attribute, forcing itself and
+  // all its subtree to be inert.
+  bool IsInertRoot();
 
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }

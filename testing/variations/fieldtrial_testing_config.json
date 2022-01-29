@@ -280,7 +280,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_2022-01-18",
                     "params": {
                         "save_card_message_use_followup_button_text": "false",
                         "save_card_message_use_gpay_icon": "true"
@@ -2727,6 +2727,7 @@
             "platforms": [
                 "android",
                 "android_weblayer",
+                "android_webview",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
@@ -4156,7 +4157,9 @@
     "OptimizeEarlyNavigation": [
         {
             "platforms": [
-                "android"
+                "android",
+                "android_weblayer",
+                "android_webview"
             ],
             "experiments": [
                 {
@@ -5451,6 +5454,27 @@
             ]
         }
     ],
+    "SafeBrowsingSendSampledPingsForProtegoAllowlistDomains": [
+        {
+            "platforms": [
+                "android",
+                "ios",
+                "linux",
+                "mac",
+                "windows",
+                "chromeos",
+                "chromeos_lacros"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingSendSampledPingsForProtegoAllowlistDomains"
+                    ]
+                }
+            ]
+        }
+    ],
     "SendTabToSelfV2": [
         {
             "platforms": [
@@ -5937,6 +5961,7 @@
             "platforms": [
                 "android",
                 "android_weblayer",
+                "android_webview",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",

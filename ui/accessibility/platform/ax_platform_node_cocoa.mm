@@ -778,6 +778,12 @@ bool IsAXSetter(SEL selector) {
   if (ui::IsSetLike(role))
     [axAttributes addObject:@"AXARIASetSize"];
 
+  // Caret navigation and text selection attributes.
+  if (!ui::IsPlatformDocument(_node->GetRole())) {
+    [axAttributes
+        addObjectsFromArray:@[ NSAccessibilityFocusableAncestorAttribute ]];
+  }
+
   // Live regions.
   if (_node->HasStringAttribute(ax::mojom::StringAttribute::kLiveStatus))
     [axAttributes addObject:NSAccessibilityARIALiveAttribute];
@@ -1223,6 +1229,21 @@ bool IsAXSetter(SEL selector) {
     return
         @(_node->GetDelegate()->GetFocus() == _node->GetNativeViewAccessible());
   return @NO;
+}
+
+- (id)AXFocusableAncestor {
+  if (![self instanceActive])
+    return nil;
+
+  ui::AXPlatformNodeBase* ancestor = _node;
+  for (; ancestor; ancestor = ancestor->GetPlatformParent()) {
+    // Do not cross document boundaries.
+    if (ui::IsPlatformDocument(ancestor->GetRole()))
+      return nil;
+    if (ancestor->HasState(ax::mojom::State::kFocusable))
+      break;
+  }
+  return ancestor->GetNativeViewAccessible();
 }
 
 - (id)AXParent {
@@ -1812,8 +1833,7 @@ bool IsAXSetter(SEL selector) {
     case ax::mojom::Role::kRegion:
       return l10n_util::GetNSString(IDS_AX_ROLE_REGION);
     case ax::mojom::Role::kSpinButton:
-      // This control is similar to what VoiceOver calls a "stepper".
-      return l10n_util::GetNSString(IDS_AX_ROLE_STEPPER);
+      return l10n_util::GetNSString(IDS_AX_ROLE_SPIN_BUTTON);
     case ax::mojom::Role::kStatus:
       return l10n_util::GetNSString(IDS_AX_ROLE_STATUS);
     case ax::mojom::Role::kSearchBox:

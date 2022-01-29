@@ -1136,6 +1136,15 @@ TEST_F(DesksTemplatesTest, ShowingTemplatesGridToTabletMode) {
                   ->desks_templates_grid_widget()
                   ->IsVisible());
 
+  // Tests that the templates button is in expanded state when the grid is
+  // showing, even with one desk.
+  auto* zero_state = GetDesksTemplatesButtonForRoot(root_window,
+                                                    /*zero_state=*/true);
+  auto* expanded_state = GetDesksTemplatesButtonForRoot(root_window,
+                                                        /*zero_state=*/false);
+  ASSERT_FALSE(zero_state->GetVisible());
+  ASSERT_TRUE(expanded_state->GetVisible());
+
   // Tests that after transitioning, we remain in overview mode and the grid is
   // hidden.
   EnterTabletMode();
@@ -1144,6 +1153,11 @@ TEST_F(DesksTemplatesTest, ShowingTemplatesGridToTabletMode) {
                    ->GetGridWithRootWindow(root_window)
                    ->desks_templates_grid_widget()
                    ->IsVisible());
+
+  // Tests that the templates button is also hidden in tablet mode. Regression
+  // test for https://crbug.com/1291777.
+  EXPECT_FALSE(zero_state->GetVisible());
+  EXPECT_FALSE(expanded_state->GetVisible());
 }
 
 // In certain cases there are activation issues when we enter tablet mode,
@@ -1861,16 +1875,13 @@ TEST_F(DesksTemplatesTest, AccessibilityFocusAnnotatorInOverview) {
 
   auto* save_widget =
       GetSaveDeskAsTemplateButtonForRoot(Shell::GetPrimaryRootWindow());
-
-  // Overview items are in MRU order, so the expected order in the grid list is
-  // the reverse creation order.
   auto* item_widget = GetOverviewItemForWindow(window.get())->item_widget();
 
-  // Order should be [focus_widget, save_widget, item_widget, desk_widget].
-  CheckA11yOverrides("focus", focus_widget, desk_widget, save_widget);
-  CheckA11yOverrides("save", save_widget, focus_widget, item_widget);
-  CheckA11yOverrides("item", item_widget, save_widget, desk_widget);
-  CheckA11yOverrides("desk", desk_widget, item_widget, focus_widget);
+  // Order should be [focus_widget, item_widget, desk_widget, save_widget].
+  CheckA11yOverrides("focus", focus_widget, save_widget, item_widget);
+  CheckA11yOverrides("item", item_widget, focus_widget, desk_widget);
+  CheckA11yOverrides("desk", desk_widget, item_widget, save_widget);
+  CheckA11yOverrides("save", save_widget, desk_widget, focus_widget);
 }
 
 TEST_F(DesksTemplatesTest, LayoutItemsInLandscape) {
@@ -2257,6 +2268,56 @@ TEST_F(DesksTemplatesTest, ReplaceTemplateMetric) {
 
   EXPECT_FALSE(Shell::IsSystemModalWindowOpen());
   EXPECT_TRUE(GetOverviewSession());
+}
+
+// Tests that there is no animation when removing a desk with windows while the
+// grid is shown. Regression test for https://crbug.com/1291770.
+TEST_F(DesksTemplatesTest, NoAnimationWhenRemovingDesk) {
+  AddEntry(base::GUID::GenerateRandomV4(), "template", base::Time::Now());
+
+  // Create and a new desk, and create a test window on the active desk.
+  DesksController* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kKeyboard);
+  auto test_window = CreateAppWindow();
+  ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
+  ASSERT_TRUE(desks_controller->BelongsToActiveDesk(test_window.get()));
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  ui::ScopedAnimationDurationScaleMode animation(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Remove the active desk. Ensure that there are no animations on the overview
+  // item, otherwise a flicker will be seen as they should be hidden when the
+  // desks templates grid is shown.
+  RemoveDesk(desks_controller->active_desk());
+
+  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
+  OverviewItem* overview_item =
+      overview_grid->GetOverviewItemContaining(test_window.get());
+  ASSERT_TRUE(overview_item);
+  ui::Layer* item_widget_layer = overview_item->item_widget()->GetLayer();
+  EXPECT_FALSE(item_widget_layer->GetAnimator()->is_animating());
+  EXPECT_EQ(0.f, item_widget_layer->opacity());
+  EXPECT_FALSE(test_window->layer()->GetAnimator()->is_animating());
+  EXPECT_EQ(0.f, test_window->layer()->opacity());
+}
+
+// Tests that the desks templates name view can accept touch events and get
+// focused. Regression test for https://crbug.com/1291769.
+TEST_F(DesksTemplatesTest, TouchForNameView) {
+  AddEntry(base::GUID::GenerateRandomV4(), "template", base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  DesksTemplatesNameView* name_view =
+      GetItemViewFromTemplatesGrid(0)->name_view();
+  ASSERT_FALSE(name_view->HasFocus());
+
+  // The name view should receive focus after getting a gesture tap.
+  GetEventGenerator()->GestureTapAt(
+      name_view->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(name_view->HasFocus());
 }
 
 }  // namespace ash

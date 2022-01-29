@@ -256,8 +256,7 @@ void ExtensionHost::OnDidStopFirstLoad() {
   // Nothing to do for background pages.
 }
 
-void ExtensionHost::DocumentAvailableInMainFrame(
-    content::RenderFrameHost* render_frame_host) {
+void ExtensionHost::PrimaryMainDocumentElementAvailable() {
   // If the document has already been marked as available for this host, then
   // bail. No need for the redundant setup. http://crbug.com/31170
   if (document_element_available_)
@@ -439,11 +438,8 @@ bool ExtensionHost::IsNeverComposited(content::WebContents* web_contents) {
 }
 
 content::PictureInPictureResult ExtensionHost::EnterPictureInPicture(
-    content::WebContents* web_contents,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size) {
-  return delegate_->EnterPictureInPicture(web_contents, surface_id,
-                                          natural_size);
+    content::WebContents* web_contents) {
+  return delegate_->EnterPictureInPicture(web_contents);
 }
 
 void ExtensionHost::ExitPictureInPicture() {

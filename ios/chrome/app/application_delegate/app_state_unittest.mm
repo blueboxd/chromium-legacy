@@ -250,6 +250,11 @@ class AppStateTest : public BlockCleanupTest {
     browser_state_ = test_cbs_builder.Build();
   }
 
+  void TearDown() override {
+    main_scene_state_ = nil;
+    BlockCleanupTest::TearDown();
+  }
+
   void swizzleConnectedScenes(NSArray<SceneState*>* connectedScenes) {
     connected_scenes_swizzle_block_ = ^NSArray<SceneState*>*(id self) {
       return connectedScenes;
@@ -361,7 +366,9 @@ class AppStateTest : public BlockCleanupTest {
               applicationDelegate:main_application_delegate_];
       [app_state_.connectedScenes addObject:main_scene_state_];
 
-      main_scene_state_ = [main_scene_state_ initWithAppState:app_state_];
+      main_scene_state_ =
+          [main_scene_state_ initWithAppState:app_state_
+                                 browserState:browser_state_.get()];
       main_scene_state_.window = getWindowMock();
 
       if (with_safe_mode_agent) {
@@ -401,7 +408,9 @@ class AppStateTest : public BlockCleanupTest {
               applicationDelegate:main_application_delegate_];
       [app_state_.connectedScenes addObject:main_scene_state_];
 
-      main_scene_state_ = [main_scene_state_ initWithAppState:app_state_];
+      main_scene_state_ =
+          [main_scene_state_ initWithAppState:app_state_
+                                 browserState:browser_state_.get()];
       main_scene_state_.window = window;
       [window makeKeyAndVisible];
 
@@ -603,8 +612,11 @@ using AppStateNoFixtureTest = PlatformTest;
 // Test that -willResignActive set cold start to NO and launch record.
 TEST_F(AppStateNoFixtureTest, willResignActive) {
   // Setup.
-  base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<Browser> browser = std::make_unique<TestBrowser>();
+  base::test::TaskEnvironment task_environment;
+  std::unique_ptr<TestChromeBrowserState> browser_state =
+      TestChromeBrowserState::Builder().Build();
+  std::unique_ptr<Browser> browser =
+      std::make_unique<TestBrowser>(browser_state.get());
 
   StubBrowserInterfaceProvider* interfaceProvider =
       [[StubBrowserInterfaceProvider alloc] init];
@@ -706,7 +718,8 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
   id memoryHelper = [OCMockObject mockForClass:[MemoryWarningHelper class]];
   StubBrowserInterfaceProvider* interfaceProvider = getInterfaceProvider();
   id tabOpener = [OCMockObject mockForProtocol:@protocol(TabOpening)];
-  std::unique_ptr<Browser> browser = std::make_unique<TestBrowser>();
+  std::unique_ptr<Browser> browser =
+      std::make_unique<TestBrowser>(getBrowserState());
 
   [[[getBrowserLauncherMock() stub] andReturn:interfaceProvider]
       interfaceProvider];
@@ -839,7 +852,8 @@ TEST_F(AppStateTest, applicationDidEnterBackgroundIncognito) {
   StubBrowserInterfaceProvider* interfaceProvider = getInterfaceProvider();
   crash_helper::SetEnabled(true);
 
-  std::unique_ptr<Browser> browser = std::make_unique<TestBrowser>();
+  std::unique_ptr<Browser> browser =
+      std::make_unique<TestBrowser>(getBrowserState());
   id startupInformation = getStartupInformationMock();
   id browserLauncher = getBrowserLauncherMock();
 

@@ -3172,12 +3172,13 @@ crbug.com/626703 [ Mac ] external/wpt/css/css-ruby/ruby-autohide-002.html [ Fail
 crbug.com/626703 [ Mac ] external/wpt/css/css-ruby/ruby-autohide-004.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/url/a-element-xhtml.xhtml [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/url/failure.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/url/url-constructor.any.html [ Failure ]
 crbug.com/626703 [ Mac11 ] external/wpt/css/css-flexbox/abspos/flex-abspos-staticpos-align-self-006.html [ Failure ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-flexbox/flexbox_flow-column-wrap.html [ Crash Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/registered-property-invalidation-001.https.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/hid.https.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-content/quotes-030.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] virtual/prerender/external/wpt/speculation-rules/prerender/fetch-blob.html [ Skip Timeout ]
 crbug.com/626703 [ Win10.20h2 ] virtual/prerender/external/wpt/speculation-rules/prerender/cache-storage.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/prerender/external/wpt/speculation-rules/prerender/cache-storage.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/private-network-access/fetch.https.window.html?include=from-public [ Timeout ]
@@ -6314,7 +6315,7 @@ crbug.com/1072022 http/tests/security/frameNavigation/xss-ALLOWED-parent-navigat
 # Sheriff 2021-03-19
 crbug.com/1189976 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Skip ]
 crbug.com/1189976 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints-editing-dom-from-inspector.js [ Skip ]
-crbug.com/1190176 [ Linux ] fast/peerconnection/RTCPeerConnection-addMultipleTransceivers.html [ Failure Pass Crash ]
+crbug.com/1190176 [ Linux ] fast/peerconnection/RTCPeerConnection-addMultipleTransceivers.html [ Crash Failure Pass ]
 
 crbug.com/1176039 [ Mac ] virtual/stable/media/stable/video-object-fit-stable.html [ Failure Pass ]
 
@@ -7576,6 +7577,7 @@ crbug.com/1286944 [ Mac11 ] virtual/off-main-thread-css-paint/external/wpt/css/c
 crbug.com/1286944 [ Mac11 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/geometry-border-image-002.https.html [ Failure Pass ]
 crbug.com/1286944 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/hidpi/canvas-transform.https.html [ Failure Pass ]
 crbug.com/1286944 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/parse-input-arguments-011.https.html [ Failure Pass ]
+crbug.com/1286944 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/registered-property-invalidation-001.https.html [ Failure Pass ]
 
 # Sheriff 2022-01-17
 crbug.com/1287928 external/wpt/webrtc/RTCPeerConnection-perfect-negotiation-stress-glare.https.html [ Skip ]
@@ -7631,9 +7633,6 @@ crbug.com/1290978 [ Win7 ] http/tests/devtools/elements/accessibility/edit-aria-
 crbug.com/1291246 [ Mac ] virtual/dark-system-color-picker-appearance/fast/forms/color-scheme/color/color-picker-appearance.html [ Failure Pass ]
 crbug.com/1291246 [ Mac ] virtual/system-color-picker-appearance/fast/forms/color-scheme/color/color-picker-appearance.html [ Failure Pass ]
 crbug.com/1291274 [ Mac ] virtual/document-transition/wpt_internal/document-transition/transition-waits-for-animations.html [ Crash ]
-crbug.com/1291383 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation-stress-glare-linear.https.html [ Skip ]
-crbug.com/1291383 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation-stress-glare.https.html [ Skip ]
-crbug.com/1291383 virtual/shared_array_buffer_on_desktop/fast/peerconnection/RTCPeerConnection-addMultipleTransceivers.html [ Skip ]
 
 # Sheriff 2022-01-27 Flaky test
 crbug.com/1291488 virtual/shared_array_buffer_on_desktop/fast/peerconnection/RTCPeerConnection-addMultipleTracks.html [ Skip ]
@@ -7641,3 +7640,10 @@ crbug.com/1291488 virtual/shared_array_buffer_on_desktop/fast/peerconnection/RTC
 # Sheriff 2022-01-28
 crbug.com/1248386 http/tests/text-autosizing/wide-iframe.html [ Failure Pass Timeout ]
 crbug.com/1287563 [ Linux ] external/wpt/webrtc/RTCPeerConnection-perfect-negotiation-stress-glare-linear.https.html [ Crash Failure Pass ]
+
+# DevTools - Temporarily disable for new Interest Groups panel that requires tests to be rebaselined after the roll.
+crbug.com/1126824 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Failure Pass ]
+crbug.com/1126824 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Failure Pass ]
+crbug.com/1126824 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
+crbug.com/1126824 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Failure Pass ]
+crbug.com/1126824 http/tests/devtools/application-panel/resources-panel-websql.js [ Failure Pass ]

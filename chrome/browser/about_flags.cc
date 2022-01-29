@@ -730,6 +730,7 @@ const FeatureEntry::Choice kLacrosSelectionChoices[] = {
 };
 
 const FeatureEntry::Choice kLacrosAvailabilityPolicyChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {crosapi::browser_util::kLacrosAvailabilityPolicyUserChoice,
      crosapi::browser_util::kLacrosAvailabilityPolicySwitch,
      crosapi::browser_util::kLacrosAvailabilityPolicyUserChoice},
@@ -4650,10 +4651,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxDisableCGIParamMatchingName,
      flag_descriptions::kOmniboxDisableCGIParamMatchingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kDisableCGIParamMatching)},
-    {"omnibox-keyword-space-triggering-setting",
-     flag_descriptions::kOmniboxKeywordSpaceTriggeringSettingName,
-     flag_descriptions::kOmniboxKeywordSpaceTriggeringSettingDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kKeywordSpaceTriggeringSetting)},
     {"omnibox-active-search-engines",
      flag_descriptions::kOmniboxActiveSearchEnginesName,
      flag_descriptions::kOmniboxActiveSearchEnginesDescription, kOsDesktop,
@@ -5207,16 +5204,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_WIN)
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
-    {"autofill-profile-client-validation",
-     flag_descriptions::kAutofillProfileClientValidationName,
-     flag_descriptions::kAutofillProfileClientValidationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillProfileClientValidation)},
-
-    {"autofill-profile-server-validation",
-     flag_descriptions::kAutofillProfileServerValidationName,
-     flag_descriptions::kAutofillProfileServerValidationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillProfileServerValidation)},
-
 #if BUILDFLAG(IS_WIN)
     {"enable-windows-gaming-input-data-fetcher",
      flag_descriptions::kEnableWindowsGamingInputDataFetcherName,
@@ -5540,6 +5527,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableQuickAnswersV2TranslationName,
      flag_descriptions::kDisableQuickAnswersV2TranslationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDisableQuickAnswersV2Translation)},
+
+    {"quick-answers-always-trigger-for-single-word",
+     flag_descriptions::kQuickAnswersAlwaysTriggerForSingleWordName,
+     flag_descriptions::kQuickAnswersAlwaysTriggerForSingleWordDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::features::kQuickAnswersAlwaysTriggerForSingleWord)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)

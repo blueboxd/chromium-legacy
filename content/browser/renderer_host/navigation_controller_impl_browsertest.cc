@@ -3439,7 +3439,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     // The navigation replaced the previously committed entry with a new entry.
     // This differs than the browser-initiated case's behavior, but it's OK.
     // The renderer-initiated navigation follows the spec  at
-    // https://html.spec.whatwg.org/#navigating-across-documents:hh-replace-3,
+    // https://html.spec.whatwg.org/C/#navigating-across-documents:hh-replace-3,
     // while the browser-initiated version got converted into a reload.
     EXPECT_TRUE(capturer.did_replace_entry());
     EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
@@ -16493,9 +16493,17 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // Checks that a browser initiated error page navigation in a frame pending
 // deletion is ignored and does not result in a crash. See
 // https://crbug.com/1019180.
+// TODO(crbug.com/1291862): Flaky failures
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion \
+  DISABLED_BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion
+#else
+#define MAYBE_BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion \
+  BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion
+#endif
 IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
-    BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion) {
+    MAYBE_BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
 

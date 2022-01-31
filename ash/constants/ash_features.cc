@@ -1211,9 +1211,9 @@ const base::Feature kSystemJapanesePhysicalTyping{
     "SystemJapanesePhysicalTyping", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables using the system input engine for physical typing in
-// Korean.
-const base::Feature kSystemKoreanPhysicalTyping{
-    "SystemKoreanPhysicalTyping", base::FEATURE_ENABLED_BY_DEFAULT};
+// transliteration input methods.
+const base::Feature kSystemTransliterationPhysicalTyping{
+    "SystemTransliterationPhysicalTyping", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the Chrome OS system-proxy daemon, only for system services. This
 // means that system services like tlsdate, update engine etc. can opt to be
@@ -1891,10 +1891,6 @@ bool IsSystemChinesePhysicalTypingEnabled() {
 
 bool IsSystemJapanesePhysicalTypingEnabled() {
   return base::FeatureList::IsEnabled(kSystemJapanesePhysicalTyping);
-}
-
-bool IsSystemKoreanPhysicalTypingEnabled() {
-  return base::FeatureList::IsEnabled(kSystemKoreanPhysicalTyping);
 }
 
 bool IsTabClusterUIEnabled() {

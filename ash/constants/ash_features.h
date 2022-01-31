@@ -463,7 +463,7 @@ extern const base::Feature kSystemExtensions;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSystemJapanesePhysicalTyping;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kSystemKoreanPhysicalTyping;
+extern const base::Feature kSystemTransliterationPhysicalTyping;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSystemProxyForSystemServices;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTabClusterUI;
@@ -659,7 +659,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSyncSettingsCategorizationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsStylusBatteryStatusEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSystemChinesePhysicalTypingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSystemJapanesePhysicalTypingEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSystemKoreanPhysicalTypingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTabClusterUIEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTrafficCountersHandlerEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTrilinearFilteringEnabled();

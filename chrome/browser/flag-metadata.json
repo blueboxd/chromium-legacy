@@ -1723,6 +1723,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "enable-cros-system-transliteration-physical-typing",
+    "owners": [ "shend", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 102
+  },
+  {
     "name": "enable-cros-virtual-keyboard-api",
     "owners": [ "keithlee", "essential-inputs-team@google.com" ],
     "expiry_milestone": 97
@@ -3354,6 +3359,11 @@
     "name": "frame-throttle-fps",
     "owners":[ "yjliu", "chromeos-perf@google.com"],
     "expiry_milestone": 95
+  },
+  {
+    "name": "fre-mobile-identity-consistency",
+    "owners": [ "jlebel", "chrome-signin-team" ],
+    "expiry_milestone": 106
   },
   {
     "name": "full-restore-for-lacros",

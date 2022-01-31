@@ -19,8 +19,7 @@ public class LearnMoreFragment extends PreferenceFragmentCompat {
      */
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
-        // TODO(crbug.com/1286276): Replace string placeholders.
-        getActivity().setTitle("About personalized ads");
+        getActivity().setTitle(R.string.privacy_sandbox_learn_more_title);
         SettingsUtils.addPreferencesFromResource(this, R.xml.learn_more_preference);
     }
 }

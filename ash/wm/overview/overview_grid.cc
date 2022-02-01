@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/metrics_util.h"
@@ -646,7 +645,9 @@ void OverviewGrid::AddItem(aura::Window* window,
       window_list_.begin() + index,
       std::make_unique<OverviewItem>(window, overview_session_, this));
 
-  UpdateFrameThrottling();
+  if (overview_session_)
+    overview_session_->UpdateFrameThrottling();
+
   auto* item = window_list_[index].get();
   item->PrepareForOverview();
 
@@ -718,7 +719,8 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
   window_list_.erase(std::next(iter).base());
   tmp.reset();
 
-  UpdateFrameThrottling();
+  if (overview_session_)
+    overview_session_->UpdateFrameThrottling();
 
   if (!item_destroying)
     return;
@@ -1707,6 +1709,13 @@ void OverviewGrid::ShowDesksTemplatesGrid(bool was_zero_state) {
   for (auto& overview_mode_item : window_list_)
     overview_mode_item->HideForDesksTemplatesGrid(/*animate=*/true);
 
+  // There may be an existing animation in progress triggered by
+  // `HideDeskTemplatesGrid()` below, which animates a widget to 0.f before
+  // calling `OnDesksTemplatesGridFadedOut()` to hide the widget on animation
+  // end. Stop animating so that the callbacks associated get fired, otherwise
+  // we may end up trying to show a widget that's already shown.
+  // `StopAnimating()` is a no-op if there is no animation in progress.
+  desks_templates_grid_widget_->GetLayer()->GetAnimator()->StopAnimating();
   desks_templates_grid_widget_->Show();
 
   // Fade in the widget from its current opacity.
@@ -1735,15 +1744,18 @@ void OverviewGrid::HideDesksTemplatesGrid(bool exit_overview) {
 
   if (exit_overview && overview_session_->enter_exit_overview_type() ==
                            OverviewEnterExitType::kImmediateExit) {
-    // Since we're immediately exiting, we don't need to animate anything and
-    // can let the `desks_templates_grid_widget_` handle its own destruction.
+    // Since we're immediately exiting, we don't need to animate anything.
+    // Reshow the overview items and let the `desks_templates_grid_widget_`
+    // handle its own destruction.
+    for (auto& overview_mode_item : window_list_)
+      overview_mode_item->RevertHideForDesksTemplatesGrid(/*animate=*/false);
     return;
   }
 
   if (exit_overview) {
     // Un-hide the overview mode items.
     for (auto& overview_mode_item : window_list_)
-      overview_mode_item->RevertHideForDesksTemplatesGrid();
+      overview_mode_item->RevertHideForDesksTemplatesGrid(/*animate=*/true);
 
     // Disable the `desks_templates_grid_widget_`'s event targeting so it can't
     // get any events during the animation.
@@ -1856,6 +1868,14 @@ void OverviewGrid::UpdateSaveDeskAsTemplateButton() {
             &OverviewGrid::OnSaveDeskAsTemplateButtonPressed,
             weak_ptr_factory_.GetWeakPtr())));
   }
+
+  // There may be an existing animation in progress triggered by
+  // `PerformFadeOutLayer()` above, which animates a widget to 0.f before
+  // calling `OnSaveDeskAsTemplateButtonFadedOut()` to hide the widget on
+  // animation end. Stop animating so that the callbacks associated get fired,
+  // otherwise we may end up trying to show a widget that's already shown.
+  // `StopAnimating()` is a no-op if there is no animation in progress.
+  save_desk_as_template_widget_->GetLayer()->GetAnimator()->StopAnimating();
   save_desk_as_template_widget_->Show();
   PerformFadeInLayer(save_desk_as_template_widget_->GetLayer());
 
@@ -2331,22 +2351,14 @@ void OverviewGrid::UpdateCannotSnapWarningVisibility() {
     overview_mode_item->UpdateCannotSnapWarningVisibility();
 }
 
-void OverviewGrid::UpdateFrameThrottling() {
-  std::vector<aura::Window*> windows_to_throttle(window_list_.size(), nullptr);
-  std::transform(
-      window_list_.begin(), window_list_.end(), windows_to_throttle.begin(),
-      [](std::unique_ptr<OverviewItem>& item) { return item->GetWindow(); });
-  Shell::Get()->frame_throttling_controller()->StartThrottling(
-      windows_to_throttle);
-}
-
 void OverviewGrid::OnSaveDeskAsTemplateButtonPressed() {
-  DesksTemplatesPresenter::Get()->MaybeSaveActiveDeskAsTemplate();
+  DesksTemplatesPresenter::Get()->MaybeSaveActiveDeskAsTemplate(
+      save_desk_as_template_widget_->GetNativeWindow()->GetRootWindow());
 }
 
 void OverviewGrid::OnDesksTemplatesGridFadedOut() {
   for (auto& overview_mode_item : window_list_)
-    overview_mode_item->RevertHideForDesksTemplatesGrid();
+    overview_mode_item->RevertHideForDesksTemplatesGrid(/*animate=*/true);
 
   desks_templates_grid_widget_->Hide();
 

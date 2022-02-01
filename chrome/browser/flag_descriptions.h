@@ -64,9 +64,6 @@ extern const char kAddPasswordsInSettingsDescription[];
 extern const char kAllowInsecureLocalhostName[];
 extern const char kAllowInsecureLocalhostDescription[];
 
-extern const char kAllowSyncXHRInPageDismissalName[];
-extern const char kAllowSyncXHRInPageDismissalDescription[];
-
 extern const char kAnimatedImageResumeName[];
 extern const char kAnimatedImageResumeDescription[];
 
@@ -210,6 +207,11 @@ extern const char kAutofillEnableUpdateVirtualCardEnrollmentDescription[];
 
 extern const char kAutofillEnableVirtualCardName[];
 extern const char kAutofillEnableVirtualCardDescription[];
+
+extern const char
+    kAutofillEnableVirtualCardManagementInDesktopSettingsPageName[];
+extern const char
+    kAutofillEnableVirtualCardManagementInDesktopSettingsPageDescription[];
 
 extern const char kAutofillEnableVirtualCardsRiskBasedAuthenticationName[];
 extern const char
@@ -703,8 +705,8 @@ extern const char kEnableUseZoomForDsfChoiceDefault[];
 extern const char kEnableUseZoomForDsfChoiceEnabled[];
 extern const char kEnableUseZoomForDsfChoiceDisabled[];
 
-extern const char kEnableWebAuthenticationCableV2SupportName[];
-extern const char kEnableWebAuthenticationCableV2SupportDescription[];
+extern const char kEnableWebAuthenticationCableDiscoCredsName[];
+extern const char kEnableWebAuthenticationCableDiscoCredsDescription[];
 
 extern const char kEnableWebAuthenticationChromeOSAuthenticatorName[];
 extern const char kEnableWebAuthenticationChromeOSAuthenticatorDescription[];
@@ -1777,6 +1779,10 @@ extern const char kExploreSitesDescription[];
 extern const char kFeatureNotificationGuideName[];
 extern const char kFeatureNotificationGuideDescription[];
 
+extern const char kFeatureNotificationGuideSkipCheckForLowEngagedUsersName[];
+extern const char
+    kFeatureNotificationGuideSkipCheckForLowEngagedUsersDescription[];
+
 extern const char kFeedBackToTopName[];
 extern const char kFeedBackToTopDescription[];
 
@@ -2166,6 +2172,9 @@ extern const char kOmniboxPedalsBatch3NonEnglishDescription[];
 
 extern const char kOmniboxPedalsTranslationConsoleName[];
 extern const char kOmniboxPedalsTranslationConsoleDescription[];
+
+extern const char kScreenAIName[];
+extern const char kScreenAIDescription[];
 
 extern const char kSCTAuditingName[];
 extern const char kSCTAuditingDescription[];
@@ -2586,6 +2595,12 @@ extern const char kEnableLauncherSearchNormalizationDescription[];
 extern const char kEnableLibinputToHandleTouchpadName[];
 extern const char kEnableLibinputToHandleTouchpadDescription[];
 
+extern const char kEnableNeuralPalmAdaptiveHoldName[];
+extern const char kEnableNeuralPalmAdaptiveHoldDescription[];
+
+extern const char kEnableNeuralPalmRejectionModelV2Name[];
+extern const char kEnableNeuralPalmRejectionModelV2Description[];
+
 extern const char kEnableNeuralStylusPalmRejectionName[];
 extern const char kEnableNeuralStylusPalmRejectionDescription[];
 
@@ -2801,6 +2816,9 @@ extern const char kKeyboardBasedDisplayArrangementInSettingsDescription[];
 
 extern const char kLacrosAvailabilityIgnoreName[];
 extern const char kLacrosAvailabilityIgnoreDescription[];
+
+extern const char kLacrosOnlyName[];
+extern const char kLacrosOnlyDescription[];
 
 extern const char kLacrosPrimaryName[];
 extern const char kLacrosPrimaryDescription[];

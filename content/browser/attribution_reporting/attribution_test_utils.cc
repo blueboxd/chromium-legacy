@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_runner_util.h"
@@ -27,6 +28,7 @@ using AttributionAllowedStatus =
 using CreateReportStatus =
     ::content::AttributionStorage::CreateReportResult::Status;
 using DeactivatedSource = ::content::AttributionStorage::DeactivatedSource;
+using StoreSourceResult = ::content::AttributionStorage::StoreSourceResult;
 
 const char kDefaultImpressionOrigin[] = "https://impression.test/";
 const char kDefaultTriggerOrigin[] = "https://sub.conversion.test/";
@@ -79,9 +81,9 @@ int ConfigurableStorageDelegate::GetMaxAttributionsPerOrigin() const {
   return max_attributions_per_origin_;
 }
 
-int ConfigurableStorageDelegate::GetMaxAttributionDestinationsPerEventSource()
-    const {
-  return max_attribution_destinations_per_event_source_;
+int ConfigurableStorageDelegate::
+    GetMaxDestinationsPerSourceSiteReportingOrigin() const {
+  return max_destinations_per_source_site_reporting_origin_;
 }
 
 AttributionStorage::Delegate::RateLimitConfig
@@ -107,6 +109,12 @@ base::GUID ConfigurableStorageDelegate::NewReportID() const {
 absl::optional<AttributionStorage::Delegate::OfflineReportDelayConfig>
 ConfigurableStorageDelegate::GetOfflineReportDelayConfig() const {
   return offline_report_delay_config_;
+}
+
+void ConfigurableStorageDelegate::ShuffleReports(
+    std::vector<AttributionReport>& reports) const {
+  if (reverse_reports_on_shuffle_)
+    base::ranges::reverse(reports);
 }
 
 AttributionManager* TestManagerProvider::GetManager(
@@ -651,6 +659,19 @@ std::ostream& operator<<(std::ostream& out,
                          const DeactivatedSource& deactivated_source) {
   return out << "{source=" << deactivated_source.source
              << ",reason=" << deactivated_source.reason << "}";
+}
+
+std::ostream& operator<<(std::ostream& out, StoreSourceResult::Status status) {
+  switch (status) {
+    case StoreSourceResult::Status::kSuccess:
+      return out << "kSuccess";
+    case StoreSourceResult::Status::kInternalError:
+      return out << "kInternalError";
+    case StoreSourceResult::Status::kInsufficientSourceCapacity:
+      return out << "kInsufficientSourceCapacity";
+    case StoreSourceResult::Status::kInsufficientUniqueDestinationCapacity:
+      return out << "kInsufficientUniqueDestinationCapacity";
+  }
 }
 
 std::vector<AttributionReport> GetAttributionsToReportForTesting(

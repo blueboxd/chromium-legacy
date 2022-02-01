@@ -25,6 +25,7 @@
 #include "components/federated_learning/features/features.h"
 #include "components/federated_learning/floc_id.h"
 #include "components/policy/core/common/mock_policy_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "components/privacy_sandbox/privacy_sandbox_test_util.h"
@@ -106,6 +107,9 @@ class PrivacySandboxServiceTest : public testing::Test {
   PrivacySandboxService* privacy_sandbox_service() {
     return privacy_sandbox_service_.get();
   }
+  PrivacySandboxSettings* privacy_sandbox_settings() {
+    return PrivacySandboxSettingsFactory::GetForProfile(profile());
+  }
   base::test::ScopedFeatureList* feature_list() { return &feature_list_; }
   sync_preferences::TestingPrefServiceSyncable* prefs() {
     return profile()->GetTestingPrefService();
@@ -172,7 +176,8 @@ TEST_F(PrivacySandboxServiceTest, GetFlocIdForDisplay) {
   // Check that the cohort identifier is correctly converted to a string when
   // available.
   feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
+      {blink::features::kInterestCohortAPIOriginTrial},
+      {privacy_sandbox::kPrivacySandboxSettings3});
   profile()->GetTestingPrefService()->SetBoolean(
       prefs::kPrivacySandboxFlocEnabled, true);
   profile()->GetTestingPrefService()->SetBoolean(
@@ -189,13 +194,15 @@ TEST_F(PrivacySandboxServiceTest, GetFlocIdForDisplay) {
   // or the FLoC ID is invalid, the invalid string should be returned.
   feature_list()->Reset();
   feature_list()->InitWithFeatures(
-      {}, {blink::features::kInterestCohortAPIOriginTrial});
+      {}, {blink::features::kInterestCohortAPIOriginTrial,
+           privacy_sandbox::kPrivacySandboxSettings3});
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_INVALID),
             privacy_sandbox_service()->GetFlocIdForDisplay());
 
   feature_list()->Reset();
   feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
+      {blink::features::kInterestCohortAPIOriginTrial},
+      {privacy_sandbox::kPrivacySandboxSettings3});
   profile()->GetTestingPrefService()->SetBoolean(
       prefs::kPrivacySandboxApisEnabled, false);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_INVALID),
@@ -218,7 +225,8 @@ TEST_F(PrivacySandboxServiceTest, GetFlocIdForDisplay) {
 TEST_F(PrivacySandboxServiceTest, GetFlocIdNextUpdateForDisplay) {
   // Check that date FLoC will be next updated is returned when available.
   feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
+      {blink::features::kInterestCohortAPIOriginTrial},
+      {privacy_sandbox::kPrivacySandboxSettings3});
   profile()->GetTestingPrefService()->SetBoolean(
       prefs::kPrivacySandboxApisEnabled, true);
   profile()->GetTestingPrefService()->SetBoolean(
@@ -259,7 +267,8 @@ TEST_F(PrivacySandboxServiceTest, GetFlocIdNextUpdateForDisplay) {
   // Disabling the FLoC feature should also invalidate the next compute time.
   feature_list()->Reset();
   feature_list()->InitWithFeatures(
-      {}, {blink::features::kInterestCohortAPIOriginTrial});
+      {}, {blink::features::kInterestCohortAPIOriginTrial,
+           privacy_sandbox::kPrivacySandboxSettings3});
   profile()->GetTestingPrefService()->SetBoolean(
       prefs::kPrivacySandboxFlocEnabled, true);
   testing::Mock::VerifyAndClearExpectations(mock_floc_id_provider());
@@ -300,7 +309,8 @@ TEST_F(PrivacySandboxServiceTest, GetFlocStatusForDisplay) {
   // has FLoC enabled.
   // TODO(crbug.com/1287951): FLoC is always disabled if OT is not active.
   feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
+      {blink::features::kInterestCohortAPIOriginTrial},
+      {privacy_sandbox::kPrivacySandboxSettings3});
   profile()->GetTestingPrefService()->SetBoolean(
       prefs::kPrivacySandboxFlocEnabled, true);
   profile()->GetTestingPrefService()->SetBoolean(
@@ -329,7 +339,8 @@ TEST_F(PrivacySandboxServiceTest, GetFlocStatusForDisplay) {
       prefs::kPrivacySandboxFlocEnabled, true);
   feature_list()->Reset();
   feature_list()->InitWithFeatures(
-      {}, {blink::features::kInterestCohortAPIOriginTrial});
+      {}, {blink::features::kInterestCohortAPIOriginTrial,
+           privacy_sandbox::kPrivacySandboxSettings3});
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_STATUS_NOT_ACTIVE),
       privacy_sandbox_service()->GetFlocStatusForDisplay());
@@ -339,7 +350,8 @@ TEST_F(PrivacySandboxServiceTest, IsFlocIdResettable) {
   // Check that if FLoC is functional the FLoC ID is resettable, regardless of
   // whether the FLoC ID is currently valid.
   feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
+      {blink::features::kInterestCohortAPIOriginTrial},
+      {privacy_sandbox::kPrivacySandboxSettings3});
   federated_learning::FlocId floc_id = federated_learning::FlocId::CreateValid(
       123456, base::Time(), base::Time::Now(),
       /*sorting_lsh_version=*/0);
@@ -352,12 +364,14 @@ TEST_F(PrivacySandboxServiceTest, IsFlocIdResettable) {
 
   feature_list()->Reset();
   feature_list()->InitWithFeatures(
-      {}, {blink::features::kInterestCohortAPIOriginTrial});
+      {}, {blink::features::kInterestCohortAPIOriginTrial,
+           privacy_sandbox::kPrivacySandboxSettings3});
   EXPECT_FALSE(privacy_sandbox_service()->IsFlocIdResettable());
 
   feature_list()->Reset();
   feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
+      {blink::features::kInterestCohortAPIOriginTrial},
+      {privacy_sandbox::kPrivacySandboxSettings3});
   profile()->GetTestingPrefService()->SetBoolean(
       prefs::kPrivacySandboxFlocEnabled, false);
   EXPECT_FALSE(privacy_sandbox_service()->IsFlocIdResettable());
@@ -379,12 +393,11 @@ TEST_F(PrivacySandboxServiceTest, IsFlocIdResettable) {
 TEST_F(PrivacySandboxServiceTest, UserResetFlocID) {
   // Check that the PrivacySandboxSettings is informed, and the appropriate
   // actions are logged, in response to a user resetting the floc id.
-  auto* privacy_sandbox_settings =
-      PrivacySandboxSettingsFactory::GetForProfile(profile());
-  EXPECT_EQ(base::Time(), privacy_sandbox_settings->FlocDataAccessibleSince());
+  EXPECT_EQ(base::Time(),
+            privacy_sandbox_settings()->FlocDataAccessibleSince());
 
   privacy_sandbox_test_util::MockPrivacySandboxObserver observer;
-  privacy_sandbox_settings->AddObserver(&observer);
+  privacy_sandbox_settings()->AddObserver(&observer);
   EXPECT_CALL(observer, OnFlocDataAccessibleSinceUpdated(true)).Times(2);
 
   base::UserActionTester user_action_tester;
@@ -393,7 +406,8 @@ TEST_F(PrivacySandboxServiceTest, UserResetFlocID) {
 
   privacy_sandbox_service()->ResetFlocId(/*user_initiated=*/true);
 
-  EXPECT_NE(base::Time(), privacy_sandbox_settings->FlocDataAccessibleSince());
+  EXPECT_NE(base::Time(),
+            privacy_sandbox_settings()->FlocDataAccessibleSince());
   ASSERT_EQ(1, user_action_tester.GetActionCount(
                    "Settings.PrivacySandbox.ResetFloc"));
 
@@ -534,6 +548,32 @@ TEST_F(PrivacySandboxServiceTest, GetFledgeJoiningEtldPlusOne) {
     privacy_sandbox_service()->GetFledgeJoiningEtldPlusOneForDisplay(callback);
     EXPECT_TRUE(callback_called);
   }
+}
+
+TEST_F(PrivacySandboxServiceTest, GetFledgeBlockedEtldPlusOne) {
+  // Confirm that blocked FLEDGE top frame eTLD+1's are correctly produced
+  // for display.
+  const std::vector<std::string> sites = {"google.com", "example.com",
+                                          "google.com.au"};
+  for (const auto& site : sites)
+    privacy_sandbox_settings()->SetFledgeJoiningAllowed(site, false);
+
+  // Sites should be returned in lexographical order.
+  auto returned_sites =
+      privacy_sandbox_service()->GetBlockedFledgeJoiningTopFramesForDisplay();
+  ASSERT_EQ(3u, returned_sites.size());
+  EXPECT_EQ(returned_sites[0], sites[1]);
+  EXPECT_EQ(returned_sites[1], sites[0]);
+  EXPECT_EQ(returned_sites[2], sites[2]);
+
+  // Settings a site back to allowed should appropriately remove it from the
+  // display list.
+  privacy_sandbox_settings()->SetFledgeJoiningAllowed("google.com", true);
+  returned_sites =
+      privacy_sandbox_service()->GetBlockedFledgeJoiningTopFramesForDisplay();
+  ASSERT_EQ(2u, returned_sites.size());
+  EXPECT_EQ(returned_sites[0], sites[1]);
+  EXPECT_EQ(returned_sites[1], sites[2]);
 }
 
 class PrivacySandboxServiceTestReconciliationBlocked

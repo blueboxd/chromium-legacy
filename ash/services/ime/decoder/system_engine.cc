@@ -16,8 +16,7 @@ namespace ime {
 SystemEngine::SystemEngine(ImeCrosPlatform* platform) : platform_(platform) {
   auto* decoder = ImeDecoder::GetInstance();
 
-  if (decoder->GetStatus() != ImeDecoder::Status::kSuccess ||
-      !decoder->GetEntryPoints().is_ready) {
+  if (!decoder->IsReady()) {
     LOG(WARNING) << "SystemEngine INIT INCOMPLETE.";
     return;
   }
@@ -38,6 +37,12 @@ bool SystemEngine::BindRequest(
   return decoder_entry_points_->connect_to_input_method(
       ime_spec.c_str(), receiver_pipe_handle, host_pipe_handle,
       host_pipe_version);
+}
+
+bool SystemEngine::BindConnectionFactory(
+    mojo::PendingReceiver<mojom::ConnectionFactory> receiver) {
+  // TODO(b/209697256): Pass and bind receiver in shared library.
+  return false;
 }
 
 bool SystemEngine::IsConnected() {

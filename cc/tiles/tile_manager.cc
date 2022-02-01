@@ -28,6 +28,7 @@
 #include "cc/raster/raster_buffer.h"
 #include "cc/raster/task_category.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
+#include "cc/tiles/occluded_tile_iterator.h"
 #include "cc/tiles/tile.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -406,7 +407,6 @@ TileManager::TileManager(
       scheduled_raster_task_limit_(scheduled_raster_task_limit),
       tile_manager_settings_(tile_manager_settings),
       use_gpu_rasterization_(false),
-      use_oop_rasterization_(false),
       all_tiles_that_need_to_be_rasterized_are_scheduled_(true),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
       did_oom_on_last_assign_(false),
@@ -477,13 +477,11 @@ void TileManager::SetResources(ResourcePool* resource_pool,
                                TaskGraphRunner* task_graph_runner,
                                RasterBufferProvider* raster_buffer_provider,
                                bool use_gpu_rasterization,
-                               bool use_oop_rasterization,
                                RasterQueryQueue* pending_raster_queries) {
   DCHECK(!tile_task_manager_);
   DCHECK(task_graph_runner);
 
   use_gpu_rasterization_ = use_gpu_rasterization;
-  use_oop_rasterization_ = use_oop_rasterization;
   pending_raster_queries_ = pending_raster_queries;
   resource_pool_ = resource_pool;
   image_controller_.SetImageDecodeCache(image_decode_cache);
@@ -577,6 +575,9 @@ bool TileManager::PrepareTiles(
     tile_task_manager_->CheckForCompletedTasks();
     did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
   }
+
+  if (!ShouldRasterOccludedTiles())
+    FreeResourcesForOccludedTiles();
 
   PrioritizedWorkToSchedule prioritized_work = AssignGpuMemoryToTiles();
 
@@ -724,6 +725,7 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
                                 RasterTilePriorityQueue::Type::ALL));
   std::unique_ptr<EvictionTilePriorityQueue> eviction_priority_queue;
   PrioritizedWorkToSchedule work_to_schedule;
+  const bool raster_occluded_tiles = ShouldRasterOccludedTiles();
   for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {
     const PrioritizedTile& prioritized_tile = raster_priority_queue->Top();
     Tile* tile = prioritized_tile.tile();
@@ -735,6 +737,8 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
           TRACE_EVENT_SCOPE_THREAD);
       break;
     }
+
+    DCHECK(!prioritized_tile.is_occluded() || raster_occluded_tiles);
 
     bool tile_is_needed_now = priority.priority_bin == TilePriority::NOW;
     if (!tile->is_solid_color_analysis_performed() &&
@@ -913,6 +917,13 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
                    had_enough_memory_to_schedule_tiles_needed_now);
   image_controller_.cache()->RecordStats();
   return work_to_schedule;
+}
+
+void TileManager::FreeResourcesForOccludedTiles() {
+  std::unique_ptr<OccludedTileIterator> iterator =
+      client_->CreateOccludedTileIterator();
+  for (; !iterator->AtEnd(); iterator->Next())
+    FreeResourcesForTile(iterator->GetCurrent());
 }
 
 void TileManager::FreeResourcesForTile(Tile* tile) {
@@ -1312,10 +1323,8 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
     settings->images_to_skip = std::move(images_to_skip);
     settings->image_to_current_frame_index =
         std::move(image_id_to_current_frame_index);
-    if (use_oop_rasterization_) {
+    if (use_gpu_rasterization_) {
       settings->raster_mode = PlaybackImageProvider::RasterMode::kOop;
-    } else if (use_gpu_rasterization_) {
-      settings->raster_mode = PlaybackImageProvider::RasterMode::kGpu;
     }
   }
 
@@ -1852,6 +1861,11 @@ void TileManager::ActivationStateAsValueInto(
     state->EndDictionary();
   }
   state->EndArray();
+}
+
+bool TileManager::ShouldRasterOccludedTiles() const {
+  return (global_state_.memory_limit_policy != ALLOW_NOTHING &&
+          global_state_.memory_limit_policy != ALLOW_ABSOLUTE_MINIMUM);
 }
 
 TileManager::MemoryUsage::MemoryUsage()

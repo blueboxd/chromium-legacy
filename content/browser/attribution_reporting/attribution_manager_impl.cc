@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/rand_util.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
@@ -217,14 +216,18 @@ void AttributionManagerImpl::HandleSourceInternal(StorableSource source) {
       .WithArgs(std::move(source), deactivated_source_return_limit)
       .Then(base::BindOnce(
           [](base::WeakPtr<AttributionManagerImpl> manager,
-             std::vector<AttributionStorage::DeactivatedSource>
-                 deactivated_sources) {
+             AttributionStorage::StoreSourceResult result) {
+            // TODO(apaseltiner): Consider logging UMA based on `result` to help
+            // understand how often this fails due to privacy limits, etc.
+            //
+            // TODO(apaseltiner): Show rejected sources in internals UI.
+
             if (!manager)
               return;
 
             manager->NotifySourcesChanged();
 
-            for (const auto& source : deactivated_sources) {
+            for (const auto& source : result.deactivated_sources) {
               manager->NotifySourceDeactivated(source);
             }
           },
@@ -387,13 +390,6 @@ void AttributionManagerImpl::OnGetReportsToSend(
     std::vector<AttributionReport> reports) {
   if (reports.empty() || IsOffline())
     return;
-
-  // Shuffle new reports to provide plausible deniability on the ordering of
-  // reports that share the same |report_time|. This is important because
-  // multiple conversions for the same impression share the same report time if
-  // they are within the same reporting window, and we do not want to allow
-  // ordering on their conversion metadata bits.
-  base::RandomShuffle(reports.begin(), reports.end());
 
   SendReports(std::move(reports), /*log_metrics=*/true, base::DoNothing());
   StartGetReportsToSendTimer();

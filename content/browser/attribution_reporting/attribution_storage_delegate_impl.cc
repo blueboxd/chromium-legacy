@@ -44,10 +44,9 @@ int AttributionStorageDelegateImpl::GetMaxAttributionsPerOrigin() const {
 }
 
 int AttributionStorageDelegateImpl::
-    GetMaxAttributionDestinationsPerEventSource() const {
+    GetMaxDestinationsPerSourceSiteReportingOrigin() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(apaseltiner): Finalize a value for this.
-  return INT_MAX;
+  return 100;
 }
 
 AttributionStorage::Delegate::RateLimitConfig
@@ -61,11 +60,6 @@ AttributionStorageDelegateImpl::GetRateLimits(
       return {
           .time_window = base::Days(30),
           .max_contributions_per_window = 100,
-      };
-    case AttributionType::kAggregate:
-      return {
-          .time_window = base::Days(7),
-          .max_contributions_per_window = 65536,
       };
   }
 }
@@ -110,6 +104,12 @@ AttributionStorageDelegateImpl::GetOfflineReportDelayConfig() const {
       .min = base::Minutes(0),
       .max = base::Minutes(1),
   };
+}
+
+void AttributionStorageDelegateImpl::ShuffleReports(
+    std::vector<AttributionReport>& reports) const {
+  if (!debug_mode_)
+    base::RandomShuffle(reports.begin(), reports.end());
 }
 
 }  // namespace content

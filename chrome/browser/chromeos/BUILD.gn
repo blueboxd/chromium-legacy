@@ -274,6 +274,8 @@ source_set("chromeos") {
     "//chromeos/dbus/oobe_config",
     "//chromeos/dbus/oobe_config:proto",
     "//chromeos/dbus/os_install",
+    "//chromeos/dbus/patchpanel",
+    "//chromeos/dbus/patchpanel:patchpanel_proto",
     "//chromeos/dbus/pciguard",
     "//chromeos/dbus/permission_broker",
     "//chromeos/dbus/power",
@@ -2515,6 +2517,7 @@ source_set("chromeos") {
     "../ash/policy/enrollment/private_membership/private_membership_rlwe_client.h",
     "../ash/policy/enrollment/private_membership/private_membership_rlwe_client_impl.cc",
     "../ash/policy/enrollment/private_membership/private_membership_rlwe_client_impl.h",
+    "../ash/policy/enrollment/private_membership/psm_rlwe_id_provider.h",
     "../ash/policy/enrollment/tpm_enrollment_key_signing_service.cc",
     "../ash/policy/enrollment/tpm_enrollment_key_signing_service.h",
     "../ash/policy/external_data/cloud_external_data_manager_base.cc",
@@ -3075,6 +3078,10 @@ source_set("chromeos") {
     "../ash/sync/os_sync_util.h",
     "../ash/sync/os_syncable_service_model_type_controller.cc",
     "../ash/sync/os_syncable_service_model_type_controller.h",
+    "../ash/sync/sync_error_notifier.cc",
+    "../ash/sync/sync_error_notifier.h",
+    "../ash/sync/sync_error_notifier_factory.cc",
+    "../ash/sync/sync_error_notifier_factory.h",
     "../ash/system/automatic_reboot_manager.cc",
     "../ash/system/automatic_reboot_manager.h",
     "../ash/system/automatic_reboot_manager_observer.h",
@@ -3622,9 +3629,7 @@ source_set("chromeos") {
   }
 
   if (enable_hibernate) {
-    deps += [
-      "//chromeos/dbus/hiberman",
-    ]
+    deps += [ "//chromeos/dbus/hiberman" ]
   }
 }
 
@@ -4597,6 +4602,7 @@ source_set("unit_tests") {
     "../ash/smb_client/smbfs_share_unittest.cc",
     "../ash/startup_settings_cache_unittest.cc",
     "../ash/sync/os_sync_util_unittest.cc",
+    "../ash/sync/sync_error_notifier_unittest.cc",
     "../ash/system/automatic_reboot_manager_unittest.cc",
     "../ash/system/device_disabling_manager_unittest.cc",
     "../ash/system/kernel_feature_manager_unittest.cc",

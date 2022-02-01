@@ -61,12 +61,6 @@ const char kAllowInsecureLocalhostDescription[] =
     "Allows requests to localhost over HTTPS even when an invalid certificate "
     "is presented.";
 
-const char kAllowSyncXHRInPageDismissalName[] =
-    "Allows synchronous XHR requests in page dismissal";
-const char kAllowSyncXHRInPageDismissalDescription[] =
-    "Allows synchronous XHR requests during page dismissal when the page is "
-    "being navigated away or closed by the user.";
-
 const char kWindowsFollowCursorName[] =
     "Windows open on the display with the cursor";
 const char kWindowsFollowCursorDescription[] =
@@ -371,6 +365,15 @@ const char kAutofillEnableVirtualCardName[] =
 const char kAutofillEnableVirtualCardDescription[] =
     "When enabled, if all requirements are met, Autofill will offer to use "
     "virtual credit cards in form filling.";
+
+const char kAutofillEnableVirtualCardManagementInDesktopSettingsPageName[] =
+    "Enable virtual card enrollment management in desktop payments settings "
+    "page";
+const char
+    kAutofillEnableVirtualCardManagementInDesktopSettingsPageDescription[] =
+        "When enabled, chrome://settings/payments will offer the option to "
+        "enroll in virtual card if the card is eligible and to unenroll if the "
+        "card has been enrolled.";
 
 const char kAutofillEnableVirtualCardsRiskBasedAuthenticationName[] =
     "Enable risk based authentication for Autofill Virtual Card Numbers";
@@ -1236,10 +1239,11 @@ const char kEnableUseZoomForDsfChoiceDefault[] = "Default";
 const char kEnableUseZoomForDsfChoiceEnabled[] = "Enabled";
 const char kEnableUseZoomForDsfChoiceDisabled[] = "Disabled";
 
-const char kEnableWebAuthenticationCableV2SupportName[] =
-    "Web Authentication caBLE v2 QR codes";
-const char kEnableWebAuthenticationCableV2SupportDescription[] =
-    "Enable display of QR codes for using Android phones as security keys.";
+const char kEnableWebAuthenticationCableDiscoCredsName[] =
+    "Discoverable credentials over caBLEv2";
+const char kEnableWebAuthenticationCableDiscoCredsDescription[] =
+    "Enable the creation and use of Web Authentication discoverable "
+    "credentials over the caBLEv2 transport";
 
 const char kEnableWebAuthenticationChromeOSAuthenticatorName[] =
     "ChromeOS platform Web Authentication support";
@@ -3126,6 +3130,11 @@ const char kFeatureNotificationGuideName[] = "Feature notification guide";
 const char kFeatureNotificationGuideDescription[] =
     "Enables notifications about chrome features.";
 
+const char kFeatureNotificationGuideSkipCheckForLowEngagedUsersName[] =
+    "Feature notification guide - Skip check for low engaged users";
+const char kFeatureNotificationGuideSkipCheckForLowEngagedUsersDescription[] =
+    "Skips check for low engaged users.";
+
 const char kFeedBackToTopName[] = "Back to top of the feeds";
 const char kFeedBackToTopDescription[] =
     "Enables showing a callout to help users return to the top of the feeds "
@@ -3785,6 +3794,11 @@ const char kReadLaterName[] = "Reading List";
 const char kReadLaterDescription[] =
     "Click on the Bookmark icon or right click on a tab to add tabs to a "
     "reading list.";
+
+const char kScreenAIName[] = "Screen AI";
+const char kScreenAIDescription[] =
+    "Enables Screen AI local machine intelligence library to use the screen "
+    "snapshots to add metadata for accessibility tools.";
 
 const char kSCTAuditingName[] = "SCT auditing";
 const char kSCTAuditingDescription[] =
@@ -4525,6 +4539,15 @@ const char kEnableLauncherSearchNormalizationDescription[] =
     "Enable normalization of scores from different providers to the "
     "launcher.";
 
+const char kEnableNeuralPalmAdaptiveHoldName[] = "Palm Rejection Adaptive Hold";
+const char kEnableNeuralPalmAdaptiveHoldDescription[] =
+    "Enable adaptive hold in palm rejection.  Not compatible with all devices.";
+
+const char kEnableNeuralPalmRejectionModelV2Name[] = "Palm Rejection Model V2";
+const char kEnableNeuralPalmRejectionModelV2Description[] =
+    "Uses an updated model for palm rejection.  Not compatible with all "
+    "devices.";
+
 const char kEnableNeuralStylusPalmRejectionName[] =
     "Enable Neural Palm Detection";
 const char kEnableNeuralStylusPalmRejectionDescription[] =
@@ -4872,6 +4895,11 @@ const char kLacrosAvailabilityIgnoreName[] =
 const char kLacrosAvailabilityIgnoreDescription[] =
     "Makes the lacros-availability policy have no effect. Instead Lacros "
     "availability will be controlled by experiment and/or user flags.";
+
+const char kLacrosOnlyName[] = "Lacros is the only browser";
+const char kLacrosOnlyDescription[] =
+    "Use Lacros-chrome as the only web browser on Chrome OS. "
+    "This flag is ignored if Lacros support or primary is disabled.";
 
 const char kLacrosPrimaryName[] = "Lacros as the primary browser";
 const char kLacrosPrimaryDescription[] =

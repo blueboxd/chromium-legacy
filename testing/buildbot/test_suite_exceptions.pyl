@@ -545,14 +545,14 @@
     'modifications': {
       'CrWinAsan': {
         # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 40,
         },
       },
       'CrWinAsan(dll)': {
         # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 40,
         },
@@ -564,7 +564,7 @@
       },
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 40,
           'quickrun_shards': 80
@@ -577,9 +577,9 @@
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
-          'shards': 40,
+          'shards': 50,
         },
       },
       'Linux ChromiumOS MSan Tests': {
@@ -771,6 +771,11 @@
           '--coverage-continuous-mode=1',
         ],
       },
+      'mac-osxbeta-rel': {
+        'swarming': {
+          'shards': 12,
+        },
+      },
       'mac11-arm64-rel-tests': {
         'ci_only': False,  # https://crbug.com/1234525
         'args': [
@@ -783,7 +788,7 @@
       },
       'win-asan': {
         # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 40,
         },
@@ -926,6 +931,10 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.chrome_public_test_apk.filter',
           '--timeout-scale=2.0',
         ],
+        # TODO(https://crbug.com/1285975) Remove experiment and enable on
+        # trybot once the device offline issue is resolved.
+        'ci_only': True,
+        'experiment_percentage': 100,
       },
       'android-12-x64-fyi-rel': {
         'args': [
@@ -1133,14 +1142,14 @@
     'modifications': {
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 5,
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 5,
         },
@@ -1452,7 +1461,7 @@
     'modifications': {
       'Linux ASan LSan Tests (1)': {
         # These are slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 2,
         },
@@ -1893,7 +1902,7 @@
         },
       },
       'Linux ASan LSan Tests (1)': {
-        # These are slow on the ASan trybot for some reason, crbug.com/794372
+        # These are slow on the ASan trybot for some reason, crbug.com/1257927
         'swarming': {
           'shards': 6,
           'quickrun_shards': 12,
@@ -1907,7 +1916,7 @@
         },
       },
       'Linux TSan Tests': {
-        # These are slow on the TSan bots for some reason, crbug.com/794372
+        # These are slow on the TSan bots for some reason, crbug.com/1257927
         'swarming': {
           'shards': 32, # Adjusted for testing, see https://crbug.com/1179567
         },
@@ -1930,7 +1939,7 @@
         'experiment_percentage': 100,
       },
       'ToTLinuxTSan': {
-        # These are slow on the TSan bots for some reason, crbug.com/794372
+        # These are slow on the TSan bots for some reason, crbug.com/1257927
         'swarming': {
           'shards': 6,
         },
@@ -2277,27 +2286,27 @@
   'net_unittests': {
     'modifications': {
       'CrWinAsan': {
-        # TODO(crbug.com/794372): net_unittests is slow under ASan.
+        # TODO(crbug.com/1257927): net_unittests is slow under ASan.
         'swarming': {
           'shards': 16,
         },
       },
       'CrWinAsan(dll)': {
-        # TODO(crbug.com/794372): net_unittests is slow under ASan.
+        # TODO(crbug.com/1257927): net_unittests is slow under ASan.
         'swarming': {
           'shards': 16,
         },
       },
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 16,
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 8,
         }
@@ -2321,7 +2330,7 @@
         },
       },
       'ToTLinuxASan': {
-        # TODO(crbug.com/794372): net_unittests is slow under ASan.
+        # TODO(crbug.com/1257927): net_unittests is slow under ASan.
         'swarming': {
           'shards': 16,
         },
@@ -2405,7 +2414,7 @@
         'experiment_percentage': 0,
       },
       'win-asan': {
-        # TODO(crbug.com/794372): net_unittests is slow under ASan.
+        # TODO(crbug.com/1257927): net_unittests is slow under ASan.
         'swarming': {
           'shards': 16,
         },
@@ -2936,11 +2945,6 @@
       },
     },
   },
-  'system_webview_shell_layout_test_apk': {
-    'remove_from': [
-      'android-11-x86-rel', # crbug.com/1165280
-    ],
-  },
   'system_webview_wpt': {
     'modifications': {
       'android-webview-pie-x86-wpt-fyi-rel': {
@@ -3116,14 +3120,14 @@
     'modifications': {
       'Linux ASan LSan Tests (1)': {
         # These are slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 4,
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
         # These are slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 2,
         },
@@ -3499,7 +3503,7 @@
     'modifications': {
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # crbug.com/1257927
         'swarming': {
           'shards': 5,
         },
@@ -3606,8 +3610,6 @@
         'args': [
           '--gtest_filter=-org.chromium.weblayer.test.MediaCaptureTest.*',
         ],
-        # TODO(crbug.com/1137474): Remove after the test suite is green.
-        'experiment_percentage': 100,
       },
     },
   },
@@ -3695,6 +3697,12 @@
         'args': [
           # TODO(crbug.com/1189746) Enable this test once the issue is fixed.
           '--gtest_filter=-org.chromium.net.NetworkChangeNotifierTest.testNetworkChangeNotifierJavaObservers',
+        ],
+      },
+      'android-12-x64-fyi-rel': {
+        'args': [
+          # crbug.com/1292197
+          '--gtest_filter=-org.chromium.android_webview.test.devui.HomeFragmentTest.testLongPressCopy*',
         ],
       },
       'android-marshmallow-x86-rel': {

@@ -54,15 +54,6 @@ typedef bool (*IsInputMethodConnectedFn)();
 // sandbox is engaged.
 class ImeDecoder {
  public:
-  // Status of loading func from IME decoder DSO: either success or error type.
-  enum class Status {
-    kSuccess = 0,
-    kUninitialized = 1,
-    kNotInstalled = 2,
-    kLoadLibraryFailed = 3,
-    kFunctionMissing = 4,
-  };
-
   // Function pointers to "C" API entry points of the loaded IME shared library.
   // See ash/services/ime/public/cpp/shared_lib/interfaces.h for API specs.
   struct EntryPoints {
@@ -73,9 +64,6 @@ class ImeDecoder {
     ImeDecoderProcessFn process;
     ConnectToInputMethodFn connect_to_input_method;
     IsInputMethodConnectedFn is_input_method_connected;
-
-    // Whether the EntryPoints is ready to use.
-    bool is_ready = false;
   };
 
   // Gets the singleton ImeDecoder.
@@ -84,9 +72,7 @@ class ImeDecoder {
   ImeDecoder(const ImeDecoder&) = delete;
   ImeDecoder& operator=(const ImeDecoder&) = delete;
 
-  // Get status of the IME decoder library initialization.
-  // Return `Status::kSuccess` if the lib is successfully initialized.
-  Status GetStatus() const;
+  bool IsReady() const;
 
   // Returns entry points of the loaded decoder shared library.
   EntryPoints GetEntryPoints();
@@ -98,7 +84,7 @@ class ImeDecoder {
   explicit ImeDecoder();
   ~ImeDecoder();
 
-  Status status_;
+  bool is_ready_;
 
   // Result of IME decoder DSO initialization.
   absl::optional<base::ScopedNativeLibrary> library_;

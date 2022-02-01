@@ -110,11 +110,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "allow-sync-xhr-in-page-dismissal",
-    "owners": [ "kdillon@chromium.org" ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "allow-touchpad-haptic-click-settings",
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
     "expiry_milestone": 101
@@ -449,6 +444,11 @@
     "name": "autofill-enable-virtual-card",
     "owners": [ "siyua", "jsaul@google.com", "aneeshali@google.com" ],
     "expiry_milestone": 100
+  },
+    {
+    "name": "autofill-enable-virtual-card-management-in-desktop-settings-page",
+    "owners": [ "siyua", "jsaul@google.com"],
+    "expiry_milestone": 105
   },
   {
     "name": "autofill-enable-virtual-cards-risk-based-authentication",
@@ -2346,6 +2346,16 @@
     "expiry_milestone": 98
   },
   {
+    "name": "enable-neural-palm-adaptive-hold",
+    "owners": [ "robsc", "napper", "alanlxl" ],
+    "expiry_milestone": 130
+  },
+  {
+    "name": "enable-neural-palm-rejection-model-v2",
+    "owners": [ "robsc", "napper", "alanlxl" ],
+    "expiry_milestone": 130
+  },
+  {
     "name": "enable-neural-stylus-palm-rejection",
     "owners": [ "robsc", "napper", "adlr" ],
     // We add a neural net to change how fingers are handled. We set a milestone
@@ -2883,9 +2893,9 @@
     "expiry_milestone": 100
   },
   {
-    "name": "enable-web-authentication-cable-v2-support",
+    "name": "enable-web-authentication-cable-disco-creds",
     "owners": [ "webauthn-team@google.com" ],
-    "expiry_milestone": 103
+    "expiry_milestone": 112
   },
   {
     "name": "enable-web-authentication-chromeos-authenticator",
@@ -3154,6 +3164,11 @@
   },
   {
     "name": "feature-notification-guide",
+    "owners": [ "shaktisahu"],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "feature-notification-guide-skip-check-for-low-engaged-users",
     "owners": [ "shaktisahu"],
     "expiry_milestone": 110
   },
@@ -3703,6 +3718,14 @@
   {
     "name": "lacros-non-syncing-profiles",
     "owners": [ "jkrcal", "droger", "chrome-signin@google.com" ],
+    // Once Lacros is launched, this flag can be removed. Until then, this
+    // absolutely must not expire. We do not yet have a launch milestone.
+    // TODO(https://crbug.com/1148474).
+    "expiry_milestone": 130
+  },
+  {
+    "name": "lacros-only",
+    "owners": [ "hidehiko", "erikchen", "lacros-team@google.com" ],
     // Once Lacros is launched, this flag can be removed. Until then, this
     // absolutely must not expire. We do not yet have a launch milestone.
     // TODO(https://crbug.com/1148474).
@@ -4493,7 +4516,7 @@
   {
     "name": "page-info-about-this-site",
     "owners": [ "eokoyomon", "dullweber", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 102
   },
   {
     "name": "page-info-history",
@@ -4992,6 +5015,11 @@
     // modify the command line, so a flag is the publicly documented mechanism
     // exposed to users.
     "expiry_milestone": -1
+  },
+  {
+    "name": "screen-ai",
+    "owners": [ "rhalavati", "dtseng" ],
+    "expiry_milestone": 110
   },
   {
     "name": "screen-capture-android",
@@ -5816,7 +5844,7 @@
   {
     "name": "web-feed",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 110
   },
   {
     "name": "web-feed-ios",
@@ -5826,7 +5854,7 @@
   {
     "name": "web-feed-sort",
     "owners": ["//chrome/android/feed/OWNERS", "feed@chromium.org" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "web-midi",

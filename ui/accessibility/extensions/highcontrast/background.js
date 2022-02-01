@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+Storage.initialize();
+
 function injectContentScripts() {
   chrome.windows.getAll({'populate': true}, function(windows) {
     for (var i = 0; i < windows.length; i++) {
@@ -11,9 +13,6 @@ function injectContentScripts() {
         if (url.startsWith('chrome') || url.startsWith('about'))
           continue;
 
-        chrome.tabs.insertCSS(
-            tabs[j].id,
-            {file: 'highcontrast.css', allFrames: true});
         chrome.tabs.executeScript(
             tabs[j].id,
             {file: 'highcontrast.js', allFrames: true});
@@ -24,7 +23,7 @@ function injectContentScripts() {
 
 function updateTabs() {
   var msg = {
-    'enabled': getEnabled()
+    'enabled': Storage.enabled
   };
   chrome.windows.getAll({'populate': true}, function(windows) {
     for (var i = 0; i < windows.length; i++) {
@@ -35,8 +34,8 @@ function updateTabs() {
           continue;
         }
         var msg = {
-          'enabled': getEnabled(),
-          'scheme': getSiteScheme(siteFromUrl(url))
+          'enabled': Storage.enabled,
+          'scheme': Storage.getSiteScheme(siteFromUrl(url))
         };
         chrome.tabs.sendRequest(tabs[j].id, msg);
       }
@@ -45,21 +44,21 @@ function updateTabs() {
 }
 
 function toggleEnabled() {
-  setEnabled(!getEnabled());
+  Storage.enabled = !Storage.enabled;
   updateTabs();
 }
 
 function toggleSite(url) {
   var site = siteFromUrl(url);
-  var scheme = getSiteScheme(site);
+  var scheme = Storage.getSiteScheme(site);
   if (scheme > 0) {
     scheme = 0;
-  } else if (getDefaultScheme() > 0) {
-    scheme = getDefaultScheme();
-  } else {
-    scheme = DEFAULT_SCHEME;
+  } else if (Storage.scheme > 0) {
+    scheme = Storage.scheme;
   }
-  setSiteScheme(site, scheme);
+    scheme = Storage.SCHEME.defaultValue;
+  }
+  Storage.setSiteScheme(site, scheme);
   updateTabs();
 }
 
@@ -76,21 +75,21 @@ function init() {
           toggleSite(sender.tab ? sender.tab.url : 'www.example.com');
         }
         if (request['init']) {
-          var scheme = getDefaultScheme();
+          var scheme = Storage.scheme;
           if (sender.tab) {
-            scheme = getSiteScheme(siteFromUrl(sender.tab.url));
+            scheme = Storage.getSiteScheme(siteFromUrl(sender.tab.url));
           }
           var msg = {
-            'enabled': getEnabled(),
+            'enabled': Storage.enabled,
             'scheme': scheme
           };
           sendResponse(msg);
         }
       });
 
-  document.addEventListener('storage', function(evt) {
+  chrome.storage.onChanged.addListener(function() {
     updateTabs();
-  }, false);
+  });
 
   if (navigator.appVersion.indexOf('Mac') != -1) {
     chrome.browserAction.setTitle({'title': 'High Contrast (Cmd+Shift+F11)'});

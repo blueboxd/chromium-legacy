@@ -2068,9 +2068,6 @@ const char kWebAppsIsolationState[] = "web_apps.isolation_state";
 const char kWebAppsUrlHandlerInfo[] = "web_apps.url_handler_info";
 #endif
 
-const char kWebAppsUserDisplayModeCleanedUp[] =
-    "web_apps.user_display_mode_cleaned_up";
-
 // A string representing the last version of Chrome that System Web Apps were
 // updated for.
 const char kSystemWebAppLastUpdateVersion[] =
@@ -2141,6 +2138,11 @@ const char kTotalMemoryLimitMb[] = "total_memory_limit_mb";
 
 // String that lists supported HTTP authentication schemes.
 const char kAuthSchemes[] = "auth.schemes";
+
+// List of origin schemes that allow the supported HTTP authentication schemes
+// from "auth.schemes".
+const char kAllHttpAuthSchemesAllowedForOrigins[] =
+    "auth.http_auth_allowed_for_origins";
 
 // Boolean that specifies whether to disable CNAME lookups when generating
 // Kerberos SPN.
@@ -3142,11 +3144,6 @@ const char kEnterpriseHardwarePlatformAPIEnabled[] =
 
 // Boolean that specifies whether Signed HTTP Exchange (SXG) loading is enabled.
 const char kSignedHTTPExchangeEnabled[] = "web_package.signed_exchange.enabled";
-
-// Boolean that allows a page to perform synchronous XHR requests during page
-// dismissal.
-// TODO(https://crbug.com/1003101): Remove this in Chrome 88.
-const char kAllowSyncXHRInPageDismissal[] = "allow_sync_xhr_in_page_dismissal";
 
 #if BUILDFLAG(IS_CHROMEOS)
 // Enum that specifies client certificate management permissions for user. It

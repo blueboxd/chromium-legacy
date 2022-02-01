@@ -91,12 +91,13 @@ class ConfigurableStorageDelegate : public AttributionStorage::Delegate {
   int GetMaxAttributionsPerOrigin() const override;
   RateLimitConfig GetRateLimits(
       AttributionStorage::AttributionType attribution_type) const override;
-  int GetMaxAttributionDestinationsPerEventSource() const override;
+  int GetMaxDestinationsPerSourceSiteReportingOrigin() const override;
   base::TimeDelta GetDeleteExpiredSourcesFrequency() const override;
   base::TimeDelta GetDeleteExpiredRateLimitsFrequency() const override;
   base::GUID NewReportID() const override;
   absl::optional<OfflineReportDelayConfig> GetOfflineReportDelayConfig()
       const override;
+  void ShuffleReports(std::vector<AttributionReport>& reports) const override;
 
   void set_max_attributions_per_source(int max) {
     max_attributions_per_source_ = max;
@@ -108,8 +109,8 @@ class ConfigurableStorageDelegate : public AttributionStorage::Delegate {
     max_attributions_per_origin_ = max;
   }
 
-  void set_max_attribution_destinations_per_event_source(int max) {
-    max_attribution_destinations_per_event_source_ = max;
+  void set_max_destinations_per_source_site_reporting_origin(int max) {
+    max_destinations_per_source_site_reporting_origin_ = max;
   }
 
   void set_rate_limits(RateLimitConfig c) { rate_limits_ = c; }
@@ -131,11 +132,15 @@ class ConfigurableStorageDelegate : public AttributionStorage::Delegate {
     offline_report_delay_config_ = config;
   }
 
+  void set_reverse_reports_on_shuffle(bool reverse) {
+    reverse_reports_on_shuffle_ = reverse;
+  }
+
  private:
   int max_attributions_per_source_ = INT_MAX;
   int max_sources_per_origin_ = INT_MAX;
   int max_attributions_per_origin_ = INT_MAX;
-  int max_attribution_destinations_per_event_source_ = INT_MAX;
+  int max_destinations_per_source_site_reporting_origin_ = INT_MAX;
 
   RateLimitConfig rate_limits_ = {
       .time_window = base::TimeDelta::Max(),
@@ -148,6 +153,10 @@ class ConfigurableStorageDelegate : public AttributionStorage::Delegate {
   int report_time_ms_ = 0;
 
   absl::optional<OfflineReportDelayConfig> offline_report_delay_config_;
+
+  // If true, `ShuffleReports()` reverses the reports to allow testing the
+  // proper call from `AttributionStorage::GetAttributionsToReport()`.
+  bool reverse_reports_on_shuffle_ = false;
 };
 
 // Test manager provider which can be used to inject a fake AttributionManager.
@@ -407,6 +416,9 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(
     std::ostream& out,
     const AttributionStorage::DeactivatedSource& deactivated_source);
+
+std::ostream& operator<<(std::ostream& out,
+                         AttributionStorage::StoreSourceResult::Status status);
 
 std::vector<AttributionReport> GetAttributionsToReportForTesting(
     AttributionManagerImpl* manager,

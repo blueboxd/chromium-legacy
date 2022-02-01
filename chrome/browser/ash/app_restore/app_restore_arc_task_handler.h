@@ -18,6 +18,7 @@ class Profile;
 namespace ash {
 namespace full_restore {
 class ArcWindowHandler;
+class FullRestoreAppLaunchHandlerArcAppBrowserTest;
 }  // namespace full_restore
 
 namespace app_restore {
@@ -45,6 +46,12 @@ class AppRestoreArcTaskHandler : public KeyedService,
     return window_handler_.get();
   }
 #endif
+
+  // Check if the AppId existed in any arc app launch handler restore queue.
+  // When different launch handler which corresponding to different restore
+  // purpose trying to restore the same ARC app, it will be confusing ARC that
+  // which window info should be applied.
+  bool IsAppPendingRestore(const std::string& arc_app_id) const;
 
   ArcAppLaunchHandler* desks_templates_arc_app_launch_handler() {
     return desks_templates_arc_app_launch_handler_observer_;
@@ -78,9 +85,11 @@ class AppRestoreArcTaskHandler : public KeyedService,
   // Invoked when ChromeShelfController is created.
   void OnShelfReady();
 
- private:
   // KeyedService:
   void Shutdown() override;
+
+ private:
+  friend class ash::full_restore::FullRestoreAppLaunchHandlerArcAppBrowserTest;
 
   base::ScopedObservation<ArcAppListPrefs, ArcAppListPrefs::Observer>
       arc_prefs_observer_{this};

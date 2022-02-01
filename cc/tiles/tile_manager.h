@@ -45,6 +45,7 @@ class TracedValue;
 
 namespace cc {
 class ImageDecodeCache;
+class OccludedTileIterator;
 
 class CC_EXPORT TileManagerClient {
  public:
@@ -77,6 +78,10 @@ class CC_EXPORT TileManagerClient {
   // Note if the queue was previously built, Reset must be called on it.
   virtual std::unique_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) = 0;
+
+  // Returns an iterator of the occluded tiles.
+  virtual std::unique_ptr<OccludedTileIterator>
+  CreateOccludedTileIterator() = 0;
 
   // Informs the client that due to the currently rasterizing (or scheduled to
   // be rasterized) tiles, we will be in a position that will likely require a
@@ -182,7 +187,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
                     TaskGraphRunner* task_graph_runner,
                     RasterBufferProvider* raster_buffer_provider,
                     bool use_gpu_rasterization,
-                    bool use_oop_rasterization,
                     RasterQueryQueue* pending_raster_queries);
 
   // This causes any completed raster work to finalize, so that tiles get up to
@@ -377,6 +381,8 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
     CheckerImageTracker::ImageDecodeQueue checker_image_decode_queue;
   };
 
+  // Frees the resources of all occluded tiles.
+  void FreeResourcesForOccludedTiles();
   void FreeResourcesForTile(Tile* tile);
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);
   scoped_refptr<TileTask> CreateRasterTask(
@@ -439,6 +445,8 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   void ScheduleCheckRasterFinishedQueries();
   void CheckRasterFinishedQueries();
 
+  bool ShouldRasterOccludedTiles() const;
+
   raw_ptr<TileManagerClient> client_;
   raw_ptr<base::SequencedTaskRunner> task_runner_;
   raw_ptr<ResourcePool> resource_pool_;
@@ -449,7 +457,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   const TileManagerSettings tile_manager_settings_;
   bool use_gpu_rasterization_;
-  bool use_oop_rasterization_;
   raw_ptr<RasterQueryQueue> pending_raster_queries_ = nullptr;
 
   std::unordered_map<Tile::Id, Tile*> tiles_;

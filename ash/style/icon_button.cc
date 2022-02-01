@@ -19,7 +19,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
@@ -90,7 +89,6 @@ IconButton::IconButton(PressedCallback callback,
 
   SetImageHorizontalAlignment(ALIGN_CENTER);
   SetImageVerticalAlignment(ALIGN_MIDDLE);
-  GetViewAccessibility().OverrideIsLeaf(true);
   StyleUtil::SetUpInkDropForButton(this, gfx::Insets(),
                                    /*highlight_on_hover=*/false,
                                    /*highlight_on_focus=*/false);
@@ -122,6 +120,14 @@ IconButton::~IconButton() = default;
 void IconButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   icon_ = &icon;
   UpdateVectorIcon();
+}
+
+void IconButton::SetBackgroundColor(const SkColor background_color) {
+  if (background_color_ == background_color)
+    return;
+
+  background_color_ = background_color;
+  SchedulePaint();
 }
 
 void IconButton::SetIconColor(const SkColor icon_color) {
@@ -157,6 +163,8 @@ void IconButton::PaintButtonContents(gfx::Canvas* canvas) {
       color = color_provider->GetControlsLayerColor(
           AshColorProvider::ControlsLayerType::kControlBackgroundColorActive);
     }
+    if (background_color_)
+      color = background_color_.value();
 
     // If the button is disabled, apply opacity filter to the color.
     if (!GetEnabled())

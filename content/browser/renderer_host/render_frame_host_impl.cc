@@ -9421,7 +9421,21 @@ bool RenderFrameHostImpl::CancelPrerendering(
 
 void RenderFrameHostImpl::CancelPrerenderingByMojoBinderPolicy(
     const std::string& interface_name) {
-  RecordPrerenderCancelledInterface(interface_name);
+  // A prerendered page is identified by its root FrameTreeNode id, so if this
+  // RenderFrameHost is in any way embedded, we need to iterate up to the
+  // prerender root.
+  FrameTreeNode* outermost_frame =
+      GetOutermostMainFrameOrEmbedder()->frame_tree_node();
+  PrerenderHost* prerender_host =
+      delegate_->GetPrerenderHostRegistry()->FindNonReservedHostById(
+          outermost_frame->frame_tree_node_id());
+  if (!prerender_host)
+    return;
+
+  RecordPrerenderCancelledInterface(
+      interface_name, prerender_host->trigger_type(),
+      prerender_host->embedder_histogram_suffix());
+
   bool canceled =
       CancelPrerendering(PrerenderHost::FinalStatus::kMojoBinderPolicy);
   // This function is called from MojoBinderPolicyApplier, which should only be
@@ -10997,7 +11011,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
             navigation_request->frame_tree_node()
                 ->frame_tree()
                 ->controller()
-                .GetSessionStorageNamespace(GetSiteInstance()->GetSiteInfo())
+                .GetSessionStorageNamespace(
+                    GetSiteInstance()->GetStoragePartitionConfig())
                 ->id();
         partition->BindSessionStorageAreaForProcess(
             process_id, commit_params->storage_key, namespace_id,

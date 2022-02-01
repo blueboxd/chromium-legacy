@@ -2346,11 +2346,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
       MaybeAppendSecureOriginsAllowlistSwitch(command_line);
 
-      if (prefs->HasPrefPath(prefs::kAllowSyncXHRInPageDismissal) &&
-          prefs->GetBoolean(prefs::kAllowSyncXHRInPageDismissal)) {
-        command_line->AppendSwitch(switches::kAllowSyncXHRInPageDismissal);
-      }
-
       if (prefs->HasPrefPath(prefs::kScrollToTextFragmentEnabled) &&
           !prefs->GetBoolean(prefs::kScrollToTextFragmentEnabled)) {
         command_line->AppendSwitch(switches::kDisableScrollToTextFragment);
@@ -2847,7 +2842,7 @@ bool ChromeContentBrowserClient::IsConversionMeasurementOperationAllowed(
       return privacy_sandbox_settings->ShouldSendConversionReport(
           *impression_origin, *conversion_origin, *reporting_origin);
     case ConversionMeasurementOperation::kAny:
-      return privacy_sandbox_settings->IsPrivacySandboxAllowed();
+      return privacy_sandbox_settings->IsPrivacySandboxEnabled();
   }
 }
 

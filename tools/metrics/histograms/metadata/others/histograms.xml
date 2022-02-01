@@ -207,7 +207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ads.InterestGroup.Auction.AbortTime" units="ms"
-    expires_after="2022-03-31">
+    expires_after="2022-07-31">
   <owner>mmenke@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <summary>
@@ -320,7 +320,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ads.InterestGroup.Auction.NumOwnersWithInterestGroups"
-    units="owners" expires_after="2022-03-31">
+    units="owners" expires_after="2022-07-31">
   <owner>mmenke@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <summary>
@@ -1160,7 +1160,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="AutocompleteActionPredictor.NoStatePrefetchStatus"
     enum="AutocompleteActionPredictorPredictionStatus"
-    expires_after="2022-06-01">
+    expires_after="2022-07-31">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -3174,7 +3174,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.LensSupportStatus" enum="LensSupportStatus"
-    expires_after="2022-05-29">
+    expires_after="2022-07-31">
   <owner>benwgold@google.com</owner>
   <owner>lens-chrome@google.com</owner>
   <summary>
@@ -3306,7 +3306,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.TimeToTakeAction.Abandoned" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-07-31">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -3776,6 +3776,13 @@ chromium-metrics-reviews@google.com.
     The exit codes for crashed renderer processes. Note: Due to
     https://crbug.com/805754, the enum labels are off by 1 for M56 and earlier.
   </summary>
+</histogram>
+
+<histogram name="Crashpad.AnrUpload.Skipped" enum="AnrSkippedReason"
+    expires_after="2022-06-15">
+  <owner>smaier@chromium.org</owner>
+  <owner>crashpad-dev@chromium.org</owner>
+  <summary>The reason that an ANR upload was skipped.</summary>
 </histogram>
 
 <histogram name="Crashpad.CrashReportPending" enum="CrashpadReportPending"
@@ -5451,7 +5458,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ExploreSites.RequestStatus" enum="ExploreSitesRequestStatus"
-    expires_after="2022-04-24">
+    expires_after="2022-07-31">
   <owner>dimich@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <summary>
@@ -6283,110 +6290,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records a rough estimation of the system total disk space collected in the
     info collection GPU process, once per UMA ping.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.AndroidStackUnwinder"
-    enum="AndroidStackUnwinder" expires_after="2022-12-02">
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    The stack unwinder implementation used by the SamplingHeapProfiler. Emitted
-    on Android devices only each time the profiler is started, which happens at
-    Chrome launch when HeapProfiling.InProcess.Enabled is true.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.InProcess.Enabled" enum="BooleanEnabled"
-    expires_after="2022-12-02">
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    One metric is emitted on every Chrome launch, recording whether the
-    in-process heap profiler is enabled in the browser process for this Chrome
-    session.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.InProcess.SamplesPerSnapshot" units="samples"
-    expires_after="2022-12-02">
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    The number of samples in a heap snapshot. Emitted once per snapshot when the
-    in-process heap profiler is enabled.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.InProcess.SnapshotInterval" units="ms"
-    expires_after="2022-12-02">
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    The time until the next heap snapshot is scheduled. Emitted once per
-    snapshot when the in-process heap profiler is enabled.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.ProfiledProcess.Type"
-    enum="HeapProfilingProcessType" expires_after="2021-12-12">
-  <owner>erikchen@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    One metric is emitted every 24-hours after Chrome is launched for every
-    process that is being profiled. The timer is reset if Chrome exits.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.ProfilingMode" enum="HeapProfilingMode"
-    expires_after="2021-02-25">
-  <owner>erikchen@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    One metric is emitted every 24-hours after Chrome is launched for every
-    Chrome instance that is using out of process heap profiling. The timer is
-    reset if Chrome exits.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.RecordTrace.Success" enum="BooleanSuccess"
-    expires_after="2021-02-25">
-  <owner>erikchen@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    The metric is emitted each time Chrome attempts to record a memory-infra
-    trace to upload an out-of-process heap-profiling memory dump.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.SamplingInterval" units="bytes"
-    expires_after="2022-12-02">
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    The mean number of bytes between samples used by the SamplingHeapProfiler.
-    Emitted each time the profiler is started, which happens at Chrome launch
-    when HeapProfiling.InProcess.Enabled is true.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.UploadTrace.Size" units="bytes"
-    expires_after="2021-02-25">
-  <owner>erikchen@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    The metric is emitted each time Chrome uploads a trace. It reflects the
-    uncompressed size of the trace.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.UploadTrace.Success" enum="BooleanSuccess"
-    expires_after="2021-02-25">
-  <owner>erikchen@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    The metric is emitted each time Chrome uploads a trace. It reflects whether
-    the upload was successful.
   </summary>
 </histogram>
 
@@ -7389,7 +7292,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Lens.ImageClassification.ClassificationTime.EarlyTerminatedMs"
-    units="ms" expires_after="2022-05-22">
+    units="ms" expires_after="2022-07-31">
   <owner>yusuyoutube@google.com</owner>
   <owner>benwgold@google.com</owner>
   <summary>
@@ -11172,7 +11075,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.ContextMenu" enum="ReadingListContextMenuActions"
-    expires_after="2022-03-15">
+    expires_after="2023-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -11182,7 +11085,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Download.Failures" units="count"
-    expires_after="2022-03-15">
+    expires_after="2023-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -11191,14 +11094,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Download.Status" enum="ReadingListDownloadStatus"
-    expires_after="2022-06-05">
+    expires_after="2023-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Final status of the download of a reading list entry.</summary>
 </histogram>
 
 <histogram name="ReadingList.FirstReadAgeOnDeletion" units="hours"
-    expires_after="2022-03-15">
+    expires_after="2023-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -11208,14 +11111,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.OfflineVersionDisplayed" enum="Boolean"
-    expires_after="2022-07-17">
+    expires_after="2023-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Whether the displayed version is the offline one.</summary>
 </histogram>
 
 <histogram name="ReadingList.Read.AgeOnDeletion" units="hours"
-    expires_after="2022-03-15">
+    expires_after="2023-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -11234,7 +11137,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Read.Number" units="count"
-    expires_after="2022-07-17">
+    expires_after="2023-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Number of read entries in reading list.</summary>
@@ -11251,7 +11154,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Unread.AgeOnDeletion" units="hours"
-    expires_after="2022-03-15">
+    expires_after="2023-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -11260,7 +11163,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Unread.Number" units="count"
-    expires_after="2022-07-17">
+    expires_after="2023-03-15">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Number of unread entries in reading list.</summary>
@@ -12101,7 +12004,7 @@ Safe Browsing lookups, which is critical for security. -->
 </histogram>
 
 <histogram name="SB2.RemoteCall.Result" enum="SB2RemoteCallResult"
-    expires_after="2022-05-29">
+    expires_after="2022-07-31">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -14688,7 +14591,7 @@ should be kept until we use this API.  -->
 </histogram>
 
 <histogram name="UpgradeDetector.DaysBeforeUpgrade" units="days"
-    expires_after="2022-05-31">
+    expires_after="2022-07-31">
   <owner>emshack@chromium.org</owner>
   <owner>pbos@chromium.org</owner>
   <summary>
@@ -14701,7 +14604,7 @@ should be kept until we use this API.  -->
 </histogram>
 
 <histogram name="UpgradeDetector.HoursBeforeUpgrade" units="hours"
-    expires_after="2022-05-31">
+    expires_after="2022-07-31">
   <owner>emshack@chromium.org</owner>
   <owner>pbos@chromium.org</owner>
   <summary>

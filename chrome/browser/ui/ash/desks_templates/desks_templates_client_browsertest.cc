@@ -55,6 +55,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "components/account_id/account_id.h"
+#include "components/app_constants/constants.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
@@ -430,7 +431,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, CaptureBrowserUrlsTest) {
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
 
   // Find |browser| window's app restore data.
-  auto iter = app_id_to_launch_list.find(extension_misc::kChromeAppId);
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
   ASSERT_TRUE(iter != app_id_to_launch_list.end());
   auto app_restore_data_iter = iter->second.find(browser_window_id);
   ASSERT_TRUE(app_restore_data_iter != iter->second.end());
@@ -462,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, CaptureIncognitoBrowserTest) {
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
 
   // Find |browser| window's app restore data.
-  auto iter = app_id_to_launch_list.find(extension_misc::kChromeAppId);
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
   ASSERT_TRUE(iter != app_id_to_launch_list.end());
   auto app_restore_data_iter = iter->second.find(incognito_browser_window_id);
   // Created incognito window is NOT in restore list
@@ -512,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   EXPECT_EQ(app_id_to_launch_list.size(), 2u);
 
   // Find |browser| window's app restore data.
-  auto iter = app_id_to_launch_list.find(extension_misc::kChromeAppId);
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
   ASSERT_TRUE(iter != app_id_to_launch_list.end());
   auto app_restore_data_iter = iter->second.find(browser_window_id);
   ASSERT_TRUE(app_restore_data_iter != iter->second.end());
@@ -1016,7 +1017,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, LaunchTemplateWithPWA) {
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
   ASSERT_TRUE(restore_data->HasAppTypeBrowser());
-  auto iter = app_id_to_launch_list.find(extension_misc::kChromeAppId);
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
   ASSERT_TRUE(iter != app_id_to_launch_list.end());
   auto app_restore_data_iter = iter->second.find(pwa_window_id);
   ASSERT_TRUE(app_restore_data_iter != iter->second.end());
@@ -1067,9 +1068,9 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
 
   // Test that |pwa_browser|'s restore data is saved under the Chrome browser
-  // app id extension_misc::kChromeAppId, not Youtube app id
+  // app id app_constants::kChromeAppId, not Youtube app id
   // extension_misc::kYoutubeAppId.
-  auto iter = app_id_to_launch_list.find(extension_misc::kChromeAppId);
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
   ASSERT_TRUE(iter != app_id_to_launch_list.end());
   auto app_restore_data_iter = iter->second.find(pwa_window_id);
   ASSERT_TRUE(app_restore_data_iter != iter->second.end());
@@ -1233,7 +1234,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
 
   // Find `browser` window's app restore data.
-  auto iter = app_id_to_launch_list.find(extension_misc::kChromeAppId);
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
   ASSERT_TRUE(iter != app_id_to_launch_list.end());
   auto app_restore_data_iter = iter->second.find(browser_window_id);
   ASSERT_TRUE(app_restore_data_iter != iter->second.end());
@@ -1283,7 +1284,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   EXPECT_EQ(1u, app_id_to_launch_list.size());
 
   // Find `browser` window's app restore data.
-  auto iter = app_id_to_launch_list.find(extension_misc::kChromeAppId);
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
   ASSERT_FALSE(iter == app_id_to_launch_list.end());
   auto app_restore_data_iter = iter->second.find(incognito_browser_window_id);
   // Created incognito window is NOT in restore list.
@@ -1498,7 +1499,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(1u, app_id_to_launch_list.size());
   ASSERT_TRUE(restore_data->HasAppTypeBrowser());
-  auto iter = app_id_to_launch_list.find(extension_misc::kChromeAppId);
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
   ASSERT_TRUE(iter != app_id_to_launch_list.end());
   auto app_restore_data_iter = iter->second.find(pwa_window_id);
   ASSERT_TRUE(app_restore_data_iter != iter->second.end());
@@ -1552,9 +1553,9 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   EXPECT_EQ(1u, app_id_to_launch_list.size());
 
   // Test that `pwa_browser`'s restore data is saved under the Chrome browser
-  // app id extension_misc::kChromeAppId, not Youtube app id
+  // app id app_constants::kChromeAppId, not Youtube app id
   // extension_misc::kYoutubeAppId.
-  auto iter = app_id_to_launch_list.find(extension_misc::kChromeAppId);
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
   ASSERT_TRUE(iter != app_id_to_launch_list.end());
   auto app_restore_data_iter = iter->second.find(pwa_window_id);
   ASSERT_TRUE(app_restore_data_iter != iter->second.end());
@@ -1611,7 +1612,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   EXPECT_EQ(2u, app_id_to_launch_list.size());
 
   // Find `browser` window's app restore data.
-  auto iter = app_id_to_launch_list.find(extension_misc::kChromeAppId);
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
   ASSERT_NE(iter, app_id_to_launch_list.end());
   auto app_restore_data_iter = iter->second.find(browser_window_id);
   ASSERT_NE(iter->second.end(), app_restore_data_iter);
@@ -1839,6 +1840,93 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
 
+// Tests that launching the same desk template multiple times creates desks with
+// different/incremented names.
+IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
+                       SystemUILaunchMultipleDeskTemplates) {
+  const base::GUID kDeskUuid = base::GUID::GenerateRandomV4();
+  const std::u16string kDeskName(u"Test Desk Name");
+
+  auto* desks_controller = ash::DesksController::Get();
+
+  ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
+  desks_controller->desks()[0]->SetName(kDeskName, true);
+
+  // Save a template.
+  ash::ToggleOverview();
+  ash::WaitForOverviewEnterAnimation();
+
+  ClickSaveDeskAsTemplateButton();
+
+  // `ClickSaveDeskAsTemplateButton` will take us to the templates grid. For all
+  // subsuquent runs, we enter the templates grid by click the templates button
+  // on the desks bar.
+  bool first_run = true;
+  auto check_launch_template_desk_name =
+      [kDeskUuid, &first_run](const std::u16string& desk_name) {
+        SCOPED_TRACE(desk_name);
+
+        if (!first_run)
+          ClickExpandedStateTemplatesButton();
+
+        ClickFirstTemplateItem();
+        content::RunAllTasksUntilIdle();
+
+        first_run = false;
+      };
+
+  // Launching a desk from the template creates a desk with the same name as
+  // the template.
+  desks_controller->desks()[0]->SetName(u"Desk", true);
+  check_launch_template_desk_name(kDeskName);
+
+  // Launch more desks from the template and verify that the newly create desks
+  // have unique names.
+  check_launch_template_desk_name(std::u16string(kDeskName).append(u"(1)"));
+  check_launch_template_desk_name(std::u16string(kDeskName).append(u"(2)"));
+
+  // Remove "Test Desk Name (1)", which means the next created desk from
+  // template will have that name. Then it will skip (2) since it already
+  // exists, and create the next desk with (3).
+  RemoveDesk(desks_controller->desks()[2].get());
+  check_launch_template_desk_name(std::u16string(kDeskName).append(u"(1)"));
+  check_launch_template_desk_name(std::u16string(kDeskName).append(u"(3)"));
+
+  // Same as above, but make sure that deleting the desk with the exact template
+  // name still functions the same by only filling in whatever name is
+  // available.
+  RemoveDesk(desks_controller->desks()[1].get());
+  check_launch_template_desk_name(kDeskName);
+  check_launch_template_desk_name(std::u16string(kDeskName).append(u"(4)"));
+}
+
+// Tests that the launch from template histogram is recorded properly.
+IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
+                       SystemUIDeskTemplateLaunchFromTemplateHistogram) {
+  base::HistogramTester histogram_tester;
+
+  // Create a new browser.
+  CreateBrowser({});
+
+  // Save a template.
+  ash::ToggleOverview();
+  ash::WaitForOverviewEnterAnimation();
+  ClickSaveDeskAsTemplateButton();
+
+  const int launches = 5;
+  for (int i = 0; i < launches; i++) {
+    ClickFirstTemplateItem();
+    ClickExpandedStateTemplatesButton();
+  }
+
+  // TODO(crbug.com/1287649) : This histogram is double counted when a template
+  // is launched from the UI.
+  constexpr char kLaunchFromTemplateHistogramName[] =
+      "Ash.DeskTemplate.LaunchFromTemplate";
+  histogram_tester.ExpectTotalCount(kLaunchFromTemplateHistogramName,
+                                    2 * launches);
+}
+
 class DesksTemplatesClientArcTest : public InProcessBrowserTest {
  public:
   DesksTemplatesClientArcTest() {
@@ -1940,10 +2028,6 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientArcTest,
   arc_helper()->GetAppHost()->OnTaskDestroyed(kTaskId2);
   arc_helper()->StopInstance();
 }
-
-// TODO(crbug.com/1273532): Port over LaunchMultipleDeskTemplates and
-// DeskTemplateLaunchFromTemplateHistogram to use the native UI to do template
-// operations.
 
 class DesksTemplatesClientMultiProfileTest : public ash::LoginManagerTest {
  public:

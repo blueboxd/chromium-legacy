@@ -738,6 +738,11 @@ const base::Feature kRunVideoCaptureServiceInBrowserProcess{
 const base::Feature kSavePageAsWebBundle{"SavePageAsWebBundle",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables using Screen AI library to add metadata for accessibility tools.
+#if !BUILDFLAG(IS_ANDROID)
+const base::Feature kScreenAI{"ScreenAI", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Browser-side feature flag for Secure Payment Confirmation (SPC) that also
 // controls the render side feature state. SPC initial launch is intended
 // only for Mac devices with Touch ID and and Windows devices with
@@ -879,6 +884,11 @@ const base::FeatureParam<base::TimeDelta>
     kSiteIsolationForCrossOriginOpenerPolicyExpirationTimeoutParam{
         &kSiteIsolationForCrossOriginOpenerPolicy, "expiration_timeout",
         base::Days(7)};
+
+// This feature turns on site isolation support in <webview> guests.
+const base::Feature kSiteIsolationForGuests{"SiteIsolationForGuests",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, OOPIFs will not try to reuse compatible processes from
 // unrelated tabs.
 const base::Feature kDisableProcessReuse{"DisableProcessReuse",
@@ -1044,6 +1054,11 @@ const base::Feature kWebAuthCable{"WebAuthenticationCable",
 // Controls whether WebAuthn conditional UI requests are supported.
 const base::Feature kWebAuthConditionalUI{"WebAuthenticationConditionalUI",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the Web Bluetooth API is enabled:
+// https://webbluetoothcg.github.io/web-bluetooth/
+const base::Feature kWebBluetooth{"WebBluetooth",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether Web Bluetooth should use the new permissions backend. The
 // new permissions backend uses ChooserContextBase, which is used by other

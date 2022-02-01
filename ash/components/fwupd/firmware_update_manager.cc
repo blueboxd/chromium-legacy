@@ -245,6 +245,21 @@ void FirmwareUpdateManager::RecordDeviceMetrics(int num_devices) {
   firmware_update::metrics::EmitDeviceCount(num_devices, is_first_response_);
 }
 
+void FirmwareUpdateManager::RecordUpdateMetrics() {
+  firmware_update::metrics::EmitUpdateCount(
+      updates_.size(), GetNumCriticalUpdates(), is_first_response_);
+}
+
+int FirmwareUpdateManager::GetNumCriticalUpdates() {
+  int critical_update_count = 0;
+  for (const auto& update : updates_) {
+    if (update->priority == firmware_update::mojom::UpdatePriority::kCritical) {
+      critical_update_count++;
+    }
+  }
+  return critical_update_count;
+}
+
 void FirmwareUpdateManager::NotifyUpdateListObservers() {
   for (auto& observer : update_list_observers_) {
     observer->OnUpdateListChanged(mojo::Clone(updates_));
@@ -500,6 +515,8 @@ void FirmwareUpdateManager::OnUpdateListResponse(
     return;
   }
 
+  RecordUpdateMetrics();
+
   // We only want to show the notification once, at startup.
   if (is_first_response_) {
     ShowNotificationIfRequired();
@@ -528,6 +545,8 @@ void FirmwareUpdateManager::OnInstallResponse(bool success) {
 
   devices_already_notified_.erase(inflight_update_->device_id);
   inflight_update_.reset();
+  // Request all updates to refresh the update list after an install.
+  RequestAllUpdates();
 }
 
 void FirmwareUpdateManager::BindInterface(

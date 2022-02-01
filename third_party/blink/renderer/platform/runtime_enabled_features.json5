@@ -177,10 +177,6 @@
       name: "AllowContentInitiatedDataUrlNavigations",
     },
     {
-      name: "AllowSyncXHRInPageDismissal",
-      origin_trial_feature_name: "AllowSyncXHRInPageDismissal",
-    },
-    {
       name: "AndroidDownloadableFontsMatching",
     },
     {
@@ -452,6 +448,13 @@
     {
       name: "CompositeRelativeKeyframes",
       status: "stable"
+    },
+    {
+      // Compositing of video element is no longer necessary after launch of
+      // CompositeAfterPaint. This feature is to keep the old behavior for A/B
+      // testing. Will disable and remove.
+      name: "CompositeVideoElement",
+      status: "stable",
     },
     {
       name: "ComputedAccessibilityInfo",

@@ -42,6 +42,7 @@ using CreateReportResult = ::content::AttributionStorage::CreateReportResult;
 using CreateReportStatus =
     ::content::AttributionStorage::CreateReportResult::Status;
 using DeactivatedSource = ::content::AttributionStorage::DeactivatedSource;
+using StoreSourceResult = ::content::AttributionStorage::StoreSourceResult;
 
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -495,7 +496,10 @@ TEST_F(AttributionStorageTest, MaxImpressionsPerOrigin_LimitsStorage) {
   delegate()->set_max_sources_per_origin(2);
   storage()->StoreSource(SourceBuilder().SetSourceEventId(3).Build());
   storage()->StoreSource(SourceBuilder().SetSourceEventId(5).Build());
-  storage()->StoreSource(SourceBuilder().SetSourceEventId(7).Build());
+  EXPECT_EQ(storage()
+                ->StoreSource(SourceBuilder().SetSourceEventId(7).Build())
+                .status,
+            StoreSourceResult::Status::kInsufficientSourceCapacity);
 
   EXPECT_THAT(storage()->GetActiveSources(),
               ElementsAre(SourceEventIdIs(3u), SourceEventIdIs(5u)));
@@ -525,11 +529,15 @@ TEST_F(AttributionStorageTest, MaxImpressionsPerOrigin_PerOriginNotSite) {
 
   // This impression shouldn't be stored, because its origin has already hit the
   // limit of 2.
-  storage()->StoreSource(SourceBuilder()
-                             .SetImpressionOrigin(url::Origin::Create(
-                                 GURL("https://foo.a.example")))
-                             .SetSourceEventId(9)
-                             .Build());
+  EXPECT_EQ(storage()
+                ->StoreSource(SourceBuilder()
+                                  .SetImpressionOrigin(url::Origin::Create(
+                                      GURL("https://foo.a.example")))
+                                  .SetSourceEventId(9)
+                                  .Build())
+                .status,
+            StoreSourceResult::Status::kInsufficientSourceCapacity);
+
   // This impression should be stored, because its origin hasn't hit the limit
   // of 2.
   storage()->StoreSource(SourceBuilder()
@@ -921,54 +929,54 @@ TEST_F(AttributionStorageTest,
 }
 
 TEST_F(AttributionStorageTest,
-       MaxAttributionDestinationsPerSource_AlreadyStored) {
-  const auto impression =
-      SourceBuilder()
-          .SetSourceType(CommonSourceInfo::SourceType::kEvent)
-          .Build();
+       MaxDestinationsPerSource_ScopedToSourceSiteAndReportingOrigin) {
+  delegate()->set_max_destinations_per_source_site_reporting_origin(3);
 
-  // Setting this doesn't affect the test behavior, but makes it clear that the
-  // test passes without depending on the default value of |INT_MAX|.
-  delegate()->set_max_attribution_destinations_per_event_source(1);
-  storage()->StoreSource(impression);
-  storage()->StoreSource(impression);
+  const auto store_source = [&](const char* impression_origin,
+                                const char* reporting_origin,
+                                const char* destination_origin) {
+    return storage()
+        ->StoreSource(
+            SourceBuilder()
+                .SetImpressionOrigin(
+                    url::Origin::Create(GURL(impression_origin)))
+                .SetReportingOrigin(url::Origin::Create(GURL(reporting_origin)))
+                .SetConversionOrigin(
+                    url::Origin::Create(GURL(destination_origin)))
+                .SetExpiry(base::Days(30))
+                .Build())
+        .status;
+  };
 
-  // The second impression's |conversion_destination| matches the first's, so it
-  // doesn't add to the number of distinct values for the |impression_site|,
-  // and both impressions should be stored.
-  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(2));
-}
+  store_source("https://s1.test", "https://a.r.test", "https://d1.test");
+  store_source("https://s1.test", "https://a.r.test", "https://d2.test");
+  store_source("https://s1.test", "https://a.r.test", "https://d3.test");
+  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(3));
 
-TEST_F(
-    AttributionStorageTest,
-    MaxAttributionDestinationsPerSource_DifferentImpressionSitesAreIndependent) {
-  // Setting this doesn't affect the test behavior, but makes it clear that the
-  // test passes without depending on the default value of |INT_MAX|.
-  delegate()->set_max_attribution_destinations_per_event_source(1);
-  storage()->StoreSource(
-      SourceBuilder()
-          .SetImpressionOrigin(url::Origin::Create(GURL("https://a.example")))
-          .SetConversionOrigin(url::Origin::Create(GURL("https://c.example")))
-          .SetSourceType(CommonSourceInfo::SourceType::kEvent)
-          .Build());
-  storage()->StoreSource(
-      SourceBuilder()
-          .SetImpressionOrigin(url::Origin::Create(GURL("https://b.example")))
-          .SetConversionOrigin(url::Origin::Create(GURL("https://d.example")))
-          .SetSourceType(CommonSourceInfo::SourceType::kEvent)
-          .Build());
+  // This should succeed because the destination is already present on a pending
+  // source.
+  store_source("https://s1.test", "https://a.r.test", "https://d2.test");
+  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(4));
 
-  // The two impressions together have 2 distinct |conversion_destination|
-  // values, but they are independent because they vary by |impression_site|, so
-  // both should be stored.
-  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(2));
+  // This should fail because there are already 3 distinct destinations.
+  EXPECT_EQ(
+      store_source("https://s1.test", "https://a.r.test", "https://d4.test"),
+      AttributionStorage::StoreSourceResult::Status::
+          kInsufficientUniqueDestinationCapacity);
+  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(4));
+
+  // This should succeed because the source site is different.
+  store_source("https://s2.test", "https://a.r.test", "https://d5.test");
+  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(5));
+
+  // This should succeed because the reporting origin is different.
+  store_source("https://s1.test", "https://b.r.test", "https://d5.test");
+  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(6));
 }
 
 TEST_F(AttributionStorageTest,
-       MaxAttributionDestinationsPerSource_IrrelevantForNavigationSources) {
-  // Setting this doesn't affect the test behavior, but makes it clear that the
-  // test passes without depending on the default value of |INT_MAX|.
-  delegate()->set_max_attribution_destinations_per_event_source(1);
+       MaxAttributionDestinationsPerSource_AppliesToNavigationSources) {
+  delegate()->set_max_destinations_per_source_site_reporting_origin(1);
   storage()->StoreSource(
       SourceBuilder()
           .SetConversionOrigin(url::Origin::Create(GURL("https://a.example/")))
@@ -978,100 +986,60 @@ TEST_F(AttributionStorageTest,
           .SetConversionOrigin(url::Origin::Create(GURL("https://b.example")))
           .Build());
 
-  // Both impressions should be stored because they are navigation source.
-  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(2));
-}
-
-TEST_F(
-    AttributionStorageTest,
-    MaxAttributionDestinationsPerSource_InsufficientCapacityDeletesOldImpressions) {
-  // Verifies that active sources are removed in order, and that the destination
-  // limit handles multiple active impressions for the same destination when
-  // deleting.
-
-  struct {
-    std::string impression_origin;
-    std::string conversion_origin;
-    int max;
-  } kImpressions[] = {
-      {"https://foo.test.example", "https://a.example", INT_MAX},
-      {"https://bar.test.example", "https://b.example", INT_MAX},
-      {"https://xyz.test.example", "https://a.example", INT_MAX},
-      {"https://ghi.test.example", "https://b.example", INT_MAX},
-      {"https://qrs.test.example", "https://c.example", 2},
-  };
-
-  for (const auto& impression : kImpressions) {
-    delegate()->set_max_attribution_destinations_per_event_source(
-        impression.max);
-    storage()->StoreSource(
-        SourceBuilder()
-            .SetImpressionOrigin(
-                url::Origin::Create(GURL(impression.impression_origin)))
-            .SetConversionOrigin(
-                url::Origin::Create(GURL(impression.conversion_origin)))
-            .SetSourceType(CommonSourceInfo::SourceType::kEvent)
-            .Build());
-    task_environment_.FastForwardBy(base::Milliseconds(1));
-  }
-
-  EXPECT_THAT(storage()->GetActiveSources(),
-              ElementsAre(ImpressionOriginIs(url::Origin::Create(
-                              GURL("https://ghi.test.example"))),
-                          ImpressionOriginIs(url::Origin::Create(
-                              GURL("https://qrs.test.example")))));
+  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
 }
 
 TEST_F(AttributionStorageTest,
-       MaxAttributionDestinationsPerSource_IgnoresInactiveImpressions) {
-  delegate()->set_max_attributions_per_source(1);
-  delegate()->set_max_attribution_destinations_per_event_source(INT_MAX);
-
+       MaxAttributionDestinationsPerSource_CountsAllSourceTypes) {
+  delegate()->set_max_destinations_per_source_site_reporting_origin(1);
   storage()->StoreSource(
       SourceBuilder()
-          .SetSourceType(CommonSourceInfo::SourceType::kEvent)
+          .SetConversionOrigin(url::Origin::Create(GURL("https://a.example/")))
+          .SetSourceType(CommonSourceInfo::SourceType::kNavigation)
           .Build());
-  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
-
-  EXPECT_EQ(CreateReportStatus::kSuccess,
-            MaybeCreateAndStoreReport(DefaultTrigger()));
-  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
-
-  // Force the impression to be deactivated by ensuring that the next report is
-  // in a different window.
-  delegate()->set_report_time_ms(kReportTime + 1);
-  EXPECT_EQ(CreateReportStatus::kPriorityTooLow,
-            MaybeCreateAndStoreReport(DefaultTrigger()));
-  EXPECT_THAT(storage()->GetActiveSources(), IsEmpty());
-
-  task_environment_.FastForwardBy(base::Milliseconds(1));
-  storage()->StoreSource(
-      SourceBuilder()
-          .SetConversionOrigin(url::Origin::Create(GURL("https://a.example")))
-          .SetSourceType(CommonSourceInfo::SourceType::kEvent)
-          .Build());
-  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
-
-  delegate()->set_max_attribution_destinations_per_event_source(1);
-  task_environment_.FastForwardBy(base::Milliseconds(1));
   storage()->StoreSource(
       SourceBuilder()
           .SetConversionOrigin(url::Origin::Create(GURL("https://b.example")))
           .SetSourceType(CommonSourceInfo::SourceType::kEvent)
           .Build());
 
-  // The earliest active impression should be deleted to make room for this new
-  // one.
+  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
+}
+
+TEST_F(AttributionStorageTest,
+       MaxAttributionDestinationsPerSource_IgnoresInactiveImpressions) {
+  delegate()->set_max_attributions_per_source(1);
+  delegate()->set_max_destinations_per_source_site_reporting_origin(INT_MAX);
+
+  const auto origin_a = url::Origin::Create(GURL("https://a.example"));
+
+  storage()->StoreSource(SourceBuilder().SetConversionOrigin(origin_a).Build());
+  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
+
+  const auto trigger =
+      TriggerBuilder()
+          .SetConversionDestination(net::SchemefulSite(origin_a))
+          .Build();
+
+  EXPECT_EQ(CreateReportStatus::kSuccess, MaybeCreateAndStoreReport(trigger));
+  EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
+
+  // Force the impression to be deactivated by ensuring that the next report is
+  // in a different window.
+  delegate()->set_report_time_ms(kReportTime + 1);
+  EXPECT_EQ(CreateReportStatus::kPriorityTooLow,
+            MaybeCreateAndStoreReport(trigger));
+  EXPECT_THAT(storage()->GetActiveSources(), IsEmpty());
+
+  delegate()->set_max_destinations_per_source_site_reporting_origin(1);
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetConversionOrigin(url::Origin::Create(GURL("https://b.example")))
+          .Build());
+
   EXPECT_THAT(storage()->GetActiveSources(),
               ElementsAre(ConversionOriginIs(
                   url::Origin::Create(GURL("https://b.example")))));
-
-  // Both the inactive impression and the new one for b.example should be
-  // retained; a.example is the only one that should have been deleted. The
-  // presence of 1 conversion to report implies that the inactive impression
-  // remains in the DB.
-  task_environment_.FastForwardBy(base::Milliseconds(kReportTime));
-  EXPECT_THAT(storage()->GetAttributionsToReport(base::Time::Now()), SizeIs(1));
 }
 
 TEST_F(AttributionStorageTest,
@@ -1499,7 +1467,8 @@ TEST_F(AttributionStorageTest, StoreSource_ReturnsDeactivatedSources) {
   SourceBuilder builder1;
   builder1.SetSourceEventId(7);
 
-  EXPECT_THAT(storage()->StoreSource(builder1.Build()), IsEmpty());
+  EXPECT_THAT(storage()->StoreSource(builder1.Build()).deactivated_sources,
+              IsEmpty());
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
 
   task_environment_.FastForwardBy(base::Milliseconds(kReportTime));
@@ -1514,7 +1483,7 @@ TEST_F(AttributionStorageTest, StoreSource_ReturnsDeactivatedSources) {
   builder2.SetSourceEventId(9);
 
   builder1.SetDedupKeys({13});
-  EXPECT_THAT(storage()->StoreSource(builder2.Build()),
+  EXPECT_THAT(storage()->StoreSource(builder2.Build()).deactivated_sources,
               ElementsAre(DeactivatedSource(
                   builder1.BuildStored(),
                   DeactivatedSource::Reason::kReplacedByNewerSource)));
@@ -1526,11 +1495,13 @@ TEST_F(AttributionStorageTest, StoreSource_ReturnsDeactivatedSources) {
 TEST_F(AttributionStorageTest, StoreSource_ReturnsDeactivatedSources_Limited) {
   SourceBuilder builder1;
   builder1.SetSourceEventId(1);
-  EXPECT_THAT(storage()->StoreSource(builder1.Build()), IsEmpty());
+  EXPECT_THAT(storage()->StoreSource(builder1.Build()).deactivated_sources,
+              IsEmpty());
 
   SourceBuilder builder2;
   builder2.SetSourceEventId(2);
-  EXPECT_THAT(storage()->StoreSource(builder2.Build()), IsEmpty());
+  EXPECT_THAT(storage()->StoreSource(builder2.Build()).deactivated_sources,
+              IsEmpty());
 
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(2));
 
@@ -1545,8 +1516,10 @@ TEST_F(AttributionStorageTest, StoreSource_ReturnsDeactivatedSources_Limited) {
   // 2 sources are deactivated, but only 1 should be returned.
   SourceBuilder builder3;
   builder3.SetSourceEventId(3);
-  EXPECT_THAT(storage()->StoreSource(builder3.Build(),
-                                     /*deactivated_source_return_limit=*/1),
+  EXPECT_THAT(storage()
+                  ->StoreSource(builder3.Build(),
+                                /*deactivated_source_return_limit=*/1)
+                  .deactivated_sources,
               ElementsAre(DeactivatedSource(
                   builder1.BuildStored(),
                   DeactivatedSource::Reason::kReplacedByNewerSource)));
@@ -1558,7 +1531,8 @@ TEST_F(AttributionStorageTest,
        MaybeCreateAndStoreReport_ReturnsDeactivatedSources) {
   SourceBuilder builder;
   builder.SetSourceEventId(7);
-  EXPECT_THAT(storage()->StoreSource(builder.Build()), IsEmpty());
+  EXPECT_THAT(storage()->StoreSource(builder.Build()).deactivated_sources,
+              IsEmpty());
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
 
   // Store the maximum number of reports for the source.
@@ -1691,6 +1665,33 @@ TEST_F(AttributionStorageTest, GetNextReportTime) {
   EXPECT_EQ(storage()->GetNextReportTime(base::Time::Min()), report_time_a);
   EXPECT_EQ(storage()->GetNextReportTime(report_time_a), report_time_b);
   EXPECT_EQ(storage()->GetNextReportTime(report_time_b), absl::nullopt);
+}
+
+TEST_F(AttributionStorageTest, GetAttributionsToReport_Shuffles) {
+  storage()->StoreSource(SourceBuilder().Build());
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
+      MaybeCreateAndStoreReport(TriggerBuilder().SetTriggerData(3).Build()));
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
+      MaybeCreateAndStoreReport(TriggerBuilder().SetTriggerData(1).Build()));
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
+      MaybeCreateAndStoreReport(TriggerBuilder().SetTriggerData(2).Build()));
+
+  EXPECT_THAT(storage()->GetAttributionsToReport(
+                  /*max_report_time=*/base::Time::Max(), /*limit=*/-1),
+              ElementsAre(EventLevelDataIs(TriggerDataIs(3)),
+                          EventLevelDataIs(TriggerDataIs(1)),
+                          EventLevelDataIs(TriggerDataIs(2))));
+
+  delegate()->set_reverse_reports_on_shuffle(true);
+
+  EXPECT_THAT(storage()->GetAttributionsToReport(
+                  /*max_report_time=*/base::Time::Max(), /*limit=*/-1),
+              ElementsAre(EventLevelDataIs(TriggerDataIs(2)),
+                          EventLevelDataIs(TriggerDataIs(1)),
+                          EventLevelDataIs(TriggerDataIs(3))));
 }
 
 }  // namespace content

@@ -25,7 +25,6 @@
 #include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/net/cross_origin_opener_policy_reporter.h"
 #include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
@@ -60,11 +59,11 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "services/network/public/cpp/features.h"
@@ -1810,8 +1809,10 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
 
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
 
-  // We do not currently swap processes for navigations in webview tag guests.
-  if (current_instance->IsGuest()) {
+  // Do not currently swap processes for navigations in webview tag guests,
+  // unless site isolation is enabled for them.
+  if (current_instance->IsGuest() &&
+      !SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled()) {
     AppendReason(reason,
                  "GetSiteInstanceForNavigation => current_instance (IsGuest)");
     return current_instance;
@@ -2408,9 +2409,22 @@ scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
     return candidate_instance;
   }
 
-  // Otherwise return a newly created one.
+  // Otherwise return a new SiteInstance in a new BrowsingInstance.
+  UrlInfo dest_url_info = descriptor.dest_url_info;
+  if (current_instance->IsGuest()) {
+    // If the current SiteInstance is for a guest, the new unrelated
+    // SiteInstance must also be for a guest and must stay in the same
+    // StoragePartition.  Note that we should only attempt BrowsingInstance
+    // swaps in guests when site isolation for guests is enabled.
+    DCHECK(SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled());
+    dest_url_info = UrlInfo(
+        UrlInfoInit(descriptor.dest_url_info)
+            .WithStoragePartitionConfig(
+                current_instance->GetSiteInfo().storage_partition_config()));
+  }
   return SiteInstanceImpl::CreateForUrlInfo(
-      GetNavigationController().GetBrowserContext(), descriptor.dest_url_info);
+      GetNavigationController().GetBrowserContext(), dest_url_info,
+      current_instance->IsGuest());
 }
 
 bool RenderFrameHostManager::CanUseSourceSiteInstance(

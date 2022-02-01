@@ -72,6 +72,15 @@ AppRestoreArcTaskHandler::~AppRestoreArcTaskHandler() {
     arc_session_manager->RemoveObserver(this);
 }
 
+bool AppRestoreArcTaskHandler::IsAppPendingRestore(
+    const std::string& arc_app_id) const {
+  for (auto& handler : arc_app_launcher_handers_) {
+    if (handler && handler->IsAppPendingRestore(arc_app_id))
+      return true;
+  }
+  return false;
+}
+
 void AppRestoreArcTaskHandler::OnTaskCreated(int32_t task_id,
                                              const std::string& package_name,
                                              const std::string& activity,
@@ -117,6 +126,7 @@ void AppRestoreArcTaskHandler::OnAppConnectionClosed() {
 
 void AppRestoreArcTaskHandler::OnArcAppListPrefsDestroyed() {
   arc_prefs_observer_.Reset();
+  Shutdown();
 }
 
 void AppRestoreArcTaskHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
@@ -139,6 +149,10 @@ void AppRestoreArcTaskHandler::Shutdown() {
   for (auto& handler : arc_app_launcher_handers_) {
     handler.reset();
   }
+  desks_templates_arc_app_launch_handler_observer_ = nullptr;
+  full_restore_arc_app_launch_handler_observer_ = nullptr;
+  window_predictor_arc_app_launch_handler_observer_ = nullptr;
+
   window_handler_.reset();
 }
 

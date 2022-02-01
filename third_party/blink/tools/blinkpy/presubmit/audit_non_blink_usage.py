@@ -198,6 +198,12 @@ _CONFIG = [
             # //base/strings/char_traits.h.
             'base::CharTraits',
 
+            # //base/synchronization/lock.h.
+            'base::AutoLock',
+            'base::AutoUnlock',
+            'base::AutoTryLock',
+            'base::Lock',
+
             # //base/synchronization/waitable_event.h.
             'base::WaitableEvent',
 
@@ -378,6 +384,11 @@ _CONFIG = [
 
             # Range type.
             'gfx::Range',
+
+            # Mac CALayer result (error code)
+            'gfx::CALayerResult',
+            'gfx::kCALayerUnknownDidNotSwap',
+            'gfx::kCALayerUnknownNoWidget',
 
             # Wrapper of SkRegion used in Chromium.
             'cc::Region',
@@ -1147,8 +1158,6 @@ _CONFIG = [
             'base::Unretained',
             'base::NoDestructor',
             'base::flat_map',
-            'base::AutoLock',
-            'base::Lock',
             'base::EraseIf',
             'base::ScopedPlatformFile',
             'mojo::WrapCallbackWithDefaultInvokeIfNotRun',
@@ -1211,7 +1220,6 @@ _CONFIG = [
         ],
         'allowed': [
             'media::.+',
-            'base::AutoLock',
             'base::Hash',
             'base::Lock',
             'base::StringPrintf',
@@ -1318,7 +1326,6 @@ _CONFIG = [
             'third_party/blink/renderer/modules/webrtc/',
         ],
         'allowed': [
-            'base::AutoLock',
             'base::Erase',
             'base::Lock',
             'base::StringPrintf',
@@ -1463,8 +1470,6 @@ _CONFIG = [
         ],
         'allowed': [
             'absl::.+',
-            'base::AutoLock',
-            'base::AutoUnlock',
             # TODO(crbug.com/1266408): Temporarily added to enable splitting UMA stats based on tier.
             'base::CPU',
             'base::LazyInstance',

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 
+#include <algorithm>
+
 #include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
@@ -137,6 +139,10 @@ PrivacySandboxService::PrivacySandboxService(
       base::BindRepeating(&PrivacySandboxService::OnPrivacySandboxPrefChanged,
                           base::Unretained(this)));
   user_prefs_registrar_.Add(
+      prefs::kPrivacySandboxApisEnabledV2,
+      base::BindRepeating(&PrivacySandboxService::OnPrivacySandboxPrefChanged,
+                          base::Unretained(this)));
+  user_prefs_registrar_.Add(
       prefs::kPrivacySandboxFlocEnabled,
       base::BindRepeating(&PrivacySandboxService::OnPrivacySandboxPrefChanged,
                           base::Unretained(this)));
@@ -166,7 +172,7 @@ PrivacySandboxService::GetRequiredDialogType() {
   return DialogType::kNone;
 }
 
-void PrivacySandboxService::DialogActionOccur(
+void PrivacySandboxService::DialogActionOccurred(
     PrivacySandboxService::DialogAction action) {
   // TODO(crbug.com/1286276): Not yet implemented.
 }
@@ -255,11 +261,17 @@ void PrivacySandboxService::SetFlocPrefEnabled(bool enabled) const {
 }
 
 bool PrivacySandboxService::IsPrivacySandboxEnabled() {
-  return pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabled);
+  return privacy_sandbox_settings_->IsPrivacySandboxEnabled();
 }
 
 bool PrivacySandboxService::IsPrivacySandboxManaged() {
-  return pref_service_->IsManagedPreference(prefs::kPrivacySandboxApisEnabled);
+  if (!base::FeatureList::IsEnabled(
+          privacy_sandbox::kPrivacySandboxSettings3)) {
+    return pref_service_->IsManagedPreference(
+        prefs::kPrivacySandboxApisEnabled);
+  }
+  return pref_service_->IsManagedPreference(
+      prefs::kPrivacySandboxApisEnabledV2);
 }
 
 void PrivacySandboxService::OnPrivacySandboxPrefChanged() {
@@ -281,6 +293,23 @@ void PrivacySandboxService::GetFledgeJoiningEtldPlusOneForDisplay(
   interest_group_manager_->GetAllInterestGroupJoiningOrigins(base::BindOnce(
       &PrivacySandboxService::ConvertFledgeJoiningTopFramesForDisplay,
       weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+std::vector<std::string>
+PrivacySandboxService::GetBlockedFledgeJoiningTopFramesForDisplay() const {
+  auto* pref_value =
+      pref_service_->GetDictionary(prefs::kPrivacySandboxFledgeJoinBlocked);
+  DCHECK(pref_value->is_dict());
+
+  std::vector<std::string> blocked_top_frames;
+
+  for (auto entry : pref_value->DictItems())
+    blocked_top_frames.emplace_back(entry.first);
+
+  // Apply a lexographic ordering to match other settings permission surfaces.
+  std::sort(blocked_top_frames.begin(), blocked_top_frames.end());
+
+  return blocked_top_frames;
 }
 
 void PrivacySandboxService::Shutdown() {
@@ -393,6 +422,7 @@ void PrivacySandboxService::MaybeReconcilePrivacySandboxPref() {
 }
 
 void PrivacySandboxService::ReconcilePrivacySandboxPref() {
+  // Reconciliation only ever affects the synced, pre-notice / consent pref.
   if (ShouldDisablePrivacySandbox(cookie_settings_, pref_service_))
     pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabled, false);
 
@@ -456,7 +486,7 @@ void PrivacySandboxService::LogPrivacySandboxState() {
     return;
   }
 
-  if (pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabled)) {
+  if (privacy_sandbox_settings_->IsPrivacySandboxEnabled()) {
     const bool floc_enabled =
         pref_service_->GetBoolean(prefs::kPrivacySandboxFlocEnabled);
 

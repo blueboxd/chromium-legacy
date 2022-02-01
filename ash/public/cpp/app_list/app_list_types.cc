@@ -36,6 +36,7 @@ bool IsAppListSearchResultAnApp(AppListSearchResultType result_type) {
     case AppListSearchResultType::kHelpApp:
     case AppListSearchResultType::kFileSearch:
     case AppListSearchResultType::kDriveSearch:
+    case AppListSearchResultType::kKeyboardShortcut:
       return false;
   }
 }
@@ -166,8 +167,6 @@ std::ostream& operator<<(std::ostream& os, AppListViewState state) {
 // SearchResultIconInfo:
 
 SearchResultIconInfo::SearchResultIconInfo() = default;
-
-SearchResultIconInfo::SearchResultIconInfo(gfx::ImageSkia icon) : icon(icon) {}
 
 SearchResultIconInfo::SearchResultIconInfo(gfx::ImageSkia icon, int dimension)
     : icon(icon), dimension(dimension) {}

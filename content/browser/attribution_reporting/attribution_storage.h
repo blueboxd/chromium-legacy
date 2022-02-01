@@ -39,7 +39,6 @@ class AttributionStorage {
   enum class AttributionType {
     kNavigation = 0,
     kEvent = 1,
-    kAggregate = 2,
   };
 
   // Storage delegate that can supplied to extend basic attribution storage
@@ -89,9 +88,9 @@ class AttributionStorage {
     virtual int GetMaxAttributionsPerOrigin() const = 0;
 
     // Returns the maximum number of distinct attribution destinations that can
-    // be in storage at any time for event sources with a given
-    // reporting origin.
-    virtual int GetMaxAttributionDestinationsPerEventSource() const = 0;
+    // be in storage at any time for sources with the same <source site,
+    // reporting origin>.
+    virtual int GetMaxDestinationsPerSourceSiteReportingOrigin() const = 0;
 
     // Returns the rate limits for capping contributions per window.
     virtual RateLimitConfig GetRateLimits(
@@ -114,6 +113,14 @@ class AttributionStorage {
     // no delay should be applied, e.g. due to debug mode.
     virtual absl::optional<OfflineReportDelayConfig>
     GetOfflineReportDelayConfig() const = 0;
+
+    // Shuffles reports to provide plausible deniability on the ordering of
+    // reports that share the same |report_time|. This is important because
+    // multiple conversions for the same impression share the same report time
+    // if they are within the same reporting window, and we do not want to allow
+    // ordering on their conversion metadata bits.
+    virtual void ShuffleReports(
+        std::vector<AttributionReport>& reports) const = 0;
   };
 
   struct CONTENT_EXPORT DeactivatedSource {
@@ -135,6 +142,30 @@ class AttributionStorage {
     Reason reason;
   };
 
+  struct CONTENT_EXPORT StoreSourceResult {
+    enum class Status {
+      kSuccess,
+      kInternalError,
+      kInsufficientSourceCapacity,
+      kInsufficientUniqueDestinationCapacity,
+    };
+
+    explicit StoreSourceResult(
+        Status status,
+        std::vector<DeactivatedSource> deactivated_sources = {});
+
+    ~StoreSourceResult();
+
+    StoreSourceResult(const StoreSourceResult&);
+    StoreSourceResult(StoreSourceResult&&);
+
+    StoreSourceResult& operator=(const StoreSourceResult&);
+    StoreSourceResult& operator=(StoreSourceResult&&);
+
+    Status status;
+    std::vector<DeactivatedSource> deactivated_sources;
+  };
+
   virtual ~AttributionStorage() = default;
 
   // When adding a new method, also add it to
@@ -147,7 +178,7 @@ class AttributionStorage {
   // Unconverted matching sources are not modified.
   // Returns at most `deactivated_source_return_limit` deactivated sources, to
   // put an upper bound on memory usage; use a negative number for no limit.
-  virtual std::vector<DeactivatedSource> StoreSource(
+  virtual StoreSourceResult StoreSource(
       const StorableSource& source,
       int deactivated_source_return_limit = -1) = 0;
 
@@ -216,7 +247,7 @@ class AttributionStorage {
   // Returns all of the reports that should be sent before
   // |max_report_time|. This call is logically const, and does not modify the
   // underlying storage. |limit| limits the number of reports to return; use
-  // a negative number for no limit.
+  // a negative number for no limit. Reports are shuffled before being returned.
   virtual std::vector<AttributionReport> GetAttributionsToReport(
       base::Time max_report_time,
       int limit = -1) = 0;

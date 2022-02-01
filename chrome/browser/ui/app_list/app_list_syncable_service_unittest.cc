@@ -35,6 +35,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/app_constants/constants.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/model/sync_error_factory.h"
@@ -1535,7 +1536,7 @@ TEST_F(AppListSyncableServiceTest, TransferItem) {
 
   // Chrome is an existing app to transfer attributes to.
   scoped_refptr<extensions::Extension> chrome =
-      MakeApp(kSomeAppName, extension_misc::kChromeAppId,
+      MakeApp(kSomeAppName, app_constants::kChromeAppId,
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
   InstallExtension(chrome.get());
 
@@ -1555,9 +1556,9 @@ TEST_F(AppListSyncableServiceTest, TransferItem) {
   ASSERT_TRUE(webstore_sync_item);
 
   const app_list::AppListSyncableService::SyncItem* chrome_sync_item =
-      GetSyncItem(extension_misc::kChromeAppId);
+      GetSyncItem(app_constants::kChromeAppId);
   const ChromeAppListItem* chrome_item =
-      model_updater->FindItem(extension_misc::kChromeAppId);
+      model_updater->FindItem(app_constants::kChromeAppId);
   ASSERT_TRUE(chrome_item);
   ASSERT_TRUE(chrome_sync_item);
 
@@ -1578,7 +1579,7 @@ TEST_F(AppListSyncableServiceTest, TransferItem) {
 
   // Perform attributes transfer to existing Chrome app.
   EXPECT_TRUE(app_list_syncable_service()->TransferItemAttributes(
-      extensions::kWebStoreAppId, extension_misc::kChromeAppId));
+      extensions::kWebStoreAppId, app_constants::kChromeAppId));
   // Perform attributes transfer to the future Youtube app.
   EXPECT_TRUE(app_list_syncable_service()->TransferItemAttributes(
       extensions::kWebStoreAppId, extension_misc::kYoutubeAppId));
@@ -2954,12 +2955,12 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
   app_list_syncable_service()->SetAppListPreferredOrder(
       ash::AppListSortOrder::kNameReverseAlphabetical);
 
-  // Folders should be in front of apps.
-  EXPECT_EQ(GetOrderedItemIdsFromSyncableService(),
-            std::vector<std::string>({kFolderId2, kFolderId1, kChildItemId2_3,
-                                      kChildItemId2_2, kChildItemId2_1,
-                                      kChildItemId1_2, kChildItemId1_1,
-                                      kItemId2, kItemId1}));
+  // Folders should be sorted alphabetically with apps.
+  EXPECT_EQ(
+      GetOrderedItemIdsFromSyncableService(),
+      std::vector<std::string>(
+          {kChildItemId2_3, kChildItemId2_2, kChildItemId2_1, kFolderId2,
+           kChildItemId1_2, kChildItemId1_1, kFolderId1, kItemId2, kItemId1}));
 }
 
 // Verifies that sorting app items with the alphabetical order should work as
@@ -3261,12 +3262,13 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
   // Install a new app.
   const std::string kNewAppId = CreateNextAppId(GenerateId("app_id"));
   scoped_refptr<extensions::Extension> app =
-      MakeApp("B", kNewAppId, extensions::Extension::NO_FLAGS);
+      MakeApp("G", kNewAppId, extensions::Extension::NO_FLAGS);
   InstallExtension(app.get());
 
-  // Verify that the app is placed after folders.
+  // Verify that the app is placed alphabetically - note that empty folder name
+  // is treated as "Unnamed".
   EXPECT_EQ(GetOrderedNamesFromSyncableService(),
-            std::vector<std::string>({"Folder1", "Folder2", "", "B"}));
+            std::vector<std::string>({"Folder1", "Folder2", "G", ""}));
 
   // Verify that the entropy is zero.
   EXPECT_TRUE(cc::MathUtil::IsWithinEpsilon(
@@ -3276,18 +3278,18 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
   // Install the second app.
   const std::string kNewAppId2 = CreateNextAppId(GenerateId("app_id2"));
   scoped_refptr<extensions::Extension> app2 =
-      MakeApp("C", kNewAppId2, extensions::Extension::NO_FLAGS);
+      MakeApp("c", kNewAppId2, extensions::Extension::NO_FLAGS);
   InstallExtension(app2.get());
 
-  // Verify that the app is placed after folders.
+  // Verify that the app is placed alphabetically again.
   EXPECT_EQ(GetOrderedNamesFromSyncableService(),
-            std::vector<std::string>({"Folder1", "Folder2", "", "B", "C"}));
+            std::vector<std::string>({"c", "Folder1", "Folder2", "G", ""}));
 
   // Change folders' names so that folders are out of order.
   ChangeItemName(kFolderItemId1, "Folder2");
   ChangeItemName(kFolderItemId2, "Folder1");
   EXPECT_EQ(GetOrderedNamesFromSyncableService(),
-            std::vector<std::string>({"Folder2", "Folder1", "", "B", "C"}));
+            std::vector<std::string>({"c", "Folder2", "Folder1", "G", ""}));
 
   // There is one folder item out of order so the entropy should be 1/5 = 0.2.
   EXPECT_TRUE(cc::MathUtil::IsWithinEpsilon(
@@ -3297,21 +3299,21 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
   // Install the third app. Verify the item order after installation.
   const std::string kNewAppId3 = CreateNextAppId(GenerateId("app_id3"));
   scoped_refptr<extensions::Extension> app3 =
-      MakeApp("D", kNewAppId3, extensions::Extension::NO_FLAGS);
+      MakeApp("Fs", kNewAppId3, extensions::Extension::NO_FLAGS);
   InstallExtension(app3.get());
   EXPECT_EQ(
       GetOrderedNamesFromSyncableService(),
-      std::vector<std::string>({"Folder2", "Folder1", "", "B", "C", "D"}));
+      std::vector<std::string>({"c", "Folder2", "Folder1", "Fs", "G", ""}));
 
-  // Install the forth app. Verify that the new item is inserted between a
-  // folder and an app.
+  // Install the forth app. Verify that the new item is inserted in alphabetical
+  // order.
   const std::string kNewAppId4 = CreateNextAppId(GenerateId("app_id4"));
   scoped_refptr<extensions::Extension> app4 =
-      MakeApp("A", kNewAppId4, extensions::Extension::NO_FLAGS);
+      MakeApp("z", kNewAppId4, extensions::Extension::NO_FLAGS);
   InstallExtension(app4.get());
-  EXPECT_EQ(
-      GetOrderedNamesFromSyncableService(),
-      std::vector<std::string>({"Folder2", "Folder1", "", "A", "B", "C", "D"}));
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>(
+                {"c", "Folder2", "Folder1", "Fs", "G", "", "z"}));
 }
 
 // Verifies that the new app's position maintains the launcher sort order among

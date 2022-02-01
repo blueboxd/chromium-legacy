@@ -696,8 +696,6 @@ extern const char kWebAppsIsolationState[];
 extern const char kWebAppsUrlHandlerInfo[];
 #endif
 
-extern const char kWebAppsUserDisplayModeCleanedUp[];
-
 extern const char kSystemWebAppLastUpdateVersion[];
 extern const char kSystemWebAppLastInstalledLocale[];
 extern const char kSystemWebAppInstallFailureCount[];
@@ -820,6 +818,7 @@ extern const char kRegisteredBackgroundContents[];
 extern const char kTotalMemoryLimitMb[];
 
 extern const char kAuthSchemes[];
+extern const char kAllHttpAuthSchemesAllowedForOrigins[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kAuthServerAllowlist[];
@@ -1078,8 +1077,6 @@ extern const char kTabFreezingEnabled[];
 extern const char kEnterpriseHardwarePlatformAPIEnabled[];
 
 extern const char kSignedHTTPExchangeEnabled[];
-
-extern const char kAllowSyncXHRInPageDismissal[];
 
 #if BUILDFLAG(IS_ANDROID)
 extern const char kUsageStatsEnabled[];

@@ -1258,6 +1258,8 @@ static_library("browser") {
     "prefetch/no_state_prefetch/no_state_prefetch_tab_helper.h",
     "prefetch/pref_names.cc",
     "prefetch/pref_names.h",
+    "prefetch/prefetch_headers.cc",
+    "prefetch/prefetch_headers.h",
     "prefetch/prefetch_prefs.cc",
     "prefetch/prefetch_prefs.h",
     "prefetch/prefetch_proxy/chrome_speculation_host_delegate.cc",
@@ -2444,6 +2446,7 @@ static_library("browser") {
       "//ash/webui/shortcut_customization_ui",
       "//chrome/app/theme:chrome_unscaled_resources_grit",
       "//chrome/browser/ash/system_extensions",
+      "//chrome/browser/ash/system_extensions/api/hid",
       "//chrome/browser/ash/system_extensions/api/window_management",
       "//chrome/browser/nearby_sharing/common",
       "//chrome/browser/policy:onc",
@@ -4441,6 +4444,7 @@ static_library("browser") {
       "//chrome/browser/ui/webui/access_code_cast:mojo_bindings",
       "//chrome/browser/ui/webui/tab_strip:mojo_bindings",
       "//chrome/browser/web_applications",
+      "//chrome/browser/web_applications/adjustments",
       "//chrome/browser/web_applications/app_service",
       "//chrome/common/apps/platform_apps",
       "//chrome/common/cart:mojo_bindings",
@@ -4488,6 +4492,10 @@ static_library("browser") {
 
       # TODO(crbug.com/1200215): Remove cycles and simplify all dependencies.
       "//chrome/browser/web_applications",
+
+      # TODO(crbug.com/1292435): Remove once AppServiceProxy is extracted from
+      # //chrome/browser.
+      "//chrome/browser/web_applications/adjustments",
       "//chrome/browser/web_applications/app_service",
     ]
 
@@ -4868,10 +4876,6 @@ static_library("browser") {
       "support_tool/ash/ui_hierarchy_data_collector.h",
       "sync/desk_sync_service_factory.cc",
       "sync/desk_sync_service_factory.h",
-      "sync/sync_error_notifier_ash.cc",
-      "sync/sync_error_notifier_ash.h",
-      "sync/sync_error_notifier_factory_ash.cc",
-      "sync/sync_error_notifier_factory_ash.h",
       "sync/wifi_configuration_sync_service_factory.cc",
       "sync/wifi_configuration_sync_service_factory.h",
       "task_manager/providers/arc/arc_process_task.cc",

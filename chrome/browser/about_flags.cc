@@ -694,6 +694,7 @@ const FeatureEntry::Choice kTopChromeTouchUiChoices[] = {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kLacrosAvailabilityIgnoreInternalName[] =
     "lacros-availability-ignore";
+const char kLacrosOnlyInternalName[] = "lacros-only";
 const char kLacrosPrimaryInternalName[] = "lacros-primary";
 const char kLacrosSupportInternalName[] = "lacros-support";
 const char kLacrosStabilityInternalName[] = "lacros-stability";
@@ -3191,6 +3192,9 @@ const FeatureEntry kFeatureEntries[] = {
     {kLacrosPrimaryInternalName, flag_descriptions::kLacrosPrimaryName,
      flag_descriptions::kLacrosPrimaryDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kLacrosPrimary)},
+    {kLacrosOnlyInternalName, flag_descriptions::kLacrosOnlyName,
+     flag_descriptions::kLacrosOnlyDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kLacrosOnly)},
     {kLacrosAvailabilityIgnoreInternalName,
      flag_descriptions::kLacrosAvailabilityIgnoreName,
      flag_descriptions::kLacrosAvailabilityIgnoreDescription, kOsCrOS,
@@ -3939,6 +3943,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFeatureNotificationGuideName,
      flag_descriptions::kFeatureNotificationGuideDescription, kOsAll,
      FEATURE_VALUE_TYPE(feature_guide::features::kFeatureNotificationGuide)},
+    {"feature-notification-guide-skip-check-for-low-engaged-users",
+     flag_descriptions::
+         kFeatureNotificationGuideSkipCheckForLowEngagedUsersName,
+     flag_descriptions::
+         kFeatureNotificationGuideSkipCheckForLowEngagedUsersDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(feature_guide::features::kSkipCheckForLowEngagedUsers)},
     {"offline-pages-live-page-sharing",
      flag_descriptions::kOfflinePagesLivePageSharingName,
      flag_descriptions::kOfflinePagesLivePageSharingDescription, kOsAndroid,
@@ -5183,10 +5194,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
      SINGLE_VALUE_TYPE(network::switches::kLogNetLog)},
 
-    {"enable-web-authentication-cable-v2-support",
-     flag_descriptions::kEnableWebAuthenticationCableV2SupportName,
-     flag_descriptions::kEnableWebAuthenticationCableV2SupportDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(device::kWebAuthPhoneSupport)},
+    {"enable-web-authentication-cable-disco-creds",
+     flag_descriptions::kEnableWebAuthenticationCableDiscoCredsName,
+     flag_descriptions::kEnableWebAuthenticationCableDiscoCredsDescription,
+     kOsAll, FEATURE_VALUE_TYPE(device::kWebAuthCableDisco)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-web-authentication-chromeos-authenticator",
@@ -5743,6 +5754,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAllowTouchpadHapticClickSettingsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAllowTouchpadHapticClickSettings)},
 
+    {"enable-neural-palm-adaptive-hold",
+     flag_descriptions::kEnableNeuralPalmAdaptiveHoldName,
+     flag_descriptions::kEnableNeuralPalmAdaptiveHoldDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ui::kEnableNeuralPalmAdaptiveHold)},
+
+    {"enable-neural-palm-rejection-model-v2",
+     flag_descriptions::kEnableNeuralPalmRejectionModelV2Name,
+     flag_descriptions::kEnableNeuralPalmRejectionModelV2Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(ui::kEnableNeuralPalmRejectionModelV2)},
+
     {"enable-neural-stylus-palm-rejection",
      flag_descriptions::kEnableNeuralStylusPalmRejectionName,
      flag_descriptions::kEnableNeuralStylusPalmRejectionDescription, kOsCrOS,
@@ -5917,12 +5938,6 @@ const FeatureEntry kFeatureEntries[] = {
          kAutofillUseMobileLabelDisambiguationVariations,
          "AutofillUseMobileLabelDisambiguation")},
 #endif  // BUILDFLAG(IS_ANDROID)
-
-    {"allow-sync-xhr-in-page-dismissal",
-     flag_descriptions::kAllowSyncXHRInPageDismissalName,
-     flag_descriptions::kAllowSyncXHRInPageDismissalDescription,
-     kOsAll | kDeprecated,
-     FEATURE_VALUE_TYPE(blink::features::kAllowSyncXHRInPageDismissal)},
 
     {"enable-sync-requires-policies-loaded",
      flag_descriptions::kEnableSyncRequiresPoliciesLoadedName,
@@ -7856,6 +7871,22 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTailoredSecurityIntegrationDescription, kOsAll,
      FEATURE_VALUE_TYPE(safe_browsing::kTailoredSecurityIntegration)},
 
+#if !BUILDFLAG(IS_ANDROID)
+    {"screen-ai", flag_descriptions::kScreenAIName,
+     flag_descriptions::kScreenAIDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kScreenAI)},
+#endif
+
+    {"autofill-enable-virtual-card-management-in-desktop-settings-page",
+     flag_descriptions::
+         kAutofillEnableVirtualCardManagementInDesktopSettingsPageName,
+     flag_descriptions::
+         kAutofillEnableVirtualCardManagementInDesktopSettingsPageDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillEnableVirtualCardManagementInDesktopSettingsPage)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -7927,6 +7958,10 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
 
   if (!strcmp(kLacrosStabilityInternalName, entry.internal_name)) {
     return !crosapi::browser_util::IsLacrosAllowedToBeEnabled(channel);
+  }
+
+  if (!strcmp(kLacrosOnlyInternalName, entry.internal_name)) {
+    return !crosapi::browser_util::IsLacrosOnlyFlagAllowed(channel);
   }
 
   if (!strcmp(kLacrosPrimaryInternalName, entry.internal_name)) {

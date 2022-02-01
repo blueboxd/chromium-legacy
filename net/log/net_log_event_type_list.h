@@ -588,6 +588,8 @@ EVENT_TYPE(SSL_ALERT_SENT)
 EVENT_TYPE(SSL_CONFIRM_HANDSHAKE)
 
 // An SSL connection sent or received a handshake message.
+// `SSL_ENCYPTED_CLIENT_HELLO` means the handshake message was not sent over the
+// wire but encrypted with the Encrypted ClientHello (ECH) extension.
 // The following parameters are attached:
 //   {
 //     "type": <The type of the handshake message, as an integer>
@@ -596,6 +598,7 @@ EVENT_TYPE(SSL_CONFIRM_HANDSHAKE)
 //   }
 EVENT_TYPE(SSL_HANDSHAKE_MESSAGE_RECEIVED)
 EVENT_TYPE(SSL_HANDSHAKE_MESSAGE_SENT)
+EVENT_TYPE(SSL_ENCYPTED_CLIENT_HELLO)
 
 // The specified number of bytes were sent on the socket.  Depending on the
 // source of the event, may be logged either once the data is sent, or when it
@@ -4065,6 +4068,26 @@ EVENT_TYPE(CORS_PREFLIGHT_URL_REQUEST)
 EVENT_TYPE(CORS_PREFLIGHT_CACHED_RESULT)
 
 // ------------------------------------------------------------------------
+// Private Network Access
+// ------------------------------------------------------------------------
+
+// This event is logged when a new connection is checked against Private
+// Network Access rules.
+//
+// It contains the following parameters:
+//  {
+//    "client_address_space": <the IP address space of the request client>,
+//    "resource_address_space": <the IP address space of the remote endpoint>,
+//    "result": <the result of the check>,
+//  }
+//
+// If the result is "unexpected-private-network", then the request is
+// interrupted and a preflight request is retried, this time with PNA headers
+// attached. If this second connection fails the check again, the request is
+// failed.
+EVENT_TYPE(PRIVATE_NETWORK_ACCESS_CHECK)
+
+// ------------------------------------------------------------------------
 // Initiator
 // ------------------------------------------------------------------------
 
@@ -4093,3 +4116,10 @@ EVENT_TYPE(COMPUTED_PRIVACY_MODE)
 //    "message": <Failure message>,
 // }
 EVENT_TYPE(WEBSOCKET_UPGRADE_FAILURE)
+
+// This event is logged when the WebSocket read buffer size is changed. It
+// contains the following parameters:
+// {
+//    "read_buffer_size_in_bytes": <New read buffer size in bytes>,
+// }
+EVENT_TYPE(WEBSOCKET_READ_BUFFER_SIZE_CHANGED)
